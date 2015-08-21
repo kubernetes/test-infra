@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 
 	"k8s.io/contrib/mungegithub/issues"
 	"k8s.io/contrib/mungegithub/pulls"
@@ -28,6 +29,7 @@ import (
 
 var (
 	token          = flag.String("token", "", "The OAuth Token to use for requests.")
+	tokenFile      = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
 	minPRNumber    = flag.Int("min-pr-number", 0, "The minimum PR to start with [default: 0]")
 	minIssueNumber = flag.Int("min-issue-number", 0, "The minimum PR to start with [default: 0]")
 	dryrun         = flag.Bool("dry-run", false, "If true, don't actually merge anything")
@@ -45,7 +47,15 @@ func main() {
 	if len(*project) == 0 {
 		glog.Fatalf("--project is required.")
 	}
-	client := github.MakeClient(*token)
+	tokenData := *token
+	if len(tokenData) == 0 && len(*tokenFile) != 0 {
+		data, err := ioutil.ReadFile(*tokenFile)
+		if err != nil {
+			glog.Fatalf("error reading token file: %v", err)
+		}
+		tokenData = string(data)
+	}
+	client := github.MakeClient(tokenData)
 
 	if len(*issueMungers) > 0 {
 		glog.Infof("Running issue mungers")
