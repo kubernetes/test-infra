@@ -95,6 +95,11 @@ func MungePullRequests(client *github.Client, pullMungers, org, project string, 
 func mungePullRequestList(list []github.PullRequest, client *github.Client, org, project string, mungers []Munger, minPRNumber int, dryrun bool) error {
 	for ix := range list {
 		pr := &list[ix]
+		if p, _, err := client.PullRequests.Get(org, project, *pr.Number); err != nil {
+			return err
+		} else {
+			*pr = *p
+		}
 		for _, munger := range mungers {
 			glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
 			if *pr.Number < minPRNumber {
@@ -125,4 +130,14 @@ func HasLabel(labels []github.Label, name string) bool {
 		}
 	}
 	return false
+}
+
+func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
+	var ret []string
+	for _, label := range labels {
+		if label.Name != nil && strings.HasPrefix(*label.Name, prefix) {
+			ret = append(ret, *label.Name)
+		}
+	}
+	return ret
 }
