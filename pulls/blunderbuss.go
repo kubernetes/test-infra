@@ -82,6 +82,10 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, org, project
 	}
 	potentialOwners := util.StringSet{}
 	for _, commit := range commits {
+		if commit.Author == nil || commit.Author.Login == nil || commit.SHA == nil {
+			glog.Warningf("Skipping invalid commit for %d: %#v", *pr.Number, commit)
+			continue
+		}
 		commit, _, err := client.Repositories.GetCommit(*commit.Author.Login, project, *commit.SHA)
 		if err != nil {
 			glog.Errorf("Can't load commit %s %s %s", *commit.Author.Login, project, *commit.SHA)
