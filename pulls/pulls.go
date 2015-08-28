@@ -95,28 +95,29 @@ func MungePullRequests(client *github.Client, pullMungers, org, project string, 
 func mungePullRequestList(list []github.PullRequest, client *github.Client, org, project string, mungers []Munger, minPRNumber int, dryrun bool) error {
 	for ix := range list {
 		pr := &list[ix]
+		glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
+		if *pr.Number < minPRNumber {
+			glog.V(3).Infof("skipping %d less %d", *pr.Number, minPRNumber)
+			continue
+		}
 		if p, _, err := client.PullRequests.Get(org, project, *pr.Number); err != nil {
 			return err
 		} else {
 			*pr = *p
 		}
+		commits, _, err := client.PullRequests.ListCommits(org, project, *pr.Number, &github.ListOptions{})
+		if err != nil {
+			return err
+		}
+		events, _, err := client.Issues.ListIssueEvents(org, project, *pr.Number, &github.ListOptions{})
+		if err != nil {
+			return err
+		}
+		issue, _, err := client.Issues.Get(org, project, *pr.Number)
+		if err != nil {
+			return err
+		}
 		for _, munger := range mungers {
-			glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
-			if *pr.Number < minPRNumber {
-				continue
-			}
-			commits, _, err := client.PullRequests.ListCommits(org, project, *pr.Number, &github.ListOptions{})
-			if err != nil {
-				return err
-			}
-			events, _, err := client.Issues.ListIssueEvents(org, project, *pr.Number, &github.ListOptions{})
-			if err != nil {
-				return err
-			}
-			issue, _, err := client.Issues.Get(org, project, *pr.Number)
-			if err != nil {
-				return err
-			}
 			munger.MungePullRequest(client, org, project, pr, issue, commits, events, dryrun)
 		}
 	}
