@@ -36,6 +36,32 @@ func (PRSizeMunger) Name() string { return "size" }
 
 const labelSizePrefix = "size/"
 
+// getGeneratedFiles returns a list of all automatically generated files in the repo. These include
+// docs, deep_copy, and conversions
+func getGeneratedFiles(client *github.Client, opts opts.MungeOptions, c github.RepositoryCommit) []string {
+	getOpts := &github.RepositoryContentGetOptions{Ref: *c.SHA}
+	genFiles := []string{
+		"pkg/api/v1/deep_copy_generated.go",
+		"pkg/api/deep_copy_generated.go",
+		"pkg/expapi/v1/deep_copy_generated.go",
+		"pkg/expapi/deep_copy_generated.go",
+		"pkg/api/v1/conversion_generated.go",
+		"pkg/expapi/v1/conversion_generated.go",
+		"api/swagger-spec/resourceListing.json",
+		"api/swagger-spec/version.json",
+		"api/swagger-spec/api.json",
+		"api/swagger-spec/v1.json",
+	}
+	genDocs, _, _, err := client.Repositories.GetContents(opts.Org, opts.Project, ".generated_docs", getOpts)
+	if err == nil && genDocs != nil {
+		if b, err := genDocs.Decode(); err == nil {
+			docs := strings.Split(string(b), "\n")
+			genFiles = append(genFiles, docs...)
+		}
+	}
+	return genFiles
+}
+
 func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
 	if pr.Number == nil {
 		glog.Warningf("PR has no Number: %+v", *pr)
@@ -53,11 +79,31 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 	adds := *pr.Additions
 	dels := *pr.Deletions
 
+	// It would be 'better' to call this for every commit but that takes
+	// a whole lot of time for almost always the same information, and if
+	// our results are slightly wrong, who cares? Instead look for the
+	// generated files once per PR and if someone changed both what files
+	// are generated and then undid that change in an intermediate commit
+	// we might call this PR bigger than we "should."
+	genFiles := getGeneratedFiles(client, opts, commits[len(commits)-1])
+
 	for _, c := range commits {
 		for _, f := range c.Files {
 			if strings.HasPrefix(*f.Filename, "Godeps/") {
 				adds = adds - *f.Additions
 				dels = dels - *f.Deletions
+				continue
+			}
+			found := false
+			for _, genFile := range genFiles {
+				if *f.Filename == genFile {
+					adds = adds - *f.Additions
+					dels = dels - *f.Deletions
+					found = true
+					break
+				}
+			}
+			if found {
 				continue
 			}
 		}
@@ -70,6 +116,9 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 	needsUpdate := true
 	for _, l := range existing {
 		if l == newLabel {
+			if opts.Dryrun {
+				glog.Infof("PR #%d: has label %s which is correct", *pr.Number, l)
+			}
 			needsUpdate = false
 			continue
 		}
