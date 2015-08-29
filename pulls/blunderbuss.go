@@ -88,11 +88,6 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.P
 			glog.Warningf("Skipping invalid commit for %d: %#v", *pr.Number, commit)
 			continue
 		}
-		commit, _, err := client.Repositories.GetCommit(*commit.Author.Login, opts.Project, *commit.SHA)
-		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s", *commit.Author.Login, opts.Project, *commit.SHA)
-			continue
-		}
 		for _, file := range commit.Files {
 			fileOwners := b.config.FindOwners(*file.Filename)
 			if len(fileOwners) == 0 {

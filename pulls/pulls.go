@@ -111,6 +111,15 @@ func mungePullRequestList(list []github.PullRequest, client *github.Client, mung
 		if err != nil {
 			return err
 		}
+		filledCommits := []github.RepositoryCommit{}
+		for _, c := range commits {
+			commit, _, err := client.Repositories.GetCommit(opts.Org, opts.Project, *c.SHA)
+			if err != nil {
+				glog.Errorf("Can't load commit %s %s %s", opts.Org, opts.Project, *commit.SHA)
+				continue
+			}
+			filledCommits = append(filledCommits, *commit)
+		}
 		events, _, err := client.Issues.ListIssueEvents(opts.Org, opts.Project, *pr.Number, &github.ListOptions{})
 		if err != nil {
 			return err
@@ -120,7 +129,7 @@ func mungePullRequestList(list []github.PullRequest, client *github.Client, mung
 			return err
 		}
 		for _, munger := range mungers {
-			munger.MungePullRequest(client, pr, issue, commits, events, opts)
+			munger.MungePullRequest(client, pr, issue, filledCommits, events, opts)
 		}
 	}
 	return nil
