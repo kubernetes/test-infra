@@ -19,6 +19,8 @@ package pulls
 import (
 	"time"
 
+	"k8s.io/contrib/mungegithub/opts"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 )
@@ -31,7 +33,7 @@ func init() {
 
 func (RemoveNeedsRebaseMunger) Name() string { return "remove-needs-rebase" }
 
-func (RemoveNeedsRebaseMunger) MungePullRequest(client *github.Client, org, project string, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, dryrun bool) {
+func (RemoveNeedsRebaseMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
 	if !HasLabel(issue.Labels, "needs-rebase") {
 		return
 	}
@@ -39,16 +41,16 @@ func (RemoveNeedsRebaseMunger) MungePullRequest(client *github.Client, org, proj
 		// If mergeable is nil, github is likely re-calculating mergeability, wait a bit and reload the PR.
 		time.Sleep(2 * time.Second)
 		var err error
-		if pr, _, err = client.PullRequests.Get(org, project, *pr.Number); err != nil {
+		if pr, _, err = client.PullRequests.Get(opts.Org, opts.Project, *pr.Number); err != nil {
 			glog.Errorf("Failed to resync project: %d", *pr.Number)
 			return
 		}
 	}
 	if pr.Mergeable != nil && *pr.Mergeable {
-		if dryrun {
+		if opts.Dryrun {
 			glog.Infof("Would have removed needs-rebase for %d", *pr.Number)
 		} else {
-			client.Issues.RemoveLabelForIssue(org, project, *pr.Number, "needs-rebase")
+			client.Issues.RemoveLabelForIssue(opts.Org, opts.Project, *pr.Number, "needs-rebase")
 		}
 	}
 }

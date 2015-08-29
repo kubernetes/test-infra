@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/contrib/mungegithub/opts"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 )
@@ -51,7 +53,7 @@ func RegisterMunger(munger Munger) error {
 	return nil
 }
 
-func MungeIssues(client *github.Client, issueMungers, org, project string, minIssueNumber int, dryrun bool) error {
+func MungeIssues(client *github.Client, issueMungers string, o opts.MungeOptions) error {
 	mungers, err := getMungers(strings.Split(issueMungers, ","))
 	if err != nil {
 		return err
@@ -63,11 +65,11 @@ func MungeIssues(client *github.Client, issueMungers, org, project string, minIs
 			Sort:        "desc",
 			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}
-		list, response, err := client.Issues.ListByRepo(org, project, listOpts)
+		list, response, err := client.Issues.ListByRepo(o.Org, o.Project, listOpts)
 		if err != nil {
 			return err
 		}
-		if err := mungeIssueList(list, client, org, project, mungers, minIssueNumber, dryrun); err != nil {
+		if err := mungeIssueList(list, client, o.Org, o.Project, mungers, o.MinIssueNumber, o.Dryrun); err != nil {
 			return err
 		}
 		if response.LastPage == 0 || response.LastPage == page {

@@ -22,10 +22,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	"k8s.io/contrib/mungegithub/opts"
 	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/yaml"
+
+	"github.com/golang/glog"
+	"github.com/google/go-github/github"
 )
 
 // A BlunderbussConfig maps a set of file prefixes to a set of owner names (github users)
@@ -73,7 +75,7 @@ func (b *BlunderbussMunger) loadConfig() {
 	glog.V(4).Infof("Loaded config from %s", *blunderbussConfig)
 }
 
-func (b *BlunderbussMunger) MungePullRequest(client *github.Client, org, project string, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, dryrun bool) {
+func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
 	if b.config == nil {
 		b.loadConfig()
 	}
@@ -86,9 +88,9 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, org, project
 			glog.Warningf("Skipping invalid commit for %d: %#v", *pr.Number, commit)
 			continue
 		}
-		commit, _, err := client.Repositories.GetCommit(*commit.Author.Login, project, *commit.SHA)
+		commit, _, err := client.Repositories.GetCommit(*commit.Author.Login, opts.Project, *commit.SHA)
 		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s", *commit.Author.Login, project, *commit.SHA)
+			glog.Errorf("Can't load commit %s %s %s", *commit.Author.Login, opts.Project, *commit.SHA)
 			continue
 		}
 		for _, file := range commit.Files {
@@ -105,11 +107,11 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, org, project
 	}
 	ix := rand.Int() % potentialOwners.Len()
 	owner := potentialOwners.List()[ix]
-	if dryrun {
+	if opts.Dryrun {
 		glog.Infof("would have assigned %s to PR %d", owner, *pr.Number)
 		return
 	}
-	if _, _, err := client.Issues.Edit(org, project, *pr.Number, &github.IssueRequest{Assignee: &owner}); err != nil {
+	if _, _, err := client.Issues.Edit(opts.Org, opts.Project, *pr.Number, &github.IssueRequest{Assignee: &owner}); err != nil {
 		glog.Errorf("Error updating issue: %v", err)
 	}
 }

@@ -19,6 +19,8 @@ package pulls
 import (
 	"fmt"
 
+	"k8s.io/contrib/mungegithub/opts"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 )
@@ -33,7 +35,7 @@ func (PRSizeMunger) Name() string { return "size" }
 
 const labelSizePrefix = "size/"
 
-func (PRSizeMunger) MungePullRequest(client *github.Client, org, project string, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, dryrun bool) {
+func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
 	if pr.Number == nil {
 		glog.Warningf("PR has no Number: %+v", *pr)
 		return
@@ -60,23 +62,23 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, org, project string,
 			needsUpdate = false
 			continue
 		}
-		if dryrun {
+		if opts.Dryrun {
 			glog.Infof("PR #%d: would have removed label %s", *pr.Number, l)
 		} else {
-			if _, err := client.Issues.RemoveLabelForIssue(org, project, *pr.Number, l); err != nil {
+			if _, err := client.Issues.RemoveLabelForIssue(opts.Org, opts.Project, *pr.Number, l); err != nil {
 				glog.Errorf("PR #%d: error removing label %q: %v", *pr.Number, l, err)
 			}
 		}
 	}
 	if needsUpdate {
-		if dryrun {
+		if opts.Dryrun {
 			glog.Infof("PR #%d: would have added label %s", *pr.Number, newLabel)
 		} else {
-			if _, _, err := client.Issues.AddLabelsToIssue(org, project, *pr.Number, []string{newLabel}); err != nil {
+			if _, _, err := client.Issues.AddLabelsToIssue(opts.Org, opts.Project, *pr.Number, []string{newLabel}); err != nil {
 				glog.Errorf("PR #%d: error adding label %q: %v", *pr.Number, newLabel, err)
 			}
 			body := fmt.Sprintf("Labelling this PR as %s", newLabel)
-			if _, _, err := client.Issues.CreateComment(org, project, *pr.Number, &github.IssueComment{Body: &body}); err != nil {
+			if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &body}); err != nil {
 				glog.Errorf("PR #%d: error adding comment: %v", *pr.Number, err)
 			}
 		}
