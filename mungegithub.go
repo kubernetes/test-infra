@@ -28,6 +28,9 @@ import (
 	"github.com/golang/glog"
 )
 
+// stolen from https://groups.google.com/forum/#!msg/golang-nuts/a9PitPAHSSU/ziQw1-QHw3EJ
+const maxInt = int(^uint(0) >> 1)
+
 var (
 	o            = opts.MungeOptions{}
 	token        = flag.String("token", "", "The OAuth Token to use for requests.")
@@ -37,6 +40,7 @@ var (
 )
 
 func init() {
+	flag.IntVar(&o.MaxPRNumber, "max-pr-number", maxInt, "The maximum PR to check (useful for debugging this utility)")
 	flag.IntVar(&o.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with [default: 0]")
 	flag.IntVar(&o.MinIssueNumber, "min-issue-number", 0, "The minimum PR to start with [default: 0]")
 	flag.BoolVar(&o.Dryrun, "dry-run", false, "If true, don't actually merge anything")
