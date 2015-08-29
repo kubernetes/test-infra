@@ -18,6 +18,7 @@ package pulls
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/contrib/mungegithub/opts"
 
@@ -51,6 +52,16 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 
 	adds := *pr.Additions
 	dels := *pr.Deletions
+
+	for _, c := range commits {
+		for _, f := range c.Files {
+			if strings.HasPrefix(*f.Filename, "Godeps/") {
+				adds = adds - *f.Additions
+				dels = dels - *f.Deletions
+				continue
+			}
+		}
+	}
 
 	newSize := calculateSize(adds, dels)
 	newLabel := labelSizePrefix + newSize
