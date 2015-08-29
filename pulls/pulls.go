@@ -74,7 +74,9 @@ func MungePullRequests(client *github.Client, pullMungers, org, project string, 
 	for {
 		glog.V(4).Infof("Fetching page %d", page)
 		listOpts := &github.PullRequestListOptions{
-			Sort:        "desc",
+			State:       "open",
+			Sort:        "created",
+			Direction:   "asc",
 			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}
 		prs, response, err := client.PullRequests.List(org, project, listOpts)
