@@ -96,6 +96,7 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.P
 			potentialOwners.Insert(fileOwners...)
 		}
 	}
+	potentialOwners.Delete(*pr.User.Login)
 	if potentialOwners.Len() == 0 {
 		glog.Errorf("No owners found for PR %d", *pr.Number)
 		return
