@@ -17,8 +17,6 @@ limitations under the License.
 package pulls
 
 import (
-	"time"
-
 	"k8s.io/contrib/mungegithub/opts"
 	github_util "k8s.io/contrib/submit-queue/github"
 
@@ -32,22 +30,12 @@ type OkToTestMunger struct{}
 
 func init() {
 	RegisterMungerOrDie(OkToTestMunger{})
-	dii
 }
 
 func (OkToTestMunger) Name() string { return "ok-to-test" }
 
-func isLGTM(issue *github.Issue) {
-	for _, label := range issue.Labels {
-		if label.Name != nil && *label.Name == "lgtm" {
-			return true
-		}
-	}
-	return false
-}
-
 func (OkToTestMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
-	if !isLGTM(issue) {
+	if !HasLabel(issue.Labels, "lgtm") {
 		return
 	}
 	status, err := github_util.GetStatus(client, opts.Org, opts.Project, *pr.Number, []string{"Jenkins GCE e2e"})
@@ -63,8 +51,8 @@ func (OkToTestMunger) MungePullRequest(client *github.Client, pr *github.PullReq
 		glog.V(2).Infof("status is incomplete, adding ok to test")
 		msg := `@k8s-bot ok to test
 
-pr builder appears to be missing, activating due to 'lgtm' label.`
-		if _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{ Body: &msg }); err != nil {
+	pr builder appears to be missing, activating due to 'lgtm' label.`
+		if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &msg}); err != nil {
 			glog.Errorf("failed to create comment: %v", err)
 		}
 	}
