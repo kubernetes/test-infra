@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/contrib/mungegithub/opts"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 )
@@ -34,7 +36,7 @@ type Munger interface {
 	//   * The commits for the PR
 	//   * The events on the PR
 	//   * dryrun, if true, the munger should take no action, and only report what it would have done.
-	MungePullRequest(client *github.Client, org, user string, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, dryrun bool)
+	MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions)
 	Name() string
 }
 
@@ -64,7 +66,7 @@ func RegisterMungerOrDie(munger Munger) {
 	}
 }
 
-func MungePullRequests(client *github.Client, pullMungers, org, project string, minPRNumber int, dryrun bool) error {
+func MungePullRequests(client *github.Client, pullMungers string, opts opts.MungeOptions) error {
 	mungers, err := getMungers(strings.Split(pullMungers, ","))
 	if err != nil {
 		return err
@@ -77,11 +79,11 @@ func MungePullRequests(client *github.Client, pullMungers, org, project string, 
 			Sort:        "desc",
 			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}
-		prs, response, err := client.PullRequests.List(org, project, listOpts)
+		prs, response, err := client.PullRequests.List(opts.Org, opts.Project, listOpts)
 		if err != nil {
 			return err
 		}
-		if err := mungePullRequestList(prs, client, org, project, mungers, minPRNumber, dryrun); err != nil {
+		if err := mungePullRequestList(prs, client, mungers, opts); err != nil {
 			return err
 		}
 		if response.LastPage == 0 || response.LastPage == page {
@@ -92,32 +94,42 @@ func MungePullRequests(client *github.Client, pullMungers, org, project string, 
 	return nil
 }
 
-func mungePullRequestList(list []github.PullRequest, client *github.Client, org, project string, mungers []Munger, minPRNumber int, dryrun bool) error {
+func mungePullRequestList(list []github.PullRequest, client *github.Client, mungers []Munger, opts opts.MungeOptions) error {
 	for ix := range list {
 		pr := &list[ix]
-		if p, _, err := client.PullRequests.Get(org, project, *pr.Number); err != nil {
+		glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
+		if *pr.Number < opts.MinPRNumber {
+			glog.V(3).Infof("skipping %d less %d", *pr.Number, opts.MinPRNumber)
+			continue
+		}
+		if p, _, err := client.PullRequests.Get(opts.Org, opts.Project, *pr.Number); err != nil {
 			return err
 		} else {
 			*pr = *p
 		}
-		for _, munger := range mungers {
-			glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
-			if *pr.Number < minPRNumber {
+		commits, _, err := client.PullRequests.ListCommits(opts.Org, opts.Project, *pr.Number, &github.ListOptions{})
+		if err != nil {
+			return err
+		}
+		filledCommits := []github.RepositoryCommit{}
+		for _, c := range commits {
+			commit, _, err := client.Repositories.GetCommit(opts.Org, opts.Project, *c.SHA)
+			if err != nil {
+				glog.Errorf("Can't load commit %s %s %s", opts.Org, opts.Project, *commit.SHA)
 				continue
 			}
-			commits, _, err := client.PullRequests.ListCommits(org, project, *pr.Number, &github.ListOptions{})
-			if err != nil {
-				return err
-			}
-			events, _, err := client.Issues.ListIssueEvents(org, project, *pr.Number, &github.ListOptions{})
-			if err != nil {
-				return err
-			}
-			issue, _, err := client.Issues.Get(org, project, *pr.Number)
-			if err != nil {
-				return err
-			}
-			munger.MungePullRequest(client, org, project, pr, issue, commits, events, dryrun)
+			filledCommits = append(filledCommits, *commit)
+		}
+		events, _, err := client.Issues.ListIssueEvents(opts.Org, opts.Project, *pr.Number, &github.ListOptions{})
+		if err != nil {
+			return err
+		}
+		issue, _, err := client.Issues.Get(opts.Org, opts.Project, *pr.Number)
+		if err != nil {
+			return err
+		}
+		for _, munger := range mungers {
+			munger.MungePullRequest(client, pr, issue, filledCommits, events, opts)
 		}
 	}
 	return nil

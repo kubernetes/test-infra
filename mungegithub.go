@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 
 	"k8s.io/contrib/mungegithub/issues"
+	"k8s.io/contrib/mungegithub/opts"
 	"k8s.io/contrib/mungegithub/pulls"
 	"k8s.io/contrib/submit-queue/github"
 
@@ -28,23 +29,27 @@ import (
 )
 
 var (
-	token          = flag.String("token", "", "The OAuth Token to use for requests.")
-	tokenFile      = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
-	minPRNumber    = flag.Int("min-pr-number", 0, "The minimum PR to start with [default: 0]")
-	minIssueNumber = flag.Int("min-issue-number", 0, "The minimum PR to start with [default: 0]")
-	dryrun         = flag.Bool("dry-run", false, "If true, don't actually merge anything")
-	org            = flag.String("organization", "kubernetes", "The github organization to scan")
-	project        = flag.String("project", "kubernetes", "The github project to scan")
-	issueMungers   = flag.String("issue-mungers", "", "A list of issue mungers to run")
-	prMungers      = flag.String("pr-mungers", "", "A list of pull request mungers to run")
+	o            = opts.MungeOptions{}
+	token        = flag.String("token", "", "The OAuth Token to use for requests.")
+	tokenFile    = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
+	issueMungers = flag.String("issue-mungers", "", "A list of issue mungers to run")
+	prMungers    = flag.String("pr-mungers", "", "A list of pull request mungers to run")
 )
+
+func init() {
+	flag.IntVar(&o.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with [default: 0]")
+	flag.IntVar(&o.MinIssueNumber, "min-issue-number", 0, "The minimum PR to start with [default: 0]")
+	flag.BoolVar(&o.Dryrun, "dry-run", false, "If true, don't actually merge anything")
+	flag.StringVar(&o.Org, "organization", "kubernetes", "The github organization to scan")
+	flag.StringVar(&o.Project, "project", "kubernetes", "The github project to scan")
+}
 
 func main() {
 	flag.Parse()
-	if len(*org) == 0 {
+	if len(o.Org) == 0 {
 		glog.Fatalf("--organization is required.")
 	}
-	if len(*project) == 0 {
+	if len(o.Project) == 0 {
 		glog.Fatalf("--project is required.")
 	}
 	tokenData := *token
@@ -59,13 +64,13 @@ func main() {
 
 	if len(*issueMungers) > 0 {
 		glog.Infof("Running issue mungers")
-		if err := issues.MungeIssues(client, *issueMungers, *org, *project, *minIssueNumber, *dryrun); err != nil {
+		if err := issues.MungeIssues(client, *issueMungers, o); err != nil {
 			glog.Errorf("Error munging issues: %v", err)
 		}
 	}
 	if len(*prMungers) > 0 {
 		glog.Infof("Running PR mungers")
-		if err := pulls.MungePullRequests(client, *prMungers, *org, *project, *minPRNumber, *dryrun); err != nil {
+		if err := pulls.MungePullRequests(client, *prMungers, o); err != nil {
 			glog.Errorf("Error munging PRs: %v", err)
 		}
 	}
