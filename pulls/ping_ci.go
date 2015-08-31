@@ -18,7 +18,7 @@ package pulls
 
 import (
 	"time"
-	
+
 	"k8s.io/contrib/mungegithub/opts"
 	github_util "k8s.io/contrib/submit-queue/github"
 
