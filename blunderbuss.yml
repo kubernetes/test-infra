@@ -70,6 +70,8 @@ prefixMap:
 
   pkg/kubelet:
     - dchen1107
+    - vishh
+    - yujuhong
 
   pkg/master:
     - davidopp
