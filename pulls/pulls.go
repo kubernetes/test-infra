@@ -101,7 +101,11 @@ func mungePullRequestList(list []github.PullRequest, client *github.Client, mung
 		pr := &list[ix]
 		glog.V(2).Infof("-=-=-=-=%d-=-=-=-=-", *pr.Number)
 		if *pr.Number < opts.MinPRNumber {
-			glog.V(3).Infof("skipping %d less %d", *pr.Number, opts.MinPRNumber)
+			glog.V(3).Infof("skipping PR#%d < MinPRNumber(%d) ", *pr.Number, opts.MinPRNumber)
+			continue
+		}
+		if *pr.Number > opts.MaxPRNumber {
+			glog.V(3).Infof("skipping PR#%d > MaxPRNumber(%d)", *pr.Number, opts.MaxPRNumber)
 			continue
 		}
 		if p, _, err := client.PullRequests.Get(opts.Org, opts.Project, *pr.Number); err != nil {
