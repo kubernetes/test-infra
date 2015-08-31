@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/contrib/mungegithub/opts"
+	github_util "k8s.io/contrib/submit-queue/github"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -127,7 +128,7 @@ func mungePullRequestList(list []github.PullRequest, client *github.Client, mung
 			}
 			filledCommits = append(filledCommits, *commit)
 		}
-		events, _, err := client.Issues.ListIssueEvents(opts.Org, opts.Project, *pr.Number, &github.ListOptions{})
+		events, err := github_util.GetAllEventsForPR(client, opts.Org, opts.Project, *pr.Number)
 		if err != nil {
 			return err
 		}
