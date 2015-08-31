@@ -57,6 +57,7 @@ func RegisterMunger(munger Munger) error {
 		return fmt.Errorf("A munger with that name (%s) already exists", munger.Name())
 	}
 	mungerMap[munger.Name()] = munger
+	glog.Infof("Registered %#v at %s", munger, munger.Name())
 	return nil
 }
 
