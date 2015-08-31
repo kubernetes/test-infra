@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"io/ioutil"
+	"time"
 
 	"k8s.io/contrib/mungegithub/issues"
 	"k8s.io/contrib/mungegithub/opts"
@@ -37,6 +38,8 @@ var (
 	tokenFile    = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
 	issueMungers = flag.String("issue-mungers", "", "A list of issue mungers to run")
 	prMungers    = flag.String("pr-mungers", "", "A list of pull request mungers to run")
+	oneOff       = flag.Bool("once", false, "If true, only run one iteration of munging")
+	period       = flag.Duration("period", 30*time.Minute, "The period for running mungers, default 30 minutes")
 )
 
 func init() {
@@ -66,16 +69,19 @@ func main() {
 	}
 	client := github.MakeClient(tokenData)
 
-	if len(*issueMungers) > 0 {
-		glog.Infof("Running issue mungers")
-		if err := issues.MungeIssues(client, *issueMungers, o); err != nil {
-			glog.Errorf("Error munging issues: %v", err)
+	for !*oneOff {
+		if len(*issueMungers) > 0 {
+			glog.Infof("Running issue mungers")
+			if err := issues.MungeIssues(client, *issueMungers, o); err != nil {
+				glog.Errorf("Error munging issues: %v", err)
+			}
 		}
-	}
-	if len(*prMungers) > 0 {
-		glog.Infof("Running PR mungers")
-		if err := pulls.MungePullRequests(client, *prMungers, o); err != nil {
-			glog.Errorf("Error munging PRs: %v", err)
+		if len(*prMungers) > 0 {
+			glog.Infof("Running PR mungers")
+			if err := pulls.MungePullRequests(client, *prMungers, o); err != nil {
+				glog.Errorf("Error munging PRs: %v", err)
+			}
 		}
+		time.Sleep(*period)
 	}
 }
