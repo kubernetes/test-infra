@@ -19,6 +19,7 @@ package pulls
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/contrib/mungegithub/opts"
 	github_util "k8s.io/contrib/submit-queue/github"
@@ -114,6 +115,18 @@ func mungePullRequestList(list []github.PullRequest, client *github.Client, mung
 			return err
 		} else {
 			*pr = *p
+		}
+		// This is annoying, github appears to only temporarily cache mergeability, if it is nil, wait
+		// for an async refresh and retry.
+		if pr.Mergeable == nil {
+			glog.Infof("Waiting for mergeability on %s %d", *pr.Title, *pr.Number)
+			// TODO: determine what a good empirical setting for this is.
+			time.Sleep(2 * time.Second)
+			if p, _, err := client.PullRequests.Get(opts.Org, opts.Project, *pr.Number); err != nil {
+				return err
+			} else {
+				*pr = *p
+			}
 		}
 		commits, _, err := client.PullRequests.ListCommits(opts.Org, opts.Project, *pr.Number, &github.ListOptions{})
 		if err != nil {
