@@ -7,7 +7,7 @@ spec:
   containers:
   - command:
       - /run.sh
-    image: gcr.io/google_containers/mungegithub:0.4
+    image: gcr.io/google_containers/mungegithub:0.5
     imagePullPolicy: IfNotPresent
     name: mungegithub
     resources:
