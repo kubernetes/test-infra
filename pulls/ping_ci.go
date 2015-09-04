@@ -40,6 +40,10 @@ func (PingCIMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 	if !HasLabel(issue.Labels, "lgtm") {
 		return
 	}
+	if pr.Mergeable == nil || !*pr.Mergeable {
+		glog.Infof("skipping CI check for %d since mergeable is nil or false", *pr.Number)
+		return
+	}
 	status, err := github_util.GetStatus(client, opts.Org, opts.Project, *pr.Number, []string{"Shippable", "continuous-integration/travis-ci/pr"})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
