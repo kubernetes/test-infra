@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -33,6 +34,7 @@ import (
 const maxInt = int(^uint(0) >> 1)
 
 var (
+	_            = fmt.Print
 	o            = opts.MungeOptions{}
 	token        = flag.String("token", "", "The OAuth Token to use for requests.")
 	tokenFile    = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
@@ -69,7 +71,10 @@ func main() {
 	}
 	client := github.MakeClient(tokenData)
 
-	for !*oneOff {
+	if len(*issueMungers) == 0 && len(*prMungers) == 0 {
+		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
+	}
+	for {
 		if len(*issueMungers) > 0 {
 			glog.Infof("Running issue mungers")
 			if err := issues.MungeIssues(client, *issueMungers, o); err != nil {
@@ -81,6 +86,9 @@ func main() {
 			if err := pulls.MungePullRequests(client, *prMungers, o); err != nil {
 				glog.Errorf("Error munging PRs: %v", err)
 			}
+		}
+		if *oneOff {
+			break
 		}
 		time.Sleep(*period)
 	}
