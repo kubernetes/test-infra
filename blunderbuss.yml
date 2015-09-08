@@ -1,7 +1,7 @@
 prefixMap:
   cluster/addons/dns:
     - thockin
-    - artfulcoder
+    - ArtfulCoder
 
   test:
     - ixdy
@@ -60,7 +60,7 @@ prefixMap:
   pkg/credentialprovider:
     - erictune
     - liggitt
- 
+
   pkg/kubectl:
     - jlowdermilk
     - brendandburns
@@ -73,18 +73,28 @@ prefixMap:
     - vishh
     - yujuhong
 
+  cmd/kubelet:
+    - dchen1107
+    - vishh
+    - yujuhong
+
   pkg/master:
     - davidopp
     - derekwaynecarr
+    - lavalamp
+
+  cmd/kube-controller-manager:
+    - davidopp
+    - lavalamp
 
   pkg/proxy:
     - thockin
-    - artfulcoder
+    - ArtfulCoder
 
   pkg/volume:
     - thockin
     - saad-ali
-  
+
   pkg/registry:
     - lavalamp
     - smarterclayton
@@ -97,7 +107,24 @@ prefixMap:
     - smarterclayton
     - eparis
 
+  cmd:
+    - lavalamp
+    - dchen1107
+    - thockin
+    - brendandburns
+    - davidopp
+
+  plugin:
+    - lavalamp
+    - dchen1107
+    - thockin
+    - brendandburns
+    - davidopp
+
   plugin/pkg/scheduler:
+    - davidopp
+
+  plugin/cmd/kube-scheduler:
     - davidopp
 
   plugin/pkg/admission:
@@ -141,6 +168,12 @@ prefixMap:
     - lavalamp
     - ixdy
     - eparis
+
+  Godeps:
+    - lavalamp
+    - davidopp
+    - thockin
+    - quinton-hoole
 
   build:
     - zmerlynn

@@ -18,38 +18,48 @@ package pulls
 
 import (
 	"flag"
+	"math"
 	"math/rand"
 	"os"
 	"strings"
 
 	"k8s.io/contrib/mungegithub/opts"
-	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 )
 
+// weightMap is a map of user to a weight for that user.
+type weightMap map[string]int64
+
 // A BlunderbussConfig maps a set of file prefixes to a set of owner names (github users)
 type BlunderbussConfig struct {
 	PrefixMap map[string][]string `json:"prefixMap,omitempty" yaml:"prefixMap,omitempty"`
 }
 
-func (b *BlunderbussConfig) FindOwners(filename string) []string {
-	owners := util.StringSet{}
+func (b *BlunderbussConfig) FindOwners(filename string) weightMap {
+	wm := weightMap{}
 	for prefix, ownersList := range b.PrefixMap {
 		if strings.HasPrefix(filename, prefix) {
-			owners.Insert(ownersList...)
+			// Give one point for each directory-- so that more specific directories get more weight.
+			weight := int64(1 + strings.Count(prefix, "/"))
+			for _, owner := range ownersList {
+				wm[owner] = wm[owner] + weight
+			}
 		}
 	}
-	return owners.List()
+	return wm
 }
 
 type BlunderbussMunger struct {
 	config *BlunderbussConfig
 }
 
-var blunderbussConfig = flag.String("blunderbuss-config", "", "Path to the blunderbuss config file")
+var (
+	blunderbussConfig   = flag.String("blunderbuss-config", "", "Path to the blunderbuss config file")
+	blunderbussReassign = flag.Bool("blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+)
 
 func init() {
 	blunderbuss := &BlunderbussMunger{}
@@ -79,30 +89,57 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.P
 	if b.config == nil {
 		b.loadConfig()
 	}
-	if issue.Assignee != nil {
+	if !*blunderbussReassign && issue.Assignee != nil {
 		return
 	}
-	potentialOwners := util.StringSet{}
+	potentialOwners := weightMap{}
+	weightSum := int64(0)
 	for _, commit := range commits {
 		if commit.Author == nil || commit.Author.Login == nil || commit.SHA == nil {
 			glog.Warningf("Skipping invalid commit for %d: %#v", *pr.Number, commit)
 			continue
 		}
 		for _, file := range commit.Files {
+			fileWeight := int64(1)
+			if file.Changes != nil {
+				fileWeight = int64(*file.Changes)
+			}
+			// Judge file size on a log scale-- effectively this
+			// makes three buckets, we shouldn't have many 10k+
+			// line changes.
+			fileWeight = int64(math.Log10(float64(fileWeight)) + .5)
 			fileOwners := b.config.FindOwners(*file.Filename)
 			if len(fileOwners) == 0 {
 				glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 			}
-			potentialOwners.Insert(fileOwners...)
+			for owner, ownerWeight := range fileOwners {
+				if owner == *pr.User.Login {
+					continue
+				}
+				potentialOwners[owner] = potentialOwners[owner] + fileWeight*ownerWeight
+				weightSum += fileWeight * ownerWeight
+			}
 		}
 	}
-	potentialOwners.Delete(*pr.User.Login)
-	if potentialOwners.Len() == 0 {
+	if len(potentialOwners) == 0 {
 		glog.Errorf("No owners found for PR %d", *pr.Number)
 		return
 	}
-	ix := rand.Int() % potentialOwners.Len()
-	owner := potentialOwners.List()[ix]
+	glog.V(4).Infof("Weights: %#v\nSum: %v", potentialOwners, weightSum)
+
+	if issue.Assignee != nil {
+		cur := *issue.Assignee.Login
+		glog.Infof("Current assignee %v has a %02.2f%% chance of having been chosen", cur, 100.0*float64(potentialOwners[cur])/float64(weightSum))
+	}
+	selection := rand.Int63n(weightSum)
+	owner := ""
+	for o, w := range potentialOwners {
+		owner = o
+		selection -= w
+		if selection <= 0 {
+			break
+		}
+	}
 	if opts.Dryrun {
 		glog.Infof("would have assigned %s to PR %d", owner, *pr.Number)
 		return
