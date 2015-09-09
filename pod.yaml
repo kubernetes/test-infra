@@ -3,11 +3,14 @@ kind: Pod
 metadata:
   name: mungegithub
   namespace: default
+  labels:
+    app: mungegithub
+    version: "0.6"
 spec:
   containers:
   - command:
       - /run.sh
-    image: gcr.io/google_containers/mungegithub:0.5
+    image: gcr.io/google_containers/mungegithub:0.6
     imagePullPolicy: IfNotPresent
     name: mungegithub
     resources:
