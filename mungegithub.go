@@ -17,79 +17,82 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"time"
 
+	"k8s.io/contrib/mungegithub/config"
 	"k8s.io/contrib/mungegithub/issues"
-	"k8s.io/contrib/mungegithub/opts"
 	"k8s.io/contrib/mungegithub/pulls"
-	"k8s.io/contrib/submit-queue/github"
 
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 )
-
-// stolen from https://groups.google.com/forum/#!msg/golang-nuts/a9PitPAHSSU/ziQw1-QHw3EJ
-const maxInt = int(^uint(0) >> 1)
 
 var (
-	_            = fmt.Print
-	o            = opts.MungeOptions{}
-	token        = flag.String("token", "", "The OAuth Token to use for requests.")
-	tokenFile    = flag.String("token-file", "", "A file containing the OAUTH token to use for requests.")
-	issueMungers = flag.String("issue-mungers", "", "A list of issue mungers to run")
-	prMungers    = flag.String("pr-mungers", "", "A list of pull request mungers to run")
-	oneOff       = flag.Bool("once", false, "If true, only run one iteration of munging")
-	period       = flag.Duration("period", 30*time.Minute, "The period for running mungers, default 30 minutes")
+	_ = fmt.Print
 )
 
-func init() {
-	flag.IntVar(&o.MaxPRNumber, "max-pr-number", maxInt, "The maximum PR to check (useful for debugging this utility)")
-	flag.IntVar(&o.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with [default: 0]")
-	flag.IntVar(&o.MinIssueNumber, "min-issue-number", 0, "The minimum PR to start with [default: 0]")
-	flag.BoolVar(&o.Dryrun, "dry-run", false, "If true, don't actually merge anything")
-	flag.StringVar(&o.Org, "organization", "kubernetes", "The github organization to scan")
-	flag.StringVar(&o.Project, "project", "kubernetes", "The github project to scan")
+func addMungeFlags(config *config.MungeConfig, cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
+	cmd.Flags().StringSliceVar(&config.IssueMungersList, "issue-mungers", []string{}, "A list of issue mungers to run")
+	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{}, "A list of pull request mungers to run")
+	cmd.Flags().DurationVar(&config.Period, "period", 30*time.Minute, "The period for running mungers")
 }
 
-func main() {
-	flag.Parse()
-	if len(o.Org) == 0 {
-		glog.Fatalf("--organization is required.")
-	}
-	if len(o.Project) == 0 {
-		glog.Fatalf("--project is required.")
-	}
-	tokenData := *token
-	if len(tokenData) == 0 && len(*tokenFile) != 0 {
-		data, err := ioutil.ReadFile(*tokenFile)
-		if err != nil {
-			glog.Fatalf("error reading token file: %v", err)
-		}
-		tokenData = string(data)
-	}
-	client := github.MakeClient(tokenData)
-
-	if len(*issueMungers) == 0 && len(*prMungers) == 0 {
+func doMungers(config *config.MungeConfig) error {
+	if len(config.IssueMungers) == 0 && len(config.PRMungersList) == 0 {
 		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
 	}
 	for {
-		if len(*issueMungers) > 0 {
+		if len(config.IssueMungers) > 0 {
 			glog.Infof("Running issue mungers")
-			if err := issues.MungeIssues(client, *issueMungers, o); err != nil {
+			if err := issues.MungeIssues(config); err != nil {
 				glog.Errorf("Error munging issues: %v", err)
 			}
 		}
-		if len(*prMungers) > 0 {
+		if len(config.PRMungersList) > 0 {
 			glog.Infof("Running PR mungers")
-			if err := pulls.MungePullRequests(client, *prMungers, o); err != nil {
+			if err := pulls.MungePullRequests(config); err != nil {
 				glog.Errorf("Error munging PRs: %v", err)
 			}
 		}
-		if *oneOff {
+		if config.Once {
 			break
 		}
-		time.Sleep(*period)
+		glog.Infof("Sleeping for %v\n", config.Period)
+		time.Sleep(config.Period)
+	}
+	return nil
+}
+
+func main() {
+	config := &config.MungeConfig{}
+	root := &cobra.Command{
+		Use:   filepath.Base(os.Args[0]),
+		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			if err := config.PreExecute(); err != nil {
+				return err
+			}
+			return doMungers(config)
+		},
+	}
+	config.AddRootFlags(root)
+	addMungeFlags(config, root)
+
+	prMungers := pulls.GetAllMungers()
+	for _, m := range prMungers {
+		m.AddFlags(root)
+	}
+
+	issueMungers := issues.GetAllMungers()
+	for _, m := range issueMungers {
+		m.AddFlags(root)
+	}
+
+	if err := root.Execute(); err != nil {
+		glog.Fatalf("%v\n", err)
 	}
 }

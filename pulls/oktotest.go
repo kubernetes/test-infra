@@ -17,11 +17,12 @@ limitations under the License.
 package pulls
 
 import (
-	"k8s.io/contrib/mungegithub/opts"
-	github_util "k8s.io/contrib/submit-queue/github"
+	github_util "k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/config"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 // OkToTestMunger looks for situations where a reviewer has LGTM'd a PR, but it
@@ -34,26 +35,22 @@ func init() {
 
 func (OkToTestMunger) Name() string { return "ok-to-test" }
 
-func (OkToTestMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
-	if !HasLabel(issue.Labels, "lgtm") {
+func (OkToTestMunger) AddFlags(cmd *cobra.Command) {}
+
+func (OkToTestMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
-	status, err := github_util.GetStatus(client, opts.Org, opts.Project, *pr.Number, []string{"Jenkins GCE e2e"})
+	status, err := config.GetStatus(*pr.Number, []string{"Jenkins GCE e2e"})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
 	}
 	if status == "incomplete" {
-		if opts.Dryrun {
-			glog.Infof("would have marked %d as ok to test", pr.Number)
-			return
-		}
 		glog.V(2).Infof("status is incomplete, adding ok to test")
 		msg := `@k8s-bot ok to test
 
 	pr builder appears to be missing, activating due to 'lgtm' label.`
-		if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &msg}); err != nil {
-			glog.Errorf("failed to create comment: %v", err)
-		}
+		config.WriteComment(*pr.Number, msg)
 	}
 }

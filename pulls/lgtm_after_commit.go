@@ -19,10 +19,11 @@ package pulls
 import (
 	"time"
 
-	"k8s.io/contrib/mungegithub/opts"
+	github_util "k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/config"
 
-	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 type LGTMAfterCommitMunger struct{}
@@ -57,7 +58,9 @@ func lgtmTime(events []github.IssueEvent) *time.Time {
 
 func (LGTMAfterCommitMunger) Name() string { return "lgtm-after-commit" }
 
-func (LGTMAfterCommitMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
+func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command) {}
+
+func (LGTMAfterCommitMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	lastModified := lastModifiedTime(commits)
 	lgtmTime := lgtmTime(events)
 
@@ -65,23 +68,15 @@ func (LGTMAfterCommitMunger) MungePullRequest(client *github.Client, pr *github.
 		return
 	}
 
-	if !HasLabel(issue.Labels, "lgtm") {
+	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
 
 	if lastModified.After(*lgtmTime) {
-		if opts.Dryrun {
-			glog.Infof("Would have removed LGTM label for %d", *pr.Number)
-			return
-		}
 		lgtmRemovedBody := "PR changed after LGTM, removing LGTM."
-		if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &lgtmRemovedBody}); err != nil {
-			glog.Errorf("Error commenting on issue: %v", err)
+		if err := config.WriteComment(*pr.Number, lgtmRemovedBody); err != nil {
 			return
 		}
-		if _, err := client.Issues.RemoveLabelForIssue(opts.Org, opts.Project, *pr.Number, "lgtm"); err != nil {
-			glog.Errorf("Error removing 'lgtm': %v", err)
-			return
-		}
+		config.RemoveLabel(*pr.Number, "lgtm")
 	}
 }

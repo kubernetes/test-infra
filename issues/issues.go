@@ -18,23 +18,25 @@ package issues
 
 import (
 	"fmt"
-	"strings"
 
-	"k8s.io/contrib/mungegithub/opts"
+	"k8s.io/contrib/mungegithub/config"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	github_api "github.com/google/go-github/github"
 )
 
-var mungerMap = map[string]Munger{}
+var mungerMap = map[string]config.IssueMunger{}
 
-type Munger interface {
-	MungeIssue(client *github.Client, org, project string, issue *github.Issue, dryrun bool)
-	Name() string
+func GetAllMungers() []config.IssueMunger {
+	out := []config.IssueMunger{}
+	for _, munger := range mungerMap {
+		out = append(out, munger)
+	}
+	return out
 }
 
-func getMungers(mungers []string) ([]Munger, error) {
-	result := make([]Munger, len(mungers))
+func getMungers(mungers []string) ([]config.IssueMunger, error) {
+	result := make([]config.IssueMunger, len(mungers))
 	for ix := range mungers {
 		munger, found := mungerMap[mungers[ix]]
 		if !found {
@@ -45,50 +47,32 @@ func getMungers(mungers []string) ([]Munger, error) {
 	return result, nil
 }
 
-func RegisterMunger(munger Munger) error {
+func RegisterMunger(munger config.IssueMunger) error {
 	if _, found := mungerMap[munger.Name()]; found {
 		return fmt.Errorf("A munger with that name (%s) already exists", munger.Name())
 	}
 	mungerMap[munger.Name()] = munger
+	glog.Infof("Registered %#v at %s", munger, munger.Name())
 	return nil
 }
 
-func MungeIssues(client *github.Client, issueMungers string, o opts.MungeOptions) error {
-	mungers, err := getMungers(strings.Split(issueMungers, ","))
-	if err != nil {
+func mungeIssue(config *config.MungeConfig, pr *github_api.PullRequest, issue *github_api.Issue) error {
+	if pr != nil {
+		return nil
+	}
+
+	for _, munger := range config.IssueMungers {
+		munger.MungeIssue(config, issue)
+	}
+	return nil
+}
+
+func MungeIssues(config *config.MungeConfig) error {
+	mfunc := func(pr *github_api.PullRequest, issue *github_api.Issue) error {
+		return mungeIssue(config, pr, issue)
+	}
+	if err := config.ForEachIssueDo([]string{}, mfunc); err != nil {
 		return err
-	}
-	page := 0
-	for {
-		glog.V(4).Infof("Fetching page %d", page)
-		listOpts := &github.IssueListByRepoOptions{
-			Sort:        "desc",
-			ListOptions: github.ListOptions{PerPage: 100, Page: page},
-		}
-		list, response, err := client.Issues.ListByRepo(o.Org, o.Project, listOpts)
-		if err != nil {
-			return err
-		}
-		if err := mungeIssueList(list, client, o.Org, o.Project, mungers, o.MinIssueNumber, o.Dryrun); err != nil {
-			return err
-		}
-		if response.LastPage == 0 || response.LastPage == page {
-			break
-		}
-		page++
-	}
-	return nil
-}
-
-func mungeIssueList(list []github.Issue, client *github.Client, org, project string, mungers []Munger, minIssueNumber int, dryrun bool) error {
-	for ix := range list {
-		issue := &list[ix]
-		if *issue.Number < minIssueNumber {
-			continue
-		}
-		for _, munger := range mungers {
-			munger.MungeIssue(client, org, project, issue, dryrun)
-		}
 	}
 	return nil
 }

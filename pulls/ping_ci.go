@@ -19,11 +19,12 @@ package pulls
 import (
 	"time"
 
-	"k8s.io/contrib/mungegithub/opts"
-	github_util "k8s.io/contrib/submit-queue/github"
+	github_util "k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/config"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 // PingCIMunger looks for situations CI (Travis | Shippable) has flaked for some
@@ -36,46 +37,29 @@ func init() {
 
 func (PingCIMunger) Name() string { return "ping-ci" }
 
-func (PingCIMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
-	if !HasLabel(issue.Labels, "lgtm") {
+func (PingCIMunger) AddFlags(cmd *cobra.Command) {}
+
+func (PingCIMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
-	if pr.Mergeable == nil || !*pr.Mergeable {
-		glog.Infof("skipping CI check for %d since mergeable is nil or false", *pr.Number)
-		return
+	if mergeable, err := config.IsPRMergeable(pr); err != nil {
+		glog.V(2).Infof("Skipping %d - problem determining mergeability", *pr.Number)
+	} else if !mergeable {
+		glog.V(2).Infof("Skipping %d - not mergeable", *pr.Number)
 	}
-	status, err := github_util.GetStatus(client, opts.Org, opts.Project, *pr.Number, []string{"Shippable", "continuous-integration/travis-ci/pr"})
+	status, err := config.GetStatus(*pr.Number, []string{"Shippable", "continuous-integration/travis-ci/pr"})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
 	}
 	if status == "incomplete" {
-		if opts.Dryrun {
-			glog.Infof("would have pinged CI for %d", pr.Number)
-			return
-		}
 		glog.V(2).Infof("status is incomplete, closing and re-opening")
 		msg := "Continuous integration appears to have missed, closing and re-opening to trigger it"
-		if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &msg}); err != nil {
-			glog.Errorf("failed to create comment: %v", err)
-		}
-		state := "closed"
-		pr.State = &state
-		if _, _, err := client.PullRequests.Edit(opts.Org, opts.Project, *pr.Number, pr); err != nil {
-			glog.Errorf("Failed to close pr %d: %v", *pr.Number, err)
-			return
-		}
+		config.WriteComment(*pr.Number, msg)
+
+		config.ClosePR(pr)
 		time.Sleep(5 * time.Second)
-		state = "open"
-		pr.State = &state
-		// Try pretty hard to re-open, since it's pretty bad if we accidentally leave a PR closed
-		for tries := 0; tries < 10; tries++ {
-			if _, _, err := client.PullRequests.Edit(opts.Org, opts.Project, *pr.Number, pr); err == nil {
-				break
-			} else {
-				glog.Errorf("failed to re-open pr %d: %v", *pr.Number, err)
-			}
-			time.Sleep(5 * time.Second)
-		}
+		config.OpenPR(pr, 10)
 	}
 }

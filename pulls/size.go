@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/opts"
+	github_util "k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/config"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 type PRSizeMunger struct{}
@@ -34,12 +36,13 @@ func init() {
 
 func (PRSizeMunger) Name() string { return "size" }
 
+func (PRSizeMunger) AddFlags(cmd *cobra.Command) {}
+
 const labelSizePrefix = "size/"
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
 // docs, deep_copy, and conversions
-func getGeneratedFiles(client *github.Client, opts opts.MungeOptions, c github.RepositoryCommit) []string {
-	getOpts := &github.RepositoryContentGetOptions{Ref: *c.SHA}
+func getGeneratedFiles(config *config.MungeConfig, c github.RepositoryCommit) []string {
 	genFiles := []string{
 		"pkg/api/v1/deep_copy_generated.go",
 		"pkg/api/deep_copy_generated.go",
@@ -52,21 +55,17 @@ func getGeneratedFiles(client *github.Client, opts opts.MungeOptions, c github.R
 		"api/swagger-spec/api.json",
 		"api/swagger-spec/v1.json",
 	}
-	genDocs, _, _, err := client.Repositories.GetContents(opts.Org, opts.Project, ".generated_docs", getOpts)
-	if err == nil && genDocs != nil {
-		if b, err := genDocs.Decode(); err == nil {
-			docs := strings.Split(string(b), "\n")
-			genFiles = append(genFiles, docs...)
-		}
+	docs, err := config.GetFileContents(".generated_docs", *c.SHA)
+	if err != nil {
+		docs = ""
 	}
+	docSlice := strings.Split(docs, "\n")
+	genFiles = append(genFiles, docSlice...)
+
 	return genFiles
 }
 
-func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
-	if pr.Number == nil {
-		glog.Warningf("PR has no Number: %+v", *pr)
-		return
-	}
+func (PRSizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if pr.Additions == nil {
 		glog.Warningf("PR %d has nil Additions", *pr.Number)
 		return
@@ -85,7 +84,7 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 	// generated files once per PR and if someone changed both what files
 	// are generated and then undid that change in an intermediate commit
 	// we might call this PR bigger than we "should."
-	genFiles := getGeneratedFiles(client, opts, commits[len(commits)-1])
+	genFiles := getGeneratedFiles(config, commits[len(commits)-1])
 
 	for _, c := range commits {
 		for _, f := range c.Files {
@@ -112,36 +111,20 @@ func (PRSizeMunger) MungePullRequest(client *github.Client, pr *github.PullReque
 	newSize := calculateSize(adds, dels)
 	newLabel := labelSizePrefix + newSize
 
-	existing := GetLabelsWithPrefix(issue.Labels, labelSizePrefix)
+	existing := github_util.GetLabelsWithPrefix(issue.Labels, labelSizePrefix)
 	needsUpdate := true
 	for _, l := range existing {
 		if l == newLabel {
-			if opts.Dryrun {
-				glog.Infof("PR #%d: has label %s which is correct", *pr.Number, l)
-			}
 			needsUpdate = false
 			continue
 		}
-		if opts.Dryrun {
-			glog.Infof("PR #%d: would have removed label %s", *pr.Number, l)
-		} else {
-			if _, err := client.Issues.RemoveLabelForIssue(opts.Org, opts.Project, *pr.Number, l); err != nil {
-				glog.Errorf("PR #%d: error removing label %q: %v", *pr.Number, l, err)
-			}
-		}
+		config.RemoveLabel(*pr.Number, l)
 	}
 	if needsUpdate {
-		if opts.Dryrun {
-			glog.Infof("PR #%d: would have added label %s", *pr.Number, newLabel)
-		} else {
-			if _, _, err := client.Issues.AddLabelsToIssue(opts.Org, opts.Project, *pr.Number, []string{newLabel}); err != nil {
-				glog.Errorf("PR #%d: error adding label %q: %v", *pr.Number, newLabel, err)
-			}
-			body := fmt.Sprintf("Labelling this PR as %s", newLabel)
-			if _, _, err := client.Issues.CreateComment(opts.Org, opts.Project, *pr.Number, &github.IssueComment{Body: &body}); err != nil {
-				glog.Errorf("PR #%d: error adding comment: %v", *pr.Number, err)
-			}
-		}
+		config.AddLabels(*pr.Number, []string{newLabel})
+
+		body := fmt.Sprintf("Labelling this PR as %s", newLabel)
+		config.WriteComment(*pr.Number, body)
 	}
 }
 

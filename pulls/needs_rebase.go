@@ -17,10 +17,12 @@ limitations under the License.
 package pulls
 
 import (
-	"k8s.io/contrib/mungegithub/opts"
+	github_util "k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/config"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 type NeedsRebaseMunger struct{}
@@ -33,23 +35,18 @@ func init() {
 
 func (NeedsRebaseMunger) Name() string { return "needs-rebase" }
 
-func (NeedsRebaseMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
-	if pr.Mergeable == nil {
-		glog.Infof("Skipping %d since mergeable is nil", *pr.Number)
+func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command) {}
+
+func (NeedsRebaseMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+	mergeable, err := config.IsPRMergeable(pr)
+	if err != nil {
+		glog.V(2).Infof("Skipping %d - problem determining mergeable", *pr.Number)
 		return
 	}
-	if *pr.Mergeable && HasLabel(issue.Labels, needsRebase) {
-		if opts.Dryrun {
-			glog.Infof("Would have removed needs-rebase for %d", *pr.Number)
-		} else {
-			client.Issues.RemoveLabelForIssue(opts.Org, opts.Project, *pr.Number, needsRebase)
-		}
+	if mergeable && github_util.HasLabel(issue.Labels, needsRebase) {
+		config.RemoveLabel(*pr.Number, needsRebase)
 	}
-	if !*pr.Mergeable && !HasLabel(issue.Labels, needsRebase) {
-		if opts.Dryrun {
-			glog.Infof("Would have added needs-rebase for %d", *pr.Number)
-		} else {
-			client.Issues.AddLabelsToIssue(opts.Org, opts.Project, *pr.Number, []string{needsRebase})
-		}
+	if !mergeable && !github_util.HasLabel(issue.Labels, needsRebase) {
+		config.AddLabels(*pr.Number, []string{needsRebase})
 	}
 }

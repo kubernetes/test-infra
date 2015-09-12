@@ -17,17 +17,17 @@ limitations under the License.
 package pulls
 
 import (
-	"flag"
 	"math"
 	"math/rand"
 	"os"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/opts"
+	"k8s.io/contrib/mungegithub/config"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
 // weightMap is a map of user to a weight for that user.
@@ -53,13 +53,10 @@ func (b *BlunderbussConfig) FindOwners(filename string) weightMap {
 }
 
 type BlunderbussMunger struct {
-	config *BlunderbussConfig
+	config                *BlunderbussConfig
+	blunderbussConfigFile string
+	blunderbussReassign   bool
 }
-
-var (
-	blunderbussConfig   = flag.String("blunderbuss-config", "", "Path to the blunderbuss config file")
-	blunderbussReassign = flag.Bool("blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
-)
 
 func init() {
 	blunderbuss := &BlunderbussMunger{}
@@ -68,11 +65,16 @@ func init() {
 
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
+func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
+	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+}
+
 func (b *BlunderbussMunger) loadConfig() {
-	if len(*blunderbussConfig) == 0 {
+	if len(b.blunderbussConfigFile) == 0 {
 		glog.Fatalf("--blunderbuss-config is required with the blunderbuss munger")
 	}
-	file, err := os.Open(*blunderbussConfig)
+	file, err := os.Open(b.blunderbussConfigFile)
 	if err != nil {
 		glog.Fatalf("Failed to load blunderbuss config: %v", err)
 	}
@@ -82,14 +84,14 @@ func (b *BlunderbussMunger) loadConfig() {
 	if err := yaml.NewYAMLToJSONDecoder(file).Decode(b.config); err != nil {
 		glog.Fatalf("Failed to load blunderbuss config: %v", err)
 	}
-	glog.V(4).Infof("Loaded config from %s", *blunderbussConfig)
+	glog.V(4).Infof("Loaded config from %s", b.blunderbussConfigFile)
 }
 
-func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent, opts opts.MungeOptions) {
+func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if b.config == nil {
 		b.loadConfig()
 	}
-	if !*blunderbussReassign && issue.Assignee != nil {
+	if !b.blunderbussReassign && issue.Assignee != nil {
 		return
 	}
 	potentialOwners := weightMap{}
@@ -140,11 +142,5 @@ func (b *BlunderbussMunger) MungePullRequest(client *github.Client, pr *github.P
 			break
 		}
 	}
-	if opts.Dryrun {
-		glog.Infof("would have assigned %s to PR %d", owner, *pr.Number)
-		return
-	}
-	if _, _, err := client.Issues.Edit(opts.Org, opts.Project, *pr.Number, &github.IssueRequest{Assignee: &owner}); err != nil {
-		glog.Errorf("Error updating issue: %v", err)
-	}
+	config.AssignPR(*pr.Number, owner)
 }
