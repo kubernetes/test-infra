@@ -16,7 +16,7 @@
 
 while true; do
     /mungegithub \
-      --pr-mungers=blunderbuss,needs-rebase,ok-to-test,ping-ci,size \
+      --pr-mungers=blunderbuss,needs-rebase,ok-to-test,ping-ci,size,path-label \
       --blunderbuss-config=/blunderbuss.yml \
       --token-file=/etc/secret-volume/token
     sleep 600
