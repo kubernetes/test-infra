@@ -1,0 +1,7 @@
+# This file is used by the path-label munger and is of the form:
+#  PATHPREFIX             LABEL
+docs/proposals            kind/design
+pkg/api/register.go       kind/new-api
+pkg/expapi/register.go    kind/new-api
+pkg/api/types.go          kind/api-change
+pkg/expapi/types.go       kind/api-change

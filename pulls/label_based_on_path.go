@@ -17,7 +17,9 @@ limitations under the License.
 package pulls
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	github_util "k8s.io/contrib/github"
@@ -29,28 +31,63 @@ import (
 )
 
 var (
-	_        = fmt.Print
-	labelMap = map[string]string{
-		"docs/proposals":         "kind/design",
-		"pkg/api/register.go":    "kind/new-api",
-		"pkg/expapi/register.go": "kind/new-api",
-		"pkg/api/types.go":       "kind/api-change",
-		"pkg/expapi/types.go":    "kind/api-change",
-	}
+	_ = fmt.Print
 )
 
-type PathLabelMunger struct{}
-
-func init() {
-	RegisterMungerOrDie(PathLabelMunger{})
+type PathLabelMunger struct {
+	labelMap      *map[string]string
+	pathLabelFile string
 }
 
-func (PathLabelMunger) Name() string { return "path-label" }
+func init() {
+	RegisterMungerOrDie(&PathLabelMunger{})
+}
 
-func (PathLabelMunger) AddFlags(cmd *cobra.Command) {}
+func (p *PathLabelMunger) Name() string { return "path-label" }
 
-func (PathLabelMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
-	glog.V(8).Infof("Checking out PR %d\n", *pr.Number)
+func (p *PathLabelMunger) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "path-label.txt", "file containing the pathname to label mappings")
+}
+
+func (p *PathLabelMunger) loadPathMap() error {
+	out := map[string]string{}
+	p.labelMap = &out
+	file := p.pathLabelFile
+	if len(file) == 0 {
+		glog.Infof("No --path-label-config= supplied, applying no labels")
+		return nil
+	}
+	fp, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) != 2 {
+			glog.Errorf("Invalid line in path based label munger config %s: %q", file, line)
+			continue
+		}
+		file := fields[0]
+		label := fields[1]
+		out[file] = label
+	}
+	return scanner.Err()
+}
+
+func (p *PathLabelMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+	if p.labelMap == nil {
+		if err := p.loadPathMap(); err != nil {
+			return
+		}
+	}
+	labelMap := *p.labelMap
+
 	needsLabels := []string{}
 	for _, c := range commits {
 		for _, f := range c.Files {
