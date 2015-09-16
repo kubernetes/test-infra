@@ -5,12 +5,12 @@ metadata:
   namespace: default
   labels:
     app: mungegithub
-    version: "0.6"
+    version: "0.7"
 spec:
   containers:
   - command:
       - /run.sh
-    image: gcr.io/google_containers/mungegithub:0.6
+    image: gcr.io/google_containers/mungegithub:0.7
     imagePullPolicy: IfNotPresent
     name: mungegithub
     resources:
