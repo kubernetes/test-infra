@@ -21,3 +21,4 @@ ADD blunderbuss.yml /blunderbuss.yml
 ADD path-label.txt /path-label.txt
 ADD run.sh /run.sh
 RUN chmod a+x /run.sh
+CMD /run.sh

@@ -14,11 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-while true; do
-    /mungegithub \
-      --pr-mungers=blunderbuss,needs-rebase,ok-to-test,ping-ci,size,path-label \
-      --blunderbuss-config=/blunderbuss.yml \
-      --token-file=/etc/secret-volume/token
-    sleep 600
-done
-  
+/mungegithub \
+  --pr-mungers=blunderbuss,needs-rebase,ok-to-test,ping-ci,size,path-label \
+  --token-file=/etc/secret-volume/token
