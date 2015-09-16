@@ -87,11 +87,21 @@ func (b *BlunderbussMunger) loadConfig() {
 	glog.V(4).Infof("Loaded config from %s", b.blunderbussConfigFile)
 }
 
+// u may be nil.
+func describeUser(u *github.User) string {
+	if u != nil && u.Login != nil {
+		return *u.Login
+	}
+	return "<nil>"
+
+}
+
 func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if b.config == nil {
 		b.loadConfig()
 	}
 	if !b.blunderbussReassign && issue.Assignee != nil {
+		glog.V(4).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
 		return
 	}
 	potentialOwners := weightMap{}
@@ -142,5 +152,6 @@ func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *git
 			break
 		}
 	}
+	glog.Infof("Assigning %v to %v (previously assigned to %v)", *pr.Number, owner, describeUser(issue.Assignee))
 	config.AssignPR(*pr.Number, owner)
 }
