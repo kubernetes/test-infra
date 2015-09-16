@@ -103,13 +103,13 @@ func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *git
 		}
 		for _, file := range commit.Files {
 			fileWeight := int64(1)
-			if file.Changes != nil {
+			if file.Changes != nil && *file.Changes != 0 {
 				fileWeight = int64(*file.Changes)
 			}
 			// Judge file size on a log scale-- effectively this
 			// makes three buckets, we shouldn't have many 10k+
 			// line changes.
-			fileWeight = int64(math.Log10(float64(fileWeight)) + .5)
+			fileWeight = int64(math.Log10(float64(fileWeight))) + 1
 			fileOwners := b.config.FindOwners(*file.Filename)
 			if len(fileOwners) == 0 {
 				glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
