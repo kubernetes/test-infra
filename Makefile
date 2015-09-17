@@ -1,6 +1,6 @@
 all: push
 
-TAG = 0.8
+TAG = 0.8.1
 
 mungegithub:
 	CGO_ENABLED=0 GOOS=linux godep go build -a -installsuffix cgo -ldflags '-w' ./mungegithub.go
