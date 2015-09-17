@@ -46,6 +46,7 @@ func doMungers(config *config.MungeConfig) error {
 		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
 	}
 	for {
+		nextRunStartTime := time.Now().Add(config.Period)
 		if len(config.IssueMungers) > 0 {
 			glog.Infof("Running issue mungers")
 			if err := issues.MungeIssues(config); err != nil {
@@ -61,8 +62,13 @@ func doMungers(config *config.MungeConfig) error {
 		if config.Once {
 			break
 		}
-		glog.Infof("Sleeping for %v\n", config.Period)
-		time.Sleep(config.Period)
+		if nextRunStartTime.After(time.Now()) {
+			sleepDuration := nextRunStartTime.Sub(time.Now())
+			glog.Infof("Sleeping for %v\n", sleepDuration)
+			time.Sleep(sleepDuration)
+		} else {
+			glog.Infof("Not sleeping as we took more than %v to complete one loop\n", config.Period)
+		}
 	}
 	return nil
 }
