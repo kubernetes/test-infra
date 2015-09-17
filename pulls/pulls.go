@@ -91,7 +91,7 @@ func MungePullRequests(config *config.MungeConfig) error {
 	mfunc := func(pr *github_api.PullRequest, issue *github_api.Issue) error {
 		return mungePR(config, pr, issue)
 	}
-	if err := config.ForEachIssueDo([]string{}, mfunc); err != nil {
+	if err := config.ForEachPRDo([]string{}, mfunc); err != nil {
 		return err
 	}
 

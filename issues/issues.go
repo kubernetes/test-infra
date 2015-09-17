@@ -56,11 +56,7 @@ func RegisterMunger(munger config.IssueMunger) error {
 	return nil
 }
 
-func mungeIssue(config *config.MungeConfig, pr *github_api.PullRequest, issue *github_api.Issue) error {
-	if pr != nil {
-		return nil
-	}
-
+func mungeIssue(config *config.MungeConfig, issue *github_api.Issue) error {
 	for _, munger := range config.IssueMungers {
 		munger.MungeIssue(config, issue)
 	}
@@ -68,8 +64,8 @@ func mungeIssue(config *config.MungeConfig, pr *github_api.PullRequest, issue *g
 }
 
 func MungeIssues(config *config.MungeConfig) error {
-	mfunc := func(pr *github_api.PullRequest, issue *github_api.Issue) error {
-		return mungeIssue(config, pr, issue)
+	mfunc := func(issue *github_api.Issue) error {
+		return mungeIssue(config, issue)
 	}
 	if err := config.ForEachIssueDo([]string{}, mfunc); err != nil {
 		return err
