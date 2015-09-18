@@ -59,6 +59,7 @@ func doMungers(config *config.MungeConfig) error {
 				glog.Errorf("Error munging PRs: %v", err)
 			}
 		}
+		config.ResetAPICount()
 		if config.Once {
 			break
 		}
