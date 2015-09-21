@@ -1,0 +1,20 @@
+# File is of the format [TYPE] [NAME]
+# Where type can be path, prefix, or paths-from-repo
+#
+# Files which match these things will not be counted when determining
+# the size of a given PR
+
+path		pkg/api/v1/deep_copy_generated.go
+path		pkg/api/deep_copy_generated.go
+path		pkg/expapi/v1/deep_copy_generated.go
+path		pkg/expapi/deep_copy_generated.go
+path		pkg/api/v1/conversion_generated.go
+path		pkg/expapi/v1/conversion_generated.go
+path		api/swagger-spec/resourceListing.json
+path		api/swagger-spec/version.json
+path		api/swagger-spec/api.json
+path		api/swagger-spec/v1.json
+
+prefix		Godeps/
+
+paths-from-repo .generated_docs
