@@ -24,6 +24,7 @@ import (
 
 	github_util "k8s.io/contrib/github"
 	"k8s.io/contrib/mungegithub/config"
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -88,18 +89,18 @@ func (p *PathLabelMunger) MungePullRequest(config *config.MungeConfig, pr *githu
 	}
 	labelMap := *p.labelMap
 
-	needsLabels := []string{}
+	needsLabels := sets.NewString()
 	for _, c := range commits {
 		for _, f := range c.Files {
 			for prefix, label := range labelMap {
 				if strings.HasPrefix(*f.Filename, prefix) && !github_util.HasLabel(issue.Labels, label) {
-					needsLabels = append(needsLabels, label)
+					needsLabels.Insert(label)
 				}
 			}
 		}
 	}
 
-	if len(needsLabels) != 0 {
-		config.AddLabels(*pr.Number, needsLabels)
+	if needsLabels.Len() != 0 {
+		config.AddLabels(*pr.Number, needsLabels.List())
 	}
 }
