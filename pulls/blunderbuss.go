@@ -101,7 +101,7 @@ func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *git
 		b.loadConfig()
 	}
 	if !b.blunderbussReassign && issue.Assignee != nil {
-		glog.V(4).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
+		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
 		return
 	}
 	potentialOwners := weightMap{}
