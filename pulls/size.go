@@ -22,16 +22,19 @@ import (
 
 	github_util "k8s.io/contrib/github"
 	"k8s.io/contrib/mungegithub/config"
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
-type PRSizeMunger struct{}
+type PRSizeMunger struct {
+	genFiles *sets.String
+}
 
 func init() {
-	RegisterMungerOrDie(PRSizeMunger{})
+	RegisterMungerOrDie(&PRSizeMunger{})
 }
 
 func (PRSizeMunger) Name() string { return "size" }
@@ -42,49 +45,51 @@ const labelSizePrefix = "size/"
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
 // docs, deep_copy, and conversions
-func getGeneratedFiles(config *config.MungeConfig, c github.RepositoryCommit) []string {
-	genFiles := []string{
-		"pkg/api/v1/deep_copy_generated.go",
-		"pkg/api/deep_copy_generated.go",
-		"pkg/expapi/v1/deep_copy_generated.go",
-		"pkg/expapi/deep_copy_generated.go",
-		"pkg/api/v1/conversion_generated.go",
-		"pkg/expapi/v1/conversion_generated.go",
-		"api/swagger-spec/resourceListing.json",
-		"api/swagger-spec/version.json",
-		"api/swagger-spec/api.json",
-		"api/swagger-spec/v1.json",
+//
+// It would be 'better' to call this for every commit but that takes
+// a whole lot of time for almost always the same information, and if
+// our results are slightly wrong, who cares? Instead look for the
+// generated files once and if someone changed what files are generated
+// we'll size slightly wrong. No biggie.
+func (s *PRSizeMunger) getGeneratedFiles(config *config.MungeConfig) sets.String {
+	if s.genFiles != nil {
+		return *s.genFiles
 	}
-	docs, err := config.GetFileContents(".generated_docs", *c.SHA)
+	files := sets.NewString()
+	files.Insert("pkg/api/v1/deep_copy_generated.go")
+	files.Insert("pkg/api/deep_copy_generated.go")
+	files.Insert("pkg/expapi/v1/deep_copy_generated.go")
+	files.Insert("pkg/expapi/deep_copy_generated.go")
+	files.Insert("pkg/api/v1/conversion_generated.go")
+	files.Insert("pkg/expapi/v1/conversion_generated.go")
+	files.Insert("api/swagger-spec/resourceListing.json")
+	files.Insert("api/swagger-spec/version.json")
+	files.Insert("api/swagger-spec/api.json")
+	files.Insert("api/swagger-spec/v1.json")
+	docs, err := config.GetFileContents(".generated_docs", "")
 	if err != nil {
 		docs = ""
 	}
 	docSlice := strings.Split(docs, "\n")
-	genFiles = append(genFiles, docSlice...)
+	files.Insert(docSlice...)
 
-	return genFiles
+	s.genFiles = &files
+	return *s.genFiles
 }
 
-func (PRSizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (s *PRSizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+	genFiles := s.getGeneratedFiles(config)
+
 	if pr.Additions == nil {
 		glog.Warningf("PR %d has nil Additions", *pr.Number)
 		return
 	}
+	adds := *pr.Additions
 	if pr.Deletions == nil {
 		glog.Warningf("PR %d has nil Deletions", *pr.Number)
 		return
 	}
-
-	adds := *pr.Additions
 	dels := *pr.Deletions
-
-	// It would be 'better' to call this for every commit but that takes
-	// a whole lot of time for almost always the same information, and if
-	// our results are slightly wrong, who cares? Instead look for the
-	// generated files once per PR and if someone changed both what files
-	// are generated and then undid that change in an intermediate commit
-	// we might call this PR bigger than we "should."
-	genFiles := getGeneratedFiles(config, commits[len(commits)-1])
 
 	for _, c := range commits {
 		for _, f := range c.Files {
@@ -93,16 +98,9 @@ func (PRSizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.Pull
 				dels = dels - *f.Deletions
 				continue
 			}
-			found := false
-			for _, genFile := range genFiles {
-				if *f.Filename == genFile {
-					adds = adds - *f.Additions
-					dels = dels - *f.Deletions
-					found = true
-					break
-				}
-			}
-			if found {
+			if genFiles.Has(*f.Filename) {
+				adds = adds - *f.Additions
+				dels = dels - *f.Deletions
 				continue
 			}
 		}
