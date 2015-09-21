@@ -48,7 +48,7 @@ func (PingCIMunger) MungePullRequest(config *config.MungeConfig, pr *github.Pull
 	} else if !mergeable {
 		glog.V(2).Infof("Skipping %d - not mergeable", *pr.Number)
 	}
-	status, err := config.GetStatus(*pr.Number, []string{"Shippable", "continuous-integration/travis-ci/pr"})
+	status, err := config.GetStatus(pr, []string{"Shippable", "continuous-integration/travis-ci/pr"})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
