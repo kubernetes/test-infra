@@ -15,5 +15,5 @@
 # limitations under the License.
 
 /mungegithub \
-  --pr-mungers=blunderbuss,needs-rebase,ok-to-test,ping-ci,size,path-label \
+  --pr-mungers=blunderbuss,lgtm-after-commit,needs-rebase,ok-to-test,path-label,ping-ci,size \
   --token-file=/etc/secret-volume/token
