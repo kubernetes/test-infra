@@ -22,7 +22,7 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
@@ -101,7 +101,7 @@ func describeUser(u *github.User) string {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (b *BlunderbussMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if b.config == nil {
 		b.loadConfig()
 	}

@@ -46,9 +46,9 @@ var (
 )
 
 // SubmitQueueConfig has all of the configuration for the submit queue along with
-// and embedded github.GithubConfig
+// and embedded github.Config
 type SubmitQueueConfig struct {
-	github.GithubConfig
+	github.Config
 	Once                   bool
 	JenkinsJobs            []string
 	JenkinsHost            string

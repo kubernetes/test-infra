@@ -19,7 +19,6 @@ package pulls
 import (
 	"time"
 
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -42,7 +41,7 @@ func (PingCIMunger) Name() string { return "ping-ci" }
 func (PingCIMunger) AddFlags(cmd *cobra.Command) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (PingCIMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (PingCIMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}

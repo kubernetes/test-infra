@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/issues"
 	"k8s.io/contrib/mungegithub/pulls"
 
@@ -34,28 +34,37 @@ var (
 	_ = fmt.Print
 )
 
-func addMungeFlags(config *config.MungeConfig, cmd *cobra.Command) {
+type MungeConfig struct {
+	github_util.Config
+	MinIssueNumber   int
+	IssueMungersList []string
+	PRMungersList    []string
+	Once             bool
+	Period           time.Duration
+}
+
+func addMungeFlags(config *MungeConfig, cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
 	cmd.Flags().StringSliceVar(&config.IssueMungersList, "issue-mungers", []string{}, "A list of issue mungers to run")
 	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{}, "A list of pull request mungers to run")
 	cmd.Flags().DurationVar(&config.Period, "period", 30*time.Minute, "The period for running mungers")
 }
 
-func doMungers(config *config.MungeConfig) error {
-	if len(config.IssueMungers) == 0 && len(config.PRMungersList) == 0 {
+func doMungers(config *MungeConfig) error {
+	if len(config.IssueMungersList) == 0 && len(config.PRMungersList) == 0 {
 		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
 	}
 	for {
 		nextRunStartTime := time.Now().Add(config.Period)
-		if len(config.IssueMungers) > 0 {
+		if len(config.IssueMungersList) > 0 {
 			glog.Infof("Running issue mungers")
-			if err := issues.MungeIssues(config); err != nil {
+			if err := issues.MungeIssues(&config.Config); err != nil {
 				glog.Errorf("Error munging issues: %v", err)
 			}
 		}
 		if len(config.PRMungersList) > 0 {
 			glog.Infof("Running PR mungers")
-			if err := pulls.MungePullRequests(config); err != nil {
+			if err := pulls.MungePullRequests(&config.Config); err != nil {
 				glog.Errorf("Error munging PRs: %v", err)
 			}
 		}
@@ -75,7 +84,7 @@ func doMungers(config *config.MungeConfig) error {
 }
 
 func main() {
-	config := &config.MungeConfig{}
+	config := &MungeConfig{}
 	root := &cobra.Command{
 		Use:   filepath.Base(os.Args[0]),
 		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
@@ -83,6 +92,8 @@ func main() {
 			if err := config.PreExecute(); err != nil {
 				return err
 			}
+			issues.SetupMungers(config.IssueMungersList)
+			pulls.SetupMungers(config.PRMungersList)
 			return doMungers(config)
 		},
 	}

@@ -22,7 +22,6 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -62,7 +61,7 @@ const labelSizePrefix = "size/"
 // our results are slightly wrong, who cares? Instead look for the
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
-func (s *SizeMunger) getGeneratedFiles(config *config.MungeConfig) {
+func (s *PRSizeMunger) getGeneratedFiles(config *github_util.Config) {
 	if s.genFiles != nil {
 		return
 	}
@@ -123,7 +122,7 @@ func (s *SizeMunger) getGeneratedFiles(config *config.MungeConfig) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *SizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (s *PRSizeMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	s.getGeneratedFiles(config)
 	genFiles := *s.genFiles
 	genPrefixes := *s.genPrefixes

@@ -257,7 +257,7 @@ func TestForEachPRDo(t *testing.T) {
 
 	for _, test := range tests {
 		client, server, mux := github_test.InitTest()
-		config := &GithubConfig{
+		config := &Config{
 			client:      client,
 			Org:         "foo",
 			Project:     "bar",
@@ -572,7 +572,7 @@ func TestGetLastModified(t *testing.T) {
 	}
 	for _, test := range tests {
 		client, server, mux := github_test.InitTest()
-		config := &GithubConfig{
+		config := &Config{
 			client:  client,
 			Org:     "o",
 			Project: "r",

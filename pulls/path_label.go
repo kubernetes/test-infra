@@ -22,7 +22,6 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -86,7 +85,7 @@ func (p *PathLabelMunger) loadPathMap() error {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (p *PathLabelMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (p *PathLabelMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if p.labelMap == nil {
 		if err := p.loadPathMap(); err != nil {
 			return

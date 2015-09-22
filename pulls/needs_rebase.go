@@ -17,7 +17,6 @@ limitations under the License.
 package pulls
 
 import (
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -42,7 +41,7 @@ func (NeedsRebaseMunger) Name() string { return "needs-rebase" }
 func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (NeedsRebaseMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (NeedsRebaseMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	mergeable, err := config.IsPRMergeable(pr)
 	if err != nil {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *pr.Number)

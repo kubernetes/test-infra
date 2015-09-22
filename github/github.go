@@ -51,9 +51,9 @@ func (r *rateLimitRoundTripper) RoundTrip(req *http.Request) (resp *http.Respons
 	return r.delegate.RoundTrip(req)
 }
 
-// GithubConfig is how we are configured to talk to github and provides access
+// Config is how we are configured to talk to github and provides access
 // methods for doing so.
-type GithubConfig struct {
+type Config struct {
 	client  *github.Client
 	Org     string
 	Project string
@@ -77,7 +77,7 @@ type GithubConfig struct {
 
 type analytic int
 
-func (a *analytic) Call(config *GithubConfig) {
+func (a *analytic) Call(config *Config) {
 	config.analytics.apiCount++
 	*a = *a + 1
 }
@@ -131,7 +131,7 @@ func (a analytics) Print() {
 }
 
 // AddRootFlags will add all of the flags needed for the github config to the cobra command
-func (config *GithubConfig) AddRootFlags(cmd *cobra.Command) {
+func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&config.Token, "token", "", "The OAuth Token to use for requests.")
 	cmd.PersistentFlags().StringVar(&config.TokenFile, "token-file", "", "The file containing the OAuth Token to use for requests.")
 	cmd.PersistentFlags().IntVar(&config.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with")
@@ -146,9 +146,9 @@ func (config *GithubConfig) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
-// PreExecute will initialize the GithubConfig. It MUST be run before the config
+// PreExecute will initialize the Config. It MUST be run before the config
 // may be used to get information from Github
-func (config *GithubConfig) PreExecute() error {
+func (config *Config) PreExecute() error {
 	if len(config.Org) == 0 {
 		glog.Fatalf("--organization is required.")
 	}
@@ -203,14 +203,14 @@ func (config *GithubConfig) PreExecute() error {
 
 // ResetAPICount will both reset the counters of how many api calls have been
 // made but will also print the information from the last run.
-func (config *GithubConfig) ResetAPICount() {
+func (config *Config) ResetAPICount() {
 	config.analytics.Print()
 	config.analytics = analytics{}
 	config.analytics.lastAPIReset = time.Now()
 }
 
 // SetClient should ONLY be used by testing. Normal commands should use PreExecute()
-func (config *GithubConfig) SetClient(client *github.Client) {
+func (config *Config) SetClient(client *github.Client) {
 	config.client = client
 }
 
@@ -248,7 +248,7 @@ func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
 }
 
 // AddLabels will add all of the named `labels` to the PR
-func (config *GithubConfig) AddLabels(prNum int, labels []string) error {
+func (config *Config) AddLabels(prNum int, labels []string) error {
 	config.analytics.AddLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have added labels %v to PR %d but --dry-run is set", labels, prNum)
@@ -262,7 +262,7 @@ func (config *GithubConfig) AddLabels(prNum int, labels []string) error {
 }
 
 // RemoveLabel will remove the `label` from the PR
-func (config *GithubConfig) RemoveLabel(prNum int, label string) error {
+func (config *Config) RemoveLabel(prNum int, label string) error {
 	config.analytics.RemoveLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have removed label %q to PR %d but --dry-run is set", label, prNum)
@@ -283,7 +283,7 @@ type IssueFunction func(*github.Issue) error
 
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
-func (config *GithubConfig) LastModifiedTime(prNum int) (*time.Time, error) {
+func (config *Config) LastModifiedTime(prNum int) (*time.Time, error) {
 	config.analytics.ListCommits.Call(config)
 	list, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
 	if err != nil {
@@ -299,7 +299,7 @@ func (config *GithubConfig) LastModifiedTime(prNum int) (*time.Time, error) {
 	return lastModified, nil
 }
 
-func (config *GithubConfig) fetchAllCollaborators() ([]github.User, error) {
+func (config *Config) fetchAllCollaborators() ([]github.User, error) {
 	page := 1
 	var result []github.User
 	for {
@@ -323,7 +323,7 @@ func (config *GithubConfig) fetchAllCollaborators() ([]github.User, error) {
 // access. The second set is the specific set of user with pull access. If the
 // repo is public all users will have pull access, but some with have it
 // explicitly
-func (config *GithubConfig) UsersWithAccess() (pushUsers sets.String, pullUsers sets.String, err error) {
+func (config *Config) UsersWithAccess() (pushUsers sets.String, pullUsers sets.String, err error) {
 	pushUsers = sets.String{}
 	pullUsers = sets.String{}
 
@@ -351,7 +351,7 @@ func (config *GithubConfig) UsersWithAccess() (pushUsers sets.String, pullUsers 
 }
 
 // GetAllEventsForPR returns a list of all events for a given pr.
-func (config *GithubConfig) GetAllEventsForPR(prNum int) ([]github.IssueEvent, error) {
+func (config *Config) GetAllEventsForPR(prNum int) ([]github.IssueEvent, error) {
 	events := []github.IssueEvent{}
 	page := 1
 	for {
@@ -410,7 +410,7 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 //    * If any is 'error', the PR is in 'error'
 //    * If any is 'failure', the PR is 'failure'
 //    * Otherwise the PR is 'success'
-func (config *GithubConfig) GetStatus(pr *github.PullRequest, requiredContexts []string) (string, error) {
+func (config *Config) GetStatus(pr *github.PullRequest, requiredContexts []string) (string, error) {
 	if pr.Head == nil {
 		glog.Errorf("pr.Head is nil in GetStatus for PR# %d", *pr.Number)
 		return "failure", nil
@@ -424,7 +424,7 @@ func (config *GithubConfig) GetStatus(pr *github.PullRequest, requiredContexts [
 }
 
 // IsStatusSuccess makes sure that the combined status for all commits in a PR is 'success'
-func (config *GithubConfig) IsStatusSuccess(pr *github.PullRequest, requiredContexts []string) bool {
+func (config *Config) IsStatusSuccess(pr *github.PullRequest, requiredContexts []string) bool {
 	status, err := config.GetStatus(pr, requiredContexts)
 	if err != nil {
 		return false
@@ -439,7 +439,7 @@ func (config *GithubConfig) IsStatusSuccess(pr *github.PullRequest, requiredCont
 // because the request to test a PR again is asynchronous with the PR actually
 // moving into a pending state
 // TODO: add a timeout
-func (config *GithubConfig) WaitForPending(pr *github.PullRequest) error {
+func (config *Config) WaitForPending(pr *github.PullRequest) error {
 	for {
 		status, err := config.GetStatus(pr, []string{})
 		if err != nil {
@@ -455,7 +455,7 @@ func (config *GithubConfig) WaitForPending(pr *github.PullRequest) error {
 
 // WaitForNotPending will check if the github status is "pending" (CI still running)
 // if so it will sleep and try again until all status hooks have complete
-func (config *GithubConfig) WaitForNotPending(pr *github.PullRequest) error {
+func (config *Config) WaitForNotPending(pr *github.PullRequest) error {
 	for {
 		status, err := config.GetStatus(pr, []string{})
 		if err != nil {
@@ -469,7 +469,7 @@ func (config *GithubConfig) WaitForNotPending(pr *github.PullRequest) error {
 	}
 }
 
-func (config *GithubConfig) getCommits(prNum int) ([]github.RepositoryCommit, error) {
+func (config *Config) getCommits(prNum int) ([]github.RepositoryCommit, error) {
 	config.analytics.ListCommits.Call(config)
 	//TODO: this should handle paging, I believe....
 	commits, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
@@ -480,7 +480,7 @@ func (config *GithubConfig) getCommits(prNum int) ([]github.RepositoryCommit, er
 }
 
 // GetFilledCommits returns all of the commits for a given PR
-func (config *GithubConfig) GetFilledCommits(prNum int) ([]github.RepositoryCommit, error) {
+func (config *Config) GetFilledCommits(prNum int) ([]github.RepositoryCommit, error) {
 	commits, err := config.getCommits(prNum)
 	if err != nil {
 		return nil, err
@@ -501,7 +501,7 @@ func (config *GithubConfig) GetFilledCommits(prNum int) ([]github.RepositoryComm
 // GetPR will return a pull request based on the provided number.
 // This may be useful if some of the information in the provided
 // PR was not filled out when it was retrieved.
-func (config *GithubConfig) GetPR(prNum int) (*github.PullRequest, error) {
+func (config *Config) GetPR(prNum int) (*github.PullRequest, error) {
 	config.analytics.GetPR.Call(config)
 	pr, _, err := config.client.PullRequests.Get(config.Org, config.Project, prNum)
 	if err != nil {
@@ -512,7 +512,7 @@ func (config *GithubConfig) GetPR(prNum int) (*github.PullRequest, error) {
 }
 
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
-func (config *GithubConfig) AssignPR(prNum int, owner string) error {
+func (config *Config) AssignPR(prNum int, owner string) error {
 	config.analytics.AssignPR.Call(config)
 	assignee := &github.IssueRequest{Assignee: &owner}
 	if config.DryRun {
@@ -527,7 +527,7 @@ func (config *GithubConfig) AssignPR(prNum int, owner string) error {
 }
 
 // ClosePR will close the Given PR
-func (config *GithubConfig) ClosePR(pr *github.PullRequest) error {
+func (config *Config) ClosePR(pr *github.PullRequest) error {
 	config.analytics.ClosePR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have closed PR# %d but --dry-run was set", *pr.Number)
@@ -543,9 +543,9 @@ func (config *GithubConfig) ClosePR(pr *github.PullRequest) error {
 }
 
 // OpenPR will attempt to open the given PR.
-// If will attempt to reopen the pr `numTries` before returning an error
+// It will attempt to reopen the pr `numTries` before returning an error
 // and giving up.
-func (config *GithubConfig) OpenPR(pr *github.PullRequest, numTries int) error {
+func (config *Config) OpenPR(pr *github.PullRequest, numTries int) error {
 	config.analytics.OpenPR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have openned PR# %d but --dry-run was set", *pr.Number)
@@ -570,7 +570,7 @@ func (config *GithubConfig) OpenPR(pr *github.PullRequest, numTries int) error {
 
 // GetFileContents will return the contents of the `file` in the repo at `sha`
 // as a string
-func (config *GithubConfig) GetFileContents(file, sha string) (string, error) {
+func (config *Config) GetFileContents(file, sha string) (string, error) {
 	config.analytics.GetContents.Call(config)
 	getOpts := &github.RepositoryContentGetOptions{Ref: sha}
 	if len(sha) > 0 {
@@ -598,7 +598,7 @@ func (config *GithubConfig) GetFileContents(file, sha string) (string, error) {
 
 // MergePR will merge the given PR, duh
 // "who" is who is doing the merging, like "submit-queue"
-func (config *GithubConfig) MergePR(pr *github.PullRequest, who string) error {
+func (config *Config) MergePR(pr *github.PullRequest, who string) error {
 	prNum := *pr.Number
 	config.analytics.Merge.Call(config)
 	if config.DryRun {
@@ -629,7 +629,7 @@ func (config *GithubConfig) MergePR(pr *github.PullRequest, who string) error {
 }
 
 // WriteComment will send the `msg` as a comment to the specified PR
-func (config *GithubConfig) WriteComment(prNum int, msg string) error {
+func (config *Config) WriteComment(prNum int, msg string) error {
 	config.analytics.CreateComment.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have commented %q in %d but --dry-run is set", msg, prNum)
@@ -647,7 +647,7 @@ func (config *GithubConfig) WriteComment(prNum int, msg string) error {
 // PR again if github did not respond the first time. So the hopefully github
 // will have a response the second time. If we have no answer twice, we return
 // false
-func (config *GithubConfig) IsPRMergeable(pr *github.PullRequest) (bool, error) {
+func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
 	if pr.Mergeable == nil {
 		var err error
 		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
@@ -676,7 +676,7 @@ func (config *GithubConfig) IsPRMergeable(pr *github.PullRequest) (bool, error) 
 //   * pr.Number <= maxPRNumber
 //   * all labels are on the PR
 // Run the specified function
-func (config *GithubConfig) forEachIssueDo(labels []string, fn IssueFunction) error {
+func (config *Config) forEachIssueDo(labels []string, fn IssueFunction) error {
 	page := 1
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
@@ -725,7 +725,7 @@ func (config *GithubConfig) forEachIssueDo(labels []string, fn IssueFunction) er
 
 // ForEachIssueDo will call the provided IssueFunction once for each issue
 // which has the labels provided in `labels`
-func (config *GithubConfig) ForEachIssueDo(labels []string, fn IssueFunction) error {
+func (config *Config) ForEachIssueDo(labels []string, fn IssueFunction) error {
 	handleIssue := func(issue *github.Issue) error {
 		if issue.PullRequestLinks != nil {
 			return nil
@@ -739,7 +739,7 @@ func (config *GithubConfig) ForEachIssueDo(labels []string, fn IssueFunction) er
 
 // ForEachPRDo will call the provided PRFunction once for each issue
 // which has the labels provided in `labels`
-func (config *GithubConfig) ForEachPRDo(labels []string, fn PRFunction) error {
+func (config *Config) ForEachPRDo(labels []string, fn PRFunction) error {
 	handlePR := func(issue *github.Issue) error {
 		if issue.PullRequestLinks == nil {
 			return nil

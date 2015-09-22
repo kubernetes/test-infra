@@ -19,40 +19,49 @@ package issues
 import (
 	"fmt"
 
-	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
 	github_api "github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 )
 
-var mungerMap = map[string]config.IssueMunger{}
+type IssueMunger interface {
+	MungeIssue(config *github_util.Config, issue *github_api.Issue)
+	AddFlags(cmd *cobra.Command)
+	Name() string
+}
+
+var (
+	mungerMap = map[string]IssueMunger{}
+	mungers   = []IssueMunger{}
+)
 
 // GetAllMungers returns a slice of all registered mungers. This list is
 // completely independant of the mungers selected at runtime in --pr-mungers.
 // This is all possible mungers.
-func GetAllMungers() []config.IssueMunger {
-	out := []config.IssueMunger{}
+func GetAllMungers() []IssueMunger {
+	out := []IssueMunger{}
 	for _, munger := range mungerMap {
 		out = append(out, munger)
 	}
 	return out
 }
 
-func getMungers(mungers []string) ([]config.IssueMunger, error) {
-	result := make([]config.IssueMunger, len(mungers))
-	for ix := range mungers {
-		munger, found := mungerMap[mungers[ix]]
+func SetupMungers(requestedMungers []string) error {
+	for _, name := range requestedMungers {
+		munger, found := mungerMap[name]
 		if !found {
-			return nil, fmt.Errorf("couldn't find a munger named: %s", mungers[ix])
+			return fmt.Errorf("couldn't find a munger named: %s", name)
 		}
-		result[ix] = munger
+		mungers = append(mungers, munger)
 	}
-	return result, nil
+	return nil
 }
 
 // RegisterMunger should be called in `init()` by each munger to make itself
 // available by name
-func RegisterMunger(munger config.IssueMunger) error {
+func RegisterMunger(munger IssueMunger) error {
 	if _, found := mungerMap[munger.Name()]; found {
 		return fmt.Errorf("a munger with that name (%s) already exists", munger.Name())
 	}
@@ -61,8 +70,8 @@ func RegisterMunger(munger config.IssueMunger) error {
 	return nil
 }
 
-func mungeIssue(config *config.MungeConfig, issue *github_api.Issue) error {
-	for _, munger := range config.IssueMungers {
+func mungeIssue(config *github_util.Config, issue *github_api.Issue) error {
+	for _, munger := range mungers {
 		munger.MungeIssue(config, issue)
 	}
 	return nil
@@ -70,7 +79,7 @@ func mungeIssue(config *config.MungeConfig, issue *github_api.Issue) error {
 
 // MungeIssues is the main function which asks that each munger be called
 // for each Issue
-func MungeIssues(config *config.MungeConfig) error {
+func MungeIssues(config *github_util.Config) error {
 	mfunc := func(issue *github_api.Issue) error {
 		return mungeIssue(config, issue)
 	}

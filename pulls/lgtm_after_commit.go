@@ -19,7 +19,6 @@ package pulls
 import (
 	"time"
 
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/google/go-github/github"
@@ -65,7 +64,7 @@ func (LGTMAfterCommitMunger) Name() string { return "lgtm-after-commit" }
 func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (LGTMAfterCommitMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (LGTMAfterCommitMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	lastModified := lastModifiedTime(commits)
 	lgtmTime := lgtmTime(events)
 

@@ -17,7 +17,6 @@ limitations under the License.
 package pulls
 
 import (
-	"k8s.io/contrib/mungegithub/config"
 	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -40,7 +39,7 @@ func (OkToTestMunger) Name() string { return "ok-to-test" }
 func (OkToTestMunger) AddFlags(cmd *cobra.Command) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (OkToTestMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (OkToTestMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
