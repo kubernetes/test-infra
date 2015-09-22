@@ -22,8 +22,8 @@ import (
 	"os"
 	"strings"
 
-	github_util "k8s.io/contrib/github"
 	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"

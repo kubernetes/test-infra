@@ -19,7 +19,7 @@ package config
 import (
 	"time"
 
-	"k8s.io/contrib/github"
+	"k8s.io/contrib/mungegithub/github"
 
 	github_api "github.com/google/go-github/github"
 	"github.com/spf13/cobra"

@@ -15,5 +15,7 @@
 # limitations under the License.
 
 /mungegithub \
-  --pr-mungers=blunderbuss,lgtm-after-commit,needs-rebase,ok-to-test,path-label,ping-ci,size \
+  --pr-mungers=blunderbuss,lgtm-after-commit,needs-rebase,ok-to-test,path-label,ping-ci,size,submit-queue \
+  --jenkins-host=http://jenkins-master:8080 \
+  --jenkins-jobs=kubernetes-e2e-gce,kubernetes-e2e-gke-ci,kubernetes-build,kubernetes-e2e-gce-parallel,kubernetes-e2e-gce-autoscaling,kubernetes-e2e-gce-reboot,kubernetes-e2e-gce-scalability \
   --token-file=/etc/secret-volume/token

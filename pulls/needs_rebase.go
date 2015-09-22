@@ -17,8 +17,8 @@ limitations under the License.
 package pulls
 
 import (
-	github_util "k8s.io/contrib/github"
 	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"

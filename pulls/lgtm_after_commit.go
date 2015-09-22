@@ -19,8 +19,8 @@ package pulls
 import (
 	"time"
 
-	github_util "k8s.io/contrib/github"
 	"k8s.io/contrib/mungegithub/config"
+	github_util "k8s.io/contrib/mungegithub/github"
 
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
