@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// PRMunger is the interface which all mungers must implement to register
 type PRMunger interface {
 	// Take action on a specific pull request includes:
 	//   * The config for mungers
@@ -34,8 +35,9 @@ type PRMunger interface {
 	//   * The commits for the PR
 	//   * The events on the PR
 	MungePullRequest(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue, commits []github_api.RepositoryCommit, events []github_api.IssueEvent)
-	AddFlags(cmd *cobra.Command)
+	AddFlags(cmd *cobra.Command, config *github_util.Config)
 	Name() string
+	Initialize(*github_util.Config) error
 }
 
 var mungerMap = map[string]PRMunger{}
@@ -52,13 +54,18 @@ func GetAllMungers() []PRMunger {
 	return out
 }
 
-func SetupMungers(requestedMungers []string) error {
+// InitializeMungers will call munger.Initialize() for all mungers requested
+// in --pr-mungers
+func InitializeMungers(requestedMungers []string, config *github_util.Config) error {
 	for _, name := range requestedMungers {
 		munger, found := mungerMap[name]
 		if !found {
 			return fmt.Errorf("couldn't find a munger named: %s", name)
 		}
 		mungers = append(mungers, munger)
+		if err := munger.Initialize(config); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -46,6 +46,7 @@ func TestGetLatestCompletedBuild(t *testing.T) {
 		name      string
 		path      string
 		obj       *Job
+		stable    bool
 		expectErr bool
 	}{
 		{
@@ -54,9 +55,10 @@ func TestGetLatestCompletedBuild(t *testing.T) {
 			obj:  &Job{Result: "UNSTABLE"},
 		},
 		{
-			name: "bar",
-			path: "/job/bar/lastCompletedBuild/api/json",
-			obj:  &Job{Result: "SUCCESS"},
+			name:   "bar",
+			path:   "/job/bar/lastCompletedBuild/api/json",
+			obj:    &Job{Result: "SUCCESS"},
+			stable: true,
 		},
 		{
 			name:      "baz",
@@ -76,7 +78,7 @@ func TestGetLatestCompletedBuild(t *testing.T) {
 			},
 		})
 		client := &JenkinsClient{Host: server.URL}
-		job, err := client.GetLastCompletedBuild(test.name)
+		job, err := client.getLastCompletedBuild(test.name)
 		if test.expectErr {
 			if err == nil {
 				t.Errorf("unexpected non-error")

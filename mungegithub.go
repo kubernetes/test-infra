@@ -34,7 +34,7 @@ var (
 	_ = fmt.Print
 )
 
-type MungeConfig struct {
+type mungeConfig struct {
 	github_util.Config
 	MinIssueNumber   int
 	IssueMungersList []string
@@ -43,14 +43,14 @@ type MungeConfig struct {
 	Period           time.Duration
 }
 
-func addMungeFlags(config *MungeConfig, cmd *cobra.Command) {
+func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
 	cmd.Flags().StringSliceVar(&config.IssueMungersList, "issue-mungers", []string{}, "A list of issue mungers to run")
 	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{}, "A list of pull request mungers to run")
 	cmd.Flags().DurationVar(&config.Period, "period", 30*time.Minute, "The period for running mungers")
 }
 
-func doMungers(config *MungeConfig) error {
+func doMungers(config *mungeConfig) error {
 	if len(config.IssueMungersList) == 0 && len(config.PRMungersList) == 0 {
 		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
 	}
@@ -84,7 +84,7 @@ func doMungers(config *MungeConfig) error {
 }
 
 func main() {
-	config := &MungeConfig{}
+	config := &mungeConfig{}
 	root := &cobra.Command{
 		Use:   filepath.Base(os.Args[0]),
 		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
@@ -92,8 +92,8 @@ func main() {
 			if err := config.PreExecute(); err != nil {
 				return err
 			}
-			issues.SetupMungers(config.IssueMungersList)
-			pulls.SetupMungers(config.PRMungersList)
+			issues.InitializeMungers(config.IssueMungersList, &config.Config)
+			pulls.InitializeMungers(config.PRMungersList, &config.Config)
 			return doMungers(config)
 		},
 	}
@@ -102,12 +102,12 @@ func main() {
 
 	prMungers := pulls.GetAllMungers()
 	for _, m := range prMungers {
-		m.AddFlags(root)
+		m.AddFlags(root, &config.Config)
 	}
 
 	issueMungers := issues.GetAllMungers()
 	for _, m := range issueMungers {
-		m.AddFlags(root)
+		m.AddFlags(root, &config.Config)
 	}
 
 	if err := root.Execute(); err != nil {

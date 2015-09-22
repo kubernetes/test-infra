@@ -46,8 +46,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (SizeMunger) Name() string { return "size" }
 
+// Initialize will initialize the munger
+func (SizeMunger) Initialize(config *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
-func (s *SizeMunger) AddFlags(cmd *cobra.Command) {
+func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringVar(&s.generatedFilesFile, "generated-files-config", "generated-files.txt", "file containing the pathname to label mappings")
 }
 
@@ -61,7 +64,7 @@ const labelSizePrefix = "size/"
 // our results are slightly wrong, who cares? Instead look for the
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
-func (s *PRSizeMunger) getGeneratedFiles(config *github_util.Config) {
+func (s *SizeMunger) getGeneratedFiles(config *github_util.Config) {
 	if s.genFiles != nil {
 		return
 	}
@@ -122,7 +125,7 @@ func (s *PRSizeMunger) getGeneratedFiles(config *github_util.Config) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *PRSizeMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (s *SizeMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	s.getGeneratedFiles(config)
 	genFiles := *s.genFiles
 	genPrefixes := *s.genPrefixes

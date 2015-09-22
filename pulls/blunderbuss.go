@@ -68,8 +68,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
+// Initialize will initialize the munger
+func (b *BlunderbussMunger) Initialize(config *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
-func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command) {
+func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 }

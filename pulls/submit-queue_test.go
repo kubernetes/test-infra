@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package pulls
 
 import (
 	"encoding/json"
@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 
 	"github.com/google/go-github/github"
@@ -120,8 +121,9 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		sq := &SubmitQueue{}
+		config := &github_util.Config{}
 		client, server, mux := github_test.InitTest()
-		config := &SubmitQueueConfig{}
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
@@ -136,7 +138,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-			ok, err := config.validateLGTMAfterPush(&github.PullRequest{Number: intPtr(1)}, &test.lastModified)
+			ok, err := sq.validateLGTMAfterPush(config, &github.PullRequest{Number: intPtr(1)}, &test.lastModified)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

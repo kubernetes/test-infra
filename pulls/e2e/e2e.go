@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package e2e
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ import (
 	"time"
 
 	github_util "k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/submit-queue/jenkins"
+	"k8s.io/contrib/mungegithub/pulls/jenkins"
 
 	"github.com/golang/glog"
 	github_api "github.com/google/go-github/github"
@@ -55,44 +55,56 @@ type ExternalState struct {
 	Whitelist   []string
 }
 
-type e2eTester struct {
+// E2ETester is the object which will contact a jenkins instance and get
+// information about recent jobs
+type E2ETester struct {
+	JenkinsHost         string
+	JenkinsJobs         []string
+	DontRequireE2ELabel string
 	sync.Mutex
-	state  *ExternalState
-	Config *SubmitQueueConfig
+	State  *ExternalState
+	Config *github_util.Config
 }
 
-func (e *e2eTester) msg(msg string, args ...interface{}) {
+func (e *E2ETester) msg(msg string, args ...interface{}) {
 	e.Lock()
 	defer e.Unlock()
-	if len(e.state.Message) >= 50 {
-		e.state.Message = e.state.Message[1:]
+	if len(e.State.Message) >= 50 {
+		e.State.Message = e.State.Message[1:]
 	}
 	expanded := fmt.Sprintf(msg, args...)
-	e.state.Message = append(e.state.Message, fmt.Sprintf("%v: %v", time.Now().UTC(), expanded))
+	e.State.Message = append(e.State.Message, fmt.Sprintf("%v: %v", time.Now().UTC(), expanded))
 	glog.V(2).Info(expanded)
 }
 
-func (e *e2eTester) error(err error) {
+func (e *E2ETester) error(err error) {
 	e.Lock()
 	defer e.Unlock()
-	e.state.Err = err
+	e.State.Err = err
 }
 
-func (e *e2eTester) locked(f func()) {
+// SetWhitelist will set the complete whitelist in the ExternalState.
+func (e *E2ETester) SetWhitelist(whitelist []string) {
+	e.Lock()
+	defer e.Unlock()
+	e.State.Whitelist = whitelist
+}
+
+func (e *E2ETester) locked(f func()) {
 	e.Lock()
 	defer e.Unlock()
 	f()
 }
 
-func (e *e2eTester) setBuildStatus(build, status string) {
-	e.locked(func() { e.state.BuildStatus[build] = status })
+func (e *E2ETester) setBuildStatus(build, status string) {
+	e.locked(func() { e.State.BuildStatus[build] = status })
 }
 
-func (e *e2eTester) checkBuilds() (allStable bool) {
+func (e *E2ETester) checkBuilds() (allStable bool) {
 	// Test if the build is stable in Jenkins
-	jenkinsClient := &jenkins.JenkinsClient{Host: e.Config.JenkinsHost}
+	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
 	allStable = true
-	for _, build := range e.Config.JenkinsJobs {
+	for _, build := range e.JenkinsJobs {
 		e.msg("Checking build stability for %s", build)
 		stable, err := jenkinsClient.IsBuildStable(build)
 		if err != nil {
@@ -111,25 +123,27 @@ func (e *e2eTester) checkBuilds() (allStable bool) {
 	return allStable
 }
 
-func (e *e2eTester) waitForStableBuilds() {
+func (e *E2ETester) waitForStableBuilds() {
 	for !e.checkBuilds() {
 		e.msg("Not all builds stable. Checking again in 30s")
 		time.Sleep(30 * time.Second)
 	}
 }
 
-// This is called on a potentially mergeable PR
-func (e *e2eTester) runE2ETests(pr *github_api.PullRequest, issue *github_api.Issue) error {
-	e.locked(func() { e.state.CurrentPR = prInfo(pr) })
-	defer e.locked(func() { e.state.CurrentPR = nil })
+// Run is called on a potentially mergable PR. It will do two things
+//  - check if the internal e2e jobs are successful
+//  - run the github e2e job again and merge if it is successful
+func (e *E2ETester) Run(pr *github_api.PullRequest, issue *github_api.Issue) error {
+	e.locked(func() { e.State.CurrentPR = prInfo(pr) })
+	defer e.locked(func() { e.State.CurrentPR = nil })
 	e.msg("Considering PR %d", *pr.Number)
 
 	e.waitForStableBuilds()
 
 	// if there is a 'e2e-not-required' label, just merge it.
-	if len(e.Config.DontRequireE2ELabel) > 0 && github_util.HasLabel(issue.Labels, e.Config.DontRequireE2ELabel) {
-		e.msg("Merging %d since %s is set", *pr.Number, e.Config.DontRequireE2ELabel)
-		return e.Config.MergePR(pr, "submit-queue")
+	if len(e.DontRequireE2ELabel) > 0 && github_util.HasLabel(issue.Labels, e.DontRequireE2ELabel) {
+		e.msg("Merging %d since %s is set", *pr.Number, e.DontRequireE2ELabel)
+		return e.MergePR(pr, "submit-queue")
 	}
 
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
@@ -150,25 +164,25 @@ func (e *e2eTester) runE2ETests(pr *github_api.PullRequest, issue *github_api.Is
 	return e.Config.MergePR(pr, "submit-queue")
 }
 
-func (e *e2eTester) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (e *E2ETester) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var (
 		data []byte
 		err  error
 	)
 	e.locked(func() {
-		if e.state != nil {
-			data, err = json.MarshalIndent(e.state, "", "\t")
+		if e.State != nil {
+			data, err = json.MarshalIndent(e.State, "", "\t")
 		} else {
 			data = []byte("{}")
 		}
 	})
 
 	if err != nil {
-		glog.Errorf("Failed to encode status: %#v %v", e.state, err)
+		glog.Errorf("Failed to encode status: %#v %v", e.State, err)
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))
-		res.Write([]byte(fmt.Sprintf("%#v", e.state)))
+		res.Write([]byte(fmt.Sprintf("%#v", e.State)))
 	} else {
 		res.Header().Set("Content-type", "application/json")
 		res.WriteHeader(http.StatusOK)

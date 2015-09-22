@@ -48,8 +48,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (p *PathLabelMunger) Name() string { return "path-label" }
 
+// Initialize will initialize the munger
+func (p *PathLabelMunger) Initialize(config *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
-func (p *PathLabelMunger) AddFlags(cmd *cobra.Command) {
+func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "path-label.txt", "file containing the pathname to label mappings")
 }
 

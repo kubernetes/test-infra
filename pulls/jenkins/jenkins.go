@@ -94,8 +94,8 @@ func (j *JenkinsClient) GetJob(name string) (*Queue, error) {
 	return q, nil
 }
 
-// GetLastCompletedBuild does just that
-func (j *JenkinsClient) GetLastCompletedBuild(name string) (*Job, error) {
+// getLastCompletedBuild does just that
+func (j *JenkinsClient) getLastCompletedBuild(name string) (*Job, error) {
 	data, err := j.request("/job/" + name + "/lastCompletedBuild/api/json")
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (j *JenkinsClient) GetLastCompletedBuild(name string) (*Job, error) {
 // IsBuildStable tells if the given job in the last completed build was
 // a success.
 func (j *JenkinsClient) IsBuildStable(name string) (bool, error) {
-	q, err := j.GetLastCompletedBuild(name)
+	q, err := j.getLastCompletedBuild(name)
 	if err != nil {
 		return false, err
 	}

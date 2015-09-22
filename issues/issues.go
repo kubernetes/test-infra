@@ -26,9 +26,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// IssueMunger is the interface which all mungers must implement to register
 type IssueMunger interface {
 	MungeIssue(config *github_util.Config, issue *github_api.Issue)
-	AddFlags(cmd *cobra.Command)
+	AddFlags(cmd *cobra.Command, config *github_util.Config)
+	Initialize(*github_util.Config) error
 	Name() string
 }
 
@@ -48,11 +50,16 @@ func GetAllMungers() []IssueMunger {
 	return out
 }
 
-func SetupMungers(requestedMungers []string) error {
+// InitializeMungers will call munger.Initialize() for all mungers
+// requested in --issue-mungers
+func InitializeMungers(requestedMungers []string, config *github_util.Config) error {
 	for _, name := range requestedMungers {
 		munger, found := mungerMap[name]
 		if !found {
 			return fmt.Errorf("couldn't find a munger named: %s", name)
+		}
+		if err := munger.Initialize(config); err != nil {
+			return err
 		}
 		mungers = append(mungers, munger)
 	}

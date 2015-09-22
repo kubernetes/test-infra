@@ -60,8 +60,11 @@ func lgtmTime(events []github.IssueEvent) *time.Time {
 // Name is the name usable in --pr-mungers
 func (LGTMAfterCommitMunger) Name() string { return "lgtm-after-commit" }
 
+// Initialize will initialize the munger
+func (LGTMAfterCommitMunger) Initialize(config *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
-func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command) {}
+func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (LGTMAfterCommitMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
