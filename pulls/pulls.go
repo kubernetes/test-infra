@@ -27,6 +27,9 @@ import (
 
 var mungerMap = map[string]config.PRMunger{}
 
+// GetAllMungers returns a slice of all registered mungers. This list is
+// completely independant of the mungers selected at runtime in --pr-mungers.
+// This is all possible mungers.
 func GetAllMungers() []config.PRMunger {
 	out := []config.PRMunger{}
 	for _, munger := range mungerMap {
@@ -40,22 +43,25 @@ func getMungers(mungers []string) ([]config.PRMunger, error) {
 	for ix := range mungers {
 		munger, found := mungerMap[mungers[ix]]
 		if !found {
-			return nil, fmt.Errorf("Couldn't find a munger named: %s", mungers[ix])
+			return nil, fmt.Errorf("couldn't find a munger named: %s", mungers[ix])
 		}
 		result[ix] = munger
 	}
 	return result, nil
 }
 
+// RegisterMunger should be called in `init()` by each munger to make itself
+// available by name
 func RegisterMunger(munger config.PRMunger) error {
 	if _, found := mungerMap[munger.Name()]; found {
-		return fmt.Errorf("A munger with that name (%s) already exists", munger.Name())
+		return fmt.Errorf("a munger with that name (%s) already exists", munger.Name())
 	}
 	mungerMap[munger.Name()] = munger
 	glog.Infof("Registered %#v at %s", munger, munger.Name())
 	return nil
 }
 
+// RegisterMungerOrDie will call RegisterMunger but will be fatal on error
 func RegisterMungerOrDie(munger config.PRMunger) {
 	if err := RegisterMunger(munger); err != nil {
 		glog.Fatalf("Failed to register munger: %s", err)
@@ -87,6 +93,8 @@ func mungePR(config *config.MungeConfig, pr *github_api.PullRequest, issue *gith
 	return nil
 }
 
+// MungePullRequests is the main function which asks that each munger be called
+// for each PR
 func MungePullRequests(config *config.MungeConfig) error {
 	mfunc := func(pr *github_api.PullRequest, issue *github_api.Issue) error {
 		return mungePR(config, pr, issue)

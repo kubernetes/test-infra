@@ -33,10 +33,13 @@ func init() {
 	RegisterMungerOrDie(OkToTestMunger{})
 }
 
+// Name is the name usable in --pr-mungers
 func (OkToTestMunger) Name() string { return "ok-to-test" }
 
+// AddFlags will add any request flags to the cobra `cmd`
 func (OkToTestMunger) AddFlags(cmd *cobra.Command) {}
 
+// MungePullRequest is the workhorse the will actually make updates to the PR
 func (OkToTestMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return

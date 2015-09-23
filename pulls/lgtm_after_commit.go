@@ -26,6 +26,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// LGTMAfterCommitMunger will remove the LGTM flag from an PR which has been
+// updated since the reviewer added LGTM
 type LGTMAfterCommitMunger struct{}
 
 func init() {
@@ -56,10 +58,13 @@ func lgtmTime(events []github.IssueEvent) *time.Time {
 	return lgtmTime
 }
 
+// Name is the name usable in --pr-mungers
 func (LGTMAfterCommitMunger) Name() string { return "lgtm-after-commit" }
 
+// AddFlags will add any request flags to the cobra `cmd`
 func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command) {}
 
+// MungePullRequest is the workhorse the will actually make updates to the PR
 func (LGTMAfterCommitMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	lastModified := lastModifiedTime(commits)
 	lgtmTime := lgtmTime(events)

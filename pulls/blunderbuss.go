@@ -38,7 +38,7 @@ type BlunderbussConfig struct {
 	PrefixMap map[string][]string `json:"prefixMap,omitempty" yaml:"prefixMap,omitempty"`
 }
 
-func (b *BlunderbussConfig) FindOwners(filename string) weightMap {
+func (b *BlunderbussConfig) findOwners(filename string) weightMap {
 	wm := weightMap{}
 	for prefix, ownersList := range b.PrefixMap {
 		if strings.HasPrefix(filename, prefix) {
@@ -52,6 +52,8 @@ func (b *BlunderbussConfig) FindOwners(filename string) weightMap {
 	return wm
 }
 
+// BlunderbussMunger will assign issues to users based on the config file
+// provided by --blunderbuss-config.
 type BlunderbussMunger struct {
 	config                *BlunderbussConfig
 	blunderbussConfigFile string
@@ -63,8 +65,10 @@ func init() {
 	RegisterMungerOrDie(blunderbuss)
 }
 
+// Name is the name usable in --pr-mungers
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
+// AddFlags will add any request flags to the cobra `cmd`
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
@@ -96,6 +100,7 @@ func describeUser(u *github.User) string {
 
 }
 
+// MungePullRequest is the workhorse the will actually make updates to the PR
 func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if b.config == nil {
 		b.loadConfig()
@@ -120,7 +125,7 @@ func (b *BlunderbussMunger) MungePullRequest(config *config.MungeConfig, pr *git
 			// makes three buckets, we shouldn't have many 10k+
 			// line changes.
 			fileWeight = int64(math.Log10(float64(fileWeight))) + 1
-			fileOwners := b.config.FindOwners(*file.Filename)
+			fileOwners := b.config.findOwners(*file.Filename)
 			if len(fileOwners) == 0 {
 				glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 			}

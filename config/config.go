@@ -25,6 +25,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// MungeConfig is the configuration of the mungers. It has an embedded GithubConfig
+// which makes it useful to perform github actions
 type MungeConfig struct {
 	github.GithubConfig
 	MinIssueNumber   int
@@ -37,12 +39,16 @@ type MungeConfig struct {
 	PRMungers    []PRMunger
 }
 
+// IssueMunger is the interface which must be implemented to be a munger
+// available in --issue-mungers
 type IssueMunger interface {
 	MungeIssue(config *MungeConfig, issue *github_api.Issue)
 	AddFlags(cmd *cobra.Command)
 	Name() string
 }
 
+// PRMunger is the interface which must be implemented to be a munger
+// available in --issue-mungers
 type PRMunger interface {
 	// Take action on a specific pull request includes:
 	//   * The config for mungers

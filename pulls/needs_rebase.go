@@ -25,6 +25,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NeedsRebaseMunger will add the "needs-rebase" label to any issue which is
+// unable to be automatically merged
 type NeedsRebaseMunger struct{}
 
 const needsRebase = "needs-rebase"
@@ -33,10 +35,13 @@ func init() {
 	RegisterMungerOrDie(NeedsRebaseMunger{})
 }
 
+// Name is the name usable in --pr-mungers
 func (NeedsRebaseMunger) Name() string { return "needs-rebase" }
 
+// AddFlags will add any request flags to the cobra `cmd`
 func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command) {}
 
+// MungePullRequest is the workhorse the will actually make updates to the PR
 func (NeedsRebaseMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	mergeable, err := config.IsPRMergeable(pr)
 	if err != nil {

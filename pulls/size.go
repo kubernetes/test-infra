@@ -31,20 +31,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type PRSizeMunger struct {
+// SizeMunger will update a label on a PR based on how many lines are changed.
+// It will exclude certain files in it's calculations based on the config
+// file provided in --generated-files-config
+type SizeMunger struct {
 	generatedFilesFile string
 	genFiles           *sets.String
 	genPrefixes        *[]string
 }
 
 func init() {
-	RegisterMungerOrDie(&PRSizeMunger{})
+	RegisterMungerOrDie(&SizeMunger{})
 }
 
-func (PRSizeMunger) Name() string { return "size" }
+// Name is the name usable in --pr-mungers
+func (SizeMunger) Name() string { return "size" }
 
-func (p *PRSizeMunger) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&p.generatedFilesFile, "generated-files-config", "generated-files.txt", "file containing the pathname to label mappings")
+// AddFlags will add any request flags to the cobra `cmd`
+func (s *SizeMunger) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&s.generatedFilesFile, "generated-files-config", "generated-files.txt", "file containing the pathname to label mappings")
 }
 
 const labelSizePrefix = "size/"
@@ -57,7 +62,7 @@ const labelSizePrefix = "size/"
 // our results are slightly wrong, who cares? Instead look for the
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
-func (s *PRSizeMunger) getGeneratedFiles(config *config.MungeConfig) {
+func (s *SizeMunger) getGeneratedFiles(config *config.MungeConfig) {
 	if s.genFiles != nil {
 		return
 	}
@@ -117,7 +122,8 @@ func (s *PRSizeMunger) getGeneratedFiles(config *config.MungeConfig) {
 	return
 }
 
-func (s *PRSizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+// MungePullRequest is the workhorse the will actually make updates to the PR
+func (s *SizeMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	s.getGeneratedFiles(config)
 	genFiles := *s.genFiles
 	genPrefixes := *s.genPrefixes

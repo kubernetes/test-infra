@@ -35,10 +35,13 @@ func init() {
 	RegisterMungerOrDie(PingCIMunger{})
 }
 
+// Name is the name usable in --pr-mungers
 func (PingCIMunger) Name() string { return "ping-ci" }
 
+// AddFlags will add any request flags to the cobra `cmd`
 func (PingCIMunger) AddFlags(cmd *cobra.Command) {}
 
+// MungePullRequest is the workhorse the will actually make updates to the PR
 func (PingCIMunger) MungePullRequest(config *config.MungeConfig, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
 	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
