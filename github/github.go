@@ -140,9 +140,9 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&config.useMemoryCache, "use-http-cache", false, "If true, use a client side HTTP cache for API requests.")
 	cmd.PersistentFlags().StringVar(&config.Org, "organization", "kubernetes", "The github organization to scan")
 	cmd.PersistentFlags().StringVar(&config.Project, "project", "kubernetes", "The github project to scan")
-	// Global limit is 5000 Q/Hour, try to only use 1800 to make room for other apps
-	cmd.PersistentFlags().Float32Var(&config.RateLimit, "rate-limit", 1800, "Requests per hour we should allow")
-	cmd.PersistentFlags().IntVar(&config.RateLimitBurst, "rate-limit-burst", 900, "Requests we allow to burst over the rate limit")
+	// Global limit is 5000 Q/Hour, try to only use 4000 to make room for other apps
+	cmd.PersistentFlags().Float32Var(&config.RateLimit, "rate-limit", 4000, "Requests per hour we should allow")
+	cmd.PersistentFlags().IntVar(&config.RateLimitBurst, "rate-limit-burst", 2000, "Requests we allow to burst over the rate limit")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 

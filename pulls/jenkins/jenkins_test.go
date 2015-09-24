@@ -91,6 +91,10 @@ func TestGetLatestCompletedBuild(t *testing.T) {
 		if !reflect.DeepEqual(job, test.obj) {
 			t.Errorf("expected:\n%#v\nsaw:%#v\n", test.obj, job)
 		}
+		stable, err := client.IsBuildStable(test.name)
+		if stable != test.stable {
+			t.Errorf("expected stable=%v but got %v", test.stable, stable)
+		}
 	}
 }
 

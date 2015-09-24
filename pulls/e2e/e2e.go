@@ -21,73 +21,20 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
-	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/pulls/jenkins"
 
 	"github.com/golang/glog"
-	github_api "github.com/google/go-github/github"
 )
-
-// PRInfo explicitly collects the fields we wish to encode via JSON.
-type PRInfo struct {
-	Number *int    `json:"number"`
-	URL    *string `json:"html_url"`
-}
-
-func prInfo(pr *github_api.PullRequest) *PRInfo {
-	var out PRInfo
-	if pr != nil {
-		out.Number = pr.Number
-		out.URL = pr.HTMLURL
-	}
-	return &out
-}
-
-// ExternalState is the information used by the web frontend
-type ExternalState struct {
-	// exported so that the json marshaller will print them
-	CurrentPR   *PRInfo
-	Message     []string
-	Err         error
-	BuildStatus map[string]string
-	Whitelist   []string
-}
 
 // E2ETester is the object which will contact a jenkins instance and get
 // information about recent jobs
 type E2ETester struct {
-	JenkinsHost         string
-	JenkinsJobs         []string
-	DontRequireE2ELabel string
+	JenkinsHost string
+	JenkinsJobs []string
+
 	sync.Mutex
-	State  *ExternalState
-	Config *github_util.Config
-}
-
-func (e *E2ETester) msg(msg string, args ...interface{}) {
-	e.Lock()
-	defer e.Unlock()
-	if len(e.State.Message) >= 50 {
-		e.State.Message = e.State.Message[1:]
-	}
-	expanded := fmt.Sprintf(msg, args...)
-	e.State.Message = append(e.State.Message, fmt.Sprintf("%v: %v", time.Now().UTC(), expanded))
-	glog.V(2).Info(expanded)
-}
-
-func (e *E2ETester) error(err error) {
-	e.Lock()
-	defer e.Unlock()
-	e.State.Err = err
-}
-
-// SetWhitelist will set the complete whitelist in the ExternalState.
-func (e *E2ETester) SetWhitelist(whitelist []string) {
-	e.Lock()
-	defer e.Unlock()
-	e.State.Whitelist = whitelist
+	BuildStatus map[string]string // protect by mutex
 }
 
 func (e *E2ETester) locked(f func()) {
@@ -97,18 +44,22 @@ func (e *E2ETester) locked(f func()) {
 }
 
 func (e *E2ETester) setBuildStatus(build, status string) {
-	e.locked(func() { e.State.BuildStatus[build] = status })
+	e.Lock()
+	defer e.Unlock()
+	e.BuildStatus[build] = status
 }
 
-func (e *E2ETester) checkBuilds() (allStable bool) {
+// Stable is called to make sure all of the jenkins jobs are stable
+func (e *E2ETester) Stable() bool {
 	// Test if the build is stable in Jenkins
 	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
-	allStable = true
+
+	allStable := true
 	for _, build := range e.JenkinsJobs {
-		e.msg("Checking build stability for %s", build)
+		glog.V(2).Infof("Checking build stability for %s", build)
 		stable, err := jenkinsClient.IsBuildStable(build)
 		if err != nil {
-			e.msg("Error checking build %v: %v", build, err)
+			glog.Errorf("Error checking build %v : %v", build, err)
 			e.setBuildStatus(build, "Error checking: "+err.Error())
 			allStable = false
 			continue
@@ -123,66 +74,21 @@ func (e *E2ETester) checkBuilds() (allStable bool) {
 	return allStable
 }
 
-func (e *E2ETester) waitForStableBuilds() {
-	for !e.checkBuilds() {
-		e.msg("Not all builds stable. Checking again in 30s")
-		time.Sleep(30 * time.Second)
-	}
-}
-
-// Run is called on a potentially mergable PR. It will do two things
-//  - check if the internal e2e jobs are successful
-//  - run the github e2e job again and merge if it is successful
-func (e *E2ETester) Run(pr *github_api.PullRequest, issue *github_api.Issue) error {
-	e.locked(func() { e.State.CurrentPR = prInfo(pr) })
-	defer e.locked(func() { e.State.CurrentPR = nil })
-	e.msg("Considering PR %d", *pr.Number)
-
-	e.waitForStableBuilds()
-
-	// if there is a 'e2e-not-required' label, just merge it.
-	if len(e.DontRequireE2ELabel) > 0 && github_util.HasLabel(issue.Labels, e.DontRequireE2ELabel) {
-		e.msg("Merging %d since %s is set", *pr.Number, e.DontRequireE2ELabel)
-		return e.MergePR(pr, "submit-queue")
-	}
-
-	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
-	if err := e.Config.WriteComment(*pr.Number, body); err != nil {
-		e.error(err)
-		return err
-	}
-
-	// Wait for the build to start
-	_ = e.Config.WaitForPending(pr)
-	_ = e.Config.WaitForNotPending(pr)
-
-	// Wait for the status to go back to 'success'
-	if ok := e.Config.IsStatusSuccess(pr, []string{}); !ok {
-		e.msg("Status after build is not 'success', skipping PR %d", *pr.Number)
-		return nil
-	}
-	return e.Config.MergePR(pr, "submit-queue")
-}
-
 func (e *E2ETester) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var (
 		data []byte
 		err  error
 	)
 	e.locked(func() {
-		if e.State != nil {
-			data, err = json.MarshalIndent(e.State, "", "\t")
-		} else {
-			data = []byte("{}")
-		}
+		data, err = json.MarshalIndent(e.BuildStatus, "", "\t")
 	})
 
 	if err != nil {
-		glog.Errorf("Failed to encode status: %#v %v", e.State, err)
+		glog.Errorf("Failed to encode status: %#v %v", e.BuildStatus, err)
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))
-		res.Write([]byte(fmt.Sprintf("%#v", e.State)))
+		res.Write([]byte(fmt.Sprintf("%#v", e.BuildStatus)))
 	} else {
 		res.Header().Set("Content-type", "application/json")
 		res.WriteHeader(http.StatusOK)

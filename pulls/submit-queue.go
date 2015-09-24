@@ -82,11 +82,9 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 	}
 
 	e2e := &e2e.E2ETester{
-		Config:      config,
 		JenkinsJobs: sq.JenkinsJobs,
-		State: &e2e.ExternalState{
-			BuildStatus: map[string]string{},
-		},
+		JenkinsHost: sq.JenkinsHost,
+		BuildStatus: map[string]string{},
 	}
 	sq.e2e = e2e
 	if len(sq.Address) > 0 {
@@ -96,8 +94,7 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 		http.Handle("/api", e2e)
 		go http.ListenAndServe(sq.Address, nil)
 	}
-	wl := sq.RefreshWhitelist(config)
-	e2e.SetWhitelist(wl.List())
+	sq.RefreshWhitelist(config)
 	return nil
 }
 
@@ -190,10 +187,32 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		return
 	}
 
-	if err := e2e.Run(pr, issue); err != nil {
-		glog.Errorf("Error running e2e test: %v", err)
+	if !e2e.Stable() {
+		glog.Errorf("Error jenkins e2e tests not stable: %v", err)
 		return
 	}
 
+	// if there is a 'e2e-not-required' label, just merge it.
+	if len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
+		config.MergePR(pr, "submit-queue")
+		return
+	}
+
+	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
+	if err := config.WriteComment(*pr.Number, body); err != nil {
+		return
+	}
+
+	// Wait for the build to start
+	_ = config.WaitForPending(pr)
+	_ = config.WaitForNotPending(pr)
+
+	// Wait for the status to go back to 'success'
+	if ok := config.IsStatusSuccess(pr, contexts); !ok {
+		glog.Errorf("Status after build is not 'success', skipping PR %d", *pr.Number)
+		return
+	}
+
+	config.MergePR(pr, "submit-queue")
 	return
 }

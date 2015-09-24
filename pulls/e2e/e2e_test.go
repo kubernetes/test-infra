@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"testing"
 
 	"k8s.io/contrib/mungegithub/pulls/jenkins"
@@ -118,41 +117,14 @@ func TestCheckBuilds(t *testing.T) {
 				"foo",
 				"bar",
 			},
-			State: &ExternalState{
-				BuildStatus: map[string]string{},
-			},
+			BuildStatus: map[string]string{},
 		}
-		stable := e2e.checkBuilds()
+		stable := e2e.Stable()
 		if stable != test.expectStable {
 			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)
 		}
-		if !reflect.DeepEqual(test.expectedStatus, e2e.State.BuildStatus) {
-			t.Errorf("expected: %v, saw: %v", test.expectedStatus, e2e.State.BuildStatus)
+		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
+			t.Errorf("expected: %v, saw: %v", test.expectedStatus, e2e.BuildStatus)
 		}
-	}
-}
-
-func TestMsg(t *testing.T) {
-	e2e := &E2ETester{State: &ExternalState{}}
-	for i := 1; i <= 50; i++ {
-		e2e.msg("FOO: %d", i)
-		if len(e2e.State.Message) != i {
-			t.Errorf("unexpected message list length. expected %d, saw %d.", i, len(e2e.State.Message))
-		}
-		expectedMsg := fmt.Sprintf("FOO: %d", i)
-		if !strings.Contains(e2e.State.Message[i-1], expectedMsg) {
-			t.Errorf("expected: %s, saw: %s", expectedMsg, e2e.State.Message[i-1])
-		}
-	}
-	// test clipping
-	e2e.msg("FOO: 51")
-	if len(e2e.State.Message) != 50 {
-		t.Errorf("expected to clip at 50, len is %d", len(e2e.State.Message))
-	}
-	if !strings.Contains(e2e.State.Message[49], "FOO: 51") {
-		t.Errorf("expected to find FOO: 51, found: %s", e2e.State.Message[49])
-	}
-	if !strings.Contains(e2e.State.Message[0], "FOO: 2") {
-		t.Errorf("expected to find FOO: 2, found: %s", e2e.State.Message[49])
 	}
 }
