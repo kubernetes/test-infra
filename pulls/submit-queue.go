@@ -19,7 +19,6 @@ package pulls
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -110,26 +109,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github_util.Config) 
 	sq.addWhitelistCommand(cmd, config)
 }
 
-func (sq *SubmitQueue) validateLGTMAfterPush(config *github_util.Config, pr *github_api.PullRequest, lastModifiedTime *time.Time) (bool, error) {
-	var lgtmTime *time.Time
-	events, err := config.GetAllEventsForPR(*pr.Number)
-	if err != nil {
-		return false, err
-	}
-	for ix := range events {
-		event := &events[ix]
-		if *event.Event == "labeled" && *event.Label.Name == "lgtm" {
-			if lgtmTime == nil || event.CreatedAt.After(*lgtmTime) {
-				lgtmTime = event.CreatedAt
-			}
-		}
-	}
-	if lgtmTime == nil {
-		return false, fmt.Errorf("couldn't find time for LGTM label, this shouldn't happen, skipping PR: %d", *pr.Number)
-	}
-	return lastModifiedTime.Before(*lgtmTime), nil
-}
-
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue, commits []github_api.RepositoryCommit, events []github_api.IssueEvent) {
 	e2e := sq.e2e
@@ -155,19 +134,16 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		config.RemoveLabel(*pr.Number, needsOKToMergeLabel)
 	}
 
-	lastModifiedTime, err := config.LastModifiedTime(*pr.Number)
-	if err != nil {
-		glog.Errorf("Failed to get last modified time, skipping PR: %d", *pr.Number)
+	lastModifiedTime := github_util.LastModifiedTime(commits)
+	lgtmTime := github_util.LabelTime("lgtm", events)
+
+	if lastModifiedTime == nil || lgtmTime == nil {
+		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified")
 		return
 	}
-	if ok, err := sq.validateLGTMAfterPush(config, pr, lastModifiedTime); err != nil {
-		glog.Errorf("Error validating LGTM: %v, Skipping: %d", err, *pr.Number)
-		return
-	} else if !ok {
-		glog.Errorf("PR pushed after LGTM, attempting to remove LGTM and skipping")
-		staleLGTMBody := "LGTM was before last commit, removing LGTM"
-		config.WriteComment(*pr.Number, staleLGTMBody)
-		config.RemoveLabel(*pr.Number, "lgtm")
+
+	if lastModifiedTime.After(*lgtmTime) {
+		glog.Errorf("PR pushed after LGTM will not merge")
 		return
 	}
 
@@ -188,7 +164,6 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	if !e2e.Stable() {
-		glog.Errorf("Error jenkins e2e tests not stable: %v", err)
 		return
 	}
 

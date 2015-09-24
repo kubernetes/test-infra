@@ -214,6 +214,31 @@ func (config *Config) SetClient(client *github.Client) {
 	config.client = client
 }
 
+// LastModifiedTime returns the date of the latest commit
+func LastModifiedTime(commits []github.RepositoryCommit) *time.Time {
+	var lastModified *time.Time
+	for _, commit := range commits {
+		if lastModified == nil || commit.Commit.Committer.Date.After(*lastModified) {
+			lastModified = commit.Commit.Committer.Date
+		}
+	}
+	return lastModified
+}
+
+// LabelTime returns the last time the request label was added to an issue.
+// If the label was never added you will get the 0 time.
+func LabelTime(label string, events []github.IssueEvent) *time.Time {
+	var labelTime *time.Time
+	for _, event := range events {
+		if *event.Event == "labeled" && *event.Label.Name == label {
+			if labelTime == nil || event.CreatedAt.After(*labelTime) {
+				labelTime = event.CreatedAt
+			}
+		}
+	}
+	return labelTime
+}
+
 // HasLabel returns if the label `name` is in the array of `labels`
 func HasLabel(labels []github.Label, name string) bool {
 	for i := range labels {

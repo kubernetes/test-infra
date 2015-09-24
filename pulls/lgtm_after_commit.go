@@ -17,10 +17,9 @@ limitations under the License.
 package pulls
 
 import (
-	"time"
-
 	github_util "k8s.io/contrib/mungegithub/github"
 
+	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
@@ -31,30 +30,6 @@ type LGTMAfterCommitMunger struct{}
 
 func init() {
 	RegisterMungerOrDie(LGTMAfterCommitMunger{})
-}
-
-func lastModifiedTime(list []github.RepositoryCommit) *time.Time {
-	var lastModified *time.Time
-	for ix := range list {
-		item := list[ix]
-		if lastModified == nil || item.Commit.Committer.Date.After(*lastModified) {
-			lastModified = item.Commit.Committer.Date
-		}
-	}
-	return lastModified
-}
-
-func lgtmTime(events []github.IssueEvent) *time.Time {
-	var lgtmTime *time.Time
-	for ix := range events {
-		event := &events[ix]
-		if *event.Event == "labeled" && *event.Label.Name == "lgtm" {
-			if lgtmTime == nil || event.CreatedAt.After(*lgtmTime) {
-				lgtmTime = event.CreatedAt
-			}
-		}
-	}
-	return lgtmTime
 }
 
 // Name is the name usable in --pr-mungers
@@ -68,14 +43,15 @@ func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command, config *github_util.Co
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (LGTMAfterCommitMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
-	lastModified := lastModifiedTime(commits)
-	lgtmTime := lgtmTime(events)
-
-	if lastModified == nil || lgtmTime == nil {
+	if !github_util.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
 
-	if !github_util.HasLabel(issue.Labels, "lgtm") {
+	lastModified := github_util.LastModifiedTime(commits)
+	lgtmTime := github_util.LabelTime("lgtm", events)
+
+	if lastModified == nil || lgtmTime == nil {
+		glog.Errorf("PR %d unable to determine lastModified or lgtmTime", *pr.Number)
 		return
 	}
 
