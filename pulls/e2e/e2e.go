@@ -17,9 +17,6 @@ limitations under the License.
 package e2e
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"sync"
 
 	"k8s.io/contrib/mungegithub/pulls/jenkins"
@@ -41,6 +38,18 @@ func (e *E2ETester) locked(f func()) {
 	e.Lock()
 	defer e.Unlock()
 	f()
+}
+
+// GetBuildStatus returns the build status. This map is a copy and is thus safe
+// for the caller to use in any way.
+func (e *E2ETester) GetBuildStatus() map[string]string {
+	e.Lock()
+	defer e.Unlock()
+	out := map[string]string{}
+	for k, v := range e.BuildStatus {
+		out[k] = v
+	}
+	return out
 }
 
 func (e *E2ETester) setBuildStatus(build, status string) {
@@ -72,26 +81,4 @@ func (e *E2ETester) Stable() bool {
 		}
 	}
 	return allStable
-}
-
-func (e *E2ETester) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	var (
-		data []byte
-		err  error
-	)
-	e.locked(func() {
-		data, err = json.MarshalIndent(e.BuildStatus, "", "\t")
-	})
-
-	if err != nil {
-		glog.Errorf("Failed to encode status: %#v %v", e.BuildStatus, err)
-		res.Header().Set("Content-type", "text/plain")
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte(err.Error()))
-		res.Write([]byte(fmt.Sprintf("%#v", e.BuildStatus)))
-	} else {
-		res.Header().Set("Content-type", "application/json")
-		res.WriteHeader(http.StatusOK)
-		res.Write(data)
-	}
 }

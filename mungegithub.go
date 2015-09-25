@@ -64,6 +64,9 @@ func doMungers(config *mungeConfig) error {
 		}
 		if len(config.PRMungersList) > 0 {
 			glog.Infof("Running PR mungers")
+			if err := pulls.EachLoop(&config.Config); err != nil {
+				glog.Errorf("Error in EachLoop: %v", err)
+			}
 			if err := pulls.MungePullRequests(&config.Config); err != nil {
 				glog.Errorf("Error munging PRs: %v", err)
 			}

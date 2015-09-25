@@ -38,6 +38,9 @@ func (LGTMAfterCommitMunger) Name() string { return "lgtm-after-commit" }
 // Initialize will initialize the munger
 func (LGTMAfterCommitMunger) Initialize(config *github_util.Config) error { return nil }
 
+// EachLoop is called at the start of every munge loop
+func (LGTMAfterCommitMunger) EachLoop(_ *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
 func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {}
 

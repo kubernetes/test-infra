@@ -40,6 +40,9 @@ func (PingCIMunger) Name() string { return "ping-ci" }
 // Initialize will initialize the munger
 func (PingCIMunger) Initialize(config *github_util.Config) error { return nil }
 
+// EachLoop is called at the start of every munge loop
+func (PingCIMunger) EachLoop(_ *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
 func (PingCIMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {}
 

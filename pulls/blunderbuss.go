@@ -69,15 +69,7 @@ func init() {
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
 // Initialize will initialize the munger
-func (b *BlunderbussMunger) Initialize(config *github_util.Config) error { return nil }
-
-// AddFlags will add any request flags to the cobra `cmd`
-func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
-	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
-	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
-}
-
-func (b *BlunderbussMunger) loadConfig() {
+func (b *BlunderbussMunger) Initialize(config *github_util.Config) error {
 	if len(b.blunderbussConfigFile) == 0 {
 		glog.Fatalf("--blunderbuss-config is required with the blunderbuss munger")
 	}
@@ -92,6 +84,16 @@ func (b *BlunderbussMunger) loadConfig() {
 		glog.Fatalf("Failed to load blunderbuss config: %v", err)
 	}
 	glog.V(4).Infof("Loaded config from %s", b.blunderbussConfigFile)
+	return nil
+}
+
+// EachLoop is called at the start of every munge loop
+func (b *BlunderbussMunger) EachLoop(_ *github_util.Config) error { return nil }
+
+// AddFlags will add any request flags to the cobra `cmd`
+func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
+	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
+	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 }
 
 // u may be nil.
@@ -105,9 +107,6 @@ func describeUser(u *github.User) string {
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (b *BlunderbussMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
-	if b.config == nil {
-		b.loadConfig()
-	}
 	if !b.blunderbussReassign && issue.Assignee != nil {
 		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
 		return

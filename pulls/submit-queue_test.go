@@ -121,7 +121,6 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		sq := &SubmitQueue{}
 		config := &github_util.Config{}
 		client, server, mux := github_test.InitTest()
 		config.Org = "o"
@@ -138,10 +137,25 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-			ok, err := sq.validateLGTMAfterPush(config, &github.PullRequest{Number: intPtr(1)}, &test.lastModified)
+
+			commits, err := config.GetFilledCommits(1)
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("Unexpected error getting filled commits: %v", err)
 			}
+
+			events, err := config.GetAllEventsForPR(1)
+			if err != nil {
+				t.Errorf("Unexpected error getting events commits: %v", err)
+			}
+			lastModifiedTime := github_util.LastModifiedTime(commits)
+			lgtmTime := github_util.LabelTime("lgtm", events)
+
+			if lastModifiedTime == nil || lgtmTime == nil {
+				t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
+			}
+
+			ok := !lastModifiedTime.After(*lgtmTime)
+
 			if ok != test.shouldPass {
 				t.Errorf("expected: %v, saw: %v", test.shouldPass, ok)
 			}

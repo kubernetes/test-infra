@@ -1,48 +1,170 @@
-var app = angular.module('SubmitQueueApp', ['ngMaterial']);
+angular.module('SubmitQueueModule', ['ngMaterial']);
 
-var SubmitQueueApp = function(http, scope) {
-    this.http = http;
-    this.scope = scope;
-};
+angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', SQCntl]);
 
-SubmitQueueApp.prototype.refresh = function() {
-    this.http.get("/api")
-    .success(function(data) {
-	    this.data = data;
-	    this.data.Message.reverse();
-	    this.builds = this.getBuilds();
-	    console.log(this.builds);
-	}.bind(this))
-    .error(function(data) {
-            console.log("error fetching api");
-	    console.log(data);
-	});
-};
+function SQCntl(dataService) {
+  var self = this;
+  self.prDisplayValue = "";
+  self.prs = {};
+  self.users = {};
+  self.builds = {};
+  self.querySearch = querySearch;
+  self.updatePRVisibility = updatePRVisibility
+  self.queryNum = 0;
+  // Load all api data
+  refresh();
 
-SubmitQueueApp.prototype.getBuilds = function() {
+  function refresh() {
+    dataService.getData().then(function successCallback(response) {
+      self.prs = getPRs(response.data.PRStatus);
+      updatePRVisibility()
+      self.prSearchTerms = getPRSearchTerms();
+      self.users = getUsers(response.data.UserInfo);
+      self.builds = getE2E(response.data.BuildStatus);
+    }, function errorCallback(response) {
+      console.log("Error: Getting SubmitQueue Status");
+    });
+  }
+
+  function updatePRVisibility() {
+    angular.forEach(self.prs, function(pr) {
+      if (pr.Login.toLowerCase().match(
+          "^" + self.prDisplayValue.toLowerCase()) || pr.Num.match("^" + self.prDisplayValue)) {
+        pr.show = true;
+      } else {
+        pr.show = false;
+      }
+    });
+  }
+
+  function getPRs(prs) {
     var result = [];
-    angular.forEach(this.data.BuildStatus, function(value, key) {
-	    var obj = {'name': key};
-	    if (value == 'Stable') {
-		// green check mark
-		obj['state'] = '\u2713';
-		obj['color'] = 'green'
-	    } else if (value == 'Not Stable') {
-		// red X mark
-		obj['state'] = '\u2716';
-		obj['color'] = 'red';
-	    } else {
-		obj['state'] = '?';
-		obj['color'] = 'black';
-	    }
-	    result.push(obj)
-	});
+    angular.forEach(prs, function(value, key) {
+      var obj = {
+        'Num': key
+      };
+      angular.forEach(value, function(value, key) {
+        obj[key] = value;
+      });
+      result.push(obj);
+    });
     return result;
-};
-    
+  }
 
-app.controller('AppCtrl', ['$scope', '$http', '$interval', function($scope, $http, $interval) {
-    $scope.controller = new SubmitQueueApp($http, $scope);
-    $scope.controller.refresh();
-    $interval($scope.controller.refresh.bind($scope.controller), 2500) 
-}]);
+  function getE2E(builds) {
+    var result = [];
+    angular.forEach(builds, function(value, key) {
+      var obj = {
+        'name': key
+      };
+      if (value == 'Stable') {
+        // green check mark
+        obj.state = '\u2713';
+        obj.color = 'green';
+      } else if (value == 'Not Stable') {
+        // red X mark
+        obj.state = '\u2716';
+        obj.color = 'red';
+        self.failedBuild = true;
+      } else {
+        obj.state = 'Error';
+        obj.color = 'red';
+        obj.msg = value;
+        self.failedBuild = true;
+      }
+      result.push(obj);
+    });
+    return result;
+  }
+
+  function getUsers(users) {
+    var result = [];
+    angular.forEach(users, function(value, key) {
+      var obj = {
+        'Login': key
+      };
+      angular.forEach(value, function(value, key) {
+        obj[key] = value;
+      });
+      result.push(obj);
+    });
+    return result;
+  }
+
+  function searchTermsContain(terms, value) {
+    found = false;
+    angular.forEach(terms, function(term) {
+      if (term.value === value) {
+        found = true;
+      }
+    });
+    return found;
+  }
+
+  function getPRSearchTerms() {
+    var result = [];
+    angular.forEach(self.prs, function(pr) {
+      llogin = pr.Login.toLowerCase();
+      if (!searchTermsContain(result, llogin)) {
+        var loginobj = {
+          value: llogin,
+          display: pr.Login,
+        };
+        result.push(loginobj);
+      }
+      if (!searchTermsContain(result, pr.Num)) {
+        var numobj = {
+          value: pr.Num,
+          display: pr.Num,
+        };
+        result.push(numobj);
+      }
+    });
+    console.log(result);
+    result.sort(compareSearchTerms)
+    return result;
+  }
+
+  /* We need to compare the 'value' to get a sane sort */
+  function compareSearchTerms(a, b) {
+    if (a.value > b.value) {
+      return 1;
+    }
+    if (a.value < b.value) {
+      return -1;
+    }
+    return 0;
+  }
+
+  function querySearch(query) {
+    var results = query ? self.prSearchTerms.filter(createFilterFor(query)) : self.prSearchTerms;
+    return results;
+  }
+
+  /**
+   * Create filter function for a query string
+   */
+  function createFilterFor(query) {
+    var lowercaseQuery = angular.lowercase(query);
+    return function filterFn(state) {
+      return (state.value.indexOf(lowercaseQuery) === 0);
+    };
+  }
+
+}
+
+function goToPerson(person) {
+  window.location.href = 'https://github.com/' + person;
+}
+
+angular.module('SubmitQueueModule').service('DataService', ['$http', dataService]);
+
+function dataService($http) {
+  return ({
+    getData: getData,
+  });
+
+  function getData() {
+    return $http.get('api');
+  }
+}

@@ -49,6 +49,9 @@ func (SizeMunger) Name() string { return "size" }
 // Initialize will initialize the munger
 func (SizeMunger) Initialize(config *github_util.Config) error { return nil }
 
+// EachLoop is called at the start of every munge loop
+func (SizeMunger) EachLoop(_ *github_util.Config) error { return nil }
+
 // AddFlags will add any request flags to the cobra `cmd`
 func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringVar(&s.generatedFilesFile, "generated-files-config", "generated-files.txt", "file containing the pathname to label mappings")

@@ -1,52 +1,86 @@
-<html lang="en" ng-app="SubmitQueueApp">
-  <head>
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.9.4/angular-material.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
-    <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="initial-scale=1" />
-  </head>
-  <body>
-    <div layout="column" ng-controller="AppCtrl" style="margin-top: 20px; width: 80%" offset="10">
-      <md-toolbar layout="row">
-	<div class="md-toolbar-tools">
-          <h1 flex="95">Submit Queue Status</h1>
-	  <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" style="height: 40px" />
-	</div>
-      </md-toolbar>
-      <div id="content" class="md-whiteframe-z2" style="padding: 20px">
-	  <h2>Build Status</h2>
-	  <md-chips ng-model="controller.builds" readonly="true">
-	    <md-chip-template>
-	      <span style="color: {{$chip.color}}">{{$chip.state}}</span> {{$chip.name}}
-	    </md-chip-template>
-	  </md-chips>
-	  <h2>Current PR</h2>
-	  <div>
-	    <a href="{{controller.data.CurrentPR.html_url}}">{{controller.data.CurrentPR.title}}</a>
-	  </div>
-          <h2>Messages</h2>
-	    <div flex="50" style="height: 300px; overflow-y: scroll">
-	      <div>
-		<div flex="95" class="inline" style="width: 70%"><b>Message</b></div>
-		<div class="inline"><b>Date</b></div>
-	      </div>
-	      <div ng-repeat="msg in controller.data.Message">
-		<div class="inline" style="width: 70%">{{msg.split("UTC:")[1]}}</div>
-		<div class="inline" >{{msg.split("UTC:")[0]}}</div>
-	      </div>
-	    </div>
-	  <h2>Whitelist</h2>
-	  <div ng-repeat="user in controller.data.Whitelist">
-	    {{user}}
-	  </div>
-      </div>
-      <!-- Angular Material Dependencies -->
-      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js"></script>
+<html lang="en">
 
-      <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.9.4/angular-material.min.js"></script>
-      <script src="script.js"></script>
+<head>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.1/angular-material.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" />
+  <meta name="viewport" content="initial-scale=1" />
+</head>
+
+<body ng-app="SubmitQueueModule" ng-controller="SQCntl as cntl">
+  <div layout="column" style="margin-top: 20px; width: 80%" offset="10">
+    <md-toolbar layout="row" layout-align="space-around center">
+      <h1 class="md-display-2">Submit Queue Status</h1>
+      <a href="https://k8s.io"> <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" class="titleLogo" />
+      </a>
+    </md-toolbar>
+    <div id="content" class="md-whiteframe-z2" style="padding: 20px">
+      <md-content class="md-padding">
+        <md-tabs md-dynamic-height md-border-bottom>
+          <md-tab label="PR's">
+            <md-content class="md-padding">
+              <h2 class="md-headline">Pull Requests</h2>
+              <form ng-submit="$event.preventDefault()">
+                <md-autocomplete md-selected-item="cntl.selectedItem" md-search-text="cntl.prDisplayValue" md-search-text-change="cntl.updatePRVisibility()" md-selected-item-change="cntl.updatePRVisibility()" md-items="item in cntl.querySearch(cntl.prDisplayValue)" md-item-text="item.display"
+                md-min-length="0" placeholder="Enter username or PR number">
+                  <md-item-template>
+                    <span md-highlight-text="cntl.prDisplayValue" md-highlight-flags="^i">{{item.display}}</span>
+                  </md-item-template>
+                  <md-not-found>
+                    No matches found for "{{cntl.prDisplayValue}}".
+                  </md-not-found>
+                </md-autocomplete>
+              </form>
+              <md-list-item class="md-2-line" ng-repeat="pr in cntl.prs" ng-show="pr.show">
+                <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                  <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}" />
+                </a>
+                <div class="md-list-item-text" layout="column">
+                  <h3 class="md-body-1">
+                    <a ng-href="{{pr.URL}}">#{{pr.Num}}: {{pr.Title}}</a>
+                  </h3>
+                  <h4 class="md-body-2">{{pr.Reason}}</h4>
+                </div>
+                <md-divider md-inset ng-if="!$last"></md-divider>
+              </md-list-item>
+            </md-content>
+          </md-tab>
+          <md-tab>
+            <md-tab-label> <span ng-class="{'redTab':cntl.failedBuild}"> E2E Results </span> </md-tab-label>
+            <md-tab-body>
+              <md-content class="md-padding">
+                <h2 class="md-headline">Google E2E Results</h2>
+                <md-chips ng-model="cntl.builds" readonly="true">
+		  <md-chip-template title="{{$chip.msg}}">
+                    <span style="color: {{$chip.color}}">{{$chip.state}}</span> {{$chip.name}} <span style="color: {{$chip.color}}">{{$chip.msg}}</span>
+                  </md-chip-template>
+                </md-chips>
+              </md-content>
+            </md-tab-body>
+          </md-tab>
+          <md-tab label="Users">
+            <md-content class="md-padding">
+              <h2 class="md-headline">Users</h2>
+              <md-list-item class="md-2-line" ng-repeat="user in cntl.users" ng-click="goToPerson(user.Login)">
+                <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}" />
+                <div class="md-list-item-text" layout="column">
+                  <h3 class="md-body-1">{{user.Login}}</h3>
+                  <h4 class="md-body-2">On list because: {{user.Access}}</h4>
+                </div>
+              </md-list-item>
+            </md-content>
+          </md-tab>
+        </md-tabs>
+      </md-content>
     </div>
-  </body>
+  </div>
+  <!-- Angular Material Dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-animate.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-aria.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.1/angular-material.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
 </html>

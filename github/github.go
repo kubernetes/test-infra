@@ -101,6 +101,7 @@ type analytics struct {
 	GetContents       analytic
 	CreateComment     analytic
 	Merge             analytic
+	GetUser           analytic
 }
 
 func (a analytics) Print() {
@@ -126,6 +127,7 @@ func (a analytics) Print() {
 	fmt.Fprintf(w, "GetContents\t%d\t\n", a.GetContents)
 	fmt.Fprintf(w, "CreateComment\t%d\t\n", a.CreateComment)
 	fmt.Fprintf(w, "Merge\t%d\t\n", a.Merge)
+	fmt.Fprintf(w, "GetUser\t%d\t\n", a.GetUser)
 	w.Flush()
 	glog.V(2).Infof("\n%v", buf)
 }
@@ -348,9 +350,9 @@ func (config *Config) fetchAllCollaborators() ([]github.User, error) {
 // access. The second set is the specific set of user with pull access. If the
 // repo is public all users will have pull access, but some with have it
 // explicitly
-func (config *Config) UsersWithAccess() (pushUsers sets.String, pullUsers sets.String, err error) {
-	pushUsers = sets.String{}
-	pullUsers = sets.String{}
+func (config *Config) UsersWithAccess() ([]github.User, []github.User, error) {
+	pushUsers := []github.User{}
+	pullUsers := []github.User{}
 
 	users, err := config.fetchAllCollaborators()
 	if err != nil {
@@ -364,15 +366,21 @@ func (config *Config) UsersWithAccess() (pushUsers sets.String, pullUsers sets.S
 			glog.Errorf("%v", err)
 			return nil, nil, err
 		}
-		login := *user.Login
 		perms := *user.Permissions
 		if perms["push"] {
-			pushUsers.Insert(login)
+			pushUsers = append(pushUsers, user)
 		} else if perms["pull"] {
-			pullUsers.Insert(login)
+			pullUsers = append(pushUsers, user)
 		}
 	}
 	return pushUsers, pullUsers, nil
+}
+
+// GetUser will return information about the github user with the given login name
+func (config *Config) GetUser(login string) (*github.User, error) {
+	config.analytics.GetUser.Call(config)
+	user, _, err := config.client.Users.Get(login)
+	return user, err
 }
 
 // GetAllEventsForPR returns a list of all events for a given pr.

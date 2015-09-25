@@ -38,6 +38,7 @@ type PRMunger interface {
 	AddFlags(cmd *cobra.Command, config *github_util.Config)
 	Name() string
 	Initialize(*github_util.Config) error
+	EachLoop(*github_util.Config) error
 }
 
 var mungerMap = map[string]PRMunger{}
@@ -64,6 +65,17 @@ func InitializeMungers(requestedMungers []string, config *github_util.Config) er
 		}
 		mungers = append(mungers, munger)
 		if err := munger.Initialize(config); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// EachLoop will be called before we start a poll loop and will run the
+// EachLoop function for all active mungers
+func EachLoop(config *github_util.Config) error {
+	for _, munger := range mungers {
+		if err := munger.EachLoop(config); err != nil {
 			return err
 		}
 	}
