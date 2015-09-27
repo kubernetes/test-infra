@@ -216,8 +216,24 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		return
 	}
 
-	if !github_util.HasLabels(issue.Labels, []string{"lgtm"}) {
-		sq.SetPRStatus(pr, noLGTM)
+	if mergeable, err := config.IsPRMergeable(pr); err != nil {
+		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
+		sq.SetPRStatus(pr, unknown)
+		return
+	} else if !mergeable {
+		glog.V(4).Infof("Skipping %d - not mergable", *pr.Number)
+		sq.SetPRStatus(pr, unmergeable)
+		return
+	}
+
+	// Validate the status information for this PR
+	contexts := sq.RequiredStatusContexts
+	if len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
+		contexts = append(contexts, sq.E2EStatusContext)
+	}
+	if ok := config.IsStatusSuccess(pr, contexts); !ok {
+		glog.Errorf("PR# %d Github CI status is not success", *pr.Number)
+		sq.SetPRStatus(pr, ciFailure)
 		return
 	}
 
@@ -237,6 +253,11 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		config.RemoveLabel(*pr.Number, needsOKToMergeLabel)
 	}
 
+	if !github_util.HasLabels(issue.Labels, []string{"lgtm"}) {
+		sq.SetPRStatus(pr, noLGTM)
+		return
+	}
+
 	lastModifiedTime := github_util.LastModifiedTime(commits)
 	lgtmTime := github_util.LabelTime("lgtm", events)
 
@@ -249,27 +270,6 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	if lastModifiedTime.After(*lgtmTime) {
 		glog.V(4).Infof("PR %d changed after LGTM. Will not merge", *pr.Number)
 		sq.SetPRStatus(pr, lgtmEarly)
-		return
-	}
-
-	if mergeable, err := config.IsPRMergeable(pr); err != nil {
-		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
-		sq.SetPRStatus(pr, unknown)
-		return
-	} else if !mergeable {
-		glog.V(4).Infof("Skipping %d - not mergable", *pr.Number)
-		sq.SetPRStatus(pr, unmergeable)
-		return
-	}
-
-	// Validate the status information for this PR
-	contexts := sq.RequiredStatusContexts
-	if len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
-		contexts = append(contexts, sq.E2EStatusContext)
-	}
-	if ok := config.IsStatusSuccess(pr, contexts); !ok {
-		glog.Errorf("PR# %d Github CI status is not success", *pr.Number)
-		sq.SetPRStatus(pr, ciFailure)
 		return
 	}
 
