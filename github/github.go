@@ -70,6 +70,9 @@ type Config struct {
 	// If true, don't make any mutating API calls
 	DryRun bool
 
+	// Defaults to 30 seconds.
+	PendingWaitTime *time.Duration
+
 	useMemoryCache bool
 
 	analytics analytics
@@ -314,6 +317,7 @@ func (config *Config) LastModifiedTime(prNum int) (*time.Time, error) {
 	config.analytics.ListCommits.Call(config)
 	list, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
 	if err != nil {
+		glog.Errorf("Unable to list Commits for PR# %d: %v", prNum, err)
 		return nil, err
 	}
 	var lastModified *time.Time
@@ -451,6 +455,7 @@ func (config *Config) GetStatus(pr *github.PullRequest, requiredContexts []strin
 	combinedStatus, _, err := config.client.Repositories.GetCombinedStatus(config.Org, config.Project, *pr.Head.SHA, &github.ListOptions{})
 	config.analytics.GetCombinedStatus.Call(config)
 	if err != nil {
+		glog.Errorf("Failed to get combined status: %v", err)
 		return "failure", err
 	}
 	return computeStatus(combinedStatus, requiredContexts), nil
@@ -481,12 +486,18 @@ func (config *Config) WaitForPending(pr *github.PullRequest) error {
 		if status == "pending" {
 			return nil
 		}
-		if config.Dryrun {
+		if config.DryRun {
 			glog.V(4).Infof("PR# %d is not pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
 			return nil
 		}
-		glog.V(4).Infof("PR# %d is not pending, waiting for 30 seconds", *pr.Number)
-		time.Sleep(30 * time.Second)
+		var sleepTime time.Duration
+		if config.PendingWaitTime == nil {
+			sleepTime = 30 * time.Second
+		} else {
+			sleepTime = *config.PendingWaitTime
+		}
+		glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+		time.Sleep(sleepTime)
 	}
 }
 
@@ -501,12 +512,18 @@ func (config *Config) WaitForNotPending(pr *github.PullRequest) error {
 		if status != "pending" {
 			return nil
 		}
-		if config.Dryrun {
+		if config.DryRun {
 			glog.V(4).Infof("PR# %d is pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
 			return nil
 		}
-		glog.V(4).Infof("PR# %d is pending, waiting for 30 seconds", *pr.Number)
-		time.Sleep(30 * time.Second)
+		var sleepTime time.Duration
+		if config.PendingWaitTime == nil {
+			sleepTime = 30 * time.Second
+		} else {
+			sleepTime = *config.PendingWaitTime
+		}
+		glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+		time.Sleep(sleepTime)
 	}
 }
 
@@ -690,6 +707,7 @@ func (config *Config) WriteComment(prNum int, msg string) error {
 // will have a response the second time. If we have no answer twice, we return
 // false
 func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
+	prNum := *pr.Number
 	if pr.Mergeable == nil {
 		var err error
 		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
@@ -697,7 +715,7 @@ func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
 		time.Sleep(2 * time.Second)
 		pr, err = config.GetPR(*pr.Number)
 		if err != nil {
-			glog.Errorf("Unable to get PR# %d: %v", *pr.Number, err)
+			glog.Errorf("Unable to get PR# %d: %v", prNum, err)
 			return false, err
 		}
 	}

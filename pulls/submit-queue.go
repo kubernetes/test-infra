@@ -212,17 +212,18 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 }
 
 var (
-	unknown       = "unknown failure"
-	noCLA         = "PR does not have cla: yes."
-	noLGTM        = "PR does not have LGTM."
-	needsok       = "PR does not have 'ok-to-merge' label"
-	lgtmEarly     = "The PR was changed after the LGTM label was added."
-	unmergeable   = "PR is unable to be automatically merged. Needs rebase."
-	ciFailure     = "Github CI tests are not green."
-	e2eFailure    = "The e2e tests are failing. The entire submit queue is blocked."
-	merged        = "MERGED!"
-	githube2e     = "Running github e2e tests a second time."
-	githube2efail = "Second github e2e run failed."
+	unknown                 = "unknown failure"
+	noCLA                   = "PR does not have cla: yes."
+	noLGTM                  = "PR does not have LGTM."
+	needsok                 = "PR does not have 'ok-to-merge' label"
+	lgtmEarly               = "The PR was changed after the LGTM label was added."
+	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
+	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
+	ciFailure               = "Github CI tests are not green."
+	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
+	merged                  = "MERGED!"
+	githube2e               = "Running github e2e tests a second time."
+	githube2efail           = "Second github e2e run failed."
 )
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
@@ -237,7 +238,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 
 	if mergeable, err := config.IsPRMergeable(pr); err != nil {
 		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
-		sq.SetPRStatus(pr, unknown)
+		sq.SetPRStatus(pr, undeterminedMergability)
 		return
 	} else if !mergeable {
 		glog.V(4).Infof("Skipping %d - not mergable", *pr.Number)
@@ -247,7 +248,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 
 	// Validate the status information for this PR
 	contexts := sq.RequiredStatusContexts
-	if len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
+	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel)) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
 	if ok := config.IsStatusSuccess(pr, contexts); !ok {
@@ -281,7 +282,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	lgtmTime := github_util.LabelTime("lgtm", events)
 
 	if lastModifiedTime == nil || lgtmTime == nil {
-		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified")
+		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *pr.Number)
 		sq.SetPRStatus(pr, unknown)
 		return
 	}
@@ -298,7 +299,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	// if there is a 'e2e-not-required' label, just merge it.
-	if len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
+	if len(sq.DontRequireE2ELabel) > 0 && github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
 		config.MergePR(pr, "submit-queue")
 		sq.SetPRStatus(pr, merged)
 		return
@@ -357,11 +358,12 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 
 	// Wait for the build to start
 	_ = sq.githubConfig.WaitForPending(pr)
+	// Wait for the status to go back to something other than pending
 	_ = sq.githubConfig.WaitForNotPending(pr)
 
-	// Wait for the status to go back to 'success'
+	// Check if the thing we care about is success
 	if ok := sq.githubConfig.IsStatusSuccess(pr, []string{gceE2EContext}); !ok {
-		glog.Errorf("Status after build is not 'success', skipping PR %d", *pr.Number)
+		glog.Infof("Status after build is not 'success', skipping PR %d", *pr.Number)
 		sq.SetPRStatus(pr, githube2efail)
 		return
 	}
