@@ -481,7 +481,11 @@ func (config *Config) WaitForPending(pr *github.PullRequest) error {
 		if status == "pending" {
 			return nil
 		}
-		glog.V(4).Info("PR is not pending, waiting for 30 seconds")
+		if config.Dryrun {
+			glog.V(4).Infof("PR# %d is not pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
+			return nil
+		}
+		glog.V(4).Infof("PR# %d is not pending, waiting for 30 seconds", *pr.Number)
 		time.Sleep(30 * time.Second)
 	}
 }
@@ -497,7 +501,11 @@ func (config *Config) WaitForNotPending(pr *github.PullRequest) error {
 		if status != "pending" {
 			return nil
 		}
-		glog.V(4).Info("PR is pending, waiting for 30 seconds")
+		if config.Dryrun {
+			glog.V(4).Infof("PR# %d is pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
+			return nil
+		}
+		glog.V(4).Infof("PR# %d is pending, waiting for 30 seconds", *pr.Number)
 		time.Sleep(30 * time.Second)
 	}
 }
@@ -641,6 +649,7 @@ func (config *Config) MergePR(pr *github.PullRequest, who string) error {
 	glog.Infof("Merging PR# %d", prNum)
 	mergeBody := "Automatic merge from " + who
 	config.WriteComment(prNum, mergeBody)
+
 	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, "Auto commit by PR queue bot")
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 
@@ -35,6 +36,7 @@ import (
 
 const (
 	needsOKToMergeLabel = "needs-ok-to-merge"
+	gceE2EContext       = "Jenkins GCE e2e"
 )
 
 var (
@@ -60,12 +62,17 @@ type submitQueueStatus struct {
 	UserInfo    map[string]userInfo
 }
 
+type githubE2ERequest struct {
+	pr *github_api.PullRequest
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
 //  if user not in whitelist PR must have "ok-to-merge"
 //  The google internal jenkins instance must be passing the JenkinsJobs e2e tests
 type SubmitQueue struct {
+	githubConfig           *github_util.Config
 	JenkinsJobs            []string
 	JenkinsHost            string
 	Whitelist              string
@@ -92,6 +99,10 @@ type SubmitQueue struct {
 	prStatus     map[string]submitStatus // ALWAYS protected by sync.Mutex
 	userInfo     map[string]userInfo
 
+	// Every time a PR is added to needsGithubE2E also notify the channel
+	githubE2ERequest chan bool
+	needsGithubE2E   map[int]*github_api.PullRequest // protected by sync.Mutex!
+
 	e2e *e2e.E2ETester
 }
 
@@ -106,6 +117,8 @@ func (sq SubmitQueue) Name() string { return "submit-queue" }
 func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 	sq.Lock()
 	defer sq.Unlock()
+
+	sq.githubConfig = config
 	if len(sq.JenkinsHost) == 0 {
 		glog.Fatalf("--jenkins-host is required.")
 	}
@@ -125,6 +138,11 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 	}
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
+
+	sq.githubE2ERequest = make(chan bool, 1000)
+	sq.needsGithubE2E = map[int]*github_api.PullRequest{}
+
+	go sq.handleGithubE2EAndMerge()
 	return nil
 }
 
@@ -195,15 +213,16 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 
 var (
 	unknown       = "unknown failure"
-	noCLA         = "PR does not have cla: yes"
-	noLGTM        = "PR does not have LGTM"
+	noCLA         = "PR does not have cla: yes."
+	noLGTM        = "PR does not have LGTM."
 	needsok       = "PR does not have 'ok-to-merge' label"
-	lgtmEarly     = "The PR was changed after the LGTM label was added"
+	lgtmEarly     = "The PR was changed after the LGTM label was added."
 	unmergeable   = "PR is unable to be automatically merged. Needs rebase."
-	ciFailure     = "Github CI tests are not green"
-	e2eFailure    = "The e2e tests are failing. The entire submit queue is blocked"
+	ciFailure     = "Github CI tests are not green."
+	e2eFailure    = "The e2e tests are failing. The entire submit queue is blocked."
 	merged        = "MERGED!"
-	githube2efail = "Second github e2e run failed"
+	githube2e     = "Running github e2e tests a second time."
+	githube2efail = "Second github e2e run failed."
 )
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
@@ -285,24 +304,69 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		return
 	}
 
+	sq.SetPRStatus(pr, githube2e)
+	sq.Lock()
+	sq.githubE2ERequest <- true
+	sq.needsGithubE2E[*pr.Number] = pr
+	sq.Unlock()
+
+	return
+}
+
+// handleGithubE2EAndMerge waits for PRs that are ready to re-run the github
+// e2e tests, runs the test, and then merges if everything was successful.
+func (sq *SubmitQueue) handleGithubE2EAndMerge() {
+	for {
+		// Wait until something is ready to be processed
+		select {
+		case _ = <-sq.githubE2ERequest:
+		}
+
+		sq.Lock()
+		// Could happen if the same PR was added twice. It will only be
+		// in the map one time, but it will be in the channel twice.
+		if len(sq.needsGithubE2E) == 0 {
+			sq.Unlock()
+			continue
+		}
+		// Find and do the lowest PR number first
+		var keys []int
+		for k := range sq.needsGithubE2E {
+			keys = append(keys, k)
+		}
+		sort.Ints(keys)
+		pr := sq.needsGithubE2E[keys[0]]
+		sq.Unlock()
+
+		// re-test and maybe merge
+		sq.doGithubE2EAndMerge(pr)
+
+		// remove it from the map after we finish testing
+		sq.Lock()
+		delete(sq.needsGithubE2E, keys[0])
+		sq.Unlock()
+	}
+}
+
+func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
-	if err := config.WriteComment(*pr.Number, body); err != nil {
+	if err := sq.githubConfig.WriteComment(*pr.Number, body); err != nil {
 		sq.SetPRStatus(pr, unknown)
 		return
 	}
 
 	// Wait for the build to start
-	_ = config.WaitForPending(pr)
-	_ = config.WaitForNotPending(pr)
+	_ = sq.githubConfig.WaitForPending(pr)
+	_ = sq.githubConfig.WaitForNotPending(pr)
 
 	// Wait for the status to go back to 'success'
-	if ok := config.IsStatusSuccess(pr, contexts); !ok {
+	if ok := sq.githubConfig.IsStatusSuccess(pr, []string{gceE2EContext}); !ok {
 		glog.Errorf("Status after build is not 'success', skipping PR %d", *pr.Number)
 		sq.SetPRStatus(pr, githube2efail)
 		return
 	}
 
-	config.MergePR(pr, "submit-queue")
+	sq.githubConfig.MergePR(pr, "submit-queue")
 	sq.SetPRStatus(pr, merged)
 	return
 }
