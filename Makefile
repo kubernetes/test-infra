@@ -1,4 +1,4 @@
-all: push
+all: container
 
 TAG = 0.8.1
 

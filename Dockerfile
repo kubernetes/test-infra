@@ -20,6 +20,11 @@ ADD mungegithub /mungegithub
 ADD blunderbuss.yml /blunderbuss.yml
 ADD path-label.txt /path-label.txt
 ADD generated-files.txt /generated-files.txt
-ADD run.sh /run.sh
-RUN chmod a+x /run.sh
-CMD /run.sh
+# User lists for submit-queue and 'needs-ok-to-merge'
+ADD committers.txt /committers.txt
+ADD whitelist.txt /whitelist.txt
+# Submit queue web interface
+ADD www /www
+EXPOSE 8080
+ENTRYPOINT ["/mungegithub"]
+CMD ["--dry-run", "--token-file=/token"]

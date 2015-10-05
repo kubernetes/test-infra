@@ -9,7 +9,8 @@ metadata:
 spec:
   containers:
   - command:
-    - /run.sh
+    - /mungegithub
+    - --token-file=/etc/secret-volume/token
     image: gcr.io/google_containers/mungegithub:0.8.1
     imagePullPolicy: IfNotPresent
     name: mungegithub
