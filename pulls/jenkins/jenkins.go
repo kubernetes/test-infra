@@ -60,7 +60,7 @@ func (j *JenkinsClient) request(path string) ([]byte, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %s %d", res.Status, res.StatusCode)
+		return nil, fmt.Errorf("unexpected status: %s %d for %s", res.Status, res.StatusCode, url)
 	}
 	return ioutil.ReadAll(res.Body)
 }
@@ -75,7 +75,7 @@ func (j *JenkinsClient) GetConsoleLog(name string, build int) (io.ReadCloser, er
 	}
 	if res.StatusCode != http.StatusOK {
 		res.Body.Close()
-		return nil, fmt.Errorf("unexpected status: %s %d", res.Status, res.StatusCode)
+		return nil, fmt.Errorf("unexpected status: %s %d for %s", res.Status, res.StatusCode, url)
 	}
 	return res.Body, nil
 }
