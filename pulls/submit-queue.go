@@ -368,6 +368,11 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 		return
 	}
 
+	if !sq.e2e.Stable() {
+		sq.SetPRStatus(pr, e2eFailure)
+		return
+	}
+
 	sq.githubConfig.MergePR(pr, "submit-queue")
 	sq.SetPRStatus(pr, merged)
 	return
