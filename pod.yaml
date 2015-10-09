@@ -5,15 +5,19 @@ metadata:
   namespace: default
   labels:
     app: mungegithub
-    version: "0.8"
+    track: alpha
+    version: "0.9.alpha"
 spec:
   containers:
   - command:
     - /mungegithub
     - --token-file=/etc/secret-volume/token
-    image: gcr.io/google_containers/mungegithub:0.8.1
-    imagePullPolicy: IfNotPresent
+    image: gcr.io/google_containers/mungegithub:0.9.alpha
+    imagePullPolicy: Always
     name: mungegithub
+    ports:
+    - name: status
+      containerPort: 8080
     resources:
       limits:
         cpu: 100m

@@ -1,6 +1,6 @@
 all: container
 
-TAG = 0.8.1
+TAG = 0.9.alpha
 
 mungegithub:
 	CGO_ENABLED=0 GOOS=linux godep go build -a -installsuffix cgo -ldflags '-w' -o mungegithub

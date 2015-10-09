@@ -1,14 +1,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: submit-queue-status
   labels:
-    app: submit-queue
+    app: mungegithub
+  name: submit-queue-status
+  namespace: default
 spec:
-  selector:
-    app: submit-queue
+  clusterIP: 10.147.242.20
   ports:
   - name: status
+    nodePort: 31624
     port: 80
+    protocol: TCP
     targetPort: status
+  selector:
+    app: mungegithub
+  sessionAffinity: None
   type: LoadBalancer
