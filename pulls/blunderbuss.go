@@ -94,6 +94,7 @@ func (b *BlunderbussMunger) EachLoop(_ *github_util.Config) error { return nil }
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+	b.addBlunderbussCommand(cmd)
 }
 
 // u may be nil.

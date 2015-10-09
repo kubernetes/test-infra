@@ -1,44 +1,105 @@
 prefixMap:
-  cluster/addons/dns:
+  Godeps:
+    - davidopp
+    - eparis
+    - lavalamp
+    - quinton-hoole
     - thockin
-    - ArtfulCoder
 
-  test:
+  build:
     - ixdy
+    - lavalamp
+    - zmerlynn
+
+  cluster:
+    - brendandburns
+    - davidopp
+    - eparis
+    - robertbailey
+    - zmerlynn
+
+  cluster/addons/dns:
+    - ArtfulCoder
+    - thockin
+
+  cluster/mesos/docker:
+    - karlkfi
+
+  cmd:
+    - brendandburns
+    - davidopp
+    - dchen1107
+    - lavalamp
+    - thockin
+
+  cmd/kube-controller-manager:
+    - davidopp
+    - lavalamp
+
+  cmd/kubelet:
+    - dchen1107
+    - vishh
+    - yujuhong
+
+  contrib/mesos:
+    - jdef
+    - karlkfi
+
+  docs:
+    - bgrant0607
+    - brendandburns
+    - smarterclayton
+    - thockin
+
+  docs/getting-started-guides/mesos:
+    - jdef
+    - karlkfi
+
+  examples:
+    - bgrant0607
+    - brendandburns
+    - thockin
+
+  hack:
+    - eparis
+    - ixdy
+    - lavalamp
+    - zmerlynn
+
+  # fall through for things that miss everything else
+  pkg:
+    - bgrant0607
+    - brendandburns
+    - eparis
+    - smarterclayton
+    - thockin
 
   pkg/admission:
-    - lavalamp
     - davidopp
     - derekwaynecarr
     - erictune
+    - lavalamp
     - liggitt
 
   pkg/api:
     - bgrant0607
-    - thockin
     - erictune
     - lavalamp
     - smarterclayton
-
-  pkg/exapi:
-    - bgrant0607
     - thockin
-    - erictune
-    - lavalamp
-    - smarterclayton
 
   pkg/apiserver:
     - lavalamp
     - smarterclayton
 
   pkg/authentication:
-    - liggitt
     - erictune
+    - liggitt
 
   pkg/client:
+    - deads2k
     - lavalamp
     - smarterclayton
-    - deads2k
 
   pkg/clientauth:
     - lavalamp
@@ -54,26 +115,28 @@ prefixMap:
     - derekwaynecarr
 
   pkg/conversion:
-    - lavalamp
     - derekwaynecarr
+    - lavalamp
 
   pkg/credentialprovider:
     - erictune
     - liggitt
 
-  pkg/kubectl:
-    - jlowdermilk
-    - brendandburns
+  pkg/exapi:
     - bgrant0607
+    - erictune
+    - lavalamp
+    - smarterclayton
+    - thockin
+
+  pkg/kubectl:
+    - bgrant0607
+    - brendandburns
     - deads2k
+    - jlowdermilk
     - smarterclayton
 
   pkg/kubelet:
-    - dchen1107
-    - vishh
-    - yujuhong
-
-  cmd/kubelet:
     - dchen1107
     - vishh
     - yujuhong
@@ -83,46 +146,24 @@ prefixMap:
     - derekwaynecarr
     - lavalamp
 
-  cmd/kube-controller-manager:
-    - davidopp
-    - lavalamp
-
   pkg/proxy:
-    - thockin
     - ArtfulCoder
-
-  pkg/volume:
     - thockin
-    - saad-ali
 
   pkg/registry:
     - lavalamp
     - smarterclayton
 
-  # fall through for things that miss everything else
-  pkg:
-    - brendandburns
-    - bgrant0607
+  pkg/volume:
+    - saad-ali
     - thockin
-    - smarterclayton
-    - eparis
-
-  cmd:
-    - lavalamp
-    - dchen1107
-    - thockin
-    - brendandburns
-    - davidopp
 
   plugin:
-    - lavalamp
-    - dchen1107
-    - thockin
     - brendandburns
     - davidopp
-
-  plugin/pkg/scheduler:
-    - davidopp
+    - dchen1107
+    - lavalamp
+    - thockin
 
   plugin/cmd/kube-scheduler:
     - davidopp
@@ -131,51 +172,11 @@ prefixMap:
     - derekwaynecarr
 
   plugin/pkg/auth:
-    - liggitt
     - erictune
+    - liggitt
 
-  contrib/mesos:
-    - jdef
-    - karlkfi
-
-  cluster/mesos/docker:
-    - karlkfi
-
-  docs/getting-started-guides/mesos:
-    - jdef
-    - karlkfi
-
-  docs:
-    - thockin
-    - smarterclayton
-    - brendandburns
-    - bgrant0607
-
-  cluster:
-    - robertbailey
+  plugin/pkg/scheduler:
     - davidopp
-    - zmerlynn
-    - brendandburns
-    - eparis
 
-  examples:
-    - bgrant0607
-    - thockin
-    - brendandburns
-
-  hack:
-    - zmerlynn
-    - lavalamp
-    - ixdy
-    - eparis
-
-  Godeps:
-    - lavalamp
-    - davidopp
-    - thockin
-    - quinton-hoole
-
-  build:
-    - zmerlynn
-    - lavalamp
+  test:
     - ixdy
