@@ -294,6 +294,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	if !e2e.Stable() {
+		sq.flushGithubE2EQueue(e2eFailure)
 		sq.SetPRStatus(pr, e2eFailure)
 		return
 	}
@@ -312,6 +313,23 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	sq.Unlock()
 
 	return
+}
+
+// flushGithubE2EQueue will rmeove all entries from the build queue and will mark them
+// as failed with the given reason. We do not need to flush the githubE2ERequest
+// channel as that just causes handleGithubE2EAndMerge() to wake up. And if it
+// wakes up a few extra times, who cares.
+func (sq *SubmitQueue) flushGithubE2EQueue(reason string) {
+	prs := []*github_api.PullRequest{}
+	sq.Lock()
+	for i, pr := range sq.needsGithubE2E {
+		prs = append(prs, pr)
+		delete(sq.needsGithubE2E, i)
+	}
+	sq.Unlock()
+	for _, pr := range prs {
+		sq.SetPRStatus(pr, reason)
+	}
 }
 
 // handleGithubE2EAndMerge waits for PRs that are ready to re-run the github
