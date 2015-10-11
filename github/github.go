@@ -763,14 +763,13 @@ func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
 //   * pr.Number <= maxPRNumber
 //   * all labels are on the PR
 // Run the specified function
-func (config *Config) forEachIssueDo(labels []string, fn IssueFunction) error {
+func (config *Config) forEachIssueDo(fn IssueFunction) error {
 	page := 1
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
 		config.analytics.ListIssues.Call(config)
 		listOpts := &github.IssueListByRepoOptions{
 			Sort:        "created",
-			Labels:      labels,
 			State:       "open",
 			ListOptions: github.ListOptions{PerPage: 20, Page: page},
 		}
@@ -797,7 +796,6 @@ func (config *Config) forEachIssueDo(labels []string, fn IssueFunction) error {
 				continue
 			}
 			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks == nil)
-			glog.V(8).Infof("%v", issue.Labels)
 			if err := fn(issue); err != nil {
 				return err
 			}
@@ -811,8 +809,7 @@ func (config *Config) forEachIssueDo(labels []string, fn IssueFunction) error {
 }
 
 // ForEachIssueDo will call the provided IssueFunction once for each issue
-// which has the labels provided in `labels`
-func (config *Config) ForEachIssueDo(labels []string, fn IssueFunction) error {
+func (config *Config) ForEachIssueDo(fn IssueFunction) error {
 	handleIssue := func(issue *github.Issue) error {
 		if issue.PullRequestLinks != nil {
 			return nil
@@ -821,12 +818,11 @@ func (config *Config) ForEachIssueDo(labels []string, fn IssueFunction) error {
 
 		return fn(issue)
 	}
-	return config.forEachIssueDo(labels, handleIssue)
+	return config.forEachIssueDo(handleIssue)
 }
 
 // ForEachPRDo will call the provided PRFunction once for each issue
-// which has the labels provided in `labels`
-func (config *Config) ForEachPRDo(labels []string, fn PRFunction) error {
+func (config *Config) ForEachPRDo(fn PRFunction) error {
 	handlePR := func(issue *github.Issue) error {
 		if issue.PullRequestLinks == nil {
 			return nil
@@ -854,5 +850,5 @@ func (config *Config) ForEachPRDo(labels []string, fn PRFunction) error {
 		}
 		return fn(pr, issue)
 	}
-	return config.forEachIssueDo(labels, handlePR)
+	return config.forEachIssueDo(handlePR)
 }

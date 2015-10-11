@@ -311,7 +311,7 @@ func TestForEachPRDo(t *testing.T) {
 			prs = append(prs, pr)
 			return nil
 		}
-		err := config.ForEachPRDo([]string{}, handle)
+		err := config.ForEachPRDo(handle)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
