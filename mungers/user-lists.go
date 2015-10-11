@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pulls
+package mungers
 
 // A simple binary for merging PR that match a criteria
 // Usage:

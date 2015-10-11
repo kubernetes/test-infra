@@ -24,7 +24,7 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/contrib/mungegithub/pulls/jenkins"
+	"k8s.io/contrib/mungegithub/mungers/jenkins"
 )
 
 type testHandler struct {

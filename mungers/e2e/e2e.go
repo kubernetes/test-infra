@@ -19,7 +19,7 @@ package e2e
 import (
 	"sync"
 
-	"k8s.io/contrib/mungegithub/pulls/jenkins"
+	"k8s.io/contrib/mungegithub/mungers/jenkins"
 
 	"github.com/golang/glog"
 )

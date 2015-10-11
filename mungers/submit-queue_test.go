@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pulls
+package mungers
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ import (
 
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
-	"k8s.io/contrib/mungegithub/pulls/jenkins"
+	"k8s.io/contrib/mungegithub/mungers/jenkins"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
