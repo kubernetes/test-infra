@@ -135,6 +135,13 @@ func (a analytics) Print() {
 	glog.V(2).Infof("\n%v", buf)
 }
 
+type MungeObject struct {
+	Issue   *github.Issue
+	PR      *github.PullRequest
+	Commits []github.RepositoryCommit
+	Events  []github.IssueEvent
+}
+
 // AddRootFlags will add all of the flags needed for the github config to the cobra command
 func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&config.Token, "token", "", "The OAuth Token to use for requests.")

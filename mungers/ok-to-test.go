@@ -17,10 +17,9 @@ limitations under the License.
 package mungers
 
 import (
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -36,17 +35,20 @@ func init() {
 func (OkToTestMunger) Name() string { return "ok-to-test" }
 
 // Initialize will initialize the munger
-func (OkToTestMunger) Initialize(config *github_util.Config) error { return nil }
+func (OkToTestMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (OkToTestMunger) EachLoop(_ *github_util.Config) error { return nil }
+func (OkToTestMunger) EachLoop(_ *github.Config) error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (OkToTestMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {}
+func (OkToTestMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (OkToTestMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
-	if !github_util.HasLabel(issue.Labels, "lgtm") {
+func (OkToTestMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+
+	if !github.HasLabel(issue.Labels, "lgtm") {
 		return
 	}
 	status, err := config.GetStatus(pr, []string{"Jenkins GCE e2e"})

@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/util/sets"
 
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 
 	"github.com/golang/glog"
@@ -79,7 +79,7 @@ type submitQueueStatus struct {
 //  if user not in whitelist PR must have "ok-to-merge"
 //  The google internal jenkins instance must be passing the JenkinsJobs e2e tests
 type SubmitQueue struct {
-	githubConfig           *github_util.Config
+	githubConfig           *github.Config
 	JenkinsJobs            []string
 	JenkinsHost            string
 	Whitelist              string
@@ -122,7 +122,7 @@ func init() {
 func (sq SubmitQueue) Name() string { return "submit-queue" }
 
 // Initialize will initialize the munger
-func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
+func (sq *SubmitQueue) Initialize(config *github.Config) error {
 	sq.Lock()
 	defer sq.Unlock()
 
@@ -156,7 +156,7 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (sq *SubmitQueue) EachLoop(config *github_util.Config) error {
+func (sq *SubmitQueue) EachLoop(config *github.Config) error {
 	sq.Lock()
 	defer sq.Unlock()
 	sq.RefreshWhitelist(config)
@@ -166,7 +166,7 @@ func (sq *SubmitQueue) EachLoop(config *github_util.Config) error {
 }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github_util.Config) {
+func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{"kubernetes-e2e-gce", "kubernetes-e2e-gke-ci", "kubernetes-build", "kubernetes-e2e-gce-parallel", "kubernetes-e2e-gce-autoscaling", "kubernetes-e2e-gce-reboot", "kubernetes-e2e-gce-scalability"}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{"cla/google", travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
@@ -284,11 +284,16 @@ func (sq *SubmitQueue) requiredStatusContexts(pr *github_api.PullRequest) []stri
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue, commits []github_api.RepositoryCommit, events []github_api.IssueEvent) {
+func (sq *SubmitQueue) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+	commits := obj.Commits
+	events := obj.Events
+
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
 
-	if !github_util.HasLabels(issue.Labels, []string{"cla: yes"}) {
+	if !github.HasLabels(issue.Labels, []string{"cla: yes"}) {
 		sq.SetPRStatus(pr, noCLA)
 		return
 	}
@@ -305,7 +310,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 
 	// Validate the status information for this PR
 	contexts := sq.requiredStatusContexts(pr)
-	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel)) {
+	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !github.HasLabel(issue.Labels, sq.DontRequireE2ELabel)) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
 	if ok := config.IsStatusSuccess(pr, contexts); !ok {
@@ -314,9 +319,9 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		return
 	}
 
-	if !github_util.HasLabel(issue.Labels, sq.WhitelistOverride) && !userSet.Has(*pr.User.Login) {
+	if !github.HasLabel(issue.Labels, sq.WhitelistOverride) && !userSet.Has(*pr.User.Login) {
 		glog.V(4).Infof("Dropping %d since %s isn't in whitelist and %s isn't present", *pr.Number, *pr.User.Login, sq.WhitelistOverride)
-		if !github_util.HasLabel(issue.Labels, needsOKToMergeLabel) {
+		if !github.HasLabel(issue.Labels, needsOKToMergeLabel) {
 			config.AddLabels(*pr.Number, []string{needsOKToMergeLabel})
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
 			config.WriteComment(*pr.Number, body)
@@ -326,17 +331,17 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	// Tidy up the issue list.
-	if github_util.HasLabel(issue.Labels, needsOKToMergeLabel) {
+	if github.HasLabel(issue.Labels, needsOKToMergeLabel) {
 		config.RemoveLabel(*pr.Number, needsOKToMergeLabel)
 	}
 
-	if !github_util.HasLabels(issue.Labels, []string{"lgtm"}) {
+	if !github.HasLabels(issue.Labels, []string{"lgtm"}) {
 		sq.SetPRStatus(pr, noLGTM)
 		return
 	}
 
-	lastModifiedTime := github_util.LastModifiedTime(commits)
-	lgtmTime := github_util.LabelTime("lgtm", events)
+	lastModifiedTime := github.LastModifiedTime(commits)
+	lgtmTime := github.LabelTime("lgtm", events)
 
 	if lastModifiedTime == nil || lgtmTime == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *pr.Number)
@@ -357,7 +362,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	// if there is a 'e2e-not-required' label, just merge it.
-	if len(sq.DontRequireE2ELabel) > 0 && github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
+	if len(sq.DontRequireE2ELabel) > 0 && github.HasLabel(issue.Labels, sq.DontRequireE2ELabel) {
 		config.MergePR(pr, "submit-queue")
 		sq.SetPRStatus(pr, merged)
 		return

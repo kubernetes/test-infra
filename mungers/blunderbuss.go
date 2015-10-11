@@ -22,11 +22,11 @@ import (
 	"os"
 	"strings"
 
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	github_api "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -69,7 +69,7 @@ func init() {
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
 // Initialize will initialize the munger
-func (b *BlunderbussMunger) Initialize(config *github_util.Config) error {
+func (b *BlunderbussMunger) Initialize(config *github.Config) error {
 	if len(b.blunderbussConfigFile) == 0 {
 		glog.Fatalf("--blunderbuss-config is required with the blunderbuss munger")
 	}
@@ -88,26 +88,29 @@ func (b *BlunderbussMunger) Initialize(config *github_util.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (b *BlunderbussMunger) EachLoop(_ *github_util.Config) error { return nil }
+func (b *BlunderbussMunger) EachLoop(_ *github.Config) error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
+func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 	b.addBlunderbussCommand(cmd)
 }
 
 // u may be nil.
-func describeUser(u *github.User) string {
+func describeUser(u *github_api.User) string {
 	if u != nil && u.Login != nil {
 		return *u.Login
 	}
 	return "<nil>"
-
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (b *BlunderbussMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (b *BlunderbussMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+	commits := obj.Commits
+
 	if !b.blunderbussReassign && issue.Assignee != nil {
 		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
 		return

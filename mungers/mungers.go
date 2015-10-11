@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"fmt"
+	"time"
 
 	github_util "k8s.io/contrib/mungegithub/github"
 
@@ -34,7 +35,7 @@ type PRMunger interface {
 	//   * The issue object for the PR, github stores some things (e.g. labels) in an "issue" object with the same number as the PR
 	//   * The commits for the PR
 	//   * The events on the PR
-	MungePullRequest(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue, commits []github_api.RepositoryCommit, events []github_api.IssueEvent)
+	MungePullRequest(config *github_util.Config, obj github_util.MungeObject)
 	AddFlags(cmd *cobra.Command, config *github_util.Config)
 	Name() string
 	Initialize(*github_util.Config) error
@@ -144,7 +145,13 @@ func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
 	}
 
 	for _, munger := range mungers {
-		munger.MungePullRequest(config, pr, issue, commits, events)
+		obj := github_util.MungeObject{
+			Issue:   issue,
+			PR:      pr,
+			Commits: commits,
+			Events:  events,
+		}
+		munger.MungePullRequest(config, obj)
 	}
 	return nil
 }

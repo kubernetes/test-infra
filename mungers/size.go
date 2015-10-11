@@ -22,11 +22,10 @@ import (
 	"os"
 	"strings"
 
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -47,13 +46,13 @@ func init() {
 func (SizeMunger) Name() string { return "size" }
 
 // Initialize will initialize the munger
-func (SizeMunger) Initialize(config *github_util.Config) error { return nil }
+func (SizeMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (SizeMunger) EachLoop(_ *github_util.Config) error { return nil }
+func (SizeMunger) EachLoop(_ *github.Config) error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
+func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&s.generatedFilesFile, "generated-files-config", "generated-files.txt", "file containing the pathname to label mappings")
 }
 
@@ -67,7 +66,7 @@ const labelSizePrefix = "size/"
 // our results are slightly wrong, who cares? Instead look for the
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
-func (s *SizeMunger) getGeneratedFiles(config *github_util.Config) {
+func (s *SizeMunger) getGeneratedFiles(config *github.Config) {
 	if s.genFiles != nil {
 		return
 	}
@@ -128,7 +127,11 @@ func (s *SizeMunger) getGeneratedFiles(config *github_util.Config) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *SizeMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (s *SizeMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+	commits := obj.Commits
+
 	s.getGeneratedFiles(config)
 	genFiles := *s.genFiles
 	genPrefixes := *s.genPrefixes
@@ -164,7 +167,7 @@ func (s *SizeMunger) MungePullRequest(config *github_util.Config, pr *github.Pul
 	newSize := calculateSize(adds, dels)
 	newLabel := labelSizePrefix + newSize
 
-	existing := github_util.GetLabelsWithPrefix(issue.Labels, labelSizePrefix)
+	existing := github.GetLabelsWithPrefix(issue.Labels, labelSizePrefix)
 	needsUpdate := true
 	for _, l := range existing {
 		if l == newLabel {

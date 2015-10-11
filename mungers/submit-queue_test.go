@@ -729,7 +729,13 @@ func TestMungePullRequest(t *testing.T) {
 		sq.EachLoop(config)
 		sq.userWhitelist.Insert("k8s-merge-robot")
 
-		sq.MungePullRequest(config, test.pr, test.issue, test.commits, test.events)
+		obj := github_util.MungeObject{
+			Issue:   test.issue,
+			PR:      test.pr,
+			Commits: test.commits,
+			Events:  test.events,
+		}
+		sq.MungePullRequest(config, obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {
 			for sq.prStatus["1"].Reason != reason {

@@ -22,11 +22,10 @@ import (
 	"os"
 	"strings"
 
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -49,7 +48,7 @@ func init() {
 func (p *PathLabelMunger) Name() string { return "path-label" }
 
 // Initialize will initialize the munger
-func (p *PathLabelMunger) Initialize(config *github_util.Config) error {
+func (p *PathLabelMunger) Initialize(config *github.Config) error {
 	out := map[string]string{}
 	p.labelMap = &out
 	file := p.pathLabelFile
@@ -81,22 +80,26 @@ func (p *PathLabelMunger) Initialize(config *github_util.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (p *PathLabelMunger) EachLoop(_ *github_util.Config) error { return nil }
+func (p *PathLabelMunger) EachLoop(_ *github.Config) error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {
+func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "path-label.txt", "file containing the pathname to label mappings")
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (p *PathLabelMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (p *PathLabelMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+	commits := obj.Commits
+
 	labelMap := *p.labelMap
 
 	needsLabels := sets.NewString()
 	for _, c := range commits {
 		for _, f := range c.Files {
 			for prefix, label := range labelMap {
-				if strings.HasPrefix(*f.Filename, prefix) && !github_util.HasLabel(issue.Labels, label) {
+				if strings.HasPrefix(*f.Filename, prefix) && !github.HasLabel(issue.Labels, label) {
 					needsLabels.Insert(label)
 				}
 			}

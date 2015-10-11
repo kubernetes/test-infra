@@ -17,10 +17,9 @@ limitations under the License.
 package mungers
 
 import (
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -38,25 +37,28 @@ func init() {
 func (NeedsRebaseMunger) Name() string { return "needs-rebase" }
 
 // Initialize will initialize the munger
-func (NeedsRebaseMunger) Initialize(config *github_util.Config) error { return nil }
+func (NeedsRebaseMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (NeedsRebaseMunger) EachLoop(_ *github_util.Config) error { return nil }
+func (NeedsRebaseMunger) EachLoop(_ *github.Config) error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github_util.Config) {}
+func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (NeedsRebaseMunger) MungePullRequest(config *github_util.Config, pr *github.PullRequest, issue *github.Issue, commits []github.RepositoryCommit, events []github.IssueEvent) {
+func (NeedsRebaseMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+	issue := obj.Issue
+	pr := obj.PR
+
 	mergeable, err := config.IsPRMergeable(pr)
 	if err != nil {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *pr.Number)
 		return
 	}
-	if mergeable && github_util.HasLabel(issue.Labels, needsRebase) {
+	if mergeable && github.HasLabel(issue.Labels, needsRebase) {
 		config.RemoveLabel(*pr.Number, needsRebase)
 	}
-	if !mergeable && !github_util.HasLabel(issue.Labels, needsRebase) {
+	if !mergeable && !github.HasLabel(issue.Labels, needsRebase) {
 		config.AddLabels(*pr.Number, []string{needsRebase})
 	}
 }
