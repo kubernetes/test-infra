@@ -44,18 +44,15 @@ func (LGTMAfterCommitMunger) EachLoop(_ *github.Config) error { return nil }
 func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (LGTMAfterCommitMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
-	issue := obj.Issue
+func (LGTMAfterCommitMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
 	pr := obj.PR
-	commits := obj.Commits
-	events := obj.Events
 
-	if !github.HasLabel(issue.Labels, "lgtm") {
+	if !github.HasLabel(obj, "lgtm") {
 		return
 	}
 
-	lastModified := github.LastModifiedTime(commits)
-	lgtmTime := github.LabelTime("lgtm", events)
+	lastModified := github.LastModifiedTime(obj)
+	lgtmTime := github.LabelTime(obj, "lgtm")
 
 	if lastModified == nil || lgtmTime == nil {
 		glog.Errorf("PR %d unable to determine lastModified or lgtmTime", *pr.Number)
@@ -64,9 +61,9 @@ func (LGTMAfterCommitMunger) MungePullRequest(config *github.Config, obj github.
 
 	if lastModified.After(*lgtmTime) {
 		lgtmRemovedBody := "PR changed after LGTM, removing LGTM."
-		if err := config.WriteComment(*pr.Number, lgtmRemovedBody); err != nil {
+		if err := config.WriteComment(obj, lgtmRemovedBody); err != nil {
 			return
 		}
-		config.RemoveLabel(*pr.Number, "lgtm")
+		config.RemoveLabel(obj, "lgtm")
 	}
 }

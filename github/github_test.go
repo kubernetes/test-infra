@@ -29,42 +29,59 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func stringPtr(val string) *string     { return &val }
-func timePtr(val time.Time) *time.Time { return &val }
-func intPtr(val int) *int              { return &val }
+func stringPtr(val string) *string            { return &val }
+func timePtr(val time.Time) *time.Time        { return &val }
+func intPtr(val int) *int                     { return &val }
+func issuePtr(val github.Issue) *github.Issue { return &val }
 
 func TestHasLabel(t *testing.T) {
 	tests := []struct {
-		labels   []github.Label
+		obj      MungeObject
 		label    string
 		hasLabel bool
 	}{
 		{
-			labels: []github.Label{
-				{Name: stringPtr("foo")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("foo")},
+					},
+				}),
 			},
 			label:    "foo",
 			hasLabel: true,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+					},
+				}),
 			},
 			label:    "foo",
 			hasLabel: false,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
-				{Name: stringPtr("foo")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+						{Name: stringPtr("foo")},
+					},
+				}),
 			},
 			label:    "foo",
 			hasLabel: true,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
-				{Name: stringPtr("baz")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+						{Name: stringPtr("baz")},
+					},
+				}),
 			},
 			label:    "foo",
 			hasLabel: false,
@@ -72,7 +89,7 @@ func TestHasLabel(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if test.hasLabel != HasLabel(test.labels, test.label) {
+		if test.hasLabel != HasLabel(&test.obj, test.label) {
 			t.Errorf("Unexpected output: %v", test)
 		}
 	}
@@ -80,43 +97,63 @@ func TestHasLabel(t *testing.T) {
 
 func TestHasLabels(t *testing.T) {
 	tests := []struct {
-		labels     []github.Label
+		obj        MungeObject
 		seekLabels []string
 		hasLabel   bool
 	}{
 		{
-			labels: []github.Label{
-				{Name: stringPtr("foo")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("foo")},
+					},
+				}),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   true,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+					},
+				}),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   false,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
-				{Name: stringPtr("foo")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+						{Name: stringPtr("foo")},
+					},
+				}),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   true,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("bar")},
-				{Name: stringPtr("baz")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("bar")},
+						{Name: stringPtr("baz")},
+					},
+				}),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   false,
 		},
 		{
-			labels: []github.Label{
-				{Name: stringPtr("foo")},
+			obj: MungeObject{
+				Issue: issuePtr(github.Issue{
+					Labels: []github.Label{
+						{Name: stringPtr("foo")},
+					},
+				}),
 			},
 			seekLabels: []string{"foo", "bar"},
 			hasLabel:   false,
@@ -124,7 +161,7 @@ func TestHasLabels(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if test.hasLabel != HasLabels(test.labels, test.seekLabels) {
+		if test.hasLabel != HasLabels(&test.obj, test.seekLabels) {
 			t.Errorf("Unexpected output: %v", test)
 		}
 	}
@@ -535,7 +572,12 @@ func TestGetLastModified(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-			ts, err := config.LastModifiedTime(1)
+			obj := &MungeObject{
+				Issue: issuePtr(github.Issue{
+					Number: intPtr(1),
+				}),
+			}
+			ts, err := config.LastModifiedTime(obj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

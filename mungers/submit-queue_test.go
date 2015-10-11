@@ -37,10 +37,11 @@ var (
 	_ = glog.Errorf
 )
 
-func stringPtr(val string) *string     { return &val }
-func timePtr(val time.Time) *time.Time { return &val }
-func intPtr(val int) *int              { return &val }
-func boolPtr(val bool) *bool           { return &val }
+func stringPtr(val string) *string            { return &val }
+func timePtr(val time.Time) *time.Time        { return &val }
+func intPtr(val int) *int                     { return &val }
+func boolPtr(val bool) *bool                  { return &val }
+func issuePtr(val github.Issue) *github.Issue { return &val }
 
 func TestValidateLGTMAfterPush(t *testing.T) {
 	tests := []struct {
@@ -147,17 +148,25 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 			}
 			w.Write(data)
 
-			commits, err := config.GetFilledCommits(1)
+			obj := github_util.MungeObject{
+				Issue: issuePtr(github.Issue{
+					Number: intPtr(1),
+				}),
+			}
+			commits, err := config.GetFilledCommits(&obj)
 			if err != nil {
 				t.Errorf("Unexpected error getting filled commits: %v", err)
 			}
+			obj.Commits = commits
 
-			events, err := config.GetAllEventsForPR(1)
+			events, err := config.GetAllEventsForPR(&obj)
 			if err != nil {
 				t.Errorf("Unexpected error getting events commits: %v", err)
 			}
-			lastModifiedTime := github_util.LastModifiedTime(commits)
-			lgtmTime := github_util.LabelTime("lgtm", events)
+			obj.Events = events
+
+			lastModifiedTime := github_util.LastModifiedTime(&obj)
+			lgtmTime := github_util.LabelTime(&obj, "lgtm")
 
 			if lastModifiedTime == nil || lgtmTime == nil {
 				t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
@@ -264,7 +273,13 @@ func NonWhitelistUserPR() *github.PullRequest {
 
 func bareIssue() *github.Issue {
 	return &github.Issue{
-		Number: intPtr(1),
+		Title:   stringPtr("My title"),
+		Number:  intPtr(1),
+		HTMLURL: stringPtr("PR URL"),
+		User: &github.User{
+			Login:     stringPtr("UserNotInWhiteList"),
+			AvatarURL: stringPtr("MyAvatarURL"),
+		},
 	}
 }
 
@@ -735,7 +750,7 @@ func TestMungePullRequest(t *testing.T) {
 			Commits: test.commits,
 			Events:  test.events,
 		}
-		sq.MungePullRequest(config, obj)
+		sq.MungePullRequest(config, &obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {
 			for sq.prStatus["1"].Reason != reason {

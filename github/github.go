@@ -227,7 +227,8 @@ func (config *Config) SetClient(client *github.Client) {
 }
 
 // LastModifiedTime returns the date of the latest commit
-func LastModifiedTime(commits []github.RepositoryCommit) *time.Time {
+func LastModifiedTime(obj *MungeObject) *time.Time {
+	commits := obj.Commits
 	var lastModified *time.Time
 	for _, commit := range commits {
 		if lastModified == nil || commit.Commit.Committer.Date.After(*lastModified) {
@@ -239,7 +240,8 @@ func LastModifiedTime(commits []github.RepositoryCommit) *time.Time {
 
 // LabelTime returns the last time the request label was added to an issue.
 // If the label was never added you will get the 0 time.
-func LabelTime(label string, events []github.IssueEvent) *time.Time {
+func LabelTime(obj *MungeObject, label string) *time.Time {
+	events := obj.Events
 	var labelTime *time.Time
 	for _, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
@@ -252,7 +254,8 @@ func LabelTime(label string, events []github.IssueEvent) *time.Time {
 }
 
 // HasLabel returns if the label `name` is in the array of `labels`
-func HasLabel(labels []github.Label, name string) bool {
+func HasLabel(obj *MungeObject, name string) bool {
+	labels := obj.Issue.Labels
 	for i := range labels {
 		label := &labels[i]
 		if label.Name != nil && *label.Name == name {
@@ -263,9 +266,9 @@ func HasLabel(labels []github.Label, name string) bool {
 }
 
 // HasLabels returns if all of the label `names` are in the array of `labels`
-func HasLabels(labels []github.Label, names []string) bool {
+func HasLabels(obj *MungeObject, names []string) bool {
 	for i := range names {
-		if !HasLabel(labels, names[i]) {
+		if !HasLabel(obj, names[i]) {
 			return false
 		}
 	}
@@ -285,7 +288,8 @@ func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
 }
 
 // AddLabels will add all of the named `labels` to the PR
-func (config *Config) AddLabels(prNum int, labels []string) error {
+func (config *Config) AddLabels(obj *MungeObject, labels []string) error {
+	prNum := *obj.PR.Number
 	config.analytics.AddLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have added labels %v to PR %d but --dry-run is set", labels, prNum)
@@ -299,7 +303,8 @@ func (config *Config) AddLabels(prNum int, labels []string) error {
 }
 
 // RemoveLabel will remove the `label` from the PR
-func (config *Config) RemoveLabel(prNum int, label string) error {
+func (config *Config) RemoveLabel(obj *MungeObject, label string) error {
+	prNum := *obj.PR.Number
 	config.analytics.RemoveLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have removed label %q to PR %d but --dry-run is set", label, prNum)
@@ -317,7 +322,8 @@ type IssueFunction func(*Config, *github.Issue) error
 
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
-func (config *Config) LastModifiedTime(prNum int) (*time.Time, error) {
+func (config *Config) LastModifiedTime(obj *MungeObject) (*time.Time, error) {
+	prNum := *obj.PR.Number
 	config.analytics.ListCommits.Call(config)
 	list, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
 	if err != nil {
@@ -392,7 +398,8 @@ func (config *Config) GetUser(login string) (*github.User, error) {
 }
 
 // GetAllEventsForPR returns a list of all events for a given pr.
-func (config *Config) GetAllEventsForPR(prNum int) ([]github.IssueEvent, error) {
+func (config *Config) GetAllEventsForPR(obj *MungeObject) ([]github.IssueEvent, error) {
+	prNum := *obj.PR.Number
 	events := []github.IssueEvent{}
 	page := 1
 	for {
@@ -451,7 +458,8 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 //    * If any is 'error', the PR is in 'error'
 //    * If any is 'failure', the PR is 'failure'
 //    * Otherwise the PR is 'success'
-func (config *Config) GetStatus(pr *github.PullRequest, requiredContexts []string) (string, error) {
+func (config *Config) GetStatus(obj *MungeObject, requiredContexts []string) (string, error) {
+	pr := obj.PR
 	if pr.Head == nil {
 		glog.Errorf("pr.Head is nil in GetStatus for PR# %d", *pr.Number)
 		return "failure", nil
@@ -466,8 +474,8 @@ func (config *Config) GetStatus(pr *github.PullRequest, requiredContexts []strin
 }
 
 // IsStatusSuccess makes sure that the combined status for all commits in a PR is 'success'
-func (config *Config) IsStatusSuccess(pr *github.PullRequest, requiredContexts []string) bool {
-	status, err := config.GetStatus(pr, requiredContexts)
+func (config *Config) IsStatusSuccess(obj *MungeObject, requiredContexts []string) bool {
+	status, err := config.GetStatus(obj, requiredContexts)
 	if err != nil {
 		return false
 	}
@@ -483,9 +491,9 @@ func timeout(sleepTime time.Duration, c chan bool) {
 	c <- true
 }
 
-func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, requiredContexts []string, c chan error) {
+func (config *Config) doWaitStatus(obj *MungeObject, pending bool, requiredContexts []string, c chan error) {
 	for {
-		status, err := config.GetStatus(pr, requiredContexts)
+		status, err := config.GetStatus(obj, requiredContexts)
 		if err != nil {
 			c <- err
 			return
@@ -501,7 +509,7 @@ func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, require
 			return
 		}
 		if config.DryRun {
-			glog.V(4).Infof("PR# %d is not pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
+			glog.V(4).Infof("PR# %d is not pending, would wait 30 seconds, but --dry-run was set", *obj.PR.Number)
 			c <- nil
 			return
 		}
@@ -518,9 +526,9 @@ func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, require
 			sleepTime = *config.PendingWaitTime
 		}
 		if pending {
-			glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+			glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *obj.PR.Number, sleepTime.Seconds())
 		} else {
-			glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+			glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *obj.PR.Number, sleepTime.Seconds())
 		}
 		time.Sleep(sleepTime)
 	}
@@ -529,37 +537,38 @@ func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, require
 // WaitForPending will wait for a PR to move into Pending.  This is useful
 // because the request to test a PR again is asynchronous with the PR actually
 // moving into a pending state
-func (config *Config) WaitForPending(pr *github.PullRequest, requiredContexts []string) error {
+func (config *Config) WaitForPending(obj *MungeObject, requiredContexts []string) error {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan error, 1)
 	// Wait 45 minutes for the github e2e test to start
 	go timeout(45*time.Minute, timeoutChan)
-	go config.doWaitStatus(pr, true, requiredContexts, done)
+	go config.doWaitStatus(obj, true, requiredContexts, done)
 	select {
 	case err := <-done:
 		return err
 	case <-timeoutChan:
-		return fmt.Errorf("PR# %d timed out waiting to go \"pending\"", *pr.Number)
+		return fmt.Errorf("PR# %d timed out waiting to go \"pending\"", *obj.Issue.Number)
 	}
 }
 
 // WaitForNotPending will check if the github status is "pending" (CI still running)
 // if so it will sleep and try again until all required status hooks have complete
-func (config *Config) WaitForNotPending(pr *github.PullRequest, requiredContexts []string) error {
+func (config *Config) WaitForNotPending(obj *MungeObject, requiredContexts []string) error {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan error, 1)
 	// Wait and hour for the github e2e test to finish
 	go timeout(60*time.Minute, timeoutChan)
-	go config.doWaitStatus(pr, false, requiredContexts, done)
+	go config.doWaitStatus(obj, false, requiredContexts, done)
 	select {
 	case err := <-done:
 		return err
 	case <-timeoutChan:
-		return fmt.Errorf("PR# %d timed out waiting to go \"not pending\"", *pr.Number)
+		return fmt.Errorf("PR# %d timed out waiting to go \"not pending\"", *obj.Issue.Number)
 	}
 }
 
-func (config *Config) getCommits(prNum int) ([]github.RepositoryCommit, error) {
+func (config *Config) getCommits(obj *MungeObject) ([]github.RepositoryCommit, error) {
+	prNum := *obj.PR.Number
 	config.analytics.ListCommits.Call(config)
 	//TODO: this should handle paging, I believe....
 	commits, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
@@ -570,8 +579,8 @@ func (config *Config) getCommits(prNum int) ([]github.RepositoryCommit, error) {
 }
 
 // GetFilledCommits returns all of the commits for a given PR
-func (config *Config) GetFilledCommits(prNum int) ([]github.RepositoryCommit, error) {
-	commits, err := config.getCommits(prNum)
+func (config *Config) GetFilledCommits(obj *MungeObject) ([]github.RepositoryCommit, error) {
+	commits, err := config.getCommits(obj)
 	if err != nil {
 		return nil, err
 	}
@@ -591,18 +600,20 @@ func (config *Config) GetFilledCommits(prNum int) ([]github.RepositoryCommit, er
 // GetPR will return a pull request based on the provided number.
 // This may be useful if some of the information in the provided
 // PR was not filled out when it was retrieved.
-func (config *Config) GetPR(prNum int) (*github.PullRequest, error) {
+func (config *Config) GetPR(obj *MungeObject) (*github.PullRequest, error) {
+	issueNum := *obj.Issue.Number
 	config.analytics.GetPR.Call(config)
-	pr, _, err := config.client.PullRequests.Get(config.Org, config.Project, prNum)
+	pr, _, err := config.client.PullRequests.Get(config.Org, config.Project, issueNum)
 	if err != nil {
-		glog.Errorf("Error getting PR# %d: %v", prNum, err)
+		glog.Errorf("Error getting PR# %d: %v", issueNum, err)
 		return nil, err
 	}
 	return pr, nil
 }
 
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
-func (config *Config) AssignPR(prNum int, owner string) error {
+func (config *Config) AssignPR(obj *MungeObject, owner string) error {
+	prNum := *obj.PR.Number
 	config.analytics.AssignPR.Call(config)
 	assignee := &github.IssueRequest{Assignee: &owner}
 	if config.DryRun {
@@ -617,7 +628,8 @@ func (config *Config) AssignPR(prNum int, owner string) error {
 }
 
 // ClosePR will close the Given PR
-func (config *Config) ClosePR(pr *github.PullRequest) error {
+func (config *Config) ClosePR(obj *MungeObject) error {
+	pr := obj.PR
 	config.analytics.ClosePR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have closed PR# %d but --dry-run was set", *pr.Number)
@@ -635,7 +647,8 @@ func (config *Config) ClosePR(pr *github.PullRequest) error {
 // OpenPR will attempt to open the given PR.
 // It will attempt to reopen the pr `numTries` before returning an error
 // and giving up.
-func (config *Config) OpenPR(pr *github.PullRequest, numTries int) error {
+func (config *Config) OpenPR(obj *MungeObject, numTries int) error {
+	pr := obj.PR
 	config.analytics.OpenPR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have openned PR# %d but --dry-run was set", *pr.Number)
@@ -688,8 +701,8 @@ func (config *Config) GetFileContents(file, sha string) (string, error) {
 
 // MergePR will merge the given PR, duh
 // "who" is who is doing the merging, like "submit-queue"
-func (config *Config) MergePR(pr *github.PullRequest, who string) error {
-	prNum := *pr.Number
+func (config *Config) MergePR(obj *MungeObject, who string) error {
+	prNum := *obj.PR.Number
 	config.analytics.Merge.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have merged %d but --dry-run is set", prNum)
@@ -697,7 +710,7 @@ func (config *Config) MergePR(pr *github.PullRequest, who string) error {
 	}
 	glog.Infof("Merging PR# %d", prNum)
 	mergeBody := "Automatic merge from " + who
-	config.WriteComment(prNum, mergeBody)
+	config.WriteComment(obj, mergeBody)
 
 	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, "Auto commit by PR queue bot")
 
@@ -708,7 +721,7 @@ func (config *Config) MergePR(pr *github.PullRequest, who string) error {
 	// github is finished calculating. If my guess is correct, that also means we should be able to
 	// then merge this PR, so try again.
 	if err != nil && strings.Contains(err.Error(), "branch was modified. Review and try the merge again.") {
-		if mergeable, _ := config.IsPRMergeable(pr); mergeable {
+		if mergeable, _ := config.IsPRMergeable(obj); mergeable {
 			_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, "Auto commit by PR queue bot")
 		}
 	}
@@ -720,7 +733,8 @@ func (config *Config) MergePR(pr *github.PullRequest, who string) error {
 }
 
 // WriteComment will send the `msg` as a comment to the specified PR
-func (config *Config) WriteComment(prNum int, msg string) error {
+func (config *Config) WriteComment(obj *MungeObject, msg string) error {
+	prNum := *obj.PR.Number
 	config.analytics.CreateComment.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have commented %q in %d but --dry-run is set", msg, prNum)
@@ -738,14 +752,15 @@ func (config *Config) WriteComment(prNum int, msg string) error {
 // PR again if github did not respond the first time. So the hopefully github
 // will have a response the second time. If we have no answer twice, we return
 // false
-func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
+func (config *Config) IsPRMergeable(obj *MungeObject) (bool, error) {
+	pr := obj.PR
 	prNum := *pr.Number
 	if pr.Mergeable == nil {
 		var err error
 		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		// TODO: determine what a good empirical setting for this is.
 		time.Sleep(2 * time.Second)
-		pr, err = config.GetPR(*pr.Number)
+		pr, err = config.GetPR(obj)
 		if err != nil {
 			glog.Errorf("Unable to get PR# %d: %v", prNum, err)
 			return false, err
@@ -798,6 +813,7 @@ func (config *Config) ForEachIssueDo(fn IssueFunction) error {
 				glog.V(6).Infof("Dropping %d > %d", *issue.Number, config.MaxPRNumber)
 				continue
 			}
+			glog.V(2).Infof("----==== %d ====----", *issue.Number)
 			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks == nil)
 			if err := fn(config, issue); err != nil {
 				return err

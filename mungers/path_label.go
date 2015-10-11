@@ -88,9 +88,7 @@ func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (p *PathLabelMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
-	issue := obj.Issue
-	pr := obj.PR
+func (p *PathLabelMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
 	commits := obj.Commits
 
 	labelMap := *p.labelMap
@@ -99,7 +97,7 @@ func (p *PathLabelMunger) MungePullRequest(config *github.Config, obj github.Mun
 	for _, c := range commits {
 		for _, f := range c.Files {
 			for prefix, label := range labelMap {
-				if strings.HasPrefix(*f.Filename, prefix) && !github.HasLabel(issue.Labels, label) {
+				if strings.HasPrefix(*f.Filename, prefix) && !github.HasLabel(obj, label) {
 					needsLabels.Insert(label)
 				}
 			}
@@ -107,6 +105,6 @@ func (p *PathLabelMunger) MungePullRequest(config *github.Config, obj github.Mun
 	}
 
 	if needsLabels.Len() != 0 {
-		config.AddLabels(*pr.Number, needsLabels.List())
+		config.AddLabels(obj, needsLabels.List())
 	}
 }

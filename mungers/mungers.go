@@ -35,7 +35,7 @@ type PRMunger interface {
 	//   * The issue object for the PR, github stores some things (e.g. labels) in an "issue" object with the same number as the PR
 	//   * The commits for the PR
 	//   * The events on the PR
-	MungePullRequest(config *github_util.Config, obj github_util.MungeObject)
+	MungePullRequest(config *github_util.Config, obj *github_util.MungeObject)
 	AddFlags(cmd *cobra.Command, config *github_util.Config)
 	Name() string
 	Initialize(*github_util.Config) error
@@ -108,7 +108,11 @@ func RegisterMungerOrDie(munger PRMunger) {
 }
 
 func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
-	pr, err := config.GetPR(*issue.Number)
+	obj := github_util.MungeObject{
+		Issue: issue,
+	}
+
+	pr, err := config.GetPR(&obj)
 	if err != nil {
 		return nil
 	}
@@ -121,11 +125,12 @@ func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
 		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *issue.Number)
 		return nil
 	}
+	obj.PR = pr
 
 	if pr.Mergeable == nil {
 		glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		time.Sleep(2 * time.Second)
-		pr, err = config.GetPR(*pr.Number)
+		pr, err = config.GetPR(&obj)
 		if err != nil {
 			return err
 		}
@@ -134,24 +139,20 @@ func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
 		}
 	}
 
-	commits, err := config.GetFilledCommits(*issue.Number)
+	commits, err := config.GetFilledCommits(&obj)
 	if err != nil {
 		return err
 	}
+	obj.Commits = commits
 
-	events, err := config.GetAllEventsForPR(*issue.Number)
+	events, err := config.GetAllEventsForPR(&obj)
 	if err != nil {
 		return err
 	}
+	obj.Events = events
 
 	for _, munger := range mungers {
-		obj := github_util.MungeObject{
-			Issue:   issue,
-			PR:      pr,
-			Commits: commits,
-			Events:  events,
-		}
-		munger.MungePullRequest(config, obj)
+		munger.MungePullRequest(config, &obj)
 	}
 	return nil
 }

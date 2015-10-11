@@ -127,7 +127,7 @@ func (s *SizeMunger) getGeneratedFiles(config *github.Config) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *SizeMunger) MungePullRequest(config *github.Config, obj github.MungeObject) {
+func (s *SizeMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
 	issue := obj.Issue
 	pr := obj.PR
 	commits := obj.Commits
@@ -174,13 +174,13 @@ func (s *SizeMunger) MungePullRequest(config *github.Config, obj github.MungeObj
 			needsUpdate = false
 			continue
 		}
-		config.RemoveLabel(*pr.Number, l)
+		config.RemoveLabel(obj, l)
 	}
 	if needsUpdate {
-		config.AddLabels(*pr.Number, []string{newLabel})
+		config.AddLabels(obj, []string{newLabel})
 
 		body := fmt.Sprintf("Labelling this PR as %s", newLabel)
-		config.WriteComment(*pr.Number, body)
+		config.WriteComment(obj, body)
 	}
 }
 
