@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// package mungers deals with munging of github pull requests
+// Package mungers deals with munging of github pull requests
 package mungers

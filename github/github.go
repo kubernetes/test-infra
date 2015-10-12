@@ -135,6 +135,8 @@ func (a analytics) Print() {
 	glog.V(2).Infof("\n%v", buf)
 }
 
+// MungeObject is the object that mungers deal with. It is a combination of
+// different github API objects.
 type MungeObject struct {
 	config  *Config
 	Issue   *github.Issue
@@ -408,7 +410,7 @@ func (obj *MungeObject) IsPR() bool {
 	return true
 }
 
-// GetAllEventsForPR returns a list of all events for a given pr.
+// GetEvents returns a list of all events for a given pr.
 func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
 	if obj.events != nil {
 		return obj.events, nil
@@ -787,7 +789,7 @@ func (obj *MungeObject) WriteComment(msg string) error {
 	return nil
 }
 
-// IsPRMergeable will return if the PR is mergeable. It will pause and get the
+// IsMergeable will return if the PR is mergeable. It will pause and get the
 // PR again if github did not respond the first time. So the hopefully github
 // will have a response the second time. If we have no answer twice, we return
 // false
@@ -834,10 +836,9 @@ func (obj *MungeObject) IsMerged() (bool, error) {
 	return *pr.Merged, nil
 }
 
-// For each Issue in the project that matches:
+// ForEachIssueDo will run for each Issue in the project that matches:
 //   * pr.Number >= minPRNumber
 //   * pr.Number <= maxPRNumber
-//   * all labels are on the PR
 func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	page := 1
 	for {

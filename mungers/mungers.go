@@ -100,34 +100,18 @@ func RegisterMungerOrDie(munger Munger) {
 	}
 }
 
+// MungeIssue will call each activated munger with the given object
 func MungeIssue(obj *github.MungeObject) error {
 	// This really belongs in the individual munger
 	if !obj.IsPR() {
 		return nil
 	}
 
-	_, err := obj.GetPR()
-	if err != nil {
+	if merged, err := obj.IsMerged(); err != nil {
 		return err
-	}
-
-	merged, err := obj.IsMerged()
-	if err != nil {
-		return err
-	}
-	if merged {
+	} else if merged {
 		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *obj.Issue.Number)
 		return nil
-	}
-
-	_, err = obj.GetCommits()
-	if err != nil {
-		return err
-	}
-
-	_, err = obj.GetEvents()
-	if err != nil {
-		return err
 	}
 
 	for _, munger := range mungers {
