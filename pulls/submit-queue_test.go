@@ -551,7 +551,7 @@ func TestMungePullRequest(t *testing.T) {
 			commits:       Commits(),
 			jenkinsJob:    SuccessJenkins(),
 			githubE2EPass: false,
-			reason:        githube2e,
+			reason:        ghE2EQueued,
 		},
 		// Fail because the second run of github e2e tests failed
 		{
@@ -563,7 +563,7 @@ func TestMungePullRequest(t *testing.T) {
 			jenkinsJob:       SuccessJenkins(),
 			githubE2EPass:    false,
 			shouldWaitForE2E: true,
-			reason:           githube2efail,
+			reason:           ghE2EFailed,
 		},
 	}
 	for testNum, test := range tests {

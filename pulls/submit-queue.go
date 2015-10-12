@@ -222,8 +222,10 @@ var (
 	ciFailure               = "Github CI tests are not green."
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
 	merged                  = "MERGED!"
-	githube2e               = "Running github e2e tests a second time."
-	githube2efail           = "Second github e2e run failed."
+	ghE2EQueued             = "Queued to run github e2e tests a second time."
+	ghE2EWaitingStart       = "Requested and waiting for github e2e test to start running a second time."
+	ghE2ERunning            = "Running github e2e tests a second time."
+	ghE2EFailed             = "Second github e2e run failed."
 )
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
@@ -306,7 +308,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 		return
 	}
 
-	sq.SetPRStatus(pr, githube2e)
+	sq.SetPRStatus(pr, ghE2EQueued)
 	sq.Lock()
 	sq.githubE2ERequest <- true
 	sq.needsGithubE2E[*pr.Number] = pr
@@ -375,14 +377,16 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 	}
 
 	// Wait for the build to start
+	sq.SetPRStatus(pr, ghE2EWaitingStart)
 	_ = sq.githubConfig.WaitForPending(pr)
 	// Wait for the status to go back to something other than pending
+	sq.SetPRStatus(pr, ghE2ERunning)
 	_ = sq.githubConfig.WaitForNotPending(pr)
 
 	// Check if the thing we care about is success
 	if ok := sq.githubConfig.IsStatusSuccess(pr, []string{gceE2EContext}); !ok {
 		glog.Infof("Status after build is not 'success', skipping PR %d", *pr.Number)
-		sq.SetPRStatus(pr, githube2efail)
+		sq.SetPRStatus(pr, ghE2EFailed)
 		return
 	}
 
