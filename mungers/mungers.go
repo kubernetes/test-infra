@@ -26,29 +26,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// PRMunger is the interface which all mungers must implement to register
-type PRMunger interface {
-	// Take action on a specific pull request includes:
-	//   * The config for mungers
-	//   * The PR object
-	//   * The issue object for the PR, github stores some things (e.g. labels) in an "issue" object with the same number as the PR
-	//   * The commits for the PR
-	//   * The events on the PR
-	MungePullRequest(config *github.Config, obj *github.MungeObject)
+// Munger is the interface which all mungers must implement to register
+type Munger interface {
+	// Take action on a specific github issue:
+	MungePullRequest(obj *github.MungeObject)
 	AddFlags(cmd *cobra.Command, config *github.Config)
 	Name() string
 	Initialize(*github.Config) error
 	EachLoop(*github.Config) error
 }
 
-var mungerMap = map[string]PRMunger{}
-var mungers = []PRMunger{}
+var mungerMap = map[string]Munger{}
+var mungers = []Munger{}
 
 // GetAllMungers returns a slice of all registered mungers. This list is
 // completely independant of the mungers selected at runtime in --pr-mungers.
 // This is all possible mungers.
-func GetAllMungers() []PRMunger {
-	out := []PRMunger{}
+func GetAllMungers() []Munger {
+	out := []Munger{}
 	for _, munger := range mungerMap {
 		out = append(out, munger)
 	}
@@ -57,7 +52,7 @@ func GetAllMungers() []PRMunger {
 
 // GetActiveMungers returns a slice of all mungers which both registered and
 // were requested by the user
-func GetActiveMungers() []PRMunger {
+func GetActiveMungers() []Munger {
 	return mungers
 }
 
@@ -90,7 +85,7 @@ func EachLoop(config *github.Config) error {
 
 // RegisterMunger should be called in `init()` by each munger to make itself
 // available by name
-func RegisterMunger(munger PRMunger) error {
+func RegisterMunger(munger Munger) error {
 	if _, found := mungerMap[munger.Name()]; found {
 		return fmt.Errorf("a munger with that name (%s) already exists", munger.Name())
 	}
@@ -100,14 +95,14 @@ func RegisterMunger(munger PRMunger) error {
 }
 
 // RegisterMungerOrDie will call RegisterMunger but will be fatal on error
-func RegisterMungerOrDie(munger PRMunger) {
+func RegisterMungerOrDie(munger Munger) {
 	if err := RegisterMunger(munger); err != nil {
 		glog.Fatalf("Failed to register munger: %s", err)
 	}
 }
 
-func MungeIssue(config *github.Config, obj *github.MungeObject) error {
-	pr, err := config.GetPR(obj)
+func MungeIssue(obj *github.MungeObject) error {
+	pr, err := obj.GetPR()
 	if err != nil {
 		return nil
 	}
@@ -125,7 +120,7 @@ func MungeIssue(config *github.Config, obj *github.MungeObject) error {
 	if pr.Mergeable == nil {
 		glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		time.Sleep(2 * time.Second)
-		pr, err = config.GetPR(obj)
+		pr, err = obj.GetPR()
 		if err != nil {
 			return err
 		}
@@ -134,20 +129,20 @@ func MungeIssue(config *github.Config, obj *github.MungeObject) error {
 		}
 	}
 
-	commits, err := config.GetFilledCommits(obj)
+	commits, err := obj.GetFilledCommits()
 	if err != nil {
 		return err
 	}
 	obj.Commits = commits
 
-	events, err := config.GetAllEventsForPR(obj)
+	events, err := obj.GetAllEventsForPR()
 	if err != nil {
 		return err
 	}
 	obj.Events = events
 
 	for _, munger := range mungers {
-		munger.MungePullRequest(config, obj)
+		munger.MungePullRequest(obj)
 	}
 	return nil
 }

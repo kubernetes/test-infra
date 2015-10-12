@@ -66,7 +66,7 @@ const labelSizePrefix = "size/"
 // our results are slightly wrong, who cares? Instead look for the
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
-func (s *SizeMunger) getGeneratedFiles(config *github.Config) {
+func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	if s.genFiles != nil {
 		return
 	}
@@ -105,7 +105,7 @@ func (s *SizeMunger) getGeneratedFiles(config *github.Config) {
 		} else if eType == "path" {
 			files.Insert(file)
 		} else if eType == "paths-from-repo" {
-			docs, err := config.GetFileContents(file, "")
+			docs, err := obj.GetFileContents(file, "")
 			if err != nil {
 				continue
 			}
@@ -127,12 +127,12 @@ func (s *SizeMunger) getGeneratedFiles(config *github.Config) {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *SizeMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
+func (s *SizeMunger) MungePullRequest(obj *github.MungeObject) {
 	issue := obj.Issue
 	pr := obj.PR
 	commits := obj.Commits
 
-	s.getGeneratedFiles(config)
+	s.getGeneratedFiles(obj)
 	genFiles := *s.genFiles
 	genPrefixes := *s.genPrefixes
 
@@ -174,13 +174,13 @@ func (s *SizeMunger) MungePullRequest(config *github.Config, obj *github.MungeOb
 			needsUpdate = false
 			continue
 		}
-		config.RemoveLabel(obj, l)
+		obj.RemoveLabel(l)
 	}
 	if needsUpdate {
-		config.AddLabels(obj, []string{newLabel})
+		obj.AddLabels([]string{newLabel})
 
 		body := fmt.Sprintf("Labelling this PR as %s", newLabel)
-		config.WriteComment(obj, body)
+		obj.WriteComment(body)
 	}
 }
 

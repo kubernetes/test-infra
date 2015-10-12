@@ -106,7 +106,7 @@ func describeUser(u *github_api.User) string {
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (b *BlunderbussMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
+func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 	issue := obj.Issue
 	pr := obj.PR
 	commits := obj.Commits
@@ -164,5 +164,5 @@ func (b *BlunderbussMunger) MungePullRequest(config *github.Config, obj *github.
 		}
 	}
 	glog.Infof("Assigning %v to %v (previously assigned to %v)", *pr.Number, owner, describeUser(issue.Assignee))
-	config.AssignPR(obj, owner)
+	obj.AssignPR(owner)
 }

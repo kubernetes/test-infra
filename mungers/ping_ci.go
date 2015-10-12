@@ -46,22 +46,22 @@ func (PingCIMunger) EachLoop(_ *github.Config) error { return nil }
 func (PingCIMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (PingCIMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
+func (PingCIMunger) MungePullRequest(obj *github.MungeObject) {
 	pr := obj.PR
 
-	if !github.HasLabel(obj, "lgtm") {
+	if !obj.HasLabel("lgtm") {
 		return
 	}
-	if mergeable, err := config.IsPRMergeable(obj); err != nil {
+	if mergeable, err := obj.IsPRMergeable(); err != nil {
 		glog.V(2).Infof("Skipping %d - problem determining mergeability", *pr.Number)
 	} else if !mergeable {
 		glog.V(2).Infof("Skipping %d - not mergeable", *pr.Number)
 	}
-	if status, err := config.GetStatus(obj, []string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
+	if status, err := obj.GetStatus([]string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
 		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsCIContext)
 		return
 	}
-	status, err := config.GetStatus(obj, []string{shippableContext, travisContext})
+	status, err := obj.GetStatus([]string{shippableContext, travisContext})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
@@ -69,10 +69,10 @@ func (PingCIMunger) MungePullRequest(config *github.Config, obj *github.MungeObj
 	if status == "incomplete" {
 		glog.V(2).Infof("status is incomplete, closing and re-opening")
 		msg := "Continuous integration appears to have missed, closing and re-opening to trigger it"
-		config.WriteComment(obj, msg)
+		obj.WriteComment(msg)
 
-		config.ClosePR(obj)
+		obj.ClosePR()
 		time.Sleep(5 * time.Second)
-		config.OpenPR(obj, 10)
+		obj.OpenPR(10)
 	}
 }

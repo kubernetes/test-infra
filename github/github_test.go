@@ -89,7 +89,7 @@ func TestHasLabel(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if test.hasLabel != HasLabel(&test.obj, test.label) {
+		if test.hasLabel != test.obj.HasLabel(test.label) {
 			t.Errorf("Unexpected output: %v", test)
 		}
 	}
@@ -161,7 +161,7 @@ func TestHasLabels(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if test.hasLabel != HasLabels(&test.obj, test.seekLabels) {
+		if test.hasLabel != test.obj.HasLabels(test.seekLabels) {
 			t.Errorf("Unexpected output: %v", test)
 		}
 	}
@@ -292,7 +292,7 @@ func TestForEachIssueDo(t *testing.T) {
 			count++
 		})
 		objects := []*MungeObject{}
-		handle := func(config *Config, obj *MungeObject) error {
+		handle := func(obj *MungeObject) error {
 			objects = append(objects, obj)
 			return nil
 		}
@@ -573,14 +573,12 @@ func TestGetLastModified(t *testing.T) {
 			}
 			w.Write(data)
 			obj := &MungeObject{
+				config: config,
 				Issue: issuePtr(github.Issue{
 					Number: intPtr(1),
 				}),
 			}
-			ts, err := config.LastModifiedTime(obj)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+			ts := obj.LastModifiedTime()
 			if !ts.Equal(*test.expectedTime) {
 				t.Errorf("expected: %v, saw: %v", test.expectedTime, ts)
 			}

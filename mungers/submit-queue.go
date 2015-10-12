@@ -274,7 +274,7 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	contexts := sq.RequiredStatusContexts
 
 	// If the pr has a jenkins ci status, require it, otherwise require shippable
-	if status, err := sq.githubConfig.GetStatus(obj, []string{jenkinsCIContext}); err == nil && status != "incomplete" {
+	if status, err := obj.GetStatus([]string{jenkinsCIContext}); err == nil && status != "incomplete" {
 		contexts = append(contexts, jenkinsCIContext)
 	} else {
 		contexts = append(contexts, shippableContext)
@@ -283,18 +283,18 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 }
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (sq *SubmitQueue) MungePullRequest(config *github.Config, obj *github.MungeObject) {
+func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
 	pr := obj.PR
 
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
 
-	if !github.HasLabels(obj, []string{"cla: yes"}) {
+	if !obj.HasLabels([]string{"cla: yes"}) {
 		sq.SetMergeStatus(obj, noCLA)
 		return
 	}
 
-	if mergeable, err := config.IsPRMergeable(obj); err != nil {
+	if mergeable, err := obj.IsPRMergeable(); err != nil {
 		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
 		sq.SetMergeStatus(obj, undeterminedMergability)
 		return
@@ -306,38 +306,38 @@ func (sq *SubmitQueue) MungePullRequest(config *github.Config, obj *github.Munge
 
 	// Validate the status information for this PR
 	contexts := sq.requiredStatusContexts(obj)
-	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !github.HasLabel(obj, sq.DontRequireE2ELabel)) {
+	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !obj.HasLabel(sq.DontRequireE2ELabel)) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
-	if ok := config.IsStatusSuccess(obj, contexts); !ok {
+	if ok := obj.IsStatusSuccess(contexts); !ok {
 		glog.Errorf("PR# %d Github CI status is not success", *pr.Number)
 		sq.SetMergeStatus(obj, ciFailure)
 		return
 	}
 
-	if !github.HasLabel(obj, sq.WhitelistOverride) && !userSet.Has(*pr.User.Login) {
+	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*pr.User.Login) {
 		glog.V(4).Infof("Dropping %d since %s isn't in whitelist and %s isn't present", *pr.Number, *pr.User.Login, sq.WhitelistOverride)
-		if !github.HasLabel(obj, needsOKToMergeLabel) {
-			config.AddLabels(obj, []string{needsOKToMergeLabel})
+		if !obj.HasLabel(needsOKToMergeLabel) {
+			obj.AddLabels([]string{needsOKToMergeLabel})
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
-			config.WriteComment(obj, body)
+			obj.WriteComment(body)
 		}
 		sq.SetMergeStatus(obj, needsok)
 		return
 	}
 
 	// Tidy up the issue list.
-	if github.HasLabel(obj, needsOKToMergeLabel) {
-		config.RemoveLabel(obj, needsOKToMergeLabel)
+	if obj.HasLabel(needsOKToMergeLabel) {
+		obj.RemoveLabel(needsOKToMergeLabel)
 	}
 
-	if !github.HasLabels(obj, []string{"lgtm"}) {
+	if !obj.HasLabels([]string{"lgtm"}) {
 		sq.SetMergeStatus(obj, noLGTM)
 		return
 	}
 
-	lastModifiedTime := github.LastModifiedTime(obj)
-	lgtmTime := github.LabelTime(obj, "lgtm")
+	lastModifiedTime := obj.LastModifiedTime()
+	lgtmTime := obj.LabelTime("lgtm")
 
 	if lastModifiedTime == nil || lgtmTime == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *pr.Number)
@@ -358,8 +358,8 @@ func (sq *SubmitQueue) MungePullRequest(config *github.Config, obj *github.Munge
 	}
 
 	// if there is a 'e2e-not-required' label, just merge it.
-	if len(sq.DontRequireE2ELabel) > 0 && github.HasLabel(obj, sq.DontRequireE2ELabel) {
-		config.MergePR(obj, "submit-queue")
+	if len(sq.DontRequireE2ELabel) > 0 && obj.HasLabel(sq.DontRequireE2ELabel) {
+		obj.MergePR("submit-queue")
 		sq.SetMergeStatus(obj, merged)
 		return
 	}
@@ -448,7 +448,7 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
-	newpr, err := sq.githubConfig.GetPR(obj)
+	newpr, err := obj.GetPR()
 	if err != nil {
 		sq.SetMergeStatus(obj, unknown)
 		return
@@ -460,7 +460,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	if mergeable, err := sq.githubConfig.IsPRMergeable(obj); err != nil {
+	if mergeable, err := obj.IsPRMergeable(); err != nil {
 		sq.SetMergeStatus(obj, undeterminedMergability)
 		return
 	} else if !mergeable {
@@ -469,14 +469,14 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
-	if err := sq.githubConfig.WriteComment(obj, body); err != nil {
+	if err := obj.WriteComment(body); err != nil {
 		sq.SetMergeStatus(obj, unknown)
 		return
 	}
 
 	// Wait for the build to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart)
-	err = sq.githubConfig.WaitForPending(obj, []string{sq.E2EStatusContext})
+	err = obj.WaitForPending([]string{sq.E2EStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
 		sq.SetMergeStatus(obj, s)
@@ -487,7 +487,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning)
-	err = sq.githubConfig.WaitForNotPending(obj, contexts)
+	err = obj.WaitForNotPending(contexts)
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
 		sq.SetMergeStatus(obj, s)
@@ -495,7 +495,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	// Check if the thing we care about is success
-	if ok := sq.githubConfig.IsStatusSuccess(obj, []string{gceE2EContext}); !ok {
+	if ok := obj.IsStatusSuccess([]string{gceE2EContext}); !ok {
 		glog.Infof("Status after build is not 'success', skipping PR %d", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, ghE2EFailed)
 		return
@@ -507,7 +507,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	sq.githubConfig.MergePR(obj, "submit-queue")
+	obj.MergePR("submit-queue")
 	sq.SetMergeStatus(obj, merged)
 	return
 }

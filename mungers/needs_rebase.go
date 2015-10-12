@@ -46,18 +46,18 @@ func (NeedsRebaseMunger) EachLoop(_ *github.Config) error { return nil }
 func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (NeedsRebaseMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
+func (NeedsRebaseMunger) MungePullRequest(obj *github.MungeObject) {
 	pr := obj.PR
 
-	mergeable, err := config.IsPRMergeable(obj)
+	mergeable, err := obj.IsPRMergeable()
 	if err != nil {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *pr.Number)
 		return
 	}
-	if mergeable && github.HasLabel(obj, needsRebase) {
-		config.RemoveLabel(obj, needsRebase)
+	if mergeable && obj.HasLabel(needsRebase) {
+		obj.RemoveLabel(needsRebase)
 	}
-	if !mergeable && !github.HasLabel(obj, needsRebase) {
-		config.AddLabels(obj, []string{needsRebase})
+	if !mergeable && !obj.HasLabel(needsRebase) {
+		obj.AddLabels([]string{needsRebase})
 	}
 }

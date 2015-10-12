@@ -44,11 +44,11 @@ func (OkToTestMunger) EachLoop(_ *github.Config) error { return nil }
 func (OkToTestMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
-func (OkToTestMunger) MungePullRequest(config *github.Config, obj *github.MungeObject) {
-	if !github.HasLabel(obj, "lgtm") {
+func (OkToTestMunger) MungePullRequest(obj *github.MungeObject) {
+	if !obj.HasLabel("lgtm") {
 		return
 	}
-	status, err := config.GetStatus(obj, []string{"Jenkins GCE e2e"})
+	status, err := obj.GetStatus([]string{"Jenkins GCE e2e"})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
@@ -58,6 +58,6 @@ func (OkToTestMunger) MungePullRequest(config *github.Config, obj *github.MungeO
 		msg := `@k8s-bot ok to test
 
 	pr builder appears to be missing, activating due to 'lgtm' label.`
-		config.WriteComment(obj, msg)
+		obj.WriteComment(msg)
 	}
 }

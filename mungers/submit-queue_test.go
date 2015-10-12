@@ -153,20 +153,21 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 					Number: intPtr(1),
 				}),
 			}
-			commits, err := config.GetFilledCommits(&obj)
+			obj.SetConfig(config)
+			commits, err := obj.GetFilledCommits()
 			if err != nil {
 				t.Errorf("Unexpected error getting filled commits: %v", err)
 			}
 			obj.Commits = commits
 
-			events, err := config.GetAllEventsForPR(&obj)
+			events, err := obj.GetAllEventsForPR()
 			if err != nil {
 				t.Errorf("Unexpected error getting events commits: %v", err)
 			}
 			obj.Events = events
 
-			lastModifiedTime := github_util.LastModifiedTime(&obj)
-			lgtmTime := github_util.LabelTime(&obj, "lgtm")
+			lastModifiedTime := obj.LastModifiedTime()
+			lgtmTime := obj.LabelTime("lgtm")
 
 			if lastModifiedTime == nil || lgtmTime == nil {
 				t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
@@ -750,7 +751,8 @@ func TestMungePullRequest(t *testing.T) {
 			Commits: test.commits,
 			Events:  test.events,
 		}
-		sq.MungePullRequest(config, &obj)
+		obj.SetConfig(config)
+		sq.MungePullRequest(&obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {
 			for sq.prStatus["1"].Reason != reason {
