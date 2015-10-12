@@ -55,6 +55,12 @@ func GetAllMungers() []PRMunger {
 	return out
 }
 
+// GetActiveMungers returns a slice of all mungers which both registered and
+// were requested by the user
+func GetActiveMungers() []PRMunger {
+	return mungers
+}
+
 // InitializeMungers will call munger.Initialize() for all mungers requested
 // in --pr-mungers
 func InitializeMungers(requestedMungers []string, config *github_util.Config) error {
@@ -100,17 +106,39 @@ func RegisterMungerOrDie(munger PRMunger) {
 	}
 }
 
-func mungePR(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue) error {
-	if pr == nil {
-		fmt.Printf("found nil pr\n")
+func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
+	pr, err := config.GetPR(*issue.Number)
+	if err != nil {
+		return nil
 	}
 
-	commits, err := config.GetFilledCommits(*pr.Number)
+	if pr == nil {
+		fmt.Printf("Issue %d is not a PR, skipping.\n", *issue.Number)
+	}
+
+	if pr.Merged != nil && *pr.Merged {
+		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *issue.Number)
+		return nil
+	}
+
+	if pr.Mergeable == nil {
+		glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
+		time.Sleep(2 * time.Second)
+		pr, err = config.GetPR(*pr.Number)
+		if err != nil {
+			return err
+		}
+		if pr.Mergeable == nil {
+			glog.Infof("No mergeability for PR %d after pause. Maybe increase pause time?", *pr.Number)
+		}
+	}
+
+	commits, err := config.GetFilledCommits(*issue.Number)
 	if err != nil {
 		return err
 	}
 
-	events, err := config.GetAllEventsForPR(*pr.Number)
+	events, err := config.GetAllEventsForPR(*issue.Number)
 	if err != nil {
 		return err
 	}
@@ -118,18 +146,5 @@ func mungePR(config *github_util.Config, pr *github_api.PullRequest, issue *gith
 	for _, munger := range mungers {
 		munger.MungePullRequest(config, pr, issue, commits, events)
 	}
-	return nil
-}
-
-// MungePullRequests is the main function which asks that each munger be called
-// for each PR
-func MungePullRequests(config *github_util.Config) error {
-	mfunc := func(pr *github_api.PullRequest, issue *github_api.Issue) error {
-		return mungePR(config, pr, issue)
-	}
-	if err := config.ForEachPRDo(mfunc); err != nil {
-		return err
-	}
-
 	return nil
 }

@@ -48,19 +48,14 @@ func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
 }
 
 func doMungers(config *mungeConfig) error {
-	if len(config.PRMungersList) == 0 {
-		glog.Fatalf("must include at least one --issue-mungers or --pr-mungers")
-	}
 	for {
 		nextRunStartTime := time.Now().Add(config.Period)
-		if len(config.PRMungersList) > 0 {
-			glog.Infof("Running PR mungers")
-			if err := mungers.EachLoop(&config.Config); err != nil {
-				glog.Errorf("Error in EachLoop: %v", err)
-			}
-			if err := mungers.MungePullRequests(&config.Config); err != nil {
-				glog.Errorf("Error munging PRs: %v", err)
-			}
+		glog.Infof("Running mungers")
+
+		mungers.EachLoop(&config.Config)
+
+		if err := config.ForEachIssueDo(mungers.MungeIssue); err != nil {
+			glog.Errorf("Error munging PRs: %v", err)
 		}
 		config.ResetAPICount()
 		if config.Once {
@@ -86,6 +81,9 @@ func main() {
 			if err := config.PreExecute(); err != nil {
 				return err
 			}
+			if len(config.PRMungersList) == 0 {
+				glog.Fatalf("must include at least one --pr-mungers")
+			}
 			mungers.InitializeMungers(config.PRMungersList, &config.Config)
 			return doMungers(config)
 		},
@@ -93,8 +91,8 @@ func main() {
 	config.AddRootFlags(root)
 	addMungeFlags(config, root)
 
-	prMungers := mungers.GetAllMungers()
-	for _, m := range prMungers {
+	allMungers := mungers.GetAllMungers()
+	for _, m := range allMungers {
 		m.AddFlags(root, &config.Config)
 	}
 

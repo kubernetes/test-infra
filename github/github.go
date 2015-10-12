@@ -305,11 +305,8 @@ func (config *Config) RemoveLabel(prNum int, label string) error {
 	return nil
 }
 
-// PRFunction is the type that must be implemented and passed to ForEachPRDo
-type PRFunction func(*github.PullRequest, *github.Issue) error
-
 // IssueFunction is the type that must be implemented and passed to ForEachIssueDo
-type IssueFunction func(*github.Issue) error
+type IssueFunction func(*Config, *github.Issue) error
 
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
@@ -762,8 +759,7 @@ func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
 //   * pr.Number >= minPRNumber
 //   * pr.Number <= maxPRNumber
 //   * all labels are on the PR
-// Run the specified function
-func (config *Config) forEachIssueDo(fn IssueFunction) error {
+func (config *Config) ForEachIssueDo(fn IssueFunction) error {
 	page := 1
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
@@ -796,7 +792,7 @@ func (config *Config) forEachIssueDo(fn IssueFunction) error {
 				continue
 			}
 			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks == nil)
-			if err := fn(issue); err != nil {
+			if err := fn(config, issue); err != nil {
 				return err
 			}
 		}
@@ -806,49 +802,4 @@ func (config *Config) forEachIssueDo(fn IssueFunction) error {
 		page++
 	}
 	return nil
-}
-
-// ForEachIssueDo will call the provided IssueFunction once for each issue
-func (config *Config) ForEachIssueDo(fn IssueFunction) error {
-	handleIssue := func(issue *github.Issue) error {
-		if issue.PullRequestLinks != nil {
-			return nil
-		}
-		glog.V(2).Infof("----==== %d ====----", *issue.Number)
-
-		return fn(issue)
-	}
-	return config.forEachIssueDo(handleIssue)
-}
-
-// ForEachPRDo will call the provided PRFunction once for each issue
-func (config *Config) ForEachPRDo(fn PRFunction) error {
-	handlePR := func(issue *github.Issue) error {
-		if issue.PullRequestLinks == nil {
-			return nil
-		}
-		pr, err := config.GetPR(*issue.Number)
-		if err != nil {
-			return err
-		}
-		if pr.Merged != nil && *pr.Merged {
-			glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *issue.Number)
-			return nil
-		}
-		glog.V(2).Infof("----==== %d ====----", *issue.Number)
-
-		if pr.Mergeable == nil {
-			glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
-			time.Sleep(2 * time.Second)
-			pr, err = config.GetPR(*pr.Number)
-			if err != nil {
-				return err
-			}
-			if pr.Mergeable == nil {
-				glog.Infof("No mergeability for PR %d after pause. Maybe increase pause time?", *pr.Number)
-			}
-		}
-		return fn(pr, issue)
-	}
-	return config.forEachIssueDo(handlePR)
 }

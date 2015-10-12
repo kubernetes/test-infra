@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -131,151 +130,100 @@ func TestHasLabels(t *testing.T) {
 	}
 }
 
-// For getting an initializied int pointer.
-func intp(i int) *int          { return &i }
-func stringp(s string) *string { return &s }
-func boolp(b bool) *bool       { return &b }
-
-func PR(num int, merged bool) github.PullRequest {
-	pr := github.PullRequest{
-		Title:     stringp("Test PR Title"),
-		Number:    intp(num),
-		Merged:    boolp(merged),
-		Mergeable: boolp(true),
-	}
-	return pr
-}
-
-func TestForEachPRDo(t *testing.T) {
-	prlinks := github.PullRequestLinks{}
-	user := github.User{Login: stringp("bob")}
+func TestForEachIssueDo(t *testing.T) {
+	user := github.User{Login: stringPtr("bob")}
 	tests := []struct {
-		Issues   [][]github.Issue
-		PRs      map[int]github.PullRequest
-		Pages    []int
-		ValidPRs int
+		Issues      [][]github.Issue
+		Pages       []int
+		ValidIssues int
 	}{
 		{
 			Issues: [][]github.Issue{
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(1),
-						User:             &user,
+						Number: intPtr(5),
+						User:   &user,
 					},
 				},
 			},
-			PRs: map[int]github.PullRequest{
-				1: PR(1, false),
-			},
-			Pages:    []int{0},
-			ValidPRs: 1,
+			Pages:       []int{0},
+			ValidIssues: 1,
 		},
 		{
 			Issues: [][]github.Issue{
 				{
 					{
-						Number: intp(1),
+						Number: intPtr(5),
 						User:   &user,
 					},
 				},
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(2),
-						User:             &user,
+						Number: intPtr(6),
+						User:   &user,
 					},
 				},
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(3),
-						User:             &user,
+						Number: intPtr(7),
+						User:   &user,
 					},
 				},
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(4),
-						User:             &user,
+						Number: intPtr(8),
+						// no User, invalid
 					},
 				},
 			},
-			PRs: map[int]github.PullRequest{
-				2: PR(2, false),
-				3: PR(3, true),
-				4: PR(4, false),
-			},
-			Pages:    []int{4, 4, 4, 0},
-			ValidPRs: 2,
+			Pages:       []int{4, 4, 4, 0},
+			ValidIssues: 3,
 		},
 		{
 			Issues: [][]github.Issue{
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(1),
-						User:             &user,
+						// Invalid 1 < MinPRNumber
+						Number: intPtr(1),
+						User:   &user,
 					},
 				},
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(2),
-						User:             &user,
+						// Invalid 20 > MaxPRNumber
+						Number: intPtr(20),
+						User:   &user,
 					},
 				},
 				{
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(3),
-						User:             &user,
+						Number: intPtr(5),
+						User:   &user,
 					},
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(4),
-						User:             &user,
+						Number: intPtr(6),
+						User:   &user,
 					},
 					{
-						PullRequestLinks: &prlinks,
-						Number:           intp(5),
-						User:             &user,
+						// no Number, invalid
+						User: &user,
 					},
 				},
 			},
-			PRs: map[int]github.PullRequest{
-				1: PR(1, false),
-				2: PR(2, false),
-				3: PR(3, false),
-				4: PR(4, true),
-				5: PR(5, false),
-			},
-			Pages:    []int{3, 3, 0},
-			ValidPRs: 4,
+			Pages:       []int{3, 3, 0},
+			ValidIssues: 2,
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		client, server, mux := github_test.InitTest()
 		config := &Config{
 			client:      client,
 			Org:         "foo",
 			Project:     "bar",
-			MaxPRNumber: 32768,
+			MinPRNumber: 5,
+			MaxPRNumber: 15,
 		}
-		mux.HandleFunc("/repos/foo/bar/pulls/", func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			prNumS := strings.TrimPrefix(r.URL.Path, "/repos/foo/bar/pulls/")
-			prNum, _ := strconv.Atoi(prNumS)
-			data, err := json.Marshal(test.PRs[prNum])
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-
-			w.Write(data)
-		})
 		count := 0
 		mux.HandleFunc("/repos/foo/bar/issues", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
@@ -306,21 +254,21 @@ func TestForEachPRDo(t *testing.T) {
 			w.Write(data)
 			count++
 		})
-		prs := []*github.PullRequest{}
-		handle := func(pr *github.PullRequest, issue *github.Issue) error {
-			prs = append(prs, pr)
+		issues := []*github.Issue{}
+		handle := func(config *Config, issue *github.Issue) error {
+			issues = append(issues, issue)
 			return nil
 		}
-		err := config.ForEachPRDo(handle)
+		err := config.ForEachIssueDo(handle)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if len(prs) != test.ValidPRs {
-			t.Errorf("unexpected output %d vs %d", len(prs), test.ValidPRs)
+		if len(issues) != test.ValidIssues {
+			t.Errorf("Test: %d Unexpected output %d vs %d", i, len(issues), test.ValidIssues)
 		}
 
 		if count != len(test.Issues) {
-			t.Errorf("unexpected number of fetches: %d", count)
+			t.Errorf("Test: %d Unexpected number of fetches: %d", i, count)
 		}
 		server.Close()
 	}
