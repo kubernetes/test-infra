@@ -291,17 +291,17 @@ func TestForEachIssueDo(t *testing.T) {
 			w.Write(data)
 			count++
 		})
-		issues := []*github.Issue{}
-		handle := func(config *Config, issue *github.Issue) error {
-			issues = append(issues, issue)
+		objects := []*MungeObject{}
+		handle := func(config *Config, obj *MungeObject) error {
+			objects = append(objects, obj)
 			return nil
 		}
 		err := config.ForEachIssueDo(handle)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if len(issues) != test.ValidIssues {
-			t.Errorf("Test: %d Unexpected output %d vs %d", i, len(issues), test.ValidIssues)
+		if len(objects) != test.ValidIssues {
+			t.Errorf("Test: %d Unexpected output %d vs %d", i, len(objects), test.ValidIssues)
 		}
 
 		if count != len(test.Issues) {

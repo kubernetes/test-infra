@@ -20,10 +20,9 @@ import (
 	"fmt"
 	"time"
 
-	github_util "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
-	github_api "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -35,11 +34,11 @@ type PRMunger interface {
 	//   * The issue object for the PR, github stores some things (e.g. labels) in an "issue" object with the same number as the PR
 	//   * The commits for the PR
 	//   * The events on the PR
-	MungePullRequest(config *github_util.Config, obj *github_util.MungeObject)
-	AddFlags(cmd *cobra.Command, config *github_util.Config)
+	MungePullRequest(config *github.Config, obj *github.MungeObject)
+	AddFlags(cmd *cobra.Command, config *github.Config)
 	Name() string
-	Initialize(*github_util.Config) error
-	EachLoop(*github_util.Config) error
+	Initialize(*github.Config) error
+	EachLoop(*github.Config) error
 }
 
 var mungerMap = map[string]PRMunger{}
@@ -64,7 +63,7 @@ func GetActiveMungers() []PRMunger {
 
 // InitializeMungers will call munger.Initialize() for all mungers requested
 // in --pr-mungers
-func InitializeMungers(requestedMungers []string, config *github_util.Config) error {
+func InitializeMungers(requestedMungers []string, config *github.Config) error {
 	for _, name := range requestedMungers {
 		munger, found := mungerMap[name]
 		if !found {
@@ -80,7 +79,7 @@ func InitializeMungers(requestedMungers []string, config *github_util.Config) er
 
 // EachLoop will be called before we start a poll loop and will run the
 // EachLoop function for all active mungers
-func EachLoop(config *github_util.Config) error {
+func EachLoop(config *github.Config) error {
 	for _, munger := range mungers {
 		if err := munger.EachLoop(config); err != nil {
 			return err
@@ -107,22 +106,18 @@ func RegisterMungerOrDie(munger PRMunger) {
 	}
 }
 
-func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
-	obj := github_util.MungeObject{
-		Issue: issue,
-	}
-
-	pr, err := config.GetPR(&obj)
+func MungeIssue(config *github.Config, obj *github.MungeObject) error {
+	pr, err := config.GetPR(obj)
 	if err != nil {
 		return nil
 	}
 
 	if pr == nil {
-		fmt.Printf("Issue %d is not a PR, skipping.\n", *issue.Number)
+		fmt.Printf("Issue %d is not a PR, skipping.\n", *obj.Issue.Number)
 	}
 
 	if pr.Merged != nil && *pr.Merged {
-		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *issue.Number)
+		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *obj.Issue.Number)
 		return nil
 	}
 	obj.PR = pr
@@ -130,7 +125,7 @@ func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
 	if pr.Mergeable == nil {
 		glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		time.Sleep(2 * time.Second)
-		pr, err = config.GetPR(&obj)
+		pr, err = config.GetPR(obj)
 		if err != nil {
 			return err
 		}
@@ -139,20 +134,20 @@ func MungeIssue(config *github_util.Config, issue *github_api.Issue) error {
 		}
 	}
 
-	commits, err := config.GetFilledCommits(&obj)
+	commits, err := config.GetFilledCommits(obj)
 	if err != nil {
 		return err
 	}
 	obj.Commits = commits
 
-	events, err := config.GetAllEventsForPR(&obj)
+	events, err := config.GetAllEventsForPR(obj)
 	if err != nil {
 		return err
 	}
 	obj.Events = events
 
 	for _, munger := range mungers {
-		munger.MungePullRequest(config, &obj)
+		munger.MungePullRequest(config, obj)
 	}
 	return nil
 }

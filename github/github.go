@@ -136,6 +136,7 @@ func (a analytics) Print() {
 }
 
 type MungeObject struct {
+	config  *Config
 	Issue   *github.Issue
 	PR      *github.PullRequest
 	Commits []github.RepositoryCommit
@@ -317,8 +318,8 @@ func (config *Config) RemoveLabel(obj *MungeObject, label string) error {
 	return nil
 }
 
-// IssueFunction is the type that must be implemented and passed to ForEachIssueDo
-type IssueFunction func(*Config, *github.Issue) error
+// MungeFunction is the type that must be implemented and passed to ForEachIssueDo
+type MungeFunction func(*Config, *MungeObject) error
 
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
@@ -781,7 +782,7 @@ func (config *Config) IsPRMergeable(obj *MungeObject) (bool, error) {
 //   * pr.Number >= minPRNumber
 //   * pr.Number <= maxPRNumber
 //   * all labels are on the PR
-func (config *Config) ForEachIssueDo(fn IssueFunction) error {
+func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	page := 1
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
@@ -815,7 +816,11 @@ func (config *Config) ForEachIssueDo(fn IssueFunction) error {
 			}
 			glog.V(2).Infof("----==== %d ====----", *issue.Number)
 			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks == nil)
-			if err := fn(config, issue); err != nil {
+			obj := MungeObject{
+				config: config,
+				Issue:  issue,
+			}
+			if err := fn(config, &obj); err != nil {
 				return err
 			}
 		}
