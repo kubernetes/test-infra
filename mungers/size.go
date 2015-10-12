@@ -129,8 +129,14 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (s *SizeMunger) MungePullRequest(obj *github.MungeObject) {
 	issue := obj.Issue
-	pr := obj.PR
-	commits := obj.Commits
+	pr, err := obj.GetPR()
+	if err != nil {
+		return
+	}
+	commits, err := obj.GetCommits()
+	if err != nil {
+		return
+	}
 
 	s.getGeneratedFiles(obj)
 	genFiles := *s.genFiles

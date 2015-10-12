@@ -89,7 +89,10 @@ func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (p *PathLabelMunger) MungePullRequest(obj *github.MungeObject) {
-	commits := obj.Commits
+	commits, err := obj.GetCommits()
+	if err != nil {
+		return
+	}
 
 	labelMap := *p.labelMap
 

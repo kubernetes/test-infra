@@ -173,12 +173,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 			w.Write(data)
 		})
 
-		obj := github_util.MungeObject{
-			Issue: issuePtr(github.Issue{
-				Number: intPtr(1),
-			}),
-		}
-		obj.SetConfig(config)
+		obj := github_util.TestObject(config, bareIssue(), nil, nil, nil)
 
 		if _, err := obj.GetCommits(); err != nil {
 			t.Errorf("Unexpected error getting filled commits: %v", err)
@@ -774,13 +769,7 @@ func TestMungePullRequest(t *testing.T) {
 		sq.EachLoop(config)
 		sq.userWhitelist.Insert("k8s-merge-robot")
 
-		obj := &github_util.MungeObject{
-			Issue:   test.issue,
-			PR:      test.pr,
-			Commits: test.commits,
-			Events:  test.events,
-		}
-		obj.SetConfig(config)
+		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
 		sq.MungePullRequest(obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {

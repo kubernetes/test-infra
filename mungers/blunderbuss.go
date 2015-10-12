@@ -108,8 +108,14 @@ func describeUser(u *github_api.User) string {
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 	issue := obj.Issue
-	pr := obj.PR
-	commits := obj.Commits
+	pr, err := obj.GetPR()
+	if err != nil {
+		return
+	}
+	commits, err := obj.GetCommits()
+	if err != nil {
+		return
+	}
 
 	if !b.blunderbussReassign && issue.Assignee != nil {
 		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))

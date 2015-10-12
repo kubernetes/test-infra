@@ -49,7 +49,7 @@ func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 func (NeedsRebaseMunger) MungePullRequest(obj *github.MungeObject) {
 	mergeable, err := obj.IsMergeable()
 	if err != nil {
-		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.PR.Number)
+		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.Issue.Number)
 		return
 	}
 	if mergeable && obj.HasLabel(needsRebase) {

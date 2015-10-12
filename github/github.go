@@ -138,14 +138,22 @@ func (a analytics) Print() {
 type MungeObject struct {
 	config  *Config
 	Issue   *github.Issue
-	PR      *github.PullRequest
-	Commits []github.RepositoryCommit
-	Events  []github.IssueEvent
+	pr      *github.PullRequest
+	commits []github.RepositoryCommit
+	events  []github.IssueEvent
 }
 
-// SetConfig should NEVER be used outside of _test.go code
-func (obj *MungeObject) SetConfig(config *Config) {
-	obj.config = config
+// TestObject should NEVER be used outside of _test.go code. It creates a
+// MungeObject with the given fields. Normally these should be filled in lazily
+// as needed
+func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []github.RepositoryCommit, events []github.IssueEvent) *MungeObject {
+	return &MungeObject{
+		config:  config,
+		Issue:   issue,
+		pr:      pr,
+		commits: commits,
+		events:  events,
+	}
 }
 
 // AddRootFlags will add all of the flags needed for the github config to the cobra command
@@ -251,8 +259,11 @@ func (obj *MungeObject) LastModifiedTime() *time.Time {
 // LabelTime returns the last time the request label was added to an issue.
 // If the label was never added you will get the 0 time.
 func (obj *MungeObject) LabelTime(label string) *time.Time {
-	events := obj.Events
 	var labelTime *time.Time
+	events, err := obj.GetEvents()
+	if err != nil {
+		return labelTime
+	}
 	for _, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
 			if labelTime == nil || event.CreatedAt.After(*labelTime) {
@@ -300,7 +311,7 @@ func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
 // AddLabels will add all of the named `labels` to the PR
 func (obj *MungeObject) AddLabels(labels []string) error {
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	config.analytics.AddLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have added labels %v to PR %d but --dry-run is set", labels, prNum)
@@ -316,7 +327,7 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 // RemoveLabel will remove the `label` from the PR
 func (obj *MungeObject) RemoveLabel(label string) error {
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	config.analytics.RemoveLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have removed label %q to PR %d but --dry-run is set", label, prNum)
@@ -399,8 +410,8 @@ func (obj *MungeObject) IsPR() bool {
 
 // GetAllEventsForPR returns a list of all events for a given pr.
 func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
-	if obj.Events != nil {
-		return obj.Events, nil
+	if obj.events != nil {
+		return obj.events, nil
 	}
 	config := obj.config
 	prNum := *obj.Issue.Number
@@ -419,7 +430,7 @@ func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
 		}
 		page++
 	}
-	obj.Events = events
+	obj.events = events
 	return events, nil
 }
 
@@ -465,7 +476,10 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 //    * Otherwise the PR is 'success'
 func (obj *MungeObject) GetStatus(requiredContexts []string) (string, error) {
 	config := obj.config
-	pr := obj.PR
+	pr, err := obj.GetPR()
+	if err != nil {
+		return "failure", err
+	}
 	if pr.Head == nil {
 		glog.Errorf("pr.Head is nil in GetStatus for PR# %d", *pr.Number)
 		return "failure", nil
@@ -576,8 +590,8 @@ func (obj *MungeObject) WaitForNotPending(requiredContexts []string) error {
 
 // GetCommits returns all of the commits for a given PR
 func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
-	if obj.Commits != nil {
-		return obj.Commits, nil
+	if obj.commits != nil {
+		return obj.commits, nil
 	}
 	config := obj.config
 	config.analytics.ListCommits.Call(config)
@@ -596,7 +610,7 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 		}
 		filledCommits = append(filledCommits, *commit)
 	}
-	obj.Commits = filledCommits
+	obj.commits = filledCommits
 	return filledCommits, nil
 }
 
@@ -610,14 +624,14 @@ func (obj *MungeObject) RefreshPR() (*github.PullRequest, error) {
 		glog.Errorf("Error getting PR# %d: %v", issueNum, err)
 		return nil, err
 	}
-	obj.PR = pr
+	obj.pr = pr
 	return pr, nil
 }
 
 // GetPR will update the PR in the object.
 func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
-	if obj.PR != nil {
-		return obj.PR, nil
+	if obj.pr != nil {
+		return obj.pr, nil
 	}
 	if !obj.IsPR() {
 		return nil, fmt.Errorf("Issue: %d is not a PR", *obj.Issue.Number)
@@ -628,7 +642,7 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
 func (obj *MungeObject) AssignPR(owner string) error {
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	config.analytics.AssignPR.Call(config)
 	assignee := &github.IssueRequest{Assignee: &owner}
 	if config.DryRun {
@@ -645,7 +659,10 @@ func (obj *MungeObject) AssignPR(owner string) error {
 // ClosePR will close the Given PR
 func (obj *MungeObject) ClosePR() error {
 	config := obj.config
-	pr := obj.PR
+	pr, err := obj.GetPR()
+	if err != nil {
+		return err
+	}
 	config.analytics.ClosePR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have closed PR# %d but --dry-run was set", *pr.Number)
@@ -665,13 +682,15 @@ func (obj *MungeObject) ClosePR() error {
 // and giving up.
 func (obj *MungeObject) OpenPR(numTries int) error {
 	config := obj.config
-	pr := obj.PR
+	pr, err := obj.GetPR()
+	if err != nil {
+		return err
+	}
 	config.analytics.OpenPR.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have openned PR# %d but --dry-run was set", *pr.Number)
 		return nil
 	}
-	var err error
 	state := "open"
 	pr.State = &state
 	// Try pretty hard to re-open, since it's pretty bad if we accidentally leave a PR closed
@@ -721,7 +740,7 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 // "who" is who is doing the merging, like "submit-queue"
 func (obj *MungeObject) MergePR(who string) error {
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	config.analytics.Merge.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have merged %d but --dry-run is set", prNum)
@@ -754,7 +773,7 @@ func (obj *MungeObject) MergePR(who string) error {
 // WriteComment will send the `msg` as a comment to the specified PR
 func (obj *MungeObject) WriteComment(msg string) error {
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	config.analytics.CreateComment.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have commented %q in %d but --dry-run is set", msg, prNum)
@@ -785,7 +804,7 @@ func (obj *MungeObject) IsMergeable() (bool, error) {
 		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		// TODO: determine what a good empirical setting for this is.
 		time.Sleep(2 * time.Second)
-		pr, err = obj.GetPR()
+		pr, err = obj.RefreshPR()
 		if err != nil {
 			glog.Errorf("Unable to get PR# %d: %v", prNum, err)
 			return false, err
@@ -808,7 +827,11 @@ func (obj *MungeObject) IsMerged() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return *obj.PR.Merged, nil
+	pr, err := obj.GetPR()
+	if err != nil {
+		return false, err
+	}
+	return *pr.Merged, nil
 }
 
 // For each Issue in the project that matches:
@@ -854,7 +877,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 				Issue:  issue,
 			}
 			if err := fn(&obj); err != nil {
-				return err
+				continue
 			}
 		}
 		if response.LastPage == 0 || response.LastPage <= page {

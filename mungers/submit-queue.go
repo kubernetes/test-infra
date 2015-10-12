@@ -284,7 +284,10 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
-	pr := obj.PR
+	pr, err := obj.GetPR()
+	if err != nil {
+		return
+	}
 
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
@@ -293,17 +296,14 @@ func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
 		sq.SetMergeStatus(obj, noCLA)
 		return
 	}
-	glog.Errorf("%v", obj.PR)
 
 	if mergeable, err := obj.IsMergeable(); err != nil {
 		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
 		sq.SetMergeStatus(obj, undeterminedMergability)
-		glog.Errorf("Unable to determine")
 		return
 	} else if !mergeable {
 		glog.V(4).Infof("Skipping %d - not mergable", *pr.Number)
 		sq.SetMergeStatus(obj, unmergeable)
-		glog.Errorf("Not Mergeable")
 		return
 	}
 
@@ -451,12 +451,11 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
-	newpr, err := obj.GetPR()
+	newpr, err := obj.RefreshPR()
 	if err != nil {
 		sq.SetMergeStatus(obj, unknown)
 		return
 	}
-	obj.PR = newpr
 
 	if *newpr.Merged {
 		sq.SetMergeStatus(obj, merged)

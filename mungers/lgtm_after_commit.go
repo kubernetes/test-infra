@@ -45,8 +45,6 @@ func (LGTMAfterCommitMunger) AddFlags(cmd *cobra.Command, config *github.Config)
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (LGTMAfterCommitMunger) MungePullRequest(obj *github.MungeObject) {
-	pr := obj.PR
-
 	if !obj.HasLabel("lgtm") {
 		return
 	}
@@ -55,7 +53,7 @@ func (LGTMAfterCommitMunger) MungePullRequest(obj *github.MungeObject) {
 	lgtmTime := obj.LabelTime("lgtm")
 
 	if lastModified == nil || lgtmTime == nil {
-		glog.Errorf("PR %d unable to determine lastModified or lgtmTime", *pr.Number)
+		glog.Errorf("PR %d unable to determine lastModified or lgtmTime", *obj.Issue.Number)
 		return
 	}
 

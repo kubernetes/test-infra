@@ -52,11 +52,11 @@ func (PingCIMunger) MungePullRequest(obj *github.MungeObject) {
 	}
 	mergeable, err := obj.IsMergeable()
 	if err != nil {
-		glog.V(2).Infof("Skipping %d - problem determining mergeability", *obj.PR.Number)
+		glog.V(2).Infof("Skipping %d - problem determining mergeability", *obj.Issue.Number)
 		return
 	}
 	if !mergeable {
-		glog.V(2).Infof("Skipping %d - not mergeable", *obj.PR.Number)
+		glog.V(2).Infof("Skipping %d - not mergeable", *obj.Issue.Number)
 		return
 	}
 	if status, err := obj.GetStatus([]string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
