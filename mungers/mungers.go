@@ -18,7 +18,6 @@ package mungers
 
 import (
 	"fmt"
-	"time"
 
 	"k8s.io/contrib/mungegithub/github"
 
@@ -102,44 +101,34 @@ func RegisterMungerOrDie(munger Munger) {
 }
 
 func MungeIssue(obj *github.MungeObject) error {
-	pr, err := obj.GetPR()
-	if err != nil {
+	// This really belongs in the individual munger
+	if !obj.IsPR() {
 		return nil
 	}
 
-	if pr == nil {
-		fmt.Printf("Issue %d is not a PR, skipping.\n", *obj.Issue.Number)
+	_, err := obj.GetPR()
+	if err != nil {
+		return err
 	}
 
-	if pr.Merged != nil && *pr.Merged {
+	merged, err := obj.IsMerged()
+	if err != nil {
+		return err
+	}
+	if merged {
 		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *obj.Issue.Number)
 		return nil
 	}
-	obj.PR = pr
 
-	if pr.Mergeable == nil {
-		glog.V(2).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
-		time.Sleep(2 * time.Second)
-		pr, err = obj.GetPR()
-		if err != nil {
-			return err
-		}
-		if pr.Mergeable == nil {
-			glog.Infof("No mergeability for PR %d after pause. Maybe increase pause time?", *pr.Number)
-		}
-	}
-
-	commits, err := obj.GetFilledCommits()
+	_, err = obj.GetCommits()
 	if err != nil {
 		return err
 	}
-	obj.Commits = commits
 
-	events, err := obj.GetAllEventsForPR()
+	_, err = obj.GetEvents()
 	if err != nil {
 		return err
 	}
-	obj.Events = events
 
 	for _, munger := range mungers {
 		munger.MungePullRequest(obj)

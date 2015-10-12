@@ -45,9 +45,9 @@ func issuePtr(val github.Issue) *github.Issue { return &val }
 
 func TestValidateLGTMAfterPush(t *testing.T) {
 	tests := []struct {
-		issueEvents  []github.IssueEvent
-		shouldPass   bool
-		lastModified time.Time
+		issueEvents []github.IssueEvent
+		commits     []github.RepositoryCommit
+		shouldPass  bool
 	}{
 		{
 			issueEvents: []github.IssueEvent{
@@ -59,8 +59,8 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 					CreatedAt: timePtr(time.Unix(10, 0)),
 				},
 			},
-			lastModified: time.Unix(9, 0),
-			shouldPass:   true,
+			commits:    Commits(), // Modified at time.Unix(9)
+			shouldPass: true,
 		},
 		{
 			issueEvents: []github.IssueEvent{
@@ -69,11 +69,11 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 					Label: &github.Label{
 						Name: stringPtr("lgtm"),
 					},
-					CreatedAt: timePtr(time.Unix(10, 0)),
+					CreatedAt: timePtr(time.Unix(8, 0)),
 				},
 			},
-			lastModified: time.Unix(11, 0),
-			shouldPass:   false,
+			commits:    Commits(), // Modified at time.Unix(9)
+			shouldPass: false,
 		},
 		{
 			issueEvents: []github.IssueEvent{
@@ -99,8 +99,8 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 					CreatedAt: timePtr(time.Unix(10, 0)),
 				},
 			},
-			lastModified: time.Unix(11, 0),
-			shouldPass:   true,
+			commits:    Commits(), // Modified at time.Unix(9)
+			shouldPass: true,
 		},
 		{
 			issueEvents: []github.IssueEvent{
@@ -126,8 +126,8 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 					CreatedAt: timePtr(time.Unix(12, 0)),
 				},
 			},
-			lastModified: time.Unix(11, 0),
-			shouldPass:   true,
+			commits:    Commits(), // Modified at time.Unix(9)
+			shouldPass: true,
 		},
 	}
 	for _, test := range tests {
@@ -147,38 +147,59 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-
-			obj := github_util.MungeObject{
-				Issue: issuePtr(github.Issue{
-					Number: intPtr(1),
-				}),
-			}
-			obj.SetConfig(config)
-			commits, err := obj.GetFilledCommits()
-			if err != nil {
-				t.Errorf("Unexpected error getting filled commits: %v", err)
-			}
-			obj.Commits = commits
-
-			events, err := obj.GetAllEventsForPR()
-			if err != nil {
-				t.Errorf("Unexpected error getting events commits: %v", err)
-			}
-			obj.Events = events
-
-			lastModifiedTime := obj.LastModifiedTime()
-			lgtmTime := obj.LabelTime("lgtm")
-
-			if lastModifiedTime == nil || lgtmTime == nil {
-				t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
-			}
-
-			ok := !lastModifiedTime.After(*lgtmTime)
-
-			if ok != test.shouldPass {
-				t.Errorf("expected: %v, saw: %v", test.shouldPass, ok)
-			}
 		})
+
+		mux.HandleFunc(fmt.Sprintf("/repos/o/r/pulls/1/commits"), func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			data, err := json.Marshal(test.commits)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			w.Write(data)
+		})
+
+		mux.HandleFunc(fmt.Sprintf("/repos/o/r/commits/mysha"), func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			data, err := json.Marshal(test.commits[0])
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			w.Write(data)
+		})
+
+		obj := github_util.MungeObject{
+			Issue: issuePtr(github.Issue{
+				Number: intPtr(1),
+			}),
+		}
+		obj.SetConfig(config)
+
+		if _, err := obj.GetCommits(); err != nil {
+			t.Errorf("Unexpected error getting filled commits: %v", err)
+		}
+
+		if _, err := obj.GetEvents(); err != nil {
+			t.Errorf("Unexpected error getting events commits: %v", err)
+		}
+
+		lastModifiedTime := obj.LastModifiedTime()
+		lgtmTime := obj.LabelTime("lgtm")
+
+		if lastModifiedTime == nil || lgtmTime == nil {
+			t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
+		}
+
+		ok := !lastModifiedTime.After(*lgtmTime)
+
+		if ok != test.shouldPass {
+			t.Errorf("expected: %v, saw: %v", test.shouldPass, ok)
+		}
 		server.Close()
 	}
 }
@@ -236,6 +257,7 @@ func barePR() *github.PullRequest {
 }
 
 func mergeablePR(pr *github.PullRequest) *github.PullRequest {
+	pr.Mergeable = boolPtr(true)
 	return pr
 }
 
@@ -246,7 +268,7 @@ func userInWhiteListPR(pr *github.PullRequest) *github.PullRequest {
 
 func ValidPR() *github.PullRequest {
 	pr := barePR()
-	pr.Mergeable = boolPtr(true)
+	pr = mergeablePR(pr)
 	pr = userInWhiteListPR(pr)
 	return pr
 }
@@ -281,6 +303,7 @@ func bareIssue() *github.Issue {
 			Login:     stringPtr("UserNotInWhiteList"),
 			AvatarURL: stringPtr("MyAvatarURL"),
 		},
+		PullRequestLinks: &github.PullRequestLinks{},
 	}
 }
 
@@ -353,14 +376,20 @@ func NewLGTMEvents() []github.IssueEvent {
 	}
 }
 
+func Commit() *github.Commit {
+	return &github.Commit{
+		SHA: stringPtr("mysha"),
+		Committer: &github.CommitAuthor{
+			Date: timePtr(time.Unix(9, 0)),
+		},
+	}
+}
+
 func Commits() []github.RepositoryCommit {
 	return []github.RepositoryCommit{
 		{
-			Commit: &github.Commit{
-				Committer: &github.CommitAuthor{
-					Date: timePtr(time.Unix(9, 0)),
-				},
-			},
+			SHA:    stringPtr("mysha"),
+			Commit: Commit(),
 		},
 	}
 }
@@ -745,14 +774,14 @@ func TestMungePullRequest(t *testing.T) {
 		sq.EachLoop(config)
 		sq.userWhitelist.Insert("k8s-merge-robot")
 
-		obj := github_util.MungeObject{
+		obj := &github_util.MungeObject{
 			Issue:   test.issue,
 			PR:      test.pr,
 			Commits: test.commits,
 			Events:  test.events,
 		}
 		obj.SetConfig(config)
-		sq.MungePullRequest(&obj)
+		sq.MungePullRequest(obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {
 			for sq.prStatus["1"].Reason != reason {

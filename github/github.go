@@ -235,8 +235,11 @@ func (config *Config) SetClient(client *github.Client) {
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
 func (obj *MungeObject) LastModifiedTime() *time.Time {
-	commits := obj.Commits
 	var lastModified *time.Time
+	commits, err := obj.GetCommits()
+	if err != nil {
+		return lastModified
+	}
 	for _, commit := range commits {
 		if lastModified == nil || commit.Commit.Committer.Date.After(*lastModified) {
 			lastModified = commit.Commit.Committer.Date
@@ -386,10 +389,21 @@ func (config *Config) GetUser(login string) (*github.User, error) {
 	return user, err
 }
 
+// IsPR returns if the obj is a PR or an Issue.
+func (obj *MungeObject) IsPR() bool {
+	if obj.Issue.PullRequestLinks == nil {
+		return false
+	}
+	return true
+}
+
 // GetAllEventsForPR returns a list of all events for a given pr.
-func (obj *MungeObject) GetAllEventsForPR() ([]github.IssueEvent, error) {
+func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
+	if obj.Events != nil {
+		return obj.Events, nil
+	}
 	config := obj.config
-	prNum := *obj.PR.Number
+	prNum := *obj.Issue.Number
 	events := []github.IssueEvent{}
 	page := 1
 	for {
@@ -405,6 +419,7 @@ func (obj *MungeObject) GetAllEventsForPR() ([]github.IssueEvent, error) {
 		}
 		page++
 	}
+	obj.Events = events
 	return events, nil
 }
 
@@ -559,22 +574,15 @@ func (obj *MungeObject) WaitForNotPending(requiredContexts []string) error {
 	}
 }
 
-func (obj *MungeObject) getCommits() ([]github.RepositoryCommit, error) {
+// GetCommits returns all of the commits for a given PR
+func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
+	if obj.Commits != nil {
+		return obj.Commits, nil
+	}
 	config := obj.config
-	prNum := *obj.PR.Number
 	config.analytics.ListCommits.Call(config)
 	//TODO: this should handle paging, I believe....
-	commits, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, prNum, &github.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return commits, nil
-}
-
-// GetFilledCommits returns all of the commits for a given PR
-func (obj *MungeObject) GetFilledCommits() ([]github.RepositoryCommit, error) {
-	config := obj.config
-	commits, err := obj.getCommits()
+	commits, _, err := config.client.PullRequests.ListCommits(config.Org, config.Project, *obj.Issue.Number, &github.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -583,18 +591,17 @@ func (obj *MungeObject) GetFilledCommits() ([]github.RepositoryCommit, error) {
 		config.analytics.GetCommit.Call(config)
 		commit, _, err := config.client.Repositories.GetCommit(config.Org, config.Project, *c.SHA)
 		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s", config.Org, config.Project, *c.SHA)
+			glog.Errorf("Can't load commit %s %s %s: %v", config.Org, config.Project, *c.SHA, err)
 			continue
 		}
 		filledCommits = append(filledCommits, *commit)
 	}
+	obj.Commits = filledCommits
 	return filledCommits, nil
 }
 
-// GetPR will return a pull request based on the provided number.
-// This may be useful if some of the information in the provided
-// PR was not filled out when it was retrieved.
-func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
+// RefreshPR will get the PR again, in case anything changed since last time
+func (obj *MungeObject) RefreshPR() (*github.PullRequest, error) {
 	config := obj.config
 	issueNum := *obj.Issue.Number
 	config.analytics.GetPR.Call(config)
@@ -603,7 +610,19 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
 		glog.Errorf("Error getting PR# %d: %v", issueNum, err)
 		return nil, err
 	}
+	obj.PR = pr
 	return pr, nil
+}
+
+// GetPR will update the PR in the object.
+func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
+	if obj.PR != nil {
+		return obj.PR, nil
+	}
+	if !obj.IsPR() {
+		return nil, fmt.Errorf("Issue: %d is not a PR", *obj.Issue.Number)
+	}
+	return obj.RefreshPR()
 }
 
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
@@ -721,7 +740,7 @@ func (obj *MungeObject) MergePR(who string) error {
 	// github is finished calculating. If my guess is correct, that also means we should be able to
 	// then merge this PR, so try again.
 	if err != nil && strings.Contains(err.Error(), "branch was modified. Review and try the merge again.") {
-		if mergeable, _ := obj.IsPRMergeable(); mergeable {
+		if mergeable, _ := obj.IsMergeable(); mergeable {
 			_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, "Auto commit by PR queue bot")
 		}
 	}
@@ -753,11 +772,16 @@ func (obj *MungeObject) WriteComment(msg string) error {
 // PR again if github did not respond the first time. So the hopefully github
 // will have a response the second time. If we have no answer twice, we return
 // false
-func (obj *MungeObject) IsPRMergeable() (bool, error) {
-	pr := obj.PR
+func (obj *MungeObject) IsMergeable() (bool, error) {
+	if !obj.IsPR() {
+		return false, nil
+	}
+	pr, err := obj.GetPR()
+	if err != nil {
+		return false, err
+	}
 	prNum := *pr.Number
 	if pr.Mergeable == nil {
-		var err error
 		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		// TODO: determine what a good empirical setting for this is.
 		time.Sleep(2 * time.Second)
@@ -772,10 +796,19 @@ func (obj *MungeObject) IsPRMergeable() (bool, error) {
 		glog.Errorf("%v", err)
 		return false, err
 	}
-	if !*pr.Mergeable {
-		return false, nil
+	return *pr.Mergeable, nil
+}
+
+// IsMerged returns if the issue in question was already merged
+func (obj *MungeObject) IsMerged() (bool, error) {
+	if !obj.IsPR() {
+		return false, fmt.Errorf("Issue: %d is not a PR and is thus 'merged' is indeterminate", *obj.Issue.Number)
 	}
-	return true, nil
+	_, err := obj.IsMergeable()
+	if err != nil {
+		return false, err
+	}
+	return *obj.PR.Merged, nil
 }
 
 // For each Issue in the project that matches:

@@ -47,11 +47,9 @@ func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (NeedsRebaseMunger) MungePullRequest(obj *github.MungeObject) {
-	pr := obj.PR
-
-	mergeable, err := obj.IsPRMergeable()
+	mergeable, err := obj.IsMergeable()
 	if err != nil {
-		glog.V(2).Infof("Skipping %d - problem determining mergeable", *pr.Number)
+		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.PR.Number)
 		return
 	}
 	if mergeable && obj.HasLabel(needsRebase) {

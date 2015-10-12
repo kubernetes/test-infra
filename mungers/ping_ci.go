@@ -47,15 +47,17 @@ func (PingCIMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (PingCIMunger) MungePullRequest(obj *github.MungeObject) {
-	pr := obj.PR
-
 	if !obj.HasLabel("lgtm") {
 		return
 	}
-	if mergeable, err := obj.IsPRMergeable(); err != nil {
-		glog.V(2).Infof("Skipping %d - problem determining mergeability", *pr.Number)
-	} else if !mergeable {
-		glog.V(2).Infof("Skipping %d - not mergeable", *pr.Number)
+	mergeable, err := obj.IsMergeable()
+	if err != nil {
+		glog.V(2).Infof("Skipping %d - problem determining mergeability", *obj.PR.Number)
+		return
+	}
+	if !mergeable {
+		glog.V(2).Infof("Skipping %d - not mergeable", *obj.PR.Number)
+		return
 	}
 	if status, err := obj.GetStatus([]string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
 		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsCIContext)
