@@ -1,8 +1,8 @@
 angular.module('SubmitQueueModule', ['ngMaterial']);
 
-angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', SQCntl]);
+angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', SQCntl]);
 
-function SQCntl(dataService) {
+function SQCntl(dataService, $interval) {
   var self = this;
   self.prDisplayValue = "";
   self.prs = {};
@@ -11,8 +11,9 @@ function SQCntl(dataService) {
   self.querySearch = querySearch;
   self.updatePRVisibility = updatePRVisibility;
   self.queryNum = 0;
-  // Load all api data
   refresh();
+  // Refresh data every 30 seconds
+  $interval(refresh, 30000);
 
   function refresh() {
     dataService.getData().then(function successCallback(response) {
@@ -35,8 +36,9 @@ function SQCntl(dataService) {
 
   function __updatePRVisibility(prs) {
     angular.forEach(prs, function(pr) {
-      if (pr.Login.toLowerCase().match(
-          "^" + self.prDisplayValue.toLowerCase()) || pr.Num.match("^" + self.prDisplayValue)) {
+      if (typeof self.prDisplayValue === "undefined") {
+        pr.show = true;
+      } else if (pr.Login.toLowerCase().match("^" + self.prDisplayValue.toLowerCase()) || pr.Num.match("^" + self.prDisplayValue)) {
         pr.show = true;
       } else {
         pr.show = false;
