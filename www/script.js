@@ -9,7 +9,7 @@ function SQCntl(dataService) {
   self.users = {};
   self.builds = {};
   self.querySearch = querySearch;
-  self.updatePRVisibility = updatePRVisibility
+  self.updatePRVisibility = updatePRVisibility;
   self.queryNum = 0;
   // Load all api data
   refresh();
@@ -18,13 +18,16 @@ function SQCntl(dataService) {
     dataService.getData().then(function successCallback(response) {
       var prs = getPRs(response.data.PRStatus);
       __updatePRVisibility(prs);
-      self.prs = prs
+      self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
       self.users = getUsers(response.data.UserInfo);
       self.builds = getE2E(response.data.BuildStatus);
-      self.e2erunning = response.data.E2ERunning;
+      if (response.data.E2ERunning.Number === "") {
+        self.e2erunning = [];
+      } else {
+        self.e2erunning = [ response.data.E2ERunning ];
+      }
       self.e2equeue = response.data.E2EQueue;
-      console.log(self.e2equeue)
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
@@ -42,7 +45,7 @@ function SQCntl(dataService) {
   }
 
   function updatePRVisibility() {
-	  __updatePRVisibility(self.prs)
+          __updatePRVisibility(self.prs);
   }
 
   function getPRs(prs) {
@@ -129,7 +132,7 @@ function SQCntl(dataService) {
       }
     });
     console.log(result);
-    result.sort(compareSearchTerms)
+    result.sort(compareSearchTerms);
     return result;
   }
 
