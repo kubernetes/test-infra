@@ -414,10 +414,21 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 
 	// Wait for the build to start
 	sq.SetPRStatus(pr, ghE2EWaitingStart)
-	_ = sq.githubConfig.WaitForPending(pr)
+	err := sq.githubConfig.WaitForPending(pr)
+	if err != nil {
+		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
+		sq.SetPRStatus(pr, s)
+		return
+	}
+
 	// Wait for the status to go back to something other than pending
 	sq.SetPRStatus(pr, ghE2ERunning)
-	_ = sq.githubConfig.WaitForNotPending(pr)
+	err = sq.githubConfig.WaitForNotPending(pr)
+	if err != nil {
+		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
+		sq.SetPRStatus(pr, s)
+		return
+	}
 
 	// Check if the thing we care about is success
 	if ok := sq.githubConfig.IsStatusSuccess(pr, []string{gceE2EContext}); !ok {

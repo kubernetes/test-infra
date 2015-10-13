@@ -473,57 +473,85 @@ func (config *Config) IsStatusSuccess(pr *github.PullRequest, requiredContexts [
 	return false
 }
 
-// WaitForPending will wait for a PR to move into Pending.  This is useful
-// because the request to test a PR again is asynchronous with the PR actually
-// moving into a pending state
-// TODO: add a timeout
-func (config *Config) WaitForPending(pr *github.PullRequest) error {
+// Sleep for the given amount of time and then write to the channel
+func timeout(sleepTime time.Duration, c chan bool) {
+	time.Sleep(sleepTime)
+	c <- true
+}
+
+func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, c chan error) {
 	for {
 		status, err := config.GetStatus(pr, []string{})
 		if err != nil {
-			return err
+			c <- err
+			return
 		}
-		if status == "pending" {
-			return nil
+		var done bool
+		if pending {
+			done = (status == "pending")
+		} else {
+			done = (status != "pending")
+		}
+		if done {
+			c <- nil
+			return
 		}
 		if config.DryRun {
 			glog.V(4).Infof("PR# %d is not pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
-			return nil
+			c <- nil
+			return
 		}
 		var sleepTime time.Duration
-		if config.PendingWaitTime == nil {
+		if pending {
+			// usually the build queue starts quickly
 			sleepTime = 30 * time.Second
 		} else {
+			// but takes a while to finish
+			sleepTime = 5 * time.Minute
+		}
+		// If the time was explicitly set, use that instead
+		if config.PendingWaitTime != nil {
 			sleepTime = *config.PendingWaitTime
 		}
-		glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+		if pending {
+			glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+		} else {
+			glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
+		}
 		time.Sleep(sleepTime)
+	}
+}
+
+// WaitForPending will wait for a PR to move into Pending.  This is useful
+// because the request to test a PR again is asynchronous with the PR actually
+// moving into a pending state
+func (config *Config) WaitForPending(pr *github.PullRequest) error {
+	timeoutChan := make(chan bool, 1)
+	done := make(chan error, 1)
+	// Wait 45 minutes for the github e2e test to start
+	go timeout(45*time.Minute, timeoutChan)
+	go config.doWaitStatus(pr, true, done)
+	select {
+	case err := <-done:
+		return err
+	case <-timeoutChan:
+		return fmt.Errorf("PR# %d timed out waiting to go \"pending\"", *pr.Number)
 	}
 }
 
 // WaitForNotPending will check if the github status is "pending" (CI still running)
 // if so it will sleep and try again until all status hooks have complete
 func (config *Config) WaitForNotPending(pr *github.PullRequest) error {
-	for {
-		status, err := config.GetStatus(pr, []string{})
-		if err != nil {
-			return err
-		}
-		if status != "pending" {
-			return nil
-		}
-		if config.DryRun {
-			glog.V(4).Infof("PR# %d is pending, would wait 30 seconds, but --dry-run was set", *pr.Number)
-			return nil
-		}
-		var sleepTime time.Duration
-		if config.PendingWaitTime == nil {
-			sleepTime = 30 * time.Second
-		} else {
-			sleepTime = *config.PendingWaitTime
-		}
-		glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *pr.Number, sleepTime.Seconds())
-		time.Sleep(sleepTime)
+	timeoutChan := make(chan bool, 1)
+	done := make(chan error, 1)
+	// Wait and hour for the github e2e test to finish
+	go timeout(60*time.Minute, timeoutChan)
+	go config.doWaitStatus(pr, false, done)
+	select {
+	case err := <-done:
+		return err
+	case <-timeoutChan:
+		return fmt.Errorf("PR# %d timed out waiting to go \"not pending\"", *pr.Number)
 	}
 }
 
