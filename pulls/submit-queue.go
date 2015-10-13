@@ -44,9 +44,14 @@ var (
 )
 
 type submitStatus struct {
+	pullRequest
+	Reason string
+}
+
+type pullRequest struct {
+	Number    string
 	URL       string
 	Title     string
-	Reason    string
 	Login     string
 	AvatarURL string
 }
@@ -60,10 +65,8 @@ type submitQueueStatus struct {
 	PRStatus    map[string]submitStatus
 	BuildStatus map[string]string
 	UserInfo    map[string]userInfo
-}
-
-type githubE2ERequest struct {
-	pr *github_api.PullRequest
+	E2ERunning  *pullRequest
+	E2EQueue    []*pullRequest
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -99,9 +102,10 @@ type SubmitQueue struct {
 	prStatus     map[string]submitStatus // ALWAYS protected by sync.Mutex
 	userInfo     map[string]userInfo
 
-	// Every time a PR is added to needsGithubE2E also notify the channel
-	githubE2ERequest chan bool
-	needsGithubE2E   map[int]*github_api.PullRequest // protected by sync.Mutex!
+	// Every time a PR is added to githubE2EQueue also notify the channel
+	githubE2EWakeup  chan bool
+	githubE2ERunning *github_api.PullRequest
+	githubE2EQueue   map[int]*github_api.PullRequest // protected by sync.Mutex!
 
 	e2e *e2e.E2ETester
 }
@@ -139,8 +143,8 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
 
-	sq.githubE2ERequest = make(chan bool, 1000)
-	sq.needsGithubE2E = map[int]*github_api.PullRequest{}
+	sq.githubE2EWakeup = make(chan bool, 1000)
+	sq.githubE2EQueue = map[int]*github_api.PullRequest{}
 
 	go sq.handleGithubE2EAndMerge()
 	return nil
@@ -171,23 +175,44 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github_util.Config) 
 	sq.addWhitelistCommand(cmd, config)
 }
 
+func prToStatusPullRequest(pr *github_api.PullRequest) *pullRequest {
+	if pr == nil {
+		return &pullRequest{}
+	}
+	return &pullRequest{
+		Number:    strconv.Itoa(*pr.Number),
+		URL:       *pr.HTMLURL,
+		Title:     *pr.Title,
+		Login:     *pr.User.Login,
+		AvatarURL: *pr.User.AvatarURL,
+	}
+}
+
 // SetPRStatus will set the status given a particular PR. This function should
 // but used instead of manipulating the prStatus directly as sq.Lock() must be
 // called when manipulating that structure
 func (sq *SubmitQueue) SetPRStatus(pr *github_api.PullRequest, reason string) {
-	title := *pr.Title
 	num := strconv.Itoa(*pr.Number)
 	submitStatus := submitStatus{
-		URL:       *pr.HTMLURL,
-		Title:     title,
-		Reason:    reason,
-		Login:     *pr.User.Login,
-		AvatarURL: *pr.User.AvatarURL,
+		pullRequest: *prToStatusPullRequest(pr),
+		Reason:      reason,
 	}
 	sq.Lock()
 	defer sq.Unlock()
 
 	sq.prStatus[num] = submitStatus
+}
+
+// sq.Lock() MUST be held!
+func (sq *SubmitQueue) getE2EQueueStatus() []*pullRequest {
+	queue := []*pullRequest{}
+	keys := sq.orderedE2EQueue()
+	for _, k := range keys {
+		pr := sq.githubE2EQueue[k]
+		request := prToStatusPullRequest(pr)
+		queue = append(queue, request)
+	}
+	return queue
 }
 
 // GetQueueStatus returns a json representation of the state of the submit
@@ -203,6 +228,9 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 	status.PRStatus = outputStatus
 	status.BuildStatus = sq.e2e.GetBuildStatus()
 	status.UserInfo = sq.userInfo
+	status.E2EQueue = sq.getE2EQueueStatus()
+	status.E2ERunning = prToStatusPullRequest(sq.githubE2ERunning)
+
 	b, err := json.Marshal(status)
 	if err != nil {
 		glog.Errorf("Unable to Marshal Status: %v", status)
@@ -310,28 +338,39 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 
 	sq.SetPRStatus(pr, ghE2EQueued)
 	sq.Lock()
-	sq.githubE2ERequest <- true
-	sq.needsGithubE2E[*pr.Number] = pr
+	sq.githubE2EWakeup <- true
+	sq.githubE2EQueue[*pr.Number] = pr
 	sq.Unlock()
 
 	return
 }
 
 // flushGithubE2EQueue will rmeove all entries from the build queue and will mark them
-// as failed with the given reason. We do not need to flush the githubE2ERequest
+// as failed with the given reason. We do not need to flush the githubE2EWakeup
 // channel as that just causes handleGithubE2EAndMerge() to wake up. And if it
 // wakes up a few extra times, who cares.
 func (sq *SubmitQueue) flushGithubE2EQueue(reason string) {
 	prs := []*github_api.PullRequest{}
 	sq.Lock()
-	for i, pr := range sq.needsGithubE2E {
+	for i, pr := range sq.githubE2EQueue {
 		prs = append(prs, pr)
-		delete(sq.needsGithubE2E, i)
+		delete(sq.githubE2EQueue, i)
 	}
 	sq.Unlock()
 	for _, pr := range prs {
 		sq.SetPRStatus(pr, reason)
 	}
+}
+
+// sq.Lock() better held!!!
+func (sq *SubmitQueue) orderedE2EQueue() []int {
+	// Find and do the lowest PR number first
+	var keys []int
+	for k := range sq.githubE2EQueue {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	return keys
 }
 
 // handleGithubE2EAndMerge waits for PRs that are ready to re-run the github
@@ -340,23 +379,19 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 	for {
 		// Wait until something is ready to be processed
 		select {
-		case _ = <-sq.githubE2ERequest:
+		case _ = <-sq.githubE2EWakeup:
 		}
 
 		sq.Lock()
 		// Could happen if the same PR was added twice. It will only be
 		// in the map one time, but it will be in the channel twice.
-		if len(sq.needsGithubE2E) == 0 {
+		if len(sq.githubE2EQueue) == 0 {
 			sq.Unlock()
 			continue
 		}
-		// Find and do the lowest PR number first
-		var keys []int
-		for k := range sq.needsGithubE2E {
-			keys = append(keys, k)
-		}
-		sort.Ints(keys)
-		pr := sq.needsGithubE2E[keys[0]]
+		keys := sq.orderedE2EQueue()
+		pr := sq.githubE2EQueue[keys[0]]
+		sq.githubE2ERunning = pr
 		sq.Unlock()
 
 		// re-test and maybe merge
@@ -364,7 +399,8 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 
 		// remove it from the map after we finish testing
 		sq.Lock()
-		delete(sq.needsGithubE2E, keys[0])
+		sq.githubE2ERunning = nil
+		delete(sq.githubE2EQueue, keys[0])
 		sq.Unlock()
 	}
 }

@@ -46,11 +46,37 @@
               </md-list-item>
             </md-content>
           </md-tab>
+	  <!---
+          <md-tab label="Github E2E">
+            <md-content class="md-padding">
+              <h2 class="md-headline">Github End-to-End Tests</h2>
+	      <div layout="column" layout-padding layout-wrap layout-fill style="padding-bottom: 32px;" ng-cloak>
+	        <md-whiteframe class="md-whiteframe-6dp" layout layout-align="left top">
+	          <h3 class="md-headline">Currently Running</h3>
+                </md-whiteframe>
+	        <md-whiteframe class="md-whiteframe-6dp" layout layout-align="left top">
+	          <h3 class="md-headline">Queue</h3>
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue" ng-show="pr.show">
+                    <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                      <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}" />
+                    </a>
+                    <div class="md-list-item-text" layout="column">
+                      <h3 class="md-body-1">
+                        <a ng-href="{{pr.URL}}">#{{pr.Num}}: {{pr.Title}}</a>
+                      </h3>
+                    </div>
+                    <md-divider md-inset ng-if="!$last"></md-divider>
+                  </md-list-item>
+                </md-whiteframe>
+              </div>
+            </md-content>
+          </md-tab>
+	  -->
           <md-tab>
-            <md-tab-label> <span ng-class="{'redTab':cntl.failedBuild}"> E2E Results </span> </md-tab-label>
+            <md-tab-label> <span ng-class="{'redTab':cntl.failedBuild}">Google Internal E2E</span> </md-tab-label>
             <md-tab-body>
               <md-content class="md-padding">
-                <h2 class="md-headline">Google E2E Results</h2>
+                <h2 class="md-headline">Google End-to-End Results</h2>
                 <md-chips ng-model="cntl.builds" readonly="true">
 		  <md-chip-template title="{{$chip.msg}}">
                     <span style="color: {{$chip.color}}">{{$chip.state}}</span> {{$chip.name}} <span style="color: {{$chip.color}}">{{$chip.msg}}</span>

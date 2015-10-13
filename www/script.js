@@ -16,18 +16,22 @@ function SQCntl(dataService) {
 
   function refresh() {
     dataService.getData().then(function successCallback(response) {
-      self.prs = getPRs(response.data.PRStatus);
-      updatePRVisibility()
+      var prs = getPRs(response.data.PRStatus);
+      __updatePRVisibility(prs);
+      self.prs = prs
       self.prSearchTerms = getPRSearchTerms();
       self.users = getUsers(response.data.UserInfo);
       self.builds = getE2E(response.data.BuildStatus);
+      self.e2erunning = response.data.E2ERunning;
+      self.e2equeue = response.data.E2EQueue;
+      console.log(self.e2equeue)
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
   }
 
-  function updatePRVisibility() {
-    angular.forEach(self.prs, function(pr) {
+  function __updatePRVisibility(prs) {
+    angular.forEach(prs, function(pr) {
       if (pr.Login.toLowerCase().match(
           "^" + self.prDisplayValue.toLowerCase()) || pr.Num.match("^" + self.prDisplayValue)) {
         pr.show = true;
@@ -35,6 +39,10 @@ function SQCntl(dataService) {
         pr.show = false;
       }
     });
+  }
+
+  function updatePRVisibility() {
+	  __updatePRVisibility(self.prs)
   }
 
   function getPRs(prs) {

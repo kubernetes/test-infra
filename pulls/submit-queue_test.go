@@ -648,10 +648,10 @@ func TestMungePullRequest(t *testing.T) {
 		sq.MungePullRequest(config, test.pr, test.issue, test.commits, test.events)
 		if test.shouldWaitForE2E {
 			// probably should hold the lock when I check, but what a PITA
-			for len(sq.needsGithubE2E) == 0 {
+			for len(sq.githubE2EQueue) == 0 {
 				time.Sleep(1 * time.Millisecond)
 			}
-			for len(sq.needsGithubE2E) != 0 {
+			for len(sq.githubE2EQueue) != 0 {
 				time.Sleep(1 * time.Millisecond)
 			}
 		}
