@@ -201,6 +201,7 @@ func (sq *SubmitQueue) SetPRStatus(pr *github_api.PullRequest, reason string) {
 	defer sq.Unlock()
 
 	sq.prStatus[num] = submitStatus
+	sq.cleanupOldE2E(pr, reason)
 }
 
 // sq.Lock() MUST be held!
@@ -345,6 +346,21 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	return
 }
 
+// If the PR was put in the github e2e queue on a current pass, but now we don't
+// think it should be in the e2e queue, remove it. MUST be called with sq.Lock()
+// held.
+func (sq *SubmitQueue) cleanupOldE2E(pr *github_api.PullRequest, reason string) {
+	switch reason {
+	case ghE2EQueued:
+	case ghE2EWaitingStart:
+	case ghE2ERunning:
+		// Do nothing
+	default:
+		delete(sq.githubE2EQueue, *pr.Number)
+	}
+
+}
+
 // flushGithubE2EQueue will rmeove all entries from the build queue and will mark them
 // as failed with the given reason. We do not need to flush the githubE2EWakeup
 // channel as that just causes handleGithubE2EAndMerge() to wake up. And if it
@@ -352,9 +368,8 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 func (sq *SubmitQueue) flushGithubE2EQueue(reason string) {
 	prs := []*github_api.PullRequest{}
 	sq.Lock()
-	for i, pr := range sq.githubE2EQueue {
+	for _, pr := range sq.githubE2EQueue {
 		prs = append(prs, pr)
-		delete(sq.githubE2EQueue, i)
 	}
 	sq.Unlock()
 	for _, pr := range prs {
