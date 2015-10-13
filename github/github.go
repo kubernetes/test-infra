@@ -576,7 +576,7 @@ func (config *Config) GetFilledCommits(prNum int) ([]github.RepositoryCommit, er
 		config.analytics.GetCommit.Call(config)
 		commit, _, err := config.client.Repositories.GetCommit(config.Org, config.Project, *c.SHA)
 		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s", config.Org, config.Project, *commit.SHA)
+			glog.Errorf("Can't load commit %s %s %s", config.Org, config.Project, *c.SHA)
 			continue
 		}
 		filledCommits = append(filledCommits, *commit)
