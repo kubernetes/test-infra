@@ -133,10 +133,6 @@ func (s *SizeMunger) MungePullRequest(obj *github.MungeObject) {
 	if err != nil {
 		return
 	}
-	commits, err := obj.GetCommits()
-	if err != nil {
-		return
-	}
 
 	s.getGeneratedFiles(obj)
 	genFiles := *s.genFiles
@@ -152,6 +148,11 @@ func (s *SizeMunger) MungePullRequest(obj *github.MungeObject) {
 		return
 	}
 	dels := *pr.Deletions
+
+	commits, err := obj.GetCommits()
+	if err != nil {
+		return
+	}
 
 	for _, c := range commits {
 		for _, f := range c.Files {

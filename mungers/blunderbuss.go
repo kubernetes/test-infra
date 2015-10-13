@@ -108,24 +108,21 @@ func describeUser(u *github_api.User) string {
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 	issue := obj.Issue
-	pr, err := obj.GetPR()
-	if err != nil {
+	if !b.blunderbussReassign && issue.Assignee != nil {
+		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.blunderbussReassign, describeUser(issue.Assignee))
 		return
 	}
+
 	commits, err := obj.GetCommits()
 	if err != nil {
 		return
 	}
 
-	if !b.blunderbussReassign && issue.Assignee != nil {
-		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *pr.Number, b.blunderbussReassign, describeUser(issue.Assignee))
-		return
-	}
 	potentialOwners := weightMap{}
 	weightSum := int64(0)
 	for _, commit := range commits {
 		if commit.Author == nil || commit.Author.Login == nil || commit.SHA == nil {
-			glog.Warningf("Skipping invalid commit for %d: %#v", *pr.Number, commit)
+			glog.Warningf("Skipping invalid commit for %d: %#v", *issue.Number, commit)
 			continue
 		}
 		for _, file := range commit.Files {
@@ -142,7 +139,7 @@ func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 				glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 			}
 			for owner, ownerWeight := range fileOwners {
-				if owner == *pr.User.Login {
+				if owner == *issue.User.Login {
 					continue
 				}
 				potentialOwners[owner] = potentialOwners[owner] + fileWeight*ownerWeight
@@ -151,7 +148,7 @@ func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 		}
 	}
 	if len(potentialOwners) == 0 {
-		glog.Errorf("No owners found for PR %d", *pr.Number)
+		glog.Errorf("No owners found for PR %d", *issue.Number)
 		return
 	}
 	glog.V(4).Infof("Weights: %#v\nSum: %v", potentialOwners, weightSum)
@@ -169,6 +166,6 @@ func (b *BlunderbussMunger) MungePullRequest(obj *github.MungeObject) {
 			break
 		}
 	}
-	glog.Infof("Assigning %v to %v (previously assigned to %v)", *pr.Number, owner, describeUser(issue.Assignee))
+	glog.Infof("Assigning %v to %v (previously assigned to %v)", *issue.Number, owner, describeUser(issue.Assignee))
 	obj.AssignPR(owner)
 }
