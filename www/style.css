@@ -15,6 +15,7 @@ md-list-item > .md-avatar img {
 }
 
 .redTab {
-  padding: 10px;
-  background: red;
+  padding: 14px;
+  background-color: #F44336;
+  color: white;
 }
