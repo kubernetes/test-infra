@@ -130,7 +130,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 			shouldPass: true,
 		},
 	}
-	for _, test := range tests {
+	for testNum, test := range tests {
 		config := &github_util.Config{}
 		client, server, mux := github_test.InitTest()
 		config.Org = "o"
@@ -193,7 +193,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		ok := !lastModifiedTime.After(*lgtmTime)
 
 		if ok != test.shouldPass {
-			t.Errorf("expected: %v, saw: %v", test.shouldPass, ok)
+			t.Errorf("%d: expected: %v, saw: %v", testNum, test.shouldPass, ok)
 		}
 		server.Close()
 	}
@@ -256,29 +256,21 @@ func mergeablePR(pr *github.PullRequest) *github.PullRequest {
 	return pr
 }
 
-func userInWhiteListPR(pr *github.PullRequest) *github.PullRequest {
-	pr.User.Login = stringPtr("k8s-merge-robot")
-	return pr
-}
-
 func ValidPR() *github.PullRequest {
 	pr := barePR()
 	pr = mergeablePR(pr)
-	pr = userInWhiteListPR(pr)
 	return pr
 }
 
 func UnMergeablePR() *github.PullRequest {
 	pr := barePR()
 	pr.Mergeable = boolPtr(false)
-	pr = userInWhiteListPR(pr)
 	return pr
 }
 
 func UndeterminedMergeablePR() *github.PullRequest {
 	pr := barePR()
 	pr.Mergeable = nil
-	pr = userInWhiteListPR(pr)
 	return pr
 }
 
@@ -295,7 +287,7 @@ func bareIssue() *github.Issue {
 		Number:  intPtr(1),
 		HTMLURL: stringPtr("PR URL"),
 		User: &github.User{
-			Login:     stringPtr("UserNotInWhiteList"),
+			Login:     stringPtr("k8s-merge-robot"),
 			AvatarURL: stringPtr("MyAvatarURL"),
 		},
 		PullRequestLinks: &github.PullRequestLinks{},
@@ -328,6 +320,18 @@ func NoOKToMergeIssue() *github.Issue {
 	issue := bareIssue()
 	labelIssue("cla: yes", issue)
 	labelIssue("lgtm", issue)
+	return issue
+}
+
+func UserNotInWhitelistNoOKToMergeIssue() *github.Issue {
+	issue := NoOKToMergeIssue()
+	issue.User.Login = stringPtr("UserNotInWhiteList")
+	return issue
+}
+
+func UserNotInWhitelistOKToMergeIssue() *github.Issue {
+	issue := AllLabelsIssue()
+	issue.User.Login = stringPtr("UserNotInWhiteList")
 	return issue
 }
 
@@ -565,6 +569,19 @@ func TestMungePullRequest(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			reason:     merged,
 		},
+		// Should merge even though user not in whitelist because has ok-to-merge
+		{
+			pr:               ValidPR(),
+			issue:            UserNotInWhitelistOKToMergeIssue(),
+			ciStatus:         GitHubE2EFailStatus(),
+			events:           NewLGTMEvents(),
+			commits:          Commits(),
+			jenkinsJob:       SuccessJenkins(),
+			shouldWaitForE2E: true,
+			githubE2EPass:    true,
+			shouldPass:       true,
+			reason:           merged,
+		},
 		// Fail because PR can't automatically merge
 		{
 			pr:     UnMergeablePR(),
@@ -589,16 +606,16 @@ func TestMungePullRequest(t *testing.T) {
 			issue:  NoOKToMergeIssue(),
 			reason: ciFailure,
 		},
-		// Fail because the use is not in the whitelist and we don't have "ok-to-merge"
+		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
 		{
-			pr:       NonWhitelistUserPR(),
-			issue:    NoOKToMergeIssue(),
+			pr:       ValidPR(),
+			issue:    UserNotInWhitelistNoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   needsok,
 		},
 		// Fail because missing LGTM label
 		{
-			pr:       NonWhitelistUserPR(),
+			pr:       ValidPR(),
 			issue:    NoLGTMIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   noLGTM,

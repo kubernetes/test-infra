@@ -284,11 +284,6 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
-	pr, err := obj.GetPR()
-	if err != nil {
-		return
-	}
-
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
 
@@ -298,11 +293,11 @@ func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
 	}
 
 	if mergeable, err := obj.IsMergeable(); err != nil {
-		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *pr.Number)
+		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, undeterminedMergability)
 		return
 	} else if !mergeable {
-		glog.V(4).Infof("Skipping %d - not mergable", *pr.Number)
+		glog.V(4).Infof("Skipping %d - not mergable", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unmergeable)
 		return
 	}
@@ -313,13 +308,13 @@ func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
 	if ok := obj.IsStatusSuccess(contexts); !ok {
-		glog.Errorf("PR# %d Github CI status is not success", *pr.Number)
+		glog.Errorf("PR# %d Github CI status is not success", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, ciFailure)
 		return
 	}
 
-	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*pr.User.Login) {
-		glog.V(4).Infof("Dropping %d since %s isn't in whitelist and %s isn't present", *pr.Number, *pr.User.Login, sq.WhitelistOverride)
+	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*obj.Issue.User.Login) {
+		glog.V(4).Infof("Dropping %d since %s isn't in whitelist and %s isn't present", *obj.Issue.Number, *obj.Issue.User.Login, sq.WhitelistOverride)
 		if !obj.HasLabel(needsOKToMergeLabel) {
 			obj.AddLabels([]string{needsOKToMergeLabel})
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
@@ -343,13 +338,13 @@ func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
 	lgtmTime := obj.LabelTime("lgtm")
 
 	if lastModifiedTime == nil || lgtmTime == nil {
-		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *pr.Number)
+		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unknown)
 		return
 	}
 
 	if lastModifiedTime.After(*lgtmTime) {
-		glog.V(4).Infof("PR %d changed after LGTM. Will not merge", *pr.Number)
+		glog.V(4).Infof("PR %d changed after LGTM. Will not merge", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, lgtmEarly)
 		return
 	}
