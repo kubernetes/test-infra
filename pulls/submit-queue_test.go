@@ -454,6 +454,7 @@ func TestMungePullRequest(t *testing.T) {
 		shouldWaitForE2E bool
 		githubE2EPass    bool
 		shouldPass       bool
+		mergeAfterQueued bool
 		reason           string
 	}{
 		// Should pass because the entire thing was run and good
@@ -467,6 +468,22 @@ func TestMungePullRequest(t *testing.T) {
 			shouldWaitForE2E: true,
 			githubE2EPass:    true,
 			shouldPass:       true,
+			reason:           merged,
+		},
+		// Should list as 'merged' but the merge should happen before it gets e2e tested
+		// and we should bail early instead of waiting for a test that will never come.
+		{
+			pr:               ValidPR(),
+			issue:            NoOKToMergeIssue(),
+			events:           NewLGTMEvents(),
+			commits:          Commits(),
+			ciStatus:         SuccessStatus(),
+			jenkinsJob:       SuccessJenkins(),
+			shouldWaitForE2E: true,
+			// The test should never run, but if it does, make sure it fails
+			githubE2EPass:    false,
+			shouldPass:       true,
+			mergeAfterQueued: true,
 			reason:           merged,
 		},
 		// Should merge even though github ci failed because of dont-require-e2e
@@ -600,6 +617,13 @@ func TestMungePullRequest(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
+
+			// There is no good spot for this, but this gets called
+			// before we queue the PR. So mark the PR as "merged".
+			if test.mergeAfterQueued {
+				test.pr.Merged = boolPtr(true)
+				test.pr.Mergeable = nil
+			}
 		})
 		mux.HandleFunc("/repos/o/r/issues/1/comments", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
