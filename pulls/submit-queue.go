@@ -153,7 +153,9 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 // EachLoop is called at the start of every munge loop
 func (sq *SubmitQueue) EachLoop(config *github_util.Config) error {
 	// We check stable just to get an update in case no PR tries.
-	sq.e2e.Stable()
+	if !sq.e2e.Stable() {
+		sq.flushGithubE2EQueue(e2eFailure)
+	}
 
 	sq.Lock()
 	defer sq.Unlock()
@@ -473,6 +475,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 	}
 
 	if !sq.e2e.Stable() {
+		sq.flushGithubE2EQueue(e2eFailure)
 		sq.SetPRStatus(pr, e2eFailure)
 		return
 	}
