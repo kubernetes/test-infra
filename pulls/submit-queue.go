@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -147,16 +148,12 @@ func (sq *SubmitQueue) Initialize(config *github_util.Config) error {
 	sq.githubE2EQueue = map[int]*github_api.PullRequest{}
 
 	go sq.handleGithubE2EAndMerge()
+	go sq.updateGoogleE2ELoop()
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (sq *SubmitQueue) EachLoop(config *github_util.Config) error {
-	// We check stable just to get an update in case no PR tries.
-	if !sq.e2e.Stable() {
-		sq.flushGithubE2EQueue(e2eFailure)
-	}
-
 	sq.Lock()
 	defer sq.Unlock()
 	sq.RefreshWhitelist(config)
@@ -175,6 +172,18 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github_util.Config) 
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", "Jenkins GCE e2e", "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	sq.addWhitelistCommand(cmd, config)
+}
+
+// This serves little purpose other than to show updates every minute in the
+// web UI. Stable() will get called as needed against individual PRs as well.
+func (sq *SubmitQueue) updateGoogleE2ELoop() {
+	for {
+		if !sq.e2e.Stable() {
+			sq.flushGithubE2EQueue(e2eFailure)
+		}
+		time.Sleep(1 * time.Minute)
+	}
+
 }
 
 func prToStatusPullRequest(pr *github_api.PullRequest) *pullRequest {

@@ -66,6 +66,7 @@ function SQCntl(dataService, $interval) {
 
   function getE2E(builds) {
     var result = [];
+    var failedBuild = false;
     angular.forEach(builds, function(value, key) {
       var obj = {
         'name': key
@@ -78,15 +79,16 @@ function SQCntl(dataService, $interval) {
         // red X mark
         obj.state = '\u2716';
         obj.color = 'red';
-        self.failedBuild = true;
+        failedBuild = true;
       } else {
         obj.state = 'Error';
         obj.color = 'red';
         obj.msg = value;
-        self.failedBuild = true;
+        failedBuild = true;
       }
       result.push(obj);
     });
+    self.failedBuild = failedBuild;
     return result;
   }
 
@@ -133,7 +135,6 @@ function SQCntl(dataService, $interval) {
         result.push(numobj);
       }
     });
-    console.log(result);
     result.sort(compareSearchTerms);
     return result;
   }
