@@ -1,3 +1,4 @@
+"use strict";
 angular.module('SubmitQueueModule', ['ngMaterial']);
 
 angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', SQCntl]);
@@ -11,6 +12,7 @@ function SQCntl(dataService, $interval) {
   self.querySearch = querySearch;
   self.updatePRVisibility = updatePRVisibility;
   self.queryNum = 0;
+  // Load all api data
   refresh();
   // Refresh data every 30 seconds
   $interval(refresh, 30000);
@@ -105,7 +107,7 @@ function SQCntl(dataService, $interval) {
   }
 
   function searchTermsContain(terms, value) {
-    found = false;
+    var found = false;
     angular.forEach(terms, function(term) {
       if (term.value === value) {
         found = true;
@@ -117,7 +119,7 @@ function SQCntl(dataService, $interval) {
   function getPRSearchTerms() {
     var result = [];
     angular.forEach(self.prs, function(pr) {
-      llogin = pr.Login.toLowerCase();
+      var llogin = pr.Login.toLowerCase();
       if (!searchTermsContain(result, llogin)) {
         var loginobj = {
           value: llogin,
