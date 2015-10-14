@@ -421,6 +421,26 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
+	newpr, err := sq.githubConfig.GetPR(*pr.Number)
+	if err != nil {
+		sq.SetPRStatus(pr, unknown)
+		return
+	}
+	pr = newpr
+
+	if *pr.Merged {
+		sq.SetPRStatus(pr, merged)
+		return
+	}
+
+	if mergeable, err := sq.githubConfig.IsPRMergeable(pr); err != nil {
+		sq.SetPRStatus(pr, undeterminedMergability)
+		return
+	} else if !mergeable {
+		sq.SetPRStatus(pr, unmergeable)
+		return
+	}
+
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 	if err := sq.githubConfig.WriteComment(*pr.Number, body); err != nil {
 		sq.SetPRStatus(pr, unknown)
@@ -429,7 +449,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 
 	// Wait for the build to start
 	sq.SetPRStatus(pr, ghE2EWaitingStart)
-	err := sq.githubConfig.WaitForPending(pr)
+	err = sq.githubConfig.WaitForPending(pr)
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
 		sq.SetPRStatus(pr, s)

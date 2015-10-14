@@ -221,6 +221,7 @@ func barePR() *github.PullRequest {
 			Login:     stringPtr("UserNotInWhiteList"),
 			AvatarURL: stringPtr("MyAvatarURL"),
 		},
+		Merged: boolPtr(false),
 	}
 }
 
@@ -616,6 +617,17 @@ func TestMungePullRequest(t *testing.T) {
 			}
 			w.WriteHeader(http.StatusOK)
 			data, err := json.Marshal(github.IssueComment{})
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			w.Write(data)
+		})
+		mux.HandleFunc("/repos/o/r/pulls/1", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			data, err := json.Marshal(test.pr)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
