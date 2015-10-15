@@ -282,8 +282,12 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	return contexts
 }
 
-// MungePullRequest is the workhorse the will actually make updates to the PR
-func (sq *SubmitQueue) MungePullRequest(obj *github.MungeObject) {
+// Munge is the workhorse the will actually make updates to the PR
+func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() {
+		return
+	}
+
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
 

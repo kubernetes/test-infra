@@ -126,8 +126,12 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	return
 }
 
-// MungePullRequest is the workhorse the will actually make updates to the PR
-func (s *SizeMunger) MungePullRequest(obj *github.MungeObject) {
+// Munge is the workhorse the will actually make updates to the PR
+func (s *SizeMunger) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() {
+		return
+	}
+
 	issue := obj.Issue
 	pr, err := obj.GetPR()
 	if err != nil {

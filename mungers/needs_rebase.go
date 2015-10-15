@@ -45,8 +45,12 @@ func (NeedsRebaseMunger) EachLoop(_ *github.Config) error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
-// MungePullRequest is the workhorse the will actually make updates to the PR
-func (NeedsRebaseMunger) MungePullRequest(obj *github.MungeObject) {
+// Munge is the workhorse the will actually make updates to the PR
+func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() {
+		return
+	}
+
 	mergeable, err := obj.IsMergeable()
 	if err != nil {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.Issue.Number)

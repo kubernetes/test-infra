@@ -28,7 +28,7 @@ import (
 // Munger is the interface which all mungers must implement to register
 type Munger interface {
 	// Take action on a specific github issue:
-	MungePullRequest(obj *github.MungeObject)
+	Munge(obj *github.MungeObject)
 	AddFlags(cmd *cobra.Command, config *github.Config)
 	Name() string
 	Initialize(*github.Config) error
@@ -102,20 +102,8 @@ func RegisterMungerOrDie(munger Munger) {
 
 // MungeIssue will call each activated munger with the given object
 func MungeIssue(obj *github.MungeObject) error {
-	// This really belongs in the individual munger
-	if !obj.IsPR() {
-		return nil
-	}
-
-	if merged, err := obj.IsMerged(); err != nil {
-		return err
-	} else if merged {
-		glog.V(3).Infof("PR %d was merged, may want to reduce the PerPage so this happens less often", *obj.Issue.Number)
-		return nil
-	}
-
 	for _, munger := range mungers {
-		munger.MungePullRequest(obj)
+		munger.Munge(obj)
 	}
 	return nil
 }

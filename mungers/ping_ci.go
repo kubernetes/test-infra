@@ -45,8 +45,12 @@ func (PingCIMunger) EachLoop(_ *github.Config) error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (PingCIMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
-// MungePullRequest is the workhorse the will actually make updates to the PR
-func (PingCIMunger) MungePullRequest(obj *github.MungeObject) {
+// Munge is the workhorse the will actually make updates to the PR
+func (PingCIMunger) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() {
+		return
+	}
+
 	if !obj.HasLabel("lgtm") {
 		return
 	}

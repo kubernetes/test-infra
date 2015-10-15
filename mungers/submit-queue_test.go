@@ -520,7 +520,7 @@ func FailJenkins() jenkins.Job {
 	return job
 }
 
-func TestMungePullRequest(t *testing.T) {
+func TestMunge(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
@@ -571,16 +571,14 @@ func TestMungePullRequest(t *testing.T) {
 		},
 		// Should merge even though user not in whitelist because has ok-to-merge
 		{
-			pr:               ValidPR(),
-			issue:            UserNotInWhitelistOKToMergeIssue(),
-			ciStatus:         GitHubE2EFailStatus(),
-			events:           NewLGTMEvents(),
-			commits:          Commits(),
-			jenkinsJob:       SuccessJenkins(),
-			shouldWaitForE2E: true,
-			githubE2EPass:    true,
-			shouldPass:       true,
-			reason:           merged,
+			pr:         ValidPR(),
+			issue:      UserNotInWhitelistOKToMergeIssue(),
+			ciStatus:   GitHubE2EFailStatus(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: true,
+			reason:     merged,
 		},
 		// Fail because PR can't automatically merge
 		{
@@ -787,7 +785,7 @@ func TestMungePullRequest(t *testing.T) {
 		sq.userWhitelist.Insert("k8s-merge-robot")
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
-		sq.MungePullRequest(obj)
+		sq.Munge(obj)
 		done := make(chan bool, 1)
 		go func(done chan bool, reason string) {
 			for sq.prStatus["1"].Reason != reason {
