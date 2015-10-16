@@ -48,6 +48,7 @@ var (
 )
 
 type submitStatus struct {
+	Time time.Time
 	statusPullRequest
 	Reason string
 }
@@ -103,9 +104,10 @@ type SubmitQueue struct {
 	userWhitelist *sets.String
 
 	sync.Mutex
-	lastPRStatus map[string]submitStatus
-	prStatus     map[string]submitStatus // ALWAYS protected by sync.Mutex
-	userInfo     map[string]userInfo
+	lastPRStatus   map[string]submitStatus
+	prStatus       map[string]submitStatus // ALWAYS protected by sync.Mutex
+	userInfo       map[string]userInfo
+	statusMessages []submitStatus // protected by sync.Mutex
 
 	// Every time a PR is added to githubE2EQueue also notify the channel
 	githubE2EWakeup  chan bool
@@ -142,7 +144,12 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		if len(sq.WWWRoot) > 0 {
 			http.Handle("/", http.FileServer(http.Dir(sq.WWWRoot)))
 		}
-		http.Handle("/api", sq)
+		http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+			sq.ServeAPI(w, r)
+		})
+		http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
+			sq.ServeMessages(w, r)
+		})
 		go http.ListenAndServe(sq.Address, nil)
 	}
 	sq.prStatus = map[string]submitStatus{}
@@ -206,15 +213,28 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 // SetMergeStatus will set the status given a particular PR. This function should
 // but used instead of manipulating the prStatus directly as sq.Lock() must be
 // called when manipulating that structure
-func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
+// `obj` is the active github object
+// `reason` is the new 'status' for this object
+// `record` is wether we should show this status on the web page or not
+//    In general we do not show the status updates for PRs which didn't reach the
+//    're-run github e2e' state as these are more obvious, change less, and don't
+//    seem to ever confuse people.
+func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, record bool) {
 	num := strconv.Itoa(*obj.Issue.Number)
 	submitStatus := submitStatus{
+		Time:              time.Now(),
 		statusPullRequest: *objToStatusPullRequest(obj),
 		Reason:            reason,
 	}
 	sq.Lock()
 	defer sq.Unlock()
 
+	if record {
+		sq.statusMessages = append(sq.statusMessages, submitStatus)
+		if len(sq.statusMessages) > 128 {
+			sq.statusMessages = sq.statusMessages[1:]
+		}
+	}
 	sq.prStatus[num] = submitStatus
 	sq.cleanupOldE2E(obj, reason)
 }
@@ -229,6 +249,18 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 		queue = append(queue, request)
 	}
 	return queue
+}
+
+func (sq *SubmitQueue) GetQueueMessages() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+
+	b, err := json.Marshal(sq.statusMessages)
+	if err != nil {
+		glog.Errorf("Unable to Marshal Status: %v", sq.statusMessages)
+		return nil
+	}
+	return b
 }
 
 // GetQueueStatus returns a json representation of the state of the submit
@@ -295,17 +327,17 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	userSet := sq.userWhitelist
 
 	if !obj.HasLabels([]string{"cla: yes"}) {
-		sq.SetMergeStatus(obj, noCLA)
+		sq.SetMergeStatus(obj, noCLA, false)
 		return
 	}
 
 	if mergeable, err := obj.IsMergeable(); err != nil {
 		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, undeterminedMergability)
+		sq.SetMergeStatus(obj, undeterminedMergability, false)
 		return
 	} else if !mergeable {
 		glog.V(4).Infof("Skipping %d - not mergable", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, unmergeable)
+		sq.SetMergeStatus(obj, unmergeable, false)
 		return
 	}
 
@@ -316,7 +348,7 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	}
 	if ok := obj.IsStatusSuccess(contexts); !ok {
 		glog.Errorf("PR# %d Github CI status is not success", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, ciFailure)
+		sq.SetMergeStatus(obj, ciFailure, false)
 		return
 	}
 
@@ -327,7 +359,7 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
 			obj.WriteComment(body)
 		}
-		sq.SetMergeStatus(obj, needsok)
+		sq.SetMergeStatus(obj, needsok, false)
 		return
 	}
 
@@ -337,7 +369,7 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	}
 
 	if !obj.HasLabels([]string{"lgtm"}) {
-		sq.SetMergeStatus(obj, noLGTM)
+		sq.SetMergeStatus(obj, noLGTM, false)
 		return
 	}
 
@@ -346,30 +378,30 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 
 	if lastModifiedTime == nil || lgtmTime == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, unknown)
+		sq.SetMergeStatus(obj, unknown, false)
 		return
 	}
 
 	if lastModifiedTime.After(*lgtmTime) {
 		glog.V(4).Infof("PR %d changed after LGTM. Will not merge", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, lgtmEarly)
+		sq.SetMergeStatus(obj, lgtmEarly, false)
 		return
 	}
 
 	if !e2e.Stable() {
 		sq.flushGithubE2EQueue(e2eFailure)
-		sq.SetMergeStatus(obj, e2eFailure)
+		sq.SetMergeStatus(obj, e2eFailure, false)
 		return
 	}
 
 	// if there is a 'e2e-not-required' label, just merge it.
 	if len(sq.DontRequireE2ELabel) > 0 && obj.HasLabel(sq.DontRequireE2ELabel) {
 		obj.MergePR("submit-queue")
-		sq.SetMergeStatus(obj, merged)
+		sq.SetMergeStatus(obj, merged, true)
 		return
 	}
 
-	sq.SetMergeStatus(obj, ghE2EQueued)
+	sq.SetMergeStatus(obj, ghE2EQueued, true)
 	sq.Lock()
 	sq.githubE2EWakeup <- true
 	sq.githubE2EQueue[*obj.Issue.Number] = obj
@@ -405,7 +437,7 @@ func (sq *SubmitQueue) flushGithubE2EQueue(reason string) {
 	}
 	sq.Unlock()
 	for _, obj := range objs {
-		sq.SetMergeStatus(obj, reason)
+		sq.SetMergeStatus(obj, reason, true)
 	}
 }
 
@@ -455,71 +487,83 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	_, err := obj.RefreshPR()
 	if err != nil {
-		sq.SetMergeStatus(obj, unknown)
+		sq.SetMergeStatus(obj, unknown, true)
 		return
 	}
 
 	if m, err := obj.IsMerged(); err != nil {
-		sq.SetMergeStatus(obj, unknown)
+		sq.SetMergeStatus(obj, unknown, true)
 		return
 	} else if m {
-		sq.SetMergeStatus(obj, merged)
+		sq.SetMergeStatus(obj, merged, true)
 		return
 	}
 
 	if mergeable, err := obj.IsMergeable(); err != nil {
-		sq.SetMergeStatus(obj, undeterminedMergability)
+		sq.SetMergeStatus(obj, undeterminedMergability, true)
 		return
 	} else if !mergeable {
-		sq.SetMergeStatus(obj, unmergeable)
+		sq.SetMergeStatus(obj, unmergeable, true)
 		return
 	}
 
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 	if err := obj.WriteComment(body); err != nil {
-		sq.SetMergeStatus(obj, unknown)
+		sq.SetMergeStatus(obj, unknown, true)
 		return
 	}
 
 	// Wait for the build to start
-	sq.SetMergeStatus(obj, ghE2EWaitingStart)
+	sq.SetMergeStatus(obj, ghE2EWaitingStart, true)
 	err = obj.WaitForPending([]string{sq.E2EStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
-		sq.SetMergeStatus(obj, s)
+		sq.SetMergeStatus(obj, s, true)
 		return
 	}
 
 	contexts := append(sq.requiredStatusContexts(obj), sq.E2EStatusContext)
 
 	// Wait for the status to go back to something other than pending
-	sq.SetMergeStatus(obj, ghE2ERunning)
+	sq.SetMergeStatus(obj, ghE2ERunning, true)
 	err = obj.WaitForNotPending(contexts)
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
-		sq.SetMergeStatus(obj, s)
+		sq.SetMergeStatus(obj, s, true)
 		return
 	}
 
 	// Check if the thing we care about is success
 	if ok := obj.IsStatusSuccess([]string{gceE2EContext}); !ok {
 		glog.Infof("Status after build is not 'success', skipping PR %d", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, ghE2EFailed)
+		sq.SetMergeStatus(obj, ghE2EFailed, true)
 		return
 	}
 
 	if !sq.e2e.Stable() {
 		sq.flushGithubE2EQueue(e2eFailure)
-		sq.SetMergeStatus(obj, e2eFailure)
+		sq.SetMergeStatus(obj, e2eFailure, true)
 		return
 	}
 
 	obj.MergePR("submit-queue")
-	sq.SetMergeStatus(obj, merged)
+	sq.SetMergeStatus(obj, merged, true)
 	return
 }
 
-func (sq *SubmitQueue) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (sq *SubmitQueue) ServeMessages(res http.ResponseWriter, req *http.Request) {
+	data := sq.GetQueueMessages()
+	if data == nil {
+		res.Header().Set("Content-type", "text/plain")
+		res.WriteHeader(http.StatusInternalServerError)
+	} else {
+		res.Header().Set("Content-type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		res.Write(data)
+	}
+}
+
+func (sq *SubmitQueue) ServeAPI(res http.ResponseWriter, req *http.Request) {
 	data := sq.GetQueueStatus()
 	if data == nil {
 		res.Header().Set("Content-type", "text/plain")

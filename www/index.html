@@ -46,15 +46,16 @@
                 </form>
               </md-content>
               <md-list>
-                <md-list-item class="md-2-line" ng-repeat="pr in cntl.prs" ng-show="pr.show">
+                <md-list-item class="md-3-line" ng-repeat="pr in cntl.prs" ng-show="pr.show">
                   <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
                   <md-content class="md-list-item-text" layout="column">
                     <h3 class="md-body-1">
-                      <a ng-href="{{pr.URL}}">#{{pr.Num}}: {{pr.Title}}</a>
+                      <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
                     </h3>
                     <h4 class="md-body-2">{{pr.Reason}}</h4>
+                    <p>{{pr.Time}}</p>
                   </md-content>
                   <md-divider md-inset ng-if="!$last"></md-divider>
                 </md-list-item>
@@ -98,6 +99,31 @@
                   </md-list-item>
                 </md-list>
               </section>
+            </md-content>
+          </md-tab>
+
+          <md-tab label="History">
+            <md-content class="md-padding">
+              <md-content class="md-whiteframe-z2">
+                <md-toolbar>
+                  <h2 class="md-toolbar-tools">Historic Merge Bot Decisions</h2>
+                </md-toolbar>
+              </md-content>
+              <md-list>
+                <md-list-item class="md-3-line" ng-repeat="msg in cntl.statusMessages" ng-show="msg.show">
+                  <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{msg.Login}}">
+                    <img ng-src="{{msg.AvatarURL}}" alt="{{msg.Login}}">
+                  </a>
+                  <md-content class="md-list-item-text" layout="column">
+                    <h3 class="md-body-1">
+                      <a ng-href="{{msg.URL}}">#{{msg.Number}}: {{msg.Title}}</a>
+                    </h3>
+                    <h4 class="md-body-2">{{msg.Reason}}</h4>
+                    <p>{{msg.Time}}</p>
+                  </md-content>
+                  <md-divider md-inset ng-if="!$last"></md-divider>
+                </md-list-item>
+              </md-list>
             </md-content>
           </md-tab>
 

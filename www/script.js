@@ -35,11 +35,17 @@ function SQCntl(dataService, $interval) {
 
       self.botStats = getStats(response.data.DebugStats.Analytics);
       var d = new Date(response.data.DebugStats.NextLoopTime);
-      document.getElementById("next-run-time").innerHTML = d;
+      document.getElementById("next-run-time").innerHTML = d.toString();
       document.getElementById("api-calls").innerHTML = response.data.DebugStats.APICount;
       document.getElementById("api-calls-per-sec").innerHTML = response.data.DebugStats.APIPerSec;
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
+    });
+
+    dataService.getMessages().then(function successCallback(response) {
+      var msgs = getPRs(response.data)
+      __updatePRVisibility(msgs);
+      self.statusMessages = msgs
     });
   }
 
@@ -47,7 +53,7 @@ function SQCntl(dataService, $interval) {
     angular.forEach(prs, function(pr) {
       if (typeof self.prDisplayValue === "undefined") {
         pr.show = true;
-      } else if (pr.Login.toLowerCase().match("^" + self.prDisplayValue.toLowerCase()) || pr.Num.match("^" + self.prDisplayValue)) {
+      } else if (pr.Login.toLowerCase().match("^" + self.prDisplayValue.toLowerCase()) || pr.Number.match("^" + self.prDisplayValue)) {
         pr.show = true;
       } else {
         pr.show = false;
@@ -66,6 +72,10 @@ function SQCntl(dataService, $interval) {
         'Num': key
       };
       angular.forEach(value, function(value, key) {
+        if (key === "Time") {
+          var d = Date(value)
+          value = d.toString()
+        }
         obj[key] = value;
       });
       result.push(obj);
@@ -197,9 +207,14 @@ angular.module('SubmitQueueModule').service('DataService', ['$http', dataService
 function dataService($http) {
   return ({
     getData: getData,
+    getMessages: getMessages,
   });
 
   function getData() {
     return $http.get('api');
+  }
+
+  function getMessages() {
+    return $http.get('messages');
   }
 }
