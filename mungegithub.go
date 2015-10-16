@@ -52,7 +52,7 @@ func doMungers(config *mungeConfig) error {
 		nextRunStartTime := time.Now().Add(config.Period)
 		glog.Infof("Running mungers")
 
-		mungers.EachLoop(&config.Config)
+		mungers.EachLoop()
 
 		if err := config.ForEachIssueDo(mungers.MungeIssue); err != nil {
 			glog.Errorf("Error munging PRs: %v", err)

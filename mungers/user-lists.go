@@ -39,7 +39,8 @@ var (
 )
 
 // RefreshWhitelist updates the whitelist, re-getting the list of committers.
-func (sq *SubmitQueue) RefreshWhitelist(config *github_util.Config) {
+func (sq *SubmitQueue) RefreshWhitelist() {
+	config := sq.githubConfig
 	info := map[string]userInfo{}
 	if sq.additionalUserWhitelist == nil {
 		users, err := loadWhitelist(sq.Whitelist)

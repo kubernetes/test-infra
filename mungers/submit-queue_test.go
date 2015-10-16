@@ -503,7 +503,7 @@ func TestMunge(t *testing.T) {
 		sq.JenkinsJobs = []string{"foo"}
 		sq.WhitelistOverride = "ok-to-merge"
 		sq.Initialize(config)
-		sq.EachLoop(config)
+		sq.EachLoop()
 		sq.userWhitelist.Insert(whitelistUser)
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)

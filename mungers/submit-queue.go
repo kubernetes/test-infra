@@ -156,10 +156,10 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (sq *SubmitQueue) EachLoop(config *github.Config) error {
+func (sq *SubmitQueue) EachLoop() error {
 	sq.Lock()
 	defer sq.Unlock()
-	sq.RefreshWhitelist(config)
+	sq.RefreshWhitelist()
 	sq.lastPRStatus = sq.prStatus
 	sq.prStatus = map[string]submitStatus{}
 	return nil

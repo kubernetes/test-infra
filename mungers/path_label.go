@@ -80,7 +80,7 @@ func (p *PathLabelMunger) Initialize(config *github.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (p *PathLabelMunger) EachLoop(_ *github.Config) error { return nil }
+func (p *PathLabelMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {

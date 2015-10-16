@@ -38,7 +38,7 @@ func (OkToTestMunger) Name() string { return "ok-to-test" }
 func (OkToTestMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (OkToTestMunger) EachLoop(_ *github.Config) error { return nil }
+func (OkToTestMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (OkToTestMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}

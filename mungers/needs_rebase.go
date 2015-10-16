@@ -40,7 +40,7 @@ func (NeedsRebaseMunger) Name() string { return "needs-rebase" }
 func (NeedsRebaseMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (NeedsRebaseMunger) EachLoop(_ *github.Config) error { return nil }
+func (NeedsRebaseMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (NeedsRebaseMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}

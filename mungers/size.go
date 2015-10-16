@@ -49,7 +49,7 @@ func (SizeMunger) Name() string { return "size" }
 func (SizeMunger) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (SizeMunger) EachLoop(_ *github.Config) error { return nil }
+func (SizeMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {

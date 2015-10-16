@@ -88,7 +88,7 @@ func (b *BlunderbussMunger) Initialize(config *github.Config) error {
 }
 
 // EachLoop is called at the start of every munge loop
-func (b *BlunderbussMunger) EachLoop(_ *github.Config) error { return nil }
+func (b *BlunderbussMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
