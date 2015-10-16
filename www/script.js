@@ -13,11 +13,10 @@ function SQCntl(dataService, $interval) {
   self.updatePRVisibility = updatePRVisibility;
   self.queryNum = 0;
   self.StatOrder = "-Count";
-  // Load all api data
-  refresh();
-  // Refresh data every 60 seconds
-  $interval(refresh, 60000);
 
+  // Refresh data every 60 seconds
+  refresh();
+  $interval(refresh, 60000);
   function refresh() {
     dataService.getData('api').then(function successCallback(response) {
       var prs = getPRs(response.data.PRStatus);
@@ -31,12 +30,6 @@ function SQCntl(dataService, $interval) {
         self.e2erunning = [response.data.E2ERunning];
       }
       self.e2equeue = response.data.E2EQueue;
-
-      self.botStats = getStats(response.data.DebugStats.Analytics);
-      var d = new Date(response.data.DebugStats.NextLoopTime);
-      document.getElementById("next-run-time").innerHTML = d.toString();
-      document.getElementById("api-calls").innerHTML = response.data.DebugStats.APICount;
-      document.getElementById("api-calls-per-sec").innerHTML = response.data.DebugStats.APIPerSec;
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
@@ -53,7 +46,21 @@ function SQCntl(dataService, $interval) {
     });
   }
 
-  // We update users every 15 minutes. They rarely change change
+  // Refresh every 15 minutes
+  refreshStats();
+  $interval(refreshStats, 900000);
+  function refreshStats() {
+    dataService.getData('stats').then(function successCallback(response) {
+      var d = new Date(response.data.NextLoopTime);
+      document.getElementById("next-run-time").innerHTML = d.toString();
+
+      self.botStats = getStats(response.data.Analytics);
+      document.getElementById("api-calls").innerHTML = response.data.APICount;
+      document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
+    });
+  }
+
+  // Refresh every 15 minutes
   refreshUsers();
   $interval(refreshUsers, 900000);
   function refreshUsers() {

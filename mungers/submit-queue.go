@@ -72,7 +72,6 @@ type submitQueueStatus struct {
 	BuildStatus map[string]string
 	E2ERunning  *statusPullRequest
 	E2EQueue    []*statusPullRequest
-	DebugStats  github.DebugStats
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -145,13 +144,16 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 			http.Handle("/", http.FileServer(http.Dir(sq.WWWRoot)))
 		}
 		http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-			sq.ServeAPI(w, r)
+			sq.serveAPI(w, r)
 		})
 		http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
-			sq.ServeMessages(w, r)
+			sq.serveMessages(w, r)
 		})
 		http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-			sq.ServeUsers(w, r)
+			sq.serveUsers(w, r)
+		})
+		http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
+			sq.serveBotStats(w, r)
 		})
 		go http.ListenAndServe(sq.Address, nil)
 	}
@@ -289,9 +291,15 @@ func (sq *SubmitQueue) getQueueStatus() []byte {
 	status.BuildStatus = sq.e2e.GetBuildStatus()
 	status.E2EQueue = sq.getE2EQueueStatus()
 	status.E2ERunning = objToStatusPullRequest(sq.githubE2ERunning)
-	status.DebugStats = sq.githubConfig.GetDebugStats()
 
 	return sq.marshal(status)
+}
+
+func (sq *SubmitQueue) getBotStats() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	stats := sq.githubConfig.GetDebugStats()
+	return sq.marshal(stats)
 }
 
 const (
@@ -568,17 +576,22 @@ func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Req
 	}
 }
 
-func (sq *SubmitQueue) ServeUsers(res http.ResponseWriter, req *http.Request) {
+func (sq *SubmitQueue) serveUsers(res http.ResponseWriter, req *http.Request) {
 	data := sq.getUserInfo()
 	sq.serve(data, res, req)
 }
 
-func (sq *SubmitQueue) ServeMessages(res http.ResponseWriter, req *http.Request) {
+func (sq *SubmitQueue) serveMessages(res http.ResponseWriter, req *http.Request) {
 	data := sq.getQueueMessages()
 	sq.serve(data, res, req)
 }
 
-func (sq *SubmitQueue) ServeAPI(res http.ResponseWriter, req *http.Request) {
+func (sq *SubmitQueue) serveAPI(res http.ResponseWriter, req *http.Request) {
 	data := sq.getQueueStatus()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveBotStats(res http.ResponseWriter, req *http.Request) {
+	data := sq.getBotStats()
 	sq.serve(data, res, req)
 }
