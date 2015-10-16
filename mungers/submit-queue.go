@@ -67,11 +67,14 @@ type userInfo struct {
 	Access    string
 }
 
+type e2eQueueStatus struct {
+	E2ERunning *statusPullRequest
+	E2EQueue   []*statusPullRequest
+}
+
 type submitQueueStatus struct {
 	PRStatus    map[string]submitStatus
 	BuildStatus map[string]string
-	E2ERunning  *statusPullRequest
-	E2EQueue    []*statusPullRequest
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -154,6 +157,9 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		})
 		http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
 			sq.serveBotStats(w, r)
+		})
+		http.HandleFunc("/github-e2e-queue", func(w http.ResponseWriter, r *http.Request) {
+			sq.serveGithubE2EStatus(w, r)
 		})
 		go http.ListenAndServe(sq.Address, nil)
 	}
@@ -289,9 +295,17 @@ func (sq *SubmitQueue) getQueueStatus() []byte {
 	}
 	status.PRStatus = outputStatus
 	status.BuildStatus = sq.e2e.GetBuildStatus()
-	status.E2EQueue = sq.getE2EQueueStatus()
-	status.E2ERunning = objToStatusPullRequest(sq.githubE2ERunning)
 
+	return sq.marshal(status)
+}
+
+func (sq *SubmitQueue) getGithubE2EStatus() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	status := e2eQueueStatus{
+		E2EQueue:   sq.getE2EQueueStatus(),
+		E2ERunning: objToStatusPullRequest(sq.githubE2ERunning),
+	}
 	return sq.marshal(status)
 }
 
@@ -593,5 +607,10 @@ func (sq *SubmitQueue) serveAPI(res http.ResponseWriter, req *http.Request) {
 
 func (sq *SubmitQueue) serveBotStats(res http.ResponseWriter, req *http.Request) {
 	data := sq.getBotStats()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.Request) {
+	data := sq.getGithubE2EStatus()
 	sq.serve(data, res, req)
 }

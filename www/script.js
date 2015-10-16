@@ -17,6 +17,7 @@ function SQCntl(dataService, $interval) {
   // Refresh data every 60 seconds
   refresh();
   $interval(refresh, 60000);
+
   function refresh() {
     dataService.getData('api').then(function successCallback(response) {
       var prs = getPRs(response.data.PRStatus);
@@ -24,20 +25,30 @@ function SQCntl(dataService, $interval) {
       self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
       self.builds = getE2E(response.data.BuildStatus);
-      if (response.data.E2ERunning.Number === "") {
-        self.e2erunning = [];
-      } else {
-        self.e2erunning = [response.data.E2ERunning];
-      }
-      self.e2equeue = response.data.E2EQueue;
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
   }
 
   // Refresh every 30 seconds
+  refreshGithubE2E();
+  $interval(refreshGithubE2E, 30000);
+
+  function refreshGithubE2E() {
+    dataService.getData('github-e2e-queue').then(function successCallback(response) {
+      if (response.data.E2ERunning.Number === "") {
+        self.e2erunning = [];
+      } else {
+        self.e2erunning = [response.data.E2ERunning];
+      }
+      self.e2equeue = response.data.E2EQueue;
+    });
+  }
+
+  // Refresh every 30 seconds
   refreshMessages();
   $interval(refreshMessages, 30000);
+
   function refreshMessages() {
     dataService.getData('messages').then(function successCallback(response) {
       var msgs = getPRs(response.data);
@@ -49,6 +60,7 @@ function SQCntl(dataService, $interval) {
   // Refresh every 15 minutes
   refreshStats();
   $interval(refreshStats, 900000);
+
   function refreshStats() {
     dataService.getData('stats').then(function successCallback(response) {
       var d = new Date(response.data.NextLoopTime);
@@ -63,6 +75,7 @@ function SQCntl(dataService, $interval) {
   // Refresh every 15 minutes
   refreshUsers();
   $interval(refreshUsers, 900000);
+
   function refreshUsers() {
     dataService.getData('users').then(function successCallback(response) {
       self.users = response.data;
