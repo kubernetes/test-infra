@@ -1,5 +1,5 @@
 "use strict";
-angular.module('SubmitQueueModule', ['ngMaterial']);
+angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table']);
 
 angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', SQCntl]);
 
@@ -12,6 +12,7 @@ function SQCntl(dataService, $interval) {
   self.querySearch = querySearch;
   self.updatePRVisibility = updatePRVisibility;
   self.queryNum = 0;
+  self.StatOrder = "-Count";
   // Load all api data
   refresh();
   // Refresh data every 30 seconds
@@ -28,9 +29,15 @@ function SQCntl(dataService, $interval) {
       if (response.data.E2ERunning.Number === "") {
         self.e2erunning = [];
       } else {
-        self.e2erunning = [ response.data.E2ERunning ];
+        self.e2erunning = [response.data.E2ERunning];
       }
       self.e2equeue = response.data.E2EQueue;
+
+      self.botStats = getStats(response.data.DebugStats.Analytics);
+      var d = new Date(response.data.DebugStats.NextLoopTime);
+      document.getElementById("next-run-time").innerHTML = d;
+      document.getElementById("api-calls").innerHTML = response.data.DebugStats.APICount;
+      document.getElementById("api-calls-per-sec").innerHTML = response.data.DebugStats.APIPerSec;
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
@@ -49,7 +56,7 @@ function SQCntl(dataService, $interval) {
   }
 
   function updatePRVisibility() {
-          __updatePRVisibility(self.prs);
+    __updatePRVisibility(self.prs);
   }
 
   function getPRs(prs) {
@@ -64,6 +71,18 @@ function SQCntl(dataService, $interval) {
       result.push(obj);
     });
     return result;
+  }
+
+  function getStats(stats) {
+    var result = [];
+    angular.forEach(stats, function(value, key) {
+      var obj = {
+        Name: key,
+        Count: value
+      };
+      result.push(obj);
+    });
+    return result
   }
 
   function getE2E(builds) {

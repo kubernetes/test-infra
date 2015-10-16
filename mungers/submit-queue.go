@@ -71,6 +71,7 @@ type submitQueueStatus struct {
 	UserInfo    map[string]userInfo
 	E2ERunning  *statusPullRequest
 	E2EQueue    []*statusPullRequest
+	DebugStats  github.DebugStats
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -245,6 +246,7 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 	status.UserInfo = sq.userInfo
 	status.E2EQueue = sq.getE2EQueueStatus()
 	status.E2ERunning = objToStatusPullRequest(sq.githubE2ERunning)
+	status.DebugStats = sq.githubConfig.GetDebugStats()
 
 	b, err := json.Marshal(status)
 	if err != nil {

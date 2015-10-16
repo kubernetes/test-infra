@@ -75,6 +75,9 @@ type Config struct {
 
 	useMemoryCache bool
 
+	// When we clear analytics we store the last values here
+	lastAnalytics analytics
+
 	analytics analytics
 }
 
@@ -86,8 +89,10 @@ func (a *analytic) Call(config *Config) {
 }
 
 type analytics struct {
-	lastAPIReset time.Time
-	apiCount     int // number of times we called a github API
+	lastAPIReset       time.Time
+	nextAnalyticUpdate time.Time // when we expect the next update
+	apiCount           int       // number of times we called a github API
+	apiPerSec          float64
 
 	AddLabels         analytic
 	RemoveLabels      analytic
@@ -107,10 +112,8 @@ type analytics struct {
 	GetUser           analytic
 }
 
-func (a analytics) Print() {
-	since := time.Since(a.lastAPIReset)
-	callsPerSec := float64(a.apiCount) / since.Seconds()
-	glog.Infof("Made %d API calls since the last Reset %f calls/sec", a.apiCount, callsPerSec)
+func (a analytics) print() {
+	glog.Infof("Made %d API calls since the last Reset %f calls/sec", a.apiCount, a.apiPerSec)
 
 	buf := new(bytes.Buffer)
 	w := new(tabwriter.Writer)
@@ -143,6 +146,15 @@ type MungeObject struct {
 	pr      *github.PullRequest
 	commits []github.RepositoryCommit
 	events  []github.IssueEvent
+}
+
+// DebugStats is a structure that tells information about how we have interacted
+// with github
+type DebugStats struct {
+	Analytics    analytics
+	APIPerSec    float64
+	APICount     int
+	NextLoopTime time.Time
 }
 
 // TestObject should NEVER be used outside of _test.go code. It creates a
@@ -229,10 +241,31 @@ func (config *Config) PreExecute() error {
 	return nil
 }
 
+// GetDebugStats returns information about the bot iself. Things like how many
+// API calls has it made, how many of each type, etc.
+func (config *Config) GetDebugStats() DebugStats {
+	d := DebugStats{
+		Analytics:    config.lastAnalytics,
+		APIPerSec:    config.lastAnalytics.apiPerSec,
+		APICount:     config.lastAnalytics.apiCount,
+		NextLoopTime: config.lastAnalytics.nextAnalyticUpdate,
+	}
+	return d
+}
+
+// NextExpectedUpdate will set the debug information concerning when the
+// mungers are likely to run again.
+func (config *Config) NextExpectedUpdate(t time.Time) {
+	config.analytics.nextAnalyticUpdate = t
+}
+
 // ResetAPICount will both reset the counters of how many api calls have been
 // made but will also print the information from the last run.
 func (config *Config) ResetAPICount() {
-	config.analytics.Print()
+	since := time.Since(config.analytics.lastAPIReset)
+	config.analytics.apiPerSec = float64(config.analytics.apiCount) / since.Seconds()
+	config.lastAnalytics = config.analytics
+	config.analytics.print()
 	config.analytics = analytics{}
 	config.analytics.lastAPIReset = time.Now()
 }

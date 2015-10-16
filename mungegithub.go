@@ -51,6 +51,7 @@ func doMungers(config *mungeConfig) error {
 	for {
 		nextRunStartTime := time.Now().Add(config.Period)
 		glog.Infof("Running mungers")
+		config.NextExpectedUpdate(nextRunStartTime)
 
 		mungers.EachLoop()
 

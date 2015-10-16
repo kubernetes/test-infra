@@ -3,6 +3,7 @@
 
 <head>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.2/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="md-data-table.min.css" type="text/css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
   <link rel="stylesheet" href="style.css" type="text/css">
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png">
@@ -135,6 +136,42 @@
               </md-list>
             </md-content>
           </md-tab>
+
+          <md-tab label="Bot Info">
+            <md-content class="md-padding">
+              <md-content class="md-whiteframe-z2">
+                <md-toolbar>
+                  <h2 class="md-toolbar-tools">Statistics About the Bot</h2>
+                </md-toolbar>
+              </md-content>
+              <br>
+              <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
+              <h3 class=md-title>Total API Calls Last Loop: <span id="api-calls"></span></h3>
+              <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
+              <md-content class="md-whiteframe-z2">
+                <md-data-table-container>
+                  <md-data-table-toolbar>
+                    <h2 class="md-title">API Calls During Last Loop</h2>
+                  </md-data-table-toolbar>
+                  <table md-data-table class="md-primary">
+                    <thead md-order="cntl.StatOrder">
+                      <tr>
+                        <th order-by="Name" name="Call"></th>
+                        <th order-by="Count" name="Count" numeric descend-first></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr ng-repeat="stat in cntl.botStats | orderBy: cntl.StatOrder">
+                        <td>{{stat.Name}}</td>
+                        <td>{{stat.Count}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </md-data-table-container>
+              </md-content>
+            </md-content>
+          </md-tab>
+
         </md-tabs>
       </md-content>
     </md-content>
@@ -144,6 +181,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.min.js" type="text/javascript"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-aria.min.js" type="text/javascript"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.2/angular-material.min.js" type="text/javascript"></script>
+  <script src="md-data-table.min.js" type="text/javascript"></script>
   <script src="script.js" type="text/javascript"></script>
 </body>
 
