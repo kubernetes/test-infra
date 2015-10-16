@@ -24,7 +24,6 @@ function SQCntl(dataService, $interval) {
       __updatePRVisibility(prs);
       self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
-      self.builds = getE2E(response.data.BuildStatus);
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
@@ -79,6 +78,18 @@ function SQCntl(dataService, $interval) {
   function refreshUsers() {
     dataService.getData('users').then(function successCallback(response) {
       self.users = response.data;
+    });
+  }
+
+  // Refresh every minute
+  refreshGoogleInternalCI();
+  $interval(refreshGoogleInternalCI, 60000);
+
+  function refreshGoogleInternalCI() {
+    dataService.getData('google-internal-ci').then(function successCallback(response) {
+      var result = getE2E(response.data);
+      self.builds = result.builds;
+      self.failedBuild = result.failedBuild;
     });
   }
 
@@ -152,8 +163,10 @@ function SQCntl(dataService, $interval) {
       }
       result.push(obj);
     });
-    self.failedBuild = failedBuild;
-    return result;
+    return {
+      builds: result,
+      failedBuild: failedBuild,
+    };
   }
 
   function searchTermsContain(terms, value) {

@@ -73,8 +73,7 @@ type e2eQueueStatus struct {
 }
 
 type submitQueueStatus struct {
-	PRStatus    map[string]submitStatus
-	BuildStatus map[string]string
+	PRStatus map[string]submitStatus
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -160,6 +159,9 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		})
 		http.HandleFunc("/github-e2e-queue", func(w http.ResponseWriter, r *http.Request) {
 			sq.serveGithubE2EStatus(w, r)
+		})
+		http.HandleFunc("/google-internal-ci", func(w http.ResponseWriter, r *http.Request) {
+			sq.serveGoogleInternalStatus(w, r)
 		})
 		go http.ListenAndServe(sq.Address, nil)
 	}
@@ -294,7 +296,6 @@ func (sq *SubmitQueue) getQueueStatus() []byte {
 		outputStatus[key] = value
 	}
 	status.PRStatus = outputStatus
-	status.BuildStatus = sq.e2e.GetBuildStatus()
 
 	return sq.marshal(status)
 }
@@ -314,6 +315,12 @@ func (sq *SubmitQueue) getBotStats() []byte {
 	defer sq.Unlock()
 	stats := sq.githubConfig.GetDebugStats()
 	return sq.marshal(stats)
+}
+
+func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.e2e.GetBuildStatus())
 }
 
 const (
@@ -612,5 +619,10 @@ func (sq *SubmitQueue) serveBotStats(res http.ResponseWriter, req *http.Request)
 
 func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.Request) {
 	data := sq.getGithubE2EStatus()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
+	data := sq.getGoogleInternalStatus()
 	sq.serve(data, res, req)
 }
