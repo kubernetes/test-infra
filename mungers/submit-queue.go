@@ -145,8 +145,8 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		if len(sq.WWWRoot) > 0 {
 			http.Handle("/", http.FileServer(http.Dir(sq.WWWRoot)))
 		}
-		http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveAPI(w, r)
+		http.HandleFunc("/prs", func(w http.ResponseWriter, r *http.Request) {
+			sq.servePRs(w, r)
 		})
 		http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
 			sq.serveMessages(w, r)
@@ -607,7 +607,7 @@ func (sq *SubmitQueue) serveMessages(res http.ResponseWriter, req *http.Request)
 	sq.serve(data, res, req)
 }
 
-func (sq *SubmitQueue) serveAPI(res http.ResponseWriter, req *http.Request) {
+func (sq *SubmitQueue) servePRs(res http.ResponseWriter, req *http.Request) {
 	data := sq.getQueueStatus()
 	sq.serve(data, res, req)
 }

@@ -14,12 +14,12 @@ function SQCntl(dataService, $interval) {
   self.queryNum = 0;
   self.StatOrder = "-Count";
 
-  // Refresh data every 60 seconds
-  refresh();
-  $interval(refresh, 60000);
+  // Refresh data every 10 minutes
+  refreshPRs();
+  $interval(refreshPRs, 600000);
 
-  function refresh() {
-    dataService.getData('api').then(function successCallback(response) {
+  function refreshPRs() {
+    dataService.getData('prs').then(function successCallback(response) {
       var prs = getPRs(response.data.PRStatus);
       __updatePRVisibility(prs);
       self.prs = prs;
@@ -44,9 +44,9 @@ function SQCntl(dataService, $interval) {
     });
   }
 
-  // Refresh every 30 seconds
+  // Refresh every minute
   refreshMessages();
-  $interval(refreshMessages, 30000);
+  $interval(refreshMessages, 60000);
 
   function refreshMessages() {
     dataService.getData('messages').then(function successCallback(response) {
