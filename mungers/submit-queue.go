@@ -62,6 +62,7 @@ type statusPullRequest struct {
 }
 
 type userInfo struct {
+	Login     string
 	AvatarURL string
 	Access    string
 }
@@ -69,7 +70,6 @@ type userInfo struct {
 type submitQueueStatus struct {
 	PRStatus    map[string]submitStatus
 	BuildStatus map[string]string
-	UserInfo    map[string]userInfo
 	E2ERunning  *statusPullRequest
 	E2EQueue    []*statusPullRequest
 	DebugStats  github.DebugStats
@@ -105,9 +105,9 @@ type SubmitQueue struct {
 
 	sync.Mutex
 	lastPRStatus   map[string]submitStatus
-	prStatus       map[string]submitStatus // ALWAYS protected by sync.Mutex
-	userInfo       map[string]userInfo
-	statusMessages []submitStatus // protected by sync.Mutex
+	prStatus       map[string]submitStatus // protected by sync.Mutex
+	userInfo       map[string]userInfo     //proteted by sync.Mutex
+	statusMessages []submitStatus          // protected by sync.Mutex
 
 	// Every time a PR is added to githubE2EQueue also notify the channel
 	githubE2EWakeup  chan bool
@@ -149,6 +149,9 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		})
 		http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
 			sq.ServeMessages(w, r)
+		})
+		http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+			sq.ServeUsers(w, r)
 		})
 		go http.ListenAndServe(sq.Address, nil)
 	}
@@ -251,11 +254,8 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 	return queue
 }
 
-func (sq *SubmitQueue) GetQueueMessages() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-
-	b, err := json.Marshal(sq.statusMessages)
+func (sq *SubmitQueue) marshal(data interface{}) []byte {
+	b, err := json.Marshal(data)
 	if err != nil {
 		glog.Errorf("Unable to Marshal Status: %v", sq.statusMessages)
 		return nil
@@ -263,9 +263,21 @@ func (sq *SubmitQueue) GetQueueMessages() []byte {
 	return b
 }
 
+func (sq *SubmitQueue) getUserInfo() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.userInfo)
+}
+
+func (sq *SubmitQueue) getQueueMessages() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.statusMessages)
+}
+
 // GetQueueStatus returns a json representation of the state of the submit
 // queue. This can be used to generate web pages about the submit queue.
-func (sq *SubmitQueue) GetQueueStatus() []byte {
+func (sq *SubmitQueue) getQueueStatus() []byte {
 	status := submitQueueStatus{}
 	sq.Lock()
 	defer sq.Unlock()
@@ -275,17 +287,11 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 	}
 	status.PRStatus = outputStatus
 	status.BuildStatus = sq.e2e.GetBuildStatus()
-	status.UserInfo = sq.userInfo
 	status.E2EQueue = sq.getE2EQueueStatus()
 	status.E2ERunning = objToStatusPullRequest(sq.githubE2ERunning)
 	status.DebugStats = sq.githubConfig.GetDebugStats()
 
-	b, err := json.Marshal(status)
-	if err != nil {
-		glog.Errorf("Unable to Marshal Status: %v", status)
-		return nil
-	}
-	return b
+	return sq.marshal(status)
 }
 
 const (
@@ -551,8 +557,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	return
 }
 
-func (sq *SubmitQueue) ServeMessages(res http.ResponseWriter, req *http.Request) {
-	data := sq.GetQueueMessages()
+func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Request) {
 	if data == nil {
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
@@ -563,14 +568,17 @@ func (sq *SubmitQueue) ServeMessages(res http.ResponseWriter, req *http.Request)
 	}
 }
 
+func (sq *SubmitQueue) ServeUsers(res http.ResponseWriter, req *http.Request) {
+	data := sq.getUserInfo()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) ServeMessages(res http.ResponseWriter, req *http.Request) {
+	data := sq.getQueueMessages()
+	sq.serve(data, res, req)
+}
+
 func (sq *SubmitQueue) ServeAPI(res http.ResponseWriter, req *http.Request) {
-	data := sq.GetQueueStatus()
-	if data == nil {
-		res.Header().Set("Content-type", "text/plain")
-		res.WriteHeader(http.StatusInternalServerError)
-	} else {
-		res.Header().Set("Content-type", "application/json")
-		res.WriteHeader(http.StatusOK)
-		res.Write(data)
-	}
+	data := sq.getQueueStatus()
+	sq.serve(data, res, req)
 }

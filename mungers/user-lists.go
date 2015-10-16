@@ -39,6 +39,7 @@ var (
 )
 
 // RefreshWhitelist updates the whitelist, re-getting the list of committers.
+// called with sq.Lock() held!
 func (sq *SubmitQueue) RefreshWhitelist() {
 	config := sq.githubConfig
 	info := map[string]userInfo{}
@@ -72,6 +73,7 @@ func (sq *SubmitQueue) RefreshWhitelist() {
 	for _, user := range pullUsers {
 		allUsers.Insert(*user.Login)
 		info[*user.Login] = userInfo{
+			Login:     *user.Login,
 			Access:    "pull access",
 			AvatarURL: *user.AvatarURL,
 		}
@@ -79,6 +81,7 @@ func (sq *SubmitQueue) RefreshWhitelist() {
 	for _, user := range pushUsers {
 		allUsers.Insert(*user.Login)
 		info[*user.Login] = userInfo{
+			Login:     *user.Login,
 			Access:    "push access",
 			AvatarURL: *user.AvatarURL,
 		}
@@ -95,6 +98,7 @@ func (sq *SubmitQueue) RefreshWhitelist() {
 			continue
 		}
 		info[login] = userInfo{
+			Login:     *user.Login,
 			Access:    "explicitly whitelisted",
 			AvatarURL: *user.AvatarURL,
 		}

@@ -15,16 +15,15 @@ function SQCntl(dataService, $interval) {
   self.StatOrder = "-Count";
   // Load all api data
   refresh();
-  // Refresh data every 30 seconds
-  $interval(refresh, 30000);
+  // Refresh data every 60 seconds
+  $interval(refresh, 60000);
 
   function refresh() {
-    dataService.getData().then(function successCallback(response) {
+    dataService.getData('api').then(function successCallback(response) {
       var prs = getPRs(response.data.PRStatus);
       __updatePRVisibility(prs);
       self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
-      self.users = getUsers(response.data.UserInfo);
       self.builds = getE2E(response.data.BuildStatus);
       if (response.data.E2ERunning.Number === "") {
         self.e2erunning = [];
@@ -41,11 +40,25 @@ function SQCntl(dataService, $interval) {
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
+  }
 
-    dataService.getMessages().then(function successCallback(response) {
-      var msgs = getPRs(response.data)
+  // Refresh every 30 seconds
+  refreshMessages();
+  $interval(refreshMessages, 30000);
+  function refreshMessages() {
+    dataService.getData('messages').then(function successCallback(response) {
+      var msgs = getPRs(response.data);
       __updatePRVisibility(msgs);
-      self.statusMessages = msgs
+      self.statusMessages = msgs;
+    });
+  }
+
+  // We update users every 15 minutes. They rarely change change
+  refreshUsers();
+  $interval(refreshUsers, 900000);
+  function refreshUsers() {
+    dataService.getData('users').then(function successCallback(response) {
+      self.users = response.data;
     });
   }
 
@@ -73,8 +86,8 @@ function SQCntl(dataService, $interval) {
       };
       angular.forEach(value, function(value, key) {
         if (key === "Time") {
-          var d = Date(value)
-          value = d.toString()
+          var d = new Date(value);
+          value = d.toString();
         }
         obj[key] = value;
       });
@@ -120,20 +133,6 @@ function SQCntl(dataService, $interval) {
       result.push(obj);
     });
     self.failedBuild = failedBuild;
-    return result;
-  }
-
-  function getUsers(users) {
-    var result = [];
-    angular.forEach(users, function(value, key) {
-      var obj = {
-        'Login': key
-      };
-      angular.forEach(value, function(value, key) {
-        obj[key] = value;
-      });
-      result.push(obj);
-    });
     return result;
   }
 
@@ -207,14 +206,9 @@ angular.module('SubmitQueueModule').service('DataService', ['$http', dataService
 function dataService($http) {
   return ({
     getData: getData,
-    getMessages: getMessages,
   });
 
-  function getData() {
-    return $http.get('api');
-  }
-
-  function getMessages() {
-    return $http.get('messages');
+  function getData(file) {
+    return $http.get(file);
   }
 }

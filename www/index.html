@@ -110,7 +110,7 @@
                 </md-toolbar>
               </md-content>
               <md-list>
-                <md-list-item class="md-3-line" ng-repeat="msg in cntl.statusMessages" ng-show="msg.show">
+                <md-list-item class="md-3-line" ng-repeat="msg in cntl.statusMessages | orderBy: '-Time'" ng-show="msg.show">
                   <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{msg.Login}}">
                     <img ng-src="{{msg.AvatarURL}}" alt="{{msg.Login}}">
                   </a>
@@ -119,7 +119,7 @@
                       <a ng-href="{{msg.URL}}">#{{msg.Number}}: {{msg.Title}}</a>
                     </h3>
                     <h4 class="md-body-2">{{msg.Reason}}</h4>
-                    <p>{{msg.Time}}</p>
+                    <p class="md-body-3">{{msg.Time}}</p>
                   </md-content>
                   <md-divider md-inset ng-if="!$last"></md-divider>
                 </md-list-item>
