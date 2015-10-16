@@ -34,14 +34,117 @@ import (
 )
 
 var (
+	_ = fmt.Printf
 	_ = glog.Errorf
 )
 
-func stringPtr(val string) *string            { return &val }
-func timePtr(val time.Time) *time.Time        { return &val }
-func intPtr(val int) *int                     { return &val }
-func boolPtr(val bool) *bool                  { return &val }
-func issuePtr(val github.Issue) *github.Issue { return &val }
+func stringPtr(val string) *string { return &val }
+func boolPtr(val bool) *bool       { return &val }
+
+const noWhitelistUser = "UserNotInWhitelist"
+const whitelistUser = "WhitelistUser"
+
+func ValidPR() *github.PullRequest {
+	return github_test.PullRequest(whitelistUser, false, true, true)
+}
+
+func UnMergeablePR() *github.PullRequest {
+	return github_test.PullRequest(whitelistUser, false, true, false)
+}
+
+func UndeterminedMergeablePR() *github.PullRequest {
+	return github_test.PullRequest(whitelistUser, false, false, false)
+}
+
+func NonWhitelistUserPR() *github.PullRequest {
+	return github_test.PullRequest(noWhitelistUser, false, true, true)
+}
+
+func BareIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{}, true)
+}
+
+func NoOKToMergeIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm"}, true)
+}
+
+func NoCLAIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{"lgtm", "ok-to-merge"}, true)
+}
+
+func NoLGTMIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "ok-to-merge"}, true)
+}
+
+func UserNotInWhitelistNoOKToMergeIssue() *github.Issue {
+	return github_test.Issue(noWhitelistUser, 1, []string{"cla: yes", "lgtm"}, true)
+}
+
+func UserNotInWhitelistOKToMergeIssue() *github.Issue {
+	return github_test.Issue(noWhitelistUser, 1, []string{"lgtm", "cla: yes", "ok-to-merge"}, true)
+}
+
+func DontRequireGithubE2EIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", "e2e-not-required"}, true)
+}
+
+func OldLGTMEvents() []github.IssueEvent {
+	return github_test.Events([]github_test.LabelTime{
+		{"lgtm", 6},
+		{"lgtm", 7},
+		{"lgtm", 8},
+	})
+}
+
+func NewLGTMEvents() []github.IssueEvent {
+	return github_test.Events([]github_test.LabelTime{
+		{"lgtm", 10},
+		{"lgtm", 11},
+		{"lgtm", 12},
+	})
+}
+
+func OverlappingLGTMEvents() []github.IssueEvent {
+	return github_test.Events([]github_test.LabelTime{
+		{"lgtm", 8},
+		{"lgtm", 9},
+		{"lgtm", 10},
+	})
+}
+
+// Commits returns a slice of github.RepositoryCommit of len==3 which
+// happened at times 7, 8, 9
+func Commits() []github.RepositoryCommit {
+	return github_test.Commits(3, 7)
+}
+
+func SuccessStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext, jenkinsCIContext, gceE2EContext}, nil, nil, nil)
+}
+
+func JenkinsCIGreenShippablePendingStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{claContext, jenkinsCIContext, travisContext, gceE2EContext}, nil, []string{shippableContext}, nil)
+}
+
+func ShippableGreenStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext, gceE2EContext}, nil, nil, nil)
+}
+
+func GithubE2EFailStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext}, []string{gceE2EContext}, nil, nil)
+}
+
+func SuccessJenkins() jenkins.Job {
+	return jenkins.Job{
+		Result: "SUCCESS",
+	}
+}
+
+func FailJenkins() jenkins.Job {
+	return jenkins.Job{
+		Result: "FAILED",
+	}
+}
 
 func TestValidateLGTMAfterPush(t *testing.T) {
 	tests := []struct {
@@ -50,130 +153,29 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		shouldPass  bool
 	}{
 		{
-			issueEvents: []github.IssueEvent{
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(10, 0)),
-				},
-			},
-			commits:    Commits(), // Modified at time.Unix(9)
-			shouldPass: true,
+			issueEvents: NewLGTMEvents(), // Label >= time.Unix(10)
+			commits:     Commits(),       // Modified at time.Unix(7), 8, and 9
+			shouldPass:  true,
 		},
 		{
-			issueEvents: []github.IssueEvent{
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(8, 0)),
-				},
-			},
-			commits:    Commits(), // Modified at time.Unix(9)
-			shouldPass: false,
+			issueEvents: OldLGTMEvents(), // Label <= time.Unix(8)
+			commits:     Commits(),       // Modified at time.Unix(7), 8, and 9
+			shouldPass:  false,
 		},
 		{
-			issueEvents: []github.IssueEvent{
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(12, 0)),
-				},
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(11, 0)),
-				},
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(10, 0)),
-				},
-			},
-			commits:    Commits(), // Modified at time.Unix(9)
-			shouldPass: true,
-		},
-		{
-			issueEvents: []github.IssueEvent{
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(10, 0)),
-				},
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(11, 0)),
-				},
-				{
-					Event: stringPtr("labeled"),
-					Label: &github.Label{
-						Name: stringPtr("lgtm"),
-					},
-					CreatedAt: timePtr(time.Unix(12, 0)),
-				},
-			},
-			commits:    Commits(), // Modified at time.Unix(9)
-			shouldPass: true,
+			issueEvents: OverlappingLGTMEvents(), // Labeled at 8, 9, and 10
+			commits:     Commits(),               // Modified at time.Unix(7), 8, and 9
+			shouldPass:  true,
 		},
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, mux := github_test.InitTest()
+		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
 
-		mux.HandleFunc(fmt.Sprintf("/repos/o/r/issues/1/events"), func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.issueEvents)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-
-		mux.HandleFunc(fmt.Sprintf("/repos/o/r/pulls/1/commits"), func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.commits)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-
-		mux.HandleFunc(fmt.Sprintf("/repos/o/r/commits/mysha"), func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.commits[0])
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-
-		obj := github_util.TestObject(config, bareIssue(), nil, nil, nil)
+		obj := github_util.TestObject(config, BareIssue(), nil, nil, nil)
 
 		if _, err := obj.GetCommits(); err != nil {
 			t.Errorf("Unexpected error getting filled commits: %v", err)
@@ -235,291 +237,6 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, shouldPass bool) {
 	}
 }
 
-func barePR() *github.PullRequest {
-	return &github.PullRequest{
-		Title:   stringPtr("My title"),
-		Number:  intPtr(1),
-		HTMLURL: stringPtr("PR URL"),
-		Head: &github.PullRequestBranch{
-			SHA: stringPtr("mysha"),
-		},
-		User: &github.User{
-			Login:     stringPtr("UserNotInWhiteList"),
-			AvatarURL: stringPtr("MyAvatarURL"),
-		},
-		Merged: boolPtr(false),
-	}
-}
-
-func mergeablePR(pr *github.PullRequest) *github.PullRequest {
-	pr.Mergeable = boolPtr(true)
-	return pr
-}
-
-func ValidPR() *github.PullRequest {
-	pr := barePR()
-	pr = mergeablePR(pr)
-	return pr
-}
-
-func UnMergeablePR() *github.PullRequest {
-	pr := barePR()
-	pr.Mergeable = boolPtr(false)
-	return pr
-}
-
-func UndeterminedMergeablePR() *github.PullRequest {
-	pr := barePR()
-	pr.Mergeable = nil
-	return pr
-}
-
-func NonWhitelistUserPR() *github.PullRequest {
-	pr := barePR()
-	pr.Mergeable = boolPtr(true)
-	pr = mergeablePR(pr)
-	return pr
-}
-
-func bareIssue() *github.Issue {
-	return &github.Issue{
-		Title:   stringPtr("My title"),
-		Number:  intPtr(1),
-		HTMLURL: stringPtr("PR URL"),
-		User: &github.User{
-			Login:     stringPtr("k8s-merge-robot"),
-			AvatarURL: stringPtr("MyAvatarURL"),
-		},
-		PullRequestLinks: &github.PullRequestLinks{},
-	}
-}
-
-func labelIssue(label string, issue *github.Issue) *github.Issue {
-	l := github.Label{
-		Name: stringPtr(label),
-	}
-	issue.Labels = append(issue.Labels, l)
-	return issue
-}
-
-func NoCLAIssue() *github.Issue {
-	issue := bareIssue()
-	labelIssue("lgtm", issue)
-	labelIssue("ok-to-merge", issue)
-	return issue
-}
-
-func NoLGTMIssue() *github.Issue {
-	issue := bareIssue()
-	labelIssue("cla: yes", issue)
-	labelIssue("ok-to-merge", issue)
-	return issue
-}
-
-func NoOKToMergeIssue() *github.Issue {
-	issue := bareIssue()
-	labelIssue("cla: yes", issue)
-	labelIssue("lgtm", issue)
-	return issue
-}
-
-func UserNotInWhitelistNoOKToMergeIssue() *github.Issue {
-	issue := NoOKToMergeIssue()
-	issue.User.Login = stringPtr("UserNotInWhiteList")
-	return issue
-}
-
-func UserNotInWhitelistOKToMergeIssue() *github.Issue {
-	issue := AllLabelsIssue()
-	issue.User.Login = stringPtr("UserNotInWhiteList")
-	return issue
-}
-
-func DontRequireGithubE2EIssue() *github.Issue {
-	issue := bareIssue()
-	labelIssue("cla: yes", issue)
-	labelIssue("lgtm", issue)
-	labelIssue("e2e-not-required", issue)
-	return issue
-}
-
-func AllLabelsIssue() *github.Issue {
-	issue := bareIssue()
-	labelIssue("cla: yes", issue)
-	labelIssue("lgtm", issue)
-	labelIssue("ok-to-merge", issue)
-	return issue
-}
-
-func OldLGTMEvents() []github.IssueEvent {
-	return []github.IssueEvent{
-		{
-			Event: stringPtr("labeled"),
-			Label: &github.Label{
-				Name: stringPtr("lgtm"),
-			},
-			CreatedAt: timePtr(time.Unix(8, 0)),
-		},
-	}
-}
-
-func NewLGTMEvents() []github.IssueEvent {
-	return []github.IssueEvent{
-		{
-			Event: stringPtr("labeled"),
-			Label: &github.Label{
-				Name: stringPtr("lgtm"),
-			},
-			CreatedAt: timePtr(time.Unix(10, 0)),
-		},
-	}
-}
-
-func Commit() *github.Commit {
-	return &github.Commit{
-		SHA: stringPtr("mysha"),
-		Committer: &github.CommitAuthor{
-			Date: timePtr(time.Unix(9, 0)),
-		},
-	}
-}
-
-func Commits() []github.RepositoryCommit {
-	return []github.RepositoryCommit{
-		{
-			SHA:    stringPtr("mysha"),
-			Commit: Commit(),
-		},
-	}
-}
-
-func bareStatus() github.CombinedStatus {
-	return github.CombinedStatus{}
-}
-
-func updateStatusState(status github.CombinedStatus) github.CombinedStatus {
-	prioMap := map[string]int{
-		"pending": 4,
-		"error":   3,
-		"failure": 2,
-		"success": 1,
-		"":        0,
-	}
-
-	backMap := map[int]string{
-		4: "pending",
-		3: "error",
-		2: "failure",
-		1: "success",
-		0: "",
-	}
-
-	sint := 0
-	for _, s := range status.Statuses {
-		newSint := prioMap[*s.State]
-		if newSint > sint {
-			sint = newSint
-		}
-	}
-	status.State = stringPtr(backMap[sint])
-	return status
-}
-
-func claStatus(status github.CombinedStatus) github.CombinedStatus {
-	s := github.RepoStatus{
-		Context: stringPtr("cla/google"),
-		State:   stringPtr("success"),
-	}
-	status.Statuses = append(status.Statuses, s)
-	return updateStatusState(status)
-}
-
-func jenkinsCIStatus(status github.CombinedStatus, state string) github.CombinedStatus {
-	s := github.RepoStatus{
-		Context: stringPtr(jenkinsCIContext),
-		State:   stringPtr(state),
-	}
-	status.Statuses = append(status.Statuses, s)
-	return updateStatusState(status)
-}
-
-func shippableStatus(status github.CombinedStatus, state string) github.CombinedStatus {
-	s := github.RepoStatus{
-		Context: stringPtr(shippableContext),
-		State:   stringPtr(state),
-	}
-	status.Statuses = append(status.Statuses, s)
-	return updateStatusState(status)
-}
-
-func successGithubStatus(status github.CombinedStatus) github.CombinedStatus {
-	s := github.RepoStatus{
-		Context: stringPtr(gceE2EContext),
-		State:   stringPtr("success"),
-	}
-	status.Statuses = append(status.Statuses, s)
-	return updateStatusState(status)
-}
-
-func failGithubStatus(status github.CombinedStatus) github.CombinedStatus {
-	s := github.RepoStatus{
-		Context: stringPtr(gceE2EContext),
-		State:   stringPtr("failure"),
-	}
-	status.Statuses = append(status.Statuses, s)
-	return updateStatusState(status)
-}
-
-func NoCLAStatus() github.CombinedStatus {
-	status := bareStatus()
-	return failGithubStatus(status)
-}
-
-func GitHubE2EFailStatus() github.CombinedStatus {
-	status := bareStatus()
-	status = claStatus(status)
-	status = jenkinsCIStatus(status, "success")
-	return failGithubStatus(status)
-}
-
-func JenkinsCIGreenShippablePendingStatus() github.CombinedStatus {
-	status := bareStatus()
-	status = claStatus(status)
-	status = shippableStatus(status, "pending")
-	status = jenkinsCIStatus(status, "success")
-	return successGithubStatus(status)
-}
-
-func ShippableGreenStatus() github.CombinedStatus {
-	status := bareStatus()
-	status = claStatus(status)
-	status = shippableStatus(status, "success")
-	return successGithubStatus(status)
-}
-
-func SuccessStatus() github.CombinedStatus {
-	status := bareStatus()
-	status = claStatus(status)
-	status = jenkinsCIStatus(status, "success")
-	return successGithubStatus(status)
-}
-
-func bareJenkins() jenkins.Job {
-	return jenkins.Job{}
-}
-
-func SuccessJenkins() jenkins.Job {
-	job := bareJenkins()
-	job.Result = "SUCCESS"
-	return job
-}
-
-func FailJenkins() jenkins.Job {
-	job := bareJenkins()
-	job.Result = "FAILED"
-	return job
-}
-
 func TestMunge(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -528,7 +245,7 @@ func TestMunge(t *testing.T) {
 		issue            *github.Issue
 		commits          []github.RepositoryCommit
 		events           []github.IssueEvent
-		ciStatus         github.CombinedStatus
+		ciStatus         *github.CombinedStatus
 		jenkinsJob       jenkins.Job
 		shouldPass       bool
 		mergeAfterQueued bool
@@ -539,7 +256,7 @@ func TestMunge(t *testing.T) {
 			pr:         ValidPR(),
 			issue:      NoOKToMergeIssue(),
 			events:     NewLGTMEvents(),
-			commits:    Commits(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:   SuccessStatus(),
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
@@ -555,7 +272,7 @@ func TestMunge(t *testing.T) {
 			ciStatus:   SuccessStatus(),
 			jenkinsJob: SuccessJenkins(),
 			// The test should never run, but if it does, make sure it fails
-			shouldPass:       true,
+			shouldPass:       false,
 			mergeAfterQueued: true,
 			reason:           merged,
 		},
@@ -563,9 +280,9 @@ func TestMunge(t *testing.T) {
 		{
 			pr:         ValidPR(),
 			issue:      DontRequireGithubE2EIssue(),
-			ciStatus:   GitHubE2EFailStatus(),
+			ciStatus:   GithubE2EFailStatus(),
 			events:     NewLGTMEvents(),
-			commits:    Commits(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			reason:     merged,
 		},
@@ -573,9 +290,9 @@ func TestMunge(t *testing.T) {
 		{
 			pr:         ValidPR(),
 			issue:      UserNotInWhitelistOKToMergeIssue(),
-			ciStatus:   GitHubE2EFailStatus(),
+			ciStatus:   SuccessStatus(),
 			events:     NewLGTMEvents(),
-			commits:    Commits(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
 			reason:     merged,
@@ -628,10 +345,10 @@ func TestMunge(t *testing.T) {
 		// Fail because LGTM was added before the last change
 		{
 			pr:       ValidPR(),
-			issue:    AllLabelsIssue(),
+			issue:    NoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
 			events:   OldLGTMEvents(),
-			commits:  Commits(),
+			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
 			reason:   lgtmEarly,
 		},
 		// Fail because jenkins instances are failing (whole submit queue blocks)
@@ -640,14 +357,14 @@ func TestMunge(t *testing.T) {
 			issue:      NoOKToMergeIssue(),
 			ciStatus:   SuccessStatus(),
 			events:     NewLGTMEvents(),
-			commits:    Commits(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: FailJenkins(),
 			reason:     e2eFailure,
 		},
 		// This is not really a failure, we just check that it reports e2e is in progress
 		{
 			pr:         ValidPR(),
-			issue:      AllLabelsIssue(),
+			issue:      NoOKToMergeIssue(),
 			ciStatus:   SuccessStatus(),
 			events:     NewLGTMEvents(),
 			commits:    Commits(),
@@ -657,7 +374,7 @@ func TestMunge(t *testing.T) {
 		// Fail because the second run of github e2e tests failed
 		{
 			pr:         ValidPR(),
-			issue:      AllLabelsIssue(),
+			issue:      NoOKToMergeIssue(),
 			ciStatus:   SuccessStatus(),
 			events:     NewLGTMEvents(),
 			commits:    Commits(),
@@ -686,9 +403,30 @@ func TestMunge(t *testing.T) {
 			shouldPass: true,
 			reason:     merged,
 		},
+		{
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			ciStatus:   SuccessStatus(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: false,
+			reason:     ghE2EQueued,
+		},
+		// Fail because the second run of github e2e tests failed
+		{
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			ciStatus:   SuccessStatus(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: false,
+			reason:     ghE2EFailed,
+		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitTest()
+		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus)
 
 		config := &github_util.Config{}
 		config.Org = "o"
@@ -698,6 +436,7 @@ func TestMunge(t *testing.T) {
 		d := 250 * time.Millisecond
 		config.PendingWaitTime = &d
 
+		numJenkinsCalls := 0
 		// Respond with success to jenkins requests.
 		mux.HandleFunc("/job/foo/lastCompletedBuild/api/json", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
@@ -709,21 +448,15 @@ func TestMunge(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-		})
-		mux.HandleFunc("/repos/o/r/commits/mysha/status", func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.ciStatus)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
 
 			// There is no good spot for this, but this gets called
 			// before we queue the PR. So mark the PR as "merged".
-			if test.mergeAfterQueued {
+			// When the sq initializes, it will check the Jenkins status,
+			// so we don't want to modify the PR there. Instead we need
+			// to wait until the second time we check Jenkins, which happens
+			// we did the IsMerged() check.
+			numJenkinsCalls = numJenkinsCalls + 1
+			if numJenkinsCalls == 2 && test.mergeAfterQueued {
 				test.pr.Merged = boolPtr(true)
 				test.pr.Mergeable = nil
 			}
@@ -740,21 +473,10 @@ func TestMunge(t *testing.T) {
 			json.NewDecoder(r.Body).Decode(c)
 			msg := c.Body
 			if strings.HasPrefix(msg, "@k8s-bot test this") {
-				go fakeRunGithubE2ESuccess(&test.ciStatus, test.shouldPass)
+				go fakeRunGithubE2ESuccess(test.ciStatus, test.shouldPass)
 			}
 			w.WriteHeader(http.StatusOK)
 			data, err := json.Marshal(github.IssueComment{})
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-		mux.HandleFunc("/repos/o/r/pulls/1", func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.pr)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
@@ -774,7 +496,7 @@ func TestMunge(t *testing.T) {
 		})
 
 		sq := SubmitQueue{}
-		sq.RequiredStatusContexts = []string{"cla/google"}
+		sq.RequiredStatusContexts = []string{claContext}
 		sq.DontRequireE2ELabel = "e2e-not-required"
 		sq.E2EStatusContext = gceE2EContext
 		sq.JenkinsHost = server.URL
@@ -782,7 +504,7 @@ func TestMunge(t *testing.T) {
 		sq.WhitelistOverride = "ok-to-merge"
 		sq.Initialize(config)
 		sq.EachLoop(config)
-		sq.userWhitelist.Insert("k8s-merge-robot")
+		sq.userWhitelist.Insert(whitelistUser)
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
 		sq.Munge(obj)

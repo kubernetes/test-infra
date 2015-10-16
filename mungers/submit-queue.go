@@ -36,6 +36,7 @@ import (
 
 const (
 	needsOKToMergeLabel = "needs-ok-to-merge"
+	claContext          = "cla/google"
 	gceE2EContext       = "Jenkins GCE e2e"
 	jenkinsCIContext    = "Jenkins unit/integration"
 	shippableContext    = "Shippable"
@@ -168,7 +169,7 @@ func (sq *SubmitQueue) EachLoop(config *github.Config) error {
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{"kubernetes-e2e-gce", "kubernetes-e2e-gke-ci", "kubernetes-build", "kubernetes-e2e-gce-parallel", "kubernetes-e2e-gce-autoscaling", "kubernetes-e2e-gce-reboot", "kubernetes-e2e-gce-scalability"}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
-	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{"cla/google", travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
+	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{claContext, travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.DontRequireE2ELabel, "dont-require-e2e-label", "e2e-not-required", "If non-empty, a PR with this label will be merged automatically without looking at e2e results")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", gceE2EContext, "The name of the github status context for the e2e PR Builder")
@@ -253,7 +254,7 @@ func (sq *SubmitQueue) GetQueueStatus() []byte {
 	return b
 }
 
-var (
+const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR does not have cla: yes."
 	noLGTM                  = "PR does not have LGTM."
@@ -450,13 +451,16 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
-	newpr, err := obj.RefreshPR()
+	_, err := obj.RefreshPR()
 	if err != nil {
 		sq.SetMergeStatus(obj, unknown)
 		return
 	}
 
-	if *newpr.Merged {
+	if m, err := obj.IsMerged(); err != nil {
+		sq.SetMergeStatus(obj, unknown)
+		return
+	} else if m {
 		sq.SetMergeStatus(obj, merged)
 		return
 	}

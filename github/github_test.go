@@ -29,10 +29,9 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func stringPtr(val string) *string            { return &val }
-func timePtr(val time.Time) *time.Time        { return &val }
-func intPtr(val int) *int                     { return &val }
-func issuePtr(val github.Issue) *github.Issue { return &val }
+func stringPtr(val string) *string     { return &val }
+func timePtr(val time.Time) *time.Time { return &val }
+func intPtr(val int) *int              { return &val }
 
 func TestHasLabel(t *testing.T) {
 	tests := []struct {
@@ -42,46 +41,28 @@ func TestHasLabel(t *testing.T) {
 	}{
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("foo")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"foo"}, true),
 			},
 			label:    "foo",
 			hasLabel: true,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar"}, true),
 			},
 			label:    "foo",
 			hasLabel: false,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-						{Name: stringPtr("foo")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar", "foo"}, true),
 			},
 			label:    "foo",
 			hasLabel: true,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-						{Name: stringPtr("baz")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar", "baz"}, true),
 			},
 			label:    "foo",
 			hasLabel: false,
@@ -103,57 +84,35 @@ func TestHasLabels(t *testing.T) {
 	}{
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("foo")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"foo"}, true),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   true,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar"}, true),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   false,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-						{Name: stringPtr("foo")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar", "foo"}, true),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   true,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("bar")},
-						{Name: stringPtr("baz")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"bar", "baz"}, true),
 			},
 			seekLabels: []string{"foo"},
 			hasLabel:   false,
 		},
 		{
 			obj: MungeObject{
-				Issue: issuePtr(github.Issue{
-					Labels: []github.Label{
-						{Name: stringPtr("foo")},
-					},
-				}),
+				Issue: github_test.Issue("", 1, []string{"foo"}, true),
 			},
 			seekLabels: []string{"foo", "bar"},
 			hasLabel:   false,
@@ -168,6 +127,12 @@ func TestHasLabels(t *testing.T) {
 }
 
 func TestForEachIssueDo(t *testing.T) {
+	issue1 := github_test.Issue("bob", 1, nil, true)
+	issue5 := github_test.Issue("bob", 5, nil, true)
+	issue6 := github_test.Issue("bob", 6, nil, true)
+	issue7 := github_test.Issue("bob", 7, nil, true)
+	issue20 := github_test.Issue("bob", 20, nil, true)
+
 	user := github.User{Login: stringPtr("bob")}
 	tests := []struct {
 		Issues      [][]github.Issue
@@ -176,36 +141,16 @@ func TestForEachIssueDo(t *testing.T) {
 	}{
 		{
 			Issues: [][]github.Issue{
-				{
-					{
-						Number: intPtr(5),
-						User:   &user,
-					},
-				},
+				{*issue5},
 			},
 			Pages:       []int{0},
 			ValidIssues: 1,
 		},
 		{
 			Issues: [][]github.Issue{
-				{
-					{
-						Number: intPtr(5),
-						User:   &user,
-					},
-				},
-				{
-					{
-						Number: intPtr(6),
-						User:   &user,
-					},
-				},
-				{
-					{
-						Number: intPtr(7),
-						User:   &user,
-					},
-				},
+				{*issue5},
+				{*issue6},
+				{*issue7},
 				{
 					{
 						Number: intPtr(8),
@@ -218,29 +163,12 @@ func TestForEachIssueDo(t *testing.T) {
 		},
 		{
 			Issues: [][]github.Issue{
+				// Invalid 1 < MinPRNumber
+				// Invalid 20 > MaxPRNumber
+				{*issue1, *issue20},
+				// two valid issues
+				{*issue5, *issue6},
 				{
-					{
-						// Invalid 1 < MinPRNumber
-						Number: intPtr(1),
-						User:   &user,
-					},
-				},
-				{
-					{
-						// Invalid 20 > MaxPRNumber
-						Number: intPtr(20),
-						User:   &user,
-					},
-				},
-				{
-					{
-						Number: intPtr(5),
-						User:   &user,
-					},
-					{
-						Number: intPtr(6),
-						User:   &user,
-					},
 					{
 						// no Number, invalid
 						User: &user,
@@ -253,7 +181,7 @@ func TestForEachIssueDo(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		client, server, mux := github_test.InitTest()
+		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil)
 		config := &Config{
 			client:      client,
 			Org:         "foo",
@@ -312,13 +240,8 @@ func TestForEachIssueDo(t *testing.T) {
 }
 
 func TestComputeStatus(t *testing.T) {
-	success := stringPtr("success")
-	failure := stringPtr("failure")
-	errorp := stringPtr("error")
-	pending := stringPtr("pending")
-	sha := stringPtr("abcdef")
 	contextS := []string{"context"}
-	context := stringPtr("context")
+	otherS := []string{"other context"}
 
 	tests := []struct {
 		combinedStatus   *github.CombinedStatus
@@ -327,121 +250,75 @@ func TestComputeStatus(t *testing.T) {
 	}{
 		// test no context specified
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: success,
-				SHA:   sha,
-			},
-			expected: "success",
+			combinedStatus: github_test.Status("mysha", nil, nil, nil, nil),
+			expected:       "success",
 		},
 		{
 			combinedStatus: &github.CombinedStatus{
-				State: pending,
-				SHA:   sha,
+				State: stringPtr("pending"),
+				SHA:   stringPtr("mysha"),
 			},
 			expected: "pending",
 		},
 		{
 			combinedStatus: &github.CombinedStatus{
-				State: failure,
-				SHA:   sha,
+				State: stringPtr("failure"),
+				SHA:   stringPtr("mysha"),
 			},
 			expected: "failure",
 		},
 		{
 			combinedStatus: &github.CombinedStatus{
-				State: errorp,
-				SHA:   sha,
+				State: stringPtr("error"),
+				SHA:   stringPtr("mysha"),
 			},
 			expected: "error",
 		},
 		// test missing subcontext requested but missing
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: success,
-				SHA:   sha,
-			},
+			combinedStatus:   github_test.Status("mysha", otherS, nil, nil, nil),
 			requiredContexts: contextS,
 			expected:         "incomplete",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: pending,
-				SHA:   sha,
-			},
+			combinedStatus:   github_test.Status("mysha", nil, otherS, nil, nil),
 			requiredContexts: contextS,
 			expected:         "incomplete",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: failure,
-				SHA:   sha,
-			},
+			combinedStatus:   github_test.Status("mysha", nil, nil, otherS, nil),
 			requiredContexts: contextS,
 			expected:         "incomplete",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: errorp,
-				SHA:   sha,
-			},
+			combinedStatus:   github_test.Status("mysha", nil, nil, nil, otherS),
 			requiredContexts: contextS,
 			expected:         "incomplete",
 		},
 		// test subcontext present and requested
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: success,
-				SHA:   sha,
-				Statuses: []github.RepoStatus{
-					{Context: context, State: success},
-				},
-			},
+			combinedStatus:   github_test.Status("mysha", contextS, nil, nil, nil),
 			requiredContexts: contextS,
 			expected:         "success",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: pending,
-				SHA:   sha,
-				Statuses: []github.RepoStatus{
-					{Context: context, State: pending},
-				},
-			},
+			combinedStatus:   github_test.Status("mysha", nil, nil, contextS, nil),
 			requiredContexts: contextS,
 			expected:         "pending",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: errorp,
-				SHA:   sha,
-				Statuses: []github.RepoStatus{
-					{Context: context, State: errorp},
-				},
-			},
+			combinedStatus:   github_test.Status("mysha", nil, nil, nil, contextS),
 			requiredContexts: contextS,
 			expected:         "error",
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: failure,
-				SHA:   sha,
-				Statuses: []github.RepoStatus{
-					{Context: context, State: failure},
-				},
-			},
+			combinedStatus:   github_test.Status("mysha", nil, contextS, nil, nil),
 			requiredContexts: contextS,
 			expected:         "failure",
 		},
 		// test failed PR but the one we care about is passed
 		{
-			combinedStatus: &github.CombinedStatus{
-				State: failure,
-				SHA:   sha,
-				Statuses: []github.RepoStatus{
-					{Context: context, State: success},
-					{Context: stringPtr("other status"), State: failure},
-				},
-			},
+			combinedStatus:   github_test.Status("mysha", contextS, otherS, nil, nil),
 			requiredContexts: contextS,
 			expected:         "success",
 		},
@@ -465,87 +342,44 @@ func TestGetLastModified(t *testing.T) {
 		expectedTime *time.Time
 	}{
 		{
-			commits: []github.RepositoryCommit{
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(10, 0)),
-						},
-					},
-				},
-			},
+			commits:      github_test.Commits(1, 10),
 			expectedTime: timePtr(time.Unix(10, 0)),
 		},
 		{
-			commits: []github.RepositoryCommit{
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(10, 0)),
-						},
-					},
-				},
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(11, 0)),
-						},
-					},
-				},
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(12, 0)),
-						},
-					},
-				},
-			},
+			// remember the order of github_test.Commits() is non-deterministic
+			commits:      github_test.Commits(3, 10),
 			expectedTime: timePtr(time.Unix(12, 0)),
 		},
 		{
-			commits: []github.RepositoryCommit{
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(10, 0)),
-						},
-					},
-				},
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(9, 0)),
-						},
-					},
-				},
-				{
-					Commit: &github.Commit{
-						Committer: &github.CommitAuthor{
-							Date: timePtr(time.Unix(8, 0)),
-						},
-					},
-				},
-			},
+			// so this is probably not quite the same test...
+			commits:      github_test.Commits(3, 8),
 			expectedTime: timePtr(time.Unix(10, 0)),
 		},
 		{
+			//  We can't represent the same time in 2 commits using github_test.Commits()
 			commits: []github.RepositoryCommit{
 				{
+					SHA: stringPtr("mysha1"),
 					Commit: &github.Commit{
+						SHA: stringPtr("mysha1"),
 						Committer: &github.CommitAuthor{
 							Date: timePtr(time.Unix(9, 0)),
 						},
 					},
 				},
 				{
+					SHA: stringPtr("mysha2"),
 					Commit: &github.Commit{
+						SHA: stringPtr("mysha2"),
 						Committer: &github.CommitAuthor{
 							Date: timePtr(time.Unix(10, 0)),
 						},
 					},
 				},
 				{
+					SHA: stringPtr("mysha3"),
 					Commit: &github.Commit{
+						SHA: stringPtr("mysha3"),
 						Committer: &github.CommitAuthor{
 							Date: timePtr(time.Unix(9, 0)),
 						},
@@ -556,33 +390,20 @@ func TestGetLastModified(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, server, mux := github_test.InitTest()
-		config := &Config{
-			client:  client,
-			Org:     "o",
-			Project: "r",
+		client, server, _ := github_test.InitServer(t, nil, nil, nil, test.commits, nil)
+		config := &Config{}
+		config.Org = "o"
+		config.Project = "r"
+		config.SetClient(client)
+
+		obj := &MungeObject{
+			config: config,
+			Issue:  github_test.Issue("bob", 1, nil, true),
 		}
-		mux.HandleFunc(fmt.Sprintf("/repos/o/r/pulls/1/commits"), func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.commits)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-			obj := &MungeObject{
-				config: config,
-				Issue: issuePtr(github.Issue{
-					Number: intPtr(1),
-				}),
-			}
-			ts := obj.LastModifiedTime()
-			if !ts.Equal(*test.expectedTime) {
-				t.Errorf("expected: %v, saw: %v", test.expectedTime, ts)
-			}
-		})
+		ts := obj.LastModifiedTime()
+		if !ts.Equal(*test.expectedTime) {
+			t.Errorf("expected: %v, saw: %v for: %v", test.expectedTime, ts, test)
+		}
 		server.Close()
 	}
 }

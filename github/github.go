@@ -251,6 +251,10 @@ func (obj *MungeObject) LastModifiedTime() *time.Time {
 		return lastModified
 	}
 	for _, commit := range commits {
+		if commit.Commit == nil || commit.Commit.Committer == nil || commit.Commit.Committer.Date == nil {
+			glog.Errorf("PR %d: Found invalid RepositoryCommit: %v", *obj.Issue.Number, commit)
+			continue
+		}
 		if lastModified == nil || commit.Commit.Committer.Date.After(*lastModified) {
 			lastModified = commit.Commit.Committer.Date
 		}
@@ -604,6 +608,10 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 	}
 	filledCommits := []github.RepositoryCommit{}
 	for _, c := range commits {
+		if c.SHA == nil {
+			glog.Errorf("Invalid Repository Commit: %v", c)
+			continue
+		}
 		config.analytics.GetCommit.Call(config)
 		commit, _, err := config.client.Repositories.GetCommit(config.Org, config.Project, *c.SHA)
 		if err != nil {
@@ -825,15 +833,14 @@ func (obj *MungeObject) IsMerged() (bool, error) {
 	if !obj.IsPR() {
 		return false, fmt.Errorf("Issue: %d is not a PR and is thus 'merged' is indeterminate", *obj.Issue.Number)
 	}
-	_, err := obj.IsMergeable()
-	if err != nil {
-		return false, err
-	}
 	pr, err := obj.GetPR()
 	if err != nil {
 		return false, err
 	}
-	return *pr.Merged, nil
+	if pr.Merged != nil {
+		return *pr.Merged, nil
+	}
+	return false, fmt.Errorf("Unable to determine if PR %d was merged", *obj.Issue.Number)
 }
 
 // ForEachIssueDo will run for each Issue in the project that matches:
