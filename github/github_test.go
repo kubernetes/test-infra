@@ -407,3 +407,55 @@ func TestGetLastModified(t *testing.T) {
 		server.Close()
 	}
 }
+
+func TestRemoveLabel(t *testing.T) {
+	tests := []struct {
+		issue    *github.Issue
+		remove   string
+		expected []string
+	}{
+		{
+			issue:    github_test.Issue("", 1, []string{"label1"}, false),
+			remove:   "label1",
+			expected: []string{},
+		},
+		{
+			issue:    github_test.Issue("", 1, []string{"label2", "label1"}, false),
+			remove:   "label1",
+			expected: []string{"label2"},
+		},
+		{
+			issue:    github_test.Issue("", 1, []string{"label2"}, false),
+			remove:   "label1",
+			expected: []string{"label2"},
+		},
+		{
+			issue:    github_test.Issue("", 1, []string{}, false),
+			remove:   "label1",
+			expected: []string{},
+		},
+	}
+	for testNum, test := range tests {
+		client, server, mux := github_test.InitServer(t, test.issue, nil, nil, nil, nil)
+		config := &Config{}
+		config.Org = "o"
+		config.Project = "r"
+		config.SetClient(client)
+		mux.HandleFunc(fmt.Sprintf("/repos/o/r/issues/1/labels/%s", test.remove), func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+
+		obj := TestObject(config, test.issue, nil, nil, nil)
+		obj.RemoveLabel(test.remove)
+		if len(test.expected) != len(obj.Issue.Labels) {
+			t.Errorf("%d: len(labels) not equal, expected labels: %v but got labels: %v", testNum, test.expected, obj.Issue.Labels)
+			return
+		}
+		for i, l := range test.expected {
+			if l != *obj.Issue.Labels[i].Name {
+				t.Errorf("%d: expected labels: %v but got labels: %v", testNum, test.expected, obj.Issue.Labels)
+			}
+		}
+		server.Close()
+	}
+}

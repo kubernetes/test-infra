@@ -367,13 +367,25 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 func (obj *MungeObject) RemoveLabel(label string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
+
+	which := -1
+	for i, l := range obj.Issue.Labels {
+		if l.Name != nil && *l.Name == label {
+			which = i
+			break
+		}
+	}
+	if which != -1 {
+		obj.Issue.Labels = append(obj.Issue.Labels[:which], obj.Issue.Labels[which+1:]...)
+	}
+
 	config.analytics.RemoveLabels.Call(config)
 	if config.DryRun {
 		glog.Infof("Would have removed label %q to PR %d but --dry-run is set", label, prNum)
 		return nil
 	}
 	if _, err := config.client.Issues.RemoveLabelForIssue(config.Org, config.Project, prNum, label); err != nil {
-		glog.Errorf("Failed to remove %d from issue %d: %v", label, prNum, err)
+		glog.Errorf("Failed to remove %v from issue %d: %v", label, prNum, err)
 		return err
 	}
 	return nil
