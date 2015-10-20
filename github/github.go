@@ -120,6 +120,8 @@ type analytics struct {
 	nextAnalyticUpdate time.Time // when we expect the next update
 	apiCount           int       // number of times we called a github API
 	apiPerSec          float64
+	limitRemaining     int
+	limitResetTime     time.Time
 
 	AddLabels         analytic
 	RemoveLabels      analytic
@@ -178,10 +180,12 @@ type MungeObject struct {
 // DebugStats is a structure that tells information about how we have interacted
 // with github
 type DebugStats struct {
-	Analytics    analytics
-	APIPerSec    float64
-	APICount     int
-	NextLoopTime time.Time
+	Analytics      analytics
+	APIPerSec      float64
+	APICount       int
+	NextLoopTime   time.Time
+	LimitRemaining int
+	LimitResetTime time.Time
 }
 
 // TestObject should NEVER be used outside of _test.go code. It creates a
@@ -287,10 +291,12 @@ func (config *Config) PreExecute() error {
 // API calls has it made, how many of each type, etc.
 func (config *Config) GetDebugStats() DebugStats {
 	d := DebugStats{
-		Analytics:    config.lastAnalytics,
-		APIPerSec:    config.lastAnalytics.apiPerSec,
-		APICount:     config.lastAnalytics.apiCount,
-		NextLoopTime: config.lastAnalytics.nextAnalyticUpdate,
+		Analytics:      config.lastAnalytics,
+		APIPerSec:      config.lastAnalytics.apiPerSec,
+		APICount:       config.lastAnalytics.apiCount,
+		NextLoopTime:   config.lastAnalytics.nextAnalyticUpdate,
+		LimitRemaining: config.lastAnalytics.limitRemaining,
+		LimitResetTime: config.lastAnalytics.limitResetTime,
 	}
 	return d
 }
@@ -301,11 +307,22 @@ func (config *Config) NextExpectedUpdate(t time.Time) {
 	config.analytics.nextAnalyticUpdate = t
 }
 
+func (config *Config) handleRateLimitReset() {
+	limits, _, err := config.client.RateLimits()
+	if err != nil {
+		glog.Errorf("Unable to get RateLimits: %v", err)
+		return
+	}
+	config.analytics.limitRemaining = limits.Core.Remaining
+	config.analytics.limitResetTime = time.Time(limits.Core.Reset.Time)
+}
+
 // ResetAPICount will both reset the counters of how many api calls have been
 // made but will also print the information from the last run.
 func (config *Config) ResetAPICount() {
 	since := time.Since(config.analytics.lastAPIReset)
 	config.analytics.apiPerSec = float64(config.analytics.apiCount) / since.Seconds()
+	config.handleRateLimitReset()
 	config.lastAnalytics = config.analytics
 	config.analytics.print()
 	config.analytics = analytics{}

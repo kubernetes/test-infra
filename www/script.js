@@ -68,6 +68,9 @@ function SQCntl(dataService, $interval) {
       self.botStats = getStats(response.data.Analytics);
       document.getElementById("api-calls").innerHTML = response.data.APICount;
       document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
+      document.getElementById("github-api-limit-count").innerHTML = response.data.LimitRemaining;
+      var d = new Date(response.data.LimitResetTime);
+      document.getElementById("github-api-limit-reset").innerHTML = d.toString();
     });
   }
 
