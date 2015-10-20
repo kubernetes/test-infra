@@ -48,7 +48,34 @@ type rateLimitRoundTripper struct {
 
 func (r *rateLimitRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 	r.throttle.Accept()
-	return r.delegate.RoundTrip(req)
+	delegate := r.delegate
+	if delegate == nil {
+		delegate = http.DefaultTransport
+	}
+	return delegate.RoundTrip(req)
+}
+
+// By default github responds to PR requests with:
+//    Cache-Control:[private, max-age=60, s-maxage=60]
+// Which means the httpcache would not consider anything stale for 60 seconds.
+// However, when we re-check 'PR.mergeable' we need to skip the cache.
+// I considered checking the req.URL.Path and only setting max-age=0 when
+// getting a PR or getting the CombinedStatus, as these are the times we need
+// a super fresh copy. But since all of the other calls are only going to be made
+// once per poll loop the 60 second github freshness doesn't matter. So I can't
+// think of a reason not to just keep this simple and always set max-age=0 on
+// every request.
+type zeroCacheRoundTripper struct {
+	delegate http.RoundTripper
+}
+
+func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, err error) {
+	req.Header.Set("Cache-Control", "max-age=0")
+	delegate := r.delegate
+	if delegate == nil {
+		delegate = http.DefaultTransport
+	}
+	return delegate.RoundTrip(req)
 }
 
 // Config is how we are configured to talk to github and provides access
@@ -202,13 +229,15 @@ func (config *Config) PreExecute() error {
 		if err != nil {
 			glog.Fatalf("error reading token file: %v", err)
 		}
-		token = string(data)
+		token = strings.TrimSpace(string(data))
 	}
 
-	transport := http.DefaultTransport
-	if config.useMemoryCache {
-		transport = httpcache.NewMemoryCacheTransport()
-	}
+	// We need to get our Transport/RoundTripper in order based on arguments
+	//    oauth2 Transport // if we have an auth token
+	//    zeroCacheRoundTripper // if we are using the cache want faster timeouts
+	//    webCacheRoundTripper // if we are using the cache
+	//    rateLimitRoundTripper ** always
+	//    [http.DefaultTransport] ** always implicit
 
 	// convert from queries per hour to queries per second
 	config.RateLimit = config.RateLimit / 3600
@@ -219,22 +248,35 @@ func (config *Config) PreExecute() error {
 		config.RateLimit = 0.01
 		config.RateLimitBurst = 10
 	}
+
+	var transport http.RoundTripper
+
 	rateLimitTransport := &rateLimitRoundTripper{
-		delegate: transport,
 		throttle: util.NewTokenBucketRateLimiter(config.RateLimit, config.RateLimitBurst),
+	}
+	transport = rateLimitTransport
+
+	if config.useMemoryCache {
+		t := httpcache.NewMemoryCacheTransport()
+		t.Transport = transport
+
+		zeroCacheTransport := &zeroCacheRoundTripper{
+			delegate: t,
+		}
+
+		transport = zeroCacheTransport
+	}
+
+	if len(token) > 0 {
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+		transport = &oauth2.Transport{
+			Base:   transport,
+			Source: oauth2.ReuseTokenSource(nil, ts),
+		}
 	}
 
 	client := &http.Client{
-		Transport: rateLimitTransport,
-	}
-	if len(token) > 0 {
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-		client = &http.Client{
-			Transport: &oauth2.Transport{
-				Base:   rateLimitTransport,
-				Source: oauth2.ReuseTokenSource(nil, ts),
-			},
-		}
+		Transport: transport,
 	}
 	config.client = github.NewClient(client)
 	config.analytics.lastAPIReset = time.Now()
