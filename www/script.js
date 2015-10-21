@@ -1,5 +1,5 @@
 "use strict";
-angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table']);
+angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter']);
 
 angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', SQCntl]);
 
@@ -65,7 +65,7 @@ function SQCntl(dataService, $interval) {
       var d = new Date(response.data.NextLoopTime);
       document.getElementById("next-run-time").innerHTML = d.toString();
 
-      self.botStats = getStats(response.data.Analytics);
+      self.botStats = response.data.Analytics;
       document.getElementById("api-calls").innerHTML = response.data.APICount;
       document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
       document.getElementById("github-api-limit-count").innerHTML = response.data.LimitRemaining;
@@ -128,18 +128,6 @@ function SQCntl(dataService, $interval) {
       result.push(obj);
     });
     return result;
-  }
-
-  function getStats(stats) {
-    var result = [];
-    angular.forEach(stats, function(value, key) {
-      var obj = {
-        Name: key,
-        Count: value
-      };
-      result.push(obj);
-    });
-    return result
   }
 
   function getE2E(builds) {

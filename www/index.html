@@ -186,12 +186,14 @@
                       <tr>
                         <th order-by="Name" name="Call"></th>
                         <th order-by="Count" name="Count" numeric descend-first></th>
+                        <th order-by="CachedCount" name="Cached Count" numeric descend-first></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr ng-repeat="stat in cntl.botStats | orderBy: cntl.StatOrder">
-                        <td>{{stat.Name}}</td>
+                      <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder">
+                        <td>{{stat.$key}}</td>
                         <td>{{stat.Count}}</td>
+                        <td>{{stat.CachedCount}}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -210,6 +212,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-aria.min.js" type="text/javascript"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.2/angular-material.min.js" type="text/javascript"></script>
   <script src="md-data-table.min.js" type="text/javascript"></script>
+  <script src="toArrayFilter.js" type="text/javascript"></script>
   <script src="script.js" type="text/javascript"></script>
 </body>
 
