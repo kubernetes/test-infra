@@ -23,10 +23,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"text/tabwriter"
 	"time"
 
-	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
@@ -38,21 +38,58 @@ import (
 
 const (
 	// stolen from https://groups.google.com/forum/#!msg/golang-nuts/a9PitPAHSSU/ziQw1-QHw3EJ
-	maxInt = int(^uint(0) >> 1)
+	maxInt          = int(^uint(0) >> 1)
+	tokenLimit      = 500 // How many github api tokens to not use
+	asyncTokenLimit = 400 // How many github api tokens to not use for 'asyc' calls
 )
 
-type rateLimitRoundTripper struct {
-	delegate http.RoundTripper
-	throttle util.RateLimiter
+type callLimitRoundTripper struct {
+	sync.Mutex
+	delegate  http.RoundTripper
+	remaining int
+	resetTime time.Time
 }
 
-func (r *rateLimitRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, err error) {
-	r.throttle.Accept()
-	delegate := r.delegate
-	if delegate == nil {
-		delegate = http.DefaultTransport
+func (c *callLimitRoundTripper) getTokenExcept(remaining int) {
+	c.Lock()
+	if c.remaining > remaining {
+		c.remaining--
+		c.Unlock()
+		return
 	}
-	return delegate.RoundTrip(req)
+	resetTime := c.resetTime
+	c.Unlock()
+	sleepTime := resetTime.Sub(time.Now()) + (1 * time.Minute)
+	glog.Errorf("Ran out of github API tokens. Sleeping for %v minutes", sleepTime.Minutes())
+	// negative duration is fine, it means we are past the github api reset and we won't sleep
+	time.Sleep(sleepTime)
+}
+
+func (c *callLimitRoundTripper) getToken() {
+	c.getTokenExcept(tokenLimit)
+}
+
+func (c *callLimitRoundTripper) getAsyncToken() {
+	c.getTokenExcept(asyncTokenLimit)
+}
+
+func (c *callLimitRoundTripper) putToken() {
+	c.Lock()
+	defer c.Unlock()
+	c.remaining++
+}
+
+func (c *callLimitRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if c.delegate == nil {
+		c.delegate = http.DefaultTransport
+	}
+	// TODO Be smart about which should use getToken and which should use getAsyncToken()
+	c.getToken()
+	resp, err := c.delegate.RoundTrip(req)
+	if resp != nil && resp.Header.Get(httpcache.XFromCache) != "" {
+		c.putToken()
+	}
+	return resp, err
 }
 
 // By default github responds to PR requests with:
@@ -69,7 +106,7 @@ type zeroCacheRoundTripper struct {
 	delegate http.RoundTripper
 }
 
-func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, err error) {
+func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Cache-Control", "max-age=0")
 	delegate := r.delegate
 	if delegate == nil {
@@ -81,12 +118,10 @@ func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (resp *http.Respons
 // Config is how we are configured to talk to github and provides access
 // methods for doing so.
 type Config struct {
-	client  *github.Client
-	Org     string
-	Project string
-
-	RateLimit      float32
-	RateLimitBurst int
+	client   *github.Client
+	apiLimit *callLimitRoundTripper
+	Org      string
+	Project  string
 
 	Token     string
 	TokenFile string
@@ -104,8 +139,7 @@ type Config struct {
 
 	// When we clear analytics we store the last values here
 	lastAnalytics analytics
-
-	analytics analytics
+	analytics     analytics
 }
 
 type analytic struct {
@@ -220,9 +254,6 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&config.useMemoryCache, "use-http-cache", false, "If true, use a client side HTTP cache for API requests.")
 	cmd.PersistentFlags().StringVar(&config.Org, "organization", "kubernetes", "The github organization to scan")
 	cmd.PersistentFlags().StringVar(&config.Project, "project", "kubernetes", "The github project to scan")
-	// Global limit is 5000 Q/Hour, try to only use 4000 to make room for other apps
-	cmd.PersistentFlags().Float32Var(&config.RateLimit, "rate-limit", 4000, "Requests per hour we should allow")
-	cmd.PersistentFlags().IntVar(&config.RateLimitBurst, "rate-limit-burst", 2000, "Requests we allow to burst over the rate limit")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
@@ -249,25 +280,17 @@ func (config *Config) PreExecute() error {
 	//    oauth2 Transport // if we have an auth token
 	//    zeroCacheRoundTripper // if we are using the cache want faster timeouts
 	//    webCacheRoundTripper // if we are using the cache
-	//    rateLimitRoundTripper ** always
+	//    callLimitRoundTripper ** always
 	//    [http.DefaultTransport] ** always implicit
-
-	// convert from queries per hour to queries per second
-	config.RateLimit = config.RateLimit / 3600
-	// ignore the configured rate limit if you don't have a token.
-	// only get 60 requests per hour!
-	if len(token) == 0 {
-		glog.Warningf("Ignoring --rate-limit because no token data available")
-		config.RateLimit = 0.01
-		config.RateLimitBurst = 10
-	}
 
 	var transport http.RoundTripper
 
-	rateLimitTransport := &rateLimitRoundTripper{
-		throttle: util.NewTokenBucketRateLimiter(config.RateLimit, config.RateLimitBurst),
+	callLimitTransport := &callLimitRoundTripper{
+		remaining: tokenLimit + 500, // put in 500 so we at least have a couple to check our real limits
+		resetTime: time.Now().Add(1 * time.Minute),
 	}
-	transport = rateLimitTransport
+	config.apiLimit = callLimitTransport
+	transport = callLimitTransport
 
 	if config.useMemoryCache {
 		t := httpcache.NewMemoryCacheTransport()
@@ -292,7 +315,7 @@ func (config *Config) PreExecute() error {
 		Transport: transport,
 	}
 	config.client = github.NewClient(client)
-	config.analytics.lastAPIReset = time.Now()
+	config.ResetAPICount()
 	return nil
 }
 
@@ -317,14 +340,23 @@ func (config *Config) NextExpectedUpdate(t time.Time) {
 	config.analytics.nextAnalyticUpdate = t
 }
 
-func (config *Config) handleRateLimitReset() {
+func (config *Config) handleCallLimitReset() {
 	limits, _, err := config.client.RateLimits()
 	if err != nil {
 		glog.Errorf("Unable to get RateLimits: %v", err)
 		return
 	}
-	config.analytics.limitRemaining = limits.Core.Remaining
-	config.analytics.limitResetTime = time.Time(limits.Core.Reset.Time)
+
+	remaining := limits.Core.Remaining
+	resetTime := limits.Core.Reset.Time
+
+	config.lastAnalytics.limitRemaining = remaining
+	config.lastAnalytics.limitResetTime = resetTime
+
+	config.apiLimit.Lock()
+	config.apiLimit.remaining = remaining
+	config.apiLimit.resetTime = resetTime
+	config.apiLimit.Unlock()
 }
 
 // ResetAPICount will both reset the counters of how many api calls have been
@@ -332,11 +364,12 @@ func (config *Config) handleRateLimitReset() {
 func (config *Config) ResetAPICount() {
 	since := time.Since(config.analytics.lastAPIReset)
 	config.analytics.apiPerSec = float64(config.analytics.apiCount) / since.Seconds()
-	config.handleRateLimitReset()
 	config.lastAnalytics = config.analytics
 	config.analytics.print()
+
 	config.analytics = analytics{}
 	config.analytics.lastAPIReset = time.Now()
+	config.handleCallLimitReset()
 }
 
 // SetClient should ONLY be used by testing. Normal commands should use PreExecute()
