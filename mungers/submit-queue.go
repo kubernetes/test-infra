@@ -105,10 +105,10 @@ type SubmitQueue struct {
 	userWhitelist *sets.String
 
 	sync.Mutex
-	lastPRStatus   map[string]submitStatus
-	prStatus       map[string]submitStatus // protected by sync.Mutex
-	userInfo       map[string]userInfo     //proteted by sync.Mutex
-	statusMessages []submitStatus          // protected by sync.Mutex
+	lastPRStatus  map[string]submitStatus
+	prStatus      map[string]submitStatus // protected by sync.Mutex
+	userInfo      map[string]userInfo     //proteted by sync.Mutex
+	statusHistory []submitStatus          // protected by sync.Mutex
 
 	// Every time a PR is added to githubE2EQueue also notify the channel
 	githubE2EWakeup  chan bool
@@ -148,8 +148,8 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		http.HandleFunc("/prs", func(w http.ResponseWriter, r *http.Request) {
 			sq.servePRs(w, r)
 		})
-		http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveMessages(w, r)
+		http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
+			sq.serveHistory(w, r)
 		})
 		http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 			sq.serveUsers(w, r)
@@ -242,9 +242,9 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, re
 	defer sq.Unlock()
 
 	if record {
-		sq.statusMessages = append(sq.statusMessages, submitStatus)
-		if len(sq.statusMessages) > 128 {
-			sq.statusMessages = sq.statusMessages[1:]
+		sq.statusHistory = append(sq.statusHistory, submitStatus)
+		if len(sq.statusHistory) > 128 {
+			sq.statusHistory = sq.statusHistory[1:]
 		}
 	}
 	sq.prStatus[strconv.Itoa(*obj.Issue.Number)] = submitStatus
@@ -266,7 +266,7 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 func (sq *SubmitQueue) marshal(data interface{}) []byte {
 	b, err := json.Marshal(data)
 	if err != nil {
-		glog.Errorf("Unable to Marshal Status: %v: %v", sq.statusMessages, err)
+		glog.Errorf("Unable to Marshal Status: %v: %v", sq.statusHistory, err)
 		return nil
 	}
 	return b
@@ -278,10 +278,10 @@ func (sq *SubmitQueue) getUserInfo() []byte {
 	return sq.marshal(sq.userInfo)
 }
 
-func (sq *SubmitQueue) getQueueMessages() []byte {
+func (sq *SubmitQueue) getQueueHistory() []byte {
 	sq.Lock()
 	defer sq.Unlock()
-	return sq.marshal(sq.statusMessages)
+	return sq.marshal(sq.statusHistory)
 }
 
 // GetQueueStatus returns a json representation of the state of the submit
@@ -601,8 +601,8 @@ func (sq *SubmitQueue) serveUsers(res http.ResponseWriter, req *http.Request) {
 	sq.serve(data, res, req)
 }
 
-func (sq *SubmitQueue) serveMessages(res http.ResponseWriter, req *http.Request) {
-	data := sq.getQueueMessages()
+func (sq *SubmitQueue) serveHistory(res http.ResponseWriter, req *http.Request) {
+	data := sq.getQueueHistory()
 	sq.serve(data, res, req)
 }
 

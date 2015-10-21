@@ -6,11 +6,14 @@ angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$inter
 function SQCntl(dataService, $interval) {
   var self = this;
   self.prDisplayValue = "";
+  self.historicDisplayValue = "";
   self.prs = {};
   self.users = {};
   self.builds = {};
-  self.querySearch = querySearch;
+  self.prQuerySearch = prQuerySearch;
+  self.historicQuerySearch = historicQuerySearch;
   self.updatePRVisibility = updatePRVisibility;
+  self.updateHistoricVisibility = updateHistoricVisibility;
   self.queryNum = 0;
   self.StatOrder = "-Count";
 
@@ -21,12 +24,16 @@ function SQCntl(dataService, $interval) {
   function refreshPRs() {
     dataService.getData('prs').then(function successCallback(response) {
       var prs = response.data.PRStatus;
-      __updatePRVisibility(prs);
       self.prs = prs;
+      updatePRVisibility();
       self.prSearchTerms = getPRSearchTerms();
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
+  }
+
+  function updatePRVisibility() {
+    __updatePRVisibility(self.prs, self.prDisplayValue);
   }
 
   // Refresh every 30 seconds
@@ -45,15 +52,20 @@ function SQCntl(dataService, $interval) {
   }
 
   // Refresh every minute
-  refreshMessages();
-  $interval(refreshMessages, 60000);
+  refreshHistoricPRs();
+  $interval(refreshHistoricPRs, 60000);
 
-  function refreshMessages() {
-    dataService.getData('messages').then(function successCallback(response) {
-      var msgs = response.data;
-      __updatePRVisibility(msgs);
-      self.statusMessages = msgs;
+  function refreshHistoricPRs() {
+    dataService.getData('history').then(function successCallback(response) {
+      var prs = response.data;
+      self.historicPRs = prs;
+      updateHistoricVisibility();
+      self.historicSearchTerms = getHistoricSearchTerms();
     });
+  }
+
+  function updateHistoricVisibility() {
+    __updatePRVisibility(self.historicPRs, self.historicDisplayValue);
   }
 
   // Refresh every 15 minutes
@@ -62,16 +74,16 @@ function SQCntl(dataService, $interval) {
 
   function refreshStats() {
     dataService.getData('stats').then(function successCallback(response) {
-      var d = new Date(response.data.NextLoopTime);
-      document.getElementById("next-run-time").innerHTML = d.toLocaleTimeString();
+      var nextLoop = new Date(response.data.NextLoopTime);
+      document.getElementById("next-run-time").innerHTML = nextLoop.toLocaleTimeString();
 
       self.botStats = response.data.Analytics;
       self.APICount = response.data.APICount;
       self.CachedAPICount = response.data.CachedAPICount;
       document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
       document.getElementById("github-api-limit-count").innerHTML = response.data.LimitRemaining;
-      var d = new Date(response.data.LimitResetTime);
-      document.getElementById("github-api-limit-reset").innerHTML = d.toLocaleTimeString();
+      var nextReset = new Date(response.data.LimitResetTime);
+      document.getElementById("github-api-limit-reset").innerHTML = nextReset.toLocaleTimeString();
     });
   }
 
@@ -97,20 +109,16 @@ function SQCntl(dataService, $interval) {
     });
   }
 
-  function __updatePRVisibility(prs) {
+  function __updatePRVisibility(prs, matchVal) {
     angular.forEach(prs, function(pr) {
-      if (typeof self.prDisplayValue === "undefined") {
+      if (typeof matchVal === "undefined") {
         pr.show = true;
-      } else if (pr.Login.toLowerCase().match("^" + self.prDisplayValue.toLowerCase()) || pr.Number.match("^" + self.prDisplayValue)) {
+      } else if (pr.Login.toLowerCase().match("^" + matchVal.toLowerCase()) || pr.Number.toString().match("^" + matchVal)) {
         pr.show = true;
       } else {
         pr.show = false;
       }
     });
-  }
-
-  function updatePRVisibility() {
-    __updatePRVisibility(self.prs);
   }
 
   function getE2E(builds) {
@@ -154,8 +162,16 @@ function SQCntl(dataService, $interval) {
   }
 
   function getPRSearchTerms() {
+    return getSearchTerms(self.prs);
+  }
+
+  function getHistoricSearchTerms() {
+    return getSearchTerms(self.historicPRs);
+  }
+
+  function getSearchTerms(prs) {
     var result = [];
-    angular.forEach(self.prs, function(pr) {
+    angular.forEach(prs, function(pr) {
       var llogin = pr.Login.toLowerCase();
       if (!searchTermsContain(result, llogin)) {
         var loginobj = {
@@ -166,8 +182,8 @@ function SQCntl(dataService, $interval) {
       }
       if (!searchTermsContain(result, pr.Num)) {
         var numobj = {
-          value: pr.Num,
-          display: pr.Num,
+          value: pr.Number.toString(),
+          display: pr.Number,
         };
         result.push(numobj);
       }
@@ -187,8 +203,16 @@ function SQCntl(dataService, $interval) {
     return 0;
   }
 
-  function querySearch(query) {
-    var results = query ? self.prSearchTerms.filter(createFilterFor(query)) : self.prSearchTerms;
+  function prQuerySearch(query) {
+    return querySearch(query, self.prSearchTerms);
+  }
+
+  function historicQuerySearch(query) {
+    return querySearch(query, self.historicSearchTerms);
+  }
+
+  function querySearch(query, terms) {
+    var results = query ? terms.filter(createFilterFor(query)) : terms;
     return results;
   }
 
