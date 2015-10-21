@@ -5,15 +5,11 @@ angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$inter
 
 function SQCntl(dataService, $interval) {
   var self = this;
-  self.prDisplayValue = "";
-  self.historicDisplayValue = "";
   self.prs = {};
   self.users = {};
   self.builds = {};
   self.prQuerySearch = prQuerySearch;
   self.historicQuerySearch = historicQuerySearch;
-  self.updatePRVisibility = updatePRVisibility;
-  self.updateHistoricVisibility = updateHistoricVisibility;
   self.queryNum = 0;
   self.StatOrder = "-Count";
 
@@ -25,15 +21,10 @@ function SQCntl(dataService, $interval) {
     dataService.getData('prs').then(function successCallback(response) {
       var prs = response.data.PRStatus;
       self.prs = prs;
-      updatePRVisibility();
       self.prSearchTerms = getPRSearchTerms();
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
     });
-  }
-
-  function updatePRVisibility() {
-    __updatePRVisibility(self.prs, self.prDisplayValue);
   }
 
   // Refresh every 30 seconds
@@ -59,13 +50,8 @@ function SQCntl(dataService, $interval) {
     dataService.getData('history').then(function successCallback(response) {
       var prs = response.data;
       self.historicPRs = prs;
-      updateHistoricVisibility();
       self.historicSearchTerms = getHistoricSearchTerms();
     });
-  }
-
-  function updateHistoricVisibility() {
-    __updatePRVisibility(self.historicPRs, self.historicDisplayValue);
   }
 
   // Refresh every 15 minutes
@@ -106,18 +92,6 @@ function SQCntl(dataService, $interval) {
       var result = getE2E(response.data);
       self.builds = result.builds;
       self.failedBuild = result.failedBuild;
-    });
-  }
-
-  function __updatePRVisibility(prs, matchVal) {
-    angular.forEach(prs, function(pr) {
-      if (typeof matchVal === "undefined") {
-        pr.show = true;
-      } else if (pr.Login.toLowerCase().match("^" + matchVal.toLowerCase()) || pr.Number.toString().match("^" + matchVal)) {
-        pr.show = true;
-      } else {
-        pr.show = false;
-      }
     });
   }
 
@@ -231,6 +205,30 @@ function SQCntl(dataService, $interval) {
 function goToPerson(person) {
   window.location.href = 'https://github.com/' + person;
 }
+
+angular.module('SubmitQueueModule').filter('loginOrPR', function() {
+  return function(prs, searchVal) {
+    searchVal = searchVal || "";
+    prs = prs || [];
+    searchVal = angular.lowercase(searchVal);
+    var out = [];
+
+    angular.forEach(prs, function(pr) {
+      var shouldPush = false;
+      var llogin = pr.Login.toLowerCase();
+      if (llogin.indexOf(searchVal) === 0) {
+        shouldPush = true;
+      }
+      if (pr.Number.toString().indexOf(searchVal) === 0) {
+        shouldPush = true;
+      }
+      if (shouldPush) {
+        out.push(pr);
+      }
+    });
+    return out;
+  };
+});
 
 angular.module('SubmitQueueModule').service('DataService', ['$http', dataService]);
 
