@@ -54,7 +54,7 @@ type submitStatus struct {
 }
 
 type statusPullRequest struct {
-	Number    string
+	Number    int
 	URL       string
 	Title     string
 	Login     string
@@ -215,7 +215,7 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 		return &statusPullRequest{}
 	}
 	return &statusPullRequest{
-		Number:    strconv.Itoa(*obj.Issue.Number),
+		Number:    *obj.Issue.Number,
 		URL:       *obj.Issue.HTMLURL,
 		Title:     *obj.Issue.Title,
 		Login:     *obj.Issue.User.Login,
@@ -233,7 +233,6 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 //    're-run github e2e' state as these are more obvious, change less, and don't
 //    seem to ever confuse people.
 func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, record bool) {
-	num := strconv.Itoa(*obj.Issue.Number)
 	submitStatus := submitStatus{
 		Time:              time.Now(),
 		statusPullRequest: *objToStatusPullRequest(obj),
@@ -248,7 +247,7 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, re
 			sq.statusMessages = sq.statusMessages[1:]
 		}
 	}
-	sq.prStatus[num] = submitStatus
+	sq.prStatus[strconv.Itoa(*obj.Issue.Number)] = submitStatus
 	sq.cleanupOldE2E(obj, reason)
 }
 
@@ -267,7 +266,7 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 func (sq *SubmitQueue) marshal(data interface{}) []byte {
 	b, err := json.Marshal(data)
 	if err != nil {
-		glog.Errorf("Unable to Marshal Status: %v", sq.statusMessages)
+		glog.Errorf("Unable to Marshal Status: %v: %v", sq.statusMessages, err)
 		return nil
 	}
 	return b

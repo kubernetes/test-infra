@@ -20,7 +20,7 @@ function SQCntl(dataService, $interval) {
 
   function refreshPRs() {
     dataService.getData('prs').then(function successCallback(response) {
-      var prs = getPRs(response.data.PRStatus);
+      var prs = response.data.PRStatus;
       __updatePRVisibility(prs);
       self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
@@ -35,7 +35,7 @@ function SQCntl(dataService, $interval) {
 
   function refreshGithubE2E() {
     dataService.getData('github-e2e-queue').then(function successCallback(response) {
-      if (response.data.E2ERunning.Number === "") {
+      if (response.data.E2ERunning.Number == 0) {
         self.e2erunning = [];
       } else {
         self.e2erunning = [response.data.E2ERunning];
@@ -50,7 +50,7 @@ function SQCntl(dataService, $interval) {
 
   function refreshMessages() {
     dataService.getData('messages').then(function successCallback(response) {
-      var msgs = getPRs(response.data);
+      var msgs = response.data;
       __updatePRVisibility(msgs);
       self.statusMessages = msgs;
     });
@@ -63,14 +63,15 @@ function SQCntl(dataService, $interval) {
   function refreshStats() {
     dataService.getData('stats').then(function successCallback(response) {
       var d = new Date(response.data.NextLoopTime);
-      document.getElementById("next-run-time").innerHTML = d.toString();
+      document.getElementById("next-run-time").innerHTML = d.toLocaleTimeString();
 
       self.botStats = response.data.Analytics;
-      document.getElementById("api-calls").innerHTML = response.data.APICount;
+      self.APICount = response.data.APICount;
+      self.CachedAPICount = response.data.CachedAPICount;
       document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
       document.getElementById("github-api-limit-count").innerHTML = response.data.LimitRemaining;
       var d = new Date(response.data.LimitResetTime);
-      document.getElementById("github-api-limit-reset").innerHTML = d.toString();
+      document.getElementById("github-api-limit-reset").innerHTML = d.toLocaleTimeString();
     });
   }
 
@@ -110,24 +111,6 @@ function SQCntl(dataService, $interval) {
 
   function updatePRVisibility() {
     __updatePRVisibility(self.prs);
-  }
-
-  function getPRs(prs) {
-    var result = [];
-    angular.forEach(prs, function(value, key) {
-      var obj = {
-        'Num': key
-      };
-      angular.forEach(value, function(value, key) {
-        if (key === "Time") {
-          var d = new Date(value);
-          value = d.toString();
-        }
-        obj[key] = value;
-      });
-      result.push(obj);
-    });
-    return result;
   }
 
   function getE2E(builds) {

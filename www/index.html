@@ -46,7 +46,7 @@
                 </form>
               </md-content>
               <md-list>
-                <md-list-item class="md-3-line" ng-repeat="pr in cntl.prs" ng-show="pr.show">
+                <md-list-item class="md-3-line" ng-repeat="pr in cntl.prs | toArray | orderBy:'Number' track by pr.Number" ng-show="pr.show">
                   <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
@@ -55,7 +55,7 @@
                       <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
                     </h3>
                     <h4 class="md-body-2">{{pr.Reason}}</h4>
-                    <p>{{pr.Time}}</p>
+                    <p>{{pr.Time | date:'medium'}}</p>
                   </md-content>
                   <md-divider md-inset ng-if="!$last"></md-divider>
                 </md-list-item>
@@ -86,7 +86,7 @@
               <section>
                 <md-subheader class="md-primary">QUEUE</md-subheader>
                 <md-list layout-padding>
-                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue">
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue | orderBy: 'Number' track by pr.Number">
                     <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                       <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                     </a>
@@ -119,7 +119,7 @@
                       <a ng-href="{{msg.URL}}">#{{msg.Number}}: {{msg.Title}}</a>
                     </h3>
                     <h4 class="md-body-2">{{msg.Reason}}</h4>
-                    <p class="md-body-3">{{msg.Time}}</p>
+                    <p class="md-body-3">{{msg.Time | date:'medium'}}</p>
                   </md-content>
                   <md-divider md-inset ng-if="!$last"></md-divider>
                 </md-list-item>
@@ -152,7 +152,7 @@
                 <h2 class="md-toolbar-tools">Users</h2>
               </md-toolbar>
               <md-list>
-                <md-list-item class="md-2-line" ng-repeat="user in cntl.users" ng-click="goToPerson(user.Login)">
+                <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="goToPerson(user.Login)">
                   <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}">
                   <md-content class="md-list-item-text" layout="column">
                     <h3 class="md-body-1">{{user.Login}}</h3>
@@ -172,7 +172,6 @@
               </md-content>
               <br>
               <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
-              <h3 class=md-title>Total API Calls Last Loop: <span id="api-calls"></span></h3>
               <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
               <h3 class=md-title>Github Rate Limit Count: <span id="github-api-limit-count"></span></h3>
               <h3 class=md-title>Github Rate Limit Next Reset: <span id="github-api-limit-reset"></span></h3>
@@ -184,13 +183,13 @@
                   <table md-data-table class="md-primary">
                     <thead md-order="cntl.StatOrder">
                       <tr>
-                        <th order-by="Name" name="Call"></th>
-                        <th order-by="Count" name="Count" numeric descend-first></th>
-                        <th order-by="CachedCount" name="Cached Count" numeric descend-first></th>
+                        <th order-by="$key" name="Call"></th>
+                        <th order-by="Count" name="Count ({{ cntl.APICount }})" numeric descend-first></th>
+                        <th order-by="CachedCount" name="Cached Count ({{ cntl.CachedAPICount }})" numeric descend-first></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder">
+                      <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder" track by stat.$key>
                         <td>{{stat.$key}}</td>
                         <td>{{stat.Count}}</td>
                         <td>{{stat.CachedCount}}</td>

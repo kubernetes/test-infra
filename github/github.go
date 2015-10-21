@@ -191,6 +191,7 @@ type DebugStats struct {
 	Analytics      analytics
 	APIPerSec      float64
 	APICount       int
+	CachedAPICount int
 	NextLoopTime   time.Time
 	LimitRemaining int
 	LimitResetTime time.Time
@@ -302,6 +303,7 @@ func (config *Config) GetDebugStats() DebugStats {
 		Analytics:      config.lastAnalytics,
 		APIPerSec:      config.lastAnalytics.apiPerSec,
 		APICount:       config.lastAnalytics.apiCount,
+		CachedAPICount: config.lastAnalytics.cachedAPICount,
 		NextLoopTime:   config.lastAnalytics.nextAnalyticUpdate,
 		LimitRemaining: config.lastAnalytics.limitRemaining,
 		LimitResetTime: config.lastAnalytics.limitResetTime,
