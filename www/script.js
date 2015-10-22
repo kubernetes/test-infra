@@ -54,9 +54,9 @@ function SQCntl(dataService, $interval) {
     });
   }
 
-  // Refresh every 15 minutes
+  // Refresh every 10 minutes
   refreshStats();
-  $interval(refreshStats, 900000);
+  $interval(refreshStats, 600000);
 
   function refreshStats() {
     dataService.getData('stats').then(function successCallback(response) {
