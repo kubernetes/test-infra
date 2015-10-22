@@ -233,6 +233,7 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 //    're-run github e2e' state as these are more obvious, change less, and don't
 //    seem to ever confuse people.
 func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, record bool) {
+	glog.V(4).Infof("Skipping %d - %s", *obj.Issue.Number, reason)
 	submitStatus := submitStatus{
 		Time:              time.Now(),
 		statusPullRequest: *objToStatusPullRequest(obj),
@@ -366,11 +367,9 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	}
 
 	if mergeable, err := obj.IsMergeable(); err != nil {
-		glog.V(2).Infof("Skipping %d - unable to determine mergeability", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, undeterminedMergability, false)
 		return
 	} else if !mergeable {
-		glog.V(4).Infof("Skipping %d - not mergable", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unmergeable, false)
 		return
 	}
@@ -381,13 +380,11 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
 	if ok := obj.IsStatusSuccess(contexts); !ok {
-		glog.Errorf("PR# %d Github CI status is not success", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, ciFailure, false)
 		return
 	}
 
 	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*obj.Issue.User.Login) {
-		glog.V(4).Infof("Dropping %d since %s isn't in whitelist and %s isn't present", *obj.Issue.Number, *obj.Issue.User.Login, sq.WhitelistOverride)
 		if !obj.HasLabel(needsOKToMergeLabel) {
 			obj.AddLabels([]string{needsOKToMergeLabel})
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
@@ -417,7 +414,6 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	}
 
 	if lastModifiedTime.After(*lgtmTime) {
-		glog.V(4).Infof("PR %d changed after LGTM. Will not merge", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, lgtmEarly, false)
 		return
 	}
@@ -521,11 +517,13 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	_, err := obj.RefreshPR()
 	if err != nil {
+		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown, true)
 		return
 	}
 
 	if m, err := obj.IsMerged(); err != nil {
+		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown, true)
 		return
 	} else if m {
@@ -543,6 +541,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 	if err := obj.WriteComment(body); err != nil {
+		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown, true)
 		return
 	}
@@ -569,7 +568,6 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 
 	// Check if the thing we care about is success
 	if ok := obj.IsStatusSuccess([]string{gceE2EContext}); !ok {
-		glog.Infof("Status after build is not 'success', skipping PR %d", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, ghE2EFailed, true)
 		return
 	}
