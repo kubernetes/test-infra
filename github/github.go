@@ -852,7 +852,7 @@ func (obj *MungeObject) OpenPR(numTries int) error {
 	pr.State = &state
 	// Try pretty hard to re-open, since it's pretty bad if we accidentally leave a PR closed
 	for tries := 0; tries < numTries; tries++ {
-		if _, _, err = config.client.PullRequests.Edit(config.Org, config.Project, *pr.Number, pr); err != nil {
+		if _, _, err = config.client.PullRequests.Edit(config.Org, config.Project, *pr.Number, pr); err == nil {
 			return nil
 		}
 		glog.Warningf("failed to re-open pr %d: %v", *pr.Number, err)
