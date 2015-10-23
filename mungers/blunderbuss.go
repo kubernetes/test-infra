@@ -125,10 +125,6 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 	potentialOwners := weightMap{}
 	weightSum := int64(0)
 	for _, commit := range commits {
-		if commit.Author == nil || commit.Author.Login == nil || commit.SHA == nil {
-			glog.Warningf("Skipping invalid commit for %d: %#v", *issue.Number, commit)
-			continue
-		}
 		for _, file := range commit.Files {
 			fileWeight := int64(1)
 			if file.Changes != nil && *file.Changes != 0 {
