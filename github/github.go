@@ -454,8 +454,8 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
 	config.analytics.AddLabels.Call(config, nil)
+	glog.Infof("Adding labels %v to PR %d", labels, prNum)
 	if config.DryRun {
-		glog.Infof("Would have added labels %v to PR %d but --dry-run is set", labels, prNum)
 		return nil
 	}
 	if _, _, err := config.client.Issues.AddLabelsToIssue(config.Org, config.Project, prNum, labels); err != nil {
@@ -482,8 +482,8 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	}
 
 	config.analytics.RemoveLabels.Call(config, nil)
+	glog.Infof("Removing label %q to PR %d", label, prNum)
 	if config.DryRun {
-		glog.Infof("Would have removed label %q to PR %d but --dry-run is set", label, prNum)
 		return nil
 	}
 	if _, err := config.client.Issues.RemoveLabelForIssue(config.Org, config.Project, prNum, label); err != nil {
@@ -802,8 +802,8 @@ func (obj *MungeObject) AssignPR(owner string) error {
 	prNum := *obj.Issue.Number
 	assignee := &github.IssueRequest{Assignee: &owner}
 	config.analytics.AssignPR.Call(config, nil)
+	glog.Infof("Assigning PR# %d  to %v", prNum, owner)
 	if config.DryRun {
-		glog.Infof("Would have assigned PR# %d  to %v but --dry-run was set", prNum, owner)
 		return nil
 	}
 	if _, _, err := config.client.Issues.Edit(config.Org, config.Project, prNum, assignee); err != nil {
@@ -821,8 +821,8 @@ func (obj *MungeObject) ClosePR() error {
 		return err
 	}
 	config.analytics.ClosePR.Call(config, nil)
+	glog.Infof("Closing PR# %d", *pr.Number)
 	if config.DryRun {
-		glog.Infof("Would have closed PR# %d but --dry-run was set", *pr.Number)
 		return nil
 	}
 	state := "closed"
@@ -844,8 +844,8 @@ func (obj *MungeObject) OpenPR(numTries int) error {
 		return err
 	}
 	config.analytics.OpenPR.Call(config, nil)
+	glog.Infof("Opening PR# %d", *pr.Number)
 	if config.DryRun {
-		glog.Infof("Would have openned PR# %d but --dry-run was set", *pr.Number)
 		return nil
 	}
 	state := "open"
@@ -899,11 +899,10 @@ func (obj *MungeObject) MergePR(who string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
 	config.analytics.Merge.Call(config, nil)
+	glog.Infof("Merging PR# %d", prNum)
 	if config.DryRun {
-		glog.Infof("Would have merged %d but --dry-run is set", prNum)
 		return nil
 	}
-	glog.Infof("Merging PR# %d", prNum)
 	mergeBody := "Automatic merge from " + who
 	obj.WriteComment(mergeBody)
 
@@ -932,11 +931,10 @@ func (obj *MungeObject) WriteComment(msg string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
 	config.analytics.CreateComment.Call(config, nil)
+	glog.Infof("Commenting %q in %d", msg, prNum)
 	if config.DryRun {
-		glog.Infof("Would have commented %q in %d but --dry-run is set", msg, prNum)
 		return nil
 	}
-	glog.Infof("Adding comment: %q to PR %d", msg, prNum)
 	if _, _, err := config.client.Issues.CreateComment(config.Org, config.Project, prNum, &github.IssueComment{Body: &msg}); err != nil {
 		glog.Errorf("%v", err)
 		return err

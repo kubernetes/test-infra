@@ -73,7 +73,6 @@ func (PingCIMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 	if status == "incomplete" {
-		glog.V(2).Infof("status is incomplete, closing and re-opening")
 		msg := "Continuous integration appears to have missed, closing and re-opening to trigger it"
 		obj.WriteComment(msg)
 
