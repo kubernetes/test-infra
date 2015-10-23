@@ -24,6 +24,7 @@ import (
 
 	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers"
+	"k8s.io/kubernetes/pkg/util"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -89,6 +90,7 @@ func main() {
 			return doMungers(config)
 		},
 	}
+	root.SetGlobalNormalizationFunc(util.WordSepNormalizeFunc)
 	config.AddRootFlags(root)
 	addMungeFlags(config, root)
 
