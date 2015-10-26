@@ -1,32 +1,45 @@
 apiVersion: v1
-kind: Pod
+kind: ReplicationController
 metadata:
-  name: mungegithub
-  namespace: default
   labels:
     app: mungegithub
     track: alpha
-    version: "2015-10-26-c0c9369"
+    version: "2015-10-26-2a7f8fd"
+  name: mungegithub-2015-10-26-2a7f8fd
+  namespace: default
 spec:
-  containers:
-  - command:
-    - /mungegithub
-    - --token-file=/etc/secret-volume/token
-    image: gcr.io/google_containers/mungegithub:2015-10-26-c0c9369
-    imagePullPolicy: Always
-    name: mungegithub
-    ports:
-    - name: status
-      containerPort: 8080
-    resources:
-      limits:
-        cpu: 100m
-    volumeMounts:
-    - mountPath: /etc/secret-volume
-      name: secret-volume
-  dnsPolicy: ClusterFirst
-  restartPolicy: OnFailure
-  volumes:
-  - name: secret-volume
-    secret:
-      secretName: github-token
+  replicas: 0
+  selector:
+    app: mungegithub
+    track: alpha
+    version: "2015-10-26-2a7f8fd"
+  template:
+    metadata:
+      name: mungegithub
+      namespace: default
+      labels:
+        app: mungegithub
+        track: alpha
+        version: "2015-10-26-2a7f8fd"
+    spec:
+      containers:
+      - command:
+        - /mungegithub
+        - --token-file=/etc/secret-volume/token
+        image: gcr.io/google_containers/mungegithub:2015-10-26-2a7f8fd
+        imagePullPolicy: IfNotPresent
+        name: mungegithub
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: secret-volume
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: github-token
