@@ -19,3 +19,5 @@ push: container
 
 clean:
 	rm -f mungegithub
+
+.PHONY: all mungegithub update_pod_version container push clean

@@ -956,7 +956,7 @@ func (obj *MungeObject) IsMergeable() (bool, error) {
 	}
 	prNum := *pr.Number
 	if pr.Mergeable == nil {
-		glog.Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
+		glog.V(4).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		// TODO: determine what a good empirical setting for this is.
 		time.Sleep(2 * time.Second)
 		pr, err = obj.RefreshPR()
