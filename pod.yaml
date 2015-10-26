@@ -6,13 +6,13 @@ metadata:
   labels:
     app: mungegithub
     track: alpha
-    version: "0.9.alpha"
+    version: "2015-10-26-c0c9369"
 spec:
   containers:
   - command:
     - /mungegithub
     - --token-file=/etc/secret-volume/token
-    image: gcr.io/google_containers/mungegithub:0.9.alpha
+    image: gcr.io/google_containers/mungegithub:2015-10-26-c0c9369
     imagePullPolicy: Always
     name: mungegithub
     ports:
