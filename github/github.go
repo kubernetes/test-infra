@@ -540,7 +540,7 @@ func (config *Config) UsersWithAccess() ([]github.User, []github.User, error) {
 		if perms["push"] {
 			pushUsers = append(pushUsers, user)
 		} else if perms["pull"] {
-			pullUsers = append(pushUsers, user)
+			pullUsers = append(pullUsers, user)
 		}
 	}
 	return pushUsers, pullUsers, nil
