@@ -56,7 +56,11 @@ func (PingCIMunger) MungePullRequest(config *github_util.Config, pr *github.Pull
 	} else if !mergeable {
 		glog.V(2).Infof("Skipping %d - not mergeable", *pr.Number)
 	}
-	status, err := config.GetStatus(pr, []string{"Shippable", "continuous-integration/travis-ci/pr"})
+	if status, err := config.GetStatus(pr, []string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
+		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsCIContext)
+		return
+	}
+	status, err := config.GetStatus(pr, []string{shippableContext, travisContext})
 	if err != nil {
 		glog.Errorf("unexpected error getting status: %v", err)
 		return
