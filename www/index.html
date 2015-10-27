@@ -161,7 +161,7 @@
                 <h2 class="md-toolbar-tools">Users</h2>
               </md-toolbar>
               <md-list>
-                <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="goToPerson(user.Login)">
+                <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="cntl.goToPerson(user.Login)">
                   <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}">
                   <md-content class="md-list-item-text" layout="column">
                     <h3 class="md-body-1">{{user.Login}}</h3>

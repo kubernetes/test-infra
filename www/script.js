@@ -10,6 +10,7 @@ function SQCntl(dataService, $interval) {
   self.builds = {};
   self.prQuerySearch = prQuerySearch;
   self.historicQuerySearch = historicQuerySearch;
+  self.goToPerson = goToPerson;
   self.queryNum = 0;
   self.StatOrder = "-Count";
 
@@ -200,11 +201,12 @@ function SQCntl(dataService, $interval) {
     };
   }
 
+  function goToPerson(person) {
+    console.log(person);
+    window.location.href = 'https://github.com/' + person;
+  }
 }
 
-function goToPerson(person) {
-  window.location.href = 'https://github.com/' + person;
-}
 
 angular.module('SubmitQueueModule').filter('loginOrPR', function() {
   return function(prs, searchVal) {
