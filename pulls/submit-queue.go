@@ -38,6 +38,8 @@ import (
 const (
 	needsOKToMergeLabel = "needs-ok-to-merge"
 	gceE2EContext       = "Jenkins GCE e2e"
+	jenkinsCIContext    = "Jenkins unit/integration"
+	shippableContext    = "Shippable"
 )
 
 var (
@@ -166,10 +168,10 @@ func (sq *SubmitQueue) EachLoop(config *github_util.Config) error {
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github_util.Config) {
 	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{"kubernetes-e2e-gce", "kubernetes-e2e-gke-ci", "kubernetes-build", "kubernetes-e2e-gce-parallel", "kubernetes-e2e-gce-autoscaling", "kubernetes-e2e-gce-reboot", "kubernetes-e2e-gce-scalability"}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
-	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{"cla/google", "Shippable", "continuous-integration/travis-ci/pr"}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
+	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{"cla/google", "continuous-integration/travis-ci/pr"}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.DontRequireE2ELabel, "dont-require-e2e-label", "e2e-not-required", "If non-empty, a PR with this label will be merged automatically without looking at e2e results")
-	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", "Jenkins GCE e2e", "The name of the github status context for the e2e PR Builder")
+	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", gceE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	sq.addWhitelistCommand(cmd, config)
 }
@@ -268,6 +270,18 @@ var (
 	ghE2EFailed             = "Second github e2e run failed."
 )
 
+func (sq *SubmitQueue) requiredStatusContexts(pr *github_api.PullRequest) []string {
+	contexts := sq.RequiredStatusContexts
+
+	// If the pr has a jenkins ci status, require it, otherwise require shippable
+	if status, err := sq.githubConfig.GetStatus(pr, []string{jenkinsCIContext}); err == nil && status != "incomplete" {
+		contexts = append(contexts, jenkinsCIContext)
+	} else {
+		contexts = append(contexts, shippableContext)
+	}
+	return contexts
+}
+
 // MungePullRequest is the workhorse the will actually make updates to the PR
 func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_api.PullRequest, issue *github_api.Issue, commits []github_api.RepositoryCommit, events []github_api.IssueEvent) {
 	e2e := sq.e2e
@@ -289,7 +303,7 @@ func (sq *SubmitQueue) MungePullRequest(config *github_util.Config, pr *github_a
 	}
 
 	// Validate the status information for this PR
-	contexts := sq.RequiredStatusContexts
+	contexts := sq.requiredStatusContexts(pr)
 	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !github_util.HasLabel(issue.Labels, sq.DontRequireE2ELabel)) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
@@ -460,16 +474,18 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(pr *github_api.PullRequest) {
 
 	// Wait for the build to start
 	sq.SetPRStatus(pr, ghE2EWaitingStart)
-	err = sq.githubConfig.WaitForPending(pr)
+	err = sq.githubConfig.WaitForPending(pr, []string{sq.E2EStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
 		sq.SetPRStatus(pr, s)
 		return
 	}
 
+	contexts := append(sq.requiredStatusContexts(pr), sq.E2EStatusContext)
+
 	// Wait for the status to go back to something other than pending
 	sq.SetPRStatus(pr, ghE2ERunning)
-	err = sq.githubConfig.WaitForNotPending(pr)
+	err = sq.githubConfig.WaitForNotPending(pr, contexts)
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
 		sq.SetPRStatus(pr, s)

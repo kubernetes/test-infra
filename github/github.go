@@ -479,9 +479,9 @@ func timeout(sleepTime time.Duration, c chan bool) {
 	c <- true
 }
 
-func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, c chan error) {
+func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, requiredContexts []string, c chan error) {
 	for {
-		status, err := config.GetStatus(pr, []string{})
+		status, err := config.GetStatus(pr, requiredContexts)
 		if err != nil {
 			c <- err
 			return
@@ -525,12 +525,12 @@ func (config *Config) doWaitStatus(pr *github.PullRequest, pending bool, c chan 
 // WaitForPending will wait for a PR to move into Pending.  This is useful
 // because the request to test a PR again is asynchronous with the PR actually
 // moving into a pending state
-func (config *Config) WaitForPending(pr *github.PullRequest) error {
+func (config *Config) WaitForPending(pr *github.PullRequest, requiredContexts []string) error {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan error, 1)
 	// Wait 45 minutes for the github e2e test to start
 	go timeout(45*time.Minute, timeoutChan)
-	go config.doWaitStatus(pr, true, done)
+	go config.doWaitStatus(pr, true, requiredContexts, done)
 	select {
 	case err := <-done:
 		return err
@@ -540,13 +540,13 @@ func (config *Config) WaitForPending(pr *github.PullRequest) error {
 }
 
 // WaitForNotPending will check if the github status is "pending" (CI still running)
-// if so it will sleep and try again until all status hooks have complete
-func (config *Config) WaitForNotPending(pr *github.PullRequest) error {
+// if so it will sleep and try again until all required status hooks have complete
+func (config *Config) WaitForNotPending(pr *github.PullRequest, requiredContexts []string) error {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan error, 1)
 	// Wait and hour for the github e2e test to finish
 	go timeout(60*time.Minute, timeoutChan)
-	go config.doWaitStatus(pr, false, done)
+	go config.doWaitStatus(pr, false, requiredContexts, done)
 	select {
 	case err := <-done:
 		return err
@@ -756,7 +756,6 @@ func (config *Config) IsPRMergeable(pr *github.PullRequest) (bool, error) {
 		return false, nil
 	}
 	return true, nil
-
 }
 
 // For each Issue in the project that matches:

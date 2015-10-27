@@ -390,6 +390,24 @@ func claStatus(status github.CombinedStatus) github.CombinedStatus {
 	return updateStatusState(status)
 }
 
+func jenkinsCIStatus(status github.CombinedStatus, state string) github.CombinedStatus {
+	s := github.RepoStatus{
+		Context: stringPtr(jenkinsCIContext),
+		State:   stringPtr(state),
+	}
+	status.Statuses = append(status.Statuses, s)
+	return updateStatusState(status)
+}
+
+func shippableStatus(status github.CombinedStatus, state string) github.CombinedStatus {
+	s := github.RepoStatus{
+		Context: stringPtr(shippableContext),
+		State:   stringPtr(state),
+	}
+	status.Statuses = append(status.Statuses, s)
+	return updateStatusState(status)
+}
+
 func successGithubStatus(status github.CombinedStatus) github.CombinedStatus {
 	s := github.RepoStatus{
 		Context: stringPtr(gceE2EContext),
@@ -416,12 +434,29 @@ func NoCLAStatus() github.CombinedStatus {
 func GitHubE2EFailStatus() github.CombinedStatus {
 	status := bareStatus()
 	status = claStatus(status)
+	status = jenkinsCIStatus(status, "success")
 	return failGithubStatus(status)
+}
+
+func JenkinsCIGreenShippablePendingStatus() github.CombinedStatus {
+	status := bareStatus()
+	status = claStatus(status)
+	status = shippableStatus(status, "pending")
+	status = jenkinsCIStatus(status, "success")
+	return successGithubStatus(status)
+}
+
+func ShippableGreenStatus() github.CombinedStatus {
+	status := bareStatus()
+	status = claStatus(status)
+	status = shippableStatus(status, "success")
+	return successGithubStatus(status)
 }
 
 func SuccessStatus() github.CombinedStatus {
 	status := bareStatus()
 	status = claStatus(status)
+	status = jenkinsCIStatus(status, "success")
 	return successGithubStatus(status)
 }
 
@@ -451,37 +486,31 @@ func TestMungePullRequest(t *testing.T) {
 		events           []github.IssueEvent
 		ciStatus         github.CombinedStatus
 		jenkinsJob       jenkins.Job
-		shouldWaitForE2E bool
-		githubE2EPass    bool
 		shouldPass       bool
 		mergeAfterQueued bool
 		reason           string
 	}{
 		// Should pass because the entire thing was run and good
 		{
-			pr:               ValidPR(),
-			issue:            NoOKToMergeIssue(),
-			events:           NewLGTMEvents(),
-			commits:          Commits(),
-			ciStatus:         SuccessStatus(),
-			jenkinsJob:       SuccessJenkins(),
-			shouldWaitForE2E: true,
-			githubE2EPass:    true,
-			shouldPass:       true,
-			reason:           merged,
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			ciStatus:   SuccessStatus(),
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: true,
+			reason:     merged,
 		},
 		// Should list as 'merged' but the merge should happen before it gets e2e tested
 		// and we should bail early instead of waiting for a test that will never come.
 		{
-			pr:               ValidPR(),
-			issue:            NoOKToMergeIssue(),
-			events:           NewLGTMEvents(),
-			commits:          Commits(),
-			ciStatus:         SuccessStatus(),
-			jenkinsJob:       SuccessJenkins(),
-			shouldWaitForE2E: true,
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			ciStatus:   SuccessStatus(),
+			jenkinsJob: SuccessJenkins(),
 			// The test should never run, but if it does, make sure it fails
-			githubE2EPass:    false,
 			shouldPass:       true,
 			mergeAfterQueued: true,
 			reason:           merged,
@@ -562,26 +591,45 @@ func TestMungePullRequest(t *testing.T) {
 		},
 		// This is not really a failure, we just check that it reports e2e is in progress
 		{
-			pr:            ValidPR(),
-			issue:         AllLabelsIssue(),
-			ciStatus:      SuccessStatus(),
-			events:        NewLGTMEvents(),
-			commits:       Commits(),
-			jenkinsJob:    SuccessJenkins(),
-			githubE2EPass: false,
-			reason:        ghE2EQueued,
+			pr:         ValidPR(),
+			issue:      AllLabelsIssue(),
+			ciStatus:   SuccessStatus(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			jenkinsJob: SuccessJenkins(),
+			reason:     ghE2EQueued,
 		},
 		// Fail because the second run of github e2e tests failed
 		{
-			pr:               ValidPR(),
-			issue:            AllLabelsIssue(),
-			ciStatus:         SuccessStatus(),
-			events:           NewLGTMEvents(),
-			commits:          Commits(),
-			jenkinsJob:       SuccessJenkins(),
-			githubE2EPass:    false,
-			shouldWaitForE2E: true,
-			reason:           ghE2EFailed,
+			pr:         ValidPR(),
+			issue:      AllLabelsIssue(),
+			ciStatus:   SuccessStatus(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			jenkinsJob: SuccessJenkins(),
+			reason:     ghE2EFailed,
+		},
+		// Should pass because the jenkins ci is green even tho shippable is pending.
+		{
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			ciStatus:   JenkinsCIGreenShippablePendingStatus(),
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: true,
+			reason:     merged,
+		},
+		// Should pass because the shippable is green (no jenkins ci).
+		{
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(),
+			ciStatus:   ShippableGreenStatus(),
+			jenkinsJob: SuccessJenkins(),
+			shouldPass: true,
+			reason:     merged,
 		},
 	}
 	for testNum, test := range tests {
@@ -673,26 +721,26 @@ func TestMungePullRequest(t *testing.T) {
 		sq := SubmitQueue{}
 		sq.RequiredStatusContexts = []string{"cla/google"}
 		sq.DontRequireE2ELabel = "e2e-not-required"
+		sq.E2EStatusContext = gceE2EContext
 		sq.JenkinsHost = server.URL
 		sq.JenkinsJobs = []string{"foo"}
 		sq.WhitelistOverride = "ok-to-merge"
 		sq.Initialize(config)
 		sq.EachLoop(config)
 		sq.userWhitelist.Insert("k8s-merge-robot")
-		sq.DontRequireE2ELabel = "e2e-not-required"
 
 		sq.MungePullRequest(config, test.pr, test.issue, test.commits, test.events)
-		if test.shouldWaitForE2E {
-			// probably should hold the lock when I check, but what a PITA
-			for len(sq.githubE2EQueue) == 0 {
+		done := make(chan bool, 1)
+		go func(done chan bool, reason string) {
+			for sq.prStatus["1"].Reason != reason {
 				time.Sleep(1 * time.Millisecond)
 			}
-			for len(sq.githubE2EQueue) != 0 {
-				time.Sleep(1 * time.Millisecond)
-			}
-		}
-		if sq.prStatus["1"].Reason != test.reason {
-			t.Errorf("test:%d expected reason=%q but got %q", testNum, test.reason, sq.prStatus["1"].Reason)
+			done <- true
+		}(done, test.reason)
+		select {
+		case <-done:
+		case <-time.After(10 * time.Second):
+			t.Fatalf("test:%d timed out waiting expected reason=%q but got %q", testNum, test.reason, sq.prStatus["1"].Reason)
 		}
 		server.Close()
 	}
