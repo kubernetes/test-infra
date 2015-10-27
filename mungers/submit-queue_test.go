@@ -361,16 +361,6 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: FailJenkins(),
 			reason:     e2eFailure,
 		},
-		// This is not really a failure, we just check that it reports e2e is in progress
-		{
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(),
-			jenkinsJob: SuccessJenkins(),
-			reason:     ghE2EQueued,
-		},
 		// Fail because the second run of github e2e tests failed
 		{
 			pr:         ValidPR(),

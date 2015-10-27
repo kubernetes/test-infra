@@ -227,6 +227,8 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 			data, err = json.Marshal(thing)
 		case *github.CombinedStatus:
 			data, err = json.Marshal(thing)
+		case []github.User:
+			data, err = json.Marshal(thing)
 		}
 		if err != nil {
 			t.Errorf("%v", err)
@@ -289,5 +291,7 @@ func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, event
 		path := fmt.Sprintf("/repos/o/r/commits/%s/status", sha)
 		setMux(t, mux, path, status)
 	}
+	path := "/repos/o/r/collaborators"
+	setMux(t, mux, path, []github.User{})
 	return client, server, mux
 }
