@@ -431,13 +431,17 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	sq.SetMergeStatus(obj, ghE2EQueued, true)
+	added := false
 	sq.Lock()
-	sq.githubE2EWakeup <- true
 	if _, ok := sq.githubE2EQueue[*obj.Issue.Number]; !ok {
 		sq.githubE2EQueue[*obj.Issue.Number] = obj
+		sq.githubE2EWakeup <- true
+		added = true
 	}
 	sq.Unlock()
+	if added {
+		sq.SetMergeStatus(obj, ghE2EQueued, true)
+	}
 
 	return
 }
