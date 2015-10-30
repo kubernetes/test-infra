@@ -15,7 +15,7 @@ prefixMap:
     - brendandburns
     - davidopp
     - eparis
-    - robertbailey
+    - roberthbailey
     - zmerlynn
 
   cluster/addons/dns:
