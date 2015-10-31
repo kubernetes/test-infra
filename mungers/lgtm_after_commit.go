@@ -62,6 +62,7 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 	}
 
 	if lastModified.After(*lgtmTime) {
+		glog.Infof("PR: %d lgtm:%s  lastModified:%s", *obj.Issue.Number, lgtmTime.String(), lastModified.String())
 		lgtmRemovedBody := "PR changed after LGTM, removing LGTM."
 		if err := obj.WriteComment(lgtmRemovedBody); err != nil {
 			return

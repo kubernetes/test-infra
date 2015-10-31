@@ -563,15 +563,12 @@ func (obj *MungeObject) IsPR() bool {
 
 // GetEvents returns a list of all events for a given pr.
 func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
-	if obj.events != nil {
-		return obj.events, nil
-	}
 	config := obj.config
 	prNum := *obj.Issue.Number
 	events := []github.IssueEvent{}
 	page := 1
 	for {
-		eventPage, response, err := config.client.Issues.ListIssueEvents(config.Org, config.Project, prNum, &github.ListOptions{Page: page})
+		eventPage, response, err := config.client.Issues.ListIssueEvents(config.Org, config.Project, prNum, &github.ListOptions{PerPage: 100, Page: page})
 		config.analytics.ListIssueEvents.Call(config, response)
 		if err != nil {
 			glog.Errorf("Error getting events for issue: %v", err)
@@ -637,12 +634,14 @@ func (obj *MungeObject) GetStatus(requiredContexts []string) (string, error) {
 		glog.Errorf("pr.Head is nil in GetStatus for PR# %d", *pr.Number)
 		return "failure", nil
 	}
+	// TODO If we have more than 100 statuses we need to deal with paging.
 	combinedStatus, response, err := config.client.Repositories.GetCombinedStatus(config.Org, config.Project, *pr.Head.SHA, &github.ListOptions{})
 	config.analytics.GetCombinedStatus.Call(config, response)
 	if err != nil {
 		glog.Errorf("Failed to get combined status: %v", err)
 		return "failure", err
 	}
+
 	return computeStatus(combinedStatus, requiredContexts), nil
 }
 
@@ -747,12 +746,22 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 		return obj.commits, nil
 	}
 	config := obj.config
-	//TODO: this should handle paging, I believe....
-	commits, response, err := config.client.PullRequests.ListCommits(config.Org, config.Project, *obj.Issue.Number, &github.ListOptions{})
-	config.analytics.ListCommits.Call(config, response)
-	if err != nil {
-		return nil, err
+	commits := []github.RepositoryCommit{}
+	page := 0
+	for {
+		commitsPage, response, err := config.client.PullRequests.ListCommits(config.Org, config.Project, *obj.Issue.Number, &github.ListOptions{PerPage: 100, Page: page})
+		config.analytics.ListCommits.Call(config, response)
+		if err != nil {
+			glog.Errorf("Error commits for PR %d: %v", *obj.Issue.Number, err)
+			return nil, err
+		}
+		commits = append(commits, commitsPage...)
+		if response.LastPage == 0 || response.LastPage <= page {
+			break
+		}
+		page++
 	}
+
 	filledCommits := []github.RepositoryCommit{}
 	for _, c := range commits {
 		if c.SHA == nil {
@@ -998,7 +1007,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		listOpts := &github.IssueListByRepoOptions{
 			Sort:        "created",
 			State:       "open",
-			ListOptions: github.ListOptions{PerPage: 20, Page: page},
+			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}
 		issues, response, err := config.client.Issues.ListByRepo(config.Org, config.Project, listOpts)
 		config.analytics.ListIssues.Call(config, response)

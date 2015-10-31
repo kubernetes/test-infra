@@ -205,7 +205,7 @@ func TestForEachIssueDo(t *testing.T) {
 			if r.URL.Query().Get("sort") != "created" {
 				t.Errorf("Unexpected sort: %s", r.URL.Query().Get("sort"))
 			}
-			if r.URL.Query().Get("per_page") != "20" {
+			if r.URL.Query().Get("per_page") != "100" {
 				t.Errorf("Unexpected per_page: %s", r.URL.Query().Get("per_page"))
 			}
 			w.Header().Add("Link",
