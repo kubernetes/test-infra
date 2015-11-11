@@ -475,6 +475,12 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 	if config.DryRun {
 		return nil
 	}
+	for _, l := range labels {
+		label := github.Label{
+			Name: &l,
+		}
+		obj.Issue.Labels = append(obj.Issue.Labels, label)
+	}
 	if _, _, err := config.client.Issues.AddLabelsToIssue(config.Org, config.Project, prNum, labels); err != nil {
 		glog.Errorf("Failed to set labels %v for %d: %v", labels, prNum, err)
 		return err
