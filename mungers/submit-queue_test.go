@@ -249,7 +249,7 @@ func TestMunge(t *testing.T) {
 		jenkinsJob       jenkins.Job
 		shouldPass       bool
 		mergeAfterQueued bool
-		reason           string
+		reasons          []string
 	}{
 		// Should pass because the entire thing was run and good
 		{
@@ -260,7 +260,7 @@ func TestMunge(t *testing.T) {
 			ciStatus:   SuccessStatus(),
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
-			reason:     merged,
+			reasons:    []string{merged},
 		},
 		// Should list as 'merged' but the merge should happen before it gets e2e tested
 		// and we should bail early instead of waiting for a test that will never come.
@@ -274,7 +274,7 @@ func TestMunge(t *testing.T) {
 			// The test should never run, but if it does, make sure it fails
 			shouldPass:       false,
 			mergeAfterQueued: true,
-			reason:           merged,
+			reasons:          []string{merged},
 		},
 		// Should merge even though github ci failed because of dont-require-e2e
 		{
@@ -284,7 +284,7 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
-			reason:     merged,
+			reasons:    []string{merged},
 		},
 		// Should merge even though user not in whitelist because has ok-to-merge
 		{
@@ -295,52 +295,52 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
-			reason:     merged,
+			reasons:    []string{merged},
 		},
 		// Fail because PR can't automatically merge
 		{
-			pr:     UnMergeablePR(),
-			issue:  NoOKToMergeIssue(),
-			reason: unmergeable,
+			pr:      UnMergeablePR(),
+			issue:   NoOKToMergeIssue(),
+			reasons: []string{unmergeable},
 		},
 		// Fail because we don't know if PR can automatically merge
 		{
-			pr:     UndeterminedMergeablePR(),
-			issue:  NoOKToMergeIssue(),
-			reason: undeterminedMergability,
+			pr:      UndeterminedMergeablePR(),
+			issue:   NoOKToMergeIssue(),
+			reasons: []string{undeterminedMergability},
 		},
 		// Fail because the "cla: yes" label was not applied
 		{
-			pr:     ValidPR(),
-			issue:  NoCLAIssue(),
-			reason: noCLA,
+			pr:      ValidPR(),
+			issue:   NoCLAIssue(),
+			reasons: []string{noCLA},
 		},
 		// Fail because github CI tests have failed (or at least are not success)
 		{
-			pr:     NonWhitelistUserPR(),
-			issue:  NoOKToMergeIssue(),
-			reason: ciFailure,
+			pr:      NonWhitelistUserPR(),
+			issue:   NoOKToMergeIssue(),
+			reasons: []string{ciFailure},
 		},
 		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
 		{
 			pr:       ValidPR(),
 			issue:    UserNotInWhitelistNoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
-			reason:   needsok,
+			reasons:  []string{needsok},
 		},
 		// Fail because missing LGTM label
 		{
 			pr:       ValidPR(),
 			issue:    NoLGTMIssue(),
 			ciStatus: SuccessStatus(),
-			reason:   noLGTM,
+			reasons:  []string{noLGTM},
 		},
 		// Fail because we can't tell if LGTM was added before the last change
 		{
 			pr:       ValidPR(),
 			issue:    NoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
-			reason:   unknown,
+			reasons:  []string{unknown},
 		},
 		// Fail because LGTM was added before the last change
 		{
@@ -349,7 +349,7 @@ func TestMunge(t *testing.T) {
 			ciStatus: SuccessStatus(),
 			events:   OldLGTMEvents(),
 			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
-			reason:   lgtmEarly,
+			reasons:  []string{lgtmEarly},
 		},
 		// Fail because jenkins instances are failing (whole submit queue blocks)
 		{
@@ -359,7 +359,7 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: FailJenkins(),
-			reason:     e2eFailure,
+			reasons:    []string{e2eFailure},
 		},
 		// Fail because the second run of github e2e tests failed
 		{
@@ -369,7 +369,7 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(),
 			jenkinsJob: SuccessJenkins(),
-			reason:     ghE2EFailed,
+			reasons:    []string{ghE2EFailed},
 		},
 		// Should pass because the jenkins ci is green even tho shippable is pending.
 		{
@@ -380,7 +380,7 @@ func TestMunge(t *testing.T) {
 			ciStatus:   JenkinsCIGreenShippablePendingStatus(),
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
-			reason:     merged,
+			reasons:    []string{merged},
 		},
 		// Should pass because the shippable is green (no jenkins ci).
 		{
@@ -391,8 +391,9 @@ func TestMunge(t *testing.T) {
 			ciStatus:   ShippableGreenStatus(),
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
-			reason:     merged,
+			reasons:    []string{merged},
 		},
+		// When we check the reason it may be queued or it may already have failed.
 		{
 			pr:         ValidPR(),
 			issue:      NoOKToMergeIssue(),
@@ -401,7 +402,7 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: false,
-			reason:     ghE2EQueued,
+			reasons:    []string{ghE2EQueued, ghE2EFailed},
 		},
 		// Fail because the second run of github e2e tests failed
 		{
@@ -412,7 +413,7 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: false,
-			reason:     ghE2EFailed,
+			reasons:    []string{ghE2EFailed},
 		},
 	}
 	for testNum, test := range tests {
@@ -499,16 +500,22 @@ func TestMunge(t *testing.T) {
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
 		sq.Munge(obj)
 		done := make(chan bool, 1)
-		go func(done chan bool, reason string) {
-			for sq.prStatus["1"].Reason != reason {
+		go func(done chan bool) {
+			for {
+				reason := sq.prStatus["1"].Reason
+				for _, r := range test.reasons {
+					if r == reason {
+						done <- true
+						return
+					}
+				}
 				time.Sleep(1 * time.Millisecond)
 			}
-			done <- true
-		}(done, test.reason)
+		}(done)
 		select {
 		case <-done:
 		case <-time.After(10 * time.Second):
-			t.Fatalf("test:%d timed out waiting expected reason=%q but got %q", testNum, test.reason, sq.prStatus["1"].Reason)
+			t.Fatalf("test:%d timed out waiting expected reason=%v but got %q", testNum, test.reasons, sq.prStatus["1"].Reason)
 		}
 		server.Close()
 	}
