@@ -168,6 +168,7 @@ type analytics struct {
 	AddLabels         analytic
 	RemoveLabels      analytic
 	ListCollaborators analytic
+	GetIssue          analytic
 	ListIssues        analytic
 	ListIssueEvents   analytic
 	ListCommits       analytic
@@ -192,6 +193,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "AddLabels\t%d\t\n", a.AddLabels.Count)
 	fmt.Fprintf(w, "RemoveLabels\t%d\t\n", a.RemoveLabels.Count)
 	fmt.Fprintf(w, "ListCollaborators\t%d\t\n", a.ListCollaborators.Count)
+	fmt.Fprintf(w, "GetIssue\t%d\t\n", a.GetIssue.Count)
 	fmt.Fprintf(w, "ListIssues\t%d\t\n", a.ListIssues.Count)
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
@@ -375,6 +377,21 @@ func (config *Config) ResetAPICount() {
 // SetClient should ONLY be used by testing. Normal commands should use PreExecute()
 func (config *Config) SetClient(client *github.Client) {
 	config.client = client
+}
+
+// GetObject will return an object (with only the issue filled in)
+func (config *Config) GetObject(num int) (*MungeObject, error) {
+	issue, resp, err := config.client.Issues.Get(config.Org, config.Project, num)
+	config.analytics.GetIssue.Call(config, resp)
+	if err != nil {
+		glog.Errorf("GetObject: %v", err)
+		return nil, err
+	}
+	obj := &MungeObject{
+		config: config,
+		Issue:  issue,
+	}
+	return obj, nil
 }
 
 // LastModifiedTime returns the time the last commit was made
