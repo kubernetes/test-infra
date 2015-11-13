@@ -41,6 +41,8 @@ const (
 	jenkinsCIContext    = "Jenkins unit/integration"
 	shippableContext    = "Shippable"
 	travisContext       = "continuous-integration/travis-ci/pr"
+	claYes              = "cla: yes"
+	claHuman            = "cla: human-approved"
 )
 
 var (
@@ -86,12 +88,12 @@ type SubmitQueue struct {
 	JenkinsJobs            []string
 	JenkinsHost            string
 	Whitelist              string
-	RequiredStatusContexts []string
 	WhitelistOverride      string
 	Committers             string
 	Address                string
 	DontRequireE2ELabel    string
 	E2EStatusContext       string
+	RequiredStatusContexts []string
 	WWWRoot                string
 
 	// additionalUserWhitelist are non-committer users believed safe
@@ -199,7 +201,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-kubemark-gce",
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
-	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{claContext, travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
+	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.DontRequireE2ELabel, "dont-require-e2e-label", "e2e-not-required", "If non-empty, a PR with this label will be merged automatically without looking at e2e results")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", gceE2EContext, "The name of the github status context for the e2e PR Builder")
@@ -334,7 +336,7 @@ func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
 
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR does not have cla: yes."
+	noCLA                   = "PR does not have " + claYes + " or " + claHuman
 	noLGTM                  = "PR does not have LGTM."
 	needsok                 = "PR does not have 'ok-to-merge' label"
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
@@ -358,6 +360,9 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	} else {
 		contexts = append(contexts, shippableContext)
 	}
+	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !obj.HasLabel(sq.DontRequireE2ELabel)) {
+		contexts = append(contexts, sq.E2EStatusContext)
+	}
 	return contexts
 }
 
@@ -370,7 +375,7 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	e2e := sq.e2e
 	userSet := sq.userWhitelist
 
-	if !obj.HasLabels([]string{"cla: yes"}) {
+	if !obj.HasLabels([]string{claYes}) && !obj.HasLabels([]string{claHuman}) {
 		sq.SetMergeStatus(obj, noCLA, false)
 		return
 	}
@@ -385,9 +390,6 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 
 	// Validate the status information for this PR
 	contexts := sq.requiredStatusContexts(obj)
-	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !obj.HasLabel(sq.DontRequireE2ELabel)) {
-		contexts = append(contexts, sq.E2EStatusContext)
-	}
 	if ok := obj.IsStatusSuccess(contexts); !ok {
 		sq.SetMergeStatus(obj, ciFailure, false)
 		return
@@ -570,11 +572,9 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	contexts := append(sq.requiredStatusContexts(obj), sq.E2EStatusContext)
-
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning, true)
-	err = obj.WaitForNotPending(contexts)
+	err = obj.WaitForNotPending([]string{sq.E2EStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
 		sq.SetMergeStatus(obj, s, true)
@@ -582,7 +582,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	// Check if the thing we care about is success
-	if ok := obj.IsStatusSuccess([]string{gceE2EContext}); !ok {
+	if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext}); !ok {
 		sq.SetMergeStatus(obj, ghE2EFailed, true)
 		return
 	}

@@ -626,7 +626,7 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 
 	missing := requires.Difference(providers)
 	if missing.Len() != 0 {
-		glog.V(8).Infof("Failed to find %v in CombinedStatus for %s", missing.List(), combinedStatus.SHA)
+		glog.V(8).Infof("Failed to find %v in CombinedStatus for %s", missing.List(), *combinedStatus.SHA)
 		return "incomplete"
 	}
 	switch {
