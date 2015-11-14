@@ -174,6 +174,7 @@ type analytics struct {
 	ListCommits       analytic
 	GetCommit         analytic
 	GetCombinedStatus analytic
+	SetStatus         analytic
 	GetPR             analytic
 	AssignPR          analytic
 	ClosePR           analytic
@@ -199,6 +200,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
 	fmt.Fprintf(w, "GetCommit\t%d\t\n", a.GetCommit.Count)
 	fmt.Fprintf(w, "GetCombinedStatus\t%d\t\n", a.GetCombinedStatus.Count)
+	fmt.Fprintf(w, "SetStatus\t%d\t\n", a.SetStatus.Count)
 	fmt.Fprintf(w, "GetPR\t%d\t\n", a.GetPR.Count)
 	fmt.Fprintf(w, "AssignPR\t%d\t\n", a.AssignPR.Count)
 	fmt.Fprintf(w, "ClosePR\t%d\t\n", a.ClosePR.Count)
@@ -645,7 +647,6 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus) {
 	config := obj.config
 	pr, err := obj.GetPR()
 	if err != nil {
-		glog.Errorf("Unable to get PR %d: %v", *obj.Issue.Number, err)
 		return nil
 	}
 	if pr.Head == nil {
@@ -660,6 +661,46 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus) {
 		return nil
 	}
 	return combinedStatus
+}
+
+// SetStatus allowes you to set the Github Status
+func (obj *MungeObject) SetStatus(state, url, description, context string) error {
+	config := obj.config
+	status := &github.RepoStatus{
+		State:       &state,
+		URL:         &url,
+		Description: &description,
+		Context:     &context,
+	}
+	pr, err := obj.GetPR()
+	if err != nil {
+		return err
+	}
+	ref := *pr.Head.SHA
+	glog.Infof("PR %d setting %q Github status to %q", *obj.Issue.Number, context, description)
+	config.analytics.SetStatus.Call(config, nil)
+	if config.DryRun {
+		return nil
+	}
+	_, _, err = config.client.Repositories.CreateStatus(config.Org, config.Project, ref, status)
+	if err != nil {
+		glog.Errorf("Unable to set status. PR %d Ref: %q: %v", *obj.Issue.Number, ref, err)
+	}
+	return err
+}
+
+// GetStatus returns the actual requested status, or nil if not found
+func (obj *MungeObject) GetStatus(context string) *github.RepoStatus {
+	combinedStatus := obj.getCombinedStatus()
+	if combinedStatus == nil {
+		return nil
+	}
+	for _, status := range combinedStatus.Statuses {
+		if *status.Context == context {
+			return &status
+		}
+	}
+	return nil
 }
 
 // GetStatusState gets the current status of a PR.
