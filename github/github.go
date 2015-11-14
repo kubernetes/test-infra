@@ -641,39 +641,44 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 	}
 }
 
-// GetStatus gets the current status of a PR.
-//    * If any member of the 'requiredContexts' list is missing, it is 'incomplete'
-//    * If any is 'pending', the PR is 'pending'
-//    * If any is 'error', the PR is in 'error'
-//    * If any is 'failure', the PR is 'failure'
-//    * Otherwise the PR is 'success'
-func (obj *MungeObject) GetStatus(requiredContexts []string) (string, error) {
+func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus) {
 	config := obj.config
 	pr, err := obj.GetPR()
 	if err != nil {
-		return "failure", err
+		glog.Errorf("Unable to get PR %d: %v", *obj.Issue.Number, err)
+		return nil
 	}
 	if pr.Head == nil {
-		glog.Errorf("pr.Head is nil in GetStatus for PR# %d", *pr.Number)
-		return "failure", nil
+		glog.Errorf("pr.Head is nil in getCombinedStatus for PR# %d", *obj.Issue.Number)
+		return nil
 	}
 	// TODO If we have more than 100 statuses we need to deal with paging.
 	combinedStatus, response, err := config.client.Repositories.GetCombinedStatus(config.Org, config.Project, *pr.Head.SHA, &github.ListOptions{})
 	config.analytics.GetCombinedStatus.Call(config, response)
 	if err != nil {
 		glog.Errorf("Failed to get combined status: %v", err)
-		return "failure", err
+		return nil
 	}
+	return combinedStatus
+}
 
-	return computeStatus(combinedStatus, requiredContexts), nil
+// GetStatusState gets the current status of a PR.
+//    * If any member of the 'requiredContexts' list is missing, it is 'incomplete'
+//    * If any is 'pending', the PR is 'pending'
+//    * If any is 'error', the PR is in 'error'
+//    * If any is 'failure', the PR is 'failure'
+//    * Otherwise the PR is 'success'
+func (obj *MungeObject) GetStatusState(requiredContexts []string) string {
+	combinedStatus := obj.getCombinedStatus()
+	if combinedStatus == nil {
+		return "failure"
+	}
+	return computeStatus(combinedStatus, requiredContexts)
 }
 
 // IsStatusSuccess makes sure that the combined status for all commits in a PR is 'success'
 func (obj *MungeObject) IsStatusSuccess(requiredContexts []string) bool {
-	status, err := obj.GetStatus(requiredContexts)
-	if err != nil {
-		return false
-	}
+	status := obj.GetStatusState(requiredContexts)
 	if status == "success" {
 		return true
 	}
@@ -689,11 +694,7 @@ func timeout(sleepTime time.Duration, c chan bool) {
 func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c chan error) {
 	config := obj.config
 	for {
-		status, err := obj.GetStatus(requiredContexts)
-		if err != nil {
-			c <- err
-			return
-		}
+		status := obj.GetStatusState(requiredContexts)
 		var done bool
 		if pending {
 			done = (status == "pending")

@@ -355,7 +355,7 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	contexts := sq.RequiredStatusContexts
 
 	// If the pr has a jenkins ci status, require it, otherwise require shippable
-	if status, err := obj.GetStatus([]string{jenkinsCIContext}); err == nil && status != "incomplete" {
+	if state := obj.GetStatusState([]string{jenkinsCIContext}); state != "incomplete" {
 		contexts = append(contexts, jenkinsCIContext)
 	} else {
 		contexts = append(contexts, shippableContext)

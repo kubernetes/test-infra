@@ -63,16 +63,12 @@ func (PingCIMunger) Munge(obj *github.MungeObject) {
 		glog.V(2).Infof("Skipping %d - not mergeable", *obj.Issue.Number)
 		return
 	}
-	if status, err := obj.GetStatus([]string{jenkinsCIContext, travisContext}); err == nil && status != "incomplete" {
+	if state := obj.GetStatusState([]string{jenkinsCIContext, travisContext}); state != "incomplete" {
 		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsCIContext)
 		return
 	}
-	status, err := obj.GetStatus([]string{shippableContext, travisContext})
-	if err != nil {
-		glog.Errorf("unexpected error getting status: %v", err)
-		return
-	}
-	if status == "incomplete" {
+	state := obj.GetStatusState([]string{shippableContext, travisContext})
+	if state == "incomplete" {
 		msg := "Continuous integration appears to have missed, closing and re-opening to trigger it"
 		obj.WriteComment(msg)
 
