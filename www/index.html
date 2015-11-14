@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc3/angular-material.min.css" type="text/css">
   <link rel="stylesheet" href="md-data-table.min.css" type="text/css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
   <link rel="stylesheet" href="style.css" type="text/css">
@@ -107,19 +107,19 @@
                 <md-toolbar>
                   <h2 class="md-toolbar-tools">Historic Merge Bot Decisions</h2>
                   <form ng-submit="$event.preventDefault()">
-                    <md-autocomplete md-selected-item="cntl.historicSelectedItem" md-search-text="cntl.historicDisplayValue" md-items="item in cntl.historicQuerySearch(cntl.historicDisplayValue)" md-item-text="item.display" md-min-length="0" placeholder="Enter username or PR number">
+                    <md-autocomplete md-selected-item="cntl.historySelectedItem" md-search-text="cntl.historyDisplayValue" md-items="item in cntl.historyQuerySearch(cntl.historyDisplayValue)" md-item-text="item.display" md-min-length="0" placeholder="Enter username or PR number">
                       <md-item-template>
-                        <span md-highlight-text="cntl.historicDisplayValue" md-highlight-flags="^i">{{item.display}}</span>
+                        <span md-highlight-text="cntl.historyDisplayValue" md-highlight-flags="^i">{{item.display}}</span>
                       </md-item-template>
                       <md-not-found>
-                        No matches found for "{{cntl.historicDisplayValue}}".
+                        No matches found for "{{cntl.historyDisplayValue}}".
                       </md-not-found>
                     </md-autocomplete>
                   </form>
                 </md-toolbar>
               </md-content>
               <md-list>
-                <md-list-item class="md-3-line" ng-repeat="pr in cntl.historicPRs | loginOrPR:cntl.historicDisplayValue | orderBy: '-Time' track by pr.Time">
+                <md-list-item class="md-3-line" ng-repeat="pr in cntl.historyPRs | loginOrPR:cntl.historyDisplayValue | orderBy: '-Time' track by pr.Time">
                   <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
@@ -218,7 +218,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js" type="text/javascript"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.min.js" type="text/javascript"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-aria.min.js" type="text/javascript"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc3/angular-material.min.js" type="text/javascript"></script>
   <script src="md-data-table.min.js" type="text/javascript"></script>
   <script src="toArrayFilter.js" type="text/javascript"></script>
   <script src="script.js" type="text/javascript"></script>
