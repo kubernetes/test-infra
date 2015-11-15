@@ -668,7 +668,7 @@ func (obj *MungeObject) SetStatus(state, url, description, context string) error
 	config := obj.config
 	status := &github.RepoStatus{
 		State:       &state,
-		URL:         &url,
+		TargetURL:   &url,
 		Description: &description,
 		Context:     &context,
 	}

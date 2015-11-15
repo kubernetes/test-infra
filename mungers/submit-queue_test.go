@@ -252,6 +252,7 @@ func TestMunge(t *testing.T) {
 		shouldPass       bool
 		mergeAfterQueued bool
 		reason           string
+		state            string // what the github status context should be for the PR HEAD
 	}{
 		// Should pass because the entire thing was run and good
 		{
@@ -264,6 +265,7 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
 			reason:     merged,
+			state:      "success",
 		},
 		// Should list as 'merged' but the merge should happen before it gets e2e tested
 		// and we should bail early instead of waiting for a test that will never come.
@@ -279,6 +281,7 @@ func TestMunge(t *testing.T) {
 			shouldPass:       false,
 			mergeAfterQueued: true,
 			reason:           merged,
+			state:            "success",
 		},
 		// Should merge even though github ci failed because of dont-require-e2e
 		{
@@ -290,6 +293,7 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
 			reason:     merged,
+			state:      "success",
 		},
 		// Should merge even though user not in whitelist because has ok-to-merge
 		{
@@ -302,6 +306,7 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
 			reason:     merged,
+			state:      "success",
 		},
 		// Fail because PR can't automatically merge
 		{
@@ -309,6 +314,7 @@ func TestMunge(t *testing.T) {
 			pr:     UnMergeablePR(),
 			issue:  NoOKToMergeIssue(),
 			reason: unmergeable,
+			state:  "pending",
 		},
 		// Fail because we don't know if PR can automatically merge
 		{
@@ -316,6 +322,7 @@ func TestMunge(t *testing.T) {
 			pr:     UndeterminedMergeablePR(),
 			issue:  NoOKToMergeIssue(),
 			reason: undeterminedMergability,
+			state:  "pending",
 		},
 		// Fail because the "cla: yes" label was not applied
 		{
@@ -323,6 +330,7 @@ func TestMunge(t *testing.T) {
 			pr:     ValidPR(),
 			issue:  NoCLAIssue(),
 			reason: noCLA,
+			state:  "pending",
 		},
 		// Fail because github CI tests have failed (or at least are not success)
 		{
@@ -330,6 +338,7 @@ func TestMunge(t *testing.T) {
 			pr:     NonWhitelistUserPR(),
 			issue:  NoOKToMergeIssue(),
 			reason: ciFailure,
+			state:  "pending",
 		},
 		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
 		{
@@ -338,6 +347,7 @@ func TestMunge(t *testing.T) {
 			issue:    UserNotInWhitelistNoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   needsok,
+			state:    "pending",
 		},
 		// Fail because missing LGTM label
 		{
@@ -346,6 +356,7 @@ func TestMunge(t *testing.T) {
 			issue:    NoLGTMIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   noLGTM,
+			state:    "pending",
 		},
 		// Fail because we can't tell if LGTM was added before the last change
 		{
@@ -354,6 +365,7 @@ func TestMunge(t *testing.T) {
 			issue:    NoOKToMergeIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   unknown,
+			state:    "failure",
 		},
 		// Fail because LGTM was added before the last change
 		{
@@ -364,6 +376,7 @@ func TestMunge(t *testing.T) {
 			events:   OldLGTMEvents(),
 			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
 			reason:   lgtmEarly,
+			state:    "pending",
 		},
 		// Fail because jenkins instances are failing (whole submit queue blocks)
 		{
@@ -375,6 +388,7 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: FailJenkins(),
 			reason:     e2eFailure,
+			state:      "success",
 		},
 		// Fail because the second run of github e2e tests failed
 		{
@@ -386,6 +400,7 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(),
 			jenkinsJob: SuccessJenkins(),
 			reason:     ghE2EFailed,
+			state:      "pending",
 		},
 		// Should pass because the jenkins ci is green even tho shippable is pending.
 		{
@@ -398,6 +413,7 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
 			reason:     merged,
+			state:      "success",
 		},
 		// Should pass because the shippable is green (no jenkins ci).
 		{
@@ -410,6 +426,7 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: true,
 			reason:     merged,
+			state:      "success",
 		},
 		// When we check the reason it may be queued or it may already have failed.
 		{
@@ -422,6 +439,10 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: false,
 			reason:     ghE2EQueued,
+			// The state is unpredictable. When it goes on the queue it is success.
+			// When it fails the build it is pending. So state depends on how far along
+			// this were when we checked. Thus just don't check it...
+			state: "",
 		},
 		// Fail because the second run of github e2e tests failed
 		{
@@ -434,6 +455,7 @@ func TestMunge(t *testing.T) {
 			jenkinsJob: SuccessJenkins(),
 			shouldPass: false,
 			reason:     ghE2EFailed,
+			state:      "pending",
 		},
 	}
 	for testNum, test := range tests {
@@ -450,6 +472,8 @@ func TestMunge(t *testing.T) {
 		// Don't wait so long for it to go pending or back
 		d := 250 * time.Millisecond
 		config.PendingWaitTime = &d
+
+		stateSet := ""
 
 		numJenkinsCalls := 0
 		// Respond with success to jenkins requests.
@@ -481,7 +505,6 @@ func TestMunge(t *testing.T) {
 			if r.Method != "POST" {
 				t.Errorf("Unexpected method: %s", r.Method)
 			}
-
 			type comment struct {
 				Body string `json:"body"`
 			}
@@ -508,6 +531,28 @@ func TestMunge(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
+			w.Write(data)
+			test.pr.Merged = boolPtr(true)
+		})
+		path = fmt.Sprintf("/repos/o/r/statuses/%s", *test.pr.Head.SHA)
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			decoder := json.NewDecoder(r.Body)
+			var status github.RepoStatus
+			err := decoder.Decode(&status)
+			if err != nil {
+				t.Errorf("Unable to decode status: %v", err)
+			}
+
+			stateSet = *status.State
+
+			data, err := json.Marshal(status)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			w.WriteHeader(http.StatusOK)
 			w.Write(data)
 			test.pr.Merged = boolPtr(true)
 		})
@@ -549,9 +594,13 @@ func TestMunge(t *testing.T) {
 		select {
 		case <-done:
 		case <-time.After(10 * time.Second):
-			t.Fatalf("%d:%s timed out waiting expected reason=%q but got prStatus:%q history:%v", testNum, test.name, test.reason, sq.prStatus[issueNumStr].Reason, sq.statusHistory)
+			t.Errorf("%d:%s timed out waiting expected reason=%q but got prStatus:%q history:%v", testNum, test.name, test.reason, sq.prStatus[issueNumStr].Reason, sq.statusHistory)
 		}
 		close(done)
 		server.Close()
+
+		if test.state != "" && test.state != stateSet {
+			t.Errorf("%d:%s state set to %q but expected %q", testNum, test.name, stateSet, test.state)
+		}
 	}
 }

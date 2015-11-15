@@ -43,6 +43,7 @@ const (
 	travisContext       = "continuous-integration/travis-ci/pr"
 	claYes              = "cla: yes"
 	claHuman            = "cla: human-approved"
+	sqContext           = "Submit Queue"
 )
 
 var (
@@ -234,6 +235,25 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	}
 }
 
+func reasonToState(reason string) string {
+	switch reason {
+	case merged:
+		return "success"
+	case e2eFailure:
+		return "success"
+	case ghE2EQueued:
+		return "success"
+	case ghE2EWaitingStart:
+		return "success"
+	case ghE2ERunning:
+		return "success"
+	case unknown:
+		return "failure"
+	default:
+		return "pending"
+	}
+}
+
 // SetMergeStatus will set the status given a particular PR. This function should
 // but used instead of manipulating the prStatus directly as sq.Lock() must be
 // called when manipulating that structure
@@ -250,6 +270,14 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, re
 		statusPullRequest: *objToStatusPullRequest(obj),
 		Reason:            reason,
 	}
+
+	status := obj.GetStatus(sqContext)
+	if status == nil || *status.Description != reason {
+		state := reasonToState(reason)
+		url := fmt.Sprintf("http://submit-queue.k8s.io/#?prDisplay=%d&historyDisplay=%d", *obj.Issue.Number, *obj.Issue.Number)
+		_ = obj.SetStatus(state, url, reason, sqContext)
+	}
+
 	sq.Lock()
 	defer sq.Unlock()
 
