@@ -445,7 +445,10 @@ func TestRemoveLabel(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		obj := TestObject(config, test.issue, nil, nil, nil)
+		obj, err := config.GetObject(*test.issue.Number)
+		if err != nil {
+			t.Fatalf("%d: unable to get issue: %v", testNum, *test.issue.Number)
+		}
 		obj.RemoveLabel(test.remove)
 		if len(test.expected) != len(obj.Issue.Labels) {
 			t.Errorf("%d: len(labels) not equal, expected labels: %v but got labels: %v", testNum, test.expected, obj.Issue.Labels)

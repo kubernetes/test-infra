@@ -268,7 +268,7 @@ func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, event
 	}
 
 	if issue != nil {
-		path := fmt.Sprintf("repos/o/r/issues/%d", issueNum)
+		path := fmt.Sprintf("/repos/o/r/issues/%d", issueNum)
 		setMux(t, mux, path, issue)
 	}
 	if pr != nil {

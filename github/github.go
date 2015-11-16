@@ -168,6 +168,7 @@ type analytics struct {
 	AddLabels         analytic
 	RemoveLabels      analytic
 	ListCollaborators analytic
+	GetIssue          analytic
 	ListIssues        analytic
 	ListIssueEvents   analytic
 	ListCommits       analytic
@@ -192,6 +193,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "AddLabels\t%d\t\n", a.AddLabels.Count)
 	fmt.Fprintf(w, "RemoveLabels\t%d\t\n", a.RemoveLabels.Count)
 	fmt.Fprintf(w, "ListCollaborators\t%d\t\n", a.ListCollaborators.Count)
+	fmt.Fprintf(w, "GetIssue\t%d\t\n", a.GetIssue.Count)
 	fmt.Fprintf(w, "ListIssues\t%d\t\n", a.ListIssues.Count)
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
@@ -377,6 +379,21 @@ func (config *Config) SetClient(client *github.Client) {
 	config.client = client
 }
 
+// GetObject will return an object (with only the issue filled in)
+func (config *Config) GetObject(num int) (*MungeObject, error) {
+	issue, resp, err := config.client.Issues.Get(config.Org, config.Project, num)
+	config.analytics.GetIssue.Call(config, resp)
+	if err != nil {
+		glog.Errorf("GetObject: %v", err)
+		return nil, err
+	}
+	obj := &MungeObject{
+		config: config,
+		Issue:  issue,
+	}
+	return obj, nil
+}
+
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
 func (obj *MungeObject) LastModifiedTime() *time.Time {
@@ -457,6 +474,12 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 	glog.Infof("Adding labels %v to PR %d", labels, prNum)
 	if config.DryRun {
 		return nil
+	}
+	for _, l := range labels {
+		label := github.Label{
+			Name: &l,
+		}
+		obj.Issue.Labels = append(obj.Issue.Labels, label)
 	}
 	if _, _, err := config.client.Issues.AddLabelsToIssue(config.Org, config.Project, prNum, labels); err != nil {
 		glog.Errorf("Failed to set labels %v for %d: %v", labels, prNum, err)
