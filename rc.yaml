@@ -4,15 +4,15 @@ metadata:
   labels:
     app: mungegithub
     track: alpha
-    version: "2015-11-16-ef20af4"
-  name: mungegithub-2015-11-16-ef20af4
+    version: "2015-10-26-2a7f8fd"
+  name: mungegithub-2015-10-26-2a7f8fd
   namespace: default
 spec:
   replicas: 1
   selector:
     app: mungegithub
     track: alpha
-    version: "2015-11-16-ef20af4"
+    version: "2015-10-26-2a7f8fd"
   template:
     metadata:
       name: mungegithub
@@ -20,13 +20,13 @@ spec:
       labels:
         app: mungegithub
         track: alpha
-        version: "2015-11-16-ef20af4"
+        version: "2015-10-26-2a7f8fd"
     spec:
       containers:
       - command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
-        image: gcr.io/google_containers/mungegithub:2015-11-16-ef20af4
+        image: gcr.io/google_containers/mungegithub:2015-10-26-2a7f8fd
         imagePullPolicy: IfNotPresent
         name: mungegithub
         ports:

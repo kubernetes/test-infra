@@ -188,16 +188,7 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{
-		"kubernetes-e2e-gce",
-		"kubernetes-e2e-gke-ci",
-		"kubernetes-build",
-		"kubernetes-e2e-gce-parallel",
-		"kubernetes-e2e-gce-autoscaling",
-		"kubernetes-e2e-gce-reboot",
-		"kubernetes-e2e-gce-scalability",
-		"kubernetes-kubemark-gce",
-	}, "Comma separated list of jobs in Jenkins to use for stability testing")
+	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{"kubernetes-e2e-gce", "kubernetes-e2e-gke-ci", "kubernetes-build", "kubernetes-e2e-gce-parallel", "kubernetes-e2e-gce-autoscaling", "kubernetes-e2e-gce-reboot", "kubernetes-e2e-gce-scalability"}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{claContext, travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
