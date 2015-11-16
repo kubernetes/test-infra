@@ -1,18 +1,24 @@
 "use strict";
 angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter']);
 
-angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', SQCntl]);
+angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 
-function SQCntl(dataService, $interval) {
+function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
   self.users = {};
   self.builds = {};
   self.prQuerySearch = prQuerySearch;
-  self.historicQuerySearch = historicQuerySearch;
+  self.historyQuerySearch = historyQuerySearch;
   self.goToPerson = goToPerson;
   self.queryNum = 0;
   self.StatOrder = "-Count";
+
+  // http://submit-queue.k8s.io/#?prDisplay=eparis&historyDisplay=15999
+  //  will show all PRs opened by eparis and all historic decisions for PR #15999
+  var vars = $location.search()
+  self.prDisplayValue = vars.prDisplay
+  self.historyDisplayValue = vars.historyDisplay
 
   // Refresh data every 10 minutes
   refreshPRs();
@@ -44,14 +50,14 @@ function SQCntl(dataService, $interval) {
   }
 
   // Refresh every minute
-  refreshHistoricPRs();
-  $interval(refreshHistoricPRs, 60000);
+  refreshHistoryPRs();
+  $interval(refreshHistoryPRs, 60000);
 
-  function refreshHistoricPRs() {
+  function refreshHistoryPRs() {
     dataService.getData('history').then(function successCallback(response) {
       var prs = response.data;
-      self.historicPRs = prs;
-      self.historicSearchTerms = getHistoricSearchTerms();
+      self.historyPRs = prs;
+      self.historySearchTerms = getHistorySearchTerms();
     });
   }
 
@@ -140,8 +146,8 @@ function SQCntl(dataService, $interval) {
     return getSearchTerms(self.prs);
   }
 
-  function getHistoricSearchTerms() {
-    return getSearchTerms(self.historicPRs);
+  function getHistorySearchTerms() {
+    return getSearchTerms(self.historyPRs);
   }
 
   function getSearchTerms(prs) {
@@ -182,8 +188,8 @@ function SQCntl(dataService, $interval) {
     return querySearch(query, self.prSearchTerms);
   }
 
-  function historicQuerySearch(query) {
-    return querySearch(query, self.historicSearchTerms);
+  function historyQuerySearch(query) {
+    return querySearch(query, self.historySearchTerms);
   }
 
   function querySearch(query, terms) {
