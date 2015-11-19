@@ -1056,7 +1056,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 				continue
 			}
 			glog.V(2).Infof("----==== %d ====----", *issue.Number)
-			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks == nil)
+			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks != nil)
 			obj := MungeObject{
 				config: config,
 				Issue:  issue,
