@@ -1150,3 +1150,45 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	}
 	return nil
 }
+
+// ListAllIssues grabs all issues matching the options, so you don't have to
+// worry about paging. Enforces some constraints, like min/max PR number and
+// having a valid user.
+func (config *Config) ListAllIssues(listOpts *github.IssueListByRepoOptions) ([]*github.Issue, error) {
+	allIssues := []*github.Issue{}
+	page := 1
+	for {
+		glog.V(4).Infof("Fetching page %d of issues", page)
+		listOpts.ListOptions = github.ListOptions{PerPage: 100, Page: page}
+		issues, response, err := config.client.Issues.ListByRepo(config.Org, config.Project, listOpts)
+		config.analytics.ListIssues.Call(config, response)
+		if err != nil {
+			return nil, err
+		}
+		for i := range issues {
+			issue := &issues[i]
+			if issue.Number == nil {
+				glog.Infof("Skipping issue with no number, very strange")
+				continue
+			}
+			if issue.User == nil || issue.User.Login == nil {
+				glog.V(2).Infof("Skipping PR %d with no user info %#v.", *issue.Number, issue.User)
+				continue
+			}
+			if *issue.Number < config.MinPRNumber {
+				glog.V(6).Infof("Dropping %d < %d", *issue.Number, config.MinPRNumber)
+				continue
+			}
+			if *issue.Number > config.MaxPRNumber {
+				glog.V(6).Infof("Dropping %d > %d", *issue.Number, config.MaxPRNumber)
+				continue
+			}
+			allIssues = append(allIssues, issue)
+		}
+		if response.LastPage == 0 || response.LastPage <= page {
+			break
+		}
+		page++
+	}
+	return allIssues, nil
+}
