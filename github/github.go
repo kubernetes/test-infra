@@ -709,14 +709,7 @@ func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c 
 			c <- nil
 			return
 		}
-		var sleepTime time.Duration
-		if pending {
-			// usually the build queue starts quickly
-			sleepTime = 30 * time.Second
-		} else {
-			// but takes a while to finish
-			sleepTime = 5 * time.Minute
-		}
+		sleepTime := 30 * time.Second
 		// If the time was explicitly set, use that instead
 		if config.PendingWaitTime != nil {
 			sleepTime = *config.PendingWaitTime
