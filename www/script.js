@@ -46,6 +46,7 @@ function SQCntl(dataService, $interval, $location) {
         self.e2erunning = [response.data.E2ERunning];
       }
       self.e2equeue = response.data.E2EQueue;
+      document.getElementById("queue-len").innerHTML = "&nbsp;(" + self.e2equeue.length + ")"
     });
   }
 
