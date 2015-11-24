@@ -91,25 +91,25 @@ func DontRequireGithubE2EIssue() *github.Issue {
 
 func OldLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"lgtm", 6},
-		{"lgtm", 7},
-		{"lgtm", 8},
+		{"bob", "lgtm", 6},
+		{"bob", "lgtm", 7},
+		{"bob", "lgtm", 8},
 	})
 }
 
 func NewLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"lgtm", 10},
-		{"lgtm", 11},
-		{"lgtm", 12},
+		{"bob", "lgtm", 10},
+		{"bob", "lgtm", 11},
+		{"bob", "lgtm", 12},
 	})
 }
 
 func OverlappingLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"lgtm", 8},
-		{"lgtm", 9},
-		{"lgtm", 10},
+		{"bob", "lgtm", 8},
+		{"bob", "lgtm", 9},
+		{"bob", "lgtm", 10},
 	})
 }
 

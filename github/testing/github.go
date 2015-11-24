@@ -93,6 +93,7 @@ func Issue(user string, number int, labels []string, isPR bool) *github.Issue {
 // It expresses what label the event should be about and what time
 // the event took place.
 type LabelTime struct {
+	User  string
 	Label string
 	Time  int64
 }
@@ -109,6 +110,9 @@ func Events(labels []LabelTime) []github.IssueEvent {
 				Name: stringPtr(l.Label),
 			},
 			CreatedAt: timePtr(time.Unix(l.Time, 0)),
+			Actor: &github.User{
+				Login: stringPtr(l.User),
+			},
 		}
 		eMap[i] = event
 	}
