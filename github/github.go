@@ -756,6 +756,18 @@ func (obj *MungeObject) IsStatusSuccess(requiredContexts []string) bool {
 	return false
 }
 
+// GetStatusTime returns when the status was set
+func (obj *MungeObject) GetStatusTime(context string) *time.Time {
+	status := obj.GetStatus(context)
+	if status == nil {
+		return nil
+	}
+	if status.UpdatedAt != nil {
+		return status.UpdatedAt
+	}
+	return status.CreatedAt
+}
+
 // Sleep for the given amount of time and then write to the channel
 func timeout(sleepTime time.Duration, c chan bool) {
 	time.Sleep(sleepTime)
