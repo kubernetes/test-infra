@@ -44,7 +44,7 @@ type mungeConfig struct {
 
 func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
-	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{"blunderbuss", "lgtm-after-commit", "needs-rebase", "ok-to-test", "path-label", "ping-ci", "size", "submit-queue"}, "A list of pull request mungers to run")
+	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{"blunderbuss", "lgtm-after-commit", "needs-rebase", "ok-to-test", "path-label", "ping-ci", "size", "stale-unit-test", "submit-queue"}, "A list of pull request mungers to run")
 	cmd.Flags().DurationVar(&config.Period, "period", 10*time.Minute, "The period for running mungers")
 }
 
@@ -86,7 +86,10 @@ func main() {
 			if len(config.PRMungersList) == 0 {
 				glog.Fatalf("must include at least one --pr-mungers")
 			}
-			mungers.InitializeMungers(config.PRMungersList, &config.Config)
+			err := mungers.InitializeMungers(config.PRMungersList, &config.Config)
+			if err != nil {
+				glog.Fatalf("unable to initialize requested mungers: %v", err)
+			}
 			return doMungers(config)
 		},
 	}

@@ -41,6 +41,7 @@ var (
 
 func stringPtr(val string) *string { return &val }
 func boolPtr(val bool) *bool       { return &val }
+func intPtr(val int) *int          { return &val }
 
 const noWhitelistUser = "UserNotInWhitelist"
 const whitelistUser = "WhitelistUser"

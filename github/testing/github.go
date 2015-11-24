@@ -185,8 +185,10 @@ func updateStatusState(status *github.CombinedStatus) *github.CombinedStatus {
 func fillMap(sMap map[int]github.RepoStatus, contexts []string, state string) {
 	for _, context := range contexts {
 		s := github.RepoStatus{
-			Context: stringPtr(context),
-			State:   stringPtr(state),
+			Context:   stringPtr(context),
+			State:     stringPtr(state),
+			UpdatedAt: timePtr(time.Unix(0, 0)),
+			CreatedAt: timePtr(time.Unix(0, 0)),
 		}
 		sMap[len(sMap)] = s
 	}
