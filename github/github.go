@@ -1030,6 +1030,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		listOpts := &github.IssueListByRepoOptions{
 			Sort:        "created",
 			State:       "open",
+			Direction:   "asc",
 			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}
 		issues, response, err := config.client.Issues.ListByRepo(config.Org, config.Project, listOpts)
