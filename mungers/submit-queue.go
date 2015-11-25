@@ -264,7 +264,7 @@ func reasonToState(reason string) string {
 //    're-run github e2e' state as these are more obvious, change less, and don't
 //    seem to ever confuse people.
 func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, record bool) {
-	glog.V(4).Infof("Skipping %d - %s", *obj.Issue.Number, reason)
+	glog.V(4).Infof("SubmitQueue not merging %d because %q", *obj.Issue.Number, reason)
 	submitStatus := submitStatus{
 		Time:              time.Now(),
 		statusPullRequest: *objToStatusPullRequest(obj),
@@ -280,6 +280,13 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, re
 
 	sq.Lock()
 	defer sq.Unlock()
+
+	// If we are currently retesting E2E the normal munge loop might find
+	// that the ci tests are not green. That's normal and expected and we
+	// should just ignore that status update entirely.
+	if sq.githubE2ERunning != nil && *sq.githubE2ERunning.Issue.Number == *obj.Issue.Number && reason == ciFailure {
+		return
+	}
 
 	if record {
 		sq.statusHistory = append(sq.statusHistory, submitStatus)
