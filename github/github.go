@@ -60,7 +60,11 @@ func (c *callLimitRoundTripper) getTokenExcept(remaining int) {
 	resetTime := c.resetTime
 	c.Unlock()
 	sleepTime := resetTime.Sub(time.Now()) + (1 * time.Minute)
-	glog.Errorf("Ran out of github API tokens. Sleeping for %v minutes", sleepTime.Minutes())
+	if sleepTime > 0 {
+		glog.Errorf("*****************")
+		glog.Errorf("Ran out of github API tokens. Sleeping for %v minutes", sleepTime.Minutes())
+		glog.Errorf("*****************")
+	}
 	// negative duration is fine, it means we are past the github api reset and we won't sleep
 	time.Sleep(sleepTime)
 }
