@@ -416,22 +416,42 @@ func (obj *MungeObject) LastModifiedTime() *time.Time {
 	return lastModified
 }
 
-// LabelTime returns the last time the request label was added to an issue.
-// If the label was never added you will get the 0 time.
-func (obj *MungeObject) LabelTime(label string) *time.Time {
+// labelEvent returns the most recent event where the given label was added to an issue
+func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 	var labelTime *time.Time
+	var out github.IssueEvent
 	events, err := obj.GetEvents()
 	if err != nil {
-		return labelTime
+		return &out
 	}
 	for _, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
 			if labelTime == nil || event.CreatedAt.After(*labelTime) {
 				labelTime = event.CreatedAt
+				out = event
 			}
 		}
 	}
-	return labelTime
+	return &out
+}
+
+// LabelTime returns the last time the request label was added to an issue.
+// If the label was never added you will get the 0 time.
+func (obj *MungeObject) LabelTime(label string) *time.Time {
+	event := obj.labelEvent(label)
+	if event == nil {
+		return nil
+	}
+	return event.CreatedAt
+}
+
+// LabelCreator returns the login name of the user who (last) created the given label
+func (obj *MungeObject) LabelCreator(label string) string {
+	event := obj.labelEvent(label)
+	if event == nil {
+		return ""
+	}
+	return *event.Actor.Login
 }
 
 // HasLabel returns if the label `name` is in the array of `labels`
@@ -454,6 +474,16 @@ func (obj *MungeObject) HasLabels(names []string) bool {
 		}
 	}
 	return true
+}
+
+// LabelSet returns the name of all of he labels applied to the object as a
+// kubernetes string set.
+func (obj *MungeObject) LabelSet() sets.String {
+	out := sets.NewString()
+	for _, label := range obj.Issue.Labels {
+		out.Insert(*label.Name)
+	}
+	return out
 }
 
 // GetLabelsWithPrefix will return a slice of all label names in `labels` which

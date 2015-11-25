@@ -35,6 +35,10 @@ var (
 	_ = glog.Errorf
 )
 
+func docsProposalIssue() *github.Issue {
+	return github_test.Issue(botName, 1, []string{"cla: yes", "kind/design"}, true)
+}
+
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
 func pathCommits(path string) []github.RepositoryCommit {
 	return []github.RepositoryCommit{
@@ -49,65 +53,93 @@ func pathCommits(path string) []github.RepositoryCommit {
 	}
 }
 
+func BotAddedDesign() []github.IssueEvent {
+	return github_test.Events([]github_test.LabelTime{
+		{botName, "kind/design", 9},
+		{"bob", "kind/design", 8},
+	})
+}
+
+func OtherAddedDesign() []github.IssueEvent {
+	return github_test.Events([]github_test.LabelTime{
+		{botName, "kind/design", 8},
+		{"bob", "kind/design", 9},
+	})
+}
+
 func TestPathLabelMunge(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
 		commits     []github.RepositoryCommit
+		events      []github.IssueEvent
 		mustHave    []string
 		mustNotHave []string
 	}{
 		{
 			commits:     pathCommits("docs/proposals"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{"kind/api-change", "kind/new-api"},
 		},
 		{
 			commits:     pathCommits("docs/my/proposals"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
 			commits:     pathCommits("pkg/api/types.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
 			commits:     pathCommits("pkg/api/v1/types.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
 			commits:     pathCommits("pkg/api/v1/duh/types.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
 			commits:     pathCommits("pkg/apis/experimental/register.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
 			commits:     pathCommits("pkg/apis/experimental/v1beta1/register.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
 			commits:     pathCommits("pkg/apis/experiments/v1beta1/duh/register.go"),
+			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
+		{
+			commits:     pathCommits("README"),
+			events:      OtherAddedDesign(),
+			mustHave:    []string{"kind/design"},
+			mustNotHave: []string{"kind/api-change", "kind/new-api"},
+		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitServer(t, NoOKToMergeIssue(), ValidPR(), nil, test.commits, nil)
+		client, server, mux := github_test.InitServer(t, docsProposalIssue(), ValidPR(), test.events, test.commits, nil)
+		mux.HandleFunc("/repos/o/r/issues/1/labels/kind/design", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte{})
+		})
 		mux.HandleFunc("/repos/o/r/issues/1/labels", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			out := []github.Label{
-				{
-					// TODO figure out the label name from the request...
-					Name: stringPtr("label"),
-				},
-			}
+			out := []github.Label{{}}
 			data, err := json.Marshal(out)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)

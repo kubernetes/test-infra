@@ -34,6 +34,10 @@ var (
 	_ = fmt.Print
 )
 
+const (
+	botName = "k8s-merge-robot"
+)
+
 type labelMap struct {
 	regexp *regexp.Regexp
 	label  string
@@ -43,6 +47,7 @@ type labelMap struct {
 // The mapping of files to labels if provided in a file in --path-label-config
 type PathLabelMunger struct {
 	labelMap      []labelMap
+	allLabels     sets.String
 	pathLabelFile string
 }
 
@@ -55,6 +60,7 @@ func (p *PathLabelMunger) Name() string { return "path-label" }
 
 // Initialize will initialize the munger
 func (p *PathLabelMunger) Initialize(config *github.Config) error {
+	allLabels := sets.NewString()
 	out := []labelMap{}
 	file := p.pathLabelFile
 	if len(file) == 0 {
@@ -86,12 +92,15 @@ func (p *PathLabelMunger) Initialize(config *github.Config) error {
 			continue
 		}
 
+		label := fields[1]
 		lm := labelMap{
 			regexp: r,
-			label:  fields[1],
+			label:  label,
 		}
 		out = append(out, lm)
+		allLabels.Insert(label)
 	}
+	p.allLabels = allLabels
 	p.labelMap = out
 	return scanner.Err()
 }
@@ -120,15 +129,25 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 		for _, f := range c.Files {
 			for _, lm := range p.labelMap {
 				if lm.regexp.MatchString(*f.Filename) {
-					if !obj.HasLabel(lm.label) {
-						needsLabels.Insert(lm.label)
-					}
+					needsLabels.Insert(lm.label)
 				}
 			}
 		}
 	}
 
-	if needsLabels.Len() != 0 {
+	// This is all labels on the issue that the path munger controls
+	hasLabels := obj.LabelSet().Intersection(p.allLabels)
+
+	missingLabels := needsLabels.Difference(hasLabels)
+	if missingLabels.Len() != 0 {
 		obj.AddLabels(needsLabels.List())
+	}
+
+	extraLabels := hasLabels.Difference(needsLabels)
+	for _, label := range extraLabels.List() {
+		creator := obj.LabelCreator(label)
+		if creator == botName {
+			obj.RemoveLabel(label)
+		}
 	}
 }
