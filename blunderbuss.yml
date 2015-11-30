@@ -17,6 +17,7 @@ prefixMap:
     - eparis
     - roberthbailey
     - zmerlynn
+    - mikedanese
 
   cluster/addons/dns:
     - ArtfulCoder
@@ -31,10 +32,12 @@ prefixMap:
     - dchen1107
     - lavalamp
     - thockin
+    - mikedanese
 
   cmd/kube-controller-manager:
     - davidopp
     - lavalamp
+    - mikedanese
 
   cmd/kubelet:
     - dchen1107
@@ -107,6 +110,7 @@ prefixMap:
 
   pkg/cloudprovider:
     - davidopp
+    - mikedanese
 
   pkg/cloudprovider/aws:
     - justinsb
@@ -114,6 +118,7 @@ prefixMap:
   pkg/controller:
     - davidopp
     - derekwaynecarr
+    - mikedanese
 
   pkg/conversion:
     - derekwaynecarr
@@ -146,6 +151,7 @@ prefixMap:
     - davidopp
     - derekwaynecarr
     - lavalamp
+    - mikedanese
 
   pkg/proxy:
     - ArtfulCoder
