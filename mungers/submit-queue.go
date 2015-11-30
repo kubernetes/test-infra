@@ -36,14 +36,14 @@ import (
 
 const (
 	needsOKToMergeLabel = "needs-ok-to-merge"
-	claContext          = "cla/google"
-	gceE2EContext       = "Jenkins GCE e2e"
-	jenkinsCIContext    = "Jenkins unit/integration"
-	shippableContext    = "Shippable"
-	travisContext       = "continuous-integration/travis-ci/pr"
 	claYes              = "cla: yes"
 	claHuman            = "cla: human-approved"
-	sqContext           = "Submit Queue"
+
+	shippableContext = "Shippable"
+	gceE2EContext    = "Jenkins GCE e2e"
+	jenkinsCIContext = "Jenkins unit/integration"
+	travisContext    = "continuous-integration/travis-ci/pr"
+	sqContext        = "Submit Queue"
 )
 
 var (

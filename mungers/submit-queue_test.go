@@ -121,19 +121,19 @@ func Commits() []github.RepositoryCommit {
 }
 
 func SuccessStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext, jenkinsCIContext, gceE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsCIContext, gceE2EContext}, nil, nil, nil)
 }
 
 func JenkinsCIGreenShippablePendingStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{claContext, jenkinsCIContext, travisContext, gceE2EContext}, nil, []string{shippableContext}, nil)
+	return github_test.Status("mysha", []string{jenkinsCIContext, travisContext, gceE2EContext}, nil, []string{shippableContext}, nil)
 }
 
 func ShippableGreenStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext, gceE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext, gceE2EContext}, nil, nil, nil)
 }
 
 func GithubE2EFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{claContext, shippableContext, travisContext}, []string{gceE2EContext}, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext}, []string{gceE2EContext}, nil, nil)
 }
 
 func SuccessJenkins() jenkins.Job {
@@ -559,7 +559,7 @@ func TestMunge(t *testing.T) {
 		})
 
 		sq := SubmitQueue{}
-		sq.RequiredStatusContexts = []string{claContext}
+		sq.RequiredStatusContexts = []string{}
 		sq.DontRequireE2ELabel = "e2e-not-required"
 		sq.E2EStatusContext = gceE2EContext
 		sq.JenkinsHost = server.URL
