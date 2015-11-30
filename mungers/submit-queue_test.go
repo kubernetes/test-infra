@@ -526,7 +526,6 @@ func TestMunge(t *testing.T) {
 
 		sq := SubmitQueue{}
 		sq.RequiredStatusContexts = []string{}
-		sq.DontRequireE2ELabel = "e2e-not-required"
 		sq.E2EStatusContext = jenkinsE2EContext
 		sq.JenkinsHost = server.URL
 		sq.JenkinsJobs = []string{"foo"}
