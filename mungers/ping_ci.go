@@ -63,8 +63,8 @@ func (PingCIMunger) Munge(obj *github.MungeObject) {
 		glog.V(2).Infof("Skipping %d - not mergeable", *obj.Issue.Number)
 		return
 	}
-	if state := obj.GetStatusState([]string{jenkinsCIContext, travisContext}); state != "incomplete" {
-		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsCIContext)
+	if state := obj.GetStatusState([]string{jenkinsUnitContext, travisContext}); state != "incomplete" {
+		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsUnitContext)
 		return
 	}
 	state := obj.GetStatusState([]string{shippableContext, travisContext})

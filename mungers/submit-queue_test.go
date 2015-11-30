@@ -121,19 +121,19 @@ func Commits() []github.RepositoryCommit {
 }
 
 func SuccessStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsCIContext, gceE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
 }
 
 func JenkinsCIGreenShippablePendingStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{jenkinsCIContext, travisContext, gceE2EContext}, nil, []string{shippableContext}, nil)
+	return github_test.Status("mysha", []string{jenkinsUnitContext, travisContext, jenkinsE2EContext}, nil, []string{shippableContext}, nil)
 }
 
 func ShippableGreenStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext, gceE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsE2EContext}, nil, nil, nil)
 }
 
 func GithubE2EFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext}, []string{gceE2EContext}, nil, nil)
+	return github_test.Status("mysha", []string{shippableContext, travisContext}, []string{jenkinsE2EContext}, nil, nil)
 }
 
 func SuccessJenkins() jenkins.Job {
@@ -209,7 +209,7 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, shouldPass bool) {
 	ciStatus.State = stringPtr("pending")
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
-		if *status.Context == gceE2EContext {
+		if *status.Context == jenkinsE2EContext {
 			status.State = stringPtr("pending")
 			break
 		}
@@ -220,7 +220,7 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, shouldPass bool) {
 	found := false
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
-		if *status.Context == gceE2EContext {
+		if *status.Context == jenkinsE2EContext {
 			if shouldPass {
 				status.State = stringPtr("success")
 			} else {
@@ -232,7 +232,7 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, shouldPass bool) {
 	}
 	if !found {
 		e2eStatus := github.RepoStatus{
-			Context: stringPtr(gceE2EContext),
+			Context: stringPtr(jenkinsE2EContext),
 			State:   stringPtr("success"),
 		}
 		ciStatus.Statuses = append(ciStatus.Statuses, e2eStatus)
@@ -561,7 +561,7 @@ func TestMunge(t *testing.T) {
 		sq := SubmitQueue{}
 		sq.RequiredStatusContexts = []string{}
 		sq.DontRequireE2ELabel = "e2e-not-required"
-		sq.E2EStatusContext = gceE2EContext
+		sq.E2EStatusContext = jenkinsE2EContext
 		sq.JenkinsHost = server.URL
 		sq.JenkinsJobs = []string{"foo"}
 		sq.WhitelistOverride = "ok-to-merge"

@@ -40,7 +40,7 @@ var (
 func timePtr(t time.Time) *time.Time { return &t }
 
 func NowStatus() *github.CombinedStatus {
-	status := github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsCIContext, gceE2EContext}, nil, nil, nil)
+	status := github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
 	for i := range status.Statuses {
 		s := &status.Statuses[i]
 		s.CreatedAt = timePtr(time.Now())
@@ -95,7 +95,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 				test.ciStatus.State = stringPtr("pending")
 				for id := range test.ciStatus.Statuses {
 					status := &test.ciStatus.Statuses[id]
-					if *status.Context == gceE2EContext || *status.Context == jenkinsCIContext {
+					if *status.Context == jenkinsE2EContext || *status.Context == jenkinsUnitContext {
 						status.State = stringPtr("pending")
 						break
 					}

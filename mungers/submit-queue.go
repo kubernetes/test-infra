@@ -39,11 +39,11 @@ const (
 	claYes              = "cla: yes"
 	claHuman            = "cla: human-approved"
 
-	shippableContext = "Shippable"
-	gceE2EContext    = "Jenkins GCE e2e"
-	jenkinsCIContext = "Jenkins unit/integration"
-	travisContext    = "continuous-integration/travis-ci/pr"
-	sqContext        = "Submit Queue"
+	shippableContext   = "Shippable"
+	jenkinsE2EContext  = "Jenkins GCE e2e"
+	jenkinsUnitContext = "Jenkins unit/integration"
+	travisContext      = "continuous-integration/travis-ci/pr"
+	sqContext          = "Submit Queue"
 )
 
 var (
@@ -205,7 +205,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.DontRequireE2ELabel, "dont-require-e2e-label", "e2e-not-required", "If non-empty, a PR with this label will be merged automatically without looking at e2e results")
-	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", gceE2EContext, "The name of the github status context for the e2e PR Builder")
+	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	sq.addWhitelistCommand(cmd, config)
 }
@@ -390,8 +390,8 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	contexts := sq.RequiredStatusContexts
 
 	// If the pr has a jenkins ci status, require it, otherwise require shippable
-	if state := obj.GetStatusState([]string{jenkinsCIContext}); state != "incomplete" {
-		contexts = append(contexts, jenkinsCIContext)
+	if state := obj.GetStatusState([]string{jenkinsUnitContext}); state != "incomplete" {
+		contexts = append(contexts, jenkinsUnitContext)
 	} else {
 		contexts = append(contexts, shippableContext)
 	}

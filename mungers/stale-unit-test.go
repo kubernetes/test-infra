@@ -52,7 +52,7 @@ func (StaleUnitTestMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 
 // Munge is the workhorse the will actually make updates to the PR
 func (StaleUnitTestMunger) Munge(obj *github.MungeObject) {
-	requiredContexts := []string{jenkinsCIContext, gceE2EContext}
+	requiredContexts := []string{jenkinsUnitContext, jenkinsE2EContext}
 
 	if !obj.IsPR() {
 		return
