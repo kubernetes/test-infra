@@ -40,7 +40,7 @@ var (
 func timePtr(t time.Time) *time.Time { return &t }
 
 func NowStatus() *github.CombinedStatus {
-	status := github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
+	status := github_test.Status("mysha", []string{travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
 	for i := range status.Statuses {
 		s := &status.Statuses[i]
 		s.CreatedAt = timePtr(time.Now())

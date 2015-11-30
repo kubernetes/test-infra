@@ -67,7 +67,7 @@ func (PingCIMunger) Munge(obj *github.MungeObject) {
 		glog.V(2).Info("Have %s status - skipping ping CI", jenkinsUnitContext)
 		return
 	}
-	state := obj.GetStatusState([]string{shippableContext, travisContext})
+	state := obj.GetStatusState([]string{travisContext})
 	if state == "incomplete" {
 		msg := "Continuous integration appears to have missed, closing and re-opening to trigger it"
 		obj.WriteComment(msg)

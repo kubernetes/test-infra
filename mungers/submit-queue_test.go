@@ -121,19 +121,11 @@ func Commits() []github.RepositoryCommit {
 }
 
 func SuccessStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
-}
-
-func JenkinsCIGreenShippablePendingStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{jenkinsUnitContext, travisContext, jenkinsE2EContext}, nil, []string{shippableContext}, nil)
-}
-
-func ShippableGreenStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext, jenkinsE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
 }
 
 func GithubE2EFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{shippableContext, travisContext}, []string{jenkinsE2EContext}, nil, nil)
+	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext}, []string{jenkinsE2EContext}, nil, nil)
 }
 
 func SuccessJenkins() jenkins.Job {
@@ -403,35 +395,9 @@ func TestMunge(t *testing.T) {
 			reason:     ghE2EFailed,
 			state:      "pending",
 		},
-		// Should pass because the jenkins ci is green even tho shippable is pending.
-		{
-			name:       "Test15",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(),
-			ciStatus:   JenkinsCIGreenShippablePendingStatus(),
-			jenkinsJob: SuccessJenkins(),
-			shouldPass: true,
-			reason:     merged,
-			state:      "success",
-		},
-		// Should pass because the shippable is green (no jenkins ci).
-		{
-			name:       "Test16",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(),
-			ciStatus:   ShippableGreenStatus(),
-			jenkinsJob: SuccessJenkins(),
-			shouldPass: true,
-			reason:     merged,
-			state:      "success",
-		},
 		// When we check the reason it may be queued or it may already have failed.
 		{
-			name:       "Test17",
+			name:       "Test15",
 			pr:         ValidPR(),
 			issue:      NoOKToMergeIssue(),
 			ciStatus:   SuccessStatus(),
@@ -447,7 +413,7 @@ func TestMunge(t *testing.T) {
 		},
 		// Fail because the second run of github e2e tests failed
 		{
-			name:       "Test18",
+			name:       "Test16",
 			pr:         ValidPR(),
 			issue:      NoOKToMergeIssue(),
 			ciStatus:   SuccessStatus(),

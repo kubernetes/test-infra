@@ -39,7 +39,6 @@ const (
 	claYes              = "cla: yes"
 	claHuman            = "cla: human-approved"
 
-	shippableContext   = "Shippable"
 	jenkinsE2EContext  = "Jenkins GCE e2e"
 	jenkinsUnitContext = "Jenkins unit/integration"
 	travisContext      = "continuous-integration/travis-ci/pr"
@@ -389,12 +388,8 @@ const (
 func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string {
 	contexts := sq.RequiredStatusContexts
 
-	// If the pr has a jenkins ci status, require it, otherwise require shippable
-	if state := obj.GetStatusState([]string{jenkinsUnitContext}); state != "incomplete" {
-		contexts = append(contexts, jenkinsUnitContext)
-	} else {
-		contexts = append(contexts, shippableContext)
-	}
+	contexts = append(contexts, jenkinsUnitContext)
+
 	if len(sq.E2EStatusContext) > 0 && (len(sq.DontRequireE2ELabel) == 0 || !obj.HasLabel(sq.DontRequireE2ELabel)) {
 		contexts = append(contexts, sq.E2EStatusContext)
 	}
