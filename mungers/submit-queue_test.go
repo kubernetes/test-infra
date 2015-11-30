@@ -525,7 +525,7 @@ func TestMunge(t *testing.T) {
 		})
 
 		sq := SubmitQueue{}
-		sq.RequiredStatusContexts = []string{}
+		sq.RequiredStatusContexts = []string{jenkinsUnitContext}
 		sq.E2EStatusContext = jenkinsE2EContext
 		sq.JenkinsHost = server.URL
 		sq.JenkinsJobs = []string{"foo"}
