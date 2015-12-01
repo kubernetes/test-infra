@@ -66,9 +66,9 @@ type issueReportData struct {
 	title    string
 }
 
-func (self issueReportData) String() string {
-	days := self.age.Hours() / 24
-	return fmt.Sprintf("  [%v] %v: %q (%.2v days)", self.priority, self.number, self.title, days)
+func (data issueReportData) String() string {
+	days := data.age.Hours() / 24
+	return fmt.Sprintf("  [%v] %v: %q (%.2v days)", data.priority, data.number, data.title, days)
 }
 
 func gatherData(cfg *githubhelper.Config) (*reportData, error) {
