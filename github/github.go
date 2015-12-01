@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"text/tabwriter"
@@ -41,6 +42,9 @@ const (
 	maxInt          = int(^uint(0) >> 1)
 	tokenLimit      = 500 // How many github api tokens to not use
 	asyncTokenLimit = 400 // How many github api tokens to not use for 'asyc' calls
+
+	headerRateRemaining = "X-RateLimit-Remaining"
+	headerRateReset     = "X-RateLimit-Reset"
 )
 
 type callLimitRoundTripper struct {
@@ -77,12 +81,6 @@ func (c *callLimitRoundTripper) getAsyncToken() {
 	c.getTokenExcept(asyncTokenLimit)
 }
 
-func (c *callLimitRoundTripper) putToken() {
-	c.Lock()
-	defer c.Unlock()
-	c.remaining++
-}
-
 func (c *callLimitRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if c.delegate == nil {
 		c.delegate = http.DefaultTransport
@@ -90,8 +88,17 @@ func (c *callLimitRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 	// TODO Be smart about which should use getToken and which should use getAsyncToken()
 	c.getToken()
 	resp, err := c.delegate.RoundTrip(req)
-	if resp != nil && resp.Header.Get(httpcache.XFromCache) != "" {
-		c.putToken()
+	c.Lock()
+	defer c.Unlock()
+	if resp != nil {
+		if remaining := resp.Header.Get(headerRateRemaining); remaining != "" {
+			c.remaining, _ = strconv.Atoi(remaining)
+		}
+		if reset := resp.Header.Get(headerRateReset); reset != "" {
+			if v, _ := strconv.ParseInt(reset, 10, 64); v != 0 {
+				c.resetTime = time.Unix(v, 0)
+			}
+		}
 	}
 	return resp, err
 }
@@ -166,8 +173,6 @@ type analytics struct {
 	apiCount           int       // number of times we called a github API
 	cachedAPICount     int       // how many api calls were answered by the local cache
 	apiPerSec          float64
-	limitRemaining     int
-	limitResetTime     time.Time
 
 	AddLabels         analytic
 	RemoveLabels      analytic
@@ -336,9 +341,11 @@ func (config *Config) GetDebugStats() DebugStats {
 		APICount:       config.lastAnalytics.apiCount,
 		CachedAPICount: config.lastAnalytics.cachedAPICount,
 		NextLoopTime:   config.lastAnalytics.nextAnalyticUpdate,
-		LimitRemaining: config.lastAnalytics.limitRemaining,
-		LimitResetTime: config.lastAnalytics.limitResetTime,
 	}
+	config.apiLimit.Lock()
+	defer config.apiLimit.Unlock()
+	d.LimitRemaining = config.apiLimit.remaining
+	d.LimitResetTime = config.apiLimit.resetTime
 	return d
 }
 
@@ -346,25 +353,6 @@ func (config *Config) GetDebugStats() DebugStats {
 // mungers are likely to run again.
 func (config *Config) NextExpectedUpdate(t time.Time) {
 	config.analytics.nextAnalyticUpdate = t
-}
-
-func (config *Config) handleCallLimitReset() {
-	limits, _, err := config.client.RateLimits()
-	if err != nil {
-		glog.Errorf("Unable to get RateLimits: %v", err)
-		return
-	}
-
-	remaining := limits.Core.Remaining
-	resetTime := limits.Core.Reset.Time
-
-	config.lastAnalytics.limitRemaining = remaining
-	config.lastAnalytics.limitResetTime = resetTime
-
-	config.apiLimit.Lock()
-	config.apiLimit.remaining = remaining
-	config.apiLimit.resetTime = resetTime
-	config.apiLimit.Unlock()
 }
 
 // ResetAPICount will both reset the counters of how many api calls have been
@@ -377,7 +365,6 @@ func (config *Config) ResetAPICount() {
 
 	config.analytics = analytics{}
 	config.analytics.lastAPIReset = time.Now()
-	config.handleCallLimitReset()
 }
 
 // SetClient should ONLY be used by testing. Normal commands should use PreExecute()
