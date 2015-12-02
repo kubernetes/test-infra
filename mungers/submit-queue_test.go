@@ -195,39 +195,52 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 	}
 }
 
-// fakeRunGithubE2ESuccess imitates the github e2e running, but indicates
-// success after a short sleep
-func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, shouldPass bool) {
+func setStatus(status *github.RepoStatus, success bool) {
+	if success {
+		status.State = stringPtr("success")
+	} else {
+		status.State = stringPtr("failure")
+	}
+}
+
+func addStatus(context string, success bool, ciStatus *github.CombinedStatus) {
+	status := github.RepoStatus{
+		Context: stringPtr(context),
+	}
+	setStatus(&status, success)
+	ciStatus.Statuses = append(ciStatus.Statuses, status)
+}
+
+// fakeRunGithubE2ESuccess imitates jenkins running
+func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, e2ePass, unitPass bool) {
 	ciStatus.State = stringPtr("pending")
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
-		if *status.Context == jenkinsE2EContext {
+		if *status.Context == jenkinsE2EContext || *status.Context == jenkinsUnitContext {
 			status.State = stringPtr("pending")
-			break
 		}
 	}
 	// short sleep like the test is running
 	time.Sleep(500 * time.Millisecond)
 	ciStatus.State = stringPtr("success")
-	found := false
+	foundE2E := false
+	foundUnit := false
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
 		if *status.Context == jenkinsE2EContext {
-			if shouldPass {
-				status.State = stringPtr("success")
-			} else {
-				status.State = stringPtr("failure")
-			}
-			found = true
-			break
+			setStatus(status, e2ePass)
+			foundE2E = true
+		}
+		if *status.Context == jenkinsUnitContext {
+			setStatus(status, unitPass)
+			foundUnit = true
 		}
 	}
-	if !found {
-		e2eStatus := github.RepoStatus{
-			Context: stringPtr(jenkinsE2EContext),
-			State:   stringPtr("success"),
-		}
-		ciStatus.Statuses = append(ciStatus.Statuses, e2eStatus)
+	if !foundE2E {
+		addStatus(jenkinsE2EContext, e2ePass, ciStatus)
+	}
+	if !foundUnit {
+		addStatus(jenkinsUnitContext, unitPass, ciStatus)
 	}
 }
 
@@ -242,7 +255,8 @@ func TestMunge(t *testing.T) {
 		events           []github.IssueEvent
 		ciStatus         *github.CombinedStatus
 		jenkinsJob       jenkins.Job
-		shouldPass       bool
+		e2ePass          bool
+		unitPass         bool
 		mergeAfterQueued bool
 		reason           string
 		state            string // what the github status context should be for the PR HEAD
@@ -256,7 +270,8 @@ func TestMunge(t *testing.T) {
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:   SuccessStatus(),
 			jenkinsJob: SuccessJenkins(),
-			shouldPass: true,
+			e2ePass:    true,
+			unitPass:   true,
 			reason:     merged,
 			state:      "success",
 		},
@@ -271,7 +286,6 @@ func TestMunge(t *testing.T) {
 			ciStatus:   SuccessStatus(),
 			jenkinsJob: SuccessJenkins(),
 			// The test should never run, but if it does, make sure it fails
-			shouldPass:       false,
 			mergeAfterQueued: true,
 			reason:           merged,
 			state:            "success",
@@ -297,7 +311,8 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
-			shouldPass: true,
+			e2ePass:    true,
+			unitPass:   true,
 			reason:     merged,
 			state:      "success",
 		},
@@ -404,7 +419,6 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
-			shouldPass: false,
 			reason:     ghE2EQueued,
 			// The state is unpredictable. When it goes on the queue it is success.
 			// When it fails the build it is pending. So state depends on how far along
@@ -420,7 +434,32 @@ func TestMunge(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: SuccessJenkins(),
-			shouldPass: false,
+			reason:     ghE2EFailed,
+			state:      "pending",
+		},
+		{
+			name:       "Fail because E2E pass, but unit test fail",
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:   SuccessStatus(),
+			jenkinsJob: SuccessJenkins(),
+			e2ePass:    true,
+			unitPass:   false,
+			reason:     ghE2EFailed,
+			state:      "pending",
+		},
+		{
+			name:       "Fail because E2E fail, but unit test pass",
+			pr:         ValidPR(),
+			issue:      NoOKToMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:   SuccessStatus(),
+			jenkinsJob: SuccessJenkins(),
+			e2ePass:    false,
+			unitPass:   true,
 			reason:     ghE2EFailed,
 			state:      "pending",
 		},
@@ -479,7 +518,7 @@ func TestMunge(t *testing.T) {
 			json.NewDecoder(r.Body).Decode(c)
 			msg := c.Body
 			if strings.HasPrefix(msg, "@k8s-bot test this") {
-				go fakeRunGithubE2ESuccess(test.ciStatus, test.shouldPass)
+				go fakeRunGithubE2ESuccess(test.ciStatus, test.e2ePass, test.unitPass)
 			}
 			w.WriteHeader(http.StatusOK)
 			data, err := json.Marshal(github.IssueComment{})
@@ -527,6 +566,7 @@ func TestMunge(t *testing.T) {
 		sq := SubmitQueue{}
 		sq.RequiredStatusContexts = []string{jenkinsUnitContext}
 		sq.E2EStatusContext = jenkinsE2EContext
+		sq.UnitStatusContext = jenkinsUnitContext
 		sq.JenkinsHost = server.URL
 		sq.JenkinsJobs = []string{"foo"}
 		sq.WhitelistOverride = "ok-to-merge"

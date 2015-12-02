@@ -93,6 +93,7 @@ type SubmitQueue struct {
 	Committers             string
 	Address                string
 	E2EStatusContext       string
+	UnitStatusContext      string
 	RequiredStatusContexts []string
 	WWWRoot                string
 
@@ -201,9 +202,10 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-kubemark-gce",
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
-	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{travisContext, jenkinsUnitContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
+	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{travisContext}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
+	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
 	cmd.Flags().StringVar(&sq.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	sq.addWhitelistCommand(cmd, config)
 }
@@ -388,6 +390,9 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	contexts := sq.RequiredStatusContexts
 	if len(sq.E2EStatusContext) > 0 && !obj.HasLabel(e2eNotRequiredLabel) {
 		contexts = append(contexts, sq.E2EStatusContext)
+	}
+	if len(sq.UnitStatusContext) > 0 {
+		contexts = append(contexts, sq.UnitStatusContext)
 	}
 	return contexts
 }
@@ -591,7 +596,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 
 	// Wait for the build to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart, true)
-	err = obj.WaitForPending([]string{sq.E2EStatusContext})
+	err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
 		sq.SetMergeStatus(obj, s, true)
@@ -600,7 +605,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning, true)
-	err = obj.WaitForNotPending([]string{sq.E2EStatusContext})
+	err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
 		sq.SetMergeStatus(obj, s, true)
@@ -608,7 +613,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	// Check if the thing we care about is success
-	if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext}); !ok {
+	if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
 		sq.SetMergeStatus(obj, ghE2EFailed, true)
 		return
 	}
