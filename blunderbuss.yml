@@ -70,20 +70,19 @@ prefixMap:
     - lavalamp
     - zmerlynn
 
-  # fall through for things that miss everything else
-  pkg:
-    - bgrant0607
-    - brendandburns
-    - eparis
-    - smarterclayton
-    - thockin
-
   pkg/admission:
     - davidopp
     - derekwaynecarr
     - erictune
     - lavalamp
     - liggitt
+
+  pkg/apis:
+    - bgrant0607
+    - erictune
+    - lavalamp
+    - smarterclayton
+    - thockin
 
   pkg/api:
     - bgrant0607
@@ -95,8 +94,9 @@ prefixMap:
   pkg/apiserver:
     - lavalamp
     - smarterclayton
+    - nikhiljindal
 
-  pkg/authentication:
+  pkg/auth:
     - erictune
     - liggitt
 
@@ -104,9 +104,8 @@ prefixMap:
     - deads2k
     - lavalamp
     - smarterclayton
-
-  pkg/clientauth:
-    - lavalamp
+    - krousey
+    - caesarxuchao
 
   pkg/cloudprovider:
     - davidopp
@@ -119,21 +118,17 @@ prefixMap:
     - davidopp
     - derekwaynecarr
     - mikedanese
+    - bprashanth
 
   pkg/conversion:
     - derekwaynecarr
     - lavalamp
+    - smarterclayton
+    - wojtek-t
 
   pkg/credentialprovider:
     - erictune
     - liggitt
-
-  pkg/exapi:
-    - bgrant0607
-    - erictune
-    - lavalamp
-    - smarterclayton
-    - thockin
 
   pkg/kubectl:
     - bgrant0607
@@ -141,6 +136,7 @@ prefixMap:
     - deads2k
     - jlowdermilk
     - smarterclayton
+    - janetkuo
 
   pkg/kubelet:
     - dchen1107
@@ -152,6 +148,7 @@ prefixMap:
     - derekwaynecarr
     - lavalamp
     - mikedanese
+    - nikhiljindal
 
   pkg/proxy:
     - ArtfulCoder
@@ -160,6 +157,7 @@ prefixMap:
   pkg/registry:
     - lavalamp
     - smarterclayton
+    - wojtek-t
 
   pkg/volume:
     - saad-ali
@@ -183,6 +181,23 @@ prefixMap:
     - liggitt
 
   plugin/pkg/scheduler:
+    - davidopp
+
+  cmd/libs/go2idl:
+    - lavalamp
+    - wojtek-t
+
+  # fall through for things that miss everything else
+  pkg:
+    - bgrant0607
+    - brendandburns
+    - eparis
+    - smarterclayton
+    - thockin
+    - lavalamp
+
+  plugin:
+    - lavalamp
     - davidopp
 
   test:
