@@ -196,9 +196,5 @@ prefixMap:
     - thockin
     - lavalamp
 
-  plugin:
-    - lavalamp
-    - davidopp
-
   test:
     - ixdy
