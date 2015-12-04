@@ -28,7 +28,7 @@ prefixMap:
 
   cluster/vagrant:
     - derekwaynecarr
- 
+
   cmd:
     - brendandburns
     - davidopp
