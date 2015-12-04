@@ -26,6 +26,9 @@ prefixMap:
   cluster/mesos/docker:
     - karlkfi
 
+  cluster/vagrant:
+    - derekwaynecarr
+ 
   cmd:
     - brendandburns
     - davidopp
