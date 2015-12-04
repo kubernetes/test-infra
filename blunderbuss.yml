@@ -15,9 +15,9 @@ prefixMap:
     - brendandburns
     - davidopp
     - eparis
+    - mikedanese
     - roberthbailey
     - zmerlynn
-    - mikedanese
 
   cluster/addons/dns:
     - ArtfulCoder
@@ -31,8 +31,8 @@ prefixMap:
     - davidopp
     - dchen1107
     - lavalamp
-    - thockin
     - mikedanese
+    - thockin
 
   cmd/kube-controller-manager:
     - davidopp
@@ -43,6 +43,10 @@ prefixMap:
     - dchen1107
     - vishh
     - yujuhong
+
+  cmd/libs/go2idl:
+    - lavalamp
+    - wojtek-t
 
   contrib/mesos:
     - jdef
@@ -70,19 +74,21 @@ prefixMap:
     - lavalamp
     - zmerlynn
 
+  # fall through for things that miss everything else
+  pkg:
+    - bgrant0607
+    - brendandburns
+    - eparis
+    - lavalamp
+    - smarterclayton
+    - thockin
+
   pkg/admission:
     - davidopp
     - derekwaynecarr
     - erictune
     - lavalamp
     - liggitt
-
-  pkg/apis:
-    - bgrant0607
-    - erictune
-    - lavalamp
-    - smarterclayton
-    - thockin
 
   pkg/api:
     - bgrant0607
@@ -91,21 +97,28 @@ prefixMap:
     - smarterclayton
     - thockin
 
-  pkg/apiserver:
+  pkg/apis:
+    - bgrant0607
+    - erictune
     - lavalamp
     - smarterclayton
+    - thockin
+
+  pkg/apiserver:
+    - lavalamp
     - nikhiljindal
+    - smarterclayton
 
   pkg/auth:
     - erictune
     - liggitt
 
   pkg/client:
+    - caesarxuchao
     - deads2k
+    - krousey
     - lavalamp
     - smarterclayton
-    - krousey
-    - caesarxuchao
 
   pkg/cloudprovider:
     - davidopp
@@ -115,10 +128,10 @@ prefixMap:
     - justinsb
 
   pkg/controller:
+    - bprashanth
     - davidopp
     - derekwaynecarr
     - mikedanese
-    - bprashanth
 
   pkg/conversion:
     - derekwaynecarr
@@ -134,9 +147,9 @@ prefixMap:
     - bgrant0607
     - brendandburns
     - deads2k
+    - janetkuo
     - jlowdermilk
     - smarterclayton
-    - janetkuo
 
   pkg/kubelet:
     - dchen1107
@@ -182,19 +195,6 @@ prefixMap:
 
   plugin/pkg/scheduler:
     - davidopp
-
-  cmd/libs/go2idl:
-    - lavalamp
-    - wojtek-t
-
-  # fall through for things that miss everything else
-  pkg:
-    - bgrant0607
-    - brendandburns
-    - eparis
-    - smarterclayton
-    - thockin
-    - lavalamp
 
   test:
     - ixdy
