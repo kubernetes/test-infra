@@ -60,22 +60,29 @@ type reportData struct {
 }
 
 type issueReportData struct {
-	number   int
-	age      time.Duration
-	priority string
-	title    string
+	number       int
+	age          time.Duration
+	lastActivity time.Duration
+	priority     string
+	title        string
 }
 
 func (data issueReportData) String() string {
 	days := data.age.Hours() / 24
-	return fmt.Sprintf("  [%v] %v: %q (%.2v days)", data.priority, data.number, data.title, days)
+	active := "inactive"
+	if data.lastActivity < time.Hour*24*7 {
+		active = "active"
+	}
+	return fmt.Sprintf("  [%v - %v] %v: %q (%.5v days old) http://issues.k8s.io/%v",
+		data.priority, active, data.number, data.title, days, data.number,
+	)
 }
 
-func gatherData(cfg *githubhelper.Config) (*reportData, error) {
+func gatherData(cfg *githubhelper.Config, labels []string, excludeLowPriority bool) (*reportData, error) {
 	issues, err := cfg.ListAllIssues(&github.IssueListByRepoOptions{
 		State:  "open",
 		Sort:   "created",
-		Labels: []string{"kind/flake"},
+		Labels: labels,
 	})
 	if err != nil {
 		return nil, err
@@ -104,6 +111,10 @@ func gatherData(cfg *githubhelper.Config) (*reportData, error) {
 		if issue.CreatedAt != nil {
 			age = time.Now().Sub(*issue.CreatedAt)
 		}
+		lastActivity := time.Duration(0)
+		if issue.UpdatedAt != nil {
+			lastActivity = time.Now().Sub(*issue.UpdatedAt)
+		}
 		priority := "??"
 		priorityLabels := githubhelper.GetLabelsWithPrefix(issue.Labels, "priority/")
 		if len(priorityLabels) == 1 {
@@ -111,13 +122,16 @@ func gatherData(cfg *githubhelper.Config) (*reportData, error) {
 		}
 		if priority == "P2" || priority == "P3" {
 			r.lowPriorityTests++
-			continue
+			if excludeLowPriority {
+				continue
+			}
 		}
 		reportData := issueReportData{
-			priority: priority,
-			number:   *issue.Number,
-			title:    *issue.Title,
-			age:      age,
+			priority:     priority,
+			number:       *issue.Number,
+			title:        *issue.Title,
+			age:          age,
+			lastActivity: lastActivity,
 		}
 		r.loginToIssues[assignee] = append(r.loginToIssues[assignee], reportData)
 		if priority == "??" {
@@ -140,7 +154,7 @@ func (s *ShameReport) runCmd(r io.Reader) error {
 
 // Report is the workhorse that actually makes the report.
 func (s *ShameReport) Report(cfg *githubhelper.Config) error {
-	r, err := gatherData(cfg)
+	r, err := gatherData(cfg, []string{"kind/flake"}, true)
 	if err != nil {
 		return err
 	}
