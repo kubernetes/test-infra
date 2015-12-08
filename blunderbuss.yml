@@ -123,6 +123,9 @@ prefixMap:
     - lavalamp
     - smarterclayton
 
+  pkg/client/leaderelection:
+    - mikedanese
+
   pkg/cloudprovider:
     - davidopp
     - mikedanese
