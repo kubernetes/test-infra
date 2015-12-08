@@ -208,8 +208,9 @@ func (s *ShameReport) groupReport(r *reportData) (map[string]bool, error) {
 If you are in the To: line of this email, you have flaky tests to fix! Flaky
 tests, even if they flake only a small percentage of the time, cause the merge
 queue to become very long, which causes everyone on the team pain and
-suffering.  Please either fix the tests assigned to you or find them an owner
-who will fix them.
+suffering. Therefore, if you have flaky tests assigned to you, you should fix
+them before doing anything else.  Please either fix the tests assigned to you
+or find them an owner who will fix them.
 
 There were %v P2/P3 issues which are not reported here.
 
@@ -258,7 +259,6 @@ func (s *ShameReport) individualReport(user string, r *reportData) error {
 	}
 	// No Cc on individual emails!
 	fmt.Fprintf(dest, "To: %v\n", strings.Join(to, ","))
-	fmt.Fprint(dest, "Bcc: dbsmith@google.com\n") // so I know it works
 	fmt.Fprintf(dest, "Subject: Kubernetes flaky Test Report: %v flaky tests\n", r.totalTests)
 	fmt.Fprintf(dest, `
 Hi %v,
