@@ -7,6 +7,7 @@ prefixMap:
     - thockin
 
   build:
+    - ihmccreery
     - ixdy
     - lavalamp
     - zmerlynn
@@ -73,8 +74,10 @@ prefixMap:
 
   hack:
     - eparis
+    - ihmccreery
     - ixdy
     - lavalamp
+    - spxtr
     - zmerlynn
 
   # fall through for things that miss everything else
@@ -202,5 +205,9 @@ prefixMap:
   plugin/pkg/scheduler:
     - davidopp
 
+  release:
+    - ihmccreery
+
   test:
+    - ihmccreery
     - ixdy
