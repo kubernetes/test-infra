@@ -20,7 +20,6 @@ marekbiskup
 mbforbes
 mgr01
 mml
-mvdan
 preillyme
 pweil-
 rootfs
