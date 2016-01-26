@@ -106,15 +106,16 @@ function SQCntl(dataService, $interval, $location) {
   function getE2E(builds) {
     var result = [];
     var failedBuild = false;
-    angular.forEach(builds, function(value, key) {
+    angular.forEach(builds, function(job, key) {
       var obj = {
-        'name': key
+        'name': key,
+        'id': job.ID,
       };
-      if (value == 'Stable') {
+      if (job.Status == 'Stable') {
         // green check mark
         obj.state = '\u2713';
         obj.color = 'green';
-      } else if (value == 'Not Stable') {
+      } else if (job.Status == 'Not Stable') {
         // red X mark
         obj.state = '\u2716';
         obj.color = 'red';
@@ -122,7 +123,7 @@ function SQCntl(dataService, $interval, $location) {
       } else {
         obj.state = 'Error';
         obj.color = 'red';
-        obj.msg = value;
+        obj.msg = job.Status;
         failedBuild = true;
       }
       result.push(obj);

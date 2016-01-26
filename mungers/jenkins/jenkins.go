@@ -51,6 +51,12 @@ type Job struct {
 	Timestamp int    `json:"timestamp"`
 }
 
+// IsStable is really is success, but maybe there is a way to make it look
+// at multiple runs...
+func (j Job) IsStable() bool {
+	return j.Result == "SUCCESS"
+}
+
 func (j *JenkinsClient) request(path string) ([]byte, error) {
 	url := j.Host + path
 	glog.V(3).Infof("Hitting: %s", url)
@@ -94,8 +100,8 @@ func (j *JenkinsClient) GetJob(name string) (*Queue, error) {
 	return q, nil
 }
 
-// getLastCompletedBuild does just that
-func (j *JenkinsClient) getLastCompletedBuild(name string) (*Job, error) {
+// GetLastCompletedBuild does just that
+func (j *JenkinsClient) GetLastCompletedBuild(name string) (*Job, error) {
 	data, err := j.request("/job/" + name + "/lastCompletedBuild/api/json")
 	if err != nil {
 		return nil, err
@@ -106,14 +112,4 @@ func (j *JenkinsClient) getLastCompletedBuild(name string) (*Job, error) {
 		return nil, err
 	}
 	return job, nil
-}
-
-// IsBuildStable tells if the given job in the last completed build was
-// a success.
-func (j *JenkinsClient) IsBuildStable(name string) (bool, error) {
-	q, err := j.getLastCompletedBuild(name)
-	if err != nil {
-		return false, err
-	}
-	return q.Result == "SUCCESS", nil
 }

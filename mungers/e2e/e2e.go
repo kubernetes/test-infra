@@ -24,6 +24,12 @@ import (
 	"github.com/golang/glog"
 )
 
+// BuildInfo tells the build ID and the build success
+type BuildInfo struct {
+	Status string
+	ID     string
+}
+
 // E2ETester is the object which will contact a jenkins instance and get
 // information about recent jobs
 type E2ETester struct {
@@ -31,7 +37,7 @@ type E2ETester struct {
 	JenkinsJobs []string
 
 	sync.Mutex
-	BuildStatus map[string]string // protect by mutex
+	BuildStatus map[string]BuildInfo // protect by mutex
 }
 
 func (e *E2ETester) locked(f func()) {
@@ -42,20 +48,20 @@ func (e *E2ETester) locked(f func()) {
 
 // GetBuildStatus returns the build status. This map is a copy and is thus safe
 // for the caller to use in any way.
-func (e *E2ETester) GetBuildStatus() map[string]string {
+func (e *E2ETester) GetBuildStatus() map[string]BuildInfo {
 	e.Lock()
 	defer e.Unlock()
-	out := map[string]string{}
+	out := map[string]BuildInfo{}
 	for k, v := range e.BuildStatus {
 		out[k] = v
 	}
 	return out
 }
 
-func (e *E2ETester) setBuildStatus(build, status string) {
+func (e *E2ETester) setBuildStatus(build, status string, id string) {
 	e.Lock()
 	defer e.Unlock()
-	e.BuildStatus[build] = status
+	e.BuildStatus[build] = BuildInfo{Status: status, ID: id}
 }
 
 // Stable is called to make sure all of the jenkins jobs are stable
@@ -66,17 +72,17 @@ func (e *E2ETester) Stable() bool {
 	allStable := true
 	for _, build := range e.JenkinsJobs {
 		glog.V(2).Infof("Checking build stability for %s", build)
-		stable, err := jenkinsClient.IsBuildStable(build)
+		job, err := jenkinsClient.GetLastCompletedBuild(build)
 		if err != nil {
 			glog.Errorf("Error checking build %v : %v", build, err)
-			e.setBuildStatus(build, "Error checking: "+err.Error())
+			e.setBuildStatus(build, "Error checking: "+err.Error(), "0")
 			allStable = false
 			continue
 		}
-		if stable {
-			e.setBuildStatus(build, "Stable")
+		if job.IsStable() {
+			e.setBuildStatus(build, "Stable", job.ID)
 		} else {
-			e.setBuildStatus(build, "Not Stable")
+			e.setBuildStatus(build, "Not Stable", job.ID)
 			allStable = false
 		}
 	}

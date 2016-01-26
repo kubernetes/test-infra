@@ -141,7 +141,7 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 	e2e := &e2e.E2ETester{
 		JenkinsJobs: sq.JenkinsJobs,
 		JenkinsHost: sq.JenkinsHost,
-		BuildStatus: map[string]string{},
+		BuildStatus: map[string]e2e.BuildInfo{},
 	}
 	sq.e2e = e2e
 	if len(sq.Address) > 0 {
