@@ -47,7 +47,7 @@ func TestCheckBuilds(t *testing.T) {
 	tests := []struct {
 		paths          map[string][]byte
 		expectStable   bool
-		expectedStatus map[string]string
+		expectedStatus map[string]BuildInfo
 	}{
 		{
 			paths: map[string][]byte{
@@ -59,7 +59,7 @@ func TestCheckBuilds(t *testing.T) {
 				}, t),
 			},
 			expectStable:   true,
-			expectedStatus: map[string]string{"foo": "Stable", "bar": "Stable"},
+			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Stable", ""}},
 		},
 		{
 			paths: map[string][]byte{
@@ -71,7 +71,7 @@ func TestCheckBuilds(t *testing.T) {
 				}, t),
 			},
 			expectStable:   false,
-			expectedStatus: map[string]string{"foo": "Stable", "bar": "Not Stable"},
+			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Not Stable", ""}},
 		},
 		{
 			paths: map[string][]byte{
@@ -83,7 +83,7 @@ func TestCheckBuilds(t *testing.T) {
 				}, t),
 			},
 			expectStable:   false,
-			expectedStatus: map[string]string{"foo": "Stable", "bar": "Not Stable"},
+			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Not Stable", ""}},
 		},
 		{
 			paths: map[string][]byte{
@@ -95,7 +95,7 @@ func TestCheckBuilds(t *testing.T) {
 				}, t),
 			},
 			expectStable:   false,
-			expectedStatus: map[string]string{"foo": "Not Stable", "bar": "Stable"},
+			expectedStatus: map[string]BuildInfo{"foo": {"Not Stable", ""}, "bar": {"Stable", ""}},
 		},
 	}
 	for _, test := range tests {
@@ -117,7 +117,7 @@ func TestCheckBuilds(t *testing.T) {
 				"foo",
 				"bar",
 			},
-			BuildStatus: map[string]string{},
+			BuildStatus: map[string]BuildInfo{},
 		}
 		stable := e2e.Stable()
 		if stable != test.expectStable {
