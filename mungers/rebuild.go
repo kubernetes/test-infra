@@ -58,7 +58,7 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	comments, err := obj.GetComments(*obj.Issue.Number)
+	comments, err := obj.ListComments(*obj.Issue.Number)
 	if err != nil {
 		glog.Errorf("unexpected error getting comments: %v", err)
 	}
@@ -73,7 +73,7 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 			}
 		}
 		if isRebuildComment(comment) && rebuildCommentMissingIssueNumber(comment) {
-			if err := obj.DeleteComment(*comment.ID); err != nil {
+			if err := obj.DeleteComment(comment); err != nil {
 				glog.Errorf("Error deleting comment: %v", err)
 				continue
 			}
