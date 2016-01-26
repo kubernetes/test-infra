@@ -2,7 +2,6 @@
 ArtfulCoder
 MikeJeffrey
 Random-Liu
-RichieEscarez
 a-robinson
 alex-mohr
 amygdala
@@ -14,9 +13,9 @@ brendandburns
 cadvisorJenkinsBot
 caesarxuchao
 cjcullen
+david-mcmahon
 davidopp
 dchen1107
-ddysher
 deads2k
 derekwaynecarr
 eparis
@@ -44,6 +43,7 @@ k8s-merge-robot
 k8s-slack
 karlkfi
 kelseyhightower
+kevin-wangzefeng
 krousey
 lavalamp
 liggitt
@@ -63,6 +63,7 @@ roberthbailey
 saad-ali
 satnam6502
 smarterclayton
+spxtr
 sttts
 thockin
 timstclair
@@ -70,5 +71,6 @@ vaikas-google
 vishh
 vmarmol
 wojtek-t
+yifan-gu
 yujuhong
 zmerlynn
