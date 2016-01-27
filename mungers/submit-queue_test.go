@@ -150,6 +150,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.JenkinsJobs = []string{"foo"}
 	sq.WhitelistOverride = "ok-to-merge"
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
+	sq.githubE2EPollTime = 50 * time.Millisecond
 	if startThreads {
 		sq.Initialize(config)
 		sq.EachLoop()
@@ -514,7 +515,7 @@ func TestSubmitQueue(t *testing.T) {
 			events:     NewLGTMEvents(),
 			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
 			jenkinsJob: FailJenkins(),
-			reason:     e2eFailure,
+			reason:     ghE2EQueued,
 			state:      "success",
 		},
 		// Fail because the second run of github e2e tests failed
