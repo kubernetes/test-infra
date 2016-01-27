@@ -21,6 +21,7 @@ import (
 	goflag "flag"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -537,6 +538,26 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 		return err
 	}
 	return nil
+}
+
+// Priority returns the priority an issue was labeled with.
+// The labels must take the form 'priority/P?[0-9]+'
+// or math.MaxInt32 if unset
+func (obj *MungeObject) Priority() int {
+	priority := math.MaxInt32
+	priorityLabels := GetLabelsWithPrefix(obj.Issue.Labels, "priority/")
+	for _, label := range priorityLabels {
+		label = strings.TrimPrefix(label, "priority/")
+		label = strings.TrimPrefix(label, "P")
+		prio, err := strconv.Atoi(label)
+		if err != nil {
+			continue
+		}
+		if prio < priority {
+			priority = prio
+		}
+	}
+	return priority
 }
 
 // MungeFunction is the type that must be implemented and passed to ForEachIssueDo

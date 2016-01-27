@@ -19,6 +19,7 @@ package mungers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -520,15 +521,47 @@ func (sq *SubmitQueue) flushGithubE2EQueue(reason string) {
 	}
 }
 
+type queueSorter []*github.MungeObject
+
+func (s queueSorter) Len() int      { return len(s) }
+func (s queueSorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s queueSorter) Less(i, j int) bool {
+	a := s[i]
+	b := s[j]
+
+	aPrio := a.Priority()
+	bPrio := b.Priority()
+
+	// eparis randomly decided that unlabel issues count at p3
+	if aPrio == math.MaxInt32 {
+		aPrio = 3
+	}
+	if bPrio == math.MaxInt32 {
+		bPrio = 3
+	}
+
+	if aPrio < bPrio {
+		return true
+	} else if aPrio > bPrio {
+		return false
+	}
+
+	return *a.Issue.Number < *b.Issue.Number
+}
+
 // sq.Lock() better held!!!
 func (sq *SubmitQueue) orderedE2EQueue() []int {
-	// Find and do the lowest PR number first
-	var keys []int
-	for k := range sq.githubE2EQueue {
-		keys = append(keys, k)
+	prs := []*github.MungeObject{}
+	for _, obj := range sq.githubE2EQueue {
+		prs = append(prs, obj)
 	}
-	sort.Ints(keys)
-	return keys
+	sort.Sort(queueSorter(prs))
+
+	var ordered []int
+	for _, obj := range prs {
+		ordered = append(ordered, *obj.Issue.Number)
+	}
+	return ordered
 }
 
 // handleGithubE2EAndMerge waits for PRs that are ready to re-run the github

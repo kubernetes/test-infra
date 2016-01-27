@@ -213,6 +213,13 @@ func Status(sha string, success []string, fail []string, pending []string, error
 	return updateStatusState(out)
 }
 
+// ServeIssue is a helper to load additional issues into the test server
+func ServeIssue(t *testing.T, mux *http.ServeMux, issue *github.Issue) {
+	issueNum := *issue.Number
+	path := fmt.Sprintf("/repos/o/r/issues/%d", issueNum)
+	setMux(t, mux, path, issue)
+}
+
 func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var data []byte

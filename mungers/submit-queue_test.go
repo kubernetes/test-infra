@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"runtime"
 	"strconv"
 	"strings"
@@ -137,6 +138,122 @@ func SuccessJenkins() jenkins.Job {
 func FailJenkins() jenkins.Job {
 	return jenkins.Job{
 		Result: "FAILED",
+	}
+}
+
+func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
+	sq := new(SubmitQueue)
+	sq.RequiredStatusContexts = []string{jenkinsUnitContext}
+	sq.E2EStatusContext = jenkinsE2EContext
+	sq.UnitStatusContext = jenkinsUnitContext
+	sq.JenkinsHost = server.URL
+	sq.JenkinsJobs = []string{"foo"}
+	sq.WhitelistOverride = "ok-to-merge"
+	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
+	if startThreads {
+		sq.Initialize(config)
+		sq.EachLoop()
+		sq.userWhitelist.Insert(whitelistUser)
+	}
+	return sq
+}
+
+func TestQueueOrder(t *testing.T) {
+	tests := []struct {
+		name     string
+		issues   []github.Issue
+		expected []int
+	}{
+		{
+			name: "Just prNum",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, nil, true),
+				*github_test.Issue(whitelistUser, 3, nil, true),
+				*github_test.Issue(whitelistUser, 4, nil, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+			},
+			expected: []int{2, 3, 4, 5},
+		},
+		{
+			name: "With a priority label",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, []string{"priority/P1"}, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P1"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+			},
+			expected: []int{4, 2, 3, 5},
+		},
+		{
+			name: "With two priority labels",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P1"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+			},
+			expected: []int{2, 4, 3, 5},
+		},
+		{
+			name: "With unrelated labels",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P1", "kind/design"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 5, []string{"LGTM", "kind/new-api"}, true),
+			},
+			expected: []int{2, 4, 3, 5},
+		},
+		{
+			name: "With invalid priority label",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P0", "priorty/bob"}, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+			},
+			expected: []int{2, 4, 3, 5},
+		},
+		{
+			name: "Unlabeled counts as P3",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, nil, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P3"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P2"}, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+			},
+			expected: []int{4, 2, 3, 5},
+		},
+	}
+	for testNum, test := range tests {
+		config := &github_util.Config{}
+		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil)
+		config.Org = "o"
+		config.Project = "r"
+		config.SetClient(client)
+		sq := getTestSQ(false, config, server)
+		for i := range test.issues {
+			issue := &test.issues[i]
+			github_test.ServeIssue(t, mux, issue)
+
+			issueNum := *issue.Number
+			obj, err := config.GetObject(issueNum)
+			if err != nil {
+				t.Fatalf("%d:%q unable to get issue: %v", testNum, test.name, err)
+			}
+			sq.githubE2EQueue[issueNum] = obj
+		}
+		actual := sq.orderedE2EQueue()
+		if len(actual) != len(test.expected) {
+			t.Fatalf("%d:%q len(actual):%v != len(expected):%v", testNum, test.name, actual, test.expected)
+		}
+		for i, a := range actual {
+			e := test.expected[i]
+			if a != e {
+				t.Errorf("%d:%q a[%d]:%d != e[%d]:%d", testNum, test.name, i, a, i, e)
+			}
+		}
+		server.Close()
 	}
 }
 
@@ -562,16 +679,7 @@ func TestSubmitQueue(t *testing.T) {
 			w.Write(data)
 		})
 
-		sq := SubmitQueue{}
-		sq.RequiredStatusContexts = []string{jenkinsUnitContext}
-		sq.E2EStatusContext = jenkinsE2EContext
-		sq.UnitStatusContext = jenkinsUnitContext
-		sq.JenkinsHost = server.URL
-		sq.JenkinsJobs = []string{"foo"}
-		sq.WhitelistOverride = "ok-to-merge"
-		sq.Initialize(config)
-		sq.EachLoop()
-		sq.userWhitelist.Insert(whitelistUser)
+		sq := getTestSQ(true, config, server)
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
 		sq.Munge(obj)
