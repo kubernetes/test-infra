@@ -61,5 +61,10 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 	}
 	if !mergeable && !obj.HasLabel(needsRebase) {
 		obj.AddLabels([]string{needsRebase})
+
+		body := "PR needs rebase"
+		if err := obj.WriteComment(body); err != nil {
+			return
+		}
 	}
 }
