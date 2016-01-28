@@ -85,7 +85,7 @@
               <section>
                 <md-subheader class="md-primary">QUEUE</md-subheader>
                 <md-list layout-padding>
-                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue | orderBy: 'Number' track by pr.Number">
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue track by pr.Number">
                     <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                       <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                     </a>
