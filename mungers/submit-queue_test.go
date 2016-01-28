@@ -339,7 +339,9 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, e2ePass, unitPass 
 	}
 	// short sleep like the test is running
 	time.Sleep(500 * time.Millisecond)
-	ciStatus.State = stringPtr("success")
+	if e2ePass && unitPass {
+		ciStatus.State = stringPtr("success")
+	}
 	foundE2E := false
 	foundUnit := false
 	for id := range ciStatus.Statuses {
@@ -581,7 +583,8 @@ func TestSubmitQueue(t *testing.T) {
 			state:      "pending",
 		},
 	}
-	for testNum, test := range tests {
+	for testNum := range tests {
+		test := &tests[testNum]
 		issueNum := testNum + 1
 		issueNumStr := strconv.Itoa(issueNum)
 
@@ -686,6 +689,12 @@ func TestSubmitQueue(t *testing.T) {
 		done := make(chan bool, 1)
 		go func(done chan bool) {
 			for {
+				defer func() {
+					if r := recover(); r != nil {
+						t.Errorf("%d:%q panic'd likely writing to 'done' channel", testNum, test.name)
+					}
+				}()
+
 				if sq.prStatus[issueNumStr].Reason == test.reason {
 					done <- true
 					return
@@ -707,13 +716,13 @@ func TestSubmitQueue(t *testing.T) {
 		select {
 		case <-done:
 		case <-time.After(10 * time.Second):
-			t.Errorf("%d:%s timed out waiting expected reason=%q but got prStatus:%q history:%v", testNum, test.name, test.reason, sq.prStatus[issueNumStr].Reason, sq.statusHistory)
+			t.Errorf("%d:%q timed out waiting expected reason=%q but got prStatus:%q history:%v", testNum, test.name, test.reason, sq.prStatus[issueNumStr].Reason, sq.statusHistory)
 		}
 		close(done)
 		server.Close()
 
 		if test.state != "" && test.state != stateSet {
-			t.Errorf("%d:%s state set to %q but expected %q", testNum, test.name, stateSet, test.state)
+			t.Errorf("%d:%q state set to %q but expected %q", testNum, test.name, stateSet, test.state)
 		}
 	}
 }
