@@ -242,6 +242,8 @@ func TestForEachIssueDo(t *testing.T) {
 func TestComputeStatus(t *testing.T) {
 	contextS := []string{"context"}
 	otherS := []string{"other context"}
+	bothS := []string{"context", "other context"}
+	firstS := []string{"context", "crap"}
 
 	tests := []struct {
 		combinedStatus   *github.CombinedStatus
@@ -321,6 +323,18 @@ func TestComputeStatus(t *testing.T) {
 			combinedStatus:   github_test.Status("mysha", contextS, otherS, nil, nil),
 			requiredContexts: contextS,
 			expected:         "success",
+		},
+		// test failed because we need both, but one is failed
+		{
+			combinedStatus:   github_test.Status("mysha", contextS, otherS, nil, nil),
+			requiredContexts: bothS,
+			expected:         "failure",
+		},
+		// test failed because we need both, bot one isn't present
+		{
+			combinedStatus:   github_test.Status("mysha", firstS, nil, nil, nil),
+			requiredContexts: bothS,
+			expected:         "incomplete",
 		},
 	}
 
