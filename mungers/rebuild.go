@@ -66,7 +66,7 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 	for ix := range comments {
 		comment := &comments[ix]
 		// Skip all robot comments
-		for _, robot := range []string{"k8s-bot", "googlebot"} {
+		for _, robot := range []string{"k8s-bot", "k8s-merge-robot", "googlebot"} {
 			if *comment.User.Login == robot {
 				glog.V(4).Infof("Skipping comment by robot %s: %s", robot, *comment.Body)
 				continue
@@ -77,7 +77,9 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 				glog.Errorf("Error deleting comment: %v", err)
 				continue
 			}
-			err := obj.WriteComment(fmt.Sprintf("@%s an issue is required for any manual rebuild.  Expecting comment of the form 'github issue: #<number>'", *comment.User.Login))
+			body := fmt.Sprintf(`@%s an issue is required for any manual rebuild.  Expecting comment of the form 'github issue: #<number>'
+[Open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is%3Aissue%20label%3Akind%2Fflake)`, *comment.User.Login)
+			err := obj.WriteComment(body)
 			if err != nil {
 				glog.Errorf("unexpected error adding comment: %v", err)
 				continue
