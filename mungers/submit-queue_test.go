@@ -244,7 +244,7 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, e2ePass, unitPass 
 	}
 }
 
-func TestMunge(t *testing.T) {
+func TestSubmitQueue(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
@@ -560,7 +560,6 @@ func TestMunge(t *testing.T) {
 			}
 			w.WriteHeader(http.StatusOK)
 			w.Write(data)
-			test.pr.Merged = boolPtr(true)
 		})
 
 		sq := SubmitQueue{}
