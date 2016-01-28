@@ -1109,6 +1109,20 @@ func (obj *MungeObject) IsMerged() (bool, error) {
 	return false, fmt.Errorf("Unable to determine if PR %d was merged", *obj.Issue.Number)
 }
 
+// GetComments returns all comments for the issue/PR in question
+func (obj *MungeObject) GetComments(number int) ([]github.IssueComment, error) {
+	list, _, err := obj.config.client.Issues.ListComments(obj.config.Org, obj.config.Project, number, &github.IssueListCommentsOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (obj *MungeObject) DeleteComment(number int) error {
+	_, err := obj.config.client.Issues.DeleteComment(obj.config.Org, obj.config.Project, number)
+	return err
+}
+
 // ForEachIssueDo will run for each Issue in the project that matches:
 //   * pr.Number >= minPRNumber
 //   * pr.Number <= maxPRNumber
