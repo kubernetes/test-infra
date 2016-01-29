@@ -78,7 +78,7 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 				continue
 			}
 			body := fmt.Sprintf(`@%s an issue is required for any manual rebuild.  Expecting comment of the form 'github issue: #<number>'
-[Open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is%3Aissue%20label%3Akind%2Fflake)`, *comment.User.Login)
+[Open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is%%3Aissue%%20label%%3Akind%%2Fflake)`, *comment.User.Login)
 			err := obj.WriteComment(body)
 			if err != nil {
 				glog.Errorf("unexpected error adding comment: %v", err)
