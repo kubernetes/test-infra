@@ -243,14 +243,21 @@ func (sq *SubmitQueue) e2eStable() bool {
 	sq.Unlock()
 
 	reason := ""
+	avatar := ""
 	if wentStable {
 		reason = e2eRecover
+		avatar = "success.png"
 	} else if wentUnstable {
 		reason = e2eFailure
+		avatar = "error.png"
 	}
 	if reason != "" {
 		submitStatus := submitStatus{
-			Time:   time.Now(),
+			Time: time.Now(),
+			statusPullRequest: statusPullRequest{
+				Title:     reason,
+				AvatarURL: avatar,
+			},
 			Reason: reason,
 		}
 		sq.Lock()
