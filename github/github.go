@@ -392,6 +392,20 @@ func (config *Config) GetObject(num int) (*MungeObject, error) {
 	return obj, nil
 }
 
+// IsForBranch return true if the object is a PR for a branch with the given
+// name. It return false if it is not a pr, it isn't against the given branch,
+// or we can't tell
+func (obj *MungeObject) IsForBranch(branch string) bool {
+	pr, err := obj.GetPR()
+	if err != nil {
+		return false
+	}
+	if pr.Base != nil && pr.Base.Ref != nil && *pr.Base.Ref == branch {
+		return true
+	}
+	return false
+}
+
 // LastModifiedTime returns the time the last commit was made
 // BUG: this should probably return the last time a git push happened or something like that.
 func (obj *MungeObject) LastModifiedTime() *time.Time {
