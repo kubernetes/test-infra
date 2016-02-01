@@ -43,7 +43,7 @@ const (
 //
 // With minor modification this can be run easily by hand. Remove the LGTM check
 // godep go build
-// ./mungegithub --token-file=/PATH/TO/YOUR/TOKEN --pr-mungers=rerun-old-pending-ci --once (--dry-run)
+// ./mungegithub --token-file=/PATH/TO/YOUR/TOKEN --pr-mungers=stale-pending-ci --once (--dry-run)
 type StalePendingCI struct{}
 
 func init() {
