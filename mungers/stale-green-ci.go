@@ -27,31 +27,31 @@ import (
 )
 
 const (
-	staleHours = 48
+	staleGreenCIHours = 48
 )
 
-// StaleUnitTestMunger will remove the LGTM flag from an PR which has been
+// StaleGreenCI will remove the LGTM flag from an PR which has been
 // updated since the reviewer added LGTM
-type StaleUnitTestMunger struct{}
+type StaleGreenCI struct{}
 
 func init() {
-	RegisterMungerOrDie(StaleUnitTestMunger{})
+	RegisterMungerOrDie(StaleGreenCI{})
 }
 
 // Name is the name usable in --pr-mungers
-func (StaleUnitTestMunger) Name() string { return "stale-unit-test" }
+func (StaleGreenCI) Name() string { return "stale-green-ci" }
 
 // Initialize will initialize the munger
-func (StaleUnitTestMunger) Initialize(config *github.Config) error { return nil }
+func (StaleGreenCI) Initialize(config *github.Config) error { return nil }
 
 // EachLoop is called at the start of every munge loop
-func (StaleUnitTestMunger) EachLoop() error { return nil }
+func (StaleGreenCI) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (StaleUnitTestMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (StaleGreenCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
-func (StaleUnitTestMunger) Munge(obj *github.MungeObject) {
+func (StaleGreenCI) Munge(obj *github.MungeObject) {
 	requiredContexts := []string{jenkinsUnitContext, jenkinsE2EContext}
 
 	if !obj.IsPR() {
@@ -76,11 +76,11 @@ func (StaleUnitTestMunger) Munge(obj *github.MungeObject) {
 			glog.Errorf("%d: unable to determine time %q context was set", *obj.Issue.Number, context)
 			return
 		}
-		if time.Since(*statusTime) > staleHours*time.Hour {
+		if time.Since(*statusTime) > staleGreenCIHours*time.Hour {
 			msgFormat := `@k8s-bot test this
 
 Tests are more than %d hours old. Re-running tests.`
-			msg := fmt.Sprintf(msgFormat, staleHours)
+			msg := fmt.Sprintf(msgFormat, staleGreenCIHours)
 			obj.WriteComment(msg)
 			err := obj.WaitForPending(requiredContexts)
 			if err != nil {

@@ -115,7 +115,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 		config.Project = "r"
 		config.SetClient(client)
 
-		s := StaleUnitTestMunger{}
+		s := StaleGreenCI{}
 		err := s.Initialize(config)
 		if err != nil {
 			t.Fatalf("%v", err)
