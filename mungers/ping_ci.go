@@ -25,6 +25,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	validBranches = []string{"master"}
+)
+
 // PingCIMunger looks for situations CI (Travis | Shippable) has flaked for some
 // reason and we want to re-run them.  Achieves this by closing and re-opening the pr
 type PingCIMunger struct{}
@@ -48,6 +52,19 @@ func (PingCIMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 // Munge is the workhorse the will actually make updates to the PR
 func (PingCIMunger) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
+		return
+	}
+
+	// This munger only runs on certain branches, since travis/CI only listens
+	// on certain branches
+	validBranch := false
+	for _, b := range validBranches {
+		if obj.IsForBranch(b) {
+			validBranch = true
+			break
+		}
+	}
+	if !validBranch {
 		return
 	}
 
