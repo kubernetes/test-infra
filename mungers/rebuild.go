@@ -81,9 +81,10 @@ func (r *RebuildMunger) Munge(obj *github.MungeObject) {
 				glog.Errorf("Error deleting comment: %v", err)
 				continue
 			}
-			body := fmt.Sprintf(`@%s you must link to the test flake issue when requesting a manual test.
-Expecting comment of the form '@k8s-bot test this github issue: #\<number\>'
-[Open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open)`, *comment.User.Login)
+			body := fmt.Sprintf(`@%s
+You must link to the test flake issue which caused you to request this manual re-test.
+Re-test requests should be in the form of: `+"`"+`k8s-bot test this issue: #<number>`+"`"+`
+Here is the [list of open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open).`, *comment.User.Login)
 			err := obj.WriteComment(body)
 			if err != nil {
 				glog.Errorf("unexpected error adding comment: %v", err)
