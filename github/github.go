@@ -377,12 +377,50 @@ func (config *Config) SetClient(client *github.Client) {
 	config.client = client
 }
 
-// GetObject will return an object (with only the issue filled in)
-func (config *Config) GetObject(num int) (*MungeObject, error) {
+func (config *Config) getPR(num int) (*github.PullRequest, error) {
+	pr, response, err := config.client.PullRequests.Get(config.Org, config.Project, num)
+	config.analytics.GetPR.Call(config, response)
+	if err != nil {
+		glog.Errorf("Error getting PR# %d: %v", num, err)
+		return nil, err
+	}
+	return pr, nil
+}
+
+func (config *Config) getIssue(num int) (*github.Issue, error) {
 	issue, resp, err := config.client.Issues.Get(config.Org, config.Project, num)
 	config.analytics.GetIssue.Call(config, resp)
 	if err != nil {
-		glog.Errorf("GetObject: %v", err)
+		glog.Errorf("getIssue: %v", err)
+		return nil, err
+	}
+	return issue, nil
+}
+
+// Refresh will refresh the Issue (and PR if this is a PR)
+// (not the commits or events)
+func (obj *MungeObject) Refresh() error {
+	num := *obj.Issue.Number
+	issue, err := obj.config.getIssue(num)
+	if err != nil {
+		return err
+	}
+	obj.Issue = issue
+	if !obj.IsPR() {
+		return nil
+	}
+	pr, err := obj.config.getPR(*obj.Issue.Number)
+	if err != nil {
+		return err
+	}
+	obj.pr = pr
+	return nil
+}
+
+// GetObject will return an object (with only the issue filled in)
+func (config *Config) GetObject(num int) (*MungeObject, error) {
+	issue, err := config.getIssue(num)
+	if err != nil {
 		return nil, err
 	}
 	obj := &MungeObject{
@@ -910,21 +948,7 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 	return filledCommits, nil
 }
 
-// RefreshPR will get the PR again, in case anything changed since last time
-func (obj *MungeObject) RefreshPR() (*github.PullRequest, error) {
-	config := obj.config
-	issueNum := *obj.Issue.Number
-	pr, response, err := config.client.PullRequests.Get(config.Org, config.Project, issueNum)
-	config.analytics.GetPR.Call(config, response)
-	if err != nil {
-		glog.Errorf("Error getting PR# %d: %v", issueNum, err)
-		return nil, err
-	}
-	obj.pr = pr
-	return pr, nil
-}
-
-// GetPR will update the PR in the object.
+// GetPR will return the PR of the object.
 func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
 	if obj.pr != nil {
 		return obj.pr, nil
@@ -932,7 +956,12 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
 	if !obj.IsPR() {
 		return nil, fmt.Errorf("Issue: %d is not a PR", *obj.Issue.Number)
 	}
-	return obj.RefreshPR()
+	pr, err := obj.config.getPR(*obj.Issue.Number)
+	if err != nil {
+		return nil, err
+	}
+	obj.pr = pr
+	return pr, nil
 }
 
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
@@ -1145,7 +1174,12 @@ func (obj *MungeObject) IsMergeable() (bool, error) {
 		glog.V(4).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
 		// TODO: determine what a good empirical setting for this is.
 		time.Sleep(2 * time.Second)
-		pr, err = obj.RefreshPR()
+		err := obj.Refresh()
+		if err != nil {
+			glog.Errorf("Unable to refresh PR# %d: %v", prNum, err)
+			return false, err
+		}
+		pr, err = obj.GetPR()
 		if err != nil {
 			glog.Errorf("Unable to get PR# %d: %v", prNum, err)
 			return false, err

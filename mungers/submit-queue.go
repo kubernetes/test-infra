@@ -506,9 +506,13 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	added := false
 	sq.Lock()
 	if _, ok := sq.githubE2EQueue[*obj.Issue.Number]; !ok {
-		sq.githubE2EQueue[*obj.Issue.Number] = obj
 		added = true
 	}
+	// Add this most-recent object in place of the existing object. It will
+	// have more up2date information. Even though we explicitly refresh the
+	// PR information before do anything with it, this allow things like the
+	// queue order to change dynamically as labels are added/removed.
+	sq.githubE2EQueue[*obj.Issue.Number] = obj
 	sq.Unlock()
 	if added {
 		sq.SetMergeStatus(obj, ghE2EQueued, true)
@@ -629,7 +633,7 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
-	_, err := obj.RefreshPR()
+	err := obj.Refresh()
 	if err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown, true)
