@@ -25,11 +25,14 @@ import (
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // RebuildMunger looks for situations where a someone has asked for an e2e rebuild, but hasn't provided
 // an issue
-type RebuildMunger struct{}
+type RebuildMunger struct {
+	robots sets.String
+}
 
 var (
 	buildMatcher = regexp.MustCompile("@k8s-bot\\s+(?:e2e\\s+)?(?:unit\\s+)?test\\s+this.*")
@@ -37,23 +40,26 @@ var (
 )
 
 func init() {
-	RegisterMungerOrDie(RebuildMunger{})
+	RegisterMungerOrDie(&RebuildMunger{})
 }
 
 // Name is the name usable in --pr-mungers
-func (RebuildMunger) Name() string { return "rebuild-request" }
+func (r *RebuildMunger) Name() string { return "rebuild-request" }
 
 // Initialize will initialize the munger
-func (RebuildMunger) Initialize(config *github.Config) error { return nil }
+func (r *RebuildMunger) Initialize(config *github.Config) error {
+	r.robots = sets.NewString("googlebot", "k8s-bot", "k8s-merge-robot")
+	return nil
+}
 
 // EachLoop is called at the start of every munge loop
-func (RebuildMunger) EachLoop() error { return nil }
+func (r *RebuildMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (RebuildMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (r *RebuildMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
-func (RebuildMunger) Munge(obj *github.MungeObject) {
+func (r *RebuildMunger) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
@@ -66,11 +72,9 @@ func (RebuildMunger) Munge(obj *github.MungeObject) {
 	for ix := range comments {
 		comment := &comments[ix]
 		// Skip all robot comments
-		for _, robot := range []string{"k8s-bot", "k8s-merge-robot", "googlebot"} {
-			if *comment.User.Login == robot {
-				glog.V(4).Infof("Skipping comment by robot %s: %s", robot, *comment.Body)
-				continue
-			}
+		if r.robots.Has(*comment.User.Login) {
+			glog.V(4).Infof("Skipping comment by robot %s: %s", *comment.User.Login, *comment.Body)
+			continue
 		}
 		if isRebuildComment(comment) && rebuildCommentMissingIssueNumber(comment) {
 			if err := obj.DeleteComment(comment); err != nil {
