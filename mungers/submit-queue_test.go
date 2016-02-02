@@ -88,7 +88,7 @@ func UserNotInWhitelistOKToMergeIssue() *github.Issue {
 }
 
 func DontRequireGithubE2EIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", "e2e-not-required"}, true)
+	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", e2eNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []github.IssueEvent {
@@ -224,6 +224,17 @@ func TestQueueOrder(t *testing.T) {
 				*github_test.Issue(whitelistUser, 5, nil, true),
 			},
 			expected: []int{4, 2, 3, 5},
+		},
+		{
+			name: "e2e-not-required counts as P-negative 1",
+			issues: []github.Issue{
+				*github_test.Issue(whitelistUser, 2, nil, true),
+				*github_test.Issue(whitelistUser, 3, []string{"priority/P3"}, true),
+				*github_test.Issue(whitelistUser, 4, []string{"priority/P2"}, true),
+				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(whitelistUser, 6, []string{"priority/P3", e2eNotRequiredLabel}, true),
+			},
+			expected: []int{6, 4, 2, 3, 5},
 		},
 	}
 	for testNum, test := range tests {
