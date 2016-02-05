@@ -25,9 +25,9 @@
         <h2 class="md-toolbar-tools">E2E Tests Failing. Entire Submit Queue Blocked.</h2>
       </md-toolbar>
       <md-content class="md-padding">
-        <md-tabs md-dynamic-height md-border-bottom>
+        <md-tabs md-selected="cntl.selected" md-dynamic-height md-border-bottom>
 
-          <md-tab label="PR's">
+          <md-tab label="PR's" md-on-select="cntl.selectTab('prs')">
             <md-content class="md-padding">
               <md-content class="md-whiteframe-z2">
                 <md-toolbar>
@@ -62,7 +62,7 @@
             </md-content>
           </md-tab>
 
-          <md-tab label="Queue">
+          <md-tab label="Queue" md-on-select="cntl.selectTab('queue')">
             <md-content class="md-padding">
               <md-toolbar class="md-whiteframe-z2">
                 <h2 class="md-toolbar-tools">Queued For Retest And Merge<span id="queue-len" ng-show="cntl.e2equeue.length > 0"></span></h2>
@@ -101,7 +101,7 @@
             </md-content>
           </md-tab>
 
-          <md-tab label="History">
+          <md-tab label="History" md-on-select="cntl.selectTab('history')">
             <md-content class="md-padding">
               <md-content class="md-whiteframe-z2">
                 <md-toolbar>
@@ -136,7 +136,7 @@
             </md-content>
           </md-tab>
 
-          <md-tab>
+          <md-tab md-on-select="cntl.selectTab('e2e')">
             <md-tab-label>
               <span ng-class="{'redTab':cntl.failedBuild}">Google Internal E2E</span>
             </md-tab-label>
@@ -155,7 +155,7 @@
             </md-tab-body>
           </md-tab>
 
-          <md-tab label="Users">
+          <md-tab label="Users" md-on-select="cntl.selectTab('users')">
             <md-content class="md-padding">
               <md-toolbar class="md-whiteframe-z2">
                 <h2 class="md-toolbar-tools">Users</h2>
@@ -172,7 +172,7 @@
             </md-content>
           </md-tab>
 
-          <md-tab label="Bot Info">
+          <md-tab label="Bot Info" md-on-select="cntl.selectTab('bot')">
             <md-content class="md-padding">
               <md-content class="md-whiteframe-z2">
                 <md-toolbar>
