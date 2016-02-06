@@ -17,6 +17,8 @@ limitations under the License.
 package mungers
 
 import (
+	"fmt"
+
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -62,7 +64,7 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 	if !mergeable && !obj.HasLabel(needsRebase) {
 		obj.AddLabels([]string{needsRebase})
 
-		body := "PR needs rebase"
+		body := fmt.Sprintf("@%s PR needs rebase", *obj.Issue.User.Login)
 		if err := obj.WriteComment(body); err != nil {
 			return
 		}
