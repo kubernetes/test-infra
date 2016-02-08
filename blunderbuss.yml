@@ -142,6 +142,10 @@ prefixMap:
     - derekwaynecarr
     - mikedanese
 
+  pkg/controller/persistentvolume:
+    - saad-ali
+    - thockin
+
   pkg/conversion:
     - derekwaynecarr
     - lavalamp
@@ -184,6 +188,7 @@ prefixMap:
   pkg/volume:
     - saad-ali
     - thockin
+    - pmorie
 
   plugin:
     - brendandburns
