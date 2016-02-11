@@ -21,8 +21,11 @@ READONLY ?= true
 mungegithub:
 	CGO_ENABLED=0 GOOS=linux godep go build -a -installsuffix cgo -ldflags '-w' -o mungegithub
 
+test: mungegithub
+	CGO_ENABLED=0 GOOS=linux godep go test ./...
+
 # build the container with the binary
-container: mungegithub
+container: test
 	docker build -t $(CONTAINER) -f Dockerfile-$(APP) .
 
 # push the container
@@ -98,4 +101,4 @@ help:
 	@echo " clean:        deletes the binary and local files (does not delete old containers)"
 
 
-.PHONY: all mungegithub container push dryrun cleandryrun local_dryrun rc secret clean help
+.PHONY: all mungegithub test container push dryrun cleandryrun local_dryrun rc secret clean help
