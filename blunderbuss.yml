@@ -38,6 +38,12 @@ prefixMap:
     - mikedanese
     - thockin
 
+  cmd/kube-apiserver:
+    - lavalamp
+    - smarterclayton
+    - nikhiljindal
+    - krousey
+
   cmd/kube-controller-manager:
     - davidopp
     - lavalamp
@@ -51,6 +57,14 @@ prefixMap:
   cmd/libs/go2idl:
     - lavalamp
     - wojtek-t
+
+  cmd/libs/go2idl/go-to-protobuf:
+    - smarterclayton
+
+  cmd/libs/go2idl/client-gen:
+    - lavalamp
+    - wojtek-t
+    - caesarxuchao
 
   contrib/mesos:
     - jdef
@@ -84,7 +98,7 @@ prefixMap:
   pkg:
     - bgrant0607
     - brendandburns
-    - eparis
+    - dchen1107
     - lavalamp
     - smarterclayton
     - thockin
@@ -111,6 +125,11 @@ prefixMap:
     - thockin
 
   pkg/apiserver:
+    - lavalamp
+    - nikhiljindal
+    - smarterclayton
+
+  pkg/genericapiserver:
     - lavalamp
     - nikhiljindal
     - smarterclayton
