@@ -1,7 +1,8 @@
 # This file is used by the path-label munger and is of the form:
-#  PATH REGEXP                 LABEL
+#  PATH REGEXP			LABEL
 
-^docs/proposals                kind/design
+^docs/proposals			kind/design
+^docs/design			kind/design
 
 # examples:
 # pkg/api/types.go
