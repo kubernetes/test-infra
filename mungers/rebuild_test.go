@@ -104,6 +104,18 @@ func TestRebuildMissingIssue(t *testing.T) {
 			value:         "@k8s-bot test this please flake: #12345",
 			expectMissing: false,
 		},
+		{
+			value:         "@k8s-bot test this please flake: https://github.com/kubernetes/kubernetes/issues/12345",
+			expectMissing: false,
+		},
+		{
+			value:         "@k8s-bot test this please flake: http://github.com/kubernetes/kubernetes/issues/12345",
+			expectMissing: false,
+		},
+		{
+			value:         "@k8s-bot test this please flake: github.com/kubernetes/kubernetes/issues/12345",
+			expectMissing: false,
+		},
 	}
 	for _, test := range tests {
 		comment := &githubapi.IssueComment{
