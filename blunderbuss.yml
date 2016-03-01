@@ -233,5 +233,4 @@ prefixMap:
     - ihmccreery
 
   test:
-    - ihmccreery
     - ixdy
