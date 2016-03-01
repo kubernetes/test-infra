@@ -34,9 +34,13 @@ type RebuildMunger struct {
 	robots sets.String
 }
 
+const (
+	issueURLRe = "(?:https?://)?github.com/kubernetes/kubernetes/issues/[0-9]+"
+)
+
 var (
 	buildMatcher = regexp.MustCompile("@k8s-bot\\s+(?:e2e\\s+)?(?:unit\\s+)?test\\s+this.*")
-	issueMatcher = regexp.MustCompile("\\s+(?:github\\s+)?(issue|flake)\\:?\\s+#(?:IGNORE|[0-9]+)")
+	issueMatcher = regexp.MustCompile("\\s+(?:github\\s+)?(issue|flake)\\:?\\s+(?:#(?:IGNORE|[0-9]+)|" + issueURLRe + ")")
 )
 
 func init() {
