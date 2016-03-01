@@ -61,9 +61,9 @@ rc:
 	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' rc.yaml > local.rc.yaml
 	# update the rc.yaml with the current repo (if not gcr.io
 	sed -i -e 's|gcr.io/google_containers|$(REPO)|g' local.rc.yaml
-ifneq ($(READONLY),false)
-	# update the rc.yaml with --dry-run
-	sed -i -e 's!^\([[:space:]]\+\)- --token-file=/etc/secret-volume/token!\1- --token-file=/etc/secret-volume/token\n\1- --dry-run!g' local.rc.yaml
+ifeq ($(READONLY),false)
+	# update the rc.yaml with --dry-run=false
+	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' local.rc.yaml
 endif
 	# update the rc.yaml with label "readonly: true"
 	sed -i -e 's!^\([[:space:]]\+\)app: mungegithub!\1app: mungegithub\n\1readonly: "$(READONLY)"!g' local.rc.yaml
