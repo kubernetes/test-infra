@@ -14,3 +14,8 @@
 # pkg/apis/*/*/types.go
 ^pkg/apis/[^/]+/([^/]+/)?types.go$    kind/api-change
 ^pkg/apis/[^/]+/([^/]+/)?register.go$ kind/new-api
+
+# docs which are going away with move to separate doc repo
+^docs/getting-started-guides	kind/old-docs
+^docs/admin			kind/old-docs
+^docs/user-guide		kind/old-docs
