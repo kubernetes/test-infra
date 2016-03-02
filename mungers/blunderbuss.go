@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
@@ -68,8 +69,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (b *BlunderbussMunger) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (b *BlunderbussMunger) Initialize(config *github.Config) error {
+func (b *BlunderbussMunger) Initialize(config *github.Config, features *features.Features) error {
 	if len(b.blunderbussConfigFile) == 0 {
 		glog.Fatalf("--blunderbuss-config is required with the blunderbuss munger")
 	}

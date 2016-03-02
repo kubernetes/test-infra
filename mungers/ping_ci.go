@@ -19,6 +19,7 @@ package mungers
 import (
 	"time"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -40,8 +41,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (PingCIMunger) Name() string { return "ping-ci" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (PingCIMunger) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (PingCIMunger) Initialize(config *github.Config) error { return nil }
+func (PingCIMunger) Initialize(config *github.Config, features *features.Features) error { return nil }
 
 // EachLoop is called at the start of every munge loop
 func (PingCIMunger) EachLoop() error { return nil }

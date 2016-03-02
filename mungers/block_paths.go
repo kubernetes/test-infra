@@ -21,6 +21,7 @@ import (
 	"os"
 	"regexp"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
@@ -51,8 +52,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (b *BlockPath) Name() string { return "block-path" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (b *BlockPath) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (b *BlockPath) Initialize(config *github.Config) error {
+func (b *BlockPath) Initialize(config *github.Config, features *features.Features) error {
 	if len(b.path) == 0 {
 		glog.Fatalf("--block-path-config is required with the block-path munger")
 	}

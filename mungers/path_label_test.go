@@ -165,7 +165,7 @@ func TestPathLabelMunge(t *testing.T) {
 
 		p := PathLabelMunger{}
 		p.pathLabelFile = "../path-label.txt"
-		err := p.Initialize(config)
+		err := p.Initialize(config, nil)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
