@@ -27,6 +27,7 @@ spec:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
         - --pr-mungers=blunderbuss,lgtm-after-commit,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,submit-queue
+        - --dry-run=true
         image: gcr.io/google_containers/mungegithub:2015-10-26-2a7f8fd
         imagePullPolicy: IfNotPresent
         name: mungegithub
