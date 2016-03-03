@@ -152,7 +152,7 @@ prefixMap:
     - davidopp
     - mikedanese
 
-  pkg/cloudprovider/aws:
+  pkg/cloudprovider/providers/aws:
     - justinsb
 
   pkg/controller:
