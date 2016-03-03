@@ -38,6 +38,7 @@ import (
 const (
 	needsOKToMergeLabel = "needs-ok-to-merge"
 	e2eNotRequiredLabel = "e2e-not-required"
+	doNotAutoMergeLabel = "do-not-auto-merge"
 	claYes              = "cla: yes"
 	claHuman            = "cla: human-approved"
 
@@ -421,6 +422,7 @@ const (
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
+	noAutoMerge             = "Will not auto merge because " + doNotAutoMergeLabel + " is present"
 	ciFailure               = "Github CI tests are not green."
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
 	e2eRecover              = "The e2e tests started passing. The submit queue is unblocked."
@@ -502,6 +504,10 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	if lastModifiedTime.After(*lgtmTime) {
 		sq.SetMergeStatus(obj, lgtmEarly, false)
 		return
+	}
+
+	if obj.HasLabel(doNotAutoMergeLabel) {
+		sq.SetMergeStatus(obj, noAutoMerge, false)
 	}
 
 	added := false
@@ -672,6 +678,10 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	if !sq.e2eStable() {
 		sq.SetMergeStatus(obj, e2eFailure, true)
 		return
+	}
+
+	if obj.HasLabel(doNotAutoMergeLabel) {
+		sq.SetMergeStatus(obj, noAutoMerge, true)
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {

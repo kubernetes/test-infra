@@ -1,0 +1,12 @@
+blockRegexp:
+  - ^docs/getting-started-guides
+  - ^docs/admin
+  - ^docs/user-guide
+doNotBlockRegexp:
+  - ^docs/admin/kube-apiserver.md$
+  - ^docs/admin/kube-controller-manager.md$
+  - ^docs/admin/kube-proxy.md$
+  - ^docs/admin/kube-scheduler.md$
+  - ^docs/admin/kubelet.md$
+  - ^docs/man/man1/kubectl.*\.1$
+  - ^docs/user-guide/kubectl/kubectl.*\.md$
