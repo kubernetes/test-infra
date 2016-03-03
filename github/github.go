@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,6 +47,11 @@ const (
 
 	headerRateRemaining = "X-RateLimit-Remaining"
 	headerRateReset     = "X-RateLimit-Reset"
+)
+
+var (
+	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]$`)
+	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 )
 
 type callLimitRoundTripper struct {
@@ -594,6 +600,28 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 		return err
 	}
 	return nil
+}
+
+// ReleaseMilestoneDue returns the due date for a milestone. It ONLY looks at
+// milestones of the form 'vX.Y' where X and Y are integeters. Return the maximum
+// possible time if there is no milestone or the milestone doesn't look like a
+// release milestone
+func (obj *MungeObject) ReleaseMilestoneDue() time.Time {
+	milestone := obj.Issue.Milestone
+	if milestone == nil {
+		return maxTime
+	}
+	title := milestone.Title
+	if title == nil {
+		return maxTime
+	}
+	if !releaseMilestoneRE.MatchString(*title) {
+		return maxTime
+	}
+	if milestone.DueOn == nil {
+		return maxTime
+	}
+	return *milestone.DueOn
 }
 
 // Priority returns the priority an issue was labeled with.

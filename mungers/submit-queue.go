@@ -174,6 +174,7 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		http.HandleFunc("/google-internal-ci", func(w http.ResponseWriter, r *http.Request) {
 			sq.serveGoogleInternalStatus(w, r)
 		})
+		http.HandleFunc("/priority-info", sq.servePriorityInfo)
 		go http.ListenAndServe(sq.Address, nil)
 	}
 	sq.prStatus = map[string]submitStatus{}
@@ -567,6 +568,8 @@ type queueSorter []*github.MungeObject
 
 func (s queueSorter) Len() int      { return len(s) }
 func (s queueSorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+// If you update the function PLEASE PLEASE PLEASE also update servePriorityInfo()
 func (s queueSorter) Less(i, j int) bool {
 	a := s[i]
 	b := s[j]
@@ -577,6 +580,15 @@ func (s queueSorter) Less(i, j int) bool {
 	if aPrio < bPrio {
 		return true
 	} else if aPrio > bPrio {
+		return false
+	}
+
+	aDue := a.ReleaseMilestoneDue()
+	bDue := b.ReleaseMilestoneDue()
+
+	if aDue.Before(bDue) {
+		return true
+	} else if aDue.After(bDue) {
 		return false
 	}
 
@@ -748,4 +760,18 @@ func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.R
 func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
 	data := sq.getGoogleInternalStatus()
 	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-type", "text/plain")
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte(`First by priority (based on label named priority/pX)<br>
+P0 first, then P1, then P2.<br>
+a PR without a priority label is considered equal to priority/p3<br>
+<br>
+Second By 'release milestone due date'.<br>
+A milestone is only considered a 'release' milestone if it of the form vX.Y, where X and Y are integers<br>
+A PR without a 'release milestone' is considered to be after one with a milestone<br>
+<br>
+Third By PR number`))
 }

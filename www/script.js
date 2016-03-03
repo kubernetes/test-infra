@@ -41,8 +41,11 @@ function SQCntl(dataService, $interval, $location) {
       case "/users":
 	  self.selected=4;
 	  break;
-      case "/bot":
+      case "/priority-info":
 	  self.selected=5;
+	  break;
+      case "/bot":
+	  self.selected=6;
 	  break;
       default:
 	  console.log("unknown path: " + path);
@@ -246,6 +249,14 @@ function SQCntl(dataService, $interval, $location) {
 
   function selectTab(tabName) {
     self.location.path('/' + tabName);
+  }
+
+  getPriorityInfo()
+
+  function getPriorityInfo() {
+    dataService.getData('priority-info').then(function successCallback(response) {
+      document.getElementById("priority-info").innerHTML = response.data;
+    });
   }
 }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.3/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.css" type="text/css">
   <link rel="stylesheet" href="md-data-table.min.css" type="text/css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
   <link rel="stylesheet" href="style.css" type="text/css">
@@ -172,7 +172,20 @@
             </md-content>
           </md-tab>
 
-          <md-tab label="Bot Info" md-on-select="cntl.selectTab('bot')">
+          <md-tab label="Info: Queue Priority" md-on-select="cntl.selectTab('priority-info')">
+	    <md-content class="md-padding">
+              <md-content class="md-whiteframe-z2">
+                <md-toolbar>
+                  <h2 class="md-toolbar-tools">How PRs get prioritized in the queue</h2>
+                </md-toolbar>
+              </md-content>
+	      <md-content class="md-padding">
+	        <span id="priority-info" white-space: pre-wrap;></span>
+	      </md-content>
+	    </md-content>
+	  </md-tab>
+
+          <md-tab label="Info: Bot Stats" md-on-select="cntl.selectTab('bot')">
             <md-content class="md-padding">
               <md-content class="md-whiteframe-z2">
                 <md-toolbar>
@@ -215,10 +228,10 @@
     </md-content>
   </md-content>
   <!-- Angular Material Dependencies -->
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js" type="text/javascript"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-animate.min.js" type="text/javascript"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-aria.min.js" type="text/javascript"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.3/angular-material.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-aria.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.js" type="text/javascript"></script>
   <script src="md-data-table.min.js" type="text/javascript"></script>
   <script src="toArrayFilter.js" type="text/javascript"></script>
   <script src="script.js" type="text/javascript"></script>
