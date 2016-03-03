@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -157,24 +158,13 @@ func (sq *SubmitQueue) Initialize(config *github.Config) error {
 		if len(sq.WWWRoot) > 0 {
 			http.Handle("/", http.FileServer(http.Dir(sq.WWWRoot)))
 		}
-		http.HandleFunc("/prs", func(w http.ResponseWriter, r *http.Request) {
-			sq.servePRs(w, r)
-		})
-		http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveHistory(w, r)
-		})
-		http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveUsers(w, r)
-		})
-		http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveBotStats(w, r)
-		})
-		http.HandleFunc("/github-e2e-queue", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveGithubE2EStatus(w, r)
-		})
-		http.HandleFunc("/google-internal-ci", func(w http.ResponseWriter, r *http.Request) {
-			sq.serveGoogleInternalStatus(w, r)
-		})
+		http.HandleFunc("/prs", sq.servePRs)
+		http.HandleFunc("/history", sq.serveHistory)
+		http.HandleFunc("/users", sq.serveUsers)
+		http.HandleFunc("/stats", sq.serveBotStats)
+		http.HandleFunc("/github-e2e-queue", sq.serveGithubE2EStatus)
+		http.HandleFunc("/google-internal-ci", sq.serveGoogleInternalStatus)
+		http.HandleFunc("/merge-info", sq.serveMergeInfo)
 		http.HandleFunc("/priority-info", sq.servePriorityInfo)
 		go http.ListenAndServe(sq.Address, nil)
 	}
@@ -445,6 +435,7 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 }
 
 // Munge is the workhorse the will actually make updates to the PR
+// If you update the logic PLEASE PLEASE PLEASE update serveMergeInfo() as well.
 func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
@@ -772,16 +763,66 @@ func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *h
 	sq.serve(data, res, req)
 }
 
+func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-type", "text/plain")
+	res.WriteHeader(http.StatusOK)
+	var out bytes.Buffer
+	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
+	out.WriteString("<ol>")
+	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q</li>", claYes, claHuman))
+	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
+	contexts := sq.RequiredStatusContexts
+	exceptStr := ""
+	if len(sq.E2EStatusContext) > 0 {
+		contexts = append(contexts, sq.E2EStatusContext)
+		exceptStr = fmt.Sprintf("Note: %q is not required if the PR has the %q label", sq.E2EStatusContext, e2eNotRequiredLabel)
+	}
+	if len(sq.UnitStatusContext) > 0 {
+		contexts = append(contexts, sq.UnitStatusContext)
+	}
+	if len(contexts) > 0 {
+		out.WriteString("<li>All of the following github statuses must be green")
+		out.WriteString("<ul>")
+		for _, context := range contexts {
+			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
+		}
+		out.WriteString("</ul>")
+		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
+	}
+	out.WriteString(fmt.Sprintf("<li>The PR either needs the label %q or the creator of the PR must be in the 'Users' list seen on the 'Info' tab.</li>", sq.WhitelistOverride))
+	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, "lgtm"))
+	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", "lgtm"))
+	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotAutoMergeLabel))
+	out.WriteString(`</ol><br>`)
+	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
+	out.WriteString("<ol>")
+	out.WriteString(fmt.Sprintf("<li>All of the <a href=http://submit-queue.k8s.io/#/e2e>continuously running e2e tests</a> must be passing</li>"))
+	out.WriteString(fmt.Sprintf("<li>The %s tests must pass a second time<br>", sq.E2EStatusContext))
+	out.WriteString(fmt.Sprintf("Note: The %s tests are not required if the %q label is present</li>", sq.E2EStatusContext, e2eNotRequiredLabel))
+	out.WriteString("</ol>")
+	out.WriteString("And then the PR will be merged!!")
+	res.Write(out.Bytes())
+}
+
 func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-type", "text/plain")
 	res.WriteHeader(http.StatusOK)
-	res.Write([]byte(`First by priority (based on label named priority/pX)<br>
-P0 first, then P1, then P2.<br>
-a PR without a priority label is considered equal to priority/p3<br>
-<br>
-Second By 'release milestone due date'.<br>
-A milestone is only considered a 'release' milestone if it of the form vX.Y, where X and Y are integers<br>
-A PR without a 'release milestone' is considered to be after one with a milestone<br>
-<br>
-Third By PR number`))
+	res.Write([]byte(`The merge queue is sorted by the following. If there is a tie in any test the next test will be used. A P0 will always come before a P1, no matter how the other tests compare.
+<ol>
+  <li>Priority
+    <ul>
+      <li>Determined by a label of the form 'priority/pX'
+      <li>P0 -&gt; P1 -&gt; P2</li>
+      <li>A PR with no priority label is considered equal to a P3</li>
+    </ul>
+  </li>
+  <li>Release milestone due date
+    <ul>
+      <li>Release milestones are of the form vX.Y where X and Y are integers</li>
+      <li>Other milestones are ignored.
+      <li>PR with no release milestone will be considered after any PR with a milestone</li>
+    </ul>
+  </li>
+  <li>PR number</li>
+</ol> `))
 }
