@@ -110,7 +110,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if obj.HasLabel(doNotAutoMergeLabel) {
+	if obj.HasLabel(doNotMergeLabel) {
 		return
 	}
 
@@ -125,9 +125,10 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 				if matchesAny(*f.Filename, b.doNotBlockRegexp) {
 					continue
 				}
-				body := fmt.Sprintf("Adding label:%s because PR changes files prohibited to auto merge", doNotAutoMergeLabel)
+				body := fmt.Sprintf(`Adding label:%s because PR changes docs prohibited to auto merge
+See http://kubernetes.github.io/docs/editdocs/ for information about editting docs`, doNotMergeLabel)
 				obj.WriteComment(body)
-				obj.AddLabels([]string{doNotAutoMergeLabel})
+				obj.AddLabels([]string{doNotMergeLabel})
 				return
 			}
 		}
