@@ -71,6 +71,10 @@ func NoOKToMergeIssue() *github.Issue {
 	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm"}, true)
 }
 
+func DoNotMergeIssue() *github.Issue {
+	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", doNotMergeLabel}, true)
+}
+
 func NoCLAIssue() *github.Issue {
 	return github_test.Issue(whitelistUser, 1, []string{"lgtm", "ok-to-merge"}, true)
 }
@@ -592,6 +596,19 @@ func TestSubmitQueue(t *testing.T) {
 			e2ePass:    false,
 			unitPass:   true,
 			reason:     ghE2EFailed,
+			state:      "pending",
+		},
+		{
+			name:       "Fail because doNotMerge label is present",
+			pr:         ValidPR(),
+			issue:      DoNotMergeIssue(),
+			events:     NewLGTMEvents(),
+			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:   SuccessStatus(),
+			jenkinsJob: SuccessJenkins(),
+			e2ePass:    true,
+			unitPass:   true,
+			reason:     noMerge,
 			state:      "pending",
 		},
 	}
