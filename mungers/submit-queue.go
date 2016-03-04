@@ -188,10 +188,21 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 // EachLoop is called at the start of every munge loop
 func (sq *SubmitQueue) EachLoop() error {
 	sq.Lock()
-	defer sq.Unlock()
 	sq.RefreshWhitelist()
 	sq.lastPRStatus = sq.prStatus
 	sq.prStatus = map[string]submitStatus{}
+
+	objs := []*github.MungeObject{}
+	for _, obj := range sq.githubE2EQueue {
+		objs = append(objs, obj)
+	}
+	sq.Unlock()
+
+	for _, obj := range objs {
+		obj.Refresh()
+		// This should recheck it and clean up the queue, we don't care about the result
+		_ = sq.validForMerge(obj)
+	}
 	return nil
 }
 
