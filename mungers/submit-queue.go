@@ -298,11 +298,7 @@ func reasonToState(reason string) string {
 // called when manipulating that structure
 // `obj` is the active github object
 // `reason` is the new 'status' for this object
-// `record` is wether we should show this status on the web page or not
-//    In general we do not show the status updates for PRs which didn't reach the
-//    're-run github e2e' state as these are more obvious, change less, and don't
-//    seem to ever confuse people.
-func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, record bool) {
+func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	glog.V(4).Infof("SubmitQueue not merging %d because %q", *obj.Issue.Number, reason)
 	submitStatus := submitStatus{
 		Time:              time.Now(),
@@ -327,7 +323,7 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string, re
 		return
 	}
 
-	if record {
+	if sq.onQueue(obj) {
 		sq.statusHistory = append(sq.statusHistory, submitStatus)
 		if len(sq.statusHistory) > 128 {
 			sq.statusHistory = sq.statusHistory[1:]
@@ -438,43 +434,61 @@ func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string 
 	return contexts
 }
 
-// Munge is the workhorse the will actually make updates to the PR
+// validForMerge is the base logic about what PR can be automatically merged.
+// PRs must pass this logic to be placed on the queue and they must pass this
+// logic a second time to be retested/merged after they get to the top of
+// the queue.
+//
 // If you update the logic PLEASE PLEASE PLEASE update serveMergeInfo() as well.
-func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
+func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
+	// Can't merge an issue!
 	if !obj.IsPR() {
-		return
+		return false
+	}
+
+	// Can't merge something already merged.
+	if m, err := obj.IsMerged(); err != nil {
+		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+		sq.SetMergeStatus(obj, unknown)
+		return false
+	} else if m {
+		sq.SetMergeStatus(obj, merged)
+		return false
 	}
 
 	userSet := sq.userWhitelist
 
+	// Must pass CLA checks
 	if !obj.HasLabels([]string{claYes}) && !obj.HasLabels([]string{claHuman}) {
-		sq.SetMergeStatus(obj, noCLA, false)
-		return
+		sq.SetMergeStatus(obj, noCLA)
+		return false
 	}
 
+	// Obviously must be mergeable
 	if mergeable, err := obj.IsMergeable(); err != nil {
-		sq.SetMergeStatus(obj, undeterminedMergability, false)
-		return
+		sq.SetMergeStatus(obj, undeterminedMergability)
+		return false
 	} else if !mergeable {
-		sq.SetMergeStatus(obj, unmergeable, false)
-		return
+		sq.SetMergeStatus(obj, unmergeable)
+		return false
 	}
 
 	// Validate the status information for this PR
 	contexts := sq.requiredStatusContexts(obj)
 	if ok := obj.IsStatusSuccess(contexts); !ok {
-		sq.SetMergeStatus(obj, ciFailure, false)
-		return
+		sq.SetMergeStatus(obj, ciFailure)
+		return false
 	}
 
+	// The user either must be on the whitelist or have ok-to-merge
 	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*obj.Issue.User.Login) {
 		if !obj.HasLabel(needsOKToMergeLabel) {
 			obj.AddLabels([]string{needsOKToMergeLabel})
 			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
 			obj.WriteComment(body)
 		}
-		sq.SetMergeStatus(obj, needsok, false)
-		return
+		sq.SetMergeStatus(obj, needsok)
+		return false
 	}
 
 	// Tidy up the issue list.
@@ -482,27 +496,40 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 		obj.RemoveLabel(needsOKToMergeLabel)
 	}
 
+	// Clearly
 	if !obj.HasLabels([]string{"lgtm"}) {
-		sq.SetMergeStatus(obj, noLGTM, false)
-		return
+		sq.SetMergeStatus(obj, noLGTM)
+		return false
 	}
 
+	// PR cannot change since LGTM was added
 	lastModifiedTime := obj.LastModifiedTime()
 	lgtmTime := obj.LabelTime("lgtm")
 
 	if lastModifiedTime == nil || lgtmTime == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
-		sq.SetMergeStatus(obj, unknown, false)
-		return
+		sq.SetMergeStatus(obj, unknown)
+		return false
 	}
 
 	if lastModifiedTime.After(*lgtmTime) {
-		sq.SetMergeStatus(obj, lgtmEarly, false)
-		return
+		sq.SetMergeStatus(obj, lgtmEarly)
+		return false
 	}
 
+	// PR cannot have the label which prevents merging.
 	if obj.HasLabel(doNotMergeLabel) {
-		sq.SetMergeStatus(obj, noMerge, false)
+		sq.SetMergeStatus(obj, noMerge)
+		return false
+	}
+
+	return true
+}
+
+// Munge is the workhorse the will actually make updates to the PR
+func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
+	if !sq.validForMerge(obj) {
+		return
 	}
 
 	added := false
@@ -517,7 +544,7 @@ func (sq *SubmitQueue) Munge(obj *github.MungeObject) {
 	sq.githubE2EQueue[*obj.Issue.Number] = obj
 	sq.Unlock()
 	if added {
-		sq.SetMergeStatus(obj, ghE2EQueued, true)
+		sq.SetMergeStatus(obj, ghE2EQueued)
 	}
 
 	return
@@ -596,6 +623,18 @@ func (s queueSorter) Less(i, j int) bool {
 	return *a.Issue.Number < *b.Issue.Number
 }
 
+// onQueue just tells if a PR is already on the queue.
+// sq.Lock() must be held
+func (sq *SubmitQueue) onQueue(obj *github.MungeObject) bool {
+	for _, queueObj := range sq.githubE2EQueue {
+		if *queueObj.Issue.Number == *obj.Issue.Number {
+			return true
+		}
+
+	}
+	return false
+}
+
 // sq.Lock() better held!!!
 func (sq *SubmitQueue) orderedE2EQueue() []int {
 	prs := []*github.MungeObject{}
@@ -649,80 +688,58 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	err := obj.Refresh()
 	if err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
-		sq.SetMergeStatus(obj, unknown, true)
+		sq.SetMergeStatus(obj, unknown)
 		return
 	}
 
-	if m, err := obj.IsMerged(); err != nil {
-		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
-		sq.SetMergeStatus(obj, unknown, true)
+	if !sq.validForMerge(obj) {
 		return
-	} else if m {
-		sq.SetMergeStatus(obj, merged, true)
-		return
-	}
-
-	if mergeable, err := obj.IsMergeable(); err != nil {
-		sq.SetMergeStatus(obj, undeterminedMergability, true)
-		return
-	} else if !mergeable {
-		sq.SetMergeStatus(obj, unmergeable, true)
-		return
-	}
-
-	if !sq.e2eStable() {
-		sq.SetMergeStatus(obj, e2eFailure, true)
-		return
-	}
-
-	if obj.HasLabel(doNotMergeLabel) {
-		sq.SetMergeStatus(obj, noMerge, true)
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {
 		obj.MergePR("submit-queue")
-		sq.SetMergeStatus(obj, merged, true)
+		sq.SetMergeStatus(obj, merged)
 		return
 	}
 
 	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 	if err := obj.WriteComment(body); err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
-		sq.SetMergeStatus(obj, unknown, true)
+		sq.SetMergeStatus(obj, unknown)
 		return
 	}
 
 	// Wait for the build to start
-	sq.SetMergeStatus(obj, ghE2EWaitingStart, true)
+	sq.SetMergeStatus(obj, ghE2EWaitingStart)
 	err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
-		sq.SetMergeStatus(obj, s, true)
+		sq.SetMergeStatus(obj, s)
 		return
 	}
 
 	// Wait for the status to go back to something other than pending
-	sq.SetMergeStatus(obj, ghE2ERunning, true)
+	sq.SetMergeStatus(obj, ghE2ERunning)
 	err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 	if err != nil {
 		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
-		sq.SetMergeStatus(obj, s, true)
+		sq.SetMergeStatus(obj, s)
 		return
 	}
 
 	// Check if the thing we care about is success
 	if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
-		sq.SetMergeStatus(obj, ghE2EFailed, true)
+		sq.SetMergeStatus(obj, ghE2EFailed)
 		return
 	}
 
 	if !sq.e2eStable() {
-		sq.SetMergeStatus(obj, e2eFailure, true)
+		sq.SetMergeStatus(obj, e2eFailure)
 		return
 	}
 
 	obj.MergePR("submit-queue")
-	sq.SetMergeStatus(obj, merged, true)
+	sq.SetMergeStatus(obj, merged)
 	return
 }
 
