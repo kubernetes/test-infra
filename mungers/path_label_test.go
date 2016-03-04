@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"runtime"
 	"testing"
+	"time"
 
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
@@ -40,17 +41,26 @@ func docsProposalIssue() *github.Issue {
 }
 
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
-func pathCommits(path string) []github.RepositoryCommit {
-	return []github.RepositoryCommit{
-		{
-			SHA: stringPtr("mysha"),
-			Files: []github.CommitFile{
-				{
-					Filename: stringPtr(path),
-				},
-			},
+func pathsCommit(path []string) []github.RepositoryCommit {
+	c := github.Commit{
+		SHA: stringPtr("mysha"),
+		Committer: &github.CommitAuthor{
+			Date: timePtr(time.Unix(10, 0)),
 		},
 	}
+	rc := github.RepositoryCommit{
+		SHA:    stringPtr("mysha"),
+		Commit: &c,
+	}
+	files := []github.CommitFile{}
+	for _, p := range path {
+		f := github.CommitFile{
+			Filename: stringPtr(p),
+		}
+		files = append(files, f)
+	}
+	rc.Files = files
+	return []github.RepositoryCommit{rc}
 }
 
 func BotAddedDesign() []github.IssueEvent {
@@ -77,55 +87,55 @@ func TestPathLabelMunge(t *testing.T) {
 		mustNotHave []string
 	}{
 		{
-			commits:     pathCommits("docs/proposals"),
+			commits:     pathsCommit([]string{"docs/proposals"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{"kind/api-change", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("docs/my/proposals"),
+			commits:     pathsCommit([]string{"docs/my/proposals"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("pkg/api/types.go"),
+			commits:     pathsCommit([]string{"pkg/api/types.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("pkg/api/v1/types.go"),
+			commits:     pathsCommit([]string{"pkg/api/v1/types.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("pkg/api/v1/duh/types.go"),
+			commits:     pathsCommit([]string{"pkg/api/v1/duh/types.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("pkg/apis/experimental/register.go"),
+			commits:     pathsCommit([]string{"pkg/apis/experimental/register.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
-			commits:     pathCommits("pkg/apis/experimental/v1beta1/register.go"),
+			commits:     pathsCommit([]string{"pkg/apis/experimental/v1beta1/register.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
-			commits:     pathCommits("pkg/apis/experiments/v1beta1/duh/register.go"),
+			commits:     pathsCommit([]string{"pkg/apis/experiments/v1beta1/duh/register.go"}),
 			events:      BotAddedDesign(),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
-			commits:     pathCommits("README"),
+			commits:     pathsCommit([]string{"README"}),
 			events:      OtherAddedDesign(),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{"kind/api-change", "kind/new-api"},
@@ -155,7 +165,7 @@ func TestPathLabelMunge(t *testing.T) {
 
 		p := PathLabelMunger{}
 		p.pathLabelFile = "../path-label.txt"
-		err := p.Initialize(config)
+		err := p.Initialize(config, nil)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}

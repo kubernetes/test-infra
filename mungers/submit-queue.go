@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/util/sets"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 
@@ -137,8 +138,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (sq SubmitQueue) Name() string { return "submit-queue" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (sq SubmitQueue) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (sq *SubmitQueue) Initialize(config *github.Config) error {
+func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
 	sq.Lock()
 	defer sq.Unlock()
 

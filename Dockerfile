@@ -15,7 +15,7 @@
 FROM google/debian:wheezy
 MAINTAINER Brendan Burns <bburns@google.com>
 RUN apt-get update
-RUN apt-get install -y -qq ca-certificates
+RUN apt-get install -y -qq ca-certificates git
 ADD path-label.txt /path-label.txt
 ADD generated-files.txt /generated-files.txt
 ADD blunderbuss.yml /blunderbuss.yml

@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -34,8 +35,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (OkToTestMunger) Name() string { return "ok-to-test" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (OkToTestMunger) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (OkToTestMunger) Initialize(config *github.Config) error { return nil }
+func (OkToTestMunger) Initialize(config *github.Config, features *features.Features) error { return nil }
 
 // EachLoop is called at the start of every munge loop
 func (OkToTestMunger) EachLoop() error { return nil }

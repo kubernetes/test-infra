@@ -19,11 +19,9 @@ package mungers
 import (
 	"math"
 	"math/rand"
-	"os"
-	"strings"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
 	github_api "github.com/google/go-github/github"
@@ -38,26 +36,12 @@ type BlunderbussConfig struct {
 	PrefixMap map[string][]string `json:"prefixMap,omitempty" yaml:"prefixMap,omitempty"`
 }
 
-func (b *BlunderbussConfig) findOwners(filename string) weightMap {
-	wm := weightMap{}
-	for prefix, ownersList := range b.PrefixMap {
-		if strings.HasPrefix(filename, prefix) {
-			// Give one point for each directory-- so that more specific directories get more weight.
-			weight := int64(1 + strings.Count(prefix, "/"))
-			for _, owner := range ownersList {
-				wm[owner] = wm[owner] + weight
-			}
-		}
-	}
-	return wm
-}
-
 // BlunderbussMunger will assign issues to users based on the config file
 // provided by --blunderbuss-config.
 type BlunderbussMunger struct {
-	config                *BlunderbussConfig
-	blunderbussConfigFile string
-	blunderbussReassign   bool
+	config              *BlunderbussConfig
+	features            *features.Features
+	blunderbussReassign bool
 }
 
 func init() {
@@ -68,22 +52,12 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
-// Initialize will initialize the munger
-func (b *BlunderbussMunger) Initialize(config *github.Config) error {
-	if len(b.blunderbussConfigFile) == 0 {
-		glog.Fatalf("--blunderbuss-config is required with the blunderbuss munger")
-	}
-	file, err := os.Open(b.blunderbussConfigFile)
-	if err != nil {
-		glog.Fatalf("Failed to load blunderbuss config: %v", err)
-	}
-	defer file.Close()
+// RequiredFeatures is a slice of 'features' that must be provided
+func (b *BlunderbussMunger) RequiredFeatures() []string { return []string{features.RepoFeatureName} }
 
-	b.config = &BlunderbussConfig{}
-	if err := yaml.NewYAMLToJSONDecoder(file).Decode(b.config); err != nil {
-		glog.Fatalf("Failed to load blunderbuss config: %v", err)
-	}
-	glog.V(4).Infof("Loaded config from %s", b.blunderbussConfigFile)
+// Initialize will initialize the munger
+func (b *BlunderbussMunger) Initialize(config *github.Config, features *features.Features) error {
+	b.features = features
 	return nil
 }
 
@@ -92,9 +66,7 @@ func (b *BlunderbussMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&b.blunderbussConfigFile, "blunderbuss-config", "./blunderbuss.yml", "Path to the blunderbuss config file")
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
-	b.addBlunderbussCommand(cmd)
 }
 
 // u may be nil.
@@ -103,6 +75,20 @@ func describeUser(u *github_api.User) string {
 		return *u.Login
 	}
 	return "<nil>"
+}
+
+func chance(val, total int64) float64 {
+	return 100.0 * float64(val) / float64(total)
+}
+
+func printChance(owners weightMap, total int64) {
+	if !glog.V(4) {
+		return
+	}
+	glog.Infof("Owner\tPercent")
+	for name, weight := range owners {
+		glog.Infof("%s\t%02.2f%%", name, chance(weight, total))
+	}
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -134,16 +120,16 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 			// makes three buckets, we shouldn't have many 10k+
 			// line changes.
 			fileWeight = int64(math.Log10(float64(fileWeight))) + 1
-			fileOwners := b.config.findOwners(*file.Filename)
-			if len(fileOwners) == 0 {
+			fileOwners := b.features.Repos.LeafAssignees(*file.Filename)
+			if fileOwners.Len() == 0 {
 				glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 			}
-			for owner, ownerWeight := range fileOwners {
+			for _, owner := range fileOwners.List() {
 				if owner == *issue.User.Login {
 					continue
 				}
-				potentialOwners[owner] = potentialOwners[owner] + fileWeight*ownerWeight
-				weightSum += fileWeight * ownerWeight
+				potentialOwners[owner] = potentialOwners[owner] + fileWeight
+				weightSum += fileWeight
 			}
 		}
 	}
@@ -151,11 +137,11 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 		glog.Errorf("No owners found for PR %d", *issue.Number)
 		return
 	}
-	glog.V(4).Infof("Weights: %#v\nSum: %v", potentialOwners, weightSum)
-
+	printChance(potentialOwners, weightSum)
 	if issue.Assignee != nil {
 		cur := *issue.Assignee.Login
-		glog.Infof("Current assignee %v has a %02.2f%% chance of having been chosen", cur, 100.0*float64(potentialOwners[cur])/float64(weightSum))
+		c := chance(potentialOwners[cur], weightSum)
+		glog.Infof("Current assignee %v has a %02.2f%% chance of having been chosen", cur, c)
 	}
 	selection := rand.Int63n(weightSum)
 	owner := ""
@@ -166,6 +152,7 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 			break
 		}
 	}
-	glog.Infof("Assigning %v to %v (previously assigned to %v)", *issue.Number, owner, describeUser(issue.Assignee))
+	c := chance(potentialOwners[owner], weightSum)
+	glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned (previously assigned to %v)", *issue.Number, owner, c, describeUser(issue.Assignee))
 	obj.AssignPR(owner)
 }

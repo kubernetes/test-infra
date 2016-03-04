@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -45,8 +46,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (SizeMunger) Name() string { return "size" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (SizeMunger) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (SizeMunger) Initialize(config *github.Config) error { return nil }
+func (SizeMunger) Initialize(config *github.Config, features *features.Features) error { return nil }
 
 // EachLoop is called at the start of every munge loop
 func (SizeMunger) EachLoop() error { return nil }

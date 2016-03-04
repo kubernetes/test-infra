@@ -19,7 +19,9 @@ package mungers
 import (
 	"fmt"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -31,7 +33,8 @@ type Munger interface {
 	Munge(obj *github.MungeObject)
 	AddFlags(cmd *cobra.Command, config *github.Config)
 	Name() string
-	Initialize(*github.Config) error
+	RequiredFeatures() []string
+	Initialize(*github.Config, *features.Features) error
 	EachLoop() error
 }
 
@@ -55,16 +58,27 @@ func GetActiveMungers() []Munger {
 	return mungers
 }
 
+// RequestedFeatures returns a list of all feature which should be enabled
+// for the running mungers
+func RequestedFeatures() []string {
+	out := sets.NewString()
+	for _, m := range GetActiveMungers() {
+		f := m.RequiredFeatures()
+		out.Insert(f...)
+	}
+	return out.List()
+}
+
 // InitializeMungers will call munger.Initialize() for all mungers requested
 // in --pr-mungers
-func InitializeMungers(requestedMungers []string, config *github.Config) error {
+func InitializeMungers(requestedMungers []string, config *github.Config, features *features.Features) error {
 	for _, name := range requestedMungers {
 		munger, found := mungerMap[name]
 		if !found {
 			return fmt.Errorf("couldn't find a munger named: %s", name)
 		}
 		mungers = append(mungers, munger)
-		if err := munger.Initialize(config); err != nil {
+		if err := munger.Initialize(config, features); err != nil {
 			return err
 		}
 	}

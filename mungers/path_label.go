@@ -23,6 +23,7 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -58,8 +59,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (p *PathLabelMunger) Name() string { return "path-label" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (p *PathLabelMunger) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (p *PathLabelMunger) Initialize(config *github.Config) error {
+func (p *PathLabelMunger) Initialize(config *github.Config, features *features.Features) error {
 	allLabels := sets.NewString()
 	out := []labelMap{}
 	file := p.pathLabelFile

@@ -40,8 +40,14 @@ spec:
         volumeMounts:
         - mountPath: /etc/secret-volume
           name: secret-volume
+        - mountPath: /gitrepos
+          name: kubernetes-repo
       dnsPolicy: ClusterFirst
       volumes:
       - name: secret-volume
         secret:
           secretName: github-token
+      - name: kubernetes-repo
+        gitRepo:
+          repository: "https://github.com/kubernetes/kubernetes.git"
+          revision: "master"

@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"k8s.io/contrib/mungegithub/features"
 	github_util "k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers"
 	"k8s.io/contrib/mungegithub/reports"
@@ -42,6 +43,7 @@ type mungeConfig struct {
 	IssueReportsList []string
 	Once             bool
 	Period           time.Duration
+	features.Features
 }
 
 func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
@@ -57,6 +59,7 @@ func doMungers(config *mungeConfig) error {
 		glog.Infof("Running mungers")
 		config.NextExpectedUpdate(nextRunStartTime)
 
+		config.Features.EachLoop()
 		mungers.EachLoop()
 
 		if err := config.ForEachIssueDo(mungers.MungeIssue); err != nil {
@@ -92,9 +95,13 @@ func main() {
 			if len(config.PRMungersList) == 0 {
 				glog.Fatalf("must include at least one --pr-mungers")
 			}
-			err := mungers.InitializeMungers(config.PRMungersList, &config.Config)
+			err := mungers.InitializeMungers(config.PRMungersList, &config.Config, &config.Features)
 			if err != nil {
 				glog.Fatalf("unable to initialize requested mungers: %v", err)
+			}
+			requestedFeatures := mungers.RequestedFeatures()
+			if err := config.Features.Initialize(requestedFeatures); err != nil {
+				return err
 			}
 			return doMungers(config)
 		},
@@ -102,6 +109,7 @@ func main() {
 	root.SetGlobalNormalizationFunc(util.WordSepNormalizeFunc)
 	config.AddRootFlags(root)
 	addMungeFlags(config, root)
+	config.Features.AddFlags(root)
 
 	allMungers := mungers.GetAllMungers()
 	for _, m := range allMungers {

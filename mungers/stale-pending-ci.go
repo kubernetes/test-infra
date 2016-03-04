@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
@@ -53,8 +54,11 @@ func init() {
 // Name is the name usable in --pr-mungers
 func (StalePendingCI) Name() string { return "stale-pending-ci" }
 
+// RequiredFeatures is a slice of 'features' that must be provided
+func (StalePendingCI) RequiredFeatures() []string { return []string{} }
+
 // Initialize will initialize the munger
-func (StalePendingCI) Initialize(config *github.Config) error { return nil }
+func (StalePendingCI) Initialize(config *github.Config, features *features.Features) error { return nil }
 
 // EachLoop is called at the start of every munge loop
 func (StalePendingCI) EachLoop() error { return nil }

@@ -152,7 +152,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
 	if startThreads {
-		sq.Initialize(config)
+		sq.Initialize(config, nil)
 		sq.EachLoop()
 		sq.userWhitelist.Insert(whitelistUser)
 	}
