@@ -81,6 +81,7 @@ func InitializeMungers(requestedMungers []string, config *github.Config, feature
 		if err := munger.Initialize(config, features); err != nil {
 			return err
 		}
+		glog.Infof("Initialized munger: %s", munger.Name())
 	}
 	return nil
 }
