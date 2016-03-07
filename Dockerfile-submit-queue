@@ -28,5 +28,5 @@ ADD generated-files.txt /generated-files.txt
 ADD committers.txt /committers.txt
 ADD whitelist.txt /whitelist.txt
 # Submit queue web interface
-ADD www /www
+ADD submit-queue/www /www
 ADD mungegithub /mungegithub

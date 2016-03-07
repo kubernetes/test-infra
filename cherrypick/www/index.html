@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="md-data-table.min.css" type="text/css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Kubernetes Cherrypick Queue</title>
+</head>
+
+<body ng-app="CherrypickModule" ng-controller="CPCntl as cntl">
+  <!-- Indent the whole thing -->
+  <md-content class="md-padding" layout="column">
+    <!-- Display the white border around the indented portion -->
+    <md-content class="md-whiteframe-z2">
+      <md-toolbar layout="row" layout-align="space-around center">
+        <h1 class="md-display-2">Cherrypick Queue Status</h1>
+        <a ng-href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" class="titleLogo"></a>
+      </md-toolbar>
+      <md-content class="md-padding">
+        <md-tabs md-selected="cntl.selected" md-dynamic-height md-border-bottom>
+
+          <md-tab label="Queue" md-on-select="cntl.selectTab('queue')">
+            <md-content class="md-padding">
+              <md-toolbar class="md-whiteframe-z2">
+                <h2 class="md-toolbar-tools">PRs proposed to be cherrypicked<span id="queue-len"></span></h2>
+              </md-toolbar>
+                <md-list layout-padding>
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.queue track by pr.Number">
+                    <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                      <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
+                    </a>
+                    <md-content class="md-list-item-text" layout="column">
+                      <h3 class="md-body-1">
+                        <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
+                      </h3>
+		      <h4 class="md-body2">
+			{{pr.ExtraInfo}}
+		      </h4>
+                    </md-content>
+                    <md-divider md-inset ng-if="!$last"></md-divider>
+                  </md-list-item>
+                </md-list>
+              </section>
+            </md-content>
+          </md-tab>
+
+          <md-tab label="Info" md-on-select="cntl.selectTab('info')">
+	    <md-content class="md-padding">
+	      <md-tabs md-dynamic-height md-border-bottom>
+
+                <md-tab label="Purpose">
+	          <md-content class="md-padding">
+                    <md-content class="md-whiteframe-z2">
+                      <md-toolbar>
+                        <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
+                      </md-toolbar>
+                    </md-content>
+	            <md-content class="md-padding">
+	              <span id="queue-info"></span>
+	            </md-content>
+	          </md-content>
+	        </md-tab>
+
+                <md-tab label="Bot Stats">
+                  <md-content class="md-padding">
+                    <md-content class="md-whiteframe-z2">
+                      <md-toolbar>
+                        <h2 class="md-toolbar-tools">Statistics About the Bot</h2>
+                      </md-toolbar>
+                    </md-content>
+                    <br>
+                    <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
+                    <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
+                    <h3 class=md-title>Github Rate Limit Count: <span id="github-api-limit-count"></span></h3>
+                    <h3 class=md-title>Github Rate Limit Next Reset: <span id="github-api-limit-reset"></span></h3>
+                    <md-content class="md-whiteframe-z2">
+                      <md-data-table-container>
+                        <md-data-table-toolbar>
+                          <h2 class="md-title">API Calls During Last Loop</h2>
+                        </md-data-table-toolbar>
+                        <table md-data-table class="md-primary">
+                          <thead md-order="cntl.StatOrder">
+                            <tr>
+                              <th order-by="$key" name="Call"></th>
+                              <th order-by="Count" name="Count ({{ cntl.APICount }})" numeric descend-first></th>
+                              <th order-by="CachedCount" name="Cached Count ({{ cntl.CachedAPICount }})" numeric descend-first></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder track by stat.$key">
+                              <td>{{stat.$key}}</td>
+                              <td>{{stat.Count}}</td>
+                              <td>{{stat.CachedCount}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </md-data-table-container>
+                    </md-content>
+                  </md-content>
+                </md-tab>
+	      </md-tabs>
+	    </md-content>
+	  </md-tab>
+
+        </md-tabs>
+      </md-content>
+    </md-content>
+  </md-content>
+  <!-- Angular Material Dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-aria.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.js" type="text/javascript"></script>
+  <script src="md-data-table.min.js" type="text/javascript"></script>
+  <script src="toArrayFilter.js" type="text/javascript"></script>
+  <script src="script.js" type="text/javascript"></script>
+</body>
+
+</html>

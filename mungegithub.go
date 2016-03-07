@@ -48,7 +48,7 @@ type mungeConfig struct {
 
 func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
-	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{"blunderbuss", "lgtm-after-commit", "needs-rebase", "ok-to-test", "rebuild-request", "path-label", "ping-ci", "size", "stale-pending-ci", "stale-green-ci", "block-path", "submit-queue"}, "A list of pull request mungers to run")
+	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{}, "A list of pull request mungers to run")
 	cmd.Flags().StringSliceVar(&config.IssueReportsList, "issue-reports", []string{}, "A list of issue reports to run. If set, will run the reports and exit.")
 	cmd.Flags().DurationVar(&config.Period, "period", 10*time.Minute, "The period for running mungers")
 }

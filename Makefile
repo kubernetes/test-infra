@@ -7,7 +7,8 @@ TAG ?= $(DATE)-$(GIT)
 
 DEFAULTREPO := gcr.io/google_containers
 REPO ?= $(DEFAULTREPO)
-CONTAINER := $(REPO)/mungegithub:$(TAG)
+APP ?= submit-queue
+CONTAINER := $(REPO)/$(APP):$(TAG)
 
 KUBECONFIG ?= $(HOME)/.kube/config
 
@@ -22,7 +23,7 @@ mungegithub:
 
 # build the container with the binary
 container: mungegithub
-	docker build -t $(CONTAINER) .
+	docker build -t $(CONTAINER) -f Dockerfile-$(APP) .
 
 # push the container
 push: container
@@ -37,9 +38,9 @@ endif
 # The cluster will need a github oauth token (the secret target makes that easy to create)
 deploy: push rc
 	# Get existing RCs
-	$(eval rcs := $(shell kubectl --kubeconfig=$(KUBECONFIG) get rc --selector='app=mungegithub,readonly=$(READONLY)' --output=template --template='{{range .items}}{{.metadata.name}} {{end}}'))
+	$(eval rcs := $(shell kubectl --kubeconfig=$(KUBECONFIG) get rc --selector='app=$(APP),readonly=$(READONLY)' --output=template --template='{{range .items}}{{.metadata.name}} {{end}}'))
 	# Deploy the new RC
-	kubectl --kubeconfig=$(KUBECONFIG) create -f local.rc.yaml
+	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.rc.yaml
 	# Scale the old RCs to 0
 	$(foreach rc,$(rcs),kubectl --kubeconfig=$(KUBECONFIG) scale --replicas=0 rc $(rc);)
 	# Current RCs, you might want to clean some up!
@@ -47,7 +48,7 @@ deploy: push rc
 
 # Removes all mungegithub RCs
 cleanrcs:
-	$(eval rcs := $(shell kubectl --kubeconfig=$(KUBECONFIG) get rc --selector='app=mungegithub,readonly=$(READONLY)' --output=template --template='{{range .items}}{{.metadata.name}} {{end}}'))
+	$(eval rcs := $(shell kubectl --kubeconfig=$(KUBECONFIG) get rc --selector='app=$(APP),readonly=$(READONLY)' --output=template --template='{{range .items}}{{.metadata.name}} {{end}}'))
 	$(foreach rc,$(rcs),kubectl --kubeconfig=$(KUBECONFIG) delete rc $(rc);)
 
 # Try to run the binary locally using docker, doesn't need to push or have a running kube cluster.
@@ -58,23 +59,23 @@ local_dryrun: container
 # updates the rc.yaml with current build information and sets it to --dry-run
 rc:
 	# update the rc.yaml with the current date and git hash
-	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' rc.yaml > local.rc.yaml
+	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/rc.yaml > $(APP)/local.rc.yaml
 	# update the rc.yaml with the current repo (if not gcr.io
-	sed -i -e 's|gcr.io/google_containers|$(REPO)|g' local.rc.yaml
+	sed -i -e 's|gcr.io/google_containers|$(REPO)|g' $(APP)/local.rc.yaml
 ifeq ($(READONLY),false)
 	# update the rc.yaml with --dry-run=false
-	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' local.rc.yaml
+	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.rc.yaml
 endif
 	# update the rc.yaml with label "readonly: true"
-	sed -i -e 's!^\([[:space:]]\+\)app: mungegithub!\1app: mungegithub\n\1readonly: "$(READONLY)"!g' local.rc.yaml
+	sed -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.rc.yaml
 
 # simple transformation of a github oauth secret file to a kubernetes secret
 secret:
 	@echo $(token)
-	sed -e 's|1234567890123456789012345678901234567890123456789012345=|$(token)|' secret.yaml > local.secret.yaml
+	sed -e 's|1234567890123456789012345678901234567890123456789012345=|$(token)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
 
 clean:
-	rm -f mungegithub local.rc.yaml local.secret.yaml
+	rm -f mungegithub $(APP)/local.rc.yaml $(APP)/local.secret.yaml
 
 help:
 	@echo "ENVIRONMENT VARS:"
@@ -82,6 +83,7 @@ help:
 	@echo " TOKEN=      file with github oauth token, needed in local_dryrun and secret. Default: $(TOKEN)"
 	@echo " KUBECONFIG= kubeconfig file for deployment. Default: $(KUBECONFIG)"
 	@echo " READONLY=   should the container actually mute github objects or just do everything else. Default: $(READONLY)"
+	@echo " APP=        which application you are trying to deploy. cherrypick or submit-queue. Default: $(APP)"
 	@echo ""
 	@echo "TARGETS:"
 	@echo " all:          runs 'container'"
@@ -89,10 +91,10 @@ help:
 	@echo " container:    builds the binary and creates a container with the binary"
 	@echo " push:         pushes the container to the registry"
 	@echo " deploy:       launches the container on a kubernetes cluster, it will scale all other RCs to 0, but not delete them"
-	@echo " cleanrcs:     removes all mungegithub RCs deployed READONLY=$(READONLY)"
+	@echo " cleanrcs:     removes all RCs deployed READONLY=$(READONLY)"
 	@echo " local_dryrun: tries to launch the container locally with docker"
-	@echo " rc:           updates rc.yaml and places results in local.rc.yaml"
-	@echo " secret:       updates secret.yaml with TOKEN an creates local.secret.yaml"
+	@echo " rc:           updates $(APP)/rc.yaml and places results in $(APP)/local.rc.yaml"
+	@echo " secret:       updates $(APP)/secret.yaml with TOKEN an creates $(APP)/local.secret.yaml"
 	@echo " clean:        deletes the binary and local files (does not delete old containers)"
 
 

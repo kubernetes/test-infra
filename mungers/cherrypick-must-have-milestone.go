@@ -1,0 +1,67 @@
+/*
+Copyright 2015 The Kubernetes Authors All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package mungers
+
+import (
+	"fmt"
+
+	"k8s.io/contrib/mungegithub/features"
+	"k8s.io/contrib/mungegithub/github"
+
+	"github.com/spf13/cobra"
+)
+
+// PickMustHaveMilestone will remove the the cherrypick-candidate label from
+// any PR that does not have a 'release' milestone set.
+type PickMustHaveMilestone struct{}
+
+func init() {
+	RegisterMungerOrDie(PickMustHaveMilestone{})
+}
+
+// Name is the name usable in --pr-mungers
+func (PickMustHaveMilestone) Name() string { return "cherrypick-must-have-milestone" }
+
+// RequiredFeatures is a slice of 'features' that must be provided
+func (PickMustHaveMilestone) RequiredFeatures() []string { return []string{} }
+
+// Initialize will initialize the munger
+func (PickMustHaveMilestone) Initialize(config *github.Config, features *features.Features) error {
+	return nil
+}
+
+// EachLoop is called at the start of every munge loop
+func (PickMustHaveMilestone) EachLoop() error { return nil }
+
+// AddFlags will add any request flags to the cobra `cmd`
+func (PickMustHaveMilestone) AddFlags(cmd *cobra.Command, config *github.Config) {}
+
+// Munge is the workhorse the will actually make updates to the PR
+func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() {
+		return
+	}
+
+	releaseMilestone := obj.ReleaseMilestone()
+	hasLabel := obj.HasLabel(cpLabel)
+
+	if hasLabel && releaseMilestone == "" {
+		msg := fmt.Sprintf("Removing %q because no release milestone was set", cpLabel)
+		obj.WriteComment(msg)
+		obj.RemoveLabel(cpLabel)
+	}
+}

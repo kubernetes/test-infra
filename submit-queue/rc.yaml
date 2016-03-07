@@ -2,24 +2,21 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   labels:
-    app: mungegithub
-    track: alpha
+    app: submit-queue
     version: "2015-10-26-2a7f8fd"
-  name: mungegithub-2015-10-26-2a7f8fd
+  name: submit-queue-2015-10-26-2a7f8fd
   namespace: default
 spec:
   replicas: 1
   selector:
-    app: mungegithub
-    track: alpha
+    app: submit-queue
     version: "2015-10-26-2a7f8fd"
   template:
     metadata:
-      name: mungegithub
+      name: submit-queue
       namespace: default
       labels:
-        app: mungegithub
-        track: alpha
+        app: submit-queue
         version: "2015-10-26-2a7f8fd"
     spec:
       containers:
@@ -28,9 +25,9 @@ spec:
         - --token-file=/etc/secret-volume/token
         - --pr-mungers=blunderbuss,lgtm-after-commit,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,submit-queue
         - --dry-run=true
-        image: gcr.io/google_containers/mungegithub:2015-10-26-2a7f8fd
+        image: gcr.io/google_containers/submit-queue:2015-10-26-2a7f8fd
         imagePullPolicy: IfNotPresent
-        name: mungegithub
+        name: submit-queue
         ports:
         - name: status
           containerPort: 8080

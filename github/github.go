@@ -18,6 +18,7 @@ package github
 
 import (
 	"bytes"
+	"encoding/json"
 	goflag "flag"
 	"fmt"
 	"io/ioutil"
@@ -51,6 +52,7 @@ const (
 
 var (
 	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]$`)
+	priorityLabelRE    = regexp.MustCompile(`priority/[pP]([\d]+)`)
 	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 )
 
@@ -141,8 +143,14 @@ type Config struct {
 	Org      string
 	Project  string
 
+	state  string
+	labels []string
+
 	Token     string
 	TokenFile string
+
+	Address string // if a munger runs a web server, where it should live
+	WWWRoot string
 
 	MinPRNumber int
 	MaxPRNumber int
@@ -278,6 +286,10 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&config.useMemoryCache, "use-http-cache", true, "If true, use a client side HTTP cache for API requests.")
 	cmd.PersistentFlags().StringVar(&config.Org, "organization", "kubernetes", "The github organization to scan")
 	cmd.PersistentFlags().StringVar(&config.Project, "project", "kubernetes", "The github project to scan")
+	cmd.PersistentFlags().StringVar(&config.state, "state", "open", "State of PRs to process: 'open', 'all', etc")
+	cmd.PersistentFlags().StringSliceVar(&config.labels, "labels", []string{}, "CSV list of label which should be set on processed PRs. Unset is all labels.")
+	cmd.PersistentFlags().StringVar(&config.Address, "address", ":8080", "The address to listen on for HTTP Status")
+	cmd.PersistentFlags().StringVar(&config.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
@@ -358,6 +370,25 @@ func (config *Config) GetDebugStats() DebugStats {
 	d.LimitRemaining = config.apiLimit.remaining
 	d.LimitResetTime = config.apiLimit.resetTime
 	return d
+}
+
+func (config *Config) serveDebugStats(res http.ResponseWriter, req *http.Request) {
+	stats := config.GetDebugStats()
+	b, err := json.Marshal(stats)
+	if err != nil {
+		glog.Errorf("Unable to Marshal Status: %v: %v", stats, err)
+		res.Header().Set("Content-type", "text/plain")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	res.Header().Set("Content-type", "application/json")
+	res.WriteHeader(http.StatusOK)
+	res.Write(b)
+}
+
+// ServeDebugStats will serve out debug information at the path
+func (config *Config) ServeDebugStats(path string) {
+	http.HandleFunc(path, config.serveDebugStats)
 }
 
 // NextExpectedUpdate will set the debug information concerning when the
@@ -602,6 +633,23 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	return nil
 }
 
+// ReleaseMilestone returns the name of the 'release' milestone or an empty string
+// if none found. Release milestones are determined by the format "vX.Y"
+func (obj *MungeObject) ReleaseMilestone() string {
+	milestone := obj.Issue.Milestone
+	if milestone == nil {
+		return ""
+	}
+	title := milestone.Title
+	if title == nil {
+		return ""
+	}
+	if !releaseMilestoneRE.MatchString(*title) {
+		return ""
+	}
+	return *title
+}
+
 // ReleaseMilestoneDue returns the due date for a milestone. It ONLY looks at
 // milestones of the form 'vX.Y' where X and Y are integeters. Return the maximum
 // possible time if there is no milestone or the milestone doesn't look like a
@@ -625,15 +673,20 @@ func (obj *MungeObject) ReleaseMilestoneDue() time.Time {
 }
 
 // Priority returns the priority an issue was labeled with.
-// The labels must take the form 'priority/P?[0-9]+'
+// The labels must take the form 'priority/[pP][0-9]+'
 // or math.MaxInt32 if unset
+//
+// If a PR has both priority/p0 and priority/p1 it will be considered a p0.
 func (obj *MungeObject) Priority() int {
 	priority := math.MaxInt32
 	priorityLabels := GetLabelsWithPrefix(obj.Issue.Labels, "priority/")
 	for _, label := range priorityLabels {
-		label = strings.TrimPrefix(label, "priority/")
-		label = strings.TrimPrefix(label, "P")
-		prio, err := strconv.Atoi(label)
+		matches := priorityLabelRE.FindStringSubmatch(label)
+		// First match should be the whole label, second match the number itself
+		if len(matches) != 2 {
+			continue
+		}
+		prio, err := strconv.Atoi(matches[1])
 		if err != nil {
 			continue
 		}
@@ -1236,6 +1289,18 @@ func (obj *MungeObject) IsMerged() (bool, error) {
 	return false, fmt.Errorf("Unable to determine if PR %d was merged", *obj.Issue.Number)
 }
 
+// MergedAt returns the time an issue was merged (for nil if unmerged)
+func (obj *MungeObject) MergedAt() *time.Time {
+	if !obj.IsPR() {
+		return nil
+	}
+	pr, err := obj.GetPR()
+	if err != nil {
+		return nil
+	}
+	return pr.MergedAt
+}
+
 // ForEachIssueDo will run for each Issue in the project that matches:
 //   * pr.Number >= minPRNumber
 //   * pr.Number <= maxPRNumber
@@ -1245,7 +1310,8 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		glog.V(4).Infof("Fetching page %d of issues", page)
 		listOpts := &github.IssueListByRepoOptions{
 			Sort:        "created",
-			State:       "open",
+			State:       config.state,
+			Labels:      config.labels,
 			Direction:   "asc",
 			ListOptions: github.ListOptions{PerPage: 100, Page: page},
 		}

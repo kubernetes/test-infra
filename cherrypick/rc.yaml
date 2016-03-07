@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    app: cherrypick
+    version: "2015-10-26-2a7f8fd"
+  name: cherrypick-2015-10-26-2a7f8fd
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    app: cherrypick
+    version: "2015-10-26-2a7f8fd"
+  template:
+    metadata:
+      name: cherrypick
+      namespace: default
+      labels:
+        app: cherrypick
+        version: "2015-10-26-2a7f8fd"
+    spec:
+      containers:
+      - command:
+        - /mungegithub
+        - --token-file=/etc/secret-volume/token
+        - --pr-mungers=cherrypick-queue,cherrypick-must-have-milestone
+        - --state=all
+        - --labels=cherrypick-candidate
+        - --dry-run=true
+        - --kubernetes-dir=/gitrepo/kubernetes
+        - --period=3m
+        image: gcr.io/google_containers/cherrypick:2015-10-26-2a7f8fd
+        imagePullPolicy: IfNotPresent
+        name: cherrypick
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: cherrypick-secret-volume
+        - mountPath: /gitrepo
+          name: kubernetes-repo
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: cherrypick-secret-volume
+        secret:
+          secretName: cherrypick-secret-volume
+      - name: kubernetes-repo
+        gitRepo:
+          repository: "https://github.com/kubernetes/kubernetes.git"
+          revision: "master"

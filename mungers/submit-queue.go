@@ -100,11 +100,9 @@ type SubmitQueue struct {
 	Whitelist              string
 	WhitelistOverride      string
 	Committers             string
-	Address                string
 	E2EStatusContext       string
 	UnitStatusContext      string
 	RequiredStatusContexts []string
-	WWWRoot                string
 
 	// additionalUserWhitelist are non-committer users believed safe
 	additionalUserWhitelist *sets.String
@@ -158,19 +156,19 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		BuildStatus: map[string]e2e.BuildInfo{},
 	}
 	sq.e2e = e2e
-	if len(sq.Address) > 0 {
-		if len(sq.WWWRoot) > 0 {
-			http.Handle("/", http.FileServer(http.Dir(sq.WWWRoot)))
+	if len(sq.githubConfig.Address) > 0 {
+		if len(sq.githubConfig.WWWRoot) > 0 {
+			http.Handle("/", http.FileServer(http.Dir(sq.githubConfig.WWWRoot)))
 		}
 		http.HandleFunc("/prs", sq.servePRs)
 		http.HandleFunc("/history", sq.serveHistory)
 		http.HandleFunc("/users", sq.serveUsers)
-		http.HandleFunc("/stats", sq.serveBotStats)
 		http.HandleFunc("/github-e2e-queue", sq.serveGithubE2EStatus)
 		http.HandleFunc("/google-internal-ci", sq.serveGoogleInternalStatus)
 		http.HandleFunc("/merge-info", sq.serveMergeInfo)
 		http.HandleFunc("/priority-info", sq.servePriorityInfo)
-		go http.ListenAndServe(sq.Address, nil)
+		sq.githubConfig.ServeDebugStats("/stats")
+		go http.ListenAndServe(sq.githubConfig.Address, nil)
 	}
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
@@ -220,10 +218,8 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringVar(&sq.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
-	cmd.Flags().StringVar(&sq.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	sq.addWhitelistCommand(cmd, config)
 }
 
@@ -400,13 +396,6 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 		E2ERunning: objToStatusPullRequest(sq.githubE2ERunning),
 	}
 	return sq.marshal(status)
-}
-
-func (sq *SubmitQueue) getBotStats() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	stats := sq.githubConfig.GetDebugStats()
-	return sq.marshal(stats)
 }
 
 func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
@@ -777,11 +766,6 @@ func (sq *SubmitQueue) serveHistory(res http.ResponseWriter, req *http.Request) 
 
 func (sq *SubmitQueue) servePRs(res http.ResponseWriter, req *http.Request) {
 	data := sq.getQueueStatus()
-	sq.serve(data, res, req)
-}
-
-func (sq *SubmitQueue) serveBotStats(res http.ResponseWriter, req *http.Request) {
-	data := sq.getBotStats()
 	sq.serve(data, res, req)
 }
 
