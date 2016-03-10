@@ -32,7 +32,8 @@ import (
 )
 
 const (
-	cpLabel = "cherrypick-candidate"
+	cpCandidateLabel = "cherrypick-candidate"
+	cpApprovedLabel  = "cherrypick-approved"
 )
 
 var (
@@ -95,7 +96,7 @@ func (c *CherrypickQueue) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (c *CherrypickQueue) Munge(obj *github.MungeObject) {
-	if !obj.HasLabel(cpLabel) {
+	if !obj.HasLabel(cpCandidateLabel) {
 		return
 	}
 	if !obj.IsPR() {
@@ -129,24 +130,34 @@ func (s cpQueueSorter) Less(i, j int) bool {
 	a := s[i]
 	b := s[j]
 
+	// Sort first based on release milestone
 	aDue := a.ReleaseMilestoneDue()
 	bDue := b.ReleaseMilestoneDue()
-
 	if aDue.Before(bDue) {
 		return true
 	} else if aDue.After(bDue) {
 		return false
 	}
 
+	// Then show those which have been approved
+	aApproved := a.HasLabel(cpApprovedLabel)
+	bApproved := b.HasLabel(cpApprovedLabel)
+	if aApproved && !bApproved {
+		return true
+	} else if !aApproved && bApproved {
+		return false
+	}
+
+	// Then sort by the order in which they were merged
 	aTime := mergeTime(a)
 	bTime := mergeTime(b)
-
 	if aTime.Before(bTime) {
 		return true
 	} else if aTime.After(bTime) {
 		return false
 	}
 
+	// And finally by issue number, just so there is some consistency
 	return *a.Issue.Number < *b.Issue.Number
 }
 
@@ -196,6 +207,9 @@ func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request)
 		if milestone != "" {
 			cps.ExtraInfo = append(cps.ExtraInfo, milestone)
 		}
+		if obj.HasLabel(cpApprovedLabel) {
+			cps.ExtraInfo = append(cps.ExtraInfo, cpApprovedLabel)
+		}
 		sortedQueue = append(sortedQueue, cps)
 	}
 	data, err := json.Marshal(sortedQueue)
@@ -221,6 +235,10 @@ func (c *CherrypickQueue) serveQueueInfo(res http.ResponseWriter, req *http.Requ
       <li>PRs without a milestone are considered after PRs with a milestone</li>
     </ul>
   </li>
+  <li>Labeld with ` + cpApprovedLabel + `</li>
+    <ul>
+      <li>PRs with the label come before those without</li>
+    </ul>
   <li>Merge Time
     <ul>
       <li>The earlier a PR was merged the earlier it is in the list</li>

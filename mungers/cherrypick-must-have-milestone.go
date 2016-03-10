@@ -57,11 +57,11 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	}
 
 	releaseMilestone := obj.ReleaseMilestone()
-	hasLabel := obj.HasLabel(cpLabel)
+	hasLabel := obj.HasLabel(cpCandidateLabel)
 
 	if hasLabel && releaseMilestone == "" {
-		msg := fmt.Sprintf("Removing %q because no release milestone was set", cpLabel)
+		msg := fmt.Sprintf("Removing %q because no release milestone was set", cpCandidateLabel)
 		obj.WriteComment(msg)
-		obj.RemoveLabel(cpLabel)
+		obj.RemoveLabel(cpCandidateLabel)
 	}
 }
