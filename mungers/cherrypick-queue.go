@@ -157,6 +157,17 @@ func (s cpQueueSorter) Less(i, j int) bool {
 		return false
 	}
 
+	// Sort by LGTM as humans are likely to want to approve
+	// those first. After it merges the above check will win
+	// and LGTM won't matter
+	aLGTM := a.HasLabel("lgtm")
+	bLGTM := b.HasLabel("lgtm")
+	if aLGTM && !bLGTM {
+		return true
+	} else if !aLGTM && bLGTM {
+		return false
+	}
+
 	// And finally by issue number, just so there is some consistency
 	return *a.Issue.Number < *b.Issue.Number
 }
@@ -200,15 +211,21 @@ func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request)
 		cps := cherrypickStatus{
 			statusPullRequest: *objToStatusPullRequest(obj),
 		}
-		if merged, err := obj.IsMerged(); err == nil && merged {
-			cps.ExtraInfo = append(cps.ExtraInfo, "Merged")
+		if obj.HasLabel(cpApprovedLabel) {
+			cps.ExtraInfo = append(cps.ExtraInfo, cpApprovedLabel)
 		}
 		milestone := obj.ReleaseMilestone()
 		if milestone != "" {
 			cps.ExtraInfo = append(cps.ExtraInfo, milestone)
 		}
-		if obj.HasLabel(cpApprovedLabel) {
-			cps.ExtraInfo = append(cps.ExtraInfo, cpApprovedLabel)
+		merged, _ := obj.IsMerged()
+		if merged {
+			cps.ExtraInfo = append(cps.ExtraInfo, "Merged")
+		}
+		if !merged && obj.HasLabel("lgtm") {
+			// Don't bother showing LGTM for merged things
+			// it's just a distraction at that point
+			cps.ExtraInfo = append(cps.ExtraInfo, "lgtm")
 		}
 		sortedQueue = append(sortedQueue, cps)
 	}
@@ -235,16 +252,21 @@ func (c *CherrypickQueue) serveQueueInfo(res http.ResponseWriter, req *http.Requ
       <li>PRs without a milestone are considered after PRs with a milestone</li>
     </ul>
   </li>
-  <li>Labeld with ` + cpApprovedLabel + `</li>
+  <li>Labeld with "` + cpApprovedLabel + `"
     <ul>
-      <li>PRs with the label come before those without</li>
+      <li>PRs with the "` + cpApprovedLabel + `" label come before those without</li>
     </ul>
+  </li>
   <li>Merge Time
     <ul>
       <li>The earlier a PR was merged the earlier it is in the list</li>
       <li>PRs which have not merged are considered 'after' any merged PR</li>
     </ul>
   </li>
+  <li>Labeld with "lgtm"
+    <ul>
+      <li>PRs with the "lgtm" label come before those without</li>
+    </ul>
   <li>PR number</li>
 </ol> `))
 }
