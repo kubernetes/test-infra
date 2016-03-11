@@ -221,8 +221,11 @@ func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request)
 		merged, _ := obj.IsMerged()
 		if merged {
 			cps.ExtraInfo = append(cps.ExtraInfo, "Merged")
-		}
-		if !merged && obj.HasLabel("lgtm") {
+			sha := obj.MergeCommit()
+			if sha != nil {
+				cps.ExtraInfo = append(cps.ExtraInfo, *sha)
+			}
+		} else if obj.HasLabel("lgtm") {
 			// Don't bother showing LGTM for merged things
 			// it's just a distraction at that point
 			cps.ExtraInfo = append(cps.ExtraInfo, "lgtm")

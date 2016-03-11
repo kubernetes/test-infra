@@ -1142,6 +1142,21 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 	return string(b), nil
 }
 
+// MergeCommit will return the sha of the merge. PRs which have not merged
+// (or if we hit an error) will return nil
+func (obj *MungeObject) MergeCommit() *string {
+	events, err := obj.GetEvents()
+	if err != nil {
+		return nil
+	}
+	for _, event := range events {
+		if *event.Event == "merged" {
+			return event.CommitID
+		}
+	}
+	return nil
+}
+
 // MergePR will merge the given PR, duh
 // "who" is who is doing the merging, like "submit-queue"
 func (obj *MungeObject) MergePR(who string) error {
