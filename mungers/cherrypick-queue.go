@@ -41,6 +41,12 @@ var (
 	maxTime = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 )
 
+type rawReadyInfo struct {
+	Number int
+	Title  string
+	SHA    string
+}
+
 type cherrypickStatus struct {
 	statusPullRequest
 	ExtraInfo []string
@@ -73,6 +79,7 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 			http.Handle("/", http.FileServer(http.Dir(config.WWWRoot)))
 		}
 		http.HandleFunc("/queue", c.serveQueue)
+		http.HandleFunc("/raw", c.serveRaw)
 		http.HandleFunc("/queue-info", c.serveQueueInfo)
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
@@ -201,6 +208,42 @@ func (c *CherrypickQueue) getCurrentQueue() map[int]*github.MungeObject {
 		queue[i] = v
 	}
 	return queue
+}
+
+func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
+	queue := c.getCurrentQueue()
+	keyOrder := c.orderedQueue(queue)
+	sortedQueue := []rawReadyInfo{}
+	for _, key := range keyOrder {
+		obj := queue[key]
+		if merged, _ := obj.IsMerged(); !merged {
+			continue
+		}
+		if !obj.HasLabel(cpApprovedLabel) {
+			continue
+		}
+		sha := obj.MergeCommit()
+		if sha == nil {
+			empty := ""
+			sha = &empty
+		}
+		rri := rawReadyInfo{
+			Number: *obj.Issue.Number,
+			Title:  *obj.Issue.Title,
+			SHA:    *sha,
+		}
+		sortedQueue = append(sortedQueue, rri)
+	}
+	data, err := json.Marshal(sortedQueue)
+	if err != nil {
+		res.Header().Set("Content-type", "text/plain")
+		res.WriteHeader(http.StatusInternalServerError)
+		glog.Errorf("Unable to Marshal Status: %v: %v", data, err)
+		return
+	}
+	res.Header().Set("Content-type", "application/json")
+	res.WriteHeader(http.StatusOK)
+	res.Write(data)
 }
 
 func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request) {

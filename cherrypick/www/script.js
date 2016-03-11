@@ -6,6 +6,7 @@ angular.module('CherrypickModule').controller('CPCntl', ['DataService', '$interv
 function CPCntl(dataService, $interval, $location) {
   var self = this;
   self.queue = {};
+  self.raw = {};
   self.selectTab = selectTab;
   self.selected = 0;
   self.StatOrder = "-Count";
@@ -17,14 +18,17 @@ function CPCntl(dataService, $interval, $location) {
       case "/queue":
 	  self.selected=0;
 	  break;
-      case "/info":
+      case "/raw":
 	  self.selected=1;
+	  break;
+      case "/info":
+	  self.selected=2;
 	  break;
       default:
 	  console.log("unknown path: " + path);
 	  break;
       }
-  }
+   }
 
   // Refresh data every minute
   refreshQueue();
@@ -37,7 +41,19 @@ function CPCntl(dataService, $interval, $location) {
     }, function errorCallback(response) {
       console.log("Error: Getting Cherrypick Status");
     });
-  }
+   }
+
+  // Refresh data every minute
+  refreshRaw();
+  $interval(refreshRaw, 60000);
+
+  function refreshRaw() {
+    dataService.getData('raw').then(function successCallback(response) {
+      self.raw = response.data;
+    }, function errorCallback(response) {
+      console.log("Error: Getting Cherrypick Raw Status");
+    });
+   }
 
   // Refresh every 10 minutes
   refreshStats();

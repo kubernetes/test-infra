@@ -38,9 +38,9 @@
                       <h3 class="md-body-1">
                         <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
                       </h3>
-		      <h4 class="md-body2">
-			{{pr.ExtraInfo}}
-		      </h4>
+                      <h4 class="md-body2">
+                        {{pr.ExtraInfo}}
+                      </h4>
                     </md-content>
                     <md-divider md-inset ng-if="!$last"></md-divider>
                   </md-list-item>
@@ -49,22 +49,58 @@
             </md-content>
           </md-tab>
 
+          <md-tab label="Raw" md-on-select="cntl.selectTab('raw')">
+            <md-content class="md-padding">
+              <md-toolbar class="md-whiteframe-z2">
+                <h2 class="md-toolbar-tools">Raw output of queue ready to pick</h2>
+              </md-toolbar>
+                <md-list class="md-dense" flex>
+                  <md-subheader class="md-no-sticky">All Info</md-subheader>
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.raw track by pr.Number">
+                    <md-content class="md-list-item-text" layout="column">
+                      <h3 class="md-body-1">
+                        #{{pr.Number}}: {{pr.Title}}
+                      </h3>
+                      <h4 class="md-body2">
+                        {{pr.SHA}}
+                      </h4>
+                    </md-content>
+                  </md-list-item>
+                  <md-divider ></md-divider>
+                  <md-subheader class="md-no-sticky">SHAs</md-subheader>
+                  <md-list-item class="md-1-line" ng-repeat="pr in cntl.raw track by pr.Number">
+                    <md-content class="md-list-item-text" layout="column">
+                      {{pr.SHA}}
+                    </md-content>
+                  </md-list-item>
+                  <md-divider ></md-divider>
+                  <md-subheader class="md-no-sticky">Titles</md-subheader>
+                  <md-list-item class="md-1-line" ng-repeat="pr in cntl.raw track by pr.Number">
+                    <md-content class="md-list-item-text" layout="column">
+                      #{{pr.Number}}: {{pr.Title}}
+                    </md-content>
+                  </md-list-item>
+                </md-list>
+              </section>
+            </md-content>
+          </md-tab>
+
           <md-tab label="Info" md-on-select="cntl.selectTab('info')">
-	    <md-content class="md-padding">
-	      <md-tabs md-dynamic-height md-border-bottom>
+            <md-content class="md-padding">
+              <md-tabs md-dynamic-height md-border-bottom>
 
                 <md-tab label="Purpose">
-	          <md-content class="md-padding">
+                  <md-content class="md-padding">
                     <md-content class="md-whiteframe-z2">
                       <md-toolbar>
                         <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
                       </md-toolbar>
                     </md-content>
-	            <md-content class="md-padding">
-	              <span id="queue-info"></span>
-	            </md-content>
-	          </md-content>
-	        </md-tab>
+                    <md-content class="md-padding">
+                      <span id="queue-info"></span>
+                    </md-content>
+                  </md-content>
+                </md-tab>
 
                 <md-tab label="Bot Stats">
                   <md-content class="md-padding">
@@ -103,9 +139,9 @@
                     </md-content>
                   </md-content>
                 </md-tab>
-	      </md-tabs>
-	    </md-content>
-	  </md-tab>
+              </md-tabs>
+            </md-content>
+          </md-tab>
 
         </md-tabs>
       </md-content>
