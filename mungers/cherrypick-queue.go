@@ -102,9 +102,10 @@ func (c *CherrypickQueue) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	// This will cache the PR so when we try to view the queue we don't pull
-	// the PR info while the user is waiting on the page
+	// This will cache the PR and events so when we try to view the queue we don't
+	// hit github while trying to load the page
 	obj.GetPR()
+	obj.GetEvents()
 
 	c.Lock()
 	c.queue[*obj.Issue.Number] = obj
