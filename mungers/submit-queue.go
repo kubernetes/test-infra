@@ -156,9 +156,10 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		BuildStatus: map[string]e2e.BuildInfo{},
 	}
 	sq.e2e = e2e
-	if len(sq.githubConfig.Address) > 0 {
-		if len(sq.githubConfig.WWWRoot) > 0 {
-			http.Handle("/", http.FileServer(http.Dir(sq.githubConfig.WWWRoot)))
+
+	if len(config.Address) > 0 {
+		if len(config.WWWRoot) > 0 {
+			http.Handle("/", http.FileServer(http.Dir(config.WWWRoot)))
 		}
 		http.HandleFunc("/prs", sq.servePRs)
 		http.HandleFunc("/history", sq.serveHistory)
@@ -167,9 +168,10 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		http.HandleFunc("/google-internal-ci", sq.serveGoogleInternalStatus)
 		http.HandleFunc("/merge-info", sq.serveMergeInfo)
 		http.HandleFunc("/priority-info", sq.servePriorityInfo)
-		sq.githubConfig.ServeDebugStats("/stats")
-		go http.ListenAndServe(sq.githubConfig.Address, nil)
+		config.ServeDebugStats("/stats")
+		go http.ListenAndServe(config.Address, nil)
 	}
+
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
 
