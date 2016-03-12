@@ -36,8 +36,7 @@ function CPCntl(dataService, $interval, $location) {
 
   function refreshQueue() {
     dataService.getData('queue').then(function successCallback(response) {
-      self.queue = response.data;
-      document.getElementById("queue-len").innerHTML = "&nbsp;(" + self.queue.length + ")"
+      self.queueData = response.data;
     }, function errorCallback(response) {
       console.log("Error: Getting Cherrypick Status");
     });
@@ -45,7 +44,6 @@ function CPCntl(dataService, $interval, $location) {
 
   // Refresh data every minute
   refreshRaw();
-  $interval(refreshRaw, 60000);
 
   function refreshRaw() {
     dataService.getData('raw').then(function successCallback(response) {

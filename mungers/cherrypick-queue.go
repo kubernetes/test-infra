@@ -52,11 +52,21 @@ type cherrypickStatus struct {
 	ExtraInfo []string
 }
 
+type queueData struct {
+	MergedAndApproved []cherrypickStatus
+	Merged            []cherrypickStatus
+	Unmerged          []cherrypickStatus
+}
+
 // CherrypickQueue will merge PR which meet a set of requirements.
 type CherrypickQueue struct {
 	sync.Mutex
-	lastQueue map[int]*github.MungeObject // info from the last run of the munger
-	queue     map[int]*github.MungeObject // info from the current run of the munger
+	lastMergedAndApproved map[int]*github.MungeObject // info from the last run of the munger
+	lastMerged            map[int]*github.MungeObject // info from the last run of the munger
+	lastUnmerged          map[int]*github.MungeObject // info from the last run of the munger
+	mergedAndApproved     map[int]*github.MungeObject // info from the current run of the munger
+	merged                map[int]*github.MungeObject // info from the current run of the munger
+	unmerged              map[int]*github.MungeObject // info from the current run of the munger
 }
 
 func init() {
@@ -84,8 +94,12 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
-	c.lastQueue = map[int]*github.MungeObject{}
-	c.queue = map[int]*github.MungeObject{}
+	c.lastMergedAndApproved = map[int]*github.MungeObject{}
+	c.lastMerged = map[int]*github.MungeObject{}
+	c.lastUnmerged = map[int]*github.MungeObject{}
+	c.mergedAndApproved = map[int]*github.MungeObject{}
+	c.merged = map[int]*github.MungeObject{}
+	c.unmerged = map[int]*github.MungeObject{}
 	return nil
 }
 
@@ -93,8 +107,12 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 func (c *CherrypickQueue) EachLoop() error {
 	c.Lock()
 	defer c.Unlock()
-	c.lastQueue = c.queue
-	c.queue = map[int]*github.MungeObject{}
+	c.lastMergedAndApproved = c.mergedAndApproved
+	c.lastMerged = c.merged
+	c.lastUnmerged = c.unmerged
+	c.mergedAndApproved = map[int]*github.MungeObject{}
+	c.merged = map[int]*github.MungeObject{}
+	c.unmerged = map[int]*github.MungeObject{}
 	return nil
 }
 
@@ -112,10 +130,19 @@ func (c *CherrypickQueue) Munge(obj *github.MungeObject) {
 	// This will cache the PR and events so when we try to view the queue we don't
 	// hit github while trying to load the page
 	obj.GetPR()
-	obj.GetEvents()
 
+	num := *obj.Issue.Number
 	c.Lock()
-	c.queue[*obj.Issue.Number] = obj
+	merged, _ := obj.IsMerged()
+	if merged {
+		if obj.HasLabel(cpApprovedLabel) {
+			c.mergedAndApproved[num] = obj
+		} else {
+			c.merged[num] = obj
+		}
+	} else {
+		c.unmerged[num] = obj
+	}
 	c.Unlock()
 	return
 }
@@ -147,21 +174,21 @@ func (s cpQueueSorter) Less(i, j int) bool {
 		return false
 	}
 
-	// Then show those which have been approved
-	aApproved := a.HasLabel(cpApprovedLabel)
-	bApproved := b.HasLabel(cpApprovedLabel)
-	if aApproved && !bApproved {
-		return true
-	} else if !aApproved && bApproved {
-		return false
-	}
-
 	// Then sort by the order in which they were merged
 	aTime := mergeTime(a)
 	bTime := mergeTime(b)
 	if aTime.Before(bTime) {
 		return true
 	} else if aTime.After(bTime) {
+		return false
+	}
+
+	// Then show those which have been approved
+	aApproved := a.HasLabel(cpApprovedLabel)
+	bApproved := b.HasLabel(cpApprovedLabel)
+	if aApproved && !bApproved {
+		return true
+	} else if !aApproved && bApproved {
 		return false
 	}
 
@@ -196,35 +223,29 @@ func (c *CherrypickQueue) orderedQueue(queue map[int]*github.MungeObject) []int 
 }
 
 // getCurrentQueue returns the merger of the lastQueue and the currentQueue.
-func (c *CherrypickQueue) getCurrentQueue() map[int]*github.MungeObject {
+func (c *CherrypickQueue) getMergedQueue(last map[int]*github.MungeObject, current map[int]*github.MungeObject) map[int]*github.MungeObject {
 	c.Lock()
 	defer c.Unlock()
 
-	queue := map[int]*github.MungeObject{}
-	for i, v := range c.lastQueue {
-		queue[i] = v
+	out := map[int]*github.MungeObject{}
+	for i, v := range last {
+		out[i] = v
 	}
-	for i, v := range c.queue {
-		queue[i] = v
+	for i, v := range current {
+		out[i] = v
 	}
-	return queue
+	return out
 }
 
 func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
-	queue := c.getCurrentQueue()
+	queue := c.getMergedQueue(c.lastMergedAndApproved, c.mergedAndApproved)
 	keyOrder := c.orderedQueue(queue)
 	sortedQueue := []rawReadyInfo{}
 	for _, key := range keyOrder {
 		obj := queue[key]
-		if merged, _ := obj.IsMerged(); !merged {
-			continue
-		}
-		if !obj.HasLabel(cpApprovedLabel) {
-			continue
-		}
 		sha := obj.MergeCommit()
 		if sha == nil {
-			empty := ""
+			empty := "UnknownSHA"
 			sha = &empty
 		}
 		rri := rawReadyInfo{
@@ -246,10 +267,10 @@ func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
 	res.Write(data)
 }
 
-func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request) {
-	queue := c.getCurrentQueue()
+func (c *CherrypickQueue) getQueueData(last, current map[int]*github.MungeObject) []cherrypickStatus {
+	out := []cherrypickStatus{}
+	queue := c.getMergedQueue(last, current)
 	keyOrder := c.orderedQueue(queue)
-	sortedQueue := []cherrypickStatus{}
 	for _, key := range keyOrder {
 		obj := queue[key]
 		cps := cherrypickStatus{
@@ -263,20 +284,25 @@ func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request)
 			cps.ExtraInfo = append(cps.ExtraInfo, milestone)
 		}
 		merged, _ := obj.IsMerged()
-		if merged {
-			cps.ExtraInfo = append(cps.ExtraInfo, "Merged")
-			sha := obj.MergeCommit()
-			if sha != nil {
-				cps.ExtraInfo = append(cps.ExtraInfo, *sha)
-			}
-		} else if obj.HasLabel("lgtm") {
+		if !merged && obj.HasLabel("lgtm") {
 			// Don't bother showing LGTM for merged things
 			// it's just a distraction at that point
 			cps.ExtraInfo = append(cps.ExtraInfo, "lgtm")
 		}
-		sortedQueue = append(sortedQueue, cps)
+		out = append(out, cps)
 	}
-	data, err := json.Marshal(sortedQueue)
+
+	return out
+}
+
+func (c *CherrypickQueue) serveQueue(res http.ResponseWriter, req *http.Request) {
+	outData := queueData{}
+
+	outData.MergedAndApproved = c.getQueueData(c.lastMergedAndApproved, c.mergedAndApproved)
+	outData.Merged = c.getQueueData(c.lastMerged, c.merged)
+	outData.Unmerged = c.getQueueData(c.lastUnmerged, c.unmerged)
+
+	data, err := json.Marshal(outData)
 	if err != nil {
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
