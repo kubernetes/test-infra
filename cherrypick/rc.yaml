@@ -23,7 +23,7 @@ spec:
       - command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
-        - --pr-mungers=cherrypick-queue,cherrypick-must-have-milestone
+        - --pr-mungers=cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue
         - --state=all
         - --labels=cherrypick-candidate
         - --dry-run=true
@@ -36,8 +36,10 @@ spec:
         - name: status
           containerPort: 8080
         resources:
-          limits:
+          requests:
             cpu: 100m
+          limits:
+            cpu: 600m
         volumeMounts:
         - mountPath: /etc/secret-volume
           name: cherrypick-secret-volume

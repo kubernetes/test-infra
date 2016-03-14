@@ -55,12 +55,15 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
+	if !obj.HasLabel(cpCandidateLabel) {
+		return
+	}
 
 	releaseMilestone := obj.ReleaseMilestone()
 	hasLabel := obj.HasLabel(cpCandidateLabel)
 
 	if hasLabel && releaseMilestone == "" {
-		msg := fmt.Sprintf("Removing %q because no release milestone was set", cpCandidateLabel)
+		msg := fmt.Sprintf("Removing label `%s` because no release milestone was set. This is an invalid state and thus this PR is not being considered for cherry-pick to any release branch. Please add an appropriate release milestone and then re-add the label.", cpCandidateLabel)
 		obj.WriteComment(msg)
 		obj.RemoveLabel(cpCandidateLabel)
 	}
