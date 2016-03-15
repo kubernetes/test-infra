@@ -583,7 +583,12 @@ func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
 	return ret
 }
 
-// AddLabels will add all of the named `labels` to the PR
+// AddLabel adds a single `label` to the issue
+func (obj *MungeObject) AddLabel(label string) error {
+	return obj.AddLabels([]string{label})
+}
+
+// AddLabels will add all of the named `labels` to the issue
 func (obj *MungeObject) AddLabels(labels []string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
