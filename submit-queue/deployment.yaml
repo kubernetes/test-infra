@@ -1,37 +1,28 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  labels:
-    app: submit-queue
-    version: "2015-10-26-2a7f8fd"
-  name: submit-queue-2015-10-26-2a7f8fd
-  namespace: default
+  name: submit-queue
 spec:
   replicas: 1
-  selector:
-    app: submit-queue
-    version: "2015-10-26-2a7f8fd"
   template:
     metadata:
-      name: submit-queue
-      namespace: default
       labels:
         app: submit-queue
-        version: "2015-10-26-2a7f8fd"
     spec:
       containers:
-      - command:
+      - name: submit-queue
+        command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
         - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue
         - --dry-run=true
         image: gcr.io/google_containers/submit-queue:2015-10-26-2a7f8fd
-        imagePullPolicy: IfNotPresent
-        name: submit-queue
         ports:
         - name: status
           containerPort: 8080
         resources:
+          requests:
+            cpu: 100m
           limits:
             cpu: 100m
         volumeMounts:
@@ -39,7 +30,6 @@ spec:
           name: secret-volume
         - mountPath: /gitrepos
           name: kubernetes-repo
-      dnsPolicy: ClusterFirst
       volumes:
       - name: secret-volume
         secret:

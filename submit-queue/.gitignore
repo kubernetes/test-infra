@@ -1,3 +1,3 @@
-local.rc.yaml
+local.deployment.yaml
 local.secret.yaml
 local.service.yaml
