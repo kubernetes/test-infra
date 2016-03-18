@@ -33,6 +33,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
@@ -159,15 +160,15 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 
 	if len(config.Address) > 0 {
 		if len(config.WWWRoot) > 0 {
-			http.Handle("/", http.FileServer(http.Dir(config.WWWRoot)))
+			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot))))
 		}
-		http.HandleFunc("/prs", sq.servePRs)
-		http.HandleFunc("/history", sq.serveHistory)
-		http.HandleFunc("/users", sq.serveUsers)
-		http.HandleFunc("/github-e2e-queue", sq.serveGithubE2EStatus)
-		http.HandleFunc("/google-internal-ci", sq.serveGoogleInternalStatus)
-		http.HandleFunc("/merge-info", sq.serveMergeInfo)
-		http.HandleFunc("/priority-info", sq.servePriorityInfo)
+		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
+		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
+		http.Handle("/users", gziphandler.GzipHandler(http.HandlerFunc(sq.serveUsers)))
+		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
+		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
+		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
+		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
