@@ -17,9 +17,16 @@ limitations under the License.
 package e2e
 
 import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
 	"sync"
 
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
+	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/golang/glog"
 )
@@ -33,8 +40,9 @@ type BuildInfo struct {
 // E2ETester is the object which will contact a jenkins instance and get
 // information about recent jobs
 type E2ETester struct {
-	JenkinsHost string
-	JenkinsJobs []string
+	JenkinsHost        string
+	JobNames           []string
+	WeakStableJobNames []string
 
 	sync.Mutex
 	BuildStatus map[string]BuildInfo // protect by mutex
@@ -70,21 +78,140 @@ func (e *E2ETester) Stable() bool {
 	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
 
 	allStable := true
-	for _, build := range e.JenkinsJobs {
-		glog.V(2).Infof("Checking build stability for %s", build)
-		job, err := jenkinsClient.GetLastCompletedBuild(build)
+	for _, job := range e.JobNames {
+		glog.V(2).Infof("Checking build stability for %s", job)
+		build, err := jenkinsClient.GetLastCompletedBuild(job)
 		if err != nil {
-			glog.Errorf("Error checking build %v : %v", build, err)
-			e.setBuildStatus(build, "Error checking: "+err.Error(), "0")
+			glog.Errorf("Error checking job %v : %v", job, err)
+			e.setBuildStatus(job, "Error checking: "+err.Error(), "0")
 			allStable = false
 			continue
 		}
-		if job.IsStable() {
-			e.setBuildStatus(build, "Stable", job.ID)
+		if build.IsStable() {
+			e.setBuildStatus(job, "Stable", build.ID)
 		} else {
-			e.setBuildStatus(build, "Not Stable", job.ID)
+			e.setBuildStatus(job, "Not Stable", build.ID)
 			allStable = false
 		}
 	}
 	return allStable
+}
+
+const (
+	successString     = "SUCCESS"
+	expectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+)
+
+type finishedFile struct {
+	Result    string `json:"result"`
+	Timestamp uint64 `json:"timestamp"`
+}
+
+func checkFinishedStatus(job string, lastBuildNumber int) bool {
+	response, err := utils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, "finished.json")
+	if err != nil {
+		glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, "finished.json", err)
+		return false
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		glog.Infof("Got a non-success response %v while reading data for %v/%v/%v", response.StatusCode, job, lastBuildNumber, "finished.json")
+		return false
+	}
+	result := finishedFile{}
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, "finished.json", err)
+		return false
+	}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		glog.Errorf("Failed to unmarshal %v: %v", string(body), err)
+		return false
+	}
+	return result.Result == successString
+}
+
+// GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
+func (e *E2ETester) GCSBasedStable() bool {
+	for _, job := range e.JobNames {
+		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
+		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
+		if err != nil {
+			glog.Errorf("Error while getting data for %v: %v", job, err)
+			continue
+		}
+		if !checkFinishedStatus(job, lastBuildNumber) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// GCSWeakStable is a version of GCSBasedStable with a slightly relaxed condition.
+// This function says that e2e's are unstable only if there were real test failures
+// (i.e. there was a test that failed, so no timeouts/cluster startup failures counts),
+// or test failed for any reason 3 times in a row.
+func (e *E2ETester) GCSWeakStable() bool {
+	for _, job := range e.WeakStableJobNames {
+		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
+		glog.Infof("Checking status of %v, %v", job, lastBuildNumber)
+		if err != nil {
+			glog.Errorf("Error while getting data for %v: %v", job, err)
+			continue
+		}
+		if checkFinishedStatus(job, lastBuildNumber) {
+			continue
+		}
+
+		// If we're here it means that build failed, so we need to look for a reason
+		// by iterating over junit_XX.xml files and look for failures
+		i := 0
+		for {
+			i++
+			path := fmt.Sprintf("artifacts/junit_%02d.xml", i)
+			response, err := utils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, path)
+			if err != nil {
+				glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, path, err)
+				continue
+			}
+			if response.StatusCode != 200 {
+				break
+			}
+			defer response.Body.Close()
+			reader := bufio.NewReader(response.Body)
+			body, err := reader.ReadString('\n')
+			if err != nil {
+				glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, path, err)
+				continue
+			}
+			if strings.TrimSpace(body) != expectedXMLHeader {
+				glog.Errorf("Invalid header for %v/%v/%v: %v, expected %v", job, lastBuildNumber, path, body, expectedXMLHeader)
+				continue
+			}
+			body, err = reader.ReadString('\n')
+			if err != nil {
+				glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, path, err)
+				continue
+			}
+			numberOfTests := 0
+			nubmerOfFailures := 0
+			timestamp := 0.0
+			fmt.Sscanf(strings.TrimSpace(body), "<testsuite tests=\"%d\" failures=\"%d\" time=\"%f\">", &numberOfTests, &nubmerOfFailures, &timestamp)
+			glog.V(4).Infof("%v, numberOfTests: %v, numberOfFailures: %v", string(body), numberOfTests, nubmerOfFailures)
+			if nubmerOfFailures > 0 {
+				glog.V(4).Infof("Found failure in %v for job %v build number %v", path, job, lastBuildNumber)
+				return false
+			}
+		}
+
+		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is comming from the infrastructure
+		// Check results of previous two builds.
+		if !checkFinishedStatus(job, lastBuildNumber-1) && !checkFinishedStatus(job, lastBuildNumber-2) {
+			return false
+		}
+	}
+	return true
 }
