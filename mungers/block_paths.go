@@ -130,7 +130,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 					continue
 				}
 				body := fmt.Sprintf(`Adding label:%s because PR changes docs prohibited to auto merge
-See http://kubernetes.github.io/docs/editdocs/ for information about editting docs`, doNotMergeLabel)
+See http://kubernetes.io/editdocs/ for information about editing docs`, doNotMergeLabel)
 				obj.WriteComment(body)
 				obj.AddLabels([]string{doNotMergeLabel})
 				return
