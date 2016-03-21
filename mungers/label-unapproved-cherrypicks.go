@@ -68,6 +68,10 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	if obj.HasLabel(doNotMergeLabel) {
+		return
+	}
+
 	obj.AddLabel(doNotMergeLabel)
 
 	msg := fmt.Sprintf("This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label.", cpApprovedLabel, doNotMergeLabel)
