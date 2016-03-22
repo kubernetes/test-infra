@@ -92,10 +92,11 @@ type submitQueueStatus struct {
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
 //  if user not in whitelist PR must have "ok-to-merge"
-//  The google internal jenkins instance must be passing the JenkinsJobs e2e tests
+//  The google internal jenkins instance must be passing the JobNames e2e tests
 type SubmitQueue struct {
 	githubConfig           *github.Config
-	JenkinsJobs            []string
+	JobNames               []string
+	WeakStableJobNames     []string
 	JenkinsHost            string
 	Whitelist              string
 	WhitelistOverride      string
@@ -151,9 +152,10 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 
 	sq.lastE2EStable = true
 	e2e := &e2e.E2ETester{
-		JenkinsJobs: sq.JenkinsJobs,
-		JenkinsHost: sq.JenkinsHost,
-		BuildStatus: map[string]e2e.BuildInfo{},
+		JobNames:           sq.JobNames,
+		JenkinsHost:        sq.JenkinsHost,
+		WeakStableJobNames: sq.WeakStableJobNames,
+		BuildStatus:        map[string]e2e.BuildInfo{},
 	}
 	sq.e2e = e2e
 
@@ -208,7 +210,7 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringSliceVar(&sq.JenkinsJobs, "jenkins-jobs", []string{
+	cmd.Flags().StringSliceVar(&sq.JobNames, "jenkins-jobs", []string{
 		"kubernetes-build",
 		"kubernetes-test-go",
 		"kubernetes-e2e-gce",
@@ -218,6 +220,9 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
+	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs", []string{
+		"kubernetes-kubemark-500-gce",
+	}, "Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
@@ -230,6 +235,11 @@ func (sq *SubmitQueue) e2eStable() bool {
 	wentUnstable := false
 
 	stable := sq.e2e.Stable()
+	gcsStable := sq.e2e.GCSBasedStable()
+
+	if stable != gcsStable {
+		glog.Errorf("GCS stable check returned different value than Jenkins.")
+	}
 
 	sq.Lock()
 	last := sq.lastE2EStable

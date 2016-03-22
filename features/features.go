@@ -47,6 +47,7 @@ func (f *Features) GetActive() []feature {
 // Initialize should be called with the set of all features needed by all (active) mungers
 func (f *Features) Initialize(requestedFeatures []string) error {
 	for _, name := range requestedFeatures {
+		glog.Infof("Initilizing feature: %v", name)
 		feat, found := featureMap[name]
 		if !found {
 			return fmt.Errorf("Could not find a feature named: %s", name)

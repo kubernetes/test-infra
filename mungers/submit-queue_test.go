@@ -151,7 +151,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.E2EStatusContext = jenkinsE2EContext
 	sq.UnitStatusContext = jenkinsUnitContext
 	sq.JenkinsHost = server.URL
-	sq.JenkinsJobs = []string{"foo"}
+	sq.JobNames = []string{"foo"}
 	sq.WhitelistOverride = "ok-to-merge"
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond

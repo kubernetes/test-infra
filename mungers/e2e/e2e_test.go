@@ -113,7 +113,7 @@ func TestCheckBuilds(t *testing.T) {
 		})
 		e2e := &E2ETester{
 			JenkinsHost: server.URL,
-			JenkinsJobs: []string{
+			JobNames: []string{
 				"foo",
 				"bar",
 			},
