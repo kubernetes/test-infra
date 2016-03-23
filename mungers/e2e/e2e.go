@@ -18,10 +18,7 @@ package e2e
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"sync"
 
@@ -98,40 +95,8 @@ func (e *E2ETester) Stable() bool {
 }
 
 const (
-	successString     = "SUCCESS"
 	expectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 )
-
-type finishedFile struct {
-	Result    string `json:"result"`
-	Timestamp uint64 `json:"timestamp"`
-}
-
-func checkFinishedStatus(job string, lastBuildNumber int) bool {
-	response, err := utils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, "finished.json")
-	if err != nil {
-		glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, "finished.json", err)
-		return false
-	}
-
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		glog.Infof("Got a non-success response %v while reading data for %v/%v/%v", response.StatusCode, job, lastBuildNumber, "finished.json")
-		return false
-	}
-	result := finishedFile{}
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, "finished.json", err)
-		return false
-	}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		glog.Errorf("Failed to unmarshal %v: %v", string(body), err)
-		return false
-	}
-	return result.Result == successString
-}
 
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
 func (e *E2ETester) GCSBasedStable() bool {
@@ -142,7 +107,7 @@ func (e *E2ETester) GCSBasedStable() bool {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			continue
 		}
-		if !checkFinishedStatus(job, lastBuildNumber) {
+		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
 			return false
 		}
 	}
@@ -162,7 +127,7 @@ func (e *E2ETester) GCSWeakStable() bool {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			continue
 		}
-		if checkFinishedStatus(job, lastBuildNumber) {
+		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); stable && err == nil {
 			continue
 		}
 
@@ -209,7 +174,10 @@ func (e *E2ETester) GCSWeakStable() bool {
 
 		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is comming from the infrastructure
 		// Check results of previous two builds.
-		if !checkFinishedStatus(job, lastBuildNumber-1) && !checkFinishedStatus(job, lastBuildNumber-2) {
+		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
+			return false
+		}
+		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
 			return false
 		}
 	}
