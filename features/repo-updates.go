@@ -94,11 +94,16 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 
 	path, err = filepath.Rel(o.kubernetesDir, path)
 	if err != nil {
+		glog.Errorf("Unable to find relative path between %q and %q: %v", o.kubernetesDir, path, err)
 		return err
 	}
 	path = filepath.Dir(path)
-	o.assignees[path] = sets.NewString(c.Assignees...)
-	//o.owners[path] = sets.NewString(c.Assignees...)
+	if len(c.Assignees) > 0 {
+		o.assignees[path] = sets.NewString(c.Assignees...)
+	}
+	//if len(c.Owners) > 0 {
+	//o.owners[path] = sets.NewString(c.Owners...)
+	//}
 	return nil
 }
 
