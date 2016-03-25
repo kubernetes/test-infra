@@ -36,6 +36,7 @@ type ShameReport struct {
 	Command string
 	From    string
 	Cc      string
+	ReplyTo string
 }
 
 func init() {
@@ -50,6 +51,7 @@ func (s *ShameReport) AddFlags(cmd *cobra.Command, config *githubhelper.Config) 
 	cmd.Flags().StringVar(&s.Command, "shame-report-cmd", "tee -a shame.txt", "command to execute, passing the report as stdin")
 	cmd.Flags().StringVar(&s.From, "shame-from", "", "From: header for shame report")
 	cmd.Flags().StringVar(&s.Cc, "shame-cc", "", "Cc: header for shame report")
+	cmd.Flags().StringVar(&s.ReplyTo, "shame-reply-to", "", "Reply-To: header for shame report")
 }
 
 type reportData struct {
@@ -213,6 +215,9 @@ func (s *ShameReport) groupReport(r *reportData) (map[string]bool, error) {
 	if s.From != "" {
 		fmt.Fprintf(dest, "From: %v\n", s.From)
 	}
+	if s.ReplyTo != "" {
+		fmt.Fprintf(dest, "Reply-To: %v\n", s.ReplyTo)
+	}
 	if s.Cc != "" {
 		fmt.Fprintf(dest, "Cc: %v\n", s.Cc)
 	}
@@ -270,6 +275,9 @@ func (s *ShameReport) individualReport(user string, r *reportData) error {
 	// Write the report
 	if s.From != "" {
 		fmt.Fprintf(dest, "From: %v\n", s.From)
+	}
+	if s.ReplyTo != "" {
+		fmt.Fprintf(dest, "Reply-To: %v\n", s.ReplyTo)
 	}
 	// No Cc on individual emails!
 	fmt.Fprintf(dest, "To: %v\n", strings.Join(to, ","))
