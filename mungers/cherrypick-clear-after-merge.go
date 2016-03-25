@@ -17,7 +17,6 @@ limitations under the License.
 package mungers
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -60,14 +59,111 @@ func (c *ClearPickAfterMerge) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (c *ClearPickAfterMerge) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
-func handleFound(obj *github.MungeObject, gitMsg []byte, branch string) error {
-	msg := string(gitMsg)
-	o := strings.SplitN(msg, "\n", 2)
-	sha := o[0]
-	msg = fmt.Sprintf("Commit %s found in the %q branch appears to be this PR. Removing the %q label. If this s an error find help to get your PR picked.", sha, branch, cpCandidateLabel)
+func handleFound(obj *github.MungeObject, branch string) error {
+	msg := fmt.Sprintf("Commit found in the %q branch appears to be this PR. Removing the %q label. If this is an error find help to get your PR picked.", branch, cpCandidateLabel)
 	obj.WriteComment(msg)
 	obj.RemoveLabel(cpCandidateLabel)
 	return nil
+}
+
+// foundLog will return if the given `logString` exists on the branch in question.
+// it will also return the actual logs for further processing
+func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, string) {
+	args := []string{"merge-base", "--fork-point", "origin/master", "origin/" + branch}
+	out, err := c.features.Repos.GitCommand(args)
+	base := string(out)
+	if err != nil {
+		glog.Errorf("Unable to find the fork point for branch %s. %s:%v", branch, base, err)
+		return false, ""
+	}
+	base = strings.TrimSuffix(base, "\n")
+
+	// if release-1.2 branched from master at abcdef123 this should result in:
+	// abcdef123..origin/release-1.2
+	logRefs := fmt.Sprintf("%s..origin/%s", base, branch)
+
+	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "--grep", logString, logRefs}
+	out, err = c.features.Repos.GitCommand(args)
+	logs := string(out)
+	if err != nil {
+		glog.Errorf("Error grepping logs out=%q: %v", logs, err)
+		return false, ""
+	}
+	glog.V(10).Infof("args:%v", args)
+
+	glog.V(10).Infof("Searching for %q in %q", logString, logs)
+	if !strings.Contains(logs, logString) {
+		return false, ""
+	}
+	return true, logs
+}
+
+// Can we find a commit in the changelog that looks like it was done using git cherry-pick -m1 -x ?
+func (c *ClearPickAfterMerge) foundByPickDashX(obj *github.MungeObject, branch string) bool {
+	sha := obj.MergeCommit()
+	if sha == nil {
+		glog.Errorf("Unable to get SHA of merged PR %d", *obj.Issue.Number)
+		return false
+	}
+
+	cherrypickMsg := fmt.Sprintf("(cherry picked from commit %s)", *sha)
+	found, logs := c.foundLog(branch, cherrypickMsg)
+	if !found {
+		return false
+	}
+
+	// double check for the 'non -x' message
+	logMsg := fmt.Sprintf("Merge pull request #%d from ", *obj.Issue.Number)
+	if !strings.Contains(logs, logMsg) {
+		return false
+	}
+	glog.Infof("Found cherry-pick for %d using -x information in branch %q", *obj.Issue.Number, branch)
+	return true
+}
+
+// Can we find a commit in the changelog that looks like it was done using git cherry-pick -m1 ?
+func (c *ClearPickAfterMerge) foundByPickWithoutDashX(obj *github.MungeObject, branch string) bool {
+	logMsg := fmt.Sprintf("Merge pull request #%d from ", *obj.Issue.Number)
+
+	found, _ := c.foundLog(branch, logMsg)
+	if found {
+		glog.Infof("Found cherry-pick for %d using log matching for `git cherry-pick` in branch %q", *obj.Issue.Number, branch)
+	}
+	return found
+}
+
+// Check that the commit messages for all commits in the PR are on the branch
+func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch string) bool {
+	commits, err := obj.GetCommits()
+	if err != nil {
+		glog.Infof("unable to get commits")
+		return false
+	}
+	for _, commit := range commits {
+		if commit.Commit == nil {
+			return false
+		}
+		if commit.Commit.Message == nil {
+			return false
+		}
+		found, _ := c.foundLog(branch, *commit.Commit.Message)
+		if !found {
+			glog.Infof("found == false")
+			return false
+		}
+	}
+	return true
+}
+
+// Can we find a commit in the changelog that looks like it was done using the hack/cherry_pick_pull.sh script ?
+func (c *ClearPickAfterMerge) foundByScript(obj *github.MungeObject, branch string) bool {
+	logMsg := fmt.Sprintf("Cherry pick of #%d on %s.", *obj.Issue.Number, branch)
+
+	found, _ := c.foundLog(branch, logMsg)
+	if found {
+		glog.Infof("Found cherry-pick for %d using log matching for `hack/cherry_pick_pull.sh` in branch %q", *obj.Issue.Number, branch)
+	}
+	return found
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -91,37 +187,23 @@ func (c *ClearPickAfterMerge) Munge(obj *github.MungeObject) {
 	rel := releaseMilestone[1:]
 	branch := "release-" + rel
 
-	sha := obj.MergeCommit()
-	if sha == nil {
-		glog.Errorf("Unable to get SHA of merged %d", sha)
+	if c.foundByPickDashX(obj, branch) {
+		handleFound(obj, branch)
 		return
 	}
 
-	logMsg := fmt.Sprintf("Merge pull request #%d from ", *obj.Issue.Number)
-	bLogMsg := []byte(logMsg)
-
-	cherrypickMsg := fmt.Sprintf("(cherry picked from commit %s)", *sha)
-	args := []string{"log", "--pretty=tformat:%H%n%s%n%b", "--grep", cherrypickMsg, "origin/" + branch}
-	out, err := c.features.Repos.GitCommand(args)
-	if err != nil {
-		glog.Errorf("Error grepping for cherrypick -x message out=%q: %v", string(out), err)
-		return
-	}
-	if bytes.Contains(out, bLogMsg) {
-		glog.Infof("Found cherry-pick using -x information")
-		handleFound(obj, out, branch)
+	if c.foundByAllCommits(obj, branch) {
+		handleFound(obj, branch)
 		return
 	}
 
-	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "--grep", logMsg, "origin/" + branch}
-	out, err = c.features.Repos.GitCommand(args)
-	if err != nil {
-		glog.Errorf("Error grepping for log message out=%q: %v", string(out), err)
+	if c.foundByPickWithoutDashX(obj, branch) {
+		handleFound(obj, branch)
 		return
 	}
-	if bytes.Contains(out, bLogMsg) {
-		glog.Infof("Found cherry-pick using log matching")
-		handleFound(obj, out, branch)
+
+	if c.foundByScript(obj, branch) {
+		handleFound(obj, branch)
 		return
 	}
 
