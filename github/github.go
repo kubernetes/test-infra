@@ -244,11 +244,12 @@ func (a analytics) print() {
 // MungeObject is the object that mungers deal with. It is a combination of
 // different github API objects.
 type MungeObject struct {
-	config  *Config
-	Issue   *github.Issue
-	pr      *github.PullRequest
-	commits []github.RepositoryCommit
-	events  []github.IssueEvent
+	config   *Config
+	Issue    *github.Issue
+	pr       *github.PullRequest
+	commits  []github.RepositoryCommit
+	events   []github.IssueEvent
+	comments []github.IssueComment
 }
 
 // DebugStats is a structure that tells information about how we have interacted
@@ -1179,14 +1180,10 @@ func (obj *MungeObject) MergePR(who string) error {
 		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, *obj.Issue.Title)
 	}
 
-	// Get the text of the first comment
-	firstComment := ""
-	comments, err := obj.ListComments()
-	if err != nil {
-		return err
-	}
-	if len(comments) > 0 && comments[0].Body != nil {
-		firstComment = *comments[0].Body
+	// Get the text of the issue body
+	issueBody := ""
+	if obj.Issue.Body != nil {
+		issueBody = *obj.Issue.Body
 	}
 
 	// Get the text of the first commit
@@ -1197,17 +1194,17 @@ func (obj *MungeObject) MergePR(who string) error {
 		firstCommit = *commits[0].Commit.Message
 	}
 
-	// Include the contents of the first github comment if the first comment is not the
-	// exact same text as was included in the first commit. PRs with a single commit
-	// duplicate the first commits text into the first comment when you open the PR.
-	// If there are multiple commits people often put summary info in the first comment.
-	// If there is either summary info, or in the information was updated in github
-	// we should include it in the git history.
-	if !strings.Contains(firstCommit, firstComment) {
-		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, firstComment)
+	// Include the contents of the issue body if it is not the exact same text as was
+	// included in the first commit.  PRs with a single commit (by default when opened
+	// via the web UI) have the same text as the first commit. If there are multiple
+	// commits people often put summary info in the body. But sometimes, even with one
+	// commit people will edit/update the issue body. So if there is any reason, include
+	// the issue body in the merge commit in git.
+	if !strings.Contains(firstCommit, issueBody) {
+		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, issueBody)
 	}
 
-	_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody)
+	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody)
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates
 	// we will only get the bellow error if we provided a particular sha to merge PUT. We aren't doing that
@@ -1233,6 +1230,10 @@ func (obj *MungeObject) ListComments() ([]github.IssueComment, error) {
 	issueNum := *obj.Issue.Number
 	allComments := []github.IssueComment{}
 
+	if obj.comments != nil {
+		return obj.comments, nil
+	}
+
 	listOpts := &github.IssueListCommentsOptions{}
 
 	page := 1
@@ -1250,6 +1251,7 @@ func (obj *MungeObject) ListComments() ([]github.IssueComment, error) {
 		}
 		page++
 	}
+	obj.comments = allComments
 	return allComments, nil
 }
 
