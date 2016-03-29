@@ -657,24 +657,31 @@ func TestSubmitQueue(t *testing.T) {
 		})
 		path := fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Unexpected method: %s", r.Method)
+			if r.Method == "POST" {
+				c := new(github.IssueComment)
+				json.NewDecoder(r.Body).Decode(c)
+				msg := *c.Body
+				if strings.HasPrefix(msg, "@k8s-bot test this") {
+					go fakeRunGithubE2ESuccess(test.ciStatus, test.e2ePass, test.unitPass)
+				}
+				w.WriteHeader(http.StatusOK)
+				data, err := json.Marshal(github.IssueComment{})
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				w.Write(data)
+				return
 			}
-			type comment struct {
-				Body string `json:"body"`
+			if r.Method == "GET" {
+				w.WriteHeader(http.StatusOK)
+				data, err := json.Marshal([]github.IssueComment{})
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				w.Write(data)
+				return
 			}
-			c := new(comment)
-			json.NewDecoder(r.Body).Decode(c)
-			msg := c.Body
-			if strings.HasPrefix(msg, "@k8s-bot test this") {
-				go fakeRunGithubE2ESuccess(test.ciStatus, test.e2ePass, test.unitPass)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(github.IssueComment{})
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
+			t.Errorf("Unexpected method: %s", r.Method)
 		})
 		path = fmt.Sprintf("/repos/o/r/pulls/%d/merge", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
