@@ -148,7 +148,6 @@ func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch 
 		}
 		found, _ := c.foundLog(branch, *commit.Commit.Message)
 		if !found {
-			glog.Infof("found == false")
 			return false
 		}
 	}
