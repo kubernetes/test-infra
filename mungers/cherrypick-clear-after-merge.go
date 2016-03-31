@@ -69,14 +69,18 @@ func handleFound(obj *github.MungeObject, branch string) error {
 // foundLog will return if the given `logString` exists on the branch in question.
 // it will also return the actual logs for further processing
 func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, string) {
-	args := []string{"merge-base", "--fork-point", "origin/master", "origin/" + branch}
+	args := []string{"merge-base", "origin/master", "origin/" + branch}
 	out, err := c.features.Repos.GitCommand(args)
 	base := string(out)
 	if err != nil {
 		glog.Errorf("Unable to find the fork point for branch %s. %s:%v", branch, base, err)
 		return false, ""
 	}
-	base = strings.TrimSuffix(base, "\n")
+	lines := strings.Split(base, "\n")
+	if len(lines) < 1 {
+		glog.Errorf("Found 0 lines splitting the results of git merge-base")
+	}
+	base = lines[0]
 
 	// if release-1.2 branched from master at abcdef123 this should result in:
 	// abcdef123..origin/release-1.2
