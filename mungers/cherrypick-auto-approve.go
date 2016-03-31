@@ -74,7 +74,7 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 	if obj.IsForBranch("master") {
 		return
 	}
-	if obj.HasLabel(cpApprovedLabel) {
+	if obj.HasLabel(cpApprovedLabel) && obj.ReleaseMilestone() != "" {
 		return
 	}
 
@@ -84,13 +84,15 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 	body := *obj.Issue.Body
 
 	// foundOne tracks if we found any valid lines. PR without any valid lines
-	// shouldn't get autolabeled
+	// shouldn't get autolabeled.
 	foundOne := false
+	parentReleaseMilestone := ""
+
 	lines := strings.Split(body, "\n")
 	for _, line := range lines {
 		matches := cpRe.FindStringSubmatch(line)
 		if len(matches) != 3 {
-			glog.Errorf("%d: len(matches)=%d", *obj.Issue.Number, len(matches))
+			glog.V(6).Infof("%d: line:%v len(matches)=%d", *obj.Issue.Number, line, len(matches))
 			continue
 		}
 		parentPRNum, err := strconv.Atoi(matches[1])
@@ -108,17 +110,30 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 			return
 		}
 
-		parentReleaseMilestone := parentPR.ReleaseMilestone()
+		parentReleaseMilestone = parentPR.ReleaseMilestone()
 		milestone := fmt.Sprintf("v%s", matches[2])
 
-		// If the parent was for milestone say v1.2 but this PR
-		// is for the branch release-1.1 we should not auto-approve
+		// If the parent was for milestone v1.2 but this PR has
+		// comments saying it was 'on branch release-1.1' we should
+		// not auto approve
 		if parentReleaseMilestone != milestone {
+			glog.Errorf("%d: parentReleaseMilestone=%q but comments are for %q", *obj.Issue.Number, parentReleaseMilestone, milestone)
+			return
+		}
+
+		// If the comment is 'ont branch release-1.1' but the PR is
+		// against release-1.2 we should not auto approve.
+		targetBranch := fmt.Sprintf("release-%s", matches[2])
+		if !obj.IsForBranch(targetBranch) {
+			glog.Errorf("%d: is not for the expected branch: %q", *obj.Issue.Number, targetBranch)
 			return
 		}
 		foundOne = true
 	}
 	if foundOne {
+		if obj.ReleaseMilestone() == "" {
+			obj.SetMilestone(parentReleaseMilestone)
+		}
 		obj.AddLabel(cpApprovedLabel)
 	}
 }
