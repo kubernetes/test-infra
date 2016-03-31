@@ -240,7 +240,7 @@ func (sq *SubmitQueue) e2eStable() bool {
 	gcsStable := sq.e2e.GCSBasedStable()
 
 	if stable != gcsStable {
-		glog.Errorf("GCS stable check returned different value than Jenkins.")
+		glog.Errorf("GCS stable check returned different value than Jenkins: %v vs %v.", stable, gcsStable)
 	}
 
 	sq.Lock()

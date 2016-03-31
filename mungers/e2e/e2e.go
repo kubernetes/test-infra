@@ -108,6 +108,8 @@ func (e *E2ETester) GCSBasedStable() bool {
 			continue
 		}
 		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
+			// TODO: decrese verbosity when we feel comfortable with this check.
+			glog.Infof("Found unstable job: %v, build number: %v", job, lastBuildNumber)
 			return false
 		}
 	}
