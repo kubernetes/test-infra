@@ -209,6 +209,8 @@ type analytics struct {
 	DeleteComment     analytic
 	Merge             analytic
 	GetUser           analytic
+	SetMilestone      analytic
+	ListMilestones    analytic
 }
 
 func (a analytics) print() {
@@ -237,6 +239,8 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "DeleteComment\t%d\t\n", a.DeleteComment.Count)
 	fmt.Fprintf(w, "Merge\t%d\t\n", a.Merge.Count)
 	fmt.Fprintf(w, "GetUser\t%d\t\n", a.GetUser.Count)
+	fmt.Fprintf(w, "SetMilestone\t%d\t\n", a.SetMilestone.Count)
+	fmt.Fprintf(w, "ListMilestones\t%d\t\n", a.ListMilestones.Count)
 	w.Flush()
 	glog.V(2).Infof("\n%v", buf)
 }
@@ -455,6 +459,19 @@ func (obj *MungeObject) Refresh() error {
 	return nil
 }
 
+// ListMilestones will return all milestones of the given `state`
+func (config *Config) ListMilestones(state string) []github.Milestone {
+	listopts := github.MilestoneListOptions{
+		State: state,
+	}
+	milestones, resp, err := config.client.Issues.ListMilestones(config.Org, config.Project, &listopts)
+	config.analytics.ListMilestones.Call(config, resp)
+	if err != nil {
+		glog.Errorf("Error getting milestones of state %q: %v", state, err)
+	}
+	return milestones
+}
+
 // GetObject will return an object (with only the issue filled in)
 func (config *Config) GetObject(num int) (*MungeObject, error) {
 	issue, err := config.getIssue(num)
@@ -634,6 +651,40 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	}
 	if _, err := config.client.Issues.RemoveLabelForIssue(config.Org, config.Project, prNum, label); err != nil {
 		glog.Errorf("Failed to remove %v from issue %d: %v", label, prNum, err)
+		return err
+	}
+	return nil
+}
+
+// SetMilestone will set the milestone to the value specified
+func (obj *MungeObject) SetMilestone(title string) error {
+	milestones := obj.config.ListMilestones("all")
+
+	var milestone *github.Milestone
+	for _, m := range milestones {
+		if m.Title == nil || m.Number == nil {
+			glog.Errorf("Found milestone with nil title of number: %v", m)
+			continue
+		}
+		if *m.Title == title {
+			milestone = &m
+			break
+		}
+	}
+	if milestone == nil {
+		glog.Errorf("Unable to find milestone with title %q", title)
+		return fmt.Errorf("Unable to find milestone")
+	}
+
+	obj.config.analytics.SetMilestone.Call(obj.config, nil)
+	obj.Issue.Milestone = milestone
+	if obj.config.DryRun {
+		return nil
+	}
+
+	request := &github.IssueRequest{Milestone: milestone.Number}
+	if _, _, err := obj.config.client.Issues.Edit(obj.config.Org, obj.config.Project, *obj.Issue.Number, request); err != nil {
+		glog.Errorf("Failed to set milestone %d on issue %d: %v", *milestone.Number, *obj.Issue.Number, err)
 		return err
 	}
 	return nil

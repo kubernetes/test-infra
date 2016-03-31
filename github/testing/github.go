@@ -54,6 +54,9 @@ func PullRequest(user string, merged, mergeDetermined, mergeable bool) *github.P
 			AvatarURL: stringPtr("MyAvatarURL"),
 		},
 		Merged: boolPtr(merged),
+		Base: &github.PullRequestBranch{
+			Ref: stringPtr("master"),
+		},
 	}
 	if mergeDetermined {
 		pr.Mergeable = boolPtr(mergeable)
@@ -246,7 +249,7 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 		if err != nil {
 			t.Errorf("%v", err)
 		}
-		if r.Method != "GET" {
+		if r.Method != "GET" && r.Method != "PATCH" {
 			t.Errorf("Unexpected method: expected: GET got: %s", r.Method)
 		}
 		w.WriteHeader(http.StatusOK)
