@@ -34,7 +34,7 @@
 #          -e SMTP_PASS=my_super_secret_smtp_password \
 #          gcr.io/google_containers/shame-mailer:TAG
 
-FROM google/debian:wheezy
+FROM google/debian:jessie
 MAINTAINER Kris Rousey <krousey@google.com>
 RUN apt-get update
 RUN apt-get install -y -qq ca-certificates heirloom-mailx
