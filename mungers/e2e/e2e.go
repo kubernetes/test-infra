@@ -88,6 +88,7 @@ func (e *E2ETester) Stable() bool {
 			e.setBuildStatus(job, "Stable", build.ID)
 		} else {
 			e.setBuildStatus(job, "Not Stable", build.ID)
+			glog.Infof("Jenkis based check for %v build %v returned false", job, build.ID)
 			allStable = false
 		}
 	}
