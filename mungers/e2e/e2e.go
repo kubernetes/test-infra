@@ -106,7 +106,7 @@ func (e *E2ETester) GCSBasedStable() bool {
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
-			continue
+			return false
 		}
 		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
 			// TODO: decrese verbosity when we feel comfortable with this check.
