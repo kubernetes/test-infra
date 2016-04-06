@@ -28,15 +28,23 @@ import (
 	"github.com/golang/glog"
 )
 
+// E2ETester can be queried for E2E job stability.
+type E2ETester interface {
+	GCSBasedStable() bool
+	GCSWeakStable() bool
+	GetBuildStatus() map[string]BuildInfo
+	Stable() bool
+}
+
 // BuildInfo tells the build ID and the build success
 type BuildInfo struct {
 	Status string
 	ID     string
 }
 
-// E2ETester is the object which will contact a jenkins instance and get
+// RealE2ETester is the object which will contact a jenkins instance and get
 // information about recent jobs
-type E2ETester struct {
+type RealE2ETester struct {
 	JenkinsHost        string
 	JobNames           []string
 	WeakStableJobNames []string
@@ -45,7 +53,7 @@ type E2ETester struct {
 	BuildStatus map[string]BuildInfo // protect by mutex
 }
 
-func (e *E2ETester) locked(f func()) {
+func (e *RealE2ETester) locked(f func()) {
 	e.Lock()
 	defer e.Unlock()
 	f()
@@ -53,7 +61,7 @@ func (e *E2ETester) locked(f func()) {
 
 // GetBuildStatus returns the build status. This map is a copy and is thus safe
 // for the caller to use in any way.
-func (e *E2ETester) GetBuildStatus() map[string]BuildInfo {
+func (e *RealE2ETester) GetBuildStatus() map[string]BuildInfo {
 	e.Lock()
 	defer e.Unlock()
 	out := map[string]BuildInfo{}
@@ -63,14 +71,14 @@ func (e *E2ETester) GetBuildStatus() map[string]BuildInfo {
 	return out
 }
 
-func (e *E2ETester) setBuildStatus(build, status string, id string) {
+func (e *RealE2ETester) setBuildStatus(build, status string, id string) {
 	e.Lock()
 	defer e.Unlock()
 	e.BuildStatus[build] = BuildInfo{Status: status, ID: id}
 }
 
 // Stable is called to make sure all of the jenkins jobs are stable
-func (e *E2ETester) Stable() bool {
+func (e *RealE2ETester) Stable() bool {
 	// Test if the build is stable in Jenkins
 	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
 
@@ -100,7 +108,7 @@ const (
 )
 
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
-func (e *E2ETester) GCSBasedStable() bool {
+func (e *RealE2ETester) GCSBasedStable() bool {
 	for _, job := range e.JobNames {
 		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
@@ -122,7 +130,7 @@ func (e *E2ETester) GCSBasedStable() bool {
 // This function says that e2e's are unstable only if there were real test failures
 // (i.e. there was a test that failed, so no timeouts/cluster startup failures counts),
 // or test failed for any reason 3 times in a row.
-func (e *E2ETester) GCSWeakStable() bool {
+func (e *RealE2ETester) GCSWeakStable() bool {
 	for _, job := range e.WeakStableJobNames {
 		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.Infof("Checking status of %v, %v", job, lastBuildNumber)

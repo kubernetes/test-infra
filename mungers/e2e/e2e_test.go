@@ -111,7 +111,7 @@ func TestCheckBuilds(t *testing.T) {
 				res.Write(data)
 			},
 		})
-		e2e := &E2ETester{
+		e2e := &RealE2ETester{
 			JenkinsHost: server.URL,
 			JobNames: []string{
 				"foo",

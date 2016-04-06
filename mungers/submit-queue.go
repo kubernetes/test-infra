@@ -32,6 +32,7 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
+	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
@@ -95,10 +96,14 @@ type submitQueueStatus struct {
 //  if user not in whitelist PR must have "ok-to-merge"
 //  The google internal jenkins instance must be passing the JobNames e2e tests
 type SubmitQueue struct {
-	githubConfig           *github.Config
-	JobNames               []string
-	WeakStableJobNames     []string
-	JenkinsHost            string
+	githubConfig       *github.Config
+	JobNames           []string
+	WeakStableJobNames []string
+
+	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
+	FakeE2E     bool
+	JenkinsHost string
+
 	Whitelist              string
 	WhitelistOverride      string
 	Committers             string
@@ -128,7 +133,7 @@ type SubmitQueue struct {
 	githubE2EPollTime time.Duration
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
-	e2e           *e2e.E2ETester
+	e2e           e2e.E2ETester
 }
 
 func init() {
@@ -152,13 +157,19 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 	}
 
 	sq.lastE2EStable = true
-	e2e := &e2e.E2ETester{
-		JobNames:           sq.JobNames,
-		JenkinsHost:        sq.JenkinsHost,
-		WeakStableJobNames: sq.WeakStableJobNames,
-		BuildStatus:        map[string]e2e.BuildInfo{},
+	if sq.FakeE2E {
+		sq.e2e = &fake_e2e.FakeE2ETester{
+			JobNames:           sq.JobNames,
+			WeakStableJobNames: sq.WeakStableJobNames,
+		}
+	} else {
+		sq.e2e = &e2e.RealE2ETester{
+			JobNames:           sq.JobNames,
+			JenkinsHost:        sq.JenkinsHost,
+			WeakStableJobNames: sq.WeakStableJobNames,
+			BuildStatus:        map[string]e2e.BuildInfo{},
+		}
 	}
-	sq.e2e = e2e
 
 	if len(config.Address) > 0 {
 		if len(config.WWWRoot) > 0 {
@@ -229,6 +240,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
+	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	sq.addWhitelistCommand(cmd, config)
 }
 
