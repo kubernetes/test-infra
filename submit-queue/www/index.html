@@ -150,7 +150,7 @@
               </md-toolbar>
               <md-chips ng-model="cntl.builds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
-                  <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="https://console.cloud.google.com/storage/kubernetes-jenkins/logs/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
+                  <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
                   <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
                 </md-chip-template>
               </md-chips>
