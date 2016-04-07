@@ -156,93 +156,90 @@
           </md-tab>
 
           <md-tab label="Info" md-on-select="cntl.selectTab('info')">
-	    <md-content class="md-padding">
-	      <md-tabs md-dynamic-height md-border-bottom>
+            <md-tabs md-dynamic-height md-border-bottom>
 
-                <md-tab label="Queue Order">
-	          <md-content class="md-padding">
-                    <md-content class="md-whiteframe-z2">
-                      <md-toolbar>
-                        <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
-                      </md-toolbar>
-                    </md-content>
-	            <md-content class="md-padding">
-	              <span id="priority-info"></span>
-	            </md-content>
-	          </md-content>
-	        </md-tab>
-
-                <md-tab label="Merge Requirements">
-	          <md-content class="md-padding">
-                    <md-content class="md-whiteframe-z2">
-                      <md-toolbar>
-                        <h2 class="md-toolbar-tools">Requirements for a PR to get automatically merged </h2>
-                      </md-toolbar>
-                    </md-content>
-	            <md-content class="md-padding">
-	              <span id="merge-info"></span>
-	            </md-content>
-	          </md-content>
-	        </md-tab>
-
-                <md-tab label="Users">
-                  <md-content class="md-padding">
-                    <md-toolbar class="md-whiteframe-z2">
-                      <h2 class="md-toolbar-tools">Users</h2>
+              <md-tab label="Queue Order">
+                <md-content class="md-padding">
+                  <md-content class="md-whiteframe-z2">
+                    <md-toolbar>
+                      <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
                     </md-toolbar>
-                    <md-list>
-                      <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="cntl.goToPerson(user.Login)">
-                        <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}">
-                        <md-content class="md-list-item-text" layout="column">
-                          <h3 class="md-body-1">{{user.Login}}</h3>
-                          <h4 class="md-body-2">On list because: {{user.Access}}</h4>
-                        </md-content>
-                      </md-list-item>
-                    </md-list>
                   </md-content>
-                </md-tab>
-
-                <md-tab label="Bot Stats">
                   <md-content class="md-padding">
-                    <md-content class="md-whiteframe-z2">
-                      <md-toolbar>
-                        <h2 class="md-toolbar-tools">Statistics About the Bot</h2>
-                      </md-toolbar>
-                    </md-content>
-                    <br>
-                    <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
-                    <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
-                    <h3 class=md-title>Github Rate Limit Count: <span id="github-api-limit-count"></span></h3>
-                    <h3 class=md-title>Github Rate Limit Next Reset: <span id="github-api-limit-reset"></span></h3>
-                    <md-content class="md-whiteframe-z2">
-                      <md-data-table-container>
-                        <md-data-table-toolbar>
-                          <h2 class="md-title">API Calls During Last Loop</h2>
-                        </md-data-table-toolbar>
-                        <table md-data-table class="md-primary">
-                          <thead md-order="cntl.StatOrder">
-                            <tr>
-                              <th order-by="$key" name="Call"></th>
-                              <th order-by="Count" name="Count ({{ cntl.APICount }})" numeric descend-first></th>
-                              <th order-by="CachedCount" name="Cached Count ({{ cntl.CachedAPICount }})" numeric descend-first></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder track by stat.$key">
-                              <td>{{stat.$key}}</td>
-                              <td>{{stat.Count}}</td>
-                              <td>{{stat.CachedCount}}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </md-data-table-container>
-                    </md-content>
+                    <span id="priority-info"></span>
                   </md-content>
-                </md-tab>
-	      </md-tabs>
-	    </md-content>
-	  </md-tab>
+                </md-content>
+              </md-tab>
 
+              <md-tab label="Merge Requirements">
+                <md-content class="md-padding">
+                  <md-content class="md-whiteframe-z2">
+                    <md-toolbar>
+                      <h2 class="md-toolbar-tools">Requirements for a PR to get automatically merged </h2>
+                    </md-toolbar>
+                  </md-content>
+                  <md-content class="md-padding">
+                    <span id="merge-info"></span>
+                  </md-content>
+                </md-content>
+              </md-tab>
+
+              <md-tab label="Users">
+                <md-content class="md-padding">
+                  <md-toolbar class="md-whiteframe-z2">
+                    <h2 class="md-toolbar-tools">Users</h2>
+                  </md-toolbar>
+                  <md-list>
+                    <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="cntl.goToPerson(user.Login)">
+                      <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}">
+                      <md-content class="md-list-item-text" layout="column">
+                        <h3 class="md-body-1">{{user.Login}}</h3>
+                        <h4 class="md-body-2">On list because: {{user.Access}}</h4>
+                      </md-content>
+                    </md-list-item>
+                  </md-list>
+                </md-content>
+              </md-tab>
+
+              <md-tab label="Bot Stats">
+                <md-content class="md-padding">
+                  <md-content class="md-whiteframe-z2">
+                    <md-toolbar>
+                      <h2 class="md-toolbar-tools">Statistics About the Bot</h2>
+                    </md-toolbar>
+                  </md-content>
+                  <br>
+                  <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
+                  <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
+                  <h3 class=md-title>Github Rate Limit Count: <span id="github-api-limit-count"></span></h3>
+                  <h3 class=md-title>Github Rate Limit Next Reset: <span id="github-api-limit-reset"></span></h3>
+                  <md-content class="md-whiteframe-z2">
+                    <md-data-table-container>
+                      <md-data-table-toolbar>
+                        <h2 class="md-title">API Calls During Last Loop</h2>
+                      </md-data-table-toolbar>
+                      <table md-data-table class="md-primary">
+                        <thead md-order="cntl.StatOrder">
+                          <tr>
+                            <th order-by="$key" name="Call"></th>
+                            <th order-by="Count" name="Count ({{ cntl.APICount }})" numeric descend-first></th>
+                            <th order-by="CachedCount" name="Cached Count ({{ cntl.CachedAPICount }})" numeric descend-first></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder track by stat.$key">
+                            <td>{{stat.$key}}</td>
+                            <td>{{stat.Count}}</td>
+                            <td>{{stat.CachedCount}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </md-data-table-container>
+                  </md-content>
+                </md-content>
+              </md-tab>
+            </md-tabs>
+          </md-tab>
         </md-tabs>
       </md-content>
     </md-content>
