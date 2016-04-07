@@ -51,8 +51,8 @@ const (
 	travisContext      = "continuous-integration/travis-ci/pr"
 	sqContext          = "Submit Queue"
 
-	highestMergePriority = -1 // used for e2e-not-required
-	defaultMergePriority = 3  // when an issue is unlabeled
+	e2eNotRequiredMergePriority = -1 // used for e2e-not-required
+	defaultMergePriority        = 3  // when an issue is unlabeled
 
 	githubE2EPollTime = 30 * time.Second
 )
@@ -75,6 +75,7 @@ type statusPullRequest struct {
 	AvatarURL string
 	Additions int
 	Deletions int
+	ExtraInfo []string
 }
 
 type userInfo struct {
@@ -323,6 +324,30 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	}
 	if pr.Deletions != nil {
 		res.Deletions = *pr.Deletions
+	}
+
+	prio, ok := obj.Annotations["priority"]
+	if !ok {
+		var prio string
+		p := priority(obj)
+		if p == e2eNotRequiredMergePriority {
+			prio = e2eNotRequiredLabel
+		} else {
+			prio = fmt.Sprintf("P%d", p) // store it a P1, P2, P3.  Not just 1,2,3
+		}
+		obj.Annotations["priority"] = prio
+	}
+	if prio != "" {
+		res.ExtraInfo = append(res.ExtraInfo, prio)
+	}
+
+	milestone, ok := obj.Annotations["milestone"]
+	if !ok {
+		milestone = obj.ReleaseMilestone()
+		obj.Annotations["milestone"] = milestone
+	}
+	if milestone != "" {
+		res.ExtraInfo = append(res.ExtraInfo, milestone)
 	}
 	return &res
 }
@@ -627,7 +652,7 @@ func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
 func priority(obj *github.MungeObject) int {
 	// jump to the front of the queue if you don't need retested
 	if obj.HasLabel(e2eNotRequiredLabel) {
-		return highestMergePriority
+		return e2eNotRequiredMergePriority
 	}
 
 	prio := obj.Priority()

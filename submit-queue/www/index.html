@@ -78,6 +78,9 @@
                       <h3 class="md-body-1">
                         <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                       </h3>
+                      <h4 class="md-body2">
+                        {{pr.ExtraInfo}}
+                      </h4>
                     </md-content>
                   </md-list-item>
                 </md-list>
@@ -93,6 +96,9 @@
                       <h3 class="md-body-1">
                         <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                       </h3>
+                      <h4 class="md-body2">
+                        {{pr.ExtraInfo}}
+                      </h4>
                     </md-content>
                     <md-divider md-inset ng-if="!$last"></md-divider>
                   </md-list-item>
