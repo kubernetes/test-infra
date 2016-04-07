@@ -65,6 +65,10 @@ func (ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	if !obj.IsForBranch("master") {
+		return
+	}
+
 	if obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone) {
 		if obj.HasLabel(releaseNoteLabelNeeded) {
 			obj.RemoveLabel(releaseNoteLabelNeeded)
@@ -82,7 +86,7 @@ func (ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 
 	msgFmt := `Removing LGTM because the release note process has not been followed.
 One of the following labels is required %q, %q, or %q
-Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/proposals/release-notes.md`
+Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
 	msg := fmt.Sprintf(msgFmt, releaseNote, releaseNoteNone, releaseNoteActionRequired)
 	obj.WriteComment(msg)
 	obj.RemoveLabel("lgtm")

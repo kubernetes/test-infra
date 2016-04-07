@@ -41,6 +41,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 	tests := []struct {
 		name        string
 		issue       *github.Issue
+		branch      string
 		mustHave    []string
 		mustNotHave []string
 	}{
@@ -112,9 +113,26 @@ func TestReleaseNoteLabel(t *testing.T) {
 			mustHave:    []string{releaseNoteActionRequired},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
+		{
+			name:        "do not add needs label to non-master",
+			branch:      "release-1.2",
+			issue:       github_test.Issue(botName, 1, []string{}, true),
+			mustNotHave: []string{releaseNoteLabelNeeded},
+		},
+		{
+			name:        "do not touch LGTM on non-master",
+			branch:      "release-1.2",
+			issue:       github_test.Issue(botName, 1, []string{"lgtm"}, true),
+			mustHave:    []string{"lgtm"},
+			mustNotHave: []string{releaseNoteLabelNeeded},
+		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitServer(t, test.issue, ValidPR(), nil, nil, nil)
+		pr := ValidPR()
+		if test.branch != "" {
+			pr.Base.Ref = &test.branch
+		}
+		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil)
 		path := fmt.Sprintf("/repos/o/r/issue/%s/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
