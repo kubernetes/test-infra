@@ -54,7 +54,7 @@
                       <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
                     </h3>
                     <h4 class="md-body-2">{{pr.Reason}}</h4>
-                    <p>{{pr.Time | date:'medium'}}</p>
+                    <p>{{pr.Time | date:'medium'}} (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)</p>
                   </md-content>
                   <md-divider md-inset ng-if="!$last"></md-divider>
                 </md-list-item>
@@ -70,13 +70,13 @@
               <section>
                 <md-subheader class="md-primary">CURRENTLY RUNNING</md-subheader>
                 <md-list layout-padding>
-                  <md-list-item ng-repeat="pr in cntl.e2erunning track by pr.Number">
+                  <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2erunning track by pr.Number">
                     <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
                       <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                     </a>
                     <md-content class="md-list-item-text" layout="column">
                       <h3 class="md-body-1">
-                        <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
+                        <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                       </h3>
                     </md-content>
                   </md-list-item>
@@ -91,7 +91,7 @@
                     </a>
                     <md-content class="md-list-item-text" layout="column">
                       <h3 class="md-body-1">
-                        <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a>
+                        <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                       </h3>
                     </md-content>
                     <md-divider md-inset ng-if="!$last"></md-divider>

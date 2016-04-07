@@ -73,6 +73,8 @@ type statusPullRequest struct {
 	Title     string
 	Login     string
 	AvatarURL string
+	Additions int
+	Deletions int
 }
 
 type userInfo struct {
@@ -305,13 +307,24 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	if obj == nil {
 		return &statusPullRequest{}
 	}
-	return &statusPullRequest{
+	res := statusPullRequest{
 		Number:    *obj.Issue.Number,
 		URL:       *obj.Issue.HTMLURL,
 		Title:     *obj.Issue.Title,
 		Login:     *obj.Issue.User.Login,
 		AvatarURL: *obj.Issue.User.AvatarURL,
 	}
+	pr, err := obj.GetPR()
+	if err != nil {
+		return &res
+	}
+	if pr.Additions != nil {
+		res.Additions = *pr.Additions
+	}
+	if pr.Deletions != nil {
+		res.Deletions = *pr.Deletions
+	}
+	return &res
 }
 
 func reasonToState(reason string) string {
