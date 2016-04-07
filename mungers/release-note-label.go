@@ -65,6 +65,10 @@ func (ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	if !obj.IsForBranch("master") {
+		return
+	}
+
 	if obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone) {
 		if obj.HasLabel(releaseNoteLabelNeeded) {
 			obj.RemoveLabel(releaseNoteLabelNeeded)
