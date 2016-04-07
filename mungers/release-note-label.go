@@ -36,36 +36,61 @@ const (
 
 // ReleaseNoteLabel will remove the LGTM label from an PR which has not
 // set one of the appropriete 'release-note-*' labels.
-type ReleaseNoteLabel struct{}
+type ReleaseNoteLabel struct {
+	config *github.Config
+}
 
 func init() {
-	RegisterMungerOrDie(ReleaseNoteLabel{})
+	RegisterMungerOrDie(&ReleaseNoteLabel{})
 }
 
 // Name is the name usable in --pr-mungers
-func (ReleaseNoteLabel) Name() string { return releaseNoteLabeler }
+func (r *ReleaseNoteLabel) Name() string { return releaseNoteLabeler }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (ReleaseNoteLabel) RequiredFeatures() []string { return []string{} }
+func (r *ReleaseNoteLabel) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
-func (ReleaseNoteLabel) Initialize(config *github.Config, features *features.Features) error {
+func (r *ReleaseNoteLabel) Initialize(config *github.Config, features *features.Features) error {
+	r.config = config
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
-func (ReleaseNoteLabel) EachLoop() error { return nil }
+func (r *ReleaseNoteLabel) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (ReleaseNoteLabel) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (r *ReleaseNoteLabel) AddFlags(cmd *cobra.Command, config *github.Config) {}
+
+func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) bool {
+	if obj.IsForBranch("master") {
+		return true
+	}
+
+	parents := getCherrypickParentPRs(obj, r.config)
+	// if it has no parents it needs to follow the release note process
+	if len(parents) == 0 {
+		return true
+	}
+
+	for _, parent := range parents {
+		// If the parent didn't set a release note, the CP must
+		if !parent.HasLabel(releaseNote) && !parent.HasLabel(releaseNoteActionRequired) {
+			return true
+		}
+	}
+	// All of the parents set the releaseNote or releaseNoteActionRequired label, so
+	// this cherrypick PR needs to do nothing.
+	return false
+}
 
 // Munge is the workhorse the will actually make updates to the PR
-func (ReleaseNoteLabel) Munge(obj *github.MungeObject) {
+func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
 
-	if !obj.IsForBranch("master") {
+	if !r.prMustFollowRelNoteProcess(obj) {
 		return
 	}
 

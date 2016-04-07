@@ -41,7 +41,9 @@ func TestReleaseNoteLabel(t *testing.T) {
 	tests := []struct {
 		name        string
 		issue       *github.Issue
+		body        string
 		branch      string
+		secondIssue *github.Issue
 		mustHave    []string
 		mustNotHave []string
 	}{
@@ -114,17 +116,38 @@ func TestReleaseNoteLabel(t *testing.T) {
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:        "do not add needs label to non-master",
+			name:        "do not add needs label when parent PR has releaseNote label",
 			branch:      "release-1.2",
 			issue:       github_test.Issue(botName, 1, []string{}, true),
+			body:        "Cherry pick of #2 on release-1.2.",
+			secondIssue: github_test.Issue(botName, 2, []string{releaseNote}, true),
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:        "do not touch LGTM on non-master",
+			name:        "do not touch LGTM on non-master when parent PR has releaseNote label",
 			branch:      "release-1.2",
 			issue:       github_test.Issue(botName, 1, []string{"lgtm"}, true),
+			body:        "Cherry pick of #2 on release-1.2.",
+			secondIssue: github_test.Issue(botName, 2, []string{releaseNote}, true),
 			mustHave:    []string{"lgtm"},
 			mustNotHave: []string{releaseNoteLabelNeeded},
+		},
+		{
+			name:        "add needs label when parent PR does not have releaseNote label",
+			branch:      "release-1.2",
+			issue:       github_test.Issue(botName, 1, []string{}, true),
+			body:        "Cherry pick of #2 on release-1.2.",
+			secondIssue: github_test.Issue(botName, 2, []string{releaseNoteNone}, true),
+			mustHave:    []string{releaseNoteLabelNeeded},
+		},
+		{
+			name:        "remove LGTM on non-master when parent PR has releaseNote label",
+			branch:      "release-1.2",
+			issue:       github_test.Issue(botName, 1, []string{"lgtm"}, true),
+			body:        "Cherry pick of #2 on release-1.2.",
+			secondIssue: github_test.Issue(botName, 2, []string{releaseNoteNone}, true),
+			mustHave:    []string{releaseNoteLabelNeeded},
+			mustNotHave: []string{"lgtm"},
 		},
 	}
 	for testNum, test := range tests {
@@ -132,6 +155,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 		if test.branch != "" {
 			pr.Base.Ref = &test.branch
 		}
+		test.issue.Body = &test.body
 		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil)
 		path := fmt.Sprintf("/repos/o/r/issue/%s/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +167,20 @@ func TestReleaseNoteLabel(t *testing.T) {
 			}
 			w.Write(data)
 		})
+		if test.secondIssue != nil {
+			path = fmt.Sprintf("/repos/o/r/issues/%d", *test.secondIssue.Number)
+			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				data, err := json.Marshal(test.secondIssue)
+				if err != nil {
+					t.Errorf("%v", err)
+				}
+				if r.Method != "GET" {
+					t.Errorf("Unexpected method: expected: GET got: %s", r.Method)
+				}
+				w.WriteHeader(http.StatusOK)
+				w.Write(data)
+			})
+		}
 
 		config := &github_util.Config{}
 		config.Org = "o"
@@ -169,7 +207,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 
 		for _, l := range test.mustHave {
 			if !obj.HasLabel(l) {
-				t.Errorf("%s:%d Did not find label %q, labels: %v", test.name, testNum, l, obj.Issue.Labels)
+				t.Errorf("%s:%d: Did not find label %q, labels: %v", test.name, testNum, l, obj.Issue.Labels)
 			}
 		}
 		for _, l := range test.mustNotHave {
