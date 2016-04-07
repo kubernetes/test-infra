@@ -81,16 +81,6 @@ func TestCherrypickAuthApprove(t *testing.T) {
 			shouldNotHaveMile:  "v1.2",
 		},
 		{
-			name:               "Comment about wrong branch",
-			issue:              github_test.Issue(botName, 1, []string{}, true),
-			issueBody:          "Cherry pick of #2 on release-1.1.",
-			prBranch:           "release-1.2",
-			parentIssue:        github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
-			milestone:          &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)},
-			shouldNotHaveLabel: cpApprovedLabel,
-			shouldNotHaveMile:  "v1.2",
-		},
-		{
 			name:               "PR against wrong branch",
 			issue:              github_test.Issue(botName, 1, []string{}, true),
 			issueBody:          "Cherry pick of #2 on release-1.2.",

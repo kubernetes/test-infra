@@ -66,6 +66,39 @@ func (c *CherrypickAutoApprove) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (c *CherrypickAutoApprove) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
+func getCherrypickParentPRs(obj *github.MungeObject, config *github.Config) []*github.MungeObject {
+	out := []*github.MungeObject{}
+	if obj.Issue.Body == nil {
+		glog.Errorf("Found a nil body in %d", *obj.Issue.Number)
+		return nil
+	}
+	body := *obj.Issue.Body
+
+	// foundOne tracks if we found any valid lines. PR without any valid lines
+	// shouldn't get autolabeled.
+
+	lines := strings.Split(body, "\n")
+	for _, line := range lines {
+		matches := cpRe.FindStringSubmatch(line)
+		if len(matches) != 3 {
+			glog.V(6).Infof("%d: line:%v len(matches)=%d", *obj.Issue.Number, line, len(matches))
+			continue
+		}
+		parentPRNum, err := strconv.Atoi(matches[1])
+		if err != nil {
+			glog.Errorf("%d: Unable to convert %q to parent PR number", *obj.Issue.Number, matches[1])
+			return nil
+		}
+		parentPR, err := config.GetObject(parentPRNum)
+		if err != nil {
+			glog.Errorf("Unable to get object for %d", parentPRNum)
+			return nil
+		}
+		out = append(out, parentPR)
+	}
+	return out
+}
+
 // Munge is the workhorse the will actually make updates to the PR
 func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
@@ -78,62 +111,43 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if obj.Issue.Body == nil {
-		glog.Errorf("Found a nil body in %d", *obj.Issue.Number)
+	parents := getCherrypickParentPRs(obj, c.config)
+	if len(parents) == 0 {
+		return
 	}
-	body := *obj.Issue.Body
 
-	// foundOne tracks if we found any valid lines. PR without any valid lines
-	// shouldn't get autolabeled.
-	foundOne := false
-	parentReleaseMilestone := ""
+	major := 0
+	minor := 0
+	branch := obj.Branch()
+	if l, err := fmt.Sscanf(branch, "release-%d.%d", &major, &minor); err != nil || l != 2 {
+		return
+	}
+	branchImpliedMilestone := fmt.Sprintf("v%d.%d", major, minor)
 
-	lines := strings.Split(body, "\n")
-	for _, line := range lines {
-		matches := cpRe.FindStringSubmatch(line)
-		if len(matches) != 3 {
-			glog.V(6).Infof("%d: line:%v len(matches)=%d", *obj.Issue.Number, line, len(matches))
-			continue
-		}
-		parentPRNum, err := strconv.Atoi(matches[1])
-		if err != nil {
-			glog.Errorf("%d: Unable to convert %q to parent PR number", *obj.Issue.Number, matches[1])
+	milestone := obj.ReleaseMilestone()
+	if milestone != "" && milestone != branchImpliedMilestone {
+		glog.Errorf("Found PR %d on branch %q but have milestone %q", *obj.Issue.Number, branch, milestone)
+		return
+	}
+
+	for _, parent := range parents {
+		if !parent.HasLabel(cpApprovedLabel) {
 			return
 		}
-		parentPR, err := c.config.GetObject(parentPRNum)
-		if err != nil {
-			glog.Errorf("Unable to get object for %d", parentPRNum)
-			return
-		}
-
-		if !parentPR.HasLabel(cpApprovedLabel) {
-			return
-		}
-
-		parentReleaseMilestone = parentPR.ReleaseMilestone()
-		milestone := fmt.Sprintf("v%s", matches[2])
 
 		// If the parent was for milestone v1.2 but this PR has
 		// comments saying it was 'on branch release-1.1' we should
 		// not auto approve
-		if parentReleaseMilestone != milestone {
-			glog.Errorf("%d: parentReleaseMilestone=%q but comments are for %q", *obj.Issue.Number, parentReleaseMilestone, milestone)
+		parentMilestone := parent.ReleaseMilestone()
+		if parentMilestone != branchImpliedMilestone {
+			glog.Errorf("%d: parentReleaseMilestone=%q but branch is %q", *obj.Issue.Number, parentMilestone, obj.Branch())
 			return
 		}
-
-		// If the comment is 'ont branch release-1.1' but the PR is
-		// against release-1.2 we should not auto approve.
-		targetBranch := fmt.Sprintf("release-%s", matches[2])
-		if !obj.IsForBranch(targetBranch) {
-			glog.Errorf("%d: is not for the expected branch: %q", *obj.Issue.Number, targetBranch)
-			return
-		}
-		foundOne = true
 	}
-	if foundOne {
-		if obj.ReleaseMilestone() == "" {
-			obj.SetMilestone(parentReleaseMilestone)
-		}
+	if milestone == "" {
+		obj.SetMilestone(branchImpliedMilestone)
+	}
+	if !obj.HasLabel(cpApprovedLabel) {
 		obj.AddLabel(cpApprovedLabel)
 	}
 }

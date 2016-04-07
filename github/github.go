@@ -485,15 +485,25 @@ func (config *Config) GetObject(num int) (*MungeObject, error) {
 	return obj, nil
 }
 
+// Branch returns the branch the PR is for. Return "" if this is not a PR or
+// it does not have the required information.
+func (obj *MungeObject) Branch() string {
+	pr, err := obj.GetPR()
+	if err != nil {
+		return ""
+	}
+	if pr.Base != nil && pr.Base.Ref != nil {
+		return *pr.Base.Ref
+	}
+	return ""
+}
+
 // IsForBranch return true if the object is a PR for a branch with the given
 // name. It return false if it is not a pr, it isn't against the given branch,
 // or we can't tell
 func (obj *MungeObject) IsForBranch(branch string) bool {
-	pr, err := obj.GetPR()
-	if err != nil {
-		return false
-	}
-	if pr.Base != nil && pr.Base.Ref != nil && *pr.Base.Ref == branch {
+	objBranch := obj.Branch()
+	if objBranch == branch {
 		return true
 	}
 	return false
