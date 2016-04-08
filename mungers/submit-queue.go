@@ -94,6 +94,16 @@ type submitQueueStatus struct {
 	PRStatus map[string]submitStatus
 }
 
+// Call updateHealth on the SubmitQueue at roughly constant intervals to keep
+// this up to date. The mergeable fraction of time for the queue as a whole
+// and the individual jobs will then be NumStable[PerJob] / TotalLoops.
+type submitQueueHealth struct {
+	StartTime       time.Time
+	TotalLoops      int
+	NumStable       int
+	NumStablePerJob map[string]int
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -138,6 +148,7 @@ type SubmitQueue struct {
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
+	health        submitQueueHealth
 }
 
 func init() {
@@ -187,6 +198,7 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
+		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
@@ -199,6 +211,9 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		sq.githubE2EPollTime = githubE2EPollTime
 	}
 
+	sq.health.StartTime = time.Now()
+	sq.health.NumStablePerJob = map[string]int{}
+
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
 	return nil
@@ -207,6 +222,7 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 // EachLoop is called at the start of every munge loop
 func (sq *SubmitQueue) EachLoop() error {
 	sq.Lock()
+	sq.updateHealth()
 	sq.RefreshWhitelist()
 	sq.lastPRStatus = sq.prStatus
 	sq.prStatus = map[string]submitStatus{}
@@ -247,6 +263,22 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	sq.addWhitelistCommand(cmd, config)
+}
+
+// Hold the lock
+func (sq *SubmitQueue) updateHealth() {
+	sq.health.TotalLoops++
+	if sq.e2e.Stable() {
+		sq.health.NumStable++
+	}
+	for job, status := range sq.e2e.GetBuildStatus() {
+		if _, ok := sq.health.NumStablePerJob[job]; !ok {
+			sq.health.NumStablePerJob[job] = 0
+		}
+		if status.Status == "Stable" {
+			sq.health.NumStablePerJob[job]++
+		}
+	}
 }
 
 func (sq *SubmitQueue) e2eStable() bool {
@@ -475,6 +507,12 @@ func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
 	sq.Lock()
 	defer sq.Unlock()
 	return sq.marshal(sq.e2e.GetBuildStatus())
+}
+
+func (sq *SubmitQueue) getHealth() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.health)
 }
 
 const (
@@ -849,6 +887,11 @@ func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.R
 
 func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
 	data := sq.getGoogleInternalStatus()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
+	data := sq.getHealth()
 	sq.serve(data, res, req)
 }
 

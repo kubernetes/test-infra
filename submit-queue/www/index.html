@@ -147,9 +147,12 @@
               <md-chips ng-model="cntl.builds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="https://console.cloud.google.com/storage/kubernetes-jenkins/logs/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
-                  <span style="color: {{$chip.color}}">{{$chip.msg}}</span>
+                  <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
                 </md-chip-template>
               </md-chips>
+              <br>
+              <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
+              <p>Health percents are the fraction of the time that a given job is stable since the submit queue restarted<span ng-show="cntl.StartTime.length > 0"> ({{ cntl.StartTime }})</span>.</p>
             </md-tab-body>
           </md-tab>
 
