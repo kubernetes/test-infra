@@ -162,36 +162,32 @@
           </md-tab>
 
           <md-tab label="Info" md-on-select="cntl.selectTab('info')">
-            <md-tabs md-dynamic-height md-border-bottom>
+	    <md-content class="md-padding">
+	      <md-tabs md-dynamic-height md-border-bottom>
 
-              <md-tab label="Queue Order">
-                <md-content class="md-padding">
+                <md-tab label="Queue Order">
                   <md-content class="md-whiteframe-z2">
                     <md-toolbar>
                       <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
                     </md-toolbar>
                   </md-content>
-                  <md-content class="md-padding">
-                    <span id="priority-info"></span>
-                  </md-content>
-                </md-content>
-              </md-tab>
+	          <md-content class="md-padding">
+	            <span id="priority-info"></span>
+	          </md-content>
+	        </md-tab>
 
-              <md-tab label="Merge Requirements">
-                <md-content class="md-padding">
+                <md-tab label="Merge Requirements">
                   <md-content class="md-whiteframe-z2">
                     <md-toolbar>
                       <h2 class="md-toolbar-tools">Requirements for a PR to get automatically merged </h2>
                     </md-toolbar>
                   </md-content>
-                  <md-content class="md-padding">
-                    <span id="merge-info"></span>
-                  </md-content>
-                </md-content>
-              </md-tab>
+	          <md-content class="md-padding">
+	            <span id="merge-info"></span>
+	          </md-content>
+	        </md-tab>
 
-              <md-tab label="Users">
-                <md-content class="md-padding">
+                <md-tab label="Users">
                   <md-toolbar class="md-whiteframe-z2">
                     <h2 class="md-toolbar-tools">Users</h2>
                   </md-toolbar>
@@ -204,11 +200,9 @@
                       </md-content>
                     </md-list-item>
                   </md-list>
-                </md-content>
-              </md-tab>
+                </md-tab>
 
-              <md-tab label="Bot Stats">
-                <md-content class="md-padding">
+                <md-tab label="Bot Stats">
                   <md-content class="md-whiteframe-z2">
                     <md-toolbar>
                       <h2 class="md-toolbar-tools">Statistics About the Bot</h2>
@@ -242,10 +236,11 @@
                       </table>
                     </md-data-table-container>
                   </md-content>
-                </md-content>
-              </md-tab>
-            </md-tabs>
-          </md-tab>
+                </md-tab>
+	      </md-tabs>
+	    </md-content>
+	  </md-tab>
+
         </md-tabs>
       </md-content>
     </md-content>
