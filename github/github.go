@@ -248,12 +248,13 @@ func (a analytics) print() {
 // MungeObject is the object that mungers deal with. It is a combination of
 // different github API objects.
 type MungeObject struct {
-	config   *Config
-	Issue    *github.Issue
-	pr       *github.PullRequest
-	commits  []github.RepositoryCommit
-	events   []github.IssueEvent
-	comments []github.IssueComment
+	config      *Config
+	Issue       *github.Issue
+	pr          *github.PullRequest
+	commits     []github.RepositoryCommit
+	events      []github.IssueEvent
+	comments    []github.IssueComment
+	Annotations map[string]string //annotations are things you can set yourself.
 }
 
 // DebugStats is a structure that tells information about how we have interacted
@@ -273,11 +274,12 @@ type DebugStats struct {
 // as needed
 func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []github.RepositoryCommit, events []github.IssueEvent) *MungeObject {
 	return &MungeObject{
-		config:  config,
-		Issue:   issue,
-		pr:      pr,
-		commits: commits,
-		events:  events,
+		config:      config,
+		Issue:       issue,
+		pr:          pr,
+		commits:     commits,
+		events:      events,
+		Annotations: map[string]string{},
 	}
 }
 
@@ -479,8 +481,9 @@ func (config *Config) GetObject(num int) (*MungeObject, error) {
 		return nil, err
 	}
 	obj := &MungeObject{
-		config: config,
-		Issue:  issue,
+		config:      config,
+		Issue:       issue,
+		Annotations: map[string]string{},
 	}
 	return obj, nil
 }
@@ -1456,8 +1459,9 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 			glog.V(2).Infof("----==== %d ====----", *issue.Number)
 			glog.V(8).Infof("Issue %d labels: %v isPR: %v", *issue.Number, issue.Labels, issue.PullRequestLinks != nil)
 			obj := MungeObject{
-				config: config,
-				Issue:  issue,
+				config:      config,
+				Issue:       issue,
+				Annotations: map[string]string{},
 			}
 			if err := fn(&obj); err != nil {
 				continue
