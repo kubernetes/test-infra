@@ -50,7 +50,8 @@ type RealE2ETester struct {
 	WeakStableJobNames []string
 
 	sync.Mutex
-	BuildStatus map[string]BuildInfo // protect by mutex
+	BuildStatus          map[string]BuildInfo // protect by mutex
+	GoogleGCSBucketUtils *utils.Utils
 }
 
 func (e *RealE2ETester) locked(f func()) {
@@ -110,13 +111,13 @@ const (
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
 func (e *RealE2ETester) GCSBasedStable() bool {
 	for _, job := range e.JobNames {
-		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
+		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			return false
 		}
-		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
+		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
 			// TODO: decrese verbosity when we feel comfortable with this check.
 			glog.Infof("Found unstable job: %v, build number: %v", job, lastBuildNumber)
 			return false
@@ -132,13 +133,13 @@ func (e *RealE2ETester) GCSBasedStable() bool {
 // or test failed for any reason 3 times in a row.
 func (e *RealE2ETester) GCSWeakStable() bool {
 	for _, job := range e.WeakStableJobNames {
-		lastBuildNumber, err := utils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
+		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			continue
 		}
-		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber); stable && err == nil {
+		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber); stable && err == nil {
 			continue
 		}
 
@@ -148,7 +149,7 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 		for {
 			i++
 			path := fmt.Sprintf("artifacts/junit_%02d.xml", i)
-			response, err := utils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, path)
+			response, err := e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, path)
 			if err != nil {
 				glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, path, err)
 				continue
@@ -185,10 +186,10 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 
 		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is comming from the infrastructure
 		// Check results of previous two builds.
-		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
+		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
 			return false
 		}
-		if stable, err := utils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
+		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
 			return false
 		}
 	}
