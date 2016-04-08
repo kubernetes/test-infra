@@ -33,6 +33,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
@@ -167,10 +168,11 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 		}
 	} else {
 		sq.e2e = &e2e.RealE2ETester{
-			JobNames:           sq.JobNames,
-			JenkinsHost:        sq.JenkinsHost,
-			WeakStableJobNames: sq.WeakStableJobNames,
-			BuildStatus:        map[string]e2e.BuildInfo{},
+			JobNames:             sq.JobNames,
+			JenkinsHost:          sq.JenkinsHost,
+			WeakStableJobNames:   sq.WeakStableJobNames,
+			BuildStatus:          map[string]e2e.BuildInfo{},
+			GoogleGCSBucketUtils: utils.NewUtils(utils.GoogleBucketURL),
 		}
 	}
 
