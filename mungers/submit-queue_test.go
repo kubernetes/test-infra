@@ -30,6 +30,7 @@ import (
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
+	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -133,6 +134,24 @@ func GithubE2EFailStatus() *github.CombinedStatus {
 	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext}, []string{jenkinsE2EContext}, nil, nil)
 }
 
+func LastBuildNumber() string {
+	return "42"
+}
+
+func SuccessGCS() utils.FinishedFile {
+	return utils.FinishedFile{
+		Result:    "SUCCESS",
+		Timestamp: 1234,
+	}
+}
+
+func FailGCS() utils.FinishedFile {
+	return utils.FinishedFile{
+		Result:    "FAILURE",
+		Timestamp: 1234,
+	}
+}
+
 func SuccessJenkins() jenkins.Job {
 	return jenkins.Job{
 		Result: "SUCCESS",
@@ -156,7 +175,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
 	if startThreads {
-		sq.Initialize(config, nil)
+		sq.internalInitialize(config, nil, server.URL)
 		sq.EachLoop()
 		sq.userWhitelist.Insert(whitelistUser)
 	}
@@ -390,6 +409,8 @@ func TestSubmitQueue(t *testing.T) {
 		events           []github.IssueEvent
 		ciStatus         *github.CombinedStatus
 		jenkinsJob       jenkins.Job
+		lastBuildNumber  string
+		gcsResult        utils.FinishedFile
 		e2ePass          bool
 		unitPass         bool
 		mergeAfterQueued bool
@@ -398,28 +419,32 @@ func TestSubmitQueue(t *testing.T) {
 	}{
 		// Should pass because the entire thing was run and good
 		{
-			name:       "Test1",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:   SuccessStatus(),
-			jenkinsJob: SuccessJenkins(),
-			e2ePass:    true,
-			unitPass:   true,
-			reason:     merged,
-			state:      "success",
+			name:            "Test1",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			e2ePass:         true,
+			unitPass:        true,
+			reason:          merged,
+			state:           "success",
 		},
 		// Should list as 'merged' but the merge should happen before it gets e2e tested
 		// and we should bail early instead of waiting for a test that will never come.
 		{
-			name:       "Test2",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(),
-			ciStatus:   SuccessStatus(),
-			jenkinsJob: SuccessJenkins(),
+			name:            "Test2",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(),
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 			// The test should never run, but if it does, make sure it fails
 			mergeAfterQueued: true,
 			reason:           merged,
@@ -427,29 +452,33 @@ func TestSubmitQueue(t *testing.T) {
 		},
 		// Should merge even though github ci failed because of dont-require-e2e
 		{
-			name:       "Test3",
-			pr:         ValidPR(),
-			issue:      DontRequireGithubE2EIssue(),
-			ciStatus:   GithubE2EFailStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob: SuccessJenkins(),
-			reason:     merged,
-			state:      "success",
+			name:            "Test3",
+			pr:              ValidPR(),
+			issue:           DontRequireGithubE2EIssue(),
+			ciStatus:        GithubE2EFailStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			reason:          merged,
+			state:           "success",
 		},
 		// Should merge even though user not in whitelist because has ok-to-merge
 		{
-			name:       "Test4",
-			pr:         ValidPR(),
-			issue:      UserNotInWhitelistOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob: SuccessJenkins(),
-			e2ePass:    true,
-			unitPass:   true,
-			reason:     merged,
-			state:      "success",
+			name:            "Test4",
+			pr:              ValidPR(),
+			issue:           UserNotInWhitelistOKToMergeIssue(),
+			ciStatus:        SuccessStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			e2ePass:         true,
+			unitPass:        true,
+			reason:          merged,
+			state:           "success",
 		},
 		// Fail because PR can't automatically merge
 		{
@@ -458,6 +487,9 @@ func TestSubmitQueue(t *testing.T) {
 			issue:  NoOKToMergeIssue(),
 			reason: unmergeable,
 			state:  "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because we don't know if PR can automatically merge
 		{
@@ -466,6 +498,9 @@ func TestSubmitQueue(t *testing.T) {
 			issue:  NoOKToMergeIssue(),
 			reason: undeterminedMergability,
 			state:  "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because the "cla: yes" label was not applied
 		{
@@ -474,6 +509,9 @@ func TestSubmitQueue(t *testing.T) {
 			issue:  NoCLAIssue(),
 			reason: noCLA,
 			state:  "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because github CI tests have failed (or at least are not success)
 		{
@@ -482,6 +520,9 @@ func TestSubmitQueue(t *testing.T) {
 			issue:  NoOKToMergeIssue(),
 			reason: ciFailure,
 			state:  "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
 		{
@@ -491,6 +532,9 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus: SuccessStatus(),
 			reason:   needsok,
 			state:    "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because missing LGTM label
 		{
@@ -500,6 +544,9 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus: SuccessStatus(),
 			reason:   noLGTM,
 			state:    "pending",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because we can't tell if LGTM was added before the last change
 		{
@@ -509,6 +556,9 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus: SuccessStatus(),
 			reason:   unknown,
 			state:    "failure",
+			// To avoid false errors in logs
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
 		},
 		// Fail because LGTM was added before the last change
 		{
@@ -523,38 +573,44 @@ func TestSubmitQueue(t *testing.T) {
 		},
 		// Fail because jenkins instances are failing (whole submit queue blocks)
 		{
-			name:       "Test13",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob: FailJenkins(),
-			reason:     ghE2EQueued,
-			state:      "success",
+			name:            "Test13",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			ciStatus:        SuccessStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob:      FailJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       FailGCS(),
+			reason:          ghE2EQueued,
+			state:           "success",
 		},
 		// Fail because the second run of github e2e tests failed
 		{
-			name:       "Test14",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(),
-			jenkinsJob: SuccessJenkins(),
-			reason:     ghE2EFailed,
-			state:      "pending",
+			name:            "Test14",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			ciStatus:        SuccessStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			reason:          ghE2EFailed,
+			state:           "pending",
 		},
 		// When we check the reason it may be queued or it may already have failed.
 		{
-			name:       "Test15",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob: SuccessJenkins(),
-			reason:     ghE2EQueued,
+			name:            "Test15",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			ciStatus:        SuccessStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			reason:          ghE2EQueued,
 			// The state is unpredictable. When it goes on the queue it is success.
 			// When it fails the build it is pending. So state depends on how far along
 			// this were when we checked. Thus just don't check it...
@@ -562,54 +618,62 @@ func TestSubmitQueue(t *testing.T) {
 		},
 		// Fail because the second run of github e2e tests failed
 		{
-			name:       "Test16",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			ciStatus:   SuccessStatus(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob: SuccessJenkins(),
-			reason:     ghE2EFailed,
-			state:      "pending",
+			name:            "Test16",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			ciStatus:        SuccessStatus(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			reason:          ghE2EFailed,
+			state:           "pending",
 		},
 		{
-			name:       "Fail because E2E pass, but unit test fail",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:   SuccessStatus(),
-			jenkinsJob: SuccessJenkins(),
-			e2ePass:    true,
-			unitPass:   false,
-			reason:     ghE2EFailed,
-			state:      "pending",
+			name:            "Fail because E2E pass, but unit test fail",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			e2ePass:         true,
+			unitPass:        false,
+			reason:          ghE2EFailed,
+			state:           "pending",
 		},
 		{
-			name:       "Fail because E2E fail, but unit test pass",
-			pr:         ValidPR(),
-			issue:      NoOKToMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:   SuccessStatus(),
-			jenkinsJob: SuccessJenkins(),
-			e2ePass:    false,
-			unitPass:   true,
-			reason:     ghE2EFailed,
-			state:      "pending",
+			name:            "Fail because E2E fail, but unit test pass",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			e2ePass:         false,
+			unitPass:        true,
+			reason:          ghE2EFailed,
+			state:           "pending",
 		},
 		{
-			name:       "Fail because doNotMerge label is present",
-			pr:         ValidPR(),
-			issue:      DoNotMergeIssue(),
-			events:     NewLGTMEvents(),
-			commits:    Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:   SuccessStatus(),
-			jenkinsJob: SuccessJenkins(),
-			e2ePass:    true,
-			unitPass:   true,
-			reason:     noMerge,
-			state:      "pending",
+			name:            "Fail because doNotMerge label is present",
+			pr:              ValidPR(),
+			issue:           DoNotMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			e2ePass:         true,
+			unitPass:        true,
+			reason:          noMerge,
+			state:           "pending",
 		},
 	}
 	for testNum := range tests {
@@ -632,7 +696,8 @@ func TestSubmitQueue(t *testing.T) {
 
 		numJenkinsCalls := 0
 		// Respond with success to jenkins requests.
-		mux.HandleFunc("/job/foo/lastCompletedBuild/api/json", func(w http.ResponseWriter, r *http.Request) {
+		path := "/job/foo/lastCompletedBuild/api/json"
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
 			}
@@ -655,7 +720,33 @@ func TestSubmitQueue(t *testing.T) {
 				test.pr.Mergeable = nil
 			}
 		})
-		path := fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
+		path = "/foo/latest-build.txt"
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(test.lastBuildNumber))
+		})
+		path = fmt.Sprintf("/foo/%v/finished.json", LastBuildNumber())
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			data, err := json.Marshal(test.gcsResult)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			w.Write(data)
+
+			numJenkinsCalls = numJenkinsCalls + 1
+			if numJenkinsCalls == 2 && test.mergeAfterQueued {
+				test.pr.Merged = boolPtr(true)
+				test.pr.Mergeable = nil
+			}
+		})
+		path = fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
 				c := new(github.IssueComment)

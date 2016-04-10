@@ -152,6 +152,11 @@ func (sq SubmitQueue) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
+	return sq.internalInitialize(config, features, utils.GoogleBucketURL)
+}
+
+// internalInitialize will initialize the munger for the given GCS bucket url.
+func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, GCSBucketUrl string) error {
 	sq.Lock()
 	defer sq.Unlock()
 
@@ -172,7 +177,7 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 			JenkinsHost:          sq.JenkinsHost,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewUtils(utils.GoogleBucketURL),
+			GoogleGCSBucketUtils: utils.NewUtils(GCSBucketUrl),
 		}
 	}
 
