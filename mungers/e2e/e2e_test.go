@@ -22,9 +22,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
+	"k8s.io/contrib/test-utils/utils"
 )
 
 type testHandler struct {
@@ -43,7 +45,7 @@ func marshalOrDie(obj interface{}, t *testing.T) []byte {
 	return data
 }
 
-func TestCheckBuilds(t *testing.T) {
+func TestCheckJenkinsBuilds(t *testing.T) {
 	tests := []struct {
 		paths          map[string][]byte
 		expectStable   bool
@@ -120,6 +122,143 @@ func TestCheckBuilds(t *testing.T) {
 			BuildStatus: map[string]BuildInfo{},
 		}
 		stable := e2e.Stable()
+		if stable != test.expectStable {
+			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)
+		}
+		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
+			t.Errorf("expected: %v, saw: %v", test.expectedStatus, e2e.BuildStatus)
+		}
+	}
+}
+
+func TestCheckGCSBuilds(t *testing.T) {
+	latestBuildNumberFoo := 42
+	latestBuildNumberBar := 44
+	tests := []struct {
+		paths             map[string][]byte
+		expectStable      bool
+		expectedLastBuild int
+		expectedStatus    map[string]BuildInfo
+	}{
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: true,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Not Stable", ID: "44"},
+			},
+		},
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Not Stable", ID: "44"},
+			},
+		},
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Not Stable", ID: "42"},
+				"bar": {Status: "Not Stable", ID: "44"},
+			},
+		},
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Not Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+	}
+	for _, test := range tests {
+		server := httptest.NewServer(&testHandler{
+			handler: func(res http.ResponseWriter, req *http.Request) {
+				data, found := test.paths[req.URL.Path]
+				if !found {
+					res.WriteHeader(http.StatusNotFound)
+					fmt.Fprintf(res, "Unknown path: %s", req.URL.Path)
+					return
+				}
+				res.WriteHeader(http.StatusOK)
+				res.Write(data)
+			},
+		})
+		e2e := &RealE2ETester{
+			JenkinsHost: server.URL,
+			JobNames: []string{
+				"foo",
+				"bar",
+			},
+			BuildStatus:          map[string]BuildInfo{},
+			GoogleGCSBucketUtils: utils.NewUtils(server.URL),
+		}
+		stable := e2e.GCSBasedStable()
 		if stable != test.expectStable {
 			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)
 		}
