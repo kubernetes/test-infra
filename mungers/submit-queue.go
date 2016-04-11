@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"k8s.io/contrib/mungegithub/features"
@@ -94,14 +95,22 @@ type submitQueueStatus struct {
 	PRStatus map[string]submitStatus
 }
 
-// Call updateHealth on the SubmitQueue at roughly constant intervals to keep
-// this up to date. The mergeable fraction of time for the queue as a whole
-// and the individual jobs will then be NumStable[PerJob] / TotalLoops.
+// Information about the e2e test health. Call updateHealth on the SubmitQueue
+// at roughly constant intervals to keep this up to date. The mergeable fraction
+// of time for the queue as a whole and the individual jobs will then be
+// NumStable[PerJob] / TotalLoops.
 type submitQueueHealth struct {
 	StartTime       time.Time
 	TotalLoops      int
 	NumStable       int
 	NumStablePerJob map[string]int
+}
+
+// information about the sq itself including how fast things are merging and
+// how long since the last merge
+type submitQueueStats struct {
+	LastMergeTime time.Time
+	MergeRate     float64
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -141,7 +150,10 @@ type SubmitQueue struct {
 	userInfo      map[string]userInfo     //proteted by sync.Mutex
 	statusHistory []submitStatus          // protected by sync.Mutex
 
-	// Every time a PR is added to githubE2EQueue also notify the channel
+	clock         util.Clock
+	lastMergeTime time.Time
+	mergeRate     float64 // per 24 hours
+
 	githubE2ERunning  *github.MungeObject         // protect by sync.Mutex!
 	githubE2EQueue    map[int]*github.MungeObject // protected by sync.Mutex!
 	githubE2EPollTime time.Duration
@@ -152,7 +164,15 @@ type SubmitQueue struct {
 }
 
 func init() {
-	RegisterMungerOrDie(&SubmitQueue{})
+	clock := util.RealClock{}
+	RegisterMungerOrDie(&SubmitQueue{
+		clock:          clock,
+		lastMergeTime:  clock.Now(),
+		lastE2EStable:  true,
+		prStatus:       map[string]submitStatus{},
+		lastPRStatus:   map[string]submitStatus{},
+		githubE2EQueue: map[int]*github.MungeObject{},
+	})
 }
 
 // Name is the name usable in --pr-mungers
@@ -160,6 +180,89 @@ func (sq SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (sq SubmitQueue) RequiredFeatures() []string { return []string{} }
+
+func round(num float64) int {
+	return int(num + math.Copysign(0.5, num))
+}
+
+func toFixed(num float64) float64 {
+	output := math.Pow(10, float64(3))
+	return float64(round(num*output)) / output
+}
+
+// This is the calculation of the exponential smoothing factor. It tries to
+// make sure that if we get lots of fast merges we don't race the 'daily'
+// avg really high really fast. But more importantly it means that if merges
+// start going slowly the 'daily' average will get pulled down a lot by one
+// slow merge instead of requiring numerous merges to get pulled down
+func getSmoothFactor(dur time.Duration) float64 {
+	hours := dur.Hours()
+	smooth := .155*math.Log(hours) + .422
+	if smooth < .1 {
+		return .1
+	}
+	if smooth > .999 {
+		return .999
+	}
+	return smooth
+}
+
+// This calculates an exponentially smoothed merge Rate based on the formula
+//   newRate = (1-smooth)oldRate + smooth*newRate
+// Which is really great and simple for constant time series data. But of course
+// ours isn't time series data so I vary the smoothing factor based on how long
+// its been since the last entry. See the comments on the `getSmoothFactor` for
+// a discussion of why.
+//    This whole thing was dreamed up by eparis one weekend via a combination
+//    of guess-and-test and intuition. Someone who knows about this stuff
+//    is likely to laugh at the naivete. Point him to where someone intelligent
+//    has thought about this stuff and he will gladly do something smart.
+func calcMergeRate(oldRate float64, last, now time.Time) float64 {
+	since := now.Sub(last)
+	var rate float64
+	if since == 0 {
+		rate = 96
+	} else {
+		rate = 24.0 * time.Hour.Hours() / since.Hours()
+	}
+	smoothingFactor := getSmoothFactor(since)
+	mergeRate := ((1.0 - smoothingFactor) * oldRate) + (smoothingFactor * rate)
+	return toFixed(mergeRate)
+}
+
+// updates a smoothed rate at which PRs are merging per day.
+// returns 'Now()' and the rate.
+func (sq *SubmitQueue) updateMergeRate() {
+	now := sq.clock.Now()
+
+	sq.mergeRate = calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
+	sq.lastMergeTime = now
+}
+
+// This calculated the smoothed merge rate BUT it looks at the time since
+// the last merge vs 'Now'. If we have not passed the next 'expected' time
+// for a merge this just returns previous calculations. If 'Now' is later
+// than we would expect given the existing mergeRate then pretend a merge
+// happened right now and return the new merge rate. This way the merge rate
+// is lower even if no merge has happened in a long time.
+func (sq *SubmitQueue) calcMergeRateWithTail() float64 {
+	now := sq.clock.Now()
+
+	if sq.mergeRate == 0 {
+		return 0
+	}
+	// Figure out when we think the next merge would happen given the history
+	next := time.Duration(24/sq.mergeRate*time.Hour.Hours()) * time.Hour
+	expectedMergeTime := sq.lastMergeTime.Add(next)
+
+	// If we aren't there yet, just return the history
+	if !now.After(expectedMergeTime) {
+		return sq.mergeRate
+	}
+
+	// Pretend as though a merge happened right now to pull down the rate
+	return calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
+}
 
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
@@ -176,7 +279,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		glog.Fatalf("--jenkins-host is required.")
 	}
 
-	sq.lastE2EStable = true
 	if sq.FakeE2E {
 		sq.e2e = &fake_e2e.FakeE2ETester{
 			JobNames:           sq.JobNames,
@@ -204,19 +306,16 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
+		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
 
-	sq.prStatus = map[string]submitStatus{}
-	sq.lastPRStatus = map[string]submitStatus{}
-
-	sq.githubE2EQueue = map[int]*github.MungeObject{}
 	if sq.githubE2EPollTime == 0 {
 		sq.githubE2EPollTime = githubE2EPollTime
 	}
 
-	sq.health.StartTime = time.Now()
+	sq.health.StartTime = sq.clock.Now()
 	sq.health.NumStablePerJob = map[string]int{}
 
 	go sq.handleGithubE2EAndMerge()
@@ -319,7 +418,7 @@ func (sq *SubmitQueue) e2eStable() bool {
 	}
 	if reason != "" {
 		submitStatus := submitStatus{
-			Time: time.Now(),
+			Time: sq.clock.Now(),
 			statusPullRequest: statusPullRequest{
 				Title:     reason,
 				AvatarURL: avatar,
@@ -418,7 +517,7 @@ func reasonToState(reason string) string {
 func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	glog.V(4).Infof("SubmitQueue not merging %d because %q", *obj.Issue.Number, reason)
 	submitStatus := submitStatus{
-		Time:              time.Now(),
+		Time:              sq.clock.Now(),
 		statusPullRequest: *objToStatusPullRequest(obj),
 		Reason:            reason,
 	}
@@ -855,6 +954,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	obj.MergePR("submit-queue")
+	sq.updateMergeRate()
 	sq.SetMergeStatus(obj, merged)
 	return
 }
@@ -898,6 +998,14 @@ func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *h
 func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
 	data := sq.getHealth()
 	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) {
+	data := submitQueueStats{
+		LastMergeTime: sq.lastMergeTime,
+		MergeRate:     sq.calcMergeRateWithTail(),
+	}
+	sq.serve(sq.marshal(data), res, req)
 }
 
 func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {
@@ -951,6 +1059,7 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
       <li>Determined by a label of the form 'priority/pX'
       <li>P0 -&gt; P1 -&gt; P2</li>
       <li>A PR with no priority label is considered equal to a P3</li>
+      <li>A PR with the 'e2e-not-required' label will come first, before even P0</li>
     </ul>
   </li>
   <li>Release milestone due date
