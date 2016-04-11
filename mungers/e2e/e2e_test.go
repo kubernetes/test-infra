@@ -270,7 +270,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 
 func getJUnit(testsNo int, failuresNo int) []byte {
 	return []byte(fmt.Sprintf("%v\n<testsuite tests=\"%v\" failures=\"%v\" time=\"1234\">\n</testsuite>",
-		expectedXMLHeader, testsNo, failuresNo))
+		ExpectedXMLHeader, testsNo, failuresNo))
 }
 
 func TestCheckGCSWeakBuilds(t *testing.T) {

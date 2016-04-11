@@ -107,7 +107,8 @@ func (e *RealE2ETester) Stable() bool {
 }
 
 const (
-	expectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	// ExpectedXMLHeader is the expected header of junit_XX.xml file
+	ExpectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 )
 
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
@@ -178,8 +179,8 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 				thisStable = false
 				break
 			}
-			if strings.TrimSpace(body) != expectedXMLHeader {
-				glog.Errorf("Invalid header for %v/%v/%v: %v, expected %v", job, lastBuildNumber, path, body, expectedXMLHeader)
+			if strings.TrimSpace(body) != ExpectedXMLHeader {
+				glog.Errorf("Invalid header for %v/%v/%v: %v, expected %v", job, lastBuildNumber, path, body, ExpectedXMLHeader)
 				thisStable = false
 				break
 			}

@@ -29,6 +29,7 @@ import (
 
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
+	"k8s.io/contrib/mungegithub/mungers/e2e"
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 
@@ -134,21 +135,21 @@ func GithubE2EFailStatus() *github.CombinedStatus {
 	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext}, []string{jenkinsE2EContext}, nil, nil)
 }
 
-func LastBuildNumber() string {
-	return "42"
+func LastBuildNumber() int {
+	return 42
 }
 
 func SuccessGCS() utils.FinishedFile {
 	return utils.FinishedFile{
 		Result:    "SUCCESS",
-		Timestamp: 1234,
+		Timestamp: uint64(time.Now().Unix()),
 	}
 }
 
 func FailGCS() utils.FinishedFile {
 	return utils.FinishedFile{
 		Result:    "FAILURE",
-		Timestamp: 1234,
+		Timestamp: uint64(time.Now().Unix()),
 	}
 }
 
@@ -164,6 +165,11 @@ func FailJenkins() jenkins.Job {
 	}
 }
 
+func getJUnit(testsNo int, failuresNo int) []byte {
+	return []byte(fmt.Sprintf("%v\n<testsuite tests=\"%v\" failures=\"%v\" time=\"1234\">\n</testsuite>",
+		e2e.ExpectedXMLHeader, testsNo, failuresNo))
+}
+
 func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
 	sq := new(SubmitQueue)
 	sq.RequiredStatusContexts = []string{jenkinsUnitContext}
@@ -171,6 +177,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.UnitStatusContext = jenkinsUnitContext
 	sq.JenkinsHost = server.URL
 	sq.JobNames = []string{"foo"}
+	sq.WeakStableJobNames = []string{"bar"}
 	sq.WhitelistOverride = "ok-to-merge"
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
@@ -409,8 +416,10 @@ func TestSubmitQueue(t *testing.T) {
 		events           []github.IssueEvent
 		ciStatus         *github.CombinedStatus
 		jenkinsJob       jenkins.Job
-		lastBuildNumber  string
+		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
+		weakResults      map[int]utils.FinishedFile
+		gcsJunit         map[string][]byte
 		e2ePass          bool
 		unitPass         bool
 		mergeAfterQueued bool
@@ -428,6 +437,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			e2ePass:         true,
 			unitPass:        true,
 			reason:          merged,
@@ -445,6 +455,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			// The test should never run, but if it does, make sure it fails
 			mergeAfterQueued: true,
 			reason:           merged,
@@ -461,6 +472,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          merged,
 			state:           "success",
 		},
@@ -475,6 +487,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			e2ePass:         true,
 			unitPass:        true,
 			reason:          merged,
@@ -490,6 +503,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because we don't know if PR can automatically merge
 		{
@@ -501,6 +515,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because the "cla: yes" label was not applied
 		{
@@ -512,6 +527,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because github CI tests have failed (or at least are not success)
 		{
@@ -523,6 +539,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
 		{
@@ -535,6 +552,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because missing LGTM label
 		{
@@ -547,6 +565,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because we can't tell if LGTM was added before the last change
 		{
@@ -559,6 +578,7 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because LGTM was added before the last change
 		{
@@ -582,6 +602,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      FailJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       FailGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EQueued,
 			state:           "success",
 		},
@@ -596,6 +617,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -610,6 +632,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EQueued,
 			// The state is unpredictable. When it goes on the queue it is success.
 			// When it fails the build it is pending. So state depends on how far along
@@ -627,6 +650,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -640,6 +664,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			e2ePass:         true,
 			unitPass:        false,
 			reason:          ghE2EFailed,
@@ -655,6 +680,7 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			e2ePass:         false,
 			unitPass:        true,
 			reason:          ghE2EFailed,
@@ -670,10 +696,91 @@ func TestSubmitQueue(t *testing.T) {
 			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			e2ePass:         true,
 			unitPass:        true,
 			reason:          noMerge,
 			state:           "pending",
+		},
+		// Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
+		// and because previous two builds succeeded.
+		{
+			name:            "Test20",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults: map[int]utils.FinishedFile{
+				LastBuildNumber():     FailGCS(),
+				LastBuildNumber() - 1: SuccessGCS(),
+				LastBuildNumber() - 2: SuccessGCS(),
+			},
+			gcsJunit: map[string][]byte{
+				"junit_01.xml": getJUnit(5, 0),
+				"junit_02.xml": getJUnit(6, 0),
+				"junit_03.xml": getJUnit(7, 0),
+			},
+			e2ePass:  true,
+			unitPass: true,
+			reason:   merged,
+			state:    "success",
+		},
+		// Should fail because the failure of the weakStable job is a strong failure.
+		{
+			name:            "Test21",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults: map[int]utils.FinishedFile{
+				LastBuildNumber():     FailGCS(),
+				LastBuildNumber() - 1: SuccessGCS(),
+				LastBuildNumber() - 2: SuccessGCS(),
+			},
+			gcsJunit: map[string][]byte{
+				"junit_01.xml": getJUnit(5, 0),
+				"junit_02.xml": getJUnit(6, 1),
+				"junit_03.xml": getJUnit(7, 0),
+			},
+			e2ePass:  true,
+			unitPass: true,
+			reason:   e2eFailure,
+			state:    "success",
+		},
+		// Should fail even though weakStable job weakly failed, because there was another failure in
+		// previous two runs.
+		{
+			name:            "Test22",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults: map[int]utils.FinishedFile{
+				LastBuildNumber():     FailGCS(),
+				LastBuildNumber() - 1: SuccessGCS(),
+				LastBuildNumber() - 2: FailGCS(),
+			},
+			gcsJunit: map[string][]byte{
+				"junit_01.xml": getJUnit(5, 0),
+				"junit_02.xml": getJUnit(6, 0),
+				"junit_03.xml": getJUnit(7, 0),
+			},
+			e2ePass:  true,
+			unitPass: true,
+			reason:   e2eFailure,
+			state:    "success",
 		},
 	}
 	for testNum := range tests {
@@ -726,9 +833,9 @@ func TestSubmitQueue(t *testing.T) {
 				t.Errorf("Unexpected method: %s", r.Method)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(test.lastBuildNumber))
+			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
 		})
-		path = fmt.Sprintf("/foo/%v/finished.json", LastBuildNumber())
+		path = fmt.Sprintf("/foo/%v/finished.json", test.lastBuildNumber)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
@@ -746,6 +853,42 @@ func TestSubmitQueue(t *testing.T) {
 				test.pr.Mergeable = nil
 			}
 		})
+		path = "/bar/latest-build.txt"
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
+		})
+		for buildNumber := range test.weakResults {
+			path = fmt.Sprintf("/bar/%v/finished.json", buildNumber)
+			// workaround go for loop semantics
+			buildNumberCopy := buildNumber
+			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != "GET" {
+					t.Errorf("Unexpected method: %s", r.Method)
+				}
+				w.WriteHeader(http.StatusOK)
+				data, err := json.Marshal(test.weakResults[buildNumberCopy])
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				w.Write(data)
+			})
+		}
+		for junitFile, xml := range test.gcsJunit {
+			path = fmt.Sprintf("/bar/%v/artifacts/%v", test.lastBuildNumber, junitFile)
+			// workaround go for loop semantics
+			xmlCopy := xml
+			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != "GET" {
+					t.Errorf("Unexpected method: %s", r.Method)
+				}
+				w.WriteHeader(http.StatusOK)
+				w.Write(xmlCopy)
+			})
+		}
 		path = fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
@@ -828,7 +971,7 @@ func TestSubmitQueue(t *testing.T) {
 				}
 				found := false
 				for _, status := range sq.statusHistory {
-					if status.Number == issueNum && status.Reason == test.reason {
+					if status.Reason == test.reason {
 						found = true
 						break
 					}
