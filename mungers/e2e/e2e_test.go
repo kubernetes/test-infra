@@ -267,3 +267,204 @@ func TestCheckGCSBuilds(t *testing.T) {
 		}
 	}
 }
+
+func getJUnit(testsNo int, failuresNo int) []byte {
+	return []byte(fmt.Sprintf("%v\n<testsuite tests=\"%v\" failures=\"%v\" time=\"1234\">\n</testsuite>",
+		expectedXMLHeader, testsNo, failuresNo))
+}
+
+func TestCheckGCSWeakBuilds(t *testing.T) {
+	latestBuildNumberFoo := 42
+	latestBuildNumberBar := 44
+	tests := []struct {
+		paths             map[string][]byte
+		expectStable      bool
+		expectedLastBuild int
+		expectedStatus    map[string]BuildInfo
+	}{
+		// Simple case - both succeeds
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: true,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		// If last build was successful we shouldn't be looking any further
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: true,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		// If the last build was unsuccessful but there's no failures in JUnit file we assume that it was
+		// an infrastructure failure. Build should succeed if previous two builds were fully successful.
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1233,
+				}, t),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1232,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: true,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		// If the last build was unsuccessful but there's no failures in JUnit file we assume that it was
+		// an infrastructure failure. Build should fail if of of two builds failed.
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1233,
+				}, t),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1232,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Not Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		// If the last build was unsuccessful and theres a failed test in a JUnit file we should fail.
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/foo/%v/artifacts/junit_02.xml", latestBuildNumberFoo): getJUnit(5, 1),
+				fmt.Sprintf("/foo/%v/artifacts/junit_03.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				"/bar/latest-build.txt":                                             []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Not Stable", ID: "42"},
+				"bar": {Status: "Stable", ID: "44"},
+			},
+		},
+		// Result shouldn't depend on order.
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar): getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar): getJUnit(5, 1),
+				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar): getJUnit(5, 0),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Not Stable", ID: "44"},
+			},
+		},
+	}
+	for _, test := range tests {
+		server := httptest.NewServer(&testHandler{
+			handler: func(res http.ResponseWriter, req *http.Request) {
+				data, found := test.paths[req.URL.Path]
+				if !found {
+					res.WriteHeader(http.StatusNotFound)
+					fmt.Fprintf(res, "Unknown path: %s", req.URL.Path)
+					return
+				}
+				res.WriteHeader(http.StatusOK)
+				res.Write(data)
+			},
+		})
+		e2e := &RealE2ETester{
+			JenkinsHost: server.URL,
+			WeakStableJobNames: []string{
+				"foo",
+				"bar",
+			},
+			BuildStatus:          map[string]BuildInfo{},
+			GoogleGCSBucketUtils: utils.NewUtils(server.URL),
+		}
+		stable := e2e.GCSWeakStable()
+		if stable != test.expectStable {
+			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)
+		}
+		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
+			t.Errorf("expected: %v, saw: %v", test.expectedStatus, e2e.BuildStatus)
+		}
+	}
+}

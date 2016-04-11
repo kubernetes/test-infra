@@ -19,6 +19,7 @@ package e2e
 import (
 	"bufio"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -146,7 +147,7 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 	allStable := true
 	for _, job := range e.WeakStableJobNames {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
-		glog.Infof("Checking status of %v, %v", job, lastBuildNumber)
+		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
@@ -168,9 +169,8 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 			continue
 		}
 		defer response.Body.Close()
-
 		thisStable := true
-		for response.StatusCode != 200 {
+		for response.StatusCode == http.StatusOK {
 			reader := bufio.NewReader(response.Body)
 			body, err := reader.ReadString('\n')
 			if err != nil {
