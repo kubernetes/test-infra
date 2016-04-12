@@ -1,5 +1,5 @@
 "use strict";
-angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter']);
+angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter', 'angularMoment']);
 
 angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 
@@ -9,6 +9,7 @@ function SQCntl(dataService, $interval, $location) {
   self.users = {};
   self.builds = {};
   self.health = {};
+  self.lastMergeTime = Date();
   self.prQuerySearch = prQuerySearch;
   self.historyQuerySearch = historyQuerySearch;
   self.goToPerson = goToPerson;
@@ -76,7 +77,6 @@ function SQCntl(dataService, $interval, $location) {
         self.e2erunning = [response.data.E2ERunning];
       }
       self.e2equeue = response.data.E2EQueue;
-      document.getElementById("queue-len").innerHTML = "&nbsp;(" + self.e2equeue.length + ")"
     });
   }
 
@@ -92,11 +92,22 @@ function SQCntl(dataService, $interval, $location) {
     });
   }
 
-  // Refresh every 10 minutes
-  refreshStats();
-  $interval(refreshStats, 600000);
+  // Refresh every 30 minutes
+  refreshSQStats();
+  $interval(refreshSQStats, 1800000);
 
-  function refreshStats() {
+  function refreshSQStats() {
+    dataService.getData('sq-stats').then(function successCallback(response) {
+      self.sqStats = response.data;
+      self.lastMergeTime = new Date(response.data.LastMergeTime)
+    });
+  }
+
+  // Refresh every 10 minutes
+  refreshBotStats();
+  $interval(refreshBotStats, 600000);
+
+  function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
       var nextLoop = new Date(response.data.NextLoopTime);
       document.getElementById("next-run-time").innerHTML = nextLoop.toLocaleTimeString();
