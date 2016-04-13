@@ -358,7 +358,8 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
-	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs", []string{},
+	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
+		[]string{"kubernetes-kubemark-500-gce"},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
@@ -397,8 +398,7 @@ func (sq *SubmitQueue) e2eStable() bool {
 
 	weakStable := sq.e2e.GCSWeakStable()
 	if !weakStable {
-		glog.V(1).Info("E2E is not stable because weak stable check failed.")
-		stable = false
+		glog.Errorf("E2E is not stable because weak stable check failed.")
 	}
 
 	sq.Lock()

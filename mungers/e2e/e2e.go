@@ -125,8 +125,7 @@ func (e *RealE2ETester) GCSBasedStable() bool {
 			thisStable = false
 		}
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
-			// TODO: decrese verbosity when we feel comfortable with this check.
-			glog.Infof("Found unstable job: %v, build number: %v", job, lastBuildNumber)
+			glog.V(4).Infof("Found unstable job: %v, build number: %v", job, lastBuildNumber)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			thisStable = false
 		}
@@ -214,6 +213,7 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 		if thisStable == false {
 			allStable = false
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
+			glog.Infof("WeakStable failed because found a failure in JUnit file for build %v", lastBuildNumber)
 			continue
 		}
 
@@ -222,11 +222,13 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			allStable = false
+			glog.Infof("WeakStable failed because found a weak failure in build %v and build %v failed.", lastBuildNumber, lastBuildNumber-1)
 			continue
 		}
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			allStable = false
+			glog.Infof("WeakStable failed because found a weak failure in build %v and build %v failed.", lastBuildNumber, lastBuildNumber-2)
 			continue
 		}
 

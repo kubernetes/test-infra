@@ -713,86 +713,86 @@ func TestSubmitQueue(t *testing.T) {
 			reason:          noMerge,
 			state:           "pending",
 		},
-		// Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
-		// and because previous two builds succeeded.
-		{
-			name:            "Test20",
-			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
-			events:          NewLGTMEvents(),
-			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
-			lastBuildNumber: LastBuildNumber(),
-			gcsResult:       SuccessGCS(),
-			weakResults: map[int]utils.FinishedFile{
-				LastBuildNumber():     FailGCS(),
-				LastBuildNumber() - 1: SuccessGCS(),
-				LastBuildNumber() - 2: SuccessGCS(),
-			},
-			gcsJunit: map[string][]byte{
-				"junit_01.xml": getJUnit(5, 0),
-				"junit_02.xml": getJUnit(6, 0),
-				"junit_03.xml": getJUnit(7, 0),
-			},
-			e2ePass:  true,
-			unitPass: true,
-			reason:   merged,
-			state:    "success",
-		},
-		// Should fail because the failure of the weakStable job is a strong failure.
-		{
-			name:            "Test21",
-			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
-			events:          NewLGTMEvents(),
-			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
-			lastBuildNumber: LastBuildNumber(),
-			gcsResult:       SuccessGCS(),
-			weakResults: map[int]utils.FinishedFile{
-				LastBuildNumber():     FailGCS(),
-				LastBuildNumber() - 1: SuccessGCS(),
-				LastBuildNumber() - 2: SuccessGCS(),
-			},
-			gcsJunit: map[string][]byte{
-				"junit_01.xml": getJUnit(5, 0),
-				"junit_02.xml": getJUnit(6, 1),
-				"junit_03.xml": getJUnit(7, 0),
-			},
-			e2ePass:  true,
-			unitPass: true,
-			reason:   e2eFailure,
-			state:    "success",
-		},
-		// Should fail even though weakStable job weakly failed, because there was another failure in
-		// previous two runs.
-		{
-			name:            "Test22",
-			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
-			events:          NewLGTMEvents(),
-			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
-			lastBuildNumber: LastBuildNumber(),
-			gcsResult:       SuccessGCS(),
-			weakResults: map[int]utils.FinishedFile{
-				LastBuildNumber():     FailGCS(),
-				LastBuildNumber() - 1: SuccessGCS(),
-				LastBuildNumber() - 2: FailGCS(),
-			},
-			gcsJunit: map[string][]byte{
-				"junit_01.xml": getJUnit(5, 0),
-				"junit_02.xml": getJUnit(6, 0),
-				"junit_03.xml": getJUnit(7, 0),
-			},
-			e2ePass:  true,
-			unitPass: true,
-			reason:   e2eFailure,
-			state:    "success",
-		},
+		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
+		// // and because previous two builds succeeded.
+		// {
+		// 	name:            "Test20",
+		// 	pr:              ValidPR(),
+		// 	issue:           NoOKToMergeIssue(),
+		// 	events:          NewLGTMEvents(),
+		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+		// 	ciStatus:        SuccessStatus(),
+		// 	jenkinsJob:      SuccessJenkins(),
+		// 	lastBuildNumber: LastBuildNumber(),
+		// 	gcsResult:       SuccessGCS(),
+		// 	weakResults: map[int]utils.FinishedFile{
+		// 		LastBuildNumber():     FailGCS(),
+		// 		LastBuildNumber() - 1: SuccessGCS(),
+		// 		LastBuildNumber() - 2: SuccessGCS(),
+		// 	},
+		// 	gcsJunit: map[string][]byte{
+		// 		"junit_01.xml": getJUnit(5, 0),
+		// 		"junit_02.xml": getJUnit(6, 0),
+		// 		"junit_03.xml": getJUnit(7, 0),
+		// 	},
+		// 	e2ePass:  true,
+		// 	unitPass: true,
+		// 	reason:   merged,
+		// 	state:    "success",
+		// },
+		// // Should fail because the failure of the weakStable job is a strong failure.
+		// {
+		// 	name:            "Test21",
+		// 	pr:              ValidPR(),
+		// 	issue:           NoOKToMergeIssue(),
+		// 	events:          NewLGTMEvents(),
+		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+		// 	ciStatus:        SuccessStatus(),
+		// 	jenkinsJob:      SuccessJenkins(),
+		// 	lastBuildNumber: LastBuildNumber(),
+		// 	gcsResult:       SuccessGCS(),
+		// 	weakResults: map[int]utils.FinishedFile{
+		// 		LastBuildNumber():     FailGCS(),
+		// 		LastBuildNumber() - 1: SuccessGCS(),
+		// 		LastBuildNumber() - 2: SuccessGCS(),
+		// 	},
+		// 	gcsJunit: map[string][]byte{
+		// 		"junit_01.xml": getJUnit(5, 0),
+		// 		"junit_02.xml": getJUnit(6, 1),
+		// 		"junit_03.xml": getJUnit(7, 0),
+		// 	},
+		// 	e2ePass:  true,
+		// 	unitPass: true,
+		// 	reason:   e2eFailure,
+		// 	state:    "success",
+		// },
+		// // Should fail even though weakStable job weakly failed, because there was another failure in
+		// // previous two runs.
+		// {
+		// 	name:            "Test22",
+		// 	pr:              ValidPR(),
+		// 	issue:           NoOKToMergeIssue(),
+		// 	events:          NewLGTMEvents(),
+		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+		// 	ciStatus:        SuccessStatus(),
+		// 	jenkinsJob:      SuccessJenkins(),
+		// 	lastBuildNumber: LastBuildNumber(),
+		// 	gcsResult:       SuccessGCS(),
+		// 	weakResults: map[int]utils.FinishedFile{
+		// 		LastBuildNumber():     FailGCS(),
+		// 		LastBuildNumber() - 1: SuccessGCS(),
+		// 		LastBuildNumber() - 2: FailGCS(),
+		// 	},
+		// 	gcsJunit: map[string][]byte{
+		// 		"junit_01.xml": getJUnit(5, 0),
+		// 		"junit_02.xml": getJUnit(6, 0),
+		// 		"junit_03.xml": getJUnit(7, 0),
+		// 	},
+		// 	e2ePass:  true,
+		// 	unitPass: true,
+		// 	reason:   e2eFailure,
+		// 	state:    "success",
+		// },
 	}
 	for testNum := range tests {
 		test := &tests[testNum]
