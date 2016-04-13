@@ -22,6 +22,8 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
+	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +34,14 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
+
+	releaseNoteFormat = `Removing LGTM because the release note process has not been followed.
+One of the following labels is required %q, %q, or %q
+Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
+)
+
+var (
+	releaseNoteBody = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteNone, releaseNoteActionRequired)
 )
 
 // ReleaseNoteLabel will remove the LGTM label from an PR which has not
@@ -41,7 +51,9 @@ type ReleaseNoteLabel struct {
 }
 
 func init() {
-	RegisterMungerOrDie(&ReleaseNoteLabel{})
+	r := &ReleaseNoteLabel{}
+	RegisterMungerOrDie(r)
+	registerShouldDeleteCommentFunc(r.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -94,7 +106,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone) {
+	if completedReleaseNoteProcess(obj) {
 		if obj.HasLabel(releaseNoteLabelNeeded) {
 			obj.RemoveLabel(releaseNoteLabelNeeded)
 		}
@@ -109,10 +121,21 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	msgFmt := `Removing LGTM because the release note process has not been followed.
-One of the following labels is required %q, %q, or %q
-Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
-	msg := fmt.Sprintf(msgFmt, releaseNote, releaseNoteNone, releaseNoteActionRequired)
-	obj.WriteComment(msg)
+	obj.WriteComment(releaseNoteBody)
 	obj.RemoveLabel(lgtmLabel)
+}
+
+func completedReleaseNoteProcess(obj *github.MungeObject) bool {
+	return obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone)
+}
+
+func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != releaseNoteBody {
+		return false
+	}
+	stale := completedReleaseNoteProcess(obj)
+	if stale {
+		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
+	}
+	return stale
 }

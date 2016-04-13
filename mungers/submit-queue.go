@@ -38,6 +38,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -59,6 +60,9 @@ const (
 	defaultMergePriority        = 3  // when an issue is unlabeled
 
 	githubE2EPollTime = 30 * time.Second
+
+	notInWhitelistBody    = "The author of this PR is not in the whitelist for merge, can one of the admins add the '" + okToMergeLabel + "' label?"
+	verifySafeToMergeBody = "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 )
 
 var (
@@ -166,14 +170,17 @@ type SubmitQueue struct {
 
 func init() {
 	clock := util.RealClock{}
-	RegisterMungerOrDie(&SubmitQueue{
+	sq := &SubmitQueue{
 		clock:          clock,
 		lastMergeTime:  clock.Now(),
 		lastE2EStable:  true,
 		prStatus:       map[string]submitStatus{},
 		lastPRStatus:   map[string]submitStatus{},
 		githubE2EQueue: map[int]*github.MungeObject{},
-	})
+	}
+	RegisterMungerOrDie(sq)
+	registerShouldDeleteCommentFunc(sq.isStaleWhitelistComment)
+	registerShouldDeleteCommentFunc(sq.isStaleSafeToMergeComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -705,8 +712,7 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	if !obj.HasLabel(okToMergeLabel) && !userSet.Has(*obj.Issue.User.Login) {
 		if !obj.HasLabel(needsOKToMergeLabel) {
 			obj.AddLabels([]string{needsOKToMergeLabel})
-			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
-			obj.WriteComment(body)
+			obj.WriteComment(notInWhitelistBody)
 		}
 		sq.SetMergeStatus(obj, needsok)
 		return false
@@ -923,8 +929,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
-	if err := obj.WriteComment(body); err != nil {
+	if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown)
 		return
@@ -1077,4 +1082,26 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
   </li>
   <li>PR number</li>
 </ol> `))
+}
+
+func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != notInWhitelistBody {
+		return false
+	}
+	stale := obj.HasLabel(okToMergeLabel)
+	if stale {
+		glog.V(6).Infof("Found stale SubmitQueue Whitelist comment")
+	}
+	return stale
+}
+
+func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != verifySafeToMergeBody {
+		return false
+	}
+	stale := commentBeforeLastCI(obj, comment)
+	if stale {
+		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
+	}
+	return stale
 }

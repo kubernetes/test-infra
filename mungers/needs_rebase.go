@@ -18,13 +18,21 @@ package mungers
 
 import (
 	"fmt"
+	"regexp"
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
+
+var (
+	rebaseRE = regexp.MustCompile(`@\S+ PR needs rebase`)
+)
+
+const needsRebase = "needs-rebase"
 
 // NeedsRebaseMunger will add the "needs-rebase" label to any issue which is
 // unable to be automatically merged
@@ -35,7 +43,9 @@ const (
 )
 
 func init() {
-	RegisterMungerOrDie(NeedsRebaseMunger{})
+	n := NeedsRebaseMunger{}
+	RegisterMungerOrDie(n)
+	registerShouldDeleteCommentFunc(n.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -77,4 +87,16 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 			return
 		}
 	}
+}
+
+func (NeedsRebaseMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if !rebaseRE.MatchString(*comment.Body) {
+		return false
+	}
+	stale := !obj.HasLabel(needsRebaseLabel)
+	if stale {
+		glog.V(6).Infof("Found stale NeedsRebaseMunger comment")
+	}
+	return stale
+
 }

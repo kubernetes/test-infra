@@ -22,7 +22,17 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
+	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
+)
+
+const (
+	pickMustHaveMilestoneFormat = "Removing label `%s` because no release milestone was set. This is an invalid state and thus this PR is not being considered for cherry-pick to any release branch. Please add an appropriate release milestone and then re-add the label."
+)
+
+var (
+	pickMustHaveMilestoneBody = fmt.Sprintf(pickMustHaveMilestoneFormat, cpCandidateLabel)
 )
 
 // PickMustHaveMilestone will remove the the cherrypick-candidate label from
@@ -30,7 +40,9 @@ import (
 type PickMustHaveMilestone struct{}
 
 func init() {
-	RegisterMungerOrDie(PickMustHaveMilestone{})
+	p := PickMustHaveMilestone{}
+	RegisterMungerOrDie(p)
+	registerShouldDeleteCommentFunc(p.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -63,8 +75,18 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	hasLabel := obj.HasLabel(cpCandidateLabel)
 
 	if hasLabel && releaseMilestone == "" {
-		msg := fmt.Sprintf("Removing label `%s` because no release milestone was set. This is an invalid state and thus this PR is not being considered for cherry-pick to any release branch. Please add an appropriate release milestone and then re-add the label.", cpCandidateLabel)
-		obj.WriteComment(msg)
+		obj.WriteComment(pickMustHaveMilestoneBody)
 		obj.RemoveLabel(cpCandidateLabel)
 	}
+}
+
+func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != pickMustHaveMilestoneBody {
+		return false
+	}
+	stale := obj.ReleaseMilestone() != ""
+	if stale {
+		glog.V(6).Infof("Found stale PickMustHaveMilestone comment")
+	}
+	return stale
 }

@@ -24,7 +24,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
-	github_api "github.com/google/go-github/github"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +70,7 @@ func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) 
 }
 
 // u may be nil.
-func describeUser(u *github_api.User) string {
+func describeUser(u *githubapi.User) string {
 	if u != nil && u.Login != nil {
 		return *u.Login
 	}

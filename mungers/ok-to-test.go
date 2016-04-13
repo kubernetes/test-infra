@@ -21,7 +21,15 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
+)
+
+const (
+	okToTestBody = `@k8s-bot ok to test
+@k8s-bot test this
+
+pr builder appears to be missing, activating due to 'lgtm' label.`
 )
 
 // OkToTestMunger looks for situations where a reviewer has LGTM'd a PR, but it
@@ -29,7 +37,9 @@ import (
 type OkToTestMunger struct{}
 
 func init() {
-	RegisterMungerOrDie(OkToTestMunger{})
+	ok := OkToTestMunger{}
+	RegisterMungerOrDie(ok)
+	registerShouldDeleteCommentFunc(ok.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -39,7 +49,9 @@ func (OkToTestMunger) Name() string { return "ok-to-test" }
 func (OkToTestMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
-func (OkToTestMunger) Initialize(config *github.Config, features *features.Features) error { return nil }
+func (OkToTestMunger) Initialize(config *github.Config, features *features.Features) error {
+	return nil
+}
 
 // EachLoop is called at the start of every munge loop
 func (OkToTestMunger) EachLoop() error { return nil }
@@ -56,13 +68,20 @@ func (OkToTestMunger) Munge(obj *github.MungeObject) {
 	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
-	state := obj.GetStatusState([]string{jenkinsE2EContext, jenkinsUnitContext})
+	state := obj.GetStatusState(requiredContexts)
 	if state == "incomplete" {
 		glog.V(2).Infof("status is incomplete, adding ok to test")
-		msg := `@k8s-bot ok to test
-@k8s-bot test this
-
-pr builder appears to be missing, activating due to 'lgtm' label.`
-		obj.WriteComment(msg)
+		obj.WriteComment(okToTestBody)
 	}
+}
+
+func (OkToTestMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != okToTestBody {
+		return false
+	}
+	stale := commentBeforeLastCI(obj, comment)
+	if stale {
+		glog.V(6).Infof("Found stale OkToTestMunger comment")
+	}
+	return stale
 }

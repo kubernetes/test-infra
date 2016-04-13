@@ -24,11 +24,19 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
 const (
 	stalePendingCIHours = 24
+	pendingMsgFormat    = `@k8s-bot test this issue: #IGNORE
+
+Tests have been pending for %d hours`
+)
+
+var (
+	pendingMsgBody = fmt.Sprintf(pendingMsgFormat, stalePendingCIHours)
 )
 
 // StalePendingCI will ask the k8s-bot to test any PR with a LGTM that has
@@ -48,7 +56,9 @@ const (
 type StalePendingCI struct{}
 
 func init() {
-	RegisterMungerOrDie(StalePendingCI{})
+	s := StalePendingCI{}
+	RegisterMungerOrDie(s)
+	registerShouldDeleteCommentFunc(s.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -58,7 +68,9 @@ func (StalePendingCI) Name() string { return "stale-pending-ci" }
 func (StalePendingCI) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
-func (StalePendingCI) Initialize(config *github.Config, features *features.Features) error { return nil }
+func (StalePendingCI) Initialize(config *github.Config, features *features.Features) error {
+	return nil
+}
 
 // EachLoop is called at the start of every munge loop
 func (StalePendingCI) EachLoop() error { return nil }
@@ -94,12 +106,19 @@ func (StalePendingCI) Munge(obj *github.MungeObject) {
 			return
 		}
 		if time.Since(*statusTime) > stalePendingCIHours*time.Hour {
-			msgFormat := `@k8s-bot test this issue: #IGNORE
-
-Tests have been pending for %d hours`
-			msg := fmt.Sprintf(msgFormat, stalePendingCIHours)
-			obj.WriteComment(msg)
+			obj.WriteComment(pendingMsgBody)
 			return
 		}
 	}
+}
+
+func (StalePendingCI) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != pendingMsgBody {
+		return false
+	}
+	stale := commentBeforeLastCI(obj, comment)
+	if stale {
+		glog.V(6).Infof("Found stale StalePendingCI comment")
+	}
+	return stale
 }

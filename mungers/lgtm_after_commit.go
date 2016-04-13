@@ -21,7 +21,12 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
+)
+
+const (
+	lgtmRemovedBody = "PR changed after LGTM, removing LGTM."
 )
 
 // LGTMAfterCommitMunger will remove the LGTM flag from an PR which has been
@@ -29,7 +34,9 @@ import (
 type LGTMAfterCommitMunger struct{}
 
 func init() {
-	RegisterMungerOrDie(LGTMAfterCommitMunger{})
+	l := LGTMAfterCommitMunger{}
+	RegisterMungerOrDie(l)
+	registerShouldDeleteCommentFunc(l.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -69,10 +76,30 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 
 	if lastModified.After(*lgtmTime) {
 		glog.Infof("PR: %d lgtm:%s  lastModified:%s", *obj.Issue.Number, lgtmTime.String(), lastModified.String())
-		lgtmRemovedBody := "PR changed after LGTM, removing LGTM."
 		if err := obj.WriteComment(lgtmRemovedBody); err != nil {
 			return
 		}
 		obj.RemoveLabel(lgtmLabel)
 	}
+}
+
+func (LGTMAfterCommitMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != lgtmRemovedBody {
+		return false
+	}
+	if comment.CreatedAt == nil {
+		return false
+	}
+	if !obj.HasLabel("lgtm") {
+		return false
+	}
+	lgtmTime := obj.LabelTime("lgtm")
+	if lgtmTime == nil {
+		return false
+	}
+	stale := lgtmTime.After(*comment.CreatedAt)
+	if stale {
+		glog.V(6).Infof("Found stale LGTMAfterCommitMunger comment")
+	}
+	return stale
 }
