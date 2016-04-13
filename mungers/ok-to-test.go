@@ -53,7 +53,7 @@ func (OkToTestMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 	state := obj.GetStatusState([]string{jenkinsE2EContext, jenkinsUnitContext})

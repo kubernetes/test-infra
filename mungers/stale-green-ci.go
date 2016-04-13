@@ -62,7 +62,7 @@ func (StaleGreenCI) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabels([]string{"lgtm"}) {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 

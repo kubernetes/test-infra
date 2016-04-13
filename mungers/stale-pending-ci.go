@@ -74,7 +74,7 @@ func (StalePendingCI) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 

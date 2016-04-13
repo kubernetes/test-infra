@@ -105,7 +105,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		obj.AddLabel(releaseNoteLabelNeeded)
 	}
 
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 
@@ -114,5 +114,5 @@ One of the following labels is required %q, %q, or %q
 Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
 	msg := fmt.Sprintf(msgFmt, releaseNote, releaseNoteNone, releaseNoteActionRequired)
 	obj.WriteComment(msg)
-	obj.RemoveLabel("lgtm")
+	obj.RemoveLabel(lgtmLabel)
 }

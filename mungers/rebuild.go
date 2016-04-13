@@ -98,8 +98,8 @@ Here is the [list of open test flakes](https://github.com/kubernetes/kubernetes/
 				glog.Errorf("unexpected error adding comment: %v", err)
 				continue
 			}
-			if obj.HasLabel("lgtm") {
-				if err := obj.RemoveLabel("lgtm"); err != nil {
+			if obj.HasLabel(lgtmLabel) {
+				if err := obj.RemoveLabel(lgtmLabel); err != nil {
 					glog.Errorf("unexpected error removing lgtm label: %v", err)
 				}
 			}

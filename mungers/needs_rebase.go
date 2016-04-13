@@ -30,7 +30,9 @@ import (
 // unable to be automatically merged
 type NeedsRebaseMunger struct{}
 
-const needsRebase = "needs-rebase"
+const (
+	needsRebaseLabel = "needs-rebase"
+)
 
 func init() {
 	RegisterMungerOrDie(NeedsRebaseMunger{})
@@ -64,11 +66,11 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.Issue.Number)
 		return
 	}
-	if mergeable && obj.HasLabel(needsRebase) {
-		obj.RemoveLabel(needsRebase)
+	if mergeable && obj.HasLabel(needsRebaseLabel) {
+		obj.RemoveLabel(needsRebaseLabel)
 	}
-	if !mergeable && !obj.HasLabel(needsRebase) {
-		obj.AddLabels([]string{needsRebase})
+	if !mergeable && !obj.HasLabel(needsRebaseLabel) {
+		obj.AddLabels([]string{needsRebaseLabel})
 
 		body := fmt.Sprintf("@%s PR needs rebase", *obj.Issue.User.Login)
 		if err := obj.WriteComment(body); err != nil {

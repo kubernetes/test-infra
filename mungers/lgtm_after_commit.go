@@ -55,12 +55,12 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 
 	lastModified := obj.LastModifiedTime()
-	lgtmTime := obj.LabelTime("lgtm")
+	lgtmTime := obj.LabelTime(lgtmLabel)
 
 	if lastModified == nil || lgtmTime == nil {
 		glog.Errorf("PR %d unable to determine lastModified or lgtmTime", *obj.Issue.Number)
@@ -73,6 +73,6 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 		if err := obj.WriteComment(lgtmRemovedBody); err != nil {
 			return
 		}
-		obj.RemoveLabel("lgtm")
+		obj.RemoveLabel(lgtmLabel)
 	}
 }
