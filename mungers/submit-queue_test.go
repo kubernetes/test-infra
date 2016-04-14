@@ -72,54 +72,54 @@ func BareIssue() *github.Issue {
 }
 
 func NoOKToMergeIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm"}, true)
+	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel}, true)
 }
 
 func DoNotMergeIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", doNotMergeLabel}, true)
+	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
 }
 
 func NoCLAIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"lgtm", "ok-to-merge"}, true)
+	return github_test.Issue(whitelistUser, 1, []string{lgtmLabel, okToMergeLabel}, true)
 }
 
 func NoLGTMIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "ok-to-merge"}, true)
+	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, okToMergeLabel}, true)
 }
 
 func UserNotInWhitelistNoOKToMergeIssue() *github.Issue {
-	return github_test.Issue(noWhitelistUser, 1, []string{"cla: yes", "lgtm"}, true)
+	return github_test.Issue(noWhitelistUser, 1, []string{claYesLabel, lgtmLabel}, true)
 }
 
 func UserNotInWhitelistOKToMergeIssue() *github.Issue {
-	return github_test.Issue(noWhitelistUser, 1, []string{"lgtm", "cla: yes", "ok-to-merge"}, true)
+	return github_test.Issue(noWhitelistUser, 1, []string{lgtmLabel, claYesLabel, okToMergeLabel}, true)
 }
 
 func DontRequireGithubE2EIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{"cla: yes", "lgtm", e2eNotRequiredLabel}, true)
+	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, e2eNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", "lgtm", 6},
-		{"bob", "lgtm", 7},
-		{"bob", "lgtm", 8},
+		{"bob", lgtmLabel, 6},
+		{"bob", lgtmLabel, 7},
+		{"bob", lgtmLabel, 8},
 	})
 }
 
 func NewLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", "lgtm", 10},
-		{"bob", "lgtm", 11},
-		{"bob", "lgtm", 12},
+		{"bob", lgtmLabel, 10},
+		{"bob", lgtmLabel, 11},
+		{"bob", lgtmLabel, 12},
 	})
 }
 
 func OverlappingLGTMEvents() []github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", "lgtm", 8},
-		{"bob", "lgtm", 9},
-		{"bob", "lgtm", 10},
+		{"bob", lgtmLabel, 8},
+		{"bob", lgtmLabel, 9},
+		{"bob", lgtmLabel, 10},
 	})
 }
 
@@ -182,7 +182,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	}
 	sq.JobNames = []string{"foo"}
 	sq.WeakStableJobNames = []string{"bar"}
-	sq.WhitelistOverride = "ok-to-merge"
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
 
@@ -242,7 +241,7 @@ func TestQueueOrder(t *testing.T) {
 				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
 				*github_test.Issue(whitelistUser, 3, []string{"priority/P1", "kind/design"}, true),
 				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 5, []string{"LGTM", "kind/new-api"}, true),
+				*github_test.Issue(whitelistUser, 5, []string{lgtmLabel, "kind/new-api"}, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
@@ -267,7 +266,7 @@ func TestQueueOrder(t *testing.T) {
 			expected: []int{4, 2, 3, 5},
 		},
 		{
-			name: "e2e-not-required counts as P-negative 1",
+			name: "e2eNotRequiredLabel counts as P-negative 1",
 			issues: []github.Issue{
 				*github_test.Issue(whitelistUser, 2, nil, true),
 				*github_test.Issue(whitelistUser, 3, []string{"priority/P3"}, true),
@@ -350,7 +349,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		}
 
 		lastModifiedTime := obj.LastModifiedTime()
-		lgtmTime := obj.LabelTime("lgtm")
+		lgtmTime := obj.LabelTime(lgtmLabel)
 
 		if lastModifiedTime == nil || lgtmTime == nil {
 			t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
@@ -487,7 +486,7 @@ func TestSubmitQueue(t *testing.T) {
 			reason:          merged,
 			state:           "success",
 		},
-		// Should merge even though user not in whitelist because has ok-to-merge
+		// Should merge even though user not in whitelist because has okToMergeLabel
 		{
 			name:            "Test4",
 			pr:              ValidPR(),
@@ -528,7 +527,7 @@ func TestSubmitQueue(t *testing.T) {
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
-		// Fail because the "cla: yes" label was not applied
+		// Fail because the claYesLabel label was not applied
 		{
 			name:   "Test7",
 			pr:     ValidPR(),
@@ -552,7 +551,7 @@ func TestSubmitQueue(t *testing.T) {
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
-		// Fail because the user is not in the whitelist and we don't have "ok-to-merge"
+		// Fail because the user is not in the whitelist and we don't have okToMergeLabel
 		{
 			name:     "Test9",
 			pr:       ValidPR(),

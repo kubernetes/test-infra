@@ -178,7 +178,6 @@ func (sq *SubmitQueue) addWhitelistCommand(root *cobra.Command, config *github_u
 	}
 	root.PersistentFlags().StringVar(&sq.Whitelist, "user-whitelist", "./whitelist.txt", "Path to a whitelist file that contains users to auto-merge.  Required.")
 	root.PersistentFlags().StringVar(&sq.Committers, "committers", "./committers.txt", "File in which the list of authorized committers is stored; only used if this list cannot be gotten at run time.  (Merged with whitelist; separate so that it can be auto-generated)")
-	root.Flags().StringVar(&sq.WhitelistOverride, "whitelist-override-label", "ok-to-merge", "Github label, if present on a PR it will be merged even if the author isn't in the whitelist")
 
 	root.AddCommand(genCommitters)
 }

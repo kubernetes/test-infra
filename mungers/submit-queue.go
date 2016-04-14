@@ -38,25 +38,31 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
 const (
+	lgtmLabel           = "lgtm"
+	okToMergeLabel      = "ok-to-merge"
 	needsOKToMergeLabel = "needs-ok-to-merge"
 	e2eNotRequiredLabel = "e2e-not-required"
 	doNotMergeLabel     = "do-not-merge"
-	claYes              = "cla: yes"
-	claHuman            = "cla: human-approved"
+	claYesLabel         = "cla: yes"
+	claHumanLabel       = "cla: human-approved"
 
 	jenkinsE2EContext  = "Jenkins GCE e2e"
 	jenkinsUnitContext = "Jenkins unit/integration"
 	travisContext      = "continuous-integration/travis-ci/pr"
 	sqContext          = "Submit Queue"
 
-	e2eNotRequiredMergePriority = -1 // used for e2e-not-required
+	e2eNotRequiredMergePriority = -1 // used for e2eNotRequiredLabel
 	defaultMergePriority        = 3  // when an issue is unlabeled
 
 	githubE2EPollTime = 30 * time.Second
+
+	notInWhitelistBody    = "The author of this PR is not in the whitelist for merge, can one of the admins add the '" + okToMergeLabel + "' label?"
+	verifySafeToMergeBody = "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
 )
 
 var (
@@ -116,7 +122,7 @@ type submitQueueStats struct {
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
-//  if user not in whitelist PR must have "ok-to-merge"
+//  if user not in whitelist PR must have okToMergeLabel"
 //  The google internal jenkins instance must be passing the JobNames e2e tests
 type SubmitQueue struct {
 	githubConfig       *github.Config
@@ -128,7 +134,6 @@ type SubmitQueue struct {
 	JenkinsHost string
 
 	Whitelist              string
-	WhitelistOverride      string
 	Committers             string
 	E2EStatusContext       string
 	UnitStatusContext      string
@@ -165,14 +170,17 @@ type SubmitQueue struct {
 
 func init() {
 	clock := util.RealClock{}
-	RegisterMungerOrDie(&SubmitQueue{
+	sq := &SubmitQueue{
 		clock:          clock,
 		lastMergeTime:  clock.Now(),
 		lastE2EStable:  true,
 		prStatus:       map[string]submitStatus{},
 		lastPRStatus:   map[string]submitStatus{},
 		githubE2EQueue: map[int]*github.MungeObject{},
-	})
+	}
+	RegisterMungerOrDie(sq)
+	registerShouldDeleteCommentFunc(sq.isStaleWhitelistComment)
+	registerShouldDeleteCommentFunc(sq.isStaleSafeToMergeComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -626,9 +634,9 @@ func (sq *SubmitQueue) getHealth() []byte {
 
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR does not have " + claYes + " or " + claHuman
+	noCLA                   = "PR does not have " + claYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have LGTM."
-	needsok                 = "PR does not have 'ok-to-merge' label"
+	needsok                 = "PR does not have '" + okToMergeLabel + "' label"
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
@@ -679,7 +687,7 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	userSet := sq.userWhitelist
 
 	// Must pass CLA checks
-	if !obj.HasLabels([]string{claYes}) && !obj.HasLabels([]string{claHuman}) {
+	if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) {
 		sq.SetMergeStatus(obj, noCLA)
 		return false
 	}
@@ -701,11 +709,10 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// The user either must be on the whitelist or have ok-to-merge
-	if !obj.HasLabel(sq.WhitelistOverride) && !userSet.Has(*obj.Issue.User.Login) {
+	if !obj.HasLabel(okToMergeLabel) && !userSet.Has(*obj.Issue.User.Login) {
 		if !obj.HasLabel(needsOKToMergeLabel) {
 			obj.AddLabels([]string{needsOKToMergeLabel})
-			body := "The author of this PR is not in the whitelist for merge, can one of the admins add the 'ok-to-merge' label?"
-			obj.WriteComment(body)
+			obj.WriteComment(notInWhitelistBody)
 		}
 		sq.SetMergeStatus(obj, needsok)
 		return false
@@ -717,14 +724,14 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Clearly
-	if !obj.HasLabels([]string{"lgtm"}) {
+	if !obj.HasLabel(lgtmLabel) {
 		sq.SetMergeStatus(obj, noLGTM)
 		return false
 	}
 
 	// PR cannot change since LGTM was added
 	lastModifiedTime := obj.LastModifiedTime()
-	lgtmTime := obj.LabelTime("lgtm")
+	lgtmTime := obj.LabelTime(lgtmLabel)
 
 	if lastModifiedTime == nil || lgtmTime == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
@@ -922,8 +929,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	body := "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
-	if err := obj.WriteComment(body); err != nil {
+	if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown)
 		return
@@ -1019,7 +1025,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	var out bytes.Buffer
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q</li>", claYes, claHuman))
+	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q</li>", claYesLabel, claHumanLabel))
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	contexts := sq.RequiredStatusContexts
 	exceptStr := ""
@@ -1039,9 +1045,9 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		out.WriteString("</ul>")
 		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR either needs the label %q or the creator of the PR must be in the 'Users' list seen on the 'Info' tab.</li>", sq.WhitelistOverride))
-	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, "lgtm"))
-	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", "lgtm"))
+	out.WriteString(fmt.Sprintf("<li>The PR either needs the label %q or the creator of the PR must be in the 'Users' list seen on the 'Info' tab.</li>", okToMergeLabel))
+	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
+	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
@@ -1064,7 +1070,7 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
       <li>Determined by a label of the form 'priority/pX'
       <li>P0 -&gt; P1 -&gt; P2</li>
       <li>A PR with no priority label is considered equal to a P3</li>
-      <li>A PR with the 'e2e-not-required' label will come first, before even P0</li>
+      <li>A PR with the '` + e2eNotRequiredLabel + `' label will come first, before even P0</li>
     </ul>
   </li>
   <li>Release milestone due date
@@ -1076,4 +1082,26 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
   </li>
   <li>PR number</li>
 </ol> `))
+}
+
+func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != notInWhitelistBody {
+		return false
+	}
+	stale := obj.HasLabel(okToMergeLabel)
+	if stale {
+		glog.V(6).Infof("Found stale SubmitQueue Whitelist comment")
+	}
+	return stale
+}
+
+func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != verifySafeToMergeBody {
+		return false
+	}
+	stale := commentBeforeLastCI(obj, comment)
+	if stale {
+		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
+	}
+	return stale
 }

@@ -22,11 +22,18 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
+	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
 const (
 	labelUnapprovedPicksName = "label-unapproved-picks"
+	labelUnapprovedFormat    = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
+)
+
+var (
+	labelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, doNotMergeLabel)
 )
 
 // LabelUnapprovedPicks will remove the LGTM flag from an PR which has been
@@ -34,7 +41,9 @@ const (
 type LabelUnapprovedPicks struct{}
 
 func init() {
-	RegisterMungerOrDie(LabelUnapprovedPicks{})
+	l := LabelUnapprovedPicks{}
+	RegisterMungerOrDie(l)
+	registerShouldDeleteCommentFunc(l.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -74,6 +83,16 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 
 	obj.AddLabel(doNotMergeLabel)
 
-	msg := fmt.Sprintf("This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label.", cpApprovedLabel, doNotMergeLabel)
-	obj.WriteComment(msg)
+	obj.WriteComment(labelUnapprovedBody)
+}
+
+func (LabelUnapprovedPicks) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != labelUnapprovedBody {
+		return false
+	}
+	stale := obj.HasLabel(cpApprovedLabel)
+	if stale {
+		glog.V(6).Infof("Found stale LabelUnapprovedPicks comment")
+	}
+	return stale
 }

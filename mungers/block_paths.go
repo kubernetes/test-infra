@@ -26,11 +26,18 @@ import (
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
+const (
+	blockPathFormat = `Adding label:%s because PR changes docs prohibited to auto merge
+See http://kubernetes.io/editdocs/ for information about editing docs`
+)
+
 var (
-	_ = fmt.Print
+	_             = fmt.Print
+	blockPathBody = fmt.Sprintf(blockPathFormat, doNotMergeLabel)
 )
 
 type configBlockPath struct {
@@ -46,7 +53,9 @@ type BlockPath struct {
 }
 
 func init() {
-	RegisterMungerOrDie(&BlockPath{})
+	b := &BlockPath{}
+	RegisterMungerOrDie(b)
+	registerShouldDeleteCommentFunc(b.isStaleComment)
 }
 
 // Name is the name usable in --pr-mungers
@@ -129,12 +138,21 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 				if matchesAny(*f.Filename, b.doNotBlockRegexp) {
 					continue
 				}
-				body := fmt.Sprintf(`Adding label:%s because PR changes docs prohibited to auto merge
-See http://kubernetes.io/editdocs/ for information about editing docs`, doNotMergeLabel)
-				obj.WriteComment(body)
+				obj.WriteComment(blockPathBody)
 				obj.AddLabels([]string{doNotMergeLabel})
 				return
 			}
 		}
 	}
+}
+
+func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if *comment.Body != blockPathBody {
+		return false
+	}
+	stale := !obj.HasLabel(doNotMergeLabel)
+	if stale {
+		glog.V(6).Infof("Found stale BlockPath comment")
+	}
+	return stale
 }

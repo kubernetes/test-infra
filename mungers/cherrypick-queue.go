@@ -195,8 +195,8 @@ func (s cpQueueSorter) Less(i, j int) bool {
 	// Sort by LGTM as humans are likely to want to approve
 	// those first. After it merges the above check will win
 	// and LGTM won't matter
-	aLGTM := a.HasLabel("lgtm")
-	bLGTM := b.HasLabel("lgtm")
+	aLGTM := a.HasLabel(lgtmLabel)
+	bLGTM := b.HasLabel(lgtmLabel)
 	if aLGTM && !bLGTM {
 		return true
 	} else if !aLGTM && bLGTM {
@@ -284,10 +284,10 @@ func (c *CherrypickQueue) getQueueData(last, current map[int]*github.MungeObject
 			cps.ExtraInfo = append(cps.ExtraInfo, milestone)
 		}
 		merged, _ := obj.IsMerged()
-		if !merged && obj.HasLabel("lgtm") {
+		if !merged && obj.HasLabel(lgtmLabel) {
 			// Don't bother showing LGTM for merged things
 			// it's just a distraction at that point
-			cps.ExtraInfo = append(cps.ExtraInfo, "lgtm")
+			cps.ExtraInfo = append(cps.ExtraInfo, lgtmLabel)
 		}
 		out = append(out, cps)
 	}
@@ -336,9 +336,9 @@ func (c *CherrypickQueue) serveQueueInfo(res http.ResponseWriter, req *http.Requ
       <li>PRs which have not merged are considered 'after' any merged PR</li>
     </ul>
   </li>
-  <li>Labeld with "lgtm"
+  <li>Labeld with "` + lgtmLabel + `"
     <ul>
-      <li>PRs with the "lgtm" label come before those without</li>
+      <li>PRs with the "` + lgtmLabel + `" label come before those without</li>
     </ul>
   <li>PR number</li>
 </ol> `))

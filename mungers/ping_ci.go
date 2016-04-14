@@ -72,7 +72,7 @@ func (PingCIMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return
 	}
 	mergeable, err := obj.IsMergeable()
