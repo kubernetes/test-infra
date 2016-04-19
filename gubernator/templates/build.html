@@ -1,0 +1,39 @@
+<html>
+<style>
+pre.error {
+    white-space: pre-wrap;
+    margin: 1em 0 1em 4em;
+}
+span.time {
+    font-weight: lighter;
+    font-family: monospace;
+}
+a.anchor, pre.error>a {
+    color: inherit;
+}
+a.anchor:target {
+    color: blue;
+}
+</style>
+<body>
+<h1>{{job}} #{{build}}</h1>
+<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a></p>
+<p>Started on {{started['timestamp']|timestamp}} and took {{(finished['timestamp']-started['timestamp'])|duration}}</p>
+<p>Build Result: {{finished['result']}}</p>
+<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a> 
+<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a></p>
+{% if failures %}
+<h2>Test Failures</h1>
+{% for name, time, text in failures %}
+<a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time">{{time|duration}}</span></h3></a>
+{% if text %}
+<pre class="error">
+{{text|linkify_stacktrace(commit)}}
+</pre>
+{% endif %}
+{% endfor %}
+{% else %}
+<h2>No Test Failures!</h2>
+{% endif %}
+</body>
+</html>
