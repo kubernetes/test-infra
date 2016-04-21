@@ -2,9 +2,21 @@
 <body>
 <h1><a href="/jobs{{job_dir|dirname|dirname}}">{{job_dir|dirname|dirname}}</a>/{{job}}</h1>
 <h3>Builds</h3>
-{% for fstat in fstats %}
-{% if fstat.is_dir %}<a href="/build{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>
-{% endif %}
-{% endfor %}
+% macro build_link(fstat)
+{% if fstat.is_dir %}<a href="/build{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>{% endif %}
+% endmacro
+% if fstats|length > 150
+% for fstat in fstats[:100]
+{{ build_link(fstat) }}
+% endfor
+<h3>...</h3>
+% for fstat in fstats[-50:]
+{{ build_link(fstat) }}
+% endfor
+% else
+% for fstat in fstats
+{{ build_link(fstat) }}
+% endfor
+% endif
 </body>
 </html>

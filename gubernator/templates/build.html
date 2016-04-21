@@ -22,18 +22,18 @@ a.anchor:target {
 <p>Build Result: {{finished['result']}}</p>
 <p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a> 
 <a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a></p>
-{% if failures %}
+% if failures
 <h2>Test Failures</h1>
-{% for name, time, text in failures %}
+% for name, time, text in failures
 <a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}} <span class="time">{{time|duration}}</span></h3></a>
-{% if text %}
+% if text
 <pre class="error">
 {{text|linkify_stacktrace(commit)}}
 </pre>
-{% endif %}
-{% endfor %}
-{% else %}
+% endif
+% endfor
+% else
 <h2>No Test Failures!</h2>
-{% endif %}
+% endif
 </body>
 </html>
