@@ -38,10 +38,12 @@ const (
 	releaseNoteFormat = `Removing LGTM because the release note process has not been followed.
 One of the following labels is required %q, %q, or %q
 Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
+	parentReleaseNoteFormat = `The 'parent' PR of cherry-picks must have either the %q or %q label or this PR must follow the release note process.`
 )
 
 var (
-	releaseNoteBody = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteNone, releaseNoteActionRequired)
+	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteNone, releaseNoteActionRequired)
+	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 )
 
 // ReleaseNoteLabel will remove the LGTM label from an PR which has not
@@ -88,6 +90,9 @@ func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) b
 	for _, parent := range parents {
 		// If the parent didn't set a release note, the CP must
 		if !parent.HasLabel(releaseNote) && !parent.HasLabel(releaseNoteActionRequired) {
+			if !obj.HasLabel(releaseNoteLabelNeeded) {
+				obj.WriteComment(parentReleaseNoteBody)
+			}
 			return true
 		}
 	}
@@ -96,20 +101,25 @@ func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) b
 	return false
 }
 
+func (r *ReleaseNoteLabel) ensureNoRelNoteNeededLabel(obj *github.MungeObject) {
+	if obj.HasLabel(releaseNoteLabelNeeded) {
+		obj.RemoveLabel(releaseNoteLabelNeeded)
+	}
+}
+
 // Munge is the workhorse the will actually make updates to the PR
 func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
 
-	if !r.prMustFollowRelNoteProcess(obj) {
+	if completedReleaseNoteProcess(obj) {
+		r.ensureNoRelNoteNeededLabel(obj)
 		return
 	}
 
-	if completedReleaseNoteProcess(obj) {
-		if obj.HasLabel(releaseNoteLabelNeeded) {
-			obj.RemoveLabel(releaseNoteLabelNeeded)
-		}
+	if !r.prMustFollowRelNoteProcess(obj) {
+		r.ensureNoRelNoteNeededLabel(obj)
 		return
 	}
 
@@ -130,8 +140,12 @@ func completedReleaseNoteProcess(obj *github.MungeObject) bool {
 }
 
 func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if *comment.Body != releaseNoteBody {
+	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteFormat {
 		return false
+	}
+	if !r.prMustFollowRelNoteProcess(obj) {
+		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
+		return true
 	}
 	stale := completedReleaseNoteProcess(obj)
 	if stale {
