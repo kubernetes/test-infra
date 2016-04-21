@@ -1,0 +1,18 @@
+<html>
+<title>Gubernator</title>
+<body>
+<h1>Kubernetes Test Results Viewer</h1>
+<ul>
+{% for prefix, jobset in jobs.iteritems() %}
+<li><h2>{{prefix}}</h2>
+<a href="/jobs/{{prefix}}">Jobs List</a><br>
+Blocking Jobs:
+<ul>
+{% for job in jobset|sort %}
+<li><a href="/builds/{{prefix}}{{job}}">{{job}}</a><br></li>
+{% endfor %}
+</ul>
+</li>
+{% endfor %}
+</body>
+</html>

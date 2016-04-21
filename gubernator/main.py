@@ -14,11 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import functools
-import hashlib
 import json
-import logging
 import re
 import os
 import urllib
@@ -29,14 +26,29 @@ import jinja2
 
 from google.appengine.api import memcache
 
-import lib.defusedxml.ElementTree as ET
-import lib.cloudstorage as gcs
+import defusedxml.ElementTree as ET
+import cloudstorage as gcs
+
+import filters
 
 BUCKET_WHITELIST = {
     'kubernetes-jenkins',
 }
 
-GITHUB_VIEW_TEMPLATE = 'https://github.com/kubernetes/kubernetes/blob/%s/%s#L%s'
+DEFAULT_JOBS = {
+    'kubernetes-jenkins/logs/': {
+        'kubelet-gce-e2e-ci',
+        'kubernetes-build',
+        'kubernetes-e2e-gce',
+        'kubernetes-e2e-gce-scalability',
+        'kubernetes-e2e-gce-slow',
+        'kubernetes-e2e-gke',
+        'kubernetes-e2e-gke-slow',
+        'kubernetes-kubemark-5-gce',
+        'kubernetes-kubemark-500-gce',
+        'kubernetes-test-go',
+    }
+}
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
@@ -44,53 +56,27 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     trim_blocks=True,
     autoescape=True)
 
-
-def jinja_filter(func):
-    JINJA_ENVIRONMENT.filters[func.__name__.replace('format_', '')] = func
-    return func
+filters.register(JINJA_ENVIRONMENT.filters)
 
 
-@jinja_filter
-def format_timestamp(ts):
-    t = datetime.datetime.fromtimestamp(ts)
-    return t.strftime('%F %H:%M')
-
-
-@jinja_filter
-def format_duration(seconds):
-    hours, seconds = divmod(seconds, 3600)
-    minutes, seconds = divmod(seconds, 60)
-    out = ''
-    if hours:
-        return '%dh%dm' % (hours, minutes)
-    if minutes:
-        return '%dm%ds' % (minutes, seconds)
-    else:
-        if seconds < 10:
-            return '%.2fs' % seconds
-        return '%ds' % seconds
-
-
-@jinja_filter
-def slugify(inp):
-    inp = re.sub(r'[^\w\s-]+', '', inp)
-    return re.sub(r'\s+', '-', inp).lower()
-
-
-@jinja_filter
-def linkify_stacktrace(inp, commit):
-    inp = str(jinja2.escape(inp))
-    if not commit:
-        return inp
-    def rep(m):
-        path, line = m.groups()
-        return '<a href="%s">%s</a>' % (
-            GITHUB_VIEW_TEMPLATE % (commit, path, line), m.group(0))
-    return jinja2.Markup(re.sub(r'^/\S*/kubernetes/(\S+):(\d+)$', rep, inp, 
-                                flags=re.MULTILINE))
+def pad_numbers(s):
+    """Modify a string to make its numbers suitable for natural sorting."""
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
 
 
 def memcache_memoize(prefix, exp=60 * 60, neg_exp=60):
+    """Decorate a function to memoize its results using memcache.
+
+    The function must take a single string as input, and return a pickleable
+    type.
+
+    Args:
+        prefix: A prefix for memcache keys to use for memoization.
+        exp: How long to memoized values, in seconds.
+        neg_exp: How long to memoize falsey values, in seconds
+    Returns:
+        A decorator closure to wrap the function.
+    """
     # setting the namespace based on the current version prevents different
     # versions from sharing cache values -- meaning there's no need to worry
     # about incompatible old key/value pairs
@@ -115,11 +101,18 @@ def memcache_memoize(prefix, exp=60 * 60, neg_exp=60):
 
 @memcache_memoize('gs://')
 def gcs_read(path):
+    """Read a file from GCS. Returns None on errors."""
     try:
         with gcs.open(path) as f:
             return f.read()
     except gcs.errors.Error:
         return None
+
+
+@memcache_memoize('gs-ls://', exp=60)
+def gcs_ls(path):
+    """Enumerate files in a GCS directory. Returns a list of FileStats."""
+    return list(gcs.listbucket(path, delimiter='/'))
 
 
 @memcache_memoize('build-details://', exp=60 * 60 * 4)
@@ -141,12 +134,14 @@ def build_details(build_dir):
 
 
 def decompress(data):
+    """Decompress data if GZIP-compressed, but pass normal data thorugh."""
     if data.startswith('\x1f\x8b'):  # gzip magic
         return zlib.decompress(data, 15 | 16)
     return data
 
 
 def parse_junit(xml):
+    """Generate failed tests as a series of (name, duration, text) tuples."""
     for child in ET.fromstring(xml):
         name = child.attrib['name']
         time = float(child.attrib['time'])
@@ -164,34 +159,81 @@ def parse_junit(xml):
             yield name, time, text
 
 
-class BuildHandler(webapp2.RequestHandler):
+class RenderingHandler(webapp2.RequestHandler):
+    """Base class for Handlers that render Jinja templates."""
+    def render(self, template, context):
+        """Render a context dictionary using a given template."""
+        template = JINJA_ENVIRONMENT.get_template(template)
+        self.response.write(template.render(context))
+
+
+class IndexHandler(RenderingHandler):
+    """Render the index."""
+    def get(self):
+        self.render("index.html", {'jobs': DEFAULT_JOBS})
+
+
+class BuildHandler(RenderingHandler):
+    """Show information about a Build and its failing tests."""
     def get(self, bucket, prefix, job, build):
         if bucket not in BUCKET_WHITELIST:
             self.error(404)
             return
-        build_dir = '/%s/%s%s/%s' % (bucket, prefix, job, build)
+        job_dir = '/%s/%s%s/' % (bucket, prefix, job)
+        build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
+            self.response.write("Unable to load build details from %s"
+                                % job_dir)
             self.error(404)
             return
         started, finished, failures = details
-        commit = started['version'].split('+')[1]
-        template = JINJA_ENVIRONMENT.get_template('build.html')
-        self.response.write(template.render(dict(
-            build_dir=build_dir, job=job, build=build, commit=commit,
-            started=started, finished=finished, failures=failures)))
+        commit = started['version'].split('+')[-1]
+        self.render('build.html', dict(
+            job_dir=job_dir, build_dir=build_dir, job=job, build=build,
+            commit=commit, started=started, finished=finished,
+            failures=failures))
+
+
+class BuildListHandler(RenderingHandler):
+    """Show a list of Builds for a Job."""
+    def get(self, bucket, prefix, job):
+        if bucket not in BUCKET_WHITELIST:
+            self.error(404)
+            return
+        job_dir = '/%s/%s%s/' % (bucket, prefix, job)
+        fstats = gcs_ls(job_dir)
+        fstats.sort(key=lambda f: pad_numbers(f.filename), reverse=True)
+        self.render('build_list.html', dict(job=job, job_dir=job_dir, fstats=fstats))
+
+
+class JobListHandler(RenderingHandler):
+    """Show a list of Jobs in a directory."""
+    def get(self, bucket, prefix):
+        if bucket not in BUCKET_WHITELIST:
+            self.error(404)
+            return
+        jobs_dir = '/%s/%s/' % (bucket, prefix)
+        fstats = gcs_ls(jobs_dir)
+        fstats.sort()
+        self.render('job_list.html', dict(jobs_dir=jobs_dir, fstats=fstats))
+
 
 app = webapp2.WSGIApplication([
-    (r'/build/([-\w]+)/([-\w/]*/)?([-\w]+)/(\d+)/?', BuildHandler),
-    # webapp2.Route('/upload', gcs_upload.Upload, 'upload'),
+    (r'/', IndexHandler),
+    (r'/jobs/([-\w]+)/(.*[-\w])/?$', JobListHandler),
+    (r'/builds/([-\w]+)/(.*/)?([^/]+)/?', BuildListHandler),
+    (r'/build/([-\w]+)/(.*/)?([^/]+)/(\d+)/?', BuildHandler),
 ], debug=True)
 
 if os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
     # inject some test data so there's a page with some content
     import tarfile
-    tf = tarfile.open('kube_results.tar.gz')
+    tf = tarfile.open('test_data/kube_results.tar.gz')
     prefix = '/kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce/'
     for member in tf:
         if member.isfile():
             with gcs.open(prefix + member.name, 'w') as f:
                 f.write(tf.extractfile(member).read())
+    with gcs.open(prefix + '5044/started.json', 'w') as f:
+        f.write('test')  # So JobHandler has more than one item.

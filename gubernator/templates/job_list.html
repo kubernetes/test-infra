@@ -1,0 +1,10 @@
+<html>
+<body>
+<h1>{{jobs_dir}}</h1>
+<h3>Jobs</h3>
+{% for fstat in fstats %}
+{% if fstat.is_dir %}<a href="/builds{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>
+{% endif %}
+{% endfor %}
+</body>
+</html>

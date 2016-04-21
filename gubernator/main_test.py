@@ -22,16 +22,17 @@ To run these tests:
 """
 
 import json
+import os
 import unittest
 
 import webtest
 import webapp2
 
+import cloudstorage as gcs
+
 import main
 
 app = webtest.TestApp(main.app)
-
-import lib.cloudstorage as gcs
 
 
 def init_build(build_dir):
@@ -59,29 +60,9 @@ Error Goes Here</failure>
 
 
 class HelperTest(unittest.TestCase):
-    def test_timestamp(self):
-        self.assertEqual('2016-04-19 21:22', main.format_timestamp(1461100940))
-
-    def test_duration(self):
-        for duration, expected in {
-            3.56: '3.56s',
-            13.6: '13s',
-            78.2: '1m18s',
-            60 * 62 + 3: '1h2m',
-        }.iteritems():
-            self.assertEqual(expected, main.format_duration(duration))
-
-    def test_linkify_safe(self):
-        self.assertEqual('&lt;a&gt;', str(main.linkify_stacktrace('<a>', '3')))
-
-    def test_linkify(self):
-        linked = str(main.linkify_stacktrace(
-            "/go/src/k8s.io/kubernetes/test/example.go:123", 'VERSION'))
-        self.assertIn('<a href="https://github.com/kubernetes/kubernetes/blob/'
-                      'VERSION/test/example.go#L123">', linked)
-
-    def test_slugify(self):
-        self.assertEqual('k8s-test-foo', main.slugify('[k8s] Test Foo'))
+    def test_pad_numbers(self):
+        self.assertEqual(main.pad_numbers('a3b45'),
+                         'a' + '0' * 15 + '3b' + '0' * 14 + '45')
 
 
 class AppTest(unittest.TestCase):
@@ -94,6 +75,11 @@ class AppTest(unittest.TestCase):
         self.testbed.init_blobstore_stub()
         self.testbed.init_datastore_v3_stub()
         init_build(self.BUILD_DIR)
+
+    def test_index(self):
+        """Test that the index works."""
+        response = app.get('/')
+        self.assertIn('kubernetes-e2e-gce', response)
 
     def test_missing(self):
         """Test that a missing build gives a 404."""
@@ -118,9 +104,20 @@ class AppTest(unittest.TestCase):
         self.assertIn('No Test Failures', response)
 
     def test_cache(self):
-        """Test that caching works at some level"""
+        """Test that caching works at some level."""
         response = app.get('/build' + self.BUILD_DIR)
         gcs.delete(self.BUILD_DIR + 'started.json')
         gcs.delete(self.BUILD_DIR + 'finished.json')
         response2 = app.get('/build' + self.BUILD_DIR)
         self.assertEqual(str(response), str(response2))
+
+    def test_build_list(self):
+        """Test that the job page shows a list of builds."""
+        response = app.get('/builds' + os.path.dirname(self.BUILD_DIR[:-1]))
+        self.assertIn('/1234/">1234</a>', response)
+
+    def test_job_list(self):
+        """Test that the job list shows our job."""
+        response = app.get('/jobs/kubernetes-jenkins/logs')
+        self.assertIn('somejob/">somejob</a>', response)
+
