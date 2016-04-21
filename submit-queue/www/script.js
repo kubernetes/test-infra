@@ -51,6 +51,15 @@ function SQCntl(dataService, $interval, $location) {
       }
   }
 
+  // Request Avatars thar are as small as nec
+  function fixPRAvatars(prs) {
+    angular.forEach(prs, function(pr) {
+      if (/^https:\/\/avatars.githubusercontent.com\/u\/\d+\?v=3$/.test(pr.AvatarURL)) {
+        pr.AvatarURL += '&size=40';
+      }
+    });
+  }
+
   // Refresh data every 10 minutes
   refreshPRs();
   $interval(refreshPRs, 600000);
@@ -58,6 +67,7 @@ function SQCntl(dataService, $interval, $location) {
   function refreshPRs() {
     dataService.getData('prs').then(function successCallback(response) {
       var prs = response.data.PRStatus;
+      fixPRAvatars(prs);
       self.prs = prs;
       self.prSearchTerms = getPRSearchTerms();
     }, function errorCallback(response) {
@@ -77,6 +87,7 @@ function SQCntl(dataService, $interval, $location) {
         self.e2erunning = [response.data.E2ERunning];
       }
       self.e2equeue = response.data.E2EQueue;
+      fixPRAvatars(self.e2equeue);
     });
   }
 
@@ -87,6 +98,7 @@ function SQCntl(dataService, $interval, $location) {
   function refreshHistoryPRs() {
     dataService.getData('history').then(function successCallback(response) {
       var prs = response.data;
+      fixPRAvatars(prs);
       self.historyPRs = prs;
       self.historySearchTerms = getHistorySearchTerms();
     });
