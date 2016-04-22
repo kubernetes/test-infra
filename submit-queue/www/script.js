@@ -14,8 +14,9 @@ function SQCntl(dataService, $interval, $location) {
   self.historyQuerySearch = historyQuerySearch;
   self.goToPerson = goToPerson;
   self.selectTab = selectTab;
+  self.tabLoaded = {};
   self.queryNum = 0;
-  self.selected = 0;
+  self.selected = 1;
   self.OverallHealth = "";
   self.StartTime = "";
   self.StatOrder = "-Count";
@@ -31,27 +32,59 @@ function SQCntl(dataService, $interval, $location) {
   if (path.length > 0) {
       switch (path) {
       case "/prs":
-	  self.selected=0;
-	  break;
+          self.selected=0;
+          break;
       case "/queue":
-	  self.selected=1;
-	  break;
+          self.selected=1;
+          break;
       case "/history":
-	  self.selected=2;
-	  break;
+          self.selected=2;
+          break;
       case "/e2e":
-	  self.selected=3;
-	  break;
+          self.selected=3;
+          break;
       case "/info":
-	  self.selected=4;
-	  break;
+          self.selected=4;
+          break;
       default:
-	  console.log("unknown path: " + path);
-	  break;
+          console.log("unknown path: " + path);
+          break;
       }
   }
 
-  // Request Avatars thar are as small as nec
+  loadTab(self.selected);
+
+  // Defer loading of data for a tab until it's actually needed.
+  // This speeds up the first-boot experience a LOT.
+  function loadTab() {
+    // tab: [reloading-function, update interval in minutes, ...] (can repeat)
+    var tabFunctionReloads = {
+      0: [refreshPRs, 10],
+      1: [refreshGithubE2E, 0.5, refreshSQStats, 30],
+      2: [refreshHistoryPRs, 1],
+      3: [refreshE2EHealth, 10],
+      4: [refreshUsers, 15, refreshBotStats, 10],
+    }
+    if (self.tabLoaded[self.selected])
+      return;
+    var tabReload = tabFunctionReloads[self.selected];
+    if (tabReload !== undefined) {
+      for (var i = 0; i < tabReload.length; i += 2) {
+        var func = tabReload[i];
+        var updateIntervalMinutes = tabReload[i + 1];
+        func();
+        $interval(func, updateIntervalMinutes * 60 * 1000);
+      }
+      self.tabLoaded[self.selected] = true;
+    }
+  }
+
+  // This data is shown in a top banner (when the Queue is blocked),
+  // so it's always loaded.
+  refreshGoogleInternalCI();
+  $interval(refreshGoogleInternalCI, 60000);  // Refresh every minute
+
+  // Request Avatars that are only as large necessary (CSS limits them to 40px)
   function fixPRAvatars(prs) {
     angular.forEach(prs, function(pr) {
       if (/^https:\/\/avatars.githubusercontent.com\/u\/\d+\?v=3$/.test(pr.AvatarURL)) {
@@ -59,10 +92,6 @@ function SQCntl(dataService, $interval, $location) {
       }
     });
   }
-
-  // Refresh data every 10 minutes
-  refreshPRs();
-  $interval(refreshPRs, 600000);
 
   function refreshPRs() {
     dataService.getData('prs').then(function successCallback(response) {
@@ -74,10 +103,6 @@ function SQCntl(dataService, $interval, $location) {
       console.log("Error: Getting SubmitQueue Status");
     });
   }
-
-  // Refresh every 30 seconds
-  refreshGithubE2E();
-  $interval(refreshGithubE2E, 30000);
 
   function refreshGithubE2E() {
     dataService.getData('github-e2e-queue').then(function successCallback(response) {
@@ -91,10 +116,6 @@ function SQCntl(dataService, $interval, $location) {
     });
   }
 
-  // Refresh every minute
-  refreshHistoryPRs();
-  $interval(refreshHistoryPRs, 60000);
-
   function refreshHistoryPRs() {
     dataService.getData('history').then(function successCallback(response) {
       var prs = response.data;
@@ -104,20 +125,12 @@ function SQCntl(dataService, $interval, $location) {
     });
   }
 
-  // Refresh every 30 minutes
-  refreshSQStats();
-  $interval(refreshSQStats, 1800000);
-
   function refreshSQStats() {
     dataService.getData('sq-stats').then(function successCallback(response) {
       self.sqStats = response.data;
       self.lastMergeTime = new Date(response.data.LastMergeTime)
     });
   }
-
-  // Refresh every 10 minutes
-  refreshBotStats();
-  $interval(refreshBotStats, 600000);
 
   function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
@@ -134,19 +147,11 @@ function SQCntl(dataService, $interval, $location) {
     });
   }
 
-  // Refresh every 15 minutes
-  refreshUsers();
-  $interval(refreshUsers, 900000);
-
   function refreshUsers() {
     dataService.getData('users').then(function successCallback(response) {
       self.users = response.data;
     });
   }
-
-  // Refresh every 10 minutes
-  refreshE2EHealth();
-  $interval(refreshE2EHealth, 600000)
 
   function refreshE2EHealth() {
     dataService.getData("health").then(function successCallback(response) {
@@ -158,10 +163,6 @@ function SQCntl(dataService, $interval, $location) {
       }
     });
   }
-
-  // Refresh every minute
-  refreshGoogleInternalCI();
-  $interval(refreshGoogleInternalCI, 60000);
 
   function refreshGoogleInternalCI() {
     dataService.getData('google-internal-ci').then(function successCallback(response) {
@@ -292,6 +293,7 @@ function SQCntl(dataService, $interval, $location) {
 
   function selectTab(tabName) {
     self.location.path('/' + tabName);
+    loadTab();
   }
 
   getPriorityInfo()
