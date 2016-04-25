@@ -90,7 +90,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 			c := new(comment)
 			json.NewDecoder(r.Body).Decode(c)
 			msg := c.Body
-			if strings.HasPrefix(msg, "@k8s-bot test this") {
+			if strings.HasPrefix(msg, "@"+jenkinsBotName+" test this") {
 				tested = true
 				test.ciStatus.State = stringPtr("pending")
 				for id := range test.ciStatus.Statuses {

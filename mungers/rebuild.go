@@ -40,13 +40,14 @@ const (
 	issueURLRe    = "(?:https?://)?github.com/kubernetes/kubernetes/issues/[0-9]+"
 	rebuildFormat = `@%s
 You must link to the test flake issue which caused you to request this manual re-test.
-Re-test requests should be in the form of: ` + "`" + `k8s-bot test this issue: #<number>` + "`" + `
+Re-test requests should be in the form of: ` + "`" + jenkinsBotName + ` test this issue: #<number>` + "`" + `
 Here is the [list of open test flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open).`
 )
 
 var (
-	buildMatcher = regexp.MustCompile("@k8s-bot\\s+(?:e2e\\s+)?(?:unit\\s+)?test\\s+this.*")
-	issueMatcher = regexp.MustCompile("\\s+(?:github\\s+)?(issue|flake)\\:?\\s+(?:#(?:IGNORE|[0-9]+)|" + issueURLRe + ")")
+	buildMatcherStr = fmt.Sprintf("@%s\\s+(?:e2e\\s+)?(?:unit\\s+)?test\\s+this.*", jenkinsBotName)
+	buildMatcher    = regexp.MustCompile(buildMatcherStr)
+	issueMatcher    = regexp.MustCompile("\\s+(?:github\\s+)?(issue|flake)\\:?\\s+(?:#(?:IGNORE|[0-9]+)|" + issueURLRe + ")")
 
 	// take the format and replace the %s with \S+
 	rebuildCommentREString = strings.Replace(rebuildFormat, `@%s`, `@\S+`, 1)
@@ -67,7 +68,7 @@ func (r *RebuildMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (r *RebuildMunger) Initialize(config *github.Config, features *features.Features) error {
-	r.robots = sets.NewString("googlebot", "k8s-bot", "k8s-merge-robot")
+	r.robots = sets.NewString("googlebot", jenkinsBotName, botName)
 	return nil
 }
 

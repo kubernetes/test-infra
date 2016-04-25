@@ -61,12 +61,12 @@ const (
 
 	githubE2EPollTime = 30 * time.Second
 
-	notInWhitelistBody    = "The author of this PR is not in the whitelist for merge, can one of the admins add the '" + okToMergeLabel + "' label?"
-	verifySafeToMergeBody = "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
+	notInWhitelistBody = "The author of this PR is not in the whitelist for merge, can one of the admins add the '" + okToMergeLabel + "' label?"
 )
 
 var (
-	_ = fmt.Print
+	_                     = fmt.Print
+	verifySafeToMergeBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
 )
 
 type submitStatus struct {

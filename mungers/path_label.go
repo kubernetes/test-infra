@@ -36,7 +36,8 @@ var (
 )
 
 const (
-	botName = "k8s-merge-robot"
+	botName        = "k8s-merge-robot"
+	jenkinsBotName = "k8s-bot"
 )
 
 type labelMap struct {

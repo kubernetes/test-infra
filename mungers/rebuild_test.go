@@ -28,19 +28,19 @@ func TestIsRebuild(t *testing.T) {
 		isRebuild bool
 	}{
 		{
-			value:     "@k8s-bot test this please",
+			value:     "@" + jenkinsBotName + " test this please",
 			isRebuild: true,
 		},
 		{
-			value:     "@k8s-bot unit test this please",
+			value:     "@" + jenkinsBotName + " unit test this please",
 			isRebuild: true,
 		},
 		{
-			value:     "@k8s-bot e2e test this please",
+			value:     "@" + jenkinsBotName + " e2e test this please",
 			isRebuild: true,
 		},
 		{
-			value:     "@k8s-bot don't test this please",
+			value:     "@" + jenkinsBotName + " don't test this please",
 			isRebuild: false,
 		},
 		{
@@ -65,55 +65,55 @@ func TestRebuildMissingIssue(t *testing.T) {
 		expectMissing bool
 	}{
 		{
-			value:         "@k8s-bot test this please",
+			value:         "@" + jenkinsBotName + " test this please",
 			expectMissing: true,
 		},
 		{
-			value:         "@k8s-bot test this please github issue: #123456",
+			value:         "@" + jenkinsBotName + " test this please github issue: #123456",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please github issue: #IGNORE",
+			value:         "@" + jenkinsBotName + " test this please github issue: #IGNORE",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please github issue #123456",
+			value:         "@" + jenkinsBotName + " test this please github issue #123456",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please github issue #",
+			value:         "@" + jenkinsBotName + " test this please github issue #",
 			expectMissing: true,
 		},
 		{
-			value:         "@k8s-bot test this please github issue IGNORE",
+			value:         "@" + jenkinsBotName + " test this please github issue IGNORE",
 			expectMissing: true,
 		},
 		{
-			value:         "@k8s-bot test this please flake IGNORE",
+			value:         "@" + jenkinsBotName + " test this please flake IGNORE",
 			expectMissing: true,
 		},
 		{
-			value:         "@k8s-bot test this please issue: #IGNORE",
+			value:         "@" + jenkinsBotName + " test this please issue: #IGNORE",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please flake: #IGNORE",
+			value:         "@" + jenkinsBotName + " test this please flake: #IGNORE",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please flake: #12345",
+			value:         "@" + jenkinsBotName + " test this please flake: #12345",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please flake: https://github.com/kubernetes/kubernetes/issues/12345",
+			value:         "@" + jenkinsBotName + " test this please flake: https://github.com/kubernetes/kubernetes/issues/12345",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please flake: http://github.com/kubernetes/kubernetes/issues/12345",
+			value:         "@" + jenkinsBotName + " test this please flake: http://github.com/kubernetes/kubernetes/issues/12345",
 			expectMissing: false,
 		},
 		{
-			value:         "@k8s-bot test this please flake: github.com/kubernetes/kubernetes/issues/12345",
+			value:         "@" + jenkinsBotName + " test this please flake: github.com/kubernetes/kubernetes/issues/12345",
 			expectMissing: false,
 		},
 	}

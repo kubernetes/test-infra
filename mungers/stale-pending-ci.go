@@ -30,7 +30,7 @@ import (
 
 const (
 	stalePendingCIHours = 24
-	pendingMsgFormat    = `@k8s-bot test this issue: #IGNORE
+	pendingMsgFormat    = `@` + jenkinsBotName + ` test this issue: #IGNORE
 
 Tests have been pending for %d hours`
 )
@@ -39,7 +39,7 @@ var (
 	pendingMsgBody = fmt.Sprintf(pendingMsgFormat, stalePendingCIHours)
 )
 
-// StalePendingCI will ask the k8s-bot to test any PR with a LGTM that has
+// StalePendingCI will ask the testBot-to test any PR with a LGTM that has
 // been pending for more than 24 hours. This can happen when the jenkins VM
 // is restarted.
 //

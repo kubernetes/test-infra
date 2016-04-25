@@ -26,14 +26,14 @@ import (
 )
 
 const (
-	okToTestBody = `@k8s-bot ok to test
-@k8s-bot test this
+	okToTestBody = `ok to test
+@` + jenkinsBotName + ` test this
 
 pr builder appears to be missing, activating due to 'lgtm' label.`
 )
 
 // OkToTestMunger looks for situations where a reviewer has LGTM'd a PR, but it
-// isn't ok to test by the k8s-bot, and adds an 'ok to test' comment to the PR.
+// isn't ok to test by the testBot, and adds an 'ok to test' comment to the PR.
 type OkToTestMunger struct{}
 
 func init() {
