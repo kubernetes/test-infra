@@ -1345,6 +1345,13 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 		glog.Errorf("Found a comment with nil id for Issue %d", prNum)
 		return err
 	}
+	for i, c := range obj.comments {
+		if c.ID == nil || *c.ID != *comment.ID {
+			continue
+		}
+		obj.comments = append(obj.comments[:i], obj.comments[i+1:]...)
+		break
+	}
 	glog.Infof("Removing comment %d from Issue %d", *comment.ID, prNum)
 	if config.DryRun {
 		return nil

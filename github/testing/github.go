@@ -40,6 +40,19 @@ func boolPtr(val bool) *bool       { return &val }
 
 func timePtr(val time.Time) *time.Time { return &val }
 
+// Comment is a helper to create a valid-ish comment for testing
+func Comment(id int, login string, createdAt time.Time, body string) github.IssueComment {
+	comment := github.IssueComment{
+		ID:        &id,
+		Body:      &body,
+		CreatedAt: &createdAt,
+		User: &github.User{
+			Login: &login,
+		},
+	}
+	return comment
+}
+
 // PullRequest returns a filled out github.PullRequest
 func PullRequest(user string, merged, mergeDetermined, mergeable bool) *github.PullRequest {
 	pr := &github.PullRequest{
