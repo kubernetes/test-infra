@@ -55,7 +55,7 @@ type BlockPath struct {
 func init() {
 	b := &BlockPath{}
 	RegisterMungerOrDie(b)
-	registerShouldDeleteCommentFunc(b.isStaleComment)
+	RegisterStaleComments(b)
 }
 
 // Name is the name usable in --pr-mungers
@@ -146,7 +146,10 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != blockPathBody {
 		return false
 	}
@@ -155,4 +158,9 @@ func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.I
 		glog.V(6).Infof("Found stale BlockPath comment")
 	}
 	return stale
+}
+
+// StaleComments returns a slice of stale comments
+func (b *BlockPath) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, b.isStaleComment)
 }

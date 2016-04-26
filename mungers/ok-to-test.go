@@ -39,7 +39,7 @@ type OkToTestMunger struct{}
 func init() {
 	ok := OkToTestMunger{}
 	RegisterMungerOrDie(ok)
-	registerShouldDeleteCommentFunc(ok.isStaleComment)
+	RegisterStaleComments(ok)
 }
 
 // Name is the name usable in --pr-mungers
@@ -75,7 +75,10 @@ func (OkToTestMunger) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (OkToTestMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (OkToTestMunger) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != okToTestBody {
 		return false
 	}
@@ -84,4 +87,9 @@ func (OkToTestMunger) isStaleComment(obj *github.MungeObject, comment *githubapi
 		glog.V(6).Infof("Found stale OkToTestMunger comment")
 	}
 	return stale
+}
+
+// StaleComments returns a slice of comments which are stale
+func (ok OkToTestMunger) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, ok.isStaleComment)
 }

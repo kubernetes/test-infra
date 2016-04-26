@@ -55,7 +55,7 @@ type ReleaseNoteLabel struct {
 func init() {
 	r := &ReleaseNoteLabel{}
 	RegisterMungerOrDie(r)
-	registerShouldDeleteCommentFunc(r.isStaleComment)
+	RegisterStaleComments(r)
 }
 
 // Name is the name usable in --pr-mungers
@@ -139,7 +139,10 @@ func completedReleaseNoteProcess(obj *github.MungeObject) bool {
 	return obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone)
 }
 
-func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteFormat {
 		return false
 	}
@@ -152,4 +155,9 @@ func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment *gith
 		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
 	}
 	return stale
+}
+
+// StaleComments returns a slice of stale comments
+func (r *ReleaseNoteLabel) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, r.isStaleComment)
 }

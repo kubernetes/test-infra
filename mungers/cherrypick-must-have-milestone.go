@@ -42,7 +42,7 @@ type PickMustHaveMilestone struct{}
 func init() {
 	p := PickMustHaveMilestone{}
 	RegisterMungerOrDie(p)
-	registerShouldDeleteCommentFunc(p.isStaleComment)
+	RegisterStaleComments(p)
 }
 
 // Name is the name usable in --pr-mungers
@@ -80,7 +80,10 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != pickMustHaveMilestoneBody {
 		return false
 	}
@@ -89,4 +92,9 @@ func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment *gi
 		glog.V(6).Infof("Found stale PickMustHaveMilestone comment")
 	}
 	return stale
+}
+
+// StaleComments returns a slice of stale comments
+func (p PickMustHaveMilestone) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, p.isStaleComment)
 }

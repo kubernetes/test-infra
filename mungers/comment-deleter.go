@@ -30,8 +30,8 @@ const (
 )
 
 var (
-	_     = glog.Infof
-	funcs = []func(*github.MungeObject, *githubapi.IssueComment) bool{}
+	_        = glog.Infof
+	deleters = []StaleComment{}
 )
 
 // CommentDeleter looks for comments which are no longer useful
@@ -42,9 +42,16 @@ func init() {
 	RegisterMungerOrDie(CommentDeleter{})
 }
 
-//
-func registerShouldDeleteCommentFunc(f func(*github.MungeObject, *githubapi.IssueComment) bool) {
-	funcs = append(funcs, f)
+// StaleComment is an interface for a munger which writes comments which might go stale
+// and which should be cleaned up
+type StaleComment interface {
+	StaleComments(*github.MungeObject, []githubapi.IssueComment) []githubapi.IssueComment
+}
+
+// RegisterStaleComments is the method for a munger to register that it creates comment
+// which might go stale and need to be cleaned up
+func RegisterStaleComments(s StaleComment) {
+	deleters = append(deleters, s)
 }
 
 // Name is the name usable in --pr-mungers
@@ -62,6 +69,19 @@ func (CommentDeleter) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (CommentDeleter) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
+func validComment(comment githubapi.IssueComment) bool {
+	if comment.User == nil || comment.User.Login == nil {
+		return false
+	}
+	if comment.CreatedAt == nil {
+		return false
+	}
+	if comment.Body == nil {
+		return false
+	}
+	return true
+}
+
 // Munge is the workhorse the will actually make updates to the PR
 func (CommentDeleter) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
@@ -73,22 +93,38 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	validComments := []githubapi.IssueComment{}
 	for i := range comments {
-		comment := &comments[i]
-		if comment.User == nil || comment.User.Login == nil {
+		comment := comments[i]
+		if !validComment(comment) {
 			continue
 		}
-		if *comment.User.Login != botName {
-			continue
-		}
-		if comment.Body == nil {
-			continue
-		}
-		for _, f := range funcs {
-			if f(obj, comment) {
-				obj.DeleteComment(comment)
-				break
-			}
+		validComments = append(validComments, comment)
+	}
+	for _, d := range deleters {
+		stale := d.StaleComments(obj, validComments)
+		for _, comment := range stale {
+			obj.DeleteComment(&comment)
 		}
 	}
+}
+
+func mergeBotComment(comment githubapi.IssueComment) bool {
+	return *comment.User.Login == botName
+}
+
+func jenkinsBotComment(comment githubapi.IssueComment) bool {
+	return *comment.User.Login == jenkinsBotName
+}
+
+// Checks each comment in `comments` and returns a slice of comments for which the `stale` function was true
+func forEachCommentTest(obj *github.MungeObject, comments []githubapi.IssueComment, stale func(*github.MungeObject, githubapi.IssueComment) bool) []githubapi.IssueComment {
+	out := []githubapi.IssueComment{}
+
+	for _, comment := range comments {
+		if stale(obj, comment) {
+			out = append(out, comment)
+		}
+	}
+	return out
 }

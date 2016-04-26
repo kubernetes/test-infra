@@ -179,8 +179,7 @@ func init() {
 		githubE2EQueue: map[int]*github.MungeObject{},
 	}
 	RegisterMungerOrDie(sq)
-	registerShouldDeleteCommentFunc(sq.isStaleWhitelistComment)
-	registerShouldDeleteCommentFunc(sq.isStaleSafeToMergeComment)
+	RegisterStaleComments(sq)
 }
 
 // Name is the name usable in --pr-mungers
@@ -1084,7 +1083,10 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
 </ol> `))
 }
 
-func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != notInWhitelistBody {
 		return false
 	}
@@ -1095,7 +1097,10 @@ func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment 
 	return stale
 }
 
-func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	if !mergeBotComment(comment) {
+		return false
+	}
 	if *comment.Body != verifySafeToMergeBody {
 		return false
 	}
@@ -1104,4 +1109,13 @@ func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, commen
 		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
 	}
 	return stale
+}
+
+func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+	return sq.isStaleWhitelistComment(obj, comment) || sq.isStaleSafeToMergeComment(obj, comment)
+}
+
+// StaleComments returns a slice of stale comments
+func (sq *SubmitQueue) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, sq.isStaleComment)
 }
