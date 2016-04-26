@@ -36,6 +36,10 @@ const (
 * [Internal Jenkins Results](http://goto.google.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//35830)
 
 Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.`
+	oldBuildLinkComment = `GCE e2e test build/test **passed** for commit c801f3fc6221e4b1a54fd08378f35009dd01f052.
+* [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/13006/kubernetes-pull-build-test-e2e-gce/26147/build-log.txt)
+* [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/13006/kubernetes-pull-build-test-e2e-gce/26147/artifacts/)
+* [Internal Jenkins Results](http://goto.google.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//26147)`
 )
 
 func TestIsJenkinsTestComment(t *testing.T) {
@@ -52,6 +56,11 @@ func TestIsJenkinsTestComment(t *testing.T) {
 		{
 			name:      "fail comment",
 			value:     failComment,
+			isJenkins: true,
+		},
+		{
+			name:      "other comment",
+			value:     oldBuildLinkComment,
 			isJenkins: true,
 		},
 		{

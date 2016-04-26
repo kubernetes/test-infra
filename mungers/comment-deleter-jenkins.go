@@ -27,10 +27,10 @@ import (
 
 const (
 	commentDeleterJenkinsName = "comment-deleter-jenkins"
-	commentRegexpStr          = `GCE e2e build/test \*\*(passed|failed)\*\* for commit [[:xdigit:]]+\.
-\* \[Build Log\]\(http://pr-test\.k8s\.io/[[:digit:]]+/kubernetes-pull-build-test-e2e-gce/[[:digit:]]+/build-log\.txt\)
-\* \[Test Artifacts\]\(https://console\.developers\.google\.com/storage/browser/kubernetes-jenkins/pr-logs/pull/[[:digit:]]+/kubernetes-pull-build-test-e2e-gce/[[:digit:]]+/artifacts/\)
-\* \[Internal Jenkins Results\]\(http://goto\.google\.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//[[:digit:]]+\)`
+	commentRegexpStr          = `GCE e2e( test)? build/test \*\*(passed|failed)\*\* for commit [[:xdigit:]]+\.
+\* \[Build Log\]\([^)]+\)
+\* \[Test Artifacts\]\([^)]+\)
+\* \[Internal Jenkins Results\]\([^)]+\)`
 )
 
 var (
