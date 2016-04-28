@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"sort"
 	"strings"
@@ -151,6 +152,8 @@ func (s *ShameReport) runCmd(r io.Reader) error {
 	args = args[1:]
 	cmd := exec.Command(bin, args...)
 	cmd.Stdin = r
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
