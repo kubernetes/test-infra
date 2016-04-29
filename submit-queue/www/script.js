@@ -161,6 +161,7 @@ function SQCntl(dataService, $interval, $location) {
         self.OverallHealth = Math.round(percentStable) + "%";
         self.StartTime = new Date(self.health.StartTime).toLocaleString();
       }
+      updateBuildStability(self.builds, self.health);
     });
   }
 
@@ -168,6 +169,7 @@ function SQCntl(dataService, $interval, $location) {
     dataService.getData('google-internal-ci').then(function successCallback(response) {
       var result = getE2E(response.data);
       self.builds = result.builds;
+      updateBuildStability(self.builds, self.health);
       self.failedBuild = result.failedBuild;
     });
   }
@@ -195,20 +197,27 @@ function SQCntl(dataService, $interval, $location) {
         obj.msg = job.Status;
         failedBuild = true;
       }
-      if (self.health.TotalLoops !== 0 &&
-          self.health.NumStablePerJob !== undefined &&
-          key in self.health.NumStablePerJob) {
-        var percentStable = self.health.NumStablePerJob[key] * 100.0 / self.health.TotalLoops;
-        obj.stability = Math.round(percentStable) + "%"
-      } else {
-        obj.stability = '';
-      }
+      obj.stability = '';
       result.push(obj);
     });
     return {
       builds: result,
       failedBuild: failedBuild,
     };
+  }
+
+  function updateBuildStability(builds, health) {
+    if (Object.keys(builds).length === 0 ||
+        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
+      return;
+    }
+    angular.forEach(builds, function(build) {
+      var key = build.name;
+      if (key in self.health.NumStablePerJob) {
+        var percentStable = health.NumStablePerJob[key] * 100.0 / health.TotalLoops;
+        build.stability = Math.round(percentStable) + "%"
+      }
+    });
   }
 
   function searchTermsContain(terms, value) {
