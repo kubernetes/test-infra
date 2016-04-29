@@ -29,9 +29,9 @@ This is the ultimate lazy version, which does everything for you:
 
 ```sh
 # Create a new instance
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_create $INSTANCE
+jenkins/metadata-cache/metadata-cache-control.sh remote_create $INSTANCE
 # Update that instance
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_update $INSTANCE
+jenkins/metadata-cache/metadata-cache-control.sh remote_update $INSTANCE
 ```
 
 
@@ -41,25 +41,22 @@ Please get help from the command for most up to date info:
 
 ```sh
 # Command list
-hack/jenkins/metadata-cache/metadata-cache-control.sh help
+jenkins/metadata-cache/metadata-cache-control.sh help
 # Remote command list
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_help
+jenkins/metadata-cache/metadata-cache-control.sh remote_help
 ```
 
 ### Debugging info
 
 ```sh
 # Run basic tests
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE test
+jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE test
 # Print the configuration
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE cat
+jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE cat
 # Get logs
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_logs $INSTANCE
+jenkins/metadata-cache/metadata-cache-control.sh remote_logs $INSTANCE
 # Connect to the instance
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE connect
+jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE connect
 # Disable cache
-hack/jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE off
+jenkins/metadata-cache/metadata-cache-control.sh remote_ssh $INSTANCE off
 ```
-
-
-[![Analytics](https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/hack/jenkins/metadata-cache/README.md?pixel)]()
