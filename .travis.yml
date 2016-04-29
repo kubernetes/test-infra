@@ -1,0 +1,4 @@
+language: python
+python:
+    - "2.7"
+script: python -m unittest discover -s jenkins/test-history -p "*_test.py"
