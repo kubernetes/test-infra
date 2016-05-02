@@ -21,6 +21,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+echo "TODO(spxtr): Make this script work in the new repo." >&2
+exit 1
+
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 source "${KUBE_ROOT}/hack/lib/init.sh"
 

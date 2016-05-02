@@ -32,6 +32,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+echo "TODO(spxtr): Make this script work in the new repo." >&2
+exit 1
+
 readonly JOB_CONFIGS_ROOT="hack/jenkins/job-configs"
 readonly JOB_BUILDER_IMAGE='gcr.io/google_containers/kubekins-job-builder:1'
 

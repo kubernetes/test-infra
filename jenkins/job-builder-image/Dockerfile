@@ -43,5 +43,5 @@ RUN git clone https://git.openstack.org/openstack-infra/jenkins-job-builder \
 RUN mkdir -p /etc/jenkins_jobs
 
 WORKDIR /
-RUN git clone https://github.com/kubernetes/kubernetes.git
-WORKDIR kubernetes
+RUN git clone https://github.com/kubernetes/test-infra
+WORKDIR test-infra

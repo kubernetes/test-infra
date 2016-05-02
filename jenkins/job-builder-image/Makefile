@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TAG = 1
+TAG = 2
 
 all:
 	docker build -t gcr.io/google_containers/kubekins-job-builder:$(TAG) .
