@@ -679,7 +679,7 @@
     emails: 'wonderfly@google.com,qzheng@google.com'
     provider-env: |
         {gce-provider-env}
-        export JENKINS_USE_TRUSTY_IMAGES="y"
+        export JENKINS_TRUSTY_IMAGE_TYPE="dev"
     suffix:
         # TODO(wonderfly): For Trusty, we currently only run CI and slow tests.
         # More test coverage under way.
@@ -716,7 +716,7 @@
     provider-env: |
         {gce-provider-env}
         export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-        export JENKINS_USE_TRUSTY_IMAGES="y"
+        export JENKINS_TRUSTY_IMAGE_TYPE="dev"
     suffix:
         # TODO(wonderfly): For Trusty, we currently only run CI and slow tests.
         # More test coverage under way.
@@ -746,9 +746,9 @@
         - 'kubernetes-e2e-gce-trusty-ci-{suffix}'
 
 # Template for e2e test jobs that run on GCE with a released k8s version and
-# Trusty's continuous builds (dev only).
+# Trusty's continuous builds (dev and beta only).
 - job-template:
-    name: 'kubernetes-e2e-gce-trusty-dev-{suffix}'
+    name: 'kubernetes-e2e-gce-trusty-{suffix}'
     <<: *e2e_job_defaults
     node: '{jenkins_node}'
     triggers:
@@ -773,16 +773,16 @@
     provider-env: |
         {gce-provider-env}
         export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
-        export JENKINS_USE_TRUSTY_IMAGES="y"
+        export JENKINS_TRUSTY_IMAGE_TYPE="dev"
     suffix:
-        - 'release':
+        - 'dev-release':
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty build and the latest k8s 1.2 release.'
             timeout: 30
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-e2e-gce-trusty-dev"
-        - 'slow':
+        - 'dev-slow':
             description: 'Run slow E2E tests on GCE with the latest Trusty build with the latest k8s 1.2 release.'
             timeout: 60
             job-env: |
@@ -790,7 +790,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-e2e-gce-trusty-dev-slow"
-        - 'serial':
+        - 'dev-serial':
             description: 'Run [Serial], [Disruptive], tests on GCE, with Trusty dev images and the latest k8s 1.2 release.'
             timeout: 300
             job-env: |
@@ -798,16 +798,50 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-trusty-dev-serial"
     jobs:
-        - 'kubernetes-e2e-gce-trusty-dev-{suffix}'
+        - 'kubernetes-e2e-gce-trusty-{suffix}'
+
+- project:
+    name: kubernetes-e2e-gce-trusty-beta
+    test-owner: 'wonderfly@google.com'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    provider-env: |
+        {gce-provider-env}
+        export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+        export JENKINS_TRUSTY_IMAGE_TYPE="beta"
+    suffix:
+        - 'beta-release':
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty beta build and the latest k8s 1.2 release.'
+            timeout: 30
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-trusty-beta"
+        - 'beta-slow':
+            description: 'Run slow E2E tests on GCE with the latest Trusty beta build with the latest k8s 1.2 release.'
+            timeout: 60
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-trusty-beta-slow"
+        - 'beta-serial':
+            description: 'Run [Serial], [Disruptive], tests on GCE, with Trusty beta images and the latest k8s 1.2 release.'
+            timeout: 300
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-trusty-beta-serial"
+    jobs:
+        - 'kubernetes-e2e-gce-trusty-{suffix}'
 
 # Template for e2e test jobs that run on GCE with a released k8s version and
-# Trusty's continuous builds (beta and stable only work with k8s 1.1).
+# Trusty's continuous builds (stable only works with k8s 1.1).
 - job-template:
-    name: 'kubernetes-e2e-gce-trusty-{suffix}'
+    name: 'kubernetes-e2e-gce-trusty-stable-{suffix}'
     <<: *e2e_job_defaults
     node: '{jenkins_node}'
     triggers:
-        # Trusty beta and stable images are built once per day.
+        # Trusty stable images are built once per day.
         - timed: '@daily'
     publishers:
         - e2e-publishers:
@@ -823,7 +857,7 @@
                 if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
 
 - project:
-    name: kubernetes-e2e-gce-trusty-1-1
+    name: kubernetes-e2e-gce-trusty-stable
     test-owner: 'wonderfly@google.com'
     branch: 'release-1.1'
     emails: 'wonderfly@google.com,qzheng@google.com'
@@ -831,20 +865,14 @@
     runner: '{old-runner-1-1}'
     post-env: ''
     suffix:
-        - 'beta-release':
-            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty beta build and the latest k8s 1.1 release.'
-            timeout: 150
-        - 'beta-slow':
-            description: 'Run slow E2E tests on GCE with the latest Trusty beta build with the latest k8s 1.1 release.'
-            timeout: 270
-        - 'stable-release':
+        - 'release':
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty stable build and the latest k8s 1.1 release.'
             timeout: 150
-        - 'stable-slow':
+        - 'slow':
             description: 'Run slow E2E tests on GCE with the latest Trusty stable build with the latest k8s 1.1 release.'
             timeout: 270
     jobs:
-        - 'kubernetes-e2e-gce-trusty-{suffix}'
+        - 'kubernetes-e2e-gce-trusty-stable-{suffix}'
 
 # Jobs that run e2e tests on GKE with Trusty as node image on the release-1.2
 # branch. Note that the variable "E2E_NAME" in all following jobs are set to
