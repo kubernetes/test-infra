@@ -114,15 +114,16 @@ class GCSClientTest(unittest.TestCase):
         self.assertEqual(builds, [('fake', 123)])
 
     def test_main(self):
-        outfile = tempfile.NamedTemporaryFile(prefix='test-history-')
-        gen_json.main(self.JOBS_DIR, 'fa', outfile.name, MockedClient)
-        output = json.load(outfile)
-        expected_output = {
-            "Bad": {"fake": [{"failed": True, "build": 123, "time": 4}]},
-            "Foo": {"fake": [{"failed": False, "build": 123, "time": 3.0}]},
-            "Lazy": {}
-        }
-        self.assertEqual(output, expected_output)
+        for threads in [1, 32]:
+            outfile = tempfile.NamedTemporaryFile(prefix='test-history-')
+            gen_json.main(self.JOBS_DIR, 'fa', outfile.name, 32, MockedClient)
+            output = json.load(outfile)
+            expected_output = {
+                "Bad": {"fake": [{"failed": True, "build": 123, "time": 4}]},
+                "Foo": {"fake": [{"failed": False, "build": 123, "time": 3.0}]},
+                "Lazy": {}
+            }
+            self.assertEqual(output, expected_output)
 
 
 if __name__ == '__main__':

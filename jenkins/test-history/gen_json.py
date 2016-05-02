@@ -27,11 +27,13 @@ import logging
 import os
 import re
 import random
+import signal
 import sys
 import time
 import urllib2
 from xml.etree import ElementTree
 
+import multiprocessing
 import requests
 
 
@@ -167,13 +169,44 @@ class GCSClient(object):
                 yield test
 
 
-def get_tests(jobs_dir, matcher, client_class):
+def mp_init_worker(jobs_dir, client_class):
+    """
+    Initialize the environment for multiprocessing-based multithreading.
+    """
+    # Multiprocessing doesn't allow local variables for each worker, so we need
+    # to make a GCSClient global variable.
+    global WORKER_CLIENT
+    WORKER_CLIENT = client_class(jobs_dir)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)  # make Ctrl-C kill the worker
+
+
+def mp_get_tests((job, build)):
+    """
+    Inside a multiprocessing worker, get the tests for a given job and build.
+    """
+    return job, build, list(WORKER_CLIENT.get_tests_from_build(job, build))
+
+
+def get_tests(jobs_dir, matcher, threads, client_class):
     """Returns a dictionary of tests to be JSON encoded."""
     tests = {}
     gcs = client_class(jobs_dir)
-    for job, build in gcs.get_daily_builds(matcher):
-        print('{}/{}'.format(job, str(build)))
-        for name, duration, failed, skipped in gcs.get_tests_from_build(job, build):
+
+    jobs_and_builds = gcs.get_daily_builds(matcher)
+    if threads > 1:
+        pool = multiprocessing.Pool(threads, mp_init_worker,
+                                    (jobs_dir, client_class))
+        builds_tests_iterator = pool.imap_unordered(
+            mp_get_tests, jobs_and_builds)
+    else:
+        # for debugging, have a single-threaded mode without multiprocessing
+        builds_tests_iterator = (
+            (job, build, gcs.get_tests_from_build(job, build))
+            for job, build in jobs_and_builds)
+
+    for job, build, build_tests in builds_tests_iterator:
+        print('%s/%s' % (job, build))
+        for name, duration, failed, skipped in build_tests:
             if name not in tests:
                 tests[name] = {}
             if skipped:
@@ -185,15 +218,18 @@ def get_tests(jobs_dir, matcher, client_class):
                 'failed': failed,
                 'time': duration
             })
+    for test in tests.itervalues():
+        for job in test.itervalues():
+            job.sort(key=lambda x: x['build'], reverse=True)
     return tests
 
 
-def main(jobs_dir, match, outfile, client_class=GCSClient):
+def main(jobs_dir, match, outfile, threads, client_class=GCSClient):
     """Collect test info in matching jobs."""
     print('Finding tests in jobs matching {} in path {}'.format(
           match, jobs_dir))
     matcher = re.compile(match).match
-    tests = get_tests(jobs_dir, matcher, client_class)
+    tests = get_tests(jobs_dir, matcher, threads, client_class)
     with open(outfile, 'w') as buf:
         json.dump(tests, buf, sort_keys=True)
 
@@ -216,9 +252,15 @@ def get_options(argv):
         help='file to write output JSON to',
         default='tests.json',
     )
+    parser.add_argument(
+        '--threads',
+        help='number of concurrent threads to download results with',
+        default=32,
+        type=int,
+    )
     return parser.parse_args(argv)
 
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.jobs_dir, OPTIONS.match, OPTIONS.outfile)
+    main(OPTIONS.jobs_dir, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)

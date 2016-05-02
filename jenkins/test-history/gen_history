@@ -15,17 +15,14 @@
 # limitations under the License.
 
 # Compiles a static HTML site containing the last day's worth of test results.
-# Pass the URL of Jenkins into $1
 
 set -o errexit
 set -o nounset
 
-readonly jenkins="$1"
 readonly datestr=$(date +"%Y-%m-%d")
 
 # Create JSON report
 time python gen_json.py \
-  "--server=${jenkins}" \
   "--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci"
 
 # Create static HTML reports out of the JSON
