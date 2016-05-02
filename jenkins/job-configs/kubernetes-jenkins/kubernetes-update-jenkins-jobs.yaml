@@ -1,0 +1,16 @@
+- job:
+    name: kubernetes-update-jenkins-jobs
+    description: 'Update Jenkins jobs based on configs in https://github.com/kubernetes/test-infra/tree/master/jenkins/job-configs. Test owner: spxtr.'
+    logrotate:
+        daysToKeep: 7
+    triggers:
+        - timed: 'H/15 * * * *'
+    builders:
+        - shell: |
+            curl -fsS https://raw.githubusercontent.com/kubernetes/test-infra/master/jenkins/update-jobs.sh > update-jobs.sh
+            chmod +x update-jobs.sh
+            ./update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
+    publishers:
+      - email-ext:
+          recipients: spxtr@google.com
+
