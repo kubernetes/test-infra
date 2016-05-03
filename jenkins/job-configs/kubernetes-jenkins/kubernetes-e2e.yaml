@@ -30,8 +30,6 @@
                 fi
             fi
             {report-rc}
-    properties:
-        - mail-watcher
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -153,7 +151,7 @@
         - 'gce-ubernetes-lite':
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE, in parallel, and in a multi-zone (Ubernetes-lite) cluster.'
             timeout: 150
-            emails: '$DEFAULT_RECIPIENTS, quinton@google.com, justin@fathomdb.com'
+            emails: 'quinton@google.com, justin@fathomdb.com'
             test-owner: 'quinton'
             job-env: |
                 export PROJECT="k8s-jkns-e2e-gce-ubelite"
@@ -228,7 +226,7 @@
         - 'gke-multizone':
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel, and in a multi-zone (Ubernetes-lite) cluster.'
             timeout: 150
-            emails: '$DEFAULT_RECIPIENTS, cloud-kubernetes-alerts@google.com, arob@google.com, quinton@google.com'
+            emails: 'arob@google.com, quinton@google.com'
             job-env: |
                 export PROJECT="k8s-jkns-e2e-gke-multizone"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
@@ -542,7 +540,7 @@
         - 'gce-es-logging':
             description: 'Run [Feature:Elasticsearch] tests on GCE using the latest successful build.'
             timeout: 90
-            emails: '$DEFAULT_RECIPIENTS, mixia@google.com'
+            emails: 'mixia@google.com'
             test-owner: 'mixia'
             provider-env: '{gce-provider-env}'
             job-env: |

@@ -9,20 +9,16 @@
         - shell: |
             timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/build.sh && rc=$? || rc=$?
             {report-rc}
-    properties:
-        - mail-watcher
     publishers:
         - claim-build
         - gcs-uploader
         - log-parser
         - email-ext:
-            recipients: $DEFAULT_RECIPIENTS, cloud-kubernetes-team@google.com
             presend-script: $DEFAULT_PRESEND_SCRIPT
             fail: true
             fixed: true
             send-to:
                 - culprits
-                - recipients
     scm:
         - git:
             url: https://github.com/kubernetes/kubernetes
