@@ -1,13 +1,3 @@
-# Mail Watcher Plugin alerts the specified address whenever a job config is updated or deleted.
-- property:
-    name: mail-watcher
-    properties:
-        - raw:
-            xml: |
-                <org.jenkinsci.plugins.mailwatcher.WatcherJobProperty plugin="mail-watcher-plugin@1.13">
-                    <watcherAddresses>cloud-kubernetes-team@google.com</watcherAddresses>
-                </org.jenkinsci.plugins.mailwatcher.WatcherJobProperty>
-
 - publisher:
     name: gcs-uploader
     publishers:
@@ -120,7 +110,7 @@
 - defaults:
     name: global
     disable_job: false
-    emails: '$DEFAULT_RECIPIENTS'
+    emails: ''
     cron-string: 'H/30 * * * *'  # Set a 30m floor to start jobs.
     sq-cron-string: 'H/5 * * * *'  # Lower floor to 5m for blocking jobs.
     # How long to wait after sending TERM to send KILL (minutes)

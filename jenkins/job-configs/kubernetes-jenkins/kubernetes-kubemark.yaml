@@ -11,8 +11,6 @@
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
-    properties:
-        - mail-watcher
     publishers:
         - claim-build
         - junit-publisher

@@ -74,8 +74,6 @@
             {post-env}
             timeout -k {kill-timeout}m 60m {runner} && rc=$? || rc=$?
             {report-rc}
-    properties:
-        - mail-watcher
     publishers:
         - claim-build
         # No junit-publisher, since we're not running any tests
@@ -111,8 +109,6 @@
             {post-env}
             timeout -k {kill-timeout}m 300m {runner} && rc=$? || rc=$?
             {report-rc}
-    properties:
-        - mail-watcher
     publishers:
         - claim-build
         - junit-publisher
