@@ -33,6 +33,9 @@ import filters
 
 BUCKET_WHITELIST = {
     'kubernetes-jenkins',
+    'kube_azure_log',
+    'rktnetes-jenkins',
+    'kubernetes-github-redhat',
 }
 
 DEFAULT_JOBS = {
@@ -111,6 +114,8 @@ def gcs_read(path):
 @memcache_memoize('gs-ls://', exp=60)
 def gcs_ls(path):
     """Enumerate files in a GCS directory. Returns a list of FileStats."""
+    if path[-1] != '/':
+      path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
 
@@ -165,6 +170,12 @@ class RenderingHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template(template)
         self.response.write(template.render(context))
 
+    def check_bucket(self, prefix):
+        if prefix in BUCKET_WHITELIST:
+            return
+        if prefix[:prefix.find('/')] not in BUCKET_WHITELIST:
+            self.abort(404)
+
 
 class IndexHandler(RenderingHandler):
     """Render the index."""
@@ -174,11 +185,9 @@ class IndexHandler(RenderingHandler):
 
 class BuildHandler(RenderingHandler):
     """Show information about a Build and its failing tests."""
-    def get(self, bucket, prefix, job, build):
-        if bucket not in BUCKET_WHITELIST:
-            self.error(404)
-            return
-        job_dir = '/%s/%s%s/' % (bucket, prefix, job)
+    def get(self, prefix, job, build):
+        self.check_bucket(prefix)
+        job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
@@ -196,11 +205,9 @@ class BuildHandler(RenderingHandler):
 
 class BuildListHandler(RenderingHandler):
     """Show a list of Builds for a Job."""
-    def get(self, bucket, prefix, job):
-        if bucket not in BUCKET_WHITELIST:
-            self.error(404)
-            return
-        job_dir = '/%s/%s%s/' % (bucket, prefix, job)
+    def get(self, prefix, job):
+        self.check_bucket(prefix)
+        job_dir = '/%s/%s/' % (prefix, job)
         fstats = gcs_ls(job_dir)
         fstats.sort(key=lambda f: pad_numbers(f.filename), reverse=True)
         self.render('build_list.html', dict(job=job, job_dir=job_dir, fstats=fstats))
@@ -208,11 +215,9 @@ class BuildListHandler(RenderingHandler):
 
 class JobListHandler(RenderingHandler):
     """Show a list of Jobs in a directory."""
-    def get(self, bucket, prefix):
-        if bucket not in BUCKET_WHITELIST:
-            self.error(404)
-            return
-        jobs_dir = '/%s/%s/' % (bucket, prefix)
+    def get(self, prefix):
+        self.check_bucket(prefix)
+        jobs_dir = '/%s' % prefix
         fstats = gcs_ls(jobs_dir)
         fstats.sort()
         self.render('job_list.html', dict(jobs_dir=jobs_dir, fstats=fstats))
@@ -220,9 +225,9 @@ class JobListHandler(RenderingHandler):
 
 app = webapp2.WSGIApplication([
     (r'/', IndexHandler),
-    (r'/jobs/([-\w]+)/(.*[-\w])/?$', JobListHandler),
-    (r'/builds/([-\w]+)/(.*/)?([^/]+)/?', BuildListHandler),
-    (r'/build/([-\w]+)/(.*/)?([^/]+)/(\d+)/?', BuildHandler),
+    (r'/jobs/(.*)$', JobListHandler),
+    (r'/builds/(.*)/([^/]+)/?', BuildListHandler),
+    (r'/build/(.*)/([^/]+)/(\d+)/?', BuildHandler),
 ], debug=True)
 
 if os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
