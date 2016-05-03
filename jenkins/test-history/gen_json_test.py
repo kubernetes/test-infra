@@ -52,6 +52,7 @@ class GenJsonTest(unittest.TestCase):
 
 
 class MockedClient(gen_json.GCSClient):
+    NOW = int(time.time())
     LOG_DIR = 'gs://kubernetes-jenkins/logs/'
     JOB_DIR = LOG_DIR + 'fake/123/'
     ART_DIR = JOB_DIR + 'artifacts/'
@@ -60,7 +61,7 @@ class MockedClient(gen_json.GCSClient):
         LOG_DIR + 'fake/': [JOB_DIR, LOG_DIR + 'fake/122/'],
         ART_DIR: [ART_DIR + 'junit_01.xml']}
     gets = {
-        JOB_DIR + 'finished.json': {'timestamp': time.time()},
+        JOB_DIR + 'finished.json': {'timestamp': NOW},
         LOG_DIR + 'fake/122/finished.json': {'timestamp': 123},
         ART_DIR + 'junit_01.xml': '''
     <testsuite>
@@ -79,6 +80,15 @@ class MockedClient(gen_json.GCSClient):
 
     def ls(self, path, **kwargs):
         return self.lists[path]
+
+
+class IndexedListTest(unittest.TestCase):
+    def test_basic(self):
+        l = gen_json.IndexedList()
+        self.assertEqual(l.index('foo'), 0)
+        self.assertEqual(l.index('bar'), 1)
+        self.assertEqual(l.index('foo'), 0)
+        self.assertEqual(l, ['foo', 'bar'])
 
 
 class GCSClientTest(unittest.TestCase):
@@ -111,18 +121,24 @@ class GCSClientTest(unittest.TestCase):
     def test_get_daily_builds(self):
         client = MockedClient(self.JOBS_DIR)
         builds = list(client.get_daily_builds(lambda x: True))
-        self.assertEqual(builds, [('fake', 123)])
+        self.assertEqual(builds, [('fake', 123, client.NOW)])
 
     def test_main(self):
+        expected_output = {
+            'test_names': ['Foo', 'Bad', 'Lazy'],
+            'buckets': {'gs://kubernetes-jenkins/logs/':
+                {'fake': {'123':
+                    {'timestamp': MockedClient.NOW,
+                     'tests': [
+                             {'name': 0, 'time': 3.0},
+                             {'failed': True, 'name': 1, 'time': 4.0},
+                             {'skipped': True, 'name': 2, 'time': 0.0}
+        ]}}}}}
+
         for threads in [1, 32]:
             outfile = tempfile.NamedTemporaryFile(prefix='test-history-')
             gen_json.main(self.JOBS_DIR, 'fa', outfile.name, 32, MockedClient)
             output = json.load(outfile)
-            expected_output = {
-                "Bad": {"fake": [{"failed": True, "build": 123, "time": 4}]},
-                "Foo": {"fake": [{"failed": False, "build": 123, "time": 3.0}]},
-                "Lazy": {}
-            }
             self.assertEqual(output, expected_output)
 
 

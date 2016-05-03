@@ -185,6 +185,43 @@ def write_html(outdir, path, html):
         buf.write(html)
 
 
+def prefix_for(prefix):
+    if 'azure' in prefix:
+        return 'azure$'
+    if 'rktnetes' in prefix:
+        return 'rkt$'
+    return prefix[5:-1].replace('/', '_') + '$'
+
+
+def transpose(data):
+    """
+    Convert data from the format that gen_json creates (build-major)
+    to one that's more suitable for our processing (test-major).
+
+    Args:
+        data: dict {"buckets": {prefix: {job:
+            {build: {"tests": [{name, time, ...}]}}}}}
+
+    Returns:
+        dict {test-name: {job: [{build, time, ...}]}}
+    """
+    out = {}
+    names = data['test_names']
+    for prefix, jobs in data['buckets'].iteritems():
+        for job, builds in jobs.iteritems():
+            if prefix != 'gs://kubernetes-jenkins/logs/':
+                job = prefix_for(prefix) + job
+            for build_number, build in builds.items():
+                for test in build['tests']:
+                    if test.get('skipped'):
+                        continue
+                    out_test = out.setdefault(names[test['name']], {})
+                    out_test.setdefault(job, []).append(
+                        {'build': build_number,
+                         'time': test['time'],
+                         'failed': test.get('failed', False)})
+    return out
+
 def write_metadata(infile, outdir):
     """Writes tests-*.html and suite-*.html files.
 
@@ -194,6 +231,8 @@ def write_metadata(infile, outdir):
     """
     with open(infile) as buf:
         data = json.load(buf)
+
+    data = transpose(data)
 
     prefix_metadata = {}
     prefixes = [

@@ -160,13 +160,32 @@ class GCSClient(object):
                 # Quit once we've walked back over a day.
                 if now - timestamp > 60*60*24:
                     break
-                yield job, build
+                yield job, build, timestamp
 
     def get_tests_from_build(self, job, build):
         """Generates all tests for a build."""
         for junit_path in self._ls_junit_paths(job, build):
             for test in self._get_tests_from_junit(junit_path):
                 yield test
+
+
+class IndexedList(list):
+    """
+    Convert values into indexes into a separate list of values.
+
+    Provides a normal list interface, with an overriden index operator
+    to return a position or insert into the list.
+    """
+    def __init__(self):
+        self._index = {}
+
+    def index(self, value):
+        """Return value's position, appending it to the end if not present."""
+        if value not in self._index:
+            n = len(self)
+            self.append(value)
+            self._index[value] = n
+        return self._index[value]
 
 
 def mp_init_worker(jobs_dir, client_class):
@@ -180,14 +199,15 @@ def mp_init_worker(jobs_dir, client_class):
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # make Ctrl-C kill the worker
 
 
-def mp_get_tests((job, build)):
+def mp_get_tests((job, build, timestamp)):
     """
     Inside a multiprocessing worker, get the tests for a given job and build.
     """
-    return job, build, list(WORKER_CLIENT.get_tests_from_build(job, build))
+    return job, build, timestamp, list(
+        WORKER_CLIENT.get_tests_from_build(job, build))
 
 
-def get_tests(jobs_dir, matcher, threads, client_class):
+def get_tests(test_names, jobs_dir, matcher, threads, client_class):
     """Returns a dictionary of tests to be JSON encoded."""
     tests = {}
     gcs = client_class(jobs_dir)
@@ -201,26 +221,24 @@ def get_tests(jobs_dir, matcher, threads, client_class):
     else:
         # for debugging, have a single-threaded mode without multiprocessing
         builds_tests_iterator = (
-            (job, build, gcs.get_tests_from_build(job, build))
-            for job, build in jobs_and_builds)
+            (job, build, timestamp, gcs.get_tests_from_build(job, build))
+            for job, build, timestamp in jobs_and_builds)
 
-    for job, build, build_tests in builds_tests_iterator:
+    for job, build, timestamp, build_tests in builds_tests_iterator:
         print('%s/%s' % (job, build))
+        build_info = tests.setdefault(job, {}).setdefault(build, {})
+        build_info['timestamp'] = timestamp
+        build_info['tests'] = []
         for name, duration, failed, skipped in build_tests:
-            if name not in tests:
-                tests[name] = {}
+            result = {
+                'name': test_names.index(name),
+                'time': duration,
+            }
+            if failed:
+                result['failed'] = True
             if skipped:
-                continue
-            if job not in tests[name]:
-                tests[name][job] = []
-            tests[name][job].append({
-                'build': build,
-                'failed': failed,
-                'time': duration
-            })
-    for test in tests.itervalues():
-        for job in test.itervalues():
-            job.sort(key=lambda x: x['build'], reverse=True)
+                result['skipped'] = True
+            build_info['tests'].append(result)
     return tests
 
 
@@ -229,7 +247,12 @@ def main(jobs_dir, match, outfile, threads, client_class=GCSClient):
     print('Finding tests in jobs matching {} in path {}'.format(
           match, jobs_dir))
     matcher = re.compile(match).match
-    tests = get_tests(jobs_dir, matcher, threads, client_class)
+    names = IndexedList()
+    tests = {'test_names': names, 'buckets': {}}
+    for bucket in jobs_dir.split(','):
+        if not bucket.endswith('/'):
+            bucket += '/'
+        tests['buckets'][bucket] = get_tests(names, bucket, matcher, threads, client_class)
     with open(outfile, 'w') as buf:
         json.dump(tests, buf, sort_keys=True)
 
@@ -239,7 +262,7 @@ def get_options(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--jobs_dir',
-        help='location of test artifacts on GCS',
+        help='comma-separated locations of test artifacts on GCS',
         default='gs://kubernetes-jenkins/logs/'
     )
     parser.add_argument(
@@ -262,5 +285,9 @@ def get_options(argv):
 
 
 if __name__ == '__main__':
+    if os.getenv('REQ_CACHE'):
+        # for fast test iterations, enable caching GCS HTTP responses
+        import requests_cache
+        requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
     main(OPTIONS.jobs_dir, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
