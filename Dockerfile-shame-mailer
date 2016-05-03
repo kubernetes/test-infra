@@ -32,6 +32,7 @@
 #          -e SMTP_SERVER=smtp.example.com:1234 \
 #          -e SMTP_USER=smtp_example_user \
 #          -e SMTP_PASS=my_super_secret_smtp_password \
+#          -e ALLOWED_SHAME_DOMAINS=example.com,example.net \
 #          gcr.io/google_containers/shame-mailer:TAG
 
 FROM google/debian:jessie

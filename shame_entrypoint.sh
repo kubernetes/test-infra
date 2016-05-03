@@ -17,4 +17,5 @@
 ./mungegithub --token="${GITHUB_API_TOKEN}" --issue-reports=shame\
 	      --shame-from="${SHAME_FROM}" --shame-reply-to="${SHAME_REPLY_TO}"\
 	      --shame-cc="${SHAME_CC}"\
-	      --shame-report-cmd="mailx -v -t -S smtp=${SMTP_SERVER} -S smtp-auth=login -S smtp-auth-user=${SMTP_USER} -S smtp-auth-password=${SMTP_PASS}"
+	      --shame-report-cmd="mailx -v -t -S smtp=${SMTP_SERVER} -S smtp-auth=login -S smtp-auth-user=${SMTP_USER} -S smtp-auth-password=${SMTP_PASS}" \
+              --allowed-shame-domains="${ALLOWED_SHAME_DOMAINS}"
