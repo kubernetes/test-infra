@@ -32,25 +32,21 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-echo "TODO(spxtr): Make this script work in the new repo." >&2
-exit 1
+readonly JOB_CONFIGS_ROOT="jenkins/job-configs"
+readonly JOB_BUILDER_IMAGE='gcr.io/google_containers/kubekins-job-builder:2'
 
-readonly JOB_CONFIGS_ROOT="hack/jenkins/job-configs"
-readonly JOB_BUILDER_IMAGE='gcr.io/google_containers/kubekins-job-builder:1'
-
-KUBE_ROOT=$(cd $(dirname "${BASH_SOURCE}")/../.. && pwd)
-REPO_DIR=${REPO_DIR:-"${KUBE_ROOT}"}
+REPO_ROOT=$(cd $(dirname "${BASH_SOURCE}")/.. && pwd)
+REPO_DIR=${REPO_DIR:-"${REPO_ROOT}"}
 
 readonly output_dir=${OUTPUT_DIR:=$(mktemp -d -t JJB-XXXXX)}
 readonly docker_volume_output_dir=${DOCKER_VOLUME_OUTPUT_DIR:="${output_dir}"}
-readonly diff_file="${output_dir}/diff.txt"
 
 mkdir -p "${output_dir}/upstream" "${output_dir}/patch"
 
 echo "Saving output in ${output_dir}"
 
 readonly common_commands="\
-  git describe --long --tags --abbrev=14 >/output/gitversion.txt && \
+  git describe --long --tags --always --dirty --abbrev=14 >/output/gitversion.txt && \
   git rev-parse --abbrev-ref HEAD >/output/gitbranch.txt && \
   jenkins-jobs test \
     '${JOB_CONFIGS_ROOT}:${JOB_CONFIGS_ROOT}/kubernetes-jenkins' \
@@ -66,13 +62,12 @@ docker run --rm=true -i \
 
 docker run --rm=true -i \
   -v "${docker_volume_output_dir}/patch:/output" \
-  -v "${REPO_DIR}:/kubernetes:ro" \
+  -v "${REPO_DIR}:/test-infra:ro" \
   "${JOB_BUILDER_IMAGE}" \
   bash -c "${common_commands}"
 
-diff -ruN "${output_dir}/upstream" "${output_dir}/patch" >"${diff_file}" || true
-if [[ -t 1 ]]; then  # Attached to a terminal?
-  less "${diff_file}"
+readonly result_diff=$(diff -ruN "${output_dir}/upstream" "${output_dir}/patch" || true)
+echo "${result_diff}"
+if [[ "${TRAVIS:-}" != "true" ]]; then
+  less -fF <(echo "${result_diff}")
 fi
-echo
-echo "  *** Diff saved in ${diff_file} ***"
