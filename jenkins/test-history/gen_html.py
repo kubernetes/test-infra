@@ -32,6 +32,7 @@ import cgi
 import collections
 import json
 import os
+import re
 import string
 import sys
 import time
@@ -45,6 +46,44 @@ TestMetadata = collections.namedtuple('TestMetadata', [
 ])
 
 
+PREFIX_TO_URL = {}
+
+def prefix_for(prefix):
+    if 'azure' in prefix:
+        new = 'azure$'
+    elif 'rktnetes' in prefix:
+        new = 'rktnetes$'
+    elif 'gs://kubernetes-jenkins/' in prefix:
+        new = ''
+    else:
+        new = prefix[5:-1].replace('/', '_') + '$'
+    PREFIX_TO_URL[new] = prefix
+    return new
+
+
+def slugify(inp):
+    """
+    Convert a string into a url-safe slug fragment.
+
+    This matches the slugify code in Gubernator.
+    """
+    inp = re.sub(r'[^\w\s-]+', '', inp)
+    return re.sub(r'\s+', '-', inp).lower()
+
+
+def gubernator_url(suite, build_number, test_name):
+    """Build a link to a test failure on Gubernator."""
+    if '$' in suite:
+        prefix, suite = suite.split('$')
+        path = PREFIX_TO_URL[prefix + '$']
+    else:
+        path = PREFIX_TO_URL['']
+    if path.startswith('gs://'):
+        path = path[5:]
+    return 'https://k8s-gubernator.appspot.com/build/%s%s/%s#%s' % (
+        path, suite, build_number, slugify(test_name))
+
+
 def gen_tests(data, prefix, exact_match):
     """Creates the HTML for all test cases.
 
@@ -56,6 +95,7 @@ def gen_tests(data, prefix, exact_match):
     Returns:
         (html, TestMetadata) for matching tests
     """
+    # TODO: convert this whole mess to use a real templating language.
     html = ['<ul class="test">']
     totals = collections.defaultdict(int)
     for test in sorted(data, key=string.lower):
@@ -72,10 +112,12 @@ def gen_tests(data, prefix, exact_match):
             num_failed = 0
             num_builds = 0
             total_time = 0
+            most_recent_failure = None
             for build in data[test][suite]:
                 num_builds += 1
                 if build['failed']:
                     num_failed += 1
+                    most_recent_failure = build['build']
                 total_time += build['time']
             avg_time = total_time / num_builds
             unit = 's'
@@ -91,10 +133,18 @@ def gen_tests(data, prefix, exact_match):
             else:
                 status = 'okay'
             test_html.append('<li class="suite">')
-            test_html.append('<span class="%s">%d/%d</span>' % (
-                status, num_builds - num_failed, num_builds))
-            test_html.append(
-                '<span class="time">%.0f%s</span>' % (avg_time, unit))
+            fail_rate = '%d/%d' % (num_builds - num_failed, num_builds)
+            if most_recent_failure:
+                fail_rate = ('<a href="%s" title="Latest Failure">%s</a>' % (
+                    gubernator_url(suite, most_recent_failure, test),
+                    fail_rate))
+            suite_results = '<span class="%s">%s</span>' % (
+                status, fail_rate)
+            suite_results += ' <span class="time">%.0f%s</span>' % (
+                avg_time, unit)
+            if most_recent_failure:
+                suite_results += '</a>'
+            test_html.append(suite_results)
             test_html.append(suite)
             test_html.append('</li>')
         test_html.append('</ul>')
@@ -108,12 +158,12 @@ def gen_tests(data, prefix, exact_match):
             status = 'skipped'
         totals[status] += 1
         html.append('<li class="test %s">' % status)
-        if exact_match and len(test_html) > 2:
-            if not (test_html[2].startswith('<span') and
-                    test_html[3].startswith('<span')):
-                raise ValueError(
-                    'couldn\'t extract suite results for prepending')
-            html.extend(test_html[2:4])
+        if exact_match and len(test_html) == 6:
+            # There's a test result, place it to the left of the test name
+            # instead of in a list underneath it.
+            if not test_html[2].startswith('<span'):
+                raise ValueError('couldn\'t extract results for prepending')
+            html.append(test_html[2])
             html.append(test)
         else:
             html.append(test)
@@ -185,14 +235,6 @@ def write_html(outdir, path, html):
         buf.write(html)
 
 
-def prefix_for(prefix):
-    if 'azure' in prefix:
-        return 'azure$'
-    if 'rktnetes' in prefix:
-        return 'rkt$'
-    return prefix[5:-1].replace('/', '_') + '$'
-
-
 def transpose(data):
     """
     Convert data from the format that gen_json creates (build-major)
@@ -209,8 +251,7 @@ def transpose(data):
     names = data['test_names']
     for prefix, jobs in data['buckets'].iteritems():
         for job, builds in jobs.iteritems():
-            if prefix != 'gs://kubernetes-jenkins/logs/':
-                job = prefix_for(prefix) + job
+            job = prefix_for(prefix) + job
             for build_number, build in builds.items():
                 for test in build['tests']:
                     if test.get('skipped'):

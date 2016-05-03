@@ -98,8 +98,11 @@ li.suite span {
     font-weight: bold;
 }
 
-li.test span.time {
+li.test span {
     width: 50px;
+}
+
+li.test span.time {
     font-weight: normal;
 }
 
@@ -118,4 +121,8 @@ li.test span.failed {
 li.test>span {
     display: inline-block;
     text-align: right;
+}
+
+li.test a {
+    color: inherit;
 }
