@@ -40,6 +40,8 @@
             timeout: '{jenkins-timeout}'
             fail: true
         - timestamps
+        - workspace-cleanup:
+            external-deletion-command: 'sudo rm -rf %s'
 
 - project:
     name: kubernetes-builds
