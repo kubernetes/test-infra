@@ -33,7 +33,7 @@ if ! docker inspect job-builder &> /dev/null; then
       --net host \
       --name job-builder \
       --restart always \
-      gcr.io/google_containers/kubekins-job-builder:2
+      gcr.io/google_containers/kubekins-job-builder:3
     docker cp jenkins_jobs.ini job-builder:/etc/jenkins_jobs
   else
     echo "jenkins_jobs.ini not found in workspace" >&2

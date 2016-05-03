@@ -33,7 +33,7 @@ set -o nounset
 set -o pipefail
 
 readonly JOB_CONFIGS_ROOT="jenkins/job-configs"
-readonly JOB_BUILDER_IMAGE='gcr.io/google_containers/kubekins-job-builder:2'
+readonly JOB_BUILDER_IMAGE='gcr.io/google_containers/kubekins-job-builder:3'
 
 REPO_ROOT=$(cd $(dirname "${BASH_SOURCE}")/.. && pwd)
 REPO_DIR=${REPO_DIR:-"${REPO_ROOT}"}
