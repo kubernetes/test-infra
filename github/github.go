@@ -190,30 +190,31 @@ type analytics struct {
 	cachedAPICount     int       // how many api calls were answered by the local cache
 	apiPerSec          float64
 
-	AddLabels         analytic
-	RemoveLabels      analytic
-	ListCollaborators analytic
-	GetIssue          analytic
-	CloseIssue        analytic
-	CreateIssue       analytic
-	ListIssues        analytic
-	ListIssueEvents   analytic
-	ListCommits       analytic
-	GetCommit         analytic
-	GetCombinedStatus analytic
-	SetStatus         analytic
-	GetPR             analytic
-	AssignPR          analytic
-	ClosePR           analytic
-	OpenPR            analytic
-	GetContents       analytic
-	ListComments      analytic
-	CreateComment     analytic
-	DeleteComment     analytic
-	Merge             analytic
-	GetUser           analytic
-	SetMilestone      analytic
-	ListMilestones    analytic
+	AddLabels          analytic
+	RemoveLabels       analytic
+	ListCollaborators  analytic
+	GetIssue           analytic
+	CloseIssue         analytic
+	CreateIssue        analytic
+	ListIssues         analytic
+	ListIssueEvents    analytic
+	ListCommits        analytic
+	GetCommit          analytic
+	GetCombinedStatus  analytic
+	SetStatus          analytic
+	GetPR              analytic
+	AssignPR           analytic
+	ClosePR            analytic
+	OpenPR             analytic
+	GetContents        analytic
+	ListComments       analytic
+	ListReviewComments analytic
+	CreateComment      analytic
+	DeleteComment      analytic
+	Merge              analytic
+	GetUser            analytic
+	SetMilestone       analytic
+	ListMilestones     analytic
 }
 
 func (a analytics) print() {
@@ -239,6 +240,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "ClosePR\t%d\t\n", a.ClosePR.Count)
 	fmt.Fprintf(w, "OpenPR\t%d\t\n", a.OpenPR.Count)
 	fmt.Fprintf(w, "GetContents\t%d\t\n", a.GetContents.Count)
+	fmt.Fprintf(w, "ListReviewComments\t%d\t\n", a.ListReviewComments.Count)
 	fmt.Fprintf(w, "ListComments\t%d\t\n", a.ListComments.Count)
 	fmt.Fprintf(w, "CreateComment\t%d\t\n", a.CreateComment.Count)
 	fmt.Fprintf(w, "DeleteComment\t%d\t\n", a.DeleteComment.Count)
@@ -259,6 +261,7 @@ type MungeObject struct {
 	commits     []github.RepositoryCommit
 	events      []github.IssueEvent
 	comments    []github.IssueComment
+	prComments  []github.PullRequestComment
 	Annotations map[string]string //annotations are things you can set yourself.
 }
 
@@ -1439,6 +1442,41 @@ func (obj *MungeObject) GetPRFixesList() []int {
 		}
 	}
 	return issueNums
+}
+
+// ListReviewComments returns all review (diff) comments for the PR in question
+func (obj *MungeObject) ListReviewComments() ([]github.PullRequestComment, error) {
+	if obj.prComments != nil {
+		return obj.prComments, nil
+	}
+
+	pr, err := obj.GetPR()
+	if err != nil {
+		return nil, err
+	}
+	prNum := *pr.Number
+	allComments := []github.PullRequestComment{}
+
+	listOpts := &github.PullRequestListCommentsOptions{}
+
+	config := obj.config
+	page := 1
+	for {
+		listOpts.ListOptions.Page = page
+		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
+		comments, response, err := obj.config.client.PullRequests.ListComments(config.Org, config.Project, prNum, listOpts)
+		config.analytics.ListReviewComments.Call(config, response)
+		if err != nil {
+			return nil, err
+		}
+		allComments = append(allComments, comments...)
+		if response.LastPage == 0 || response.LastPage <= page {
+			break
+		}
+		page++
+	}
+	obj.prComments = allComments
+	return allComments, nil
 }
 
 // ListComments returns all comments for the issue/PR in question
