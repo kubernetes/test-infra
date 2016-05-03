@@ -88,7 +88,9 @@
             timeout: '{jenkins-timeout}'
             fail: true
         - timestamps
-        - workspace-cleanup
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
 
 - job-template:
     name: 'kubernetes-upgrade-{provider}-{version-old}-{version-new}-{step}'

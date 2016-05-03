@@ -33,4 +33,6 @@
             timeout: 60
             fail: true
         - timestamps
-        - workspace-cleanup
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'

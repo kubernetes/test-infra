@@ -37,7 +37,9 @@
             timeout: '{jenkins-timeout}'
             fail: true
         - timestamps
-        - workspace-cleanup
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
 
 # Template for most e2e test jobs.
 - job-template:
