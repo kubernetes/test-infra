@@ -6,15 +6,15 @@
         - timed: 'H 0 * * *'
     scm:
         - git:
-            url: https://www.github.com/kubernetes/kubernetes
+            url: https://www.github.com/kubernetes/test-infra
             branches:
                 - master
             browser: githubweb
-            browser-url: https://github.com/kubernetes/kubernetes
+            browser-url: https://github.com/kubernetes/test-infra
             skip-tag: true
     builders:
         - shell: |
-            cd hack/jenkins/test-history
+            cd jenkins/test-history
             ./gen_history http://jenkins-master:8080/
     publishers:
         - email-ext:
