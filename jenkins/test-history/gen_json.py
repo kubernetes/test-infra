@@ -37,6 +37,9 @@ import multiprocessing
 import requests
 
 
+MAX_AGE = 60 * 60 * 24  # 1 day
+
+
 class GCSClient(object):
 
     def __init__(self, jobs_dir):
@@ -136,9 +139,16 @@ class GCSClient(object):
             yield os.path.basename(os.path.dirname(job_path))
 
     def _get_builds(self, job):
-        build_paths = list(self.ls_dirs('%s%s/' % (self.jobs_dir, job)))
-        return sorted((int(os.path.basename(os.path.dirname(b)))
-                       for b in build_paths), reverse=True)
+        try:
+            latest_build = int(self.get('%s%s/latest-build.txt'
+                                        % (self.jobs_dir, job)))
+        except (ValueError, TypeError):
+            pass
+        else:
+            return (str(n) for n in xrange(latest_build, 0, -1))
+        build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
+        return sorted((os.path.basename(os.path.dirname(b))
+                       for b in build_paths), key=int, reverse=True)
 
     def _get_build_finish_time(self, job, build):
         data = self.get('%s%s/%s/finished.json' % (self.jobs_dir, job, build),
@@ -147,18 +157,22 @@ class GCSClient(object):
             return None
         return int(data['timestamp'])
 
-    def get_daily_builds(self, matcher):
+    def get_daily_builds(self, matcher, builds_have):
         """Generates all (job, build) pairs for the last day."""
         now = time.time()
         for job in self._get_jobs():
             if not matcher(job):
                 continue
             for build in self._get_builds(job):
+                if (job, build) in builds_have:
+                    # assumption: we're only getting builds NEWER than those
+                    # in builds_have.
+                    break
                 timestamp = self._get_build_finish_time(job, build)
                 if timestamp is None:
                     continue
                 # Quit once we've walked back over a day.
-                if now - timestamp > 60*60*24:
+                if now - timestamp > MAX_AGE:
                     break
                 yield job, build, timestamp
 
@@ -176,8 +190,12 @@ class IndexedList(list):
     Provides a normal list interface, with an overriden index operator
     to return a position or insert into the list.
     """
-    def __init__(self):
+    def __init__(self, iterable=None):
         self._index = {}
+        if iterable:
+            super(IndexedList, self).__init__(iterable)
+            for n, el in enumerate(self):
+                self._index[el] = n
 
     def index(self, value):
         """Return value's position, appending it to the end if not present."""
@@ -207,12 +225,38 @@ def mp_get_tests((job, build, timestamp)):
         WORKER_CLIENT.get_tests_from_build(job, build))
 
 
-def get_tests(test_names, jobs_dir, matcher, threads, client_class):
-    """Returns a dictionary of tests to be JSON encoded."""
-    tests = {}
+def get_existing_builds(jobs):
+    out = set()
+    for job_name, job in jobs.iteritems():
+        for build_num in job.iterkeys():
+            out.add((job_name, build_num))
+    return out
+
+
+def get_tests(names, jobs_dir, matcher, threads, client_class, jobs):
+    """
+    Adds information about tests to a dictionary.
+
+    Args:
+        names: an IndexedList of test names.
+        jobs_dir: the GCS path containing jobs.
+        matcher: a function str->bool that determines whether to include a job.
+        threads: how many threads to use to download build information.
+        client_class: a constructor for a GCSClient (or a subclass).
+        jobs: a dictionary to place new test information into. Builds already
+            present in this dictionary will be skipped.
+    Returns:
+        jobs is modified to contain the new test information.
+    """
     gcs = client_class(jobs_dir)
 
-    jobs_and_builds = gcs.get_daily_builds(matcher)
+    print('Loading builds from %s' % jobs_dir)
+
+    builds_have = get_existing_builds(jobs)
+    if builds_have:
+        print('already have %d builds' % len(builds_have))
+
+    jobs_and_builds = gcs.get_daily_builds(matcher, builds_have)
     if threads > 1:
         pool = multiprocessing.Pool(threads, mp_init_worker,
                                     (jobs_dir, client_class))
@@ -226,12 +270,12 @@ def get_tests(test_names, jobs_dir, matcher, threads, client_class):
 
     for job, build, timestamp, build_tests in builds_tests_iterator:
         print('%s/%s' % (job, build))
-        build_info = tests.setdefault(job, {}).setdefault(build, {})
+        build_info = jobs.setdefault(job, {}).setdefault(build, {})
         build_info['timestamp'] = timestamp
         build_info['tests'] = []
         for name, duration, failed, skipped in build_tests:
             result = {
-                'name': test_names.index(name),
+                'name': names.index(name),
                 'time': duration,
             }
             if failed:
@@ -239,20 +283,44 @@ def get_tests(test_names, jobs_dir, matcher, threads, client_class):
             if skipped:
                 result['skipped'] = True
             build_info['tests'].append(result)
-    return tests
 
 
-def main(jobs_dir, match, outfile, threads, client_class=GCSClient):
+def remove_old_builds(buckets, now):
+    pruned = 0
+    for jobs in buckets.itervalues():
+        for job_name, job in jobs.iteritems():
+            for build_num, build in job.items():  # intentional copy
+                if build['timestamp'] < now - MAX_AGE:
+                    pruned += 1
+                    job.pop(build_num)
+    print('pruned %d old builds' % pruned)
+
+
+def main(jobs_dirs, match, outfile, threads, client_class=GCSClient):
     """Collect test info in matching jobs."""
-    print('Finding tests in jobs matching {} in path {}'.format(
-          match, jobs_dir))
+    print('Finding tests in jobs matching %s' % match)
     matcher = re.compile(match).match
-    names = IndexedList()
-    tests = {'test_names': names, 'buckets': {}}
-    for bucket in jobs_dir.split(','):
+    tests = None
+    if os.path.exists(outfile):
+        try:
+            tests = json.load(open(outfile))
+            if 'test_names' not in tests:
+                raise ValueError
+        except ValueError:
+            tests = None
+        else:
+            print('Resuming from previous run...')
+            names = IndexedList(tests['test_names'])
+            tests['test_names'] = names
+            remove_old_builds(tests['buckets'], time.time())
+    if tests is None:
+        names = IndexedList()
+        tests = {'test_names': names, 'buckets': {}}
+    for bucket in jobs_dirs:
         if not bucket.endswith('/'):
             bucket += '/'
-        tests['buckets'][bucket] = get_tests(names, bucket, matcher, threads, client_class)
+        bucket_jobs = tests['buckets'].setdefault(bucket, {})
+        get_tests(names, bucket, matcher, threads, client_class, bucket_jobs)
     with open(outfile, 'w') as buf:
         json.dump(tests, buf, sort_keys=True)
 
@@ -261,9 +329,10 @@ def get_options(argv):
     """Process command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--jobs_dir',
-        help='comma-separated locations of test artifacts on GCS',
-        default='gs://kubernetes-jenkins/logs/'
+        '--jobs_dirs',
+        help='locations of test artifacts on GCS',
+        nargs='+',
+        default=['gs://kubernetes-jenkins/logs/'],
     )
     parser.add_argument(
         '--match',
@@ -290,4 +359,4 @@ if __name__ == '__main__':
         import requests_cache
         requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.jobs_dir, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
+    main(OPTIONS.jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)

@@ -329,7 +329,7 @@ def write_index(outdir, prefixes, suites, blockers):
     """
     html = html_header(title='Kubernetes Test Summary', script=False)
     html.append('<h1>Kubernetes Tests</h1>')
-    html.append('Last updated %s' % time.strftime('%F'))
+    html.append('Last updated %s' % time.strftime('%F %T %Z'))
 
     html.append('<h2>Tests from suites starting with:</h2>')
     html.extend(gen_metadata_links(prefixes))
