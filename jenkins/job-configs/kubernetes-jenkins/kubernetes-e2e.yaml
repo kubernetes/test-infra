@@ -144,6 +144,19 @@
                 export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
                 # Increase delete collection parallelism
                 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+        - 'gce-proto':
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
+            timeout: 50  # See #21138
+            job-env: |
+                # This list should match the list in kubernetes-pull-build-test-e2e-gce.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-protobuf"
+                # Store protobufs in database.
+                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
+                # Use protobufs to communicate with apiserver.
+                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
         - 'gce-examples':
             description: 'Run E2E examples test on GCE.'
             timeout: 90
