@@ -67,7 +67,7 @@ def pad_numbers(s):
     return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
 
 
-def memcache_memoize(prefix, exp=60 * 60, neg_exp=60):
+def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
     """Decorate a function to memoize its results using memcache.
 
     The function must take a single string as input, and return a pickleable
@@ -75,8 +75,8 @@ def memcache_memoize(prefix, exp=60 * 60, neg_exp=60):
 
     Args:
         prefix: A prefix for memcache keys to use for memoization.
-        exp: How long to memoized values, in seconds.
-        neg_exp: How long to memoize falsey values, in seconds
+        expires: How long to memoized values, in seconds.
+        neg_expires: How long to memoize falsey values, in seconds
     Returns:
         A decorator closure to wrap the function.
     """
@@ -94,9 +94,9 @@ def memcache_memoize(prefix, exp=60 * 60, neg_exp=60):
             else:
                 data = func(arg)
                 if data:
-                    memcache.add(key, data, exp, namespace=namespace)
+                    memcache.add(key, data, expires, namespace=namespace)
                 else:
-                    memcache.add(key, data, neg_exp, namespace=namespace)
+                    memcache.add(key, data, neg_expires, namespace=namespace)
                 return data
         return wrapped
     return wrapper
@@ -111,7 +111,7 @@ def gcs_read(path):
         return None
 
 
-@memcache_memoize('gs-ls://', exp=60)
+@memcache_memoize('gs-ls://', expires=60)
 def gcs_ls(path):
     """Enumerate files in a GCS directory. Returns a list of FileStats."""
     if path[-1] != '/':
@@ -119,33 +119,9 @@ def gcs_ls(path):
     return list(gcs.listbucket(path, delimiter='/'))
 
 
-@memcache_memoize('build-details://', exp=60 * 60 * 4)
-def build_details(build_dir):
-    started = gcs_read(build_dir + '/started.json')
-    finished = gcs_read(build_dir + '/finished.json')
-    if not (started and finished):
-        return
-    started = json.loads(started)
-    finished = json.loads(finished)
-    failures = []
-    for n in xrange(1, 99):
-        junit = gcs_read(
-            '%s/artifacts/junit_%02d.xml' % (build_dir, n))
-        if junit is None:
-            break
-        failures.extend(parse_junit(decompress(junit)))
-    return started, finished, failures
-
-
-def decompress(data):
-    """Decompress data if GZIP-compressed, but pass normal data thorugh."""
-    if data.startswith('\x1f\x8b'):  # gzip magic
-        return zlib.decompress(data, 15 | 16)
-    return data
-
-
 def parse_junit(xml):
     """Generate failed tests as a series of (name, duration, text) tuples."""
+    # TODO: support <testsuites><testsuite><testcase> structure as well
     for child in ET.fromstring(xml):
         name = child.attrib['name']
         time = float(child.attrib['time'])
@@ -161,6 +137,45 @@ def parse_junit(xml):
                 text = param.text
         if failed:
             yield name, time, text
+
+
+@memcache_memoize('build-details://', expires=60 * 60 * 4)
+def build_details(build_dir):
+    """
+    Collect information from a build directory.
+
+    Args:
+        build_dir: GCS path containing a build's results.
+    Returns:
+        started: value from started.json {'version': ..., 'timestamp': ...}
+        finished: value from finished.json {'timestamp': ..., 'result': ...}
+        failures: list of (name, duration, text) tuples
+    """
+    started = gcs_read(build_dir + '/started.json')
+    finished = gcs_read(build_dir + '/finished.json')
+    if not (started and finished):
+        # TODO: handle builds that have started but not finished properly.
+        # Right now they show an empty page (404), but should show the version
+        # and when the build started.
+        return
+    started = json.loads(started)
+    finished = json.loads(finished)
+    failures = []
+    junit_paths = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+                   if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
+    for junit_path in junit_paths:
+        junit = gcs_read(junit_path)
+        if junit is None:
+            continue
+        failures.extend(parse_junit(decompress(junit)))
+    return started, finished, failures
+
+
+def decompress(data):
+    """Decompress data if GZIP-compressed, but pass normal data thorugh."""
+    if data.startswith('\x1f\x8b'):  # gzip magic
+        return zlib.decompress(data, 15 | 16)
+    return data
 
 
 class RenderingHandler(webapp2.RequestHandler):
@@ -210,7 +225,8 @@ class BuildListHandler(RenderingHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         fstats = gcs_ls(job_dir)
         fstats.sort(key=lambda f: pad_numbers(f.filename), reverse=True)
-        self.render('build_list.html', dict(job=job, job_dir=job_dir, fstats=fstats))
+        self.render('build_list.html',
+                    dict(job=job, job_dir=job_dir, fstats=fstats))
 
 
 class JobListHandler(RenderingHandler):
