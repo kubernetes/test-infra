@@ -24,16 +24,20 @@ import unittest
 
 import gen_html
 
+
 TEST_DATA = {
-  'test1':
-      {'kubernetes-release': [{'build': 3, 'failed': False, 'time': 3.52},
-                              {'build': 4, 'failed': True, 'time': 63.21}],
-       'kubernetes-debug': [{'build': 5, 'failed': False, 'time': 7.56},
-                            {'build': 6, 'failed': False, 'time': 8.43}],
-      },
-  'test2':
-      {'kubernetes-debug': [{'build': 6, 'failed': True, 'time': 3.53}]},
-}
+    'test_names': ['test1', 'test2'],
+    'buckets': {'gs://kubernetes-jenkins/logs/': {
+        'kubernetes-release': {
+            '3': {'tests': [{'name': 0, 'time': 3.52}]},
+            '4': {'tests': [{'name': 0, 'time': 63.21, 'failed': True}]}},
+        'kubernetes-debug': {
+            '5': {'tests': [{'name': 0, 'time': 7.56}]},
+            '6': {'tests': [
+                {'name': 0, 'time': 8.43},
+                {'name': 1, 'failed': True, 'time': 3.53}]}},
+}}}
+
 
 class GenHtmlTest(unittest.TestCase):
     """Unit tests for gen_html.py."""
@@ -70,7 +74,7 @@ class GenHtmlTest(unittest.TestCase):
     @staticmethod
     def gen_html(*args):
         """Call gen_html with TEST_DATA."""
-        return gen_html.gen_html(TEST_DATA, *args)[0]
+        return gen_html.gen_html(gen_html.transpose(TEST_DATA), *args)[0]
 
     def testGenHtml(self):
         """Test that the expected tests and jobs are in the results."""

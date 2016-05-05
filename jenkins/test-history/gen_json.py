@@ -23,179 +23,305 @@ from __future__ import print_function
 
 import argparse
 import json
+import logging
 import os
 import re
-import subprocess
+import random
+import signal
 import sys
 import time
 import urllib2
 from xml.etree import ElementTree
-import zlib
+
+import multiprocessing
+import requests
 
 
-def get_json(url):
-    """Does an HTTP GET to url and parses the JSON response. None on failure."""
-    try:
-        content = urllib2.urlopen(url).read().decode('utf-8')
-        return json.loads(content)
-    except urllib2.HTTPError:
-        return None
+MAX_AGE = 60 * 60 * 24  # 1 day
 
 
-def get_jobs(server):
-    """Generates all job names running on the server."""
-    jenkins_json = get_json('{}/api/json'.format(server))
-    if not jenkins_json:
-        return
-    for job in jenkins_json['jobs']:
-        yield job['name']
+class GCSClient(object):
 
-def get_builds(server, job):
-    """Generates all build numbers for a given job."""
-    job_json = get_json('{}/job/{}/api/json'.format(server, job))
-    if not job_json:
-        return
-    for build in job_json['builds']:
-        yield build['number']
+    def __init__(self, jobs_dir):
+        self.jobs_dir = jobs_dir
+        self.session = requests.Session()
 
+    def request(self, path, params, as_json=True):
+        """GETs a JSON resource from GCS, with retries on failure.
 
-def get_build_info(server, job, build):
-    """Returns building status along with timestamp for a given build."""
-    path = '{}/job/{}/{}/api/json'.format(server, job, str(build))
-    build_json = get_json(path)
-    if not build_json:
-        return True, 0
-    return build_json['building'], build_json['timestamp']
+        Retries are based on guidance from
+        cloud.google.com/storage/docs/gsutil/addlhelp/RetryHandlingStrategy
+        """
+        url = 'https://www.googleapis.com/storage/v1/b/%s' % path
+        for retry in xrange(23):
+            try:
+                resp = self.session.get(url, params=params, stream=False)
+                if 400 <= resp.status_code < 500 and resp.status_code != 429:
+                    return None
+                resp.raise_for_status()
+                if as_json:
+                    return resp.json()
+                else:
+                    return resp.content
+            except requests.exceptions.RequestException:
+                logging.exception('request failed %s', url)
+            time.sleep(random.random() * min(60, 2 ** retry))
 
+    def parse_uri(self, path):
+        if not path.startswith('gs://'):
+            raise ValueError("Bad GCS path")
+        bucket, prefix = path[5:].split('/', 1)
+        return bucket, prefix
 
-def gcs_ls(path):
-    """Lists objects under a path on gcs."""
-    try:
-        result = subprocess.check_output(
-            ['gsutil', 'ls', path],
-            stderr=open(os.devnull, 'w'))
-    except subprocess.CalledProcessError:
-        result = b''
-    for subpath in result.decode('utf-8').split():
-        yield subpath
+    def get(self, path, as_json=False):
+        """Get an object from GCS."""
+        bucket, path = self.parse_uri(path)
+        return self.request('%s/o/%s' % (bucket, urllib2.quote(path, '')),
+                           {'alt': 'media'}, as_json=as_json)
 
-def gcs_ls_build(job, build):
-    """Lists all files under a given job and build path."""
-    url = 'gs://kubernetes-jenkins/logs/{}/{}'.format(job, str(build))
-    for path in gcs_ls(url):
-        yield path
-
-
-def gcs_ls_artifacts(job, build):
-    """Lists all artifacts for a build."""
-    for path in gcs_ls_build(job, build):
-        if path.endswith('artifacts/'):
-            for artifact in gcs_ls(path):
-                yield artifact
-
-
-def gcs_ls_junit_paths(job, build):
-    """Lists the paths of JUnit XML files for a build."""
-    for path in gcs_ls_artifacts(job, build):
-        if re.match(r'.*/junit.*\.xml$', path):
-            yield path
-
-
-def gcs_get_tests(path):
-    """Generates test data out of the provided JUnit path.
-
-    Returns None if there's an issue parsing the XML.
-    Yields name, time, failed, skipped for each test.
-    """
-    try:
-        data = subprocess.check_output(
-            ['gsutil', 'cat', path], stderr=open(os.devnull, 'w'))
-    except subprocess.CalledProcessError:
-        return
-
-    try:
-        data = zlib.decompress(data, zlib.MAX_WBITS | 16)
-    except zlib.error:
-        # Don't fail if it's not gzipped.
-        pass
-
-    try:
-        root = ElementTree.fromstring(data)
-    except ElementTree.ParseError:
-        return
-
-    for child in root:
-        name = child.attrib['name']
-        ctime = float(child.attrib['time'])
-        failed = False
-        skipped = False
-        for param in child:
-            if param.tag == 'skipped':
-                skipped = True
-            elif param.tag == 'failure':
-                failed = True
-        yield name, ctime, failed, skipped
-
-
-def get_tests_from_junit_path(path):
-    """Generates all tests in a JUnit GCS path."""
-    for test in gcs_get_tests(path):
-        if not test:
-            continue
-        yield test
-
-
-def get_tests_from_build(job, build):
-    """Generates all tests for a build."""
-    for junit_path in gcs_ls_junit_paths(job, build):
-        for test in get_tests_from_junit_path(junit_path):
-            yield test
-
-
-def get_daily_builds(server, matcher):
-    """Generates all (job, build) pairs for the last day."""
-    now = time.time()
-    for job in get_jobs(server):
-        if not matcher(job):
-            continue
-        for build in reversed(sorted(get_builds(server, job))):
-            building, timestamp = get_build_info(server, job, build)
-            # Skip if it's still building.
-            if building:
-                continue
-            # Quit once we've walked back over a day.
-            if now - timestamp / 1000 > 60*60*24:
+    def ls(self, path, dirs=True, files=True):
+        """Lists objects under a path on gcs."""
+        bucket, path = self.parse_uri(path)
+        params = {'delimiter': '/', 'prefix': path, 'fields': 'nextPageToken'}
+        if dirs:
+            params['fields'] += ',prefixes'
+        if files:
+            params['fields'] += ',items(name)'
+        while True:
+            resp = self.request('%s/o' % bucket, params)
+            for prefix in resp.get('prefixes', []):
+                yield 'gs://%s/%s' % (bucket, prefix)
+            for item in resp.get('items', []):
+                yield 'gs://%s/%s' % (bucket, item['name'])
+            if 'nextPageToken' not in resp:
                 break
-            yield job, build
+            params['pageToken'] = resp['nextPageToken']
 
+    def ls_dirs(self, path):
+        return self.ls(path, dirs=True, files=False)
 
-def get_tests(server, matcher):
-    """Returns a dictionary of tests to be JSON encoded."""
-    tests = {}
-    for job, build in get_daily_builds(server, matcher):
-        print('{}/{}'.format(job, str(build)))
-        for name, duration, failed, skipped in get_tests_from_build(job, build):
-            if name not in tests:
-                tests[name] = {}
-            if skipped:
+    def _ls_junit_paths(self, job, build):
+        """Lists the paths of JUnit XML files for a build."""
+        url = '%s%s/%s/artifacts/' % (self.jobs_dir, job, build)
+        for path in self.ls(url):
+            if re.match(r'.*/junit.*\.xml$', path):
+                yield path
+
+    def _get_tests_from_junit(self, path):
+        """Generates test data out of the provided JUnit path.
+
+        Returns None if there's an issue parsing the XML.
+        Yields name, time, failed, skipped for each test.
+        """
+        data = self.get(path)
+
+        try:
+            root = ElementTree.fromstring(data)
+        except ElementTree.ParseError:
+            logging.exception("unable to parse %s" % path)
+            return
+
+        for child in root:
+            name = child.attrib['name']
+            ctime = float(child.attrib['time'])
+            failed = False
+            skipped = False
+            for param in child:
+                if param.tag == 'skipped':
+                    skipped = True
+                elif param.tag == 'failure':
+                    failed = True
+            yield name, ctime, failed, skipped
+
+    def _get_jobs(self):
+        """Generates all jobs in the bucket."""
+        for job_path in self.ls_dirs(self.jobs_dir):
+            yield os.path.basename(os.path.dirname(job_path))
+
+    def _get_builds(self, job):
+        try:
+            latest_build = int(self.get('%s%s/latest-build.txt'
+                                        % (self.jobs_dir, job)))
+        except (ValueError, TypeError):
+            pass
+        else:
+            return (str(n) for n in xrange(latest_build, 0, -1))
+        build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
+        return sorted((os.path.basename(os.path.dirname(b))
+                       for b in build_paths), key=int, reverse=True)
+
+    def _get_build_finish_time(self, job, build):
+        data = self.get('%s%s/%s/finished.json' % (self.jobs_dir, job, build),
+                        as_json=True)
+        if data is None:
+            return None
+        return int(data['timestamp'])
+
+    def get_daily_builds(self, matcher, builds_have):
+        """Generates all (job, build) pairs for the last day."""
+        now = time.time()
+        for job in self._get_jobs():
+            if not matcher(job):
                 continue
-            if job not in tests[name]:
-                tests[name][job] = []
-            tests[name][job].append({
-                'build': build,
-                'failed': failed,
-                'time': duration
-            })
-    return tests
+            for build in self._get_builds(job):
+                if (job, build) in builds_have:
+                    # assumption: we're only getting builds NEWER than those
+                    # in builds_have.
+                    break
+                timestamp = self._get_build_finish_time(job, build)
+                if timestamp is None:
+                    continue
+                # Quit once we've walked back over a day.
+                if now - timestamp > MAX_AGE:
+                    break
+                yield job, build, timestamp
+
+    def get_tests_from_build(self, job, build):
+        """Generates all tests for a build."""
+        for junit_path in self._ls_junit_paths(job, build):
+            for test in self._get_tests_from_junit(junit_path):
+                yield test
 
 
-def main(server, match):
+class IndexedList(list):
+    """
+    Convert values into indexes into a separate list of values.
+
+    Provides a normal list interface, with an overriden index operator
+    to return a position or insert into the list.
+    """
+    def __init__(self, iterable=None):
+        self._index = {}
+        if iterable:
+            super(IndexedList, self).__init__(iterable)
+            for n, el in enumerate(self):
+                self._index[el] = n
+
+    def index(self, value):
+        """Return value's position, appending it to the end if not present."""
+        if value not in self._index:
+            n = len(self)
+            self.append(value)
+            self._index[value] = n
+        return self._index[value]
+
+
+def mp_init_worker(jobs_dir, client_class):
+    """
+    Initialize the environment for multiprocessing-based multithreading.
+    """
+    # Multiprocessing doesn't allow local variables for each worker, so we need
+    # to make a GCSClient global variable.
+    global WORKER_CLIENT
+    WORKER_CLIENT = client_class(jobs_dir)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)  # make Ctrl-C kill the worker
+
+
+def mp_get_tests((job, build, timestamp)):
+    """
+    Inside a multiprocessing worker, get the tests for a given job and build.
+    """
+    return job, build, timestamp, list(
+        WORKER_CLIENT.get_tests_from_build(job, build))
+
+
+def get_existing_builds(jobs):
+    out = set()
+    for job_name, job in jobs.iteritems():
+        for build_num in job.iterkeys():
+            out.add((job_name, build_num))
+    return out
+
+
+def get_tests(names, jobs_dir, matcher, threads, client_class, jobs):
+    """
+    Adds information about tests to a dictionary.
+
+    Args:
+        names: an IndexedList of test names.
+        jobs_dir: the GCS path containing jobs.
+        matcher: a function str->bool that determines whether to include a job.
+        threads: how many threads to use to download build information.
+        client_class: a constructor for a GCSClient (or a subclass).
+        jobs: a dictionary to place new test information into. Builds already
+            present in this dictionary will be skipped.
+    Returns:
+        jobs is modified to contain the new test information.
+    """
+    gcs = client_class(jobs_dir)
+
+    print('Loading builds from %s' % jobs_dir)
+
+    builds_have = get_existing_builds(jobs)
+    if builds_have:
+        print('already have %d builds' % len(builds_have))
+
+    jobs_and_builds = gcs.get_daily_builds(matcher, builds_have)
+    if threads > 1:
+        pool = multiprocessing.Pool(threads, mp_init_worker,
+                                    (jobs_dir, client_class))
+        builds_tests_iterator = pool.imap_unordered(
+            mp_get_tests, jobs_and_builds)
+    else:
+        # for debugging, have a single-threaded mode without multiprocessing
+        builds_tests_iterator = (
+            (job, build, timestamp, gcs.get_tests_from_build(job, build))
+            for job, build, timestamp in jobs_and_builds)
+
+    for job, build, timestamp, build_tests in builds_tests_iterator:
+        print('%s/%s' % (job, build))
+        build_info = jobs.setdefault(job, {}).setdefault(build, {})
+        build_info['timestamp'] = timestamp
+        build_info['tests'] = []
+        for name, duration, failed, skipped in build_tests:
+            result = {
+                'name': names.index(name),
+                'time': duration,
+            }
+            if failed:
+                result['failed'] = True
+            if skipped:
+                result['skipped'] = True
+            build_info['tests'].append(result)
+
+
+def remove_old_builds(buckets, now):
+    pruned = 0
+    for jobs in buckets.itervalues():
+        for job_name, job in jobs.iteritems():
+            for build_num, build in job.items():  # intentional copy
+                if build['timestamp'] < now - MAX_AGE:
+                    pruned += 1
+                    job.pop(build_num)
+    print('pruned %d old builds' % pruned)
+
+
+def main(jobs_dirs, match, outfile, threads, client_class=GCSClient):
     """Collect test info in matching jobs."""
-    print('Finding tests in jobs matching {} at server {}'.format(
-        match, server))
+    print('Finding tests in jobs matching %s' % match)
     matcher = re.compile(match).match
-    tests = get_tests(server, matcher)
-    with open('tests.json', 'w') as buf:
+    tests = None
+    if os.path.exists(outfile):
+        try:
+            tests = json.load(open(outfile))
+            if 'test_names' not in tests:
+                raise ValueError
+        except ValueError:
+            tests = None
+        else:
+            print('Resuming from previous run...')
+            names = IndexedList(tests['test_names'])
+            tests['test_names'] = names
+            remove_old_builds(tests['buckets'], time.time())
+    if tests is None:
+        names = IndexedList()
+        tests = {'test_names': names, 'buckets': {}}
+    for bucket in jobs_dirs:
+        if not bucket.endswith('/'):
+            bucket += '/'
+        bucket_jobs = tests['buckets'].setdefault(bucket, {})
+        get_tests(names, bucket, matcher, threads, client_class, bucket_jobs)
+    with open(outfile, 'w') as buf:
         json.dump(tests, buf, sort_keys=True)
 
 
@@ -203,18 +329,34 @@ def get_options(argv):
     """Process command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--server',
-        help='hostname of jenkins server',
-        required=True,
+        '--jobs_dirs',
+        help='locations of test artifacts on GCS',
+        nargs='+',
+        default=['gs://kubernetes-jenkins/logs/'],
     )
     parser.add_argument(
         '--match',
         help='filter to job names matching this re',
         required=True,
     )
+    parser.add_argument(
+        '--outfile',
+        help='file to write output JSON to',
+        default='tests.json',
+    )
+    parser.add_argument(
+        '--threads',
+        help='number of concurrent threads to download results with',
+        default=32,
+        type=int,
+    )
     return parser.parse_args(argv)
 
 
 if __name__ == '__main__':
+    if os.getenv('REQ_CACHE'):
+        # for fast test iterations, enable caching GCS HTTP responses
+        import requests_cache
+        requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.server, OPTIONS.match)
+    main(OPTIONS.jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)

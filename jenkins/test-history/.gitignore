@@ -1,0 +1,4 @@
+static/suite-*
+static/index.html
+static/tests-*
+tests.json*
