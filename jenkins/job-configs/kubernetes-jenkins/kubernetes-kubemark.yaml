@@ -19,9 +19,6 @@
         - email-ext:
             recipients: "gmarek@google.com"
     triggers:
-        - reverse:
-            jobs: 'kubernetes-build'
-            result: success
         - timed: '{cron-string}'
     wrappers:
         - ansicolor:
