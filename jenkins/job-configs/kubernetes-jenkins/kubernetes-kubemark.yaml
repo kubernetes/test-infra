@@ -46,6 +46,7 @@
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
                 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 export NUM_NODES="1"
                 export MASTER_SIZE="n1-standard-1"
@@ -66,6 +67,7 @@
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
                 export CREATE_SERVICES="true"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 export NUM_NODES="3"
                 export MASTER_SIZE="n1-standard-2"
@@ -86,6 +88,7 @@
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:HighDensityPerformance\]"
                 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 export NUM_NODES="3"
                 export MASTER_SIZE="n1-standard-2"
