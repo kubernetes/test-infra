@@ -2,8 +2,8 @@
     name: kubernetes-test-summary
     description: 'Create a daily test summary and upload to GCS. Test owner: spxtr.'
     triggers:
-        # Run every night at midnight at a random minute.
-        - timed: 'H 0 * * *'
+        # Run hourly
+        - timed: 'H * * * *'
     scm:
         - git:
             url: https://www.github.com/kubernetes/test-infra
@@ -15,7 +15,7 @@
     builders:
         - shell: |
             cd jenkins/test-history
-            ./gen_history http://jenkins-master:8080/
+            ./gen_history
     publishers:
         - email-ext:
             recipients: spxtr@google.com
