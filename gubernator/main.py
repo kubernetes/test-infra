@@ -16,6 +16,7 @@
 
 import functools
 import json
+import logging
 import re
 import os
 import urllib
@@ -121,23 +122,23 @@ def gcs_ls(path):
 
 def parse_junit(xml):
     """Generate failed tests as a series of (name, duration, text) tuples."""
-    # TODO: support <testsuites><testsuite><testcase> structure as well
-    for child in ET.fromstring(xml):
-        name = child.attrib['name']
-        time = float(child.attrib['time'])
-        failed = False
-        skipped = False
-        text = None
-        for param in child:
-            if param.tag == 'skipped':
-                skipped = True
-                text = param.text
-            elif param.tag == 'failure':
-                failed = True
-                text = param.text
-        if failed:
-            yield name, time, text
-
+    tree = ET.fromstring(xml)
+    if tree.tag == 'testsuite':
+        for child in tree:
+            name = child.attrib['name']
+            time = float(child.attrib['time'])
+            for param in child.findall('failure'):
+                yield name, time, param.text
+    elif tree.tag == 'testsuites':
+        for testsuite in tree:
+            suite_name = testsuite.attrib['name']
+            for child in testsuite.findall('testcase'):
+                name = '%s %s' % (suite_name, child.attrib['name'])
+                time = float(child.attrib['time'])
+                for param in child.findall('failure'):
+                    yield name, time, param.text
+    else:
+        logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 @memcache_memoize('build-details://', expires=60 * 60 * 4)
 def build_details(build_dir):

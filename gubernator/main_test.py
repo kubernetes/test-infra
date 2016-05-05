@@ -35,6 +35,18 @@ import main
 app = webtest.TestApp(main.app)
 
 
+JUNIT_SUITE = '''<testsuite tests="8" failures="0" time="1000.24">
+    <testcase name="First" classname="Example e2e suite" time="0">
+        <skipped/>
+    </testcase>
+    <testcase name="Second" classname="Example e2e suite" time="36.49"/>
+    <testcase name="Third" classname="Example e2e suite" time="96.49">
+        <failure>/go/src/k8s.io/kubernetes/test.go:123
+Error Goes Here</failure>
+    </testcase>
+</testsuite>'''
+
+
 def init_build(build_dir):
     """Create faked files for a build."""
     def write(path, data):
@@ -46,23 +58,41 @@ def init_build(build_dir):
           {'version': 'v1+56', 'timestamp': 1406535800})
     write(build_dir + 'finished.json',
           {'result': 'SUCCESS', 'timestamp': 1406536800})
-    write(build_dir + 'artifacts/junit_01.xml', '''
-<testsuite tests="8" failures="0" time="1000.24">
-    <testcase name="First" classname="Example e2e suite" time="0">
-        <skipped/>
-    </testcase>
-    <testcase name="Second" classname="Example e2e suite" time="36.49"/>
-    <testcase name="Third" classname="Example e2e suite" time="96.49">
-        <failure>/go/src/k8s.io/kubernetes/test/example.go:123
-Error Goes Here</failure>
-    </testcase>
-</testsuite>''')
+    write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
 
 
 class HelperTest(unittest.TestCase):
     def test_pad_numbers(self):
         self.assertEqual(main.pad_numbers('a3b45'),
                          'a' + '0' * 15 + '3b' + '0' * 14 + '45')
+
+
+class ParseJunitTest(unittest.TestCase):
+    def parse(self, xml):
+        return list(main.parse_junit(xml))
+
+    def test_normal(self):
+        failures = self.parse(JUNIT_SUITE)
+        stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
+        self.assertEqual(failures, [('Third', 96.49, stack)])
+
+    def test_testsuites(self):
+        failures = self.parse('''
+            <testsuites>
+                <testsuite name="k8s.io/suite">
+                    <properties>
+                        <property name="go.version" value="go1.6"/>
+                    </properties>
+                    <testcase name="TestBad" time="0.1">
+                        <failure>something bad</failure>
+                    </testcase>
+                </testsuite>
+            </testsuites>''')
+        self.assertEqual(failures,
+                         [('k8s.io/suite TestBad', 0.1, 'something bad')])
+
+    def test_bad_xml(self):
+        self.assertEqual(self.parse('''<body />'''), [])
 
 
 class AppTest(unittest.TestCase):
@@ -95,7 +125,7 @@ class AppTest(unittest.TestCase):
         self.assertIn('1m36s', response)       # test duration
         self.assertIn('Build Result: SUCCESS', response)
         self.assertIn('Error Goes Here', response)
-        self.assertIn('example.go#L123">', response) # stacktrace link works
+        self.assertIn('test.go#L123">', response)  # stacktrace link works
 
     def test_build_no_failures(self):
         """Test that builds with no Junit artifacts work."""
