@@ -1,7 +1,11 @@
 "use strict";
-angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter', 'angularMoment']);
+var app = angular.module('SubmitQueueModule', ['ngMaterial', 'md.data.table', 'angular-toArrayFilter', 'angularMoment']);
 
-angular.module('SubmitQueueModule').controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
+app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(false);
+}]);
+
+app.controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 
 function SQCntl(dataService, $interval, $location) {
   var self = this;
@@ -323,7 +327,7 @@ function SQCntl(dataService, $interval, $location) {
 }
 
 
-angular.module('SubmitQueueModule').filter('loginOrPR', function() {
+app.filter('loginOrPR', function() {
   return function(prs, searchVal) {
     searchVal = searchVal || "";
     prs = prs || [];
@@ -347,7 +351,7 @@ angular.module('SubmitQueueModule').filter('loginOrPR', function() {
   };
 });
 
-angular.module('SubmitQueueModule').service('DataService', ['$http', dataService]);
+app.service('DataService', ['$http', dataService]);
 
 function dataService($http) {
   return ({
