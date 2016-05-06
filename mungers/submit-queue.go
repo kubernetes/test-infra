@@ -405,6 +405,7 @@ func (sq *SubmitQueue) e2eStable() bool {
 
 	weakStable := sq.e2e.GCSWeakStable()
 	if !weakStable {
+		stable = weakStable
 		glog.Errorf("E2E is not stable because weak stable check failed.")
 	}
 
