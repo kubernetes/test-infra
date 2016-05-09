@@ -33,15 +33,23 @@ const (
 	day              = time.Hour * 24
 	keepOpenLabel    = "keep-open"
 	stalePullRequest = 90 * day // Close the PR if no human interaction for `stalePullRequest`
-	closingComment   = `This PR hasn't been active in %s. Please re-open if necessary
+	startWarning     = 60 * day
+	remindWarning    = 30 * day
+	closingComment   = `This PR hasn't been active in %s. Feel free to reopen.
 
 You can add 'keep-open' label to prevent this from happening again.`
+	warningComment = `This PR hasn't been active in %s. Will be closed in %s.
+
+You can add 'keep-open' label to prevent this from happening.`
 )
 
 var (
-	closingCommentRE = regexp.MustCompile(`This PR hasn't been active in \d+ days?\. Please re-open if necessary
+	closingCommentRE = regexp.MustCompile(`This PR hasn't been active in \d+ days?\. Feel free to reopen.
 
 You can add 'keep-open' label to prevent this from happening again\.`)
+	warningCommentRE = regexp.MustCompile(`This PR hasn't been active in \d+ days?\. Will be closed in \d+ days?\.
+
+You can add 'keep-open' label to prevent this from happening\.`)
 )
 
 // CloseStalePR will ask the Bot to close any PullRequest that didn't
@@ -173,6 +181,38 @@ func findLastModificationTime(obj *github.MungeObject) (*time.Time, error) {
 	return lastModif, nil
 }
 
+func findLatestWarningComment(obj *github.MungeObject) *githubapi.IssueComment {
+	var lastFoundComment *githubapi.IssueComment
+
+	comments, err := obj.ListComments()
+	if err != nil {
+		return nil
+	}
+
+	for i := range comments {
+		comment := comments[i]
+		if !validComment(comment) {
+			continue
+		}
+		if !mergeBotComment(comment) {
+			continue
+		}
+
+		if !warningCommentRE.MatchString(*comment.Body) {
+			continue
+		}
+
+		if lastFoundComment == nil || lastFoundComment.CreatedAt.Before(*comment.UpdatedAt) {
+			if lastFoundComment != nil {
+				obj.DeleteComment(lastFoundComment)
+			}
+			lastFoundComment = &comment
+		}
+	}
+
+	return lastFoundComment
+}
+
 func durationToDays(duration time.Duration) string {
 	days := duration / day
 	dayString := "days"
@@ -183,9 +223,38 @@ func durationToDays(duration time.Duration) string {
 }
 
 func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
-	obj.WriteComment(
-		fmt.Sprintf(closingComment, durationToDays(inactiveFor)))
+	comment := findLatestWarningComment(obj)
+	if comment != nil {
+		obj.DeleteComment(comment)
+	}
+
+	obj.WriteComment(fmt.Sprintf(closingComment, durationToDays(inactiveFor)))
 	obj.ClosePR()
+}
+
+func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, closeIn time.Duration) {
+	obj.WriteComment(fmt.Sprintf(
+		warningComment,
+		durationToDays(inactiveFor),
+		durationToDays(closeIn)))
+}
+
+func checkAndWarn(obj *github.MungeObject, inactiveFor time.Duration, closeIn time.Duration) {
+	if closeIn < day {
+		// We are going to close the PR in less than a day. Too late to warn
+		return
+	}
+	comment := findLatestWarningComment(obj)
+	if comment == nil {
+		// We don't already have the comment. Post it
+		postWarningComment(obj, inactiveFor, closeIn)
+	} else if time.Since(*comment.UpdatedAt) > remindWarning {
+		// It's time to warn again
+		obj.DeleteComment(comment)
+		postWarningComment(obj, inactiveFor, closeIn)
+	} else {
+		// We already have a warning, and it's not expired. Do nothing
+	}
 }
 
 // Munge is the workhorse that will actually close the PRs
@@ -204,9 +273,12 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	closeIn := -time.Since(lastModif.Add(stalePullRequest))
 	inactiveFor := time.Since(*lastModif)
-	if inactiveFor > stalePullRequest {
+	if closeIn <= 0 {
 		closePullRequest(obj, inactiveFor)
+	} else if closeIn <= startWarning {
+		checkAndWarn(obj, inactiveFor, closeIn)
 	} else {
 		// Pull-request is active. Do nothing
 	}
