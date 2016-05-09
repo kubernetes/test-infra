@@ -616,7 +616,6 @@
         export PROJECT="kubernetes-scale"
         export FAIL_ON_GCP_RESOURCE_LEAK="false"
         # Override GCE defaults.
-        export NETWORK_PROVIDER="flannel"
         # Temporarily switch of Heapster, as this will not schedule anywhere.
         # TODO: Think of a solution to enable it.
         export KUBE_ENABLE_CLUSTER_MONITORING="none"
