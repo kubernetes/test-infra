@@ -1365,8 +1365,15 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 		copy(temp[which:], obj.comments[which+1:])
 		obj.comments = temp
 	}
-
-	glog.Infof("Removing comment %d from Issue %d", *comment.ID, prNum)
+	body := "UNKOWN"
+	if comment.Body != nil {
+		body = *comment.Body
+	}
+	author := "UNKNOWN"
+	if comment.User != nil && comment.User.Login != nil {
+		author = *comment.User.Login
+	}
+	glog.Infof("Removing comment %d from Issue %d. Author:%s Body:%q", *comment.ID, prNum, author, body)
 	if config.DryRun {
 		return nil
 	}
