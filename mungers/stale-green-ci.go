@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	staleGreenCIHours = 48
+	staleGreenCIHours = 96
 	greenMsgFormat    = `@` + jenkinsBotName + ` test this
 
 Tests are more than %d hours old. Re-running tests.`
