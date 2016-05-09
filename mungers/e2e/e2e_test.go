@@ -331,7 +331,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 			},
 		},
 		// If the last build was unsuccessful but there's no failures in JUnit file we assume that it was
-		// an infrastructure failure. Build should succeed if previous two builds were fully successful.
+		// an infrastructure failure. Build should succeed if at least one of two builds were fully successful.
 		{
 			paths: map[string][]byte{
 				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
@@ -341,7 +341,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				}, t),
 				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
 				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
-					Result:    "SUCCESS",
+					Result:    "UNSTABLE",
 					Timestamp: 1233,
 				}, t),
 				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
@@ -361,7 +361,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 			},
 		},
 		// If the last build was unsuccessful but there's no failures in JUnit file we assume that it was
-		// an infrastructure failure. Build should fail if of of two builds failed.
+		// an infrastructure failure. Build should fail more than both recent builds failed.
 		{
 			paths: map[string][]byte{
 				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
@@ -371,7 +371,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				}, t),
 				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
 				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
-					Result:    "SUCCESS",
+					Result:    "UNSTABLE",
 					Timestamp: 1233,
 				}, t),
 				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
@@ -390,7 +390,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				"bar": {Status: "Stable", ID: "44"},
 			},
 		},
-		// If the last build was unsuccessful and theres a failed test in a JUnit file we should fail.
+		// If the last build was unsuccessful and there's a failed test in a JUnit file we should fail.
 		{
 			paths: map[string][]byte{
 				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
@@ -428,7 +428,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				}, t),
 				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar): getJUnit(5, 0),
 				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar): getJUnit(5, 1),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar): getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar): getJUnit(5, 1),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
