@@ -158,10 +158,6 @@
         export MASTER_SIZE="m3.medium"
         export NODE_SIZE="m3.medium"
         export NUM_NODES="3"
-        export AWS_CONFIG_FILE=/workspace/.aws/credentials
-        # This is needed to be able to create PD from the e2e test
-        export AWS_SHARED_CREDENTIALS_FILE=/workspace/.aws/credentials
-        export KUBE_SSH_USER=admin
     post-env: |
         # Nothing should want Jenkins $HOME
         export HOME=${{WORKSPACE}}
