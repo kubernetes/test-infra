@@ -31,6 +31,7 @@ import (
 
 const (
 	day              = time.Hour * 24
+	keepOpenLabel    = "keep-open"
 	stalePullRequest = 90 * day // Close the PR if no human interaction for `stalePullRequest`
 	closingComment   = `This PR hasn't been active in %s. Please re-open if necessary
 
@@ -190,6 +191,10 @@ func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
 // Munge is the workhorse that will actually close the PRs
 func (CloseStalePR) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
+		return
+	}
+
+	if obj.HasLabel(keepOpenLabel) {
 		return
 	}
 
