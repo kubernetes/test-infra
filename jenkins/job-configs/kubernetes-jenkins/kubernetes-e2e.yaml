@@ -150,7 +150,8 @@
             timeout: 50  # See #21138
             job-env: |
                 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
-                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] \
+                                         --kube-api-content-type=application/vnd.kubernetes.protobuf"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-protobuf"
                 # Store protobufs in database.
