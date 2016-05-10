@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/kubernetes/pkg/util"
+	utilflag "k8s.io/kubernetes/pkg/util/flag"
 )
 
 // MungeIssue is the real worker. It is called for every open github Issue
@@ -54,7 +54,7 @@ func main() {
 			return nil
 		},
 	}
-	root.SetGlobalNormalizationFunc(util.WordSepNormalizeFunc)
+	root.SetGlobalNormalizationFunc(utilflag.WordSepNormalizeFunc)
 	config.AddRootFlags(root)
 	root.Execute()
 }
