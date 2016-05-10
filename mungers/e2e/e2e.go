@@ -219,19 +219,19 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 
 		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is comming from the infrastructure
 		// Check results of previous two builds.
+		unstable := make([]int, 0)
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			allStable = false
-			glog.Infof("WeakStable failed because found a weak failure in build %v and build %v failed.", lastBuildNumber, lastBuildNumber-1)
-			continue
+			unstable = append(unstable, lastBuildNumber-1)
 		}
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
+			unstable = append(unstable, lastBuildNumber-2)
+		}
+		if len(unstable) > 1 {
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			allStable = false
-			glog.Infof("WeakStable failed because found a weak failure in build %v and build %v failed.", lastBuildNumber, lastBuildNumber-2)
+			glog.Infof("WeakStable failed because found a weak failure in build %v and builds %v failed.", lastBuildNumber, unstable)
 			continue
 		}
-
 		e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
 	}
 	return allStable
