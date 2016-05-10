@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/contrib/mungegithub",
-	"GoVersion": "go1.5",
-	"GodepVersion": "v58",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v65",
 	"Packages": [
 		"./..."
 	],
@@ -114,6 +114,11 @@
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
+		},
+		{
+			"ImportPath": "k8s.io/contrib/test-utils/utils",
+			"Comment": "0.6.0-409-g2f48df8",
+			"Rev": "2f48df887d68da03f29caf1c289de3fda7353ddd"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/conversion",
