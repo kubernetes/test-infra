@@ -978,7 +978,8 @@
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
-                export JENKINS_PUBLISHED_TEST_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_USE_SKEW_KUBECTL="true"
                 export GINKGO_PARALLEL="y"
                 export E2E_OPT="--check_version_skew=false"
                 {version-env}
@@ -991,9 +992,8 @@
                 export PROJECT="kube-gke-upg-{version-infix}-upg-mas"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export E2E_UPGRADE_TEST="true"
-                export JENKINS_PUBLISHED_TEST_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}"
-                export JENKINS_USE_OLD_TESTS="true"
                 export E2E_OPT="--check_version_skew=false"
                 # Set legacy skip list, only when testing old version
                 # TODO remove when we no longer care about v1.1
@@ -1007,9 +1007,8 @@
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export E2E_UPGRADE_TEST="true"
-                export JENKINS_PUBLISHED_TEST_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
-                export JENKINS_USE_OLD_TESTS="true"
                 export E2E_OPT="--check_version_skew=false"
                 # Set legacy skip list, only when testing old version
                 # TODO remove when we no longer care about v1.1
@@ -1023,8 +1022,9 @@
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu-n"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export E2E_UPGRADE_TEST="true"
-                export JENKINS_PUBLISHED_TEST_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
+                export JENKINS_USE_SKEW_TESTS="true"
                 export E2E_OPT="--check_version_skew=false"
                 {version-env}
 
