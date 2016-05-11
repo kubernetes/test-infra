@@ -46,19 +46,24 @@ TestMetadata = collections.namedtuple('TestMetadata', [
 ])
 
 
+BUCKET_TO_PREFIX = {}
 PREFIX_TO_URL = {}
 
-def prefix_for(prefix):
-    if 'azure' in prefix:
-        new = 'azure$'
-    elif 'rktnetes' in prefix:
-        new = 'rktnetes$'
-    elif 'gs://kubernetes-jenkins/' in prefix:
-        new = ''
-    else:
-        new = prefix[5:-1].replace('/', '_') + '$'
-    PREFIX_TO_URL[new] = prefix
-    return new
+
+def load_buckets_info(infile):
+    BUCKET_TO_PREFIX.clear()
+    with open(infile) as buf:
+        buckets = json.load(buf)
+    for bucket, data in buckets.iteritems():
+        BUCKET_TO_PREFIX[bucket] = data['prefix']
+
+
+def prefix_for(bucket):
+    prefix = BUCKET_TO_PREFIX.get(bucket)
+    if prefix is None:
+        prefix = bucket[5:-1].replace('/', '_') + '$'
+    PREFIX_TO_URL[prefix] = bucket
+    return prefix
 
 
 def slugify(inp):
@@ -344,8 +349,9 @@ def write_index(outdir, prefixes, suites, blockers):
     write_html(outdir, 'index.html', '\n'.join(html))
 
 
-def main(infile, outdir):
+def main(infile, buckets, outdir):
     """Use infile to write test, suite and index html files to outdir."""
+    load_buckets_info(buckets)
     prefixes, suites, blockers = write_metadata(infile, outdir)
     write_index(outdir, prefixes, suites, blockers)
 
@@ -357,9 +363,11 @@ def get_options(argv):
                         help='where to write output pages')
     parser.add_argument('--input', required=True,
                         help='JSON test data to read for input')
+    parser.add_argument('--buckets', required=True,
+                        help='JSON GCS buckets to read for test results')
     return parser.parse_args(argv)
 
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.input, OPTIONS.output_dir)
+    main(OPTIONS.input, OPTIONS.buckets, OPTIONS.output_dir)

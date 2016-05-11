@@ -17,6 +17,8 @@
 """Tests for gen_json."""
 
 import json
+import os
+import shutil
 import tempfile
 import unittest
 
@@ -25,20 +27,46 @@ import gen_json
 import time
 
 
+TEST_BUCKETS_DATA = {
+    'gs://kubernetes-jenkins/logs/': { 'prefix': '' },
+    'gs://bucket1/': { 'prefix': 'bucket1_prefix' },
+    'gs://bucket2/': { 'prefix': 'bucket2_prefix' }
+}
+
+
+class GetBucketsTest(unittest.TestCase):
+    """Tests for gen_json.get_buckets."""
+    def test_get_buckets(self):
+        """Test get_buckets() returns a list of buckets URLs."""
+        temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
+        try:
+            buckets_json = os.path.join(temp_dir, 'buckets.json')
+            with open(buckets_json, 'w') as buf:
+                json.dump(TEST_BUCKETS_DATA, buf)
+            buckets = gen_json.get_buckets(buckets_json)
+            self.assertEquals(
+                set(['gs://kubernetes-jenkins/logs/',
+                     'gs://bucket1/',
+                     'gs://bucket2/']),
+                set(buckets))
+        finally:
+            shutil.rmtree(temp_dir)
+
+
 class OptionsTest(unittest.TestCase):
     """Tests for gen_json.get_options."""
 
     def test_get_options(self):
         """Test argument parsing works correctly."""
-        def check(args, expected_jobs_dir, expected_match):
+        def check(args, expected_buckets, expected_match):
             """Check that all args are parsed as expected."""
             options = gen_json.get_options(args)
-            self.assertEquals([expected_jobs_dir], options.jobs_dirs)
+            self.assertEquals(expected_buckets, options.buckets)
             self.assertEquals(expected_match, options.match)
 
-        check(['--jobs_dirs=foo', '--match=bar'], 'foo', 'bar')
-        check(['--jobs_dirs', 'foo', '--match', 'bar'], 'foo', 'bar')
-        check(['--match=bar', '--jobs_dir=foo'], 'foo', 'bar')
+        check(['--buckets=foo', '--match=bar'], 'foo', 'bar')
+        check(['--buckets', 'foo', '--match', 'bar'], 'foo', 'bar')
+        check(['--match=bar', '--buckets=foo'], 'foo', 'bar')
 
     def test_get_options_missing(self):
         """Test missing arguments raise an exception."""
@@ -48,6 +76,8 @@ class OptionsTest(unittest.TestCase):
                 gen_json.get_options(args)
 
         check([])
+        check(['--match=regex'])
+        check(['--buckets=file'])
 
 
 class MockedClient(gen_json.GCSClient):

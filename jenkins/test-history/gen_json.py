@@ -329,10 +329,9 @@ def get_options(argv):
     """Process command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--jobs_dirs',
-        help='locations of test artifacts on GCS',
-        nargs='+',
-        default=['gs://kubernetes-jenkins/logs/'],
+        '--buckets',
+        help='JSON file with GCS bucket locations',
+        required=True,
     )
     parser.add_argument(
         '--match',
@@ -353,10 +352,19 @@ def get_options(argv):
     return parser.parse_args(argv)
 
 
+def get_buckets(infile):
+    if infile is None:
+        return []
+    with open(infile) as buf:
+        buckets = json.load(buf)
+    return buckets.keys()
+
+
 if __name__ == '__main__':
     if os.getenv('REQ_CACHE'):
         # for fast test iterations, enable caching GCS HTTP responses
         import requests_cache
         requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
+    jobs_dirs = get_buckets(OPTIONS.buckets)
+    main(jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)

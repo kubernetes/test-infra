@@ -30,11 +30,14 @@ gsutil -q cp "${jsonpath}" "tests.json" || true
 
 # Create JSON report
 time python gen_json.py \
-  --jobs_dirs gs://kubernetes-jenkins/logs/ gs://kube_azure_log/ gs://rktnetes-jenkins/logs/ \
+  --buckets=buckets.json \
   "--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci"
 
 # Create static HTML reports out of the JSON
-python gen_html.py --output-dir=static --input=tests.json
+python gen_html.py \
+    --output-dir=static \
+    --input=tests.json \
+    --buckets=buckets.json
 
 # Upload to GCS
 readonly gcs_acl="public-read"
