@@ -19,10 +19,10 @@ READONLY ?= true
 
 # just build the binary
 mungegithub:
-	CGO_ENABLED=0 GOOS=linux GO15VENDOREXPERIMENT=0 godep go build -a -installsuffix cgo -ldflags '-w' -o mungegithub
+	GOBIN=$(PWD) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
 
 test: mungegithub
-	CGO_ENABLED=0 GOOS=linux GO15VENDOREXPERIMENT=0 godep go test ./...
+	CGO_ENABLED=0 GOOS=linux go test ./...
 
 # build the container with the binary
 container: test

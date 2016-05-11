@@ -49,10 +49,6 @@ var (
 // But this is our world and so we should really do this for all PRs which
 // aren't likely to get another push (everything that is mergeable). Since that
 // can be a lot of PRs, I'm just doing it for the LGTM PRs automatically...
-//
-// With minor modification this can be run easily by hand. Remove the LGTM check
-// godep go build
-// ./mungegithub --token-file=/PATH/TO/YOUR/TOKEN --pr-mungers=stale-pending-ci --once (--dry-run)
 type StalePendingCI struct{}
 
 func init() {
