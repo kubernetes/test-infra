@@ -127,7 +127,7 @@
             cron-string: 'H H/12 * * *'
             job-env: |
                 # XXX Not a unique project
-                export E2E_NAME="kubemark-1000"
+                export E2E_NAME="kubemark-2000"
                 export PROJECT="kubernetes-scale"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
@@ -136,14 +136,17 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
-                export NUM_NODES="11"
+                export NUM_NODES="21"
                 export MASTER_SIZE="n1-standard-4"
                 # Note: can fit about 17 hollow nodes per core so NUM_NODES x
                 # cores_per_node should be set accordingly.
                 export NODE_SIZE="n1-standard-8"
                 export KUBEMARK_MASTER_SIZE="n1-standard-16"
-                export KUBEMARK_NUM_NODES="1000"
+                export KUBEMARK_NUM_NODES="2000"
                 export KUBE_GCE_ZONE="us-central1-f"
+                # Use protobufs
+                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
     jobs:
