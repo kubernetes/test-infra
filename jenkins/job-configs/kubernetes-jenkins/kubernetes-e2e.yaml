@@ -1020,7 +1020,7 @@
             description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-new} tests.'
             timeout: 300
             job-env: |
-                export PROJECT="kube-gke-upg-{version-infix}-upg-clu-new"
+                export PROJECT="kube-gke-upg-{version-infix}-upg-clu-n"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export E2E_UPGRADE_TEST="true"
                 export JENKINS_PUBLISHED_TEST_VERSION="ci/latest-{version-new}"
