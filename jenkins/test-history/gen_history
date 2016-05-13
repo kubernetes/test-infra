@@ -18,7 +18,6 @@
 
 set -o errexit
 set -o nounset
-set -o xtrace
 
 readonly bucket="kubernetes-test-history"
 readonly jsonpath="gs://${bucket}/logs/$(date +%F).json"
@@ -28,16 +27,16 @@ readonly jsonpath="gs://${bucket}/logs/$(date +%F).json"
 # generated.
 gsutil -q cp "${jsonpath}" "tests.json" || true
 
-# Create JSON report
-time python gen_json.py \
-  --buckets=buckets.json \
-  "--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci"
-
-# Create static HTML reports out of the JSON
-python gen_html.py \
-    --output-dir=static \
-    --input=tests.json \
-    --buckets=buckets.json
+docker run --rm -iv "$(pwd):/test-history" -w="/test-history" python:2.7 bash -c "\
+    pip install -r requirements.txt && \
+    time python gen_json.py \
+        --buckets=buckets.json \
+        \"--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci\" && \
+    time python gen_html.py \
+        --output-dir=static \
+        --input=tests.json \
+        --buckets=buckets.json \
+"
 
 # Upload to GCS
 readonly gcs_acl="public-read"
