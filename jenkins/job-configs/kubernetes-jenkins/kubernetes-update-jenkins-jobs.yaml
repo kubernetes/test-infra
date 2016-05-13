@@ -2,7 +2,7 @@
     name: kubernetes-update-jenkins-jobs
     description: 'Update Jenkins jobs based on configs in https://github.com/kubernetes/test-infra/tree/master/jenkins/job-configs. Test owner: spxtr.'
     logrotate:
-        daysToKeep: 7
+        daysToKeep: 3
     triggers:
         - timed: 'H/15 * * * *'
     builders:
