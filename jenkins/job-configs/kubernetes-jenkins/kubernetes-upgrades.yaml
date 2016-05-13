@@ -9,6 +9,8 @@
     name: 'kubernetes-upgrade-{provider}-{version-old}-{version-new}'
     disabled: false
     description: 'Upgrade multijob from {version-old} to {version-new}. Test owner: ihmccreery.'
+    logrotate:
+        daysToKeep: 7
     project-type: multijob
     triggers:
         - timed: '@hourly'

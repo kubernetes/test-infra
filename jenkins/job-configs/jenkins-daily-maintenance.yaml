@@ -2,7 +2,7 @@
     name: 'jenkins-daily-maintenance'
     description: 'Run gcloud components update and clean Docker images. Test owner: spxtr.'
     logrotate:
-        numToKeep: 200
+        daysToKeep: 30
     builders:
         - shell: |
             sudo chown -R jenkins:jenkins /usr/local/share/google
@@ -21,7 +21,7 @@
     name: 'jenkins-daily-maintenance-all'
     description: 'Run jenkins-daily-maintenance on all nodes. Test owner: spxtr.'
     logrotate:
-        numToKeep: 200
+        daysToKeep: 30
     builders:
         # Run jenkins-daily-maintenance on all nodes.
         - raw:
