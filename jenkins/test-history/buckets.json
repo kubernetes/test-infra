@@ -1,0 +1,11 @@
+{
+    "gs://kubernetes-jenkins/logs/": {
+        "prefix": ""
+    },
+    "gs://kube_azure_log/": {
+        "prefix": "azure$"
+    },
+    "gs://rktnetes-jenkins/logs/": {
+        "prefix": "rktnetes$"
+    }
+}

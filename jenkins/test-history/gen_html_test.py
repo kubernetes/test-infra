@@ -38,6 +38,12 @@ TEST_DATA = {
                 {'name': 1, 'failed': True, 'time': 3.53}]}},
 }}}
 
+TEST_BUCKETS_DATA = {
+    'gs://kubernetes-jenkins/logs/': { 'prefix': '' },
+    'gs://bucket1/': { 'prefix': 'bucket1_prefix' },
+    'gs://bucket2/': { 'prefix': 'bucket2_prefix' }
+}
+
 
 class GenHtmlTest(unittest.TestCase):
     """Unit tests for gen_html.py."""
@@ -100,16 +106,21 @@ class GenHtmlTest(unittest.TestCase):
     def testGetOptions(self):
         """Test argument parsing works correctly."""
 
-        def check(args, expected_output_dir, expected_input):
+        def check(args, expected_output_dir, expected_input,
+                  expected_buckets):
             """Check that args is parsed correctly."""
             options = gen_html.get_options(args)
             self.assertEquals(expected_output_dir, options.output_dir)
             self.assertEquals(expected_input, options.input)
+            self.assertEquals(expected_buckets, options.buckets)
 
 
-        check(['--output-dir=foo', '--input=bar'], 'foo', 'bar')
-        check(['--output-dir', 'foo', '--input', 'bar'], 'foo', 'bar')
-        check(['--input=bar', '--output-dir=foo'], 'foo', 'bar')
+        check(['--output-dir=foo', '--input=bar', '--buckets=baz'],
+              'foo', 'bar', 'baz')
+        check(['--output-dir', 'foo', '--input', 'bar', '--buckets', 'baz'],
+              'foo', 'bar', 'baz')
+        check(['--buckets=baz', '--input=bar', '--output-dir=foo'],
+              'foo', 'bar', 'baz')
 
     def testGetOptions_Missing(self):
         """Test missing arguments raise an exception."""
@@ -121,6 +132,27 @@ class GenHtmlTest(unittest.TestCase):
         check([])
         check(['--output-dir=foo'])
         check(['--input=bar'])
+        check(['--output-dir=foo', '--input=bar'])
+        check(['--buckets=baz', '--input=bar'])
+        check(['--buckets=baz', '--output-dir=foo'])
+
+    def test_load_buckets_info(self):
+        """Test load_buckets_info() populates BUCKET_TO_PREFIX."""
+        temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
+        try:
+            buckets_json = os.path.join(temp_dir, 'buckets.json')
+            with open(buckets_json, 'w') as buf:
+                json.dump(TEST_BUCKETS_DATA, buf)
+            gen_html.load_buckets_info(buckets_json)
+            for bucket in ('bucket1', 'bucket2'):
+                self.assertEquals(
+                    '%s_prefix'%bucket,
+                    gen_html.BUCKET_TO_PREFIX['gs://%s/'%bucket])
+            self.assertEquals(
+                '',
+                gen_html.BUCKET_TO_PREFIX['gs://kubernetes-jenkins/logs/'])
+        finally:
+            shutil.rmtree(temp_dir)
 
     def testMain(self):
         """Test main() creates pages."""
@@ -129,7 +161,10 @@ class GenHtmlTest(unittest.TestCase):
             tests_json = os.path.join(temp_dir, 'tests.json')
             with open(tests_json, 'w') as buf:
                 json.dump(TEST_DATA, buf)
-            gen_html.main(tests_json, temp_dir)
+            buckets_json = os.path.join(temp_dir, 'buckets.json')
+            with open(buckets_json, 'w') as buf:
+                json.dump(TEST_BUCKETS_DATA, buf)
+            gen_html.main(tests_json, buckets_json, temp_dir)
             for page in (
                     'index',
                     'tests-kubernetes',
