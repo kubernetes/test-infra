@@ -176,6 +176,21 @@
                 export MULTIZONE="true"
                 export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the nodes reside.  Master is in the first one.
                 export KUBE_GCE_ZONE="us-central1-a" # Where the master resides - hangover due to legacy scripts.
+        - 'gce-federation':
+            trigger-job: 'kubernetes-federation-build'
+            description: 'Run all federation e2e tests.'
+            timeout: 300
+            emails: 'quinton@google.com, colin.hom@coreos.com'
+            test-owner: 'quinton'
+            job-env: |
+                export PROJECT="k8s-jkns-e2e-gce-federation"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+                export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+                export FEDERATION="true"
+                export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+                export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
+                export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+
         - 'gce-kubenet':
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE using kubenet as network provider'
             timeout: 120
