@@ -19,6 +19,7 @@
 import json
 import os
 import shutil
+import StringIO
 import tempfile
 import unittest
 
@@ -27,21 +28,34 @@ import gen_html
 
 TEST_DATA = {
     'test_names': ['test1', 'test2'],
-    'buckets': {'gs://kubernetes-jenkins/logs/': {
-        'kubernetes-release': {
-            '3': {'tests': [{'name': 0, 'time': 3.52}]},
-            '4': {'tests': [{'name': 0, 'time': 63.21, 'failed': True}]}},
-        'kubernetes-debug': {
-            '5': {'tests': [{'name': 0, 'time': 7.56}]},
-            '6': {'tests': [
-                {'name': 0, 'time': 8.43},
-                {'name': 1, 'failed': True, 'time': 3.53}]}},
-}}}
+    'buckets': {
+        'gs://kubernetes-jenkins/logs/': {
+            'kubernetes-release': {
+                '3': {'tests': [{'name': 0, 'time': 3.52}]},
+                '4': {'tests': [{'name': 1, 'time': 63.21, 'failed': True}]},
+            },
+            'kubernetes-debug': {
+                '5': {'tests': [{'name': 0, 'time': 7.56}]},
+                '6': {'tests': [
+                    {'name': 0, 'time': 8.43},
+                    {'name': 1, 'failed': True, 'time': 3.53},
+                ]},
+            },
+        },
+        'gs://rktnetes-jenkins/logs/': {
+            'kubernetes-release': {
+                '7': {'tests': [{'name': 0, 'time': 0.0, 'skipped': True}]},
+            },
+        },
+        'gs://kube_azure_log/': {},
+    },
+}
+
 
 TEST_BUCKETS_DATA = {
-    'gs://kubernetes-jenkins/logs/': { 'prefix': '' },
-    'gs://bucket1/': { 'prefix': 'bucket1_prefix' },
-    'gs://bucket2/': { 'prefix': 'bucket2_prefix' }
+    "gs://kubernetes-jenkins/logs/": { "prefix": "" },
+    "gs://rktnetes-jenkins/logs/": { "prefix": "rktnetes$" },
+    "gs://kube_azure_log/": { "prefix": "azure$" },
 }
 
 
@@ -49,61 +63,86 @@ class GenHtmlTest(unittest.TestCase):
     """Unit tests for gen_html.py."""
     # pylint: disable=invalid-name
 
-    def testHtmlHeader_NoScript(self):
-        result = '\n'.join(gen_html.html_header('', False))
-        self.assertNotIn('<script', result)
+    def test_job_results(self):
+        """Test that job_results returns what we want."""
+        bucket = 'gs://kubernetes-jenkins/logs/'
+        job = 'kubernetes-release'
+        summary, tests = gen_html.job_results(
+            bucket,
+            '',
+            job,
+            TEST_DATA['buckets'][bucket][job],
+            TEST_DATA['test_names'])
+        self.assertEqual(summary.name, job)
+        self.assertEqual(summary.passed, 1)
+        self.assertEqual(summary.failed, 1)
+        self.assertEqual(summary.tests, 2)
+        self.assertEqual(summary.stable, 1)
+        self.assertEqual(summary.unstable, 0)
+        self.assertEqual(summary.broken, 1)
+        self.assertEqual(len(tests), 2)
+        self.assertEqual(tests[0]['name'], 'test2')
+        self.assertEqual(tests[1]['name'], 'test1')
+        self.assertEqual(tests[0]['runs'], 1)
+        self.assertEqual(tests[0]['failed'], 1)
 
-    def testHtmlHeader_NoTitle(self):
-        def Test(title):
-            result = '\n'.join(gen_html.html_header(title, False))
-            self.assertNotIn('<title', result)
-        Test('')
-        Test(None)
+        # Skipped tests don't show up.
+        bucket = 'gs://rktnetes-jenkins/logs/'
+        job = 'kubernetes-release'
+        summary, tests = gen_html.job_results(
+            bucket,
+            'rktnetes$',
+            job,
+            TEST_DATA['buckets'][bucket][job],
+            TEST_DATA['test_names'])
+        self.assertEqual(summary.name, 'rktnetes$' + job)
+        self.assertEqual(summary.passed, 1)
+        self.assertEqual(summary.failed, 0)
+        self.assertEqual(summary.tests, 0)
 
-    def testHtmlHeader_Title(self):
-        lines = gen_html.html_header('foo', False)
-        for item in lines:
-          if '<title' in item:
-            self.assertIn('foo', item)
-            break
-        else:
-          self.fail('No foo in: %s' % '\n'.join(lines))
+    def test_list_jobs(self):
+        """Test that list_jobs gives job data of the right length."""
+        expecteds = [
+            ('gs://kubernetes-jenkins/logs/', 'kubernetes-debug', 2),
+            ('gs://kubernetes-jenkins/logs/', 'kubernetes-release', 2),
+            ('gs://rktnetes-jenkins/logs/', 'kubernetes-release', 1),
+        ]
+        actuals = sorted(list(gen_html.list_jobs(TEST_DATA)))
+        self.assertEqual(len(expecteds), len(actuals))
+        for expected, actual in zip(expecteds, actuals):
+            self.assertEqual(expected[0], actual[0])
+            self.assertEqual(expected[1], actual[1])
+            self.assertEqual(expected[2], len(actual[2]))
 
-    def testHtmlHeader_Script(self):
-        lines = gen_html.html_header('', True)
-        for item in lines:
-          if '<script' in item:
-            break
-        else:
-          self.fail('No script in: %s' % '\n'.join(lines))
+    def test_merge_bad_tests(self):
+        """Test that merge_bad_tests merges failed tests."""
+        def check(bad, new, expected):
+            gen_html.merge_bad_tests(bad, new)
+            self.assertEqual(bad, expected)
 
-    @staticmethod
-    def gen_html(*args):
-        """Call gen_html with TEST_DATA."""
-        return gen_html.gen_html(gen_html.transpose(TEST_DATA), *args)[0]
+        check({}, [], {})
+        check({}, [{'failed': 0}], {})
+        failed_test = {
+            'failed': 1,
+            'name': 'failed_test',
+            'runs': 1,
+            'passed': 0,
+            'latest_failure': None,
+        }
+        check({}, [failed_test], {'failed_test': failed_test})
+        check({'failed_test': failed_test}, [failed_test], {
+            'failed_test': {
+                'failed': 2,
+                'name': 'failed_test',
+                'runs': 2,
+                'passed': 0,
+                'latest_failure': None,
+            }
+        })
+        check({'failed_test2': failed_test}, [failed_test], {
+            'failed_test2': failed_test, 'failed_test': failed_test})
 
-    def testGenHtml(self):
-        """Test that the expected tests and jobs are in the results."""
-        html = self.gen_html('')
-        self.assertIn('test1', html)
-        self.assertIn('test2', html)
-        self.assertIn('release', html)
-        self.assertIn('debug', html)
-
-    def testGenHtmlFilter(self):
-        """Test that filtering to just the release jobs works."""
-        html = self.gen_html('release')
-        self.assertIn('release', html)
-        self.assertIn('skipped">\ntest2', html)
-        self.assertNotIn('debug', html)
-
-    def testGenHtmlFilterExact(self):
-        """Test that filtering to an exact name works."""
-        html = self.gen_html('release', True)
-        self.assertIn('release', html)
-        self.assertNotIn('debug', html)
-
-    def testGetOptions(self):
+    def test_get_options(self):
         """Test argument parsing works correctly."""
 
         def check(args, expected_output_dir, expected_input,
@@ -122,7 +161,7 @@ class GenHtmlTest(unittest.TestCase):
         check(['--buckets=baz', '--input=bar', '--output-dir=foo'],
               'foo', 'bar', 'baz')
 
-    def testGetOptions_Missing(self):
+    def test_get_options_missing(self):
         """Test missing arguments raise an exception."""
         def check(args):
             """Check that args raise an exception."""
@@ -136,25 +175,13 @@ class GenHtmlTest(unittest.TestCase):
         check(['--buckets=baz', '--input=bar'])
         check(['--buckets=baz', '--output-dir=foo'])
 
-    def test_load_buckets_info(self):
-        """Test load_buckets_info() populates BUCKET_TO_PREFIX."""
-        temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
-        try:
-            buckets_json = os.path.join(temp_dir, 'buckets.json')
-            with open(buckets_json, 'w') as buf:
-                json.dump(TEST_BUCKETS_DATA, buf)
-            gen_html.load_buckets_info(buckets_json)
-            for bucket in ('bucket1', 'bucket2'):
-                self.assertEquals(
-                    '%s_prefix'%bucket,
-                    gen_html.BUCKET_TO_PREFIX['gs://%s/'%bucket])
-            self.assertEquals(
-                '',
-                gen_html.BUCKET_TO_PREFIX['gs://kubernetes-jenkins/logs/'])
-        finally:
-            shutil.rmtree(temp_dir)
+    def test_load_prefixes(self):
+        """Test load_prefixes does what we think."""
+        data = '{ "gs://bucket/": { "prefix": "bucket_prefix" } }'
+        prefixes = gen_html.load_prefixes(StringIO.StringIO(data))
+        self.assertEquals(prefixes['gs://bucket/'], 'bucket_prefix')
 
-    def testMain(self):
+    def test_main(self):
         """Test main() creates pages."""
         temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
         try:
@@ -163,16 +190,16 @@ class GenHtmlTest(unittest.TestCase):
                 json.dump(TEST_DATA, buf)
             buckets_json = os.path.join(temp_dir, 'buckets.json')
             with open(buckets_json, 'w') as buf:
-                json.dump(TEST_BUCKETS_DATA, buf)
+                buf.write(json.dumps(TEST_BUCKETS_DATA))
             gen_html.main(tests_json, buckets_json, temp_dir)
             for page in (
                     'index',
-                    'tests-kubernetes',
                     'suite-kubernetes-release',
                     'suite-kubernetes-debug'):
                 self.assertTrue(os.path.exists('%s/%s.html' % (temp_dir, page)))
         finally:
             shutil.rmtree(temp_dir)
+
 
 if __name__ == '__main__':
     unittest.main()

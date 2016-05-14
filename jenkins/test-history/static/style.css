@@ -1,128 +1,68 @@
 body {
-    margin: 0;
+    font-family: sans-serif;
     padding: 0;
-    font-family: monospace;
+    margin: 0;
 }
 
-#header {
-    width: 100%;
-    font-size: x-large;
-    font-weight: bold;
-    padding: 10px;
+header {
+    background-color: #3f51b5;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    box-shadow: 0px 0px 10px #666;
 }
 
-a.suite-link {
-    font-weight: bold;
-    font-size: large;
-    display: block;
-    text-decoration: none;
-}
-
-span.total {
-    display: inline-block;
-    width: 60px;
-    padding-left: 30px;
-    border-radius: 10px;
-    margin: 5px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-span.total.okay {
-    background: linear-gradient(to left, #e3e3e3 80%, #009900 20%);
-}
-
-span.total.unstable {
-    background: linear-gradient(to left, #e3e3e3 80%, #EE9500 20%);
-}
-
-span.total.failed {
-    background: linear-gradient(to left, #e3e3e3 80%, #AA0000 20%);
-}
-
-span.total.skipped {
-    background: linear-gradient(to left, #e3e3e3 80%, #999999 20%);
-}
-
-ul.test {
-    list-style-type: none;
-    padding: 0 0 5px 5px;
-    width: 100%;
-}
-
-li.test {
-    margin: 0 0 10px 0;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    padding: 5px;
-    font-size: large;
-    font-weight: bold;
-    padding-left: 4%;
-}
-
-li.test.okay {
-    background: linear-gradient(to left, #e3e3e3 97%, #009900 3%);
-}
-
-li.test.unstable {
-    background: linear-gradient(to left, #e3e3e3 97%, #EE9500 3%);
-}
-
-li.test.failed {
-    background: linear-gradient(to left, #e3e3e3 97%, #AA0000 3%);
-}
-
-li.test.skipped {
-    background: linear-gradient(to left, #e3e3e3 97%, #999999 3%);
-}
-
-ul.suite {
-    list-style: none;
-    margin: 2px 0 0 0;
+#logo {
+    width: 100px;
+    height: 100px;
+    float: left;
     padding-left: 20px;
 }
 
-li.suite {
-    margin: 0 0 2px 0;
-    font-size: normal;
+header a {
+    color: white;
+}
+
+article {
+    padding: 4px;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 2em;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tr:nth-child(even) {
+    background-color: #F0F0F0;
+}
+
+tr:hover {
+    background-color: #E0E0E0;
+}
+
+th {
+    background-color: #3f51b5;
+    color: white;
     font-weight: normal;
 }
 
-li.suite span {
-    float: left;
-    width: 70px;
-    font-weight: bold;
+table, th, td {
+   padding: 8px;
 }
 
-li.test span {
-    width: 50px;
+a {
+    text-decoration: none;
 }
 
-li.test span.time {
-    font-weight: normal;
-}
-
-li.test span.okay {
-    color: green;
-}
-
-li.test span.unstable {
-    color: orange;
-}
-
-li.test span.failed {
-    color: red;
-}
-
-li.test>span {
-    display: inline-block;
+td.numeric {
     text-align: right;
 }
 
-li.test a {
-    color: inherit;
+caption {
+    text-align: justify;
+    padding: 10px;
 }
