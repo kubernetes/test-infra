@@ -27,7 +27,8 @@ readonly jsonpath="gs://${bucket}/logs/$(date +%F).json"
 # generated.
 gsutil -q cp "${jsonpath}" "tests.json" || true
 
-docker run --rm -iv "$(pwd):/test-history" -w="/test-history" python:2.7 bash -c "\
+docker run --rm -v '/etc/localtime:/etc/localtime:ro' \
+  -v "$(pwd):/test-history" -w="/test-history" python:2.7 bash -c "\
     pip install -r requirements.txt && \
     time python gen_json.py \
         --buckets=buckets.json \
