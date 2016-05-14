@@ -235,7 +235,7 @@ def main(in_path, buckets_path, out_dir):
     with open('{}/index.html'.format(templates_path)) as index_template_file:
         index_template = jinja2.Template(index_template_file.read())
     index_html = index_template.render({
-        'last_updated': time.ctime(),
+        'last_updated': time.strftime('%a %b %d %T %Z'),
         'job_groups': [blocking_job_summaries, summaries],
         'bad_tests': sorted(bad_tests.values(), key=lambda t: t['failed'], reverse=True),
     })
