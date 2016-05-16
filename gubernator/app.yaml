@@ -10,6 +10,9 @@ handlers:
   upload: favicon\.ico
   secure: always
 
+- url: /static
+  static_dir: static
+
 - url: .*
   script: main.app
   secure: always
