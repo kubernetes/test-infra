@@ -870,9 +870,13 @@
     post-env: ''
     suffix:
         - 'release':
+            # Broken as it pins to the latest k8s release, which is broken by https://github.com/kubernetes/kubernetes/issues/25153
+            disable_job: true
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty stable build and the latest k8s 1.1 release.'
             timeout: 150
         - 'slow':
+            # Broken as it pins to the latest k8s release, which is broken by https://github.com/kubernetes/kubernetes/issues/25153
+            disable_job: true
             description: 'Run slow E2E tests on GCE with the latest Trusty stable build with the latest k8s 1.1 release.'
             timeout: 270
     jobs:
