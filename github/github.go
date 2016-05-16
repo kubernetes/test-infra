@@ -540,14 +540,18 @@ func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 	if err != nil {
 		return &out
 	}
-	for _, event := range events {
+	index := 0
+	for i, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
 			if labelTime == nil || event.CreatedAt.After(*labelTime) {
 				labelTime = event.CreatedAt
 				out = event
+				index = i
 			}
 		}
 	}
+	// Want this information next time we hit the bug where it can't find the most recent LGTM label.
+	glog.Infof("%v labelEvent: searched %v events for label %v, found at index %v", *obj.Issue.Number, len(events), label, index)
 	return &out
 }
 
@@ -846,16 +850,30 @@ func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
 	prNum := *obj.Issue.Number
 	events := []github.IssueEvent{}
 	page := 1
+	// Try to work around not finding events--suspect some cache invalidation bug when the number of pages changes.
+	tryNextPageAnyway := false
 	for {
 		eventPage, response, err := config.client.Issues.ListIssueEvents(config.Org, config.Project, prNum, &github.ListOptions{PerPage: 100, Page: page})
 		config.analytics.ListIssueEvents.Call(config, response)
 		if err != nil {
+			if tryNextPageAnyway {
+				// Cached last page was actually truthful -- expected error.
+				break
+			}
 			glog.Errorf("Error getting events for issue: %v", err)
 			return nil, err
 		}
+		if tryNextPageAnyway {
+			glog.Infof("For %v: supposedly there weren't more events, but we asked anyway and found %v more.", prNum, len(eventPage))
+			tryNextPageAnyway = false
+		}
 		events = append(events, eventPage...)
 		if response.LastPage == 0 || response.LastPage <= page {
-			break
+			if len(events)%100 == 0 {
+				tryNextPageAnyway = true
+			} else {
+				break
+			}
 		}
 		page++
 	}
