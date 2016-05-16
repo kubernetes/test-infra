@@ -32,6 +32,7 @@ import (
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
+	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 
@@ -190,6 +191,14 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.lastE2EStable = true
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
+
+	sq.health.StartTime = sq.clock.Now()
+	sq.healthHistory = make([]healthRecord, 0)
+
+	sq.e2e = &fake_e2e.FakeE2ETester{
+		JobNames:           sq.JobNames,
+		WeakStableJobNames: sq.WeakStableJobNames,
+	}
 
 	if startThreads {
 		sq.internalInitialize(config, nil, server.URL)
@@ -1176,5 +1185,28 @@ func TestCalcMergeRateWithTail(t *testing.T) {
 		if !test.expected(rate) {
 			t.Errorf("%d:%s: %v", testNum, test.name, rate)
 		}
+	}
+}
+
+func TestHealth(t *testing.T) {
+	sq := getTestSQ(false, nil, nil)
+	sq.updateHealth()
+	sq.updateHealth()
+	if len(sq.healthHistory) != 2 {
+		t.Errorf("Wrong length healthHistory after calling updateHealth: %v", sq.healthHistory)
+	}
+	if sq.health.TotalLoops != 2 || sq.health.NumStable != 2 || len(sq.health.NumStablePerJob) != 2 {
+		t.Errorf("Wrong number of stable loops after calling updateHealth: %v", sq.health)
+	}
+	for _, stable := range sq.health.NumStablePerJob {
+		if stable != 2 {
+			t.Errorf("Wrong number of stable loops for a job: %v", sq.health.NumStablePerJob)
+		}
+	}
+	sq.healthHistory[0].Time = time.Now().AddDate(0, 0, -3)
+	sq.healthHistory[1].Time = time.Now().AddDate(0, 0, -2)
+	sq.updateHealth()
+	if len(sq.healthHistory) != 1 {
+		t.Errorf("updateHealth didn't truncate old entries: %v", sq.healthHistory)
 	}
 }
