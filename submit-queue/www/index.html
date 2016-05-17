@@ -142,11 +142,11 @@
 
           <md-tab md-on-select="cntl.selectTab('e2e')">
             <md-tab-label>
-              <span ng-class="{'redTab':cntl.failedBuild}">Google Internal E2E</span>
+              <span ng-class="{'redTab':cntl.failedBuild}">E2E Tests</span>
             </md-tab-label>
             <md-tab-body>
               <md-toolbar class="md-whiteframe-z2">
-                <h2 class="md-toolbar-tools">Google End-to-End Results</h2>
+                <h2 class="md-toolbar-tools">End-to-End Results</h2>
               </md-toolbar>
               <md-chips ng-model="cntl.builds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
@@ -156,7 +156,7 @@
               </md-chips>
               <br>
               <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
-              <p>Health percents are the fraction of the time that a given job is stable since the submit queue restarted<span ng-show="cntl.StartTime.length > 0"> ({{ cntl.StartTime }})</span>.</p>
+              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted<span ng-show="cntl.StartTime.length > 0"> ({{ cntl.StartTime }})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.</p>
             </md-tab-body>
           </md-tab>
 

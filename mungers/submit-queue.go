@@ -112,6 +112,14 @@ type submitQueueHealth struct {
 	NumStablePerJob map[string]int
 }
 
+// Generate health information using a queue of healthRecords. The bools are
+// true for stable and false otherwise.
+type healthRecord struct {
+	Time    time.Time
+	Overall bool
+	Jobs    map[string]bool
+}
+
 // information about the sq itself including how fast things are merging and
 // how long since the last merge
 type submitQueueStats struct {
@@ -165,7 +173,9 @@ type SubmitQueue struct {
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
+
 	health        submitQueueHealth
+	healthHistory []healthRecord
 }
 
 func init() {
@@ -323,7 +333,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	}
 
 	sq.health.StartTime = sq.clock.Now()
-	sq.health.NumStablePerJob = map[string]int{}
+	sq.healthHistory = make([]healthRecord, 0)
 
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
@@ -378,16 +388,35 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 
 // Hold the lock
 func (sq *SubmitQueue) updateHealth() {
-	sq.health.TotalLoops++
-	if sq.e2e.Stable() {
-		sq.health.NumStable++
+	// Remove old entries from the front.
+	for len(sq.healthHistory) > 0 && time.Since(sq.healthHistory[0].Time).Hours() > 24.0 {
+		sq.healthHistory = sq.healthHistory[1:]
+	}
+	// Make the current record
+	newEntry := healthRecord{
+		Time:    time.Now(),
+		Overall: sq.e2e.Stable(),
+		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
-		if _, ok := sq.health.NumStablePerJob[job]; !ok {
-			sq.health.NumStablePerJob[job] = 0
+		newEntry.Jobs[job] = status.Status == "Stable"
+	}
+	sq.healthHistory = append(sq.healthHistory, newEntry)
+	// Now compute the health structure so we don't have to do it on page load
+	sq.health.TotalLoops = len(sq.healthHistory)
+	sq.health.NumStable = 0
+	sq.health.NumStablePerJob = map[string]int{}
+	for _, record := range sq.healthHistory {
+		if record.Overall {
+			sq.health.NumStable += 1
 		}
-		if status.Status == "Stable" {
-			sq.health.NumStablePerJob[job]++
+		for job, stable := range record.Jobs {
+			if _, ok := sq.health.NumStablePerJob[job]; !ok {
+				sq.health.NumStablePerJob[job] = 0
+			}
+			if stable {
+				sq.health.NumStablePerJob[job]++
+			}
 		}
 	}
 }
