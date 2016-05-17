@@ -76,7 +76,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 		issue.Number = intPtr(issueNum)
 		pr := ValidPR()
 		pr.Number = intPtr(issueNum)
-		client, server, mux := github_test.InitServer(t, issue, pr, nil, nil, test.ciStatus)
+		client, server, mux := github_test.InitServer(t, issue, pr, nil, nil, test.ciStatus, nil)
 
 		path := fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {

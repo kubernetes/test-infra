@@ -64,6 +64,13 @@ func UndeterminedMergeablePR() *github.PullRequest {
 	return github_test.PullRequest(whitelistUser, false, false, false)
 }
 
+func MasterCommit() *github.RepositoryCommit {
+	masterSHA := "mastersha"
+	return &github.RepositoryCommit{
+		SHA: &masterSHA,
+	}
+}
+
 func NonWhitelistUserPR() *github.PullRequest {
 	return github_test.PullRequest(noWhitelistUser, false, true, true)
 }
@@ -288,7 +295,7 @@ func TestQueueOrder(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
@@ -342,7 +349,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil)
+		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
@@ -444,6 +451,11 @@ func TestSubmitQueue(t *testing.T) {
 		mergeAfterQueued bool
 		reason           string
 		state            string // what the github status context should be for the PR HEAD
+
+		imHeadSHA      string
+		imBaseSHA      string
+		masterCommit   *github.RepositoryCommit
+		retestsAvoided int // desired output
 	}{
 		// Should pass because the entire thing was run and good
 		{
@@ -461,6 +473,27 @@ func TestSubmitQueue(t *testing.T) {
 			unitPass:        true,
 			reason:          merged,
 			state:           "success",
+		},
+		// Should pass without running tests because we had a previous run.
+		{
+			name:            "Test1",
+			pr:              ValidPR(),
+			issue:           NoOKToMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			e2ePass:         true,
+			unitPass:        true,
+			reason:          merged,
+			state:           "success",
+			retestsAvoided:  1,
+			imHeadSHA:       "mysha", // Set by ValidPR
+			imBaseSHA:       "mastersha",
+			masterCommit:    MasterCommit(),
 		},
 		// Should list as 'merged' but the merge should happen before it gets e2e tested
 		// and we should bail early instead of waiting for a test that will never come.
@@ -808,7 +841,7 @@ func TestSubmitQueue(t *testing.T) {
 		issueNumStr := strconv.Itoa(issueNum)
 
 		test.issue.Number = &issueNum
-		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus)
+		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus, test.masterCommit)
 
 		config := &github_util.Config{}
 		config.Org = "o"
@@ -972,6 +1005,8 @@ func TestSubmitQueue(t *testing.T) {
 		})
 
 		sq := getTestSQ(true, config, server)
+		sq.interruptedMergeBaseSHA = test.imBaseSHA
+		sq.interruptedMergeHeadSHA = test.imHeadSHA
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
 		sq.Munge(obj)
@@ -1012,6 +1047,9 @@ func TestSubmitQueue(t *testing.T) {
 
 		if test.state != "" && test.state != stateSet {
 			t.Errorf("%d:%q state set to %q but expected %q", testNum, test.name, stateSet, test.state)
+		}
+		if e, a := test.retestsAvoided, int(sq.retestsAvoided); e != a {
+			t.Errorf("%d:%q expected %v tests avoided but got %v", testNum, test.name, e, a)
 		}
 	}
 }

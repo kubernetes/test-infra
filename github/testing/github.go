@@ -254,6 +254,8 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 			data, err = json.Marshal(thing)
 		case github.RepositoryCommit:
 			data, err = json.Marshal(thing)
+		case *github.RepositoryCommit:
+			data, err = json.Marshal(thing)
 		case *github.CombinedStatus:
 			data, err = json.Marshal(thing)
 		case []github.User:
@@ -273,7 +275,7 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 // InitServer will return a github.Client which will talk to httptest.Server,
 // to retrieve information from the http.ServeMux. If an issue, pr, events, or
 // commits are supplied it will repond with those on o/r/
-func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, events []github.IssueEvent, commits []github.RepositoryCommit, status *github.CombinedStatus) (*github.Client, *httptest.Server, *http.ServeMux) {
+func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, events []github.IssueEvent, commits []github.RepositoryCommit, status *github.CombinedStatus, masterCommit *github.RepositoryCommit) (*github.Client, *httptest.Server, *http.ServeMux) {
 	// test server
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
@@ -315,6 +317,10 @@ func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, event
 			path := fmt.Sprintf("/repos/o/r/commits/%s", *c.SHA)
 			setMux(t, mux, path, c)
 		}
+	}
+	if masterCommit != nil {
+		path := "/repos/o/r/commits/master"
+		setMux(t, mux, path, masterCommit)
 	}
 	if status != nil {
 		path := fmt.Sprintf("/repos/o/r/commits/%s/status", sha)

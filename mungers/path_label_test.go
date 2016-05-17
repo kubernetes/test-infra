@@ -142,7 +142,7 @@ func TestPathLabelMunge(t *testing.T) {
 		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitServer(t, docsProposalIssue(), ValidPR(), test.events, test.commits, nil)
+		client, server, mux := github_test.InitServer(t, docsProposalIssue(), ValidPR(), test.events, test.commits, nil, nil)
 		mux.HandleFunc("/repos/o/r/issues/1/labels/kind/design", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte{})
