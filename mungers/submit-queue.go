@@ -25,6 +25,7 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"k8s.io/kubernetes/pkg/util"
@@ -123,8 +124,9 @@ type healthRecord struct {
 // information about the sq itself including how fast things are merging and
 // how long since the last merge
 type submitQueueStats struct {
-	LastMergeTime time.Time
-	MergeRate     float64
+	LastMergeTime  time.Time
+	MergeRate      float64
+	RetestsAvoided int
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -173,6 +175,11 @@ type SubmitQueue struct {
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
+
+	// If these two items match when we're about to kick off a retest, it's safe to skip the retest.
+	interruptedMergeHeadSHA string
+	interruptedMergeBaseSHA string
+	retestsAvoided          int32
 
 	health        submitQueueHealth
 	healthHistory []healthRecord
@@ -958,37 +965,63 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
-		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
-		sq.SetMergeStatus(obj, unknown)
-		return
+	// See if we can skip the retest.
+	headSHA, baseRef, gotHeadSHA := obj.GetHeadAndBase()
+	baseSHA := ""
+	gotBaseSHA := false
+	if gotHeadSHA {
+		baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
 	}
+	maySkipTest := gotHeadSHA && gotBaseSHA &&
+		sq.interruptedMergeBaseSHA == baseSHA &&
+		sq.interruptedMergeHeadSHA == headSHA
 
-	// Wait for the build to start
-	sq.SetMergeStatus(obj, ghE2EWaitingStart)
-	err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
-	if err != nil {
-		s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
-		sq.SetMergeStatus(obj, s)
-		return
-	}
+	if maySkipTest {
+		glog.Infof("Skipping retest since head and base sha match previous attempt!")
+		atomic.AddInt32(&sq.retestsAvoided, 1)
+	} else {
+		if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
+			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+			sq.SetMergeStatus(obj, unknown)
+			return
+		}
 
-	// Wait for the status to go back to something other than pending
-	sq.SetMergeStatus(obj, ghE2ERunning)
-	err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
-	if err != nil {
-		s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
-		sq.SetMergeStatus(obj, s)
-		return
-	}
+		// Wait for the build to start
+		sq.SetMergeStatus(obj, ghE2EWaitingStart)
+		err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
+		if err != nil {
+			s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
+			sq.SetMergeStatus(obj, s)
+			return
+		}
 
-	// Check if the thing we care about is success
-	if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
-		sq.SetMergeStatus(obj, ghE2EFailed)
-		return
+		// re-get the base SHA in case something merged between us checking and
+		// starting the tests.
+		if gotHeadSHA {
+			baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
+		}
+
+		// Wait for the status to go back to something other than pending
+		sq.SetMergeStatus(obj, ghE2ERunning)
+		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
+		if err != nil {
+			s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
+			sq.SetMergeStatus(obj, s)
+			return
+		}
+
+		// Check if the thing we care about is success
+		if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
+			sq.SetMergeStatus(obj, ghE2EFailed)
+			return
+		}
 	}
 
 	if !sq.e2eStable() {
+		if gotHeadSHA && gotBaseSHA {
+			sq.interruptedMergeBaseSHA = baseSHA
+			sq.interruptedMergeHeadSHA = headSHA
+		}
 		sq.SetMergeStatus(obj, e2eFailure)
 		return
 	}
@@ -1042,8 +1075,9 @@ func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
 
 func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) {
 	data := submitQueueStats{
-		LastMergeTime: sq.lastMergeTime,
-		MergeRate:     sq.calcMergeRateWithTail(),
+		LastMergeTime:  sq.lastMergeTime,
+		MergeRate:      sq.calcMergeRateWithTail(),
+		RetestsAvoided: int(atomic.LoadInt32(&sq.retestsAvoided)),
 	}
 	sq.serve(sq.marshal(data), res, req)
 }

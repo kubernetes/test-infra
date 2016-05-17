@@ -678,6 +678,39 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	return nil
 }
 
+// Returns the head SHA and the base ref, so that you can get the base's sha in
+// a second step. Purpose: if head and base SHA are the same across two merge
+// attempts, we don't need to rerun tests.
+func (obj *MungeObject) GetHeadAndBase() (headSHA, baseRef string, ok bool) {
+	pr, err := obj.GetPR()
+	if err != nil {
+		return "", "", false
+	}
+	if pr.Head == nil || pr.Head.SHA == nil {
+		return "", "", false
+	}
+	headSHA = *pr.Head.SHA
+	if pr.Base == nil || pr.Base.Ref == nil {
+		return "", "", false
+	}
+	baseRef = *pr.Base.Ref
+	return headSHA, baseRef, true
+}
+
+// GetSHAFromRef returns the current SHA of the given ref (i.e., branch).
+func (obj *MungeObject) GetSHAFromRef(ref string) (sha string, ok bool) {
+	commit, response, err := obj.config.client.Repositories.GetCommit(obj.config.Org, obj.config.Project, ref)
+	obj.config.analytics.GetCommit.Call(obj.config, response)
+	if err != nil {
+		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.config.Org, obj.config.Project, ref, err)
+		return "", false
+	}
+	if commit.SHA == nil {
+		return "", false
+	}
+	return *commit.SHA, true
+}
+
 // SetMilestone will set the milestone to the value specified
 func (obj *MungeObject) SetMilestone(title string) error {
 	milestones := obj.config.ListMilestones("all")
