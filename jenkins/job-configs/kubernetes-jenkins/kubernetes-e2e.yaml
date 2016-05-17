@@ -106,7 +106,7 @@
                 export KUBE_ENABLE_NODE_AUTOSCALER="true"
                 export NUM_NODES=3
                 export KUBE_AUTOSCALER_MIN_NODES=3
-                export KUBE_AUTOSCALER_MAX_NODES=4
+                export KUBE_AUTOSCALER_MAX_NODES=5
                 export KUBE_ADMISSION_CONTROL="NamespaceLifecycle,InitialResources,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota"
         - 'gce-flaky':
             description: 'Run the flaky tests on GCE, sequentially.'
