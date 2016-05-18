@@ -1019,6 +1019,7 @@ func TestSubmitQueue(t *testing.T) {
 					}
 				}()
 
+				// TODO: concurrent map read/write bug here!
 				if sq.prStatus[issueNumStr].Reason == test.reason {
 					done <- true
 					return
