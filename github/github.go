@@ -678,9 +678,9 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	return nil
 }
 
-// Returns the head SHA and the base ref, so that you can get the base's sha in
-// a second step. Purpose: if head and base SHA are the same across two merge
-// attempts, we don't need to rerun tests.
+// GetHeadAndBase returns the head SHA and the base ref, so that you can get
+// the base's sha in a second step. Purpose: if head and base SHA are the same
+// across two merge attempts, we don't need to rerun tests.
 func (obj *MungeObject) GetHeadAndBase() (headSHA, baseRef string, ok bool) {
 	pr, err := obj.GetPR()
 	if err != nil {
