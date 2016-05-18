@@ -897,6 +897,9 @@ func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
 			return nil, err
 		}
 		if tryNextPageAnyway {
+			if len(eventPage) == 0 {
+				break
+			}
 			glog.Infof("For %v: supposedly there weren't more events, but we asked anyway and found %v more.", prNum, len(eventPage))
 			tryNextPageAnyway = false
 		}
