@@ -1,0 +1,45 @@
+# Copyright 2016 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# collectd config to collect metrics from Jenkins and report to Stackdriver.
+#
+# To enable:
+# 1. Install the Jenkins Metrics plugin
+#    (https://wiki.jenkins-ci.org/display/JENKINS/Metrics+Plugin)
+# 2. Create a metrics access key by navigating to
+#    "Manage Jenkins > Configure System" and scrolling down to the "Metrics"
+#    section
+# 3. Replace {METRICS_KEY} below with that key
+# 4. Copy the modified config into /opt/stackdriver/collectd/etc/collectd.d
+# 5. Restart the stackdriver agent
+#
+# Note that collectd will spam the syslog with complaints about version metrics
+# being invalid; the repeated periods in some versions result in invalid gauge
+# values.
+#
+# Metrics will appear in Stackdriver associated with the GCE instance where
+# this is installed.
+#
+# Metric names follow the naming pattern
+# "curl_json:jenkins:gauge:{METRIC_NAME}.value-value:value".
+
+LoadPlugin curl_json
+<Plugin curl_json>
+  <URL "http://localhost:8080/metrics/{METRICS_KEY}/metrics">
+    Instance "jenkins"
+    <Key "gauges/*/value">
+      Type "gauge"
+    </Key>
+  </URL>
+</Plugin>
