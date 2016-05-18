@@ -78,7 +78,7 @@ function SQCntl(dataService, $interval, $location) {
       1: [refreshGithubE2E, refreshSQStats],
       2: [refreshHistoryPRs],
       3: [refreshE2EHealth],
-      4: [refreshUsers, refreshBotStats],
+      4: [refreshSQStats, refreshUsers, refreshBotStats],
     }
     if (self.tabLoaded[self.selected])
       return;

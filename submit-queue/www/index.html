@@ -208,6 +208,8 @@
                   <h3 class=md-title>API Calls Per Second: {{ cntl.apiCallsPerSec }}</h3>
                   <h3 class=md-title>Github Rate Limit Count: {{ cntl.githubApiLimitCount }}</h3>
                   <h3 class=md-title>Github Rate Limit Next Reset: {{ cntl.githubApiLimitReset }}</h3>
+                  <h3 class=md-title>Retests avoided because of e2e test flakes: {{ cntl.sqStats.RetestsAvoided }}</h3>
+                  <h3 class=md-title>Flakes ignored: {{ cntl.sqStats.FlakesIgnored }}</h3>
                   <md-content class="md-whiteframe-z2">
                     <md-data-table-container>
                       <md-data-table-toolbar>
