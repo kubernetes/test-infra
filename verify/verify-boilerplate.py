@@ -34,7 +34,7 @@ rootdir = os.path.dirname(__file__) + "/../"
 rootdir = os.path.abspath(rootdir)
 parser.add_argument("--rootdir", default=rootdir, help="root directory to examine")
 
-default_boilerplate_dir = os.path.join(rootdir, "hack/boilerplate")
+default_boilerplate_dir = os.path.join(rootdir, "verify/boilerplate")
 parser.add_argument("--boilerplate-dir", default=default_boilerplate_dir)
 args = parser.parse_args()
 
@@ -74,7 +74,7 @@ def file_passes(filename, refs, regexs):
         (data, found) = p.subn("", data, 1)
 
     # remove shebang from the top of shell files
-    if extension == "sh":
+    if extension == "sh" or extension == "py":
         p = regexs["shebang"]
         (data, found) = p.subn("", data, 1)
 
@@ -108,7 +108,7 @@ def file_passes(filename, refs, regexs):
 def file_extension(filename):
     return os.path.splitext(filename)[1].split(".")[-1].lower()
 
-skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/env.sh', "vendor", "test/e2e/generated/bindata.go"]
+skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'vendor', '__init__.py']
 
 def normalize_files(files):
     newfiles = []
@@ -156,18 +156,23 @@ def get_regexs():
     regexs["date"] = re.compile( '(2014|2015|2016)' )
     # strip // +build \n\n build constraints
     regexs["go_build_constraints"] = re.compile(r"^(// \+build.*\n)+\n", re.MULTILINE)
-    # strip #!.* from shell scripts
+    # strip #!.* from shell/python scripts
     regexs["shebang"] = re.compile(r"^(#!.*\n)\n*", re.MULTILINE)
     return regexs
 
-def main():
+if __name__ == "__main__":
+    exit_code = 0
     regexs = get_regexs()
     refs = get_refs()
     filenames = get_files(refs.keys())
-
+    nonconforming_files = []
     for filename in filenames:
         if not file_passes(filename, refs, regexs):
-            print(filename, file=sys.stdout)
+            nonconforming_files.append(filename)
 
-if __name__ == "__main__":
-  sys.exit(main())
+    if nonconforming_files:
+        print('%d files have incorrect boilerplate headers:' %
+              len(nonconforming_files))
+        for filename in sorted(nonconforming_files):
+            print(filename)
+        sys.exit(1)
