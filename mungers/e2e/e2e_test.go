@@ -179,7 +179,6 @@ func TestCheckGCSBuilds(t *testing.T) {
 				"bar": {Status: "Not Stable", ID: "44"},
 			},
 		},
-
 		{
 			paths: map[string][]byte{
 				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
@@ -207,6 +206,35 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Ignorable flake", ID: "44"},
+			},
+		},
+		{
+			paths: map[string][]byte{
+				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getRealJUnitFailure(),
+				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
+				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 999,
+				}, t),
+			},
+			expectStable: false,
+			expectedStatus: map[string]BuildInfo{
+				"foo": {Status: "Stable", ID: "42"},
+				"bar": {Status: "Not Stable", ID: "44"},
 			},
 		},
 
