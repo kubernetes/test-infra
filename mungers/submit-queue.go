@@ -127,6 +127,7 @@ type submitQueueStats struct {
 	LastMergeTime  time.Time
 	MergeRate      float64
 	RetestsAvoided int
+	FlakesIgnored  int
 }
 
 // SubmitQueue will merge PR which meet a set of requirements.
@@ -180,6 +181,7 @@ type SubmitQueue struct {
 	interruptedMergeHeadSHA string
 	interruptedMergeBaseSHA string
 	retestsAvoided          int32
+	flakesIgnored           int32
 
 	health        submitQueueHealth
 	healthHistory []healthRecord
@@ -428,21 +430,20 @@ func (sq *SubmitQueue) updateHealth() {
 	}
 }
 
-func (sq *SubmitQueue) e2eStable() bool {
+func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
 	wentStable := false
 	wentUnstable := false
 
-	stable := sq.e2e.GCSBasedStable()
-	jenkinsStable := sq.e2e.Stable()
-
-	if stable != jenkinsStable {
-		glog.Errorf("GCS stable check returned different value than Jenkins: %v vs %v.", stable, jenkinsStable)
-	}
+	stable, ignorableFlakes := sq.e2e.GCSBasedStable()
 
 	weakStable := sq.e2e.GCSWeakStable()
 	if !weakStable {
 		stable = weakStable
 		glog.Errorf("E2E is not stable because weak stable check failed.")
+	}
+
+	if aboutToMerge && stable && ignorableFlakes {
+		atomic.AddInt32(&sq.flakesIgnored, 1)
 	}
 
 	sq.Lock()
@@ -485,7 +486,7 @@ func (sq *SubmitQueue) e2eStable() bool {
 // web UI. Stable() will get called as needed against individual PRs as well.
 func (sq *SubmitQueue) updateGoogleE2ELoop() {
 	for {
-		_ = sq.e2eStable()
+		_ = sq.e2eStable(false)
 		time.Sleep(1 * time.Minute)
 	}
 
@@ -921,7 +922,7 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		l := len(sq.githubE2EQueue)
 		sq.Unlock()
 		// Wait until something is ready to be processed
-		if l == 0 || !sq.e2eStable() {
+		if l == 0 || !sq.e2eStable(false) {
 			time.Sleep(sq.githubE2EPollTime)
 			continue
 		}
@@ -1017,7 +1018,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		}
 	}
 
-	if !sq.e2eStable() {
+	if !sq.e2eStable(true) {
 		if gotHeadSHA && gotBaseSHA {
 			sq.interruptedMergeBaseSHA = baseSHA
 			sq.interruptedMergeHeadSHA = headSHA
@@ -1078,6 +1079,7 @@ func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) 
 		LastMergeTime:  sq.lastMergeTime,
 		MergeRate:      sq.calcMergeRateWithTail(),
 		RetestsAvoided: int(atomic.LoadInt32(&sq.retestsAvoided)),
+		FlakesIgnored:  int(atomic.LoadInt32(&sq.flakesIgnored)),
 	}
 	sq.serve(sq.marshal(data), res, req)
 }

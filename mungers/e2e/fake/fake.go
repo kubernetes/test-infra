@@ -25,7 +25,7 @@ type FakeE2ETester struct {
 }
 
 // GCSBasedStable is always true.
-func (e *FakeE2ETester) GCSBasedStable() bool { return true }
+func (e *FakeE2ETester) GCSBasedStable() (bool, bool) { return true, false }
 
 // GCSWeakStable is always true.
 func (e *FakeE2ETester) GCSWeakStable() bool { return true }

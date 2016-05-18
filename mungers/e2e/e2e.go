@@ -17,22 +17,23 @@ limitations under the License.
 package e2e
 
 import (
-	"bufio"
+	"encoding/xml"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 )
 
 // E2ETester can be queried for E2E job stability.
 type E2ETester interface {
-	GCSBasedStable() bool
+	GCSBasedStable() (stable, ignorableFlakes bool)
 	GCSWeakStable() bool
 	GetBuildStatus() map[string]BuildInfo
 	Stable() bool
@@ -112,8 +113,8 @@ const (
 )
 
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
-func (e *RealE2ETester) GCSBasedStable() bool {
-	allStable := true
+func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
+	allStable = true
 
 	for _, job := range e.JobNames {
 		thisStable := true
@@ -131,12 +132,98 @@ func (e *RealE2ETester) GCSBasedStable() bool {
 		}
 		if thisStable {
 			e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
-		} else {
-			allStable = false
+			continue
 		}
+
+		// This isn't stable-- see if we can find a reason.
+		thisFailures, err := e.failureReasons(job, lastBuildNumber, true)
+		if err != nil {
+			glog.V(4).Infof("Unable to get failure reasons for job: %v, build number: %v; %v", job, lastBuildNumber, err)
+			allStable = false
+			continue
+		}
+		if len(thisFailures) == 0 {
+			// If we couldn't identify the failure reason, then assume it's bad news.
+			allStable = false
+			continue
+		}
+		lastFailures, err := e.failureReasons(job, lastBuildNumber-1, true)
+		if err != nil {
+			glog.V(4).Infof("Unable to get failure reasons for job: %v, build number: %v (the previous build); %v", job, lastBuildNumber-1, err)
+			allStable = false
+			continue
+		}
+		// See if this & last failures form a disjoint set-- if so, it's only flakes.
+		intersection := sets.NewString(thisFailures...).Intersection(sets.NewString(lastFailures...))
+		if len(intersection) == 0 {
+			glog.V(2).Infof("Ignoring failure of %v/%v since it didn't happen the previous run this run = %v; prev run = %v.", job, lastBuildNumber, thisFailures, lastFailures)
+			ignorableFlakes = true
+			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
+			continue
+		}
+		glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, lastBuildNumber, intersection)
+		allStable = false
 	}
 
-	return allStable
+	return allStable, ignorableFlakes
+}
+
+func getJUnitFailures(r io.Reader) (failures []string, err error) {
+	type Testcase struct {
+		Name      string `xml:"name,attr"`
+		ClassName string `xml:"classname,attr"`
+		Failure   string `xml:"failure"`
+	}
+	type Testsuite struct {
+		TestCount int        `xml:"tests,attr"`
+		FailCount int        `xml:"failures,attr"`
+		Testcases []Testcase `xml:"testcase"`
+	}
+	ts := &Testsuite{}
+	// TODO: this full parse is a bit slower than the old scanf routine--
+	// could switch back for the case where we only care whether there was
+	// a failure or not if that is an issue in practice.
+	err = xml.NewDecoder(r).Decode(ts)
+	if err != nil {
+		return failures, err
+	}
+	if ts.FailCount == 0 {
+		return nil, nil
+	}
+	for _, tc := range ts.Testcases {
+		if tc.Failure != "" {
+			failures = append(failures, fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName))
+		}
+	}
+	return failures, nil
+}
+
+// If completeList is true, collect every failure reason. Otherwise exit as soon as you see any failure.
+func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList bool) (failedTests []string, err error) {
+	failuresFromResp := func(resp *http.Response) (failures []string, err error) {
+		defer resp.Body.Close()
+		return getJUnitFailures(resp.Body)
+	}
+
+	// If we're here it means that build failed, so we need to look for a reason
+	// by iterating over junit_XX.xml files and look for failures
+	for i := 1; !completeList || len(failedTests) == 0; i++ {
+		path := fmt.Sprintf("artifacts/junit_%02d.xml", i)
+		response, err := e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, buildNumber, path)
+		if err != nil {
+			return nil, fmt.Errorf("error while getting data for %v/%v/%v: %v", job, buildNumber, path, err)
+		}
+		if response.StatusCode != http.StatusOK {
+			response.Body.Close()
+			break
+		}
+		failures, err := failuresFromResp(response) // closes response.Body for us
+		if err != nil {
+			return nil, fmt.Errorf("failed to read the response for %v/%v/%v: %v", job, buildNumber, path, err)
+		}
+		failedTests = append(failedTests, failures...)
+	}
+	return failedTests, nil
 }
 
 // GCSWeakStable is a version of GCSBasedStable with a slightly relaxed condition.
@@ -158,62 +245,19 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 			continue
 		}
 
-		// If we're here it means that build failed, so we need to look for a reason
-		// by iterating over junit_XX.xml files and look for failures
-		i := 1
-		path := fmt.Sprintf("artifacts/junit_%02d.xml", i)
-		response, err := e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, path)
+		failures, err := e.failureReasons(job, lastBuildNumber, false)
 		if err != nil {
-			glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, path, err)
+			glog.Errorf("Error while getting data for %v/%v: %v", job, lastBuildNumber, err)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			continue
 		}
-		defer response.Body.Close()
-		thisStable := true
-		for response.StatusCode == http.StatusOK {
-			reader := bufio.NewReader(response.Body)
-			body, err := reader.ReadString('\n')
-			if err != nil {
-				glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, path, err)
-				thisStable = false
-				break
-			}
-			if strings.TrimSpace(body) != ExpectedXMLHeader {
-				glog.Errorf("Invalid header for %v/%v/%v: %v, expected %v", job, lastBuildNumber, path, body, ExpectedXMLHeader)
-				thisStable = false
-				break
-			}
-			body, err = reader.ReadString('\n')
-			if err != nil {
-				glog.Errorf("Failed to read the response for %v/%v/%v: %v", job, lastBuildNumber, path, err)
-				thisStable = false
-				break
-			}
-			numberOfTests := 0
-			nubmerOfFailures := 0
-			timestamp := 0.0
-			fmt.Sscanf(strings.TrimSpace(body), "<testsuite tests=\"%d\" failures=\"%d\" time=\"%f\">", &numberOfTests, &nubmerOfFailures, &timestamp)
-			glog.V(4).Infof("%v, numberOfTests: %v, numberOfFailures: %v", string(body), numberOfTests, nubmerOfFailures)
-			if nubmerOfFailures > 0 {
-				glog.V(4).Infof("Found failure in %v for job %v build number %v", path, job, lastBuildNumber)
-				thisStable = false
-				break
-			}
 
-			i++
-			path = fmt.Sprintf("artifacts/junit_%02d.xml", i)
-			response, err = e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, lastBuildNumber, path)
-			if err != nil {
-				glog.Errorf("Error while getting data for %v/%v/%v: %v", job, lastBuildNumber, path, err)
-				continue
-			}
-			defer response.Body.Close()
-		}
+		thisStable := len(failures) == 0
 
 		if thisStable == false {
 			allStable = false
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			glog.Infof("WeakStable failed because found a failure in JUnit file for build %v", lastBuildNumber)
+			glog.Infof("WeakStable failed because found a failure in JUnit file for build %v; %v and possibly more failed", lastBuildNumber, failures)
 			continue
 		}
 
