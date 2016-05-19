@@ -16,12 +16,20 @@ limitations under the License.
 
 package fake
 
-import "k8s.io/contrib/mungegithub/mungers/e2e"
+import (
+	"k8s.io/contrib/mungegithub/mungers/e2e"
+	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
+)
 
 // FakeE2ETester always reports builds as stable.
 type FakeE2ETester struct {
 	JobNames           []string
 	WeakStableJobNames []string
+}
+
+// Flakes returns nil.
+func (e *FakeE2ETester) Flakes() cache.Flakes {
+	return nil
 }
 
 // GCSBasedStable is always true.

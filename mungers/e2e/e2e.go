@@ -38,6 +38,7 @@ type E2ETester interface {
 	GCSWeakStable() bool
 	GetBuildStatus() map[string]BuildInfo
 	Stable() bool
+	Flakes() cache.Flakes
 }
 
 // BuildInfo tells the build ID and the build success
@@ -60,6 +61,7 @@ type RealE2ETester struct {
 	flakeCache *cache.Cache
 }
 
+// Init does construction-- call once it after setting the public fields of 'e'.
 func (e *RealE2ETester) Init() *RealE2ETester {
 	e.flakeCache = cache.NewCache(e.getGCSResult)
 	return e
@@ -81,6 +83,11 @@ func (e *RealE2ETester) GetBuildStatus() map[string]BuildInfo {
 		out[k] = v
 	}
 	return out
+}
+
+// Flakes returns a sorted list of current flakes.
+func (e *RealE2ETester) Flakes() cache.Flakes {
+	return e.flakeCache.Flakes()
 }
 
 func (e *RealE2ETester) setBuildStatus(build, status string, id string) {

@@ -311,13 +311,13 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			WeakStableJobNames: sq.WeakStableJobNames,
 		}
 	} else {
-		sq.e2e = &e2e.RealE2ETester{
+		sq.e2e = (&e2e.RealE2ETester{
 			JobNames:             sq.JobNames,
 			JenkinsHost:          sq.JenkinsHost,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewUtils(GCSBucketUrl),
-		}
+		}).Init()
 	}
 
 	if len(config.Address) > 0 {
@@ -333,6 +333,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
 		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
+		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
@@ -402,9 +403,10 @@ func (sq *SubmitQueue) updateHealth() {
 		sq.healthHistory = sq.healthHistory[1:]
 	}
 	// Make the current record
+	stable, _ := sq.e2e.GCSBasedStable()
 	newEntry := healthRecord{
 		Time:    time.Now(),
-		Overall: sq.e2e.Stable(),
+		Overall: stable,
 		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
@@ -613,6 +615,15 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 
 func (sq *SubmitQueue) marshal(data interface{}) []byte {
 	b, err := json.Marshal(data)
+	if err != nil {
+		glog.Errorf("Unable to Marshal data: %#v: %v", data, err)
+		return nil
+	}
+	return b
+}
+
+func (sq *SubmitQueue) prettyMarshal(data interface{}) []byte {
+	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		glog.Errorf("Unable to Marshal data: %#v: %v", data, err)
 		return nil
@@ -1082,6 +1093,11 @@ func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) 
 		FlakesIgnored:  int(atomic.LoadInt32(&sq.flakesIgnored)),
 	}
 	sq.serve(sq.marshal(data), res, req)
+}
+
+func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
+	data := sq.e2e.Flakes()
+	sq.serve(sq.prettyMarshal(data), res, req)
 }
 
 func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {
