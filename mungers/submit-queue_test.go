@@ -476,7 +476,7 @@ func TestSubmitQueue(t *testing.T) {
 		},
 		// Should pass without running tests because we had a previous run.
 		{
-			name:            "Test1",
+			name:            "Test1+prevsuccess",
 			pr:              ValidPR(),
 			issue:           NoOKToMergeIssue(),
 			events:          NewLGTMEvents(),
@@ -837,6 +837,7 @@ func TestSubmitQueue(t *testing.T) {
 	}
 	for testNum := range tests {
 		test := &tests[testNum]
+		fmt.Printf("---------Starting test %v (%v)---------------------\n", testNum, test.name)
 		issueNum := testNum + 1
 		issueNumStr := strconv.Itoa(issueNum)
 
@@ -866,6 +867,14 @@ func TestSubmitQueue(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
+		})
+		path = "/foo/latest-build.txt"
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "GET" {
+				t.Errorf("Unexpected method: %s", r.Method)
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
 
 			// There is no good spot for this, but this gets called
 			// before we queue the PR. So mark the PR as "merged".
@@ -879,14 +888,6 @@ func TestSubmitQueue(t *testing.T) {
 				test.pr.Mergeable = nil
 			}
 		})
-		path = "/foo/latest-build.txt"
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
-		})
 		path = fmt.Sprintf("/foo/%v/finished.json", test.lastBuildNumber)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
@@ -898,12 +899,6 @@ func TestSubmitQueue(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			}
 			w.Write(data)
-
-			numJenkinsCalls = numJenkinsCalls + 1
-			if numJenkinsCalls == 2 && test.mergeAfterQueued {
-				test.pr.Merged = boolPtr(true)
-				test.pr.Mergeable = nil
-			}
 		})
 		path = "/bar/latest-build.txt"
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -1019,8 +1014,13 @@ func TestSubmitQueue(t *testing.T) {
 					}
 				}()
 
-				// TODO: concurrent map read/write bug here!
-				if sq.prStatus[issueNumStr].Reason == test.reason {
+				reason := func() string {
+					sq.Mutex.Lock()
+					defer sq.Mutex.Unlock()
+					return sq.prStatus[issueNumStr].Reason
+				}
+
+				if reason() == test.reason {
 					done <- true
 					return
 				}

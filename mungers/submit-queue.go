@@ -614,7 +614,7 @@ func (sq *SubmitQueue) getE2EQueueStatus() []*statusPullRequest {
 func (sq *SubmitQueue) marshal(data interface{}) []byte {
 	b, err := json.Marshal(data)
 	if err != nil {
-		glog.Errorf("Unable to Marshal Status: %v: %v", sq.statusHistory, err)
+		glog.Errorf("Unable to Marshal data: %#v: %v", data, err)
 		return nil
 	}
 	return b
