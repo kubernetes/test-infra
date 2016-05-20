@@ -41,5 +41,32 @@ LoadPlugin curl_json
     <Key "gauges/*/value">
       Type "gauge"
     </Key>
+    <Key "timers/*/max">
+      Type "duration"
+    </Key>
+    <Key "timers/*/mean">
+      Type "duration"
+    </Key>
+    <Key "timers/*/min">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p50">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p75">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p95">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p98">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p99">
+      Type "duration"
+    </Key>
+    <Key "timers/*/p999">
+      Type "duration"
+    </Key>
   </URL>
 </Plugin>
