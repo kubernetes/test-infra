@@ -153,7 +153,8 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 # Use protobufs
                 export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
-                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
+                # TODO: Uncomment when we make the final decision to store protobufs in etcd.
+                # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
     jobs:
