@@ -16,6 +16,7 @@ install:
     - pip install -r gubernator/test_requirements.txt
     - pip install -r jenkins/test-history/requirements.txt
 script:
+    - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
     - cd gubernator && nosetests --with-gae --gae-lib-root=${HOME}/google_appengine/
