@@ -13,6 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+### BEGIN INIT INFO
+# Provides:     metadata-cache
+# Required-Start:       $networking
+# Required-Stop:        $networking
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Cache GCE Metadata Requests.
+# Description:          Caches requests to GCE metadata server, reducing load
+#                       to once for most requests and once per ~10m for tokens.
+### END INIT INFO
+
 # See README.md for system usage instructions.
 
 set -o errexit
@@ -94,6 +105,10 @@ do_local() {
       ;;
     start)
       echo -n "Starting metadata-cache session: "
+      if type -P metadata-cache.py > /dev/null; then
+        # we might not be in the right dir (especially if running as init)
+        cd "$(dirname "$(type -P metadata-cache.py)")"
+      fi
       screen -d -m -S metadata-cache python metadata-cache.py
       echo "started"
       ps ax | grep metadata
@@ -122,9 +137,10 @@ do_local() {
       ;;
     update)
       "${0}" bootstrap
+      update-rc.d metadata-cache defaults
       "${0}" off
       "${0}" stop
-      "${0}" start
+      service metadata-cache start
       "${0}" on
       "${0}" test
       ;;
@@ -158,10 +174,15 @@ do_remote() {
     remote_copy)
       echo "Copy files to ${instance}"
       gcloud compute copy-files "${DIRNAME}"/* "${instance}:/home/${USER}/"
+      gcloud compute ssh "${instance}" -t <<EOF
+      chmod +x metadata-cache*
+      sudo mv metadata-cache-control.sh /etc/init.d/metadata-cache
+      sudo mv metadata-cache.py /usr/local/bin
+EOF
       ;;
     remote_ssh)
-      echo "Running ${BASENAME} on ${instance}"
-      gcloud compute ssh "${instance}" -t -- sudo "/home/${USER}/${BASENAME}" "${@}"
+      echo "Running metadata-cache on ${instance}"
+      gcloud compute ssh "${instance}" -t -- sudo "/etc/init.d/metadata-cache" "${@}"
       ;;
     remote_update)
       "${0}" remote_copy "${instance}"
