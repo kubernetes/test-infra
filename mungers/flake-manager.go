@@ -30,6 +30,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	// URLTestStorageBucket is a link that works for *directories* and not
+	// files, since we want to link people to something that lets them
+	// browse all the artifacts.
+	URLTestStorageBucket = "https://console.cloud.google.com/storage/kubernetes-jenkins/logs"
+)
+
 // issueFinder finds an issue for a given key.
 type issueFinder interface {
 	IssueForKey(key string) (int, bool)
@@ -84,7 +91,7 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	p.oldestTime = time.Now().Add(-time.Hour * 24)
 	p.alreadySyncedFlakes = map[cache.Flake]int{}
 	p.config = config
-	p.googleGCSBucketUtils = utils.NewUtils(utils.GoogleBucketURL)
+	p.googleGCSBucketUtils = utils.NewUtils(URLTestStorageBucket)
 	return nil
 }
 
