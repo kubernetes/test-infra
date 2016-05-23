@@ -939,13 +939,13 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		}
 
 		// re-test and maybe merge
-		sq.doGithubE2EAndMerge(obj)
-
-		// remove it from the map after we finish testing
-		sq.Lock()
-		sq.githubE2ERunning = nil
-		delete(sq.githubE2EQueue, *obj.Issue.Number)
-		sq.Unlock()
+		if sq.doGithubE2EAndMerge(obj) {
+			// remove it from the map after we finish testing
+			sq.Lock()
+			sq.githubE2ERunning = nil
+			delete(sq.githubE2EQueue, *obj.Issue.Number)
+			sq.Unlock()
+		}
 	}
 }
 
@@ -996,21 +996,22 @@ func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject
 	}
 }
 
-func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
+// Returns true if we can discard the PR from the queue, false if we must keep it for later.
+func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	err := obj.Refresh()
 	if err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown)
-		return
+		return true
 	}
 
 	if !sq.validForMerge(obj) {
-		return
+		return true
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {
 		sq.mergePullRequest(obj)
-		return
+		return true
 	}
 
 	maySkipTest := sq.interruptedObj != nil && !sq.interruptedObj.hasSHAChanged()
@@ -1022,7 +1023,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
 			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 			sq.SetMergeStatus(obj, unknown)
-			return
+			return true
 		}
 
 		// Wait for the build to start
@@ -1030,7 +1031,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
 			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
-			return
+			return true
 		}
 
 		// Wait for the status to go back to something other than pending
@@ -1038,23 +1039,24 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
 			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
-			return
+			return true
 		}
 
 		// Check if the thing we care about is success
 		if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
 			sq.SetMergeStatus(obj, ghE2EFailed)
-			return
+			return true
 		}
 	}
 
 	if !sq.e2eStable(true) {
 		sq.interruptedObj = newInterruptedObject(obj)
 		sq.SetMergeStatus(obj, e2eFailure)
-		return
+		return true
 	}
 
 	sq.mergePullRequest(obj)
+	return true
 }
 
 func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Request) {
