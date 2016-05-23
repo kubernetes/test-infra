@@ -475,6 +475,7 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "success",
 		},
 		// Should pass without running tests because we had a previous run.
+		// TODO: Add a proper test to make sure we don't shuffle queue when we can just merge a PR
 		{
 			name:            "Test1",
 			pr:              ValidPR(),
@@ -1005,10 +1006,11 @@ func TestSubmitQueue(t *testing.T) {
 		})
 
 		sq := getTestSQ(true, config, server)
-		sq.interruptedMergeBaseSHA = test.imBaseSHA
-		sq.interruptedMergeHeadSHA = test.imHeadSHA
 
 		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
+		if test.imBaseSHA != "" && test.imHeadSHA != "" {
+			sq.interruptedObj = &submitQueueInterruptedObject{obj, test.imHeadSHA, test.imBaseSHA}
+		}
 		sq.Munge(obj)
 		done := make(chan bool, 1)
 		go func(done chan bool) {

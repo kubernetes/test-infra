@@ -130,6 +130,14 @@ type submitQueueStats struct {
 	FlakesIgnored  int
 }
 
+// pull-request that has been tested as successful, but interrupted because head flaked
+type submitQueueInterruptedObject struct {
+	obj *github.MungeObject
+	// If these two items match when we're about to kick off a retest, it's safe to skip the retest.
+	interruptedMergeHeadSHA string
+	interruptedMergeBaseSHA string
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -177,11 +185,9 @@ type SubmitQueue struct {
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
 
-	// If these two items match when we're about to kick off a retest, it's safe to skip the retest.
-	interruptedMergeHeadSHA string
-	interruptedMergeBaseSHA string
-	retestsAvoided          int32
-	flakesIgnored           int32
+	interruptedObj *submitQueueInterruptedObject
+	retestsAvoided int32
+	flakesIgnored  int32
 
 	health        submitQueueHealth
 	healthHistory []healthRecord
@@ -950,6 +956,9 @@ func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
 }
 
 func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
+	if sq.interruptedObj != nil {
+		return sq.interruptedObj.obj
+	}
 	sq.Lock()
 	defer sq.Unlock()
 	if len(sq.githubE2EQueue) == 0 {
@@ -960,6 +969,31 @@ func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
 	sq.githubE2ERunning = obj
 
 	return obj
+}
+
+func (interruptedObj *submitQueueInterruptedObject) hasSHAChanged() bool {
+	headSHA, baseRef, gotHeadSHA := interruptedObj.obj.GetHeadAndBase()
+	if !gotHeadSHA {
+		return true
+	}
+
+	baseSHA, gotBaseSHA := interruptedObj.obj.GetSHAFromRef(baseRef)
+	if !gotBaseSHA {
+		return true
+	}
+
+	return interruptedObj.interruptedMergeBaseSHA != baseSHA ||
+		interruptedObj.interruptedMergeHeadSHA != headSHA
+}
+
+func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject {
+	if headSHA, baseRef, gotHeadSHA := obj.GetHeadAndBase(); !gotHeadSHA {
+		return nil
+	} else if baseSHA, gotBaseSHA := obj.GetSHAFromRef(baseRef); !gotBaseSHA {
+		return nil
+	} else {
+		return &submitQueueInterruptedObject{obj, headSHA, baseSHA}
+	}
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
@@ -979,17 +1013,8 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	// See if we can skip the retest.
-	headSHA, baseRef, gotHeadSHA := obj.GetHeadAndBase()
-	baseSHA := ""
-	gotBaseSHA := false
-	if gotHeadSHA {
-		baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
-	}
-	maySkipTest := gotHeadSHA && gotBaseSHA &&
-		sq.interruptedMergeBaseSHA == baseSHA &&
-		sq.interruptedMergeHeadSHA == headSHA
-
+	maySkipTest := sq.interruptedObj != nil && !sq.interruptedObj.hasSHAChanged()
+	sq.interruptedObj = nil
 	if maySkipTest {
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
@@ -1008,12 +1033,6 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 			return
 		}
 
-		// re-get the base SHA in case something merged between us checking and
-		// starting the tests.
-		if gotHeadSHA {
-			baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
-		}
-
 		// Wait for the status to go back to something other than pending
 		sq.SetMergeStatus(obj, ghE2ERunning)
 		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
@@ -1030,10 +1049,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	if !sq.e2eStable(true) {
-		if gotHeadSHA && gotBaseSHA {
-			sq.interruptedMergeBaseSHA = baseSHA
-			sq.interruptedMergeHeadSHA = headSHA
-		}
+		sq.interruptedObj = newInterruptedObject(obj)
 		sq.SetMergeStatus(obj, e2eFailure)
 		return
 	}
