@@ -927,15 +927,10 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 			continue
 		}
 
-		sq.Lock()
-		if len(sq.githubE2EQueue) == 0 {
-			sq.Unlock()
+		obj := sq.selectPullRequest()
+		if obj == nil {
 			continue
 		}
-		keys := sq.orderedE2EQueue()
-		obj := sq.githubE2EQueue[keys[0]]
-		sq.githubE2ERunning = obj
-		sq.Unlock()
 
 		// re-test and maybe merge
 		sq.doGithubE2EAndMerge(obj)
@@ -943,9 +938,22 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		// remove it from the map after we finish testing
 		sq.Lock()
 		sq.githubE2ERunning = nil
-		delete(sq.githubE2EQueue, keys[0])
+		delete(sq.githubE2EQueue, *obj.Issue.Number)
 		sq.Unlock()
 	}
+}
+
+func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
+	sq.Lock()
+	defer sq.Unlock()
+	if len(sq.githubE2EQueue) == 0 {
+		return nil
+	}
+	keys := sq.orderedE2EQueue()
+	obj := sq.githubE2EQueue[keys[0]]
+	sq.githubE2ERunning = obj
+
+	return obj
 }
 
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
