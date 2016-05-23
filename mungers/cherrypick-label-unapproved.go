@@ -36,8 +36,8 @@ var (
 	labelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, doNotMergeLabel)
 )
 
-// LabelUnapprovedPicks will remove the LGTM flag from an PR which has been
-// updated since the reviewer added LGTM
+// LabelUnapprovedPicks will add `do-not-merge` to PRs against a release branch which
+// do not have `cherrypick-approved`.
 type LabelUnapprovedPicks struct{}
 
 func init() {
