@@ -277,6 +277,8 @@
                 export ALLOWED_NOTREADY_NODES="10"
                 export CLUSTER_IP_RANGE="10.8.0.0/13"
                 export GKE_CREATE_FLAGS="--max-nodes-per-pool=100 --no-enable-cloud-monitoring --disable-addons HorizontalPodAutoscaling"
+                export KUBE_GKE_NETWORK="gke-large-cluster"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
