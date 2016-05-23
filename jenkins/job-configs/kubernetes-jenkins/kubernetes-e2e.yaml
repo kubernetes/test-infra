@@ -266,16 +266,17 @@
             emails: 'zml@google.com'
             cron-string: ''
             trigger-job: ''
+            # TODO(zmerlynn) change back to PROJECT="gke-large-cluster-jenkins", re-enable Heapster
             job-env: |
-                export PROJECT="gke-large-cluster-jenkins"
+                export PROJECT="kubernetes-scale"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-                export ZONE="us-central1-b"
-                export NUM_NODES=1025
-                export MACHINE_TYPE="n1-highmem-2"
+                export ZONE="us-east1-a"
+                export NUM_NODES=2000
+                export MACHINE_TYPE="n1-standard-1"
                 export ALLOWED_NOTREADY_NODES="10"
                 export CLUSTER_IP_RANGE="10.8.0.0/13"
-                export GKE_CREATE_FLAGS="--max-nodes-per-pool=100"
+                export GKE_CREATE_FLAGS="--max-nodes-per-pool=100 --no-enable-cloud-monitoring --disable-addons HorizontalPodAutoscaling"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
