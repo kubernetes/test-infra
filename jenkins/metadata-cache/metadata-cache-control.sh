@@ -15,8 +15,8 @@
 
 ### BEGIN INIT INFO
 # Provides:     metadata-cache
-# Required-Start:       $networking
-# Required-Stop:        $networking
+# Required-Start:       $local_fs $networking
+# Required-Stop:
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
 # Short-Description:    Cache GCE Metadata Requests.
@@ -105,9 +105,12 @@ do_local() {
       ;;
     start)
       echo -n "Starting metadata-cache session: "
-      if type -P metadata-cache.py > /dev/null; then
-        # we might not be in the right dir (especially if running as init)
-        cd "$(dirname "$(type -P metadata-cache.py)")"
+      if [[ ! -x metadata-cache.py ]]; then
+        cd /usr/local/bin
+        if [[ ! -x metadata-cache.py ]]; then
+          echo "unable to find metadata-cache.py to launch"
+          exit 5  # LSB status for "program is not installed"
+        fi
       fi
       screen -d -m -S metadata-cache python metadata-cache.py
       echo "started"
