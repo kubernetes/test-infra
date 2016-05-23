@@ -1014,9 +1014,14 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	maySkipTest := sq.interruptedObj != nil && !sq.interruptedObj.hasSHAChanged()
+	interruptedObj := sq.interruptedObj
 	sq.interruptedObj = nil
-	if maySkipTest {
+	if interruptedObj != nil {
+		if interruptedObj.hasSHAChanged() {
+			// This PR will have to be rested.
+			// Make sure we don't have higher priority first.
+			return false
+		}
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
 	} else {
