@@ -943,6 +943,12 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 	}
 }
 
+func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
+	obj.MergePR("submit-queue")
+	sq.updateMergeRate()
+	sq.SetMergeStatus(obj, merged)
+}
+
 func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
 	sq.Lock()
 	defer sq.Unlock()
@@ -969,8 +975,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {
-		obj.MergePR("submit-queue")
-		sq.SetMergeStatus(obj, merged)
+		sq.mergePullRequest(obj)
 		return
 	}
 
@@ -999,8 +1004,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		sq.SetMergeStatus(obj, ghE2EWaitingStart)
 		err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
-			s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
-			sq.SetMergeStatus(obj, s)
+			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
 			return
 		}
 
@@ -1014,8 +1018,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		sq.SetMergeStatus(obj, ghE2ERunning)
 		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
-			s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
-			sq.SetMergeStatus(obj, s)
+			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
 			return
 		}
 
@@ -1035,10 +1038,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
 		return
 	}
 
-	obj.MergePR("submit-queue")
-	sq.updateMergeRate()
-	sq.SetMergeStatus(obj, merged)
-	return
+	sq.mergePullRequest(obj)
 }
 
 func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Request) {
