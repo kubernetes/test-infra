@@ -61,13 +61,13 @@
           </md-tab>
 
           <md-tab label="Queue" md-on-select="cntl.selectTab('queue')">
-	    <md-content class="md-whiteframe-z2">
+            <md-content class="md-whiteframe-z2">
               <md-toolbar class="md-whiteframe-z2">
-	        <h2 class="md-toolbar-tools">Queued For Retest And Merge ({{cntl.e2equeue.length}})</h2>
+                <h2 class="md-toolbar-tools">Queued For Retest And Merge ({{cntl.e2equeue.length}})</h2>
               </md-toolbar>
-	      <md-subheader class="md-primary">Estimated Merging {{cntl.sqStats.MergeRate}} PRs per day.</md-subheader>
-	    </md-content>
-	    <md-divider></md-divider>
+              <md-subheader class="md-primary">Estimated Merging {{cntl.sqStats.MergeRate}} PRs per day.</md-subheader>
+            </md-content>
+            <md-divider></md-divider>
             <section>
               <md-subheader class="md-primary">CURRENTLY RUNNING</md-subheader>
               <md-list layout-padding>
@@ -161,26 +161,26 @@
           </md-tab>
 
           <md-tab label="Info" md-on-select="cntl.selectTab('info')">
-	    <md-content class="md-padding">
-	      <md-tabs md-dynamic-height md-border-bottom>
+            <md-content class="md-padding">
+              <md-tabs md-dynamic-height md-border-bottom>
 
                 <md-tab label="Queue Order">
                   <md-toolbar class="md-whiteframe-z2">
                     <h2 class="md-toolbar-tools">How PRs get ordered in the queue</h2>
                   </md-toolbar>
-	          <md-content class="md-padding">
-	            <span id="priority-info"></span>
-	          </md-content>
-	        </md-tab>
+                  <md-content class="md-padding">
+                    <span id="priority-info"></span>
+                  </md-content>
+                </md-tab>
 
                 <md-tab label="Merge Requirements">
                   <md-toolbar class="md-whiteframe-z2">
                     <h2 class="md-toolbar-tools">Requirements for a PR to get automatically merged </h2>
                   </md-toolbar>
-	          <md-content class="md-padding">
-	            <span id="merge-info"></span>
-	          </md-content>
-	        </md-tab>
+                  <md-content class="md-padding">
+                    <span id="merge-info"></span>
+                  </md-content>
+                </md-tab>
 
                 <md-tab label="Users">
                   <md-toolbar class="md-whiteframe-z2">
@@ -204,10 +204,10 @@
                     </md-toolbar>
                   </md-content>
                   <br>
-                  <h3 class=md-title>Next Run Loop: <span id="next-run-time"></span></h3>
-                  <h3 class=md-title>API Calls Per Second: <span id="api-calls-per-sec"></span></h3>
-                  <h3 class=md-title>Github Rate Limit Count: <span id="github-api-limit-count"></span></h3>
-                  <h3 class=md-title>Github Rate Limit Next Reset: <span id="github-api-limit-reset"></span></h3>
+                  <h3 class=md-title>Next Run Loop: {{ cntl.nextRunTime }}</h3>
+                  <h3 class=md-title>API Calls Per Second: {{ cntl.apiCallsPerSec }}</h3>
+                  <h3 class=md-title>Github Rate Limit Count: {{ cntl.githubApiLimitCount }}</h3>
+                  <h3 class=md-title>Github Rate Limit Next Reset: {{ cntl.githubApiLimitReset }}</h3>
                   <md-content class="md-whiteframe-z2">
                     <md-data-table-container>
                       <md-data-table-toolbar>
@@ -232,9 +232,9 @@
                     </md-data-table-container>
                   </md-content>
                 </md-tab>
-	      </md-tabs>
-	    </md-content>
-	  </md-tab>
+              </md-tabs>
+            </md-content>
+          </md-tab>
 
         </md-tabs>
       </md-content>

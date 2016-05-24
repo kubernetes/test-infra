@@ -139,15 +139,15 @@ function SQCntl(dataService, $interval, $location) {
   function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
       var nextLoop = new Date(response.data.NextLoopTime);
-      document.getElementById("next-run-time").innerHTML = nextLoop.toLocaleTimeString();
+      self.nextRunTime = nextLoop.toLocaleTimeString();
 
       self.botStats = response.data.Analytics;
       self.APICount = response.data.APICount;
       self.CachedAPICount = response.data.CachedAPICount;
-      document.getElementById("api-calls-per-sec").innerHTML = response.data.APIPerSec;
-      document.getElementById("github-api-limit-count").innerHTML = response.data.LimitRemaining;
+      self.apiCallsPerSec = response.data.APIPerSec;
+      self.githubApiLimitCount = response.data.LimitRemaining;
       var nextReset = new Date(response.data.LimitResetTime);
-      document.getElementById("github-api-limit-reset").innerHTML = nextReset.toLocaleTimeString();
+      self.githubApiLimitReset = nextReset.toLocaleTimeString();
     });
   }
 
