@@ -274,7 +274,7 @@
                 export ADDITIONAL_ZONES="us-central1-a,us-central1-b"
         - 'gke-large-cluster':
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large (1000 node) GKE cluster'
-            timeout: 300
+            timeout: 450
             emails: 'zml@google.com'
             cron-string: ''
             trigger-job: ''
