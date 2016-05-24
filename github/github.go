@@ -196,6 +196,7 @@ type analytics struct {
 	RemoveLabels      analytic
 	ListCollaborators analytic
 	GetIssue          analytic
+	CreateIssue       analytic
 	ListIssues        analytic
 	ListIssueEvents   analytic
 	ListCommits       analytic
@@ -226,6 +227,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "RemoveLabels\t%d\t\n", a.RemoveLabels.Count)
 	fmt.Fprintf(w, "ListCollaborators\t%d\t\n", a.ListCollaborators.Count)
 	fmt.Fprintf(w, "GetIssue\t%d\t\n", a.GetIssue.Count)
+	fmt.Fprintf(w, "CreateIssue\t%d\t\n", a.CreateIssue.Count)
 	fmt.Fprintf(w, "ListIssues\t%d\t\n", a.ListIssues.Count)
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
@@ -481,6 +483,26 @@ func (config *Config) ListMilestones(state string) []github.Milestone {
 func (config *Config) GetObject(num int) (*MungeObject, error) {
 	issue, err := config.getIssue(num)
 	if err != nil {
+		return nil, err
+	}
+	obj := &MungeObject{
+		config:      config,
+		Issue:       issue,
+		Annotations: map[string]string{},
+	}
+	return obj, nil
+}
+
+// NewIssue will file a new issue and return an object for it.
+func (config *Config) NewIssue(title, body string, labels []string) (*MungeObject, error) {
+	issue, resp, err := config.client.Issues.Create(config.Org, config.Project, &github.IssueRequest{
+		Title:  &title,
+		Body:   &body,
+		Labels: &labels,
+	})
+	config.analytics.CreateIssue.Call(config, resp)
+	if err != nil {
+		glog.Errorf("createIssue: %v", err)
 		return nil, err
 	}
 	obj := &MungeObject{

@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/contrib/mungegithub",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v65",
+	"GodepVersion": "v69",
 	"Packages": [
 		"./..."
 	],
@@ -35,6 +35,10 @@
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
 			"Rev": "547ef5ac979778feb2f760cdb5f4eae1a2207b86"
+		},
+		{
+			"ImportPath": "github.com/google/gofuzz",
+			"Rev": "fd52762d25a41827db7ef64c43756fd4b9f7e382"
 		},
 		{
 			"ImportPath": "github.com/gregjones/httpcache",

@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"sync"
 
+	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -37,6 +38,7 @@ type E2ETester interface {
 	GCSWeakStable() bool
 	GetBuildStatus() map[string]BuildInfo
 	Stable() bool
+	Flakes() cache.Flakes
 }
 
 // BuildInfo tells the build ID and the build success
@@ -55,6 +57,14 @@ type RealE2ETester struct {
 	sync.Mutex
 	BuildStatus          map[string]BuildInfo // protect by mutex
 	GoogleGCSBucketUtils *utils.Utils
+
+	flakeCache *cache.Cache
+}
+
+// Init does construction-- call once it after setting the public fields of 'e'.
+func (e *RealE2ETester) Init() *RealE2ETester {
+	e.flakeCache = cache.NewCache(e.getGCSResult)
+	return e
 }
 
 func (e *RealE2ETester) locked(f func()) {
@@ -75,6 +85,11 @@ func (e *RealE2ETester) GetBuildStatus() map[string]BuildInfo {
 	return out
 }
 
+// Flakes returns a sorted list of current flakes.
+func (e *RealE2ETester) Flakes() cache.Flakes {
+	return e.flakeCache.Flakes()
+}
+
 func (e *RealE2ETester) setBuildStatus(build, status string, id string) {
 	e.Lock()
 	defer e.Unlock()
@@ -82,6 +97,7 @@ func (e *RealE2ETester) setBuildStatus(build, status string, id string) {
 }
 
 // Stable is called to make sure all of the jenkins jobs are stable
+// TODO: deprecated; GCS version is better. Use that only. Delete this.
 func (e *RealE2ETester) Stable() bool {
 	// Test if the build is stable in Jenkins
 	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
@@ -112,63 +128,101 @@ const (
 	ExpectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 )
 
+func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result, error) {
+	stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(string(j), int(n))
+	if err != nil {
+		glog.V(4).Infof("Error looking up job: %v, build number: %v", j, n)
+		// Not actually fatal!
+	}
+	r := &cache.Result{
+		Job:    j,
+		Number: n,
+		Pass:   stable,
+		// TODO: StartTime:
+	}
+	if r.Pass {
+		return r, nil
+	}
+
+	// This isn't stable-- see if we can find a reason.
+	thisFailures, err := e.failureReasons(string(j), int(n), true)
+	if err != nil {
+		glog.V(4).Infof("Error looking up job failure reasons: %v, build number: %v: %v", j, n, err)
+		r.UnlistedFlakes = true
+		return r, nil
+	}
+	if len(thisFailures) == 0 {
+		r.UnlistedFlakes = true
+	} else {
+		r.Flakes = map[cache.Test]string{}
+		for testName, reason := range thisFailures {
+			r.Flakes[cache.Test(testName)] = reason
+		}
+	}
+	return r, nil
+}
+
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
 func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 	allStable = true
 
 	for _, job := range e.JobNames {
-		thisStable := true
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			thisStable = false
+			continue
 		}
-		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber); !stable || err != nil {
-			glog.V(4).Infof("Found unstable job: %v, build number: %v", job, lastBuildNumber)
+
+		thisResult, err := e.flakeCache.Get(cache.Job(job), cache.Number(lastBuildNumber))
+		if err != nil || (!thisResult.Pass && thisResult.UnlistedFlakes) {
+			glog.V(4).Infof("Found unstable job: %v, build number: %v: (err: %v) %#v", job, lastBuildNumber, err, thisResult)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			thisStable = false
+			allStable = false
+			continue
 		}
-		if thisStable {
+
+		if thisResult.Pass {
 			e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
 			continue
 		}
 
-		// This isn't stable-- see if we can find a reason.
-		thisFailures, err := e.failureReasons(job, lastBuildNumber, true)
-		if err != nil {
-			glog.V(4).Infof("Unable to get failure reasons for job: %v, build number: %v; %v", job, lastBuildNumber, err)
+		lastResult, err := e.flakeCache.Get(cache.Job(job), cache.Number(lastBuildNumber-1))
+		if err != nil || lastResult.UnlistedFlakes {
+			glog.V(4).Infof("prev job doesn't help: %v, build number: %v (the previous build); (err %v) %#v", job, lastBuildNumber-1, err, lastResult)
 			allStable = false
+			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			continue
 		}
-		if len(thisFailures) == 0 {
-			// If we couldn't identify the failure reason, then assume it's bad news.
-			allStable = false
+
+		if lastResult.Pass {
+			ignorableFlakes = true
+			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
 			continue
 		}
-		lastFailures, err := e.failureReasons(job, lastBuildNumber-1, true)
-		if err != nil {
-			glog.V(4).Infof("Unable to get failure reasons for job: %v, build number: %v (the previous build); %v", job, lastBuildNumber-1, err)
-			allStable = false
-			continue
+
+		intersection := sets.NewString()
+		for testName := range thisResult.Flakes {
+			if _, ok := lastResult.Flakes[testName]; ok {
+				intersection.Insert(string(testName))
+			}
 		}
-		// See if this & last failures form a disjoint set-- if so, it's only flakes.
-		intersection := sets.NewString(thisFailures...).Intersection(sets.NewString(lastFailures...))
 		if len(intersection) == 0 {
-			glog.V(2).Infof("Ignoring failure of %v/%v since it didn't happen the previous run this run = %v; prev run = %v.", job, lastBuildNumber, thisFailures, lastFailures)
+			glog.V(2).Infof("Ignoring failure of %v/%v since it didn't happen the previous run this run = %v; prev run = %v.", job, lastBuildNumber, thisResult.Flakes, lastResult.Flakes)
 			ignorableFlakes = true
 			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
 			continue
 		}
 		glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, lastBuildNumber, intersection)
 		allStable = false
+		e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 	}
 
 	return allStable, ignorableFlakes
 }
 
-func getJUnitFailures(r io.Reader) (failures []string, err error) {
+func getJUnitFailures(r io.Reader) (failures map[string]string, err error) {
 	type Testcase struct {
 		Name      string `xml:"name,attr"`
 		ClassName string `xml:"classname,attr"`
@@ -190,20 +244,22 @@ func getJUnitFailures(r io.Reader) (failures []string, err error) {
 	if ts.FailCount == 0 {
 		return nil, nil
 	}
+	failures = map[string]string{}
 	for _, tc := range ts.Testcases {
 		if tc.Failure != "" {
-			failures = append(failures, fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName))
+			failures[fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName)] = tc.Failure
 		}
 	}
 	return failures, nil
 }
 
 // If completeList is true, collect every failure reason. Otherwise exit as soon as you see any failure.
-func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList bool) (failedTests []string, err error) {
-	failuresFromResp := func(resp *http.Response) (failures []string, err error) {
+func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList bool) (failedTests map[string]string, err error) {
+	failuresFromResp := func(resp *http.Response) (failures map[string]string, err error) {
 		defer resp.Body.Close()
 		return getJUnitFailures(resp.Body)
 	}
+	failedTests = map[string]string{}
 
 	// If we're here it means that build failed, so we need to look for a reason
 	// by iterating over junit_XX.xml files and look for failures
@@ -221,7 +277,9 @@ func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList
 		if err != nil {
 			return nil, fmt.Errorf("failed to read the response for %v/%v/%v: %v", job, buildNumber, path, err)
 		}
-		failedTests = append(failedTests, failures...)
+		for k, v := range failures {
+			failedTests[k] = v
+		}
 	}
 	return failedTests, nil
 }
