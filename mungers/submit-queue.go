@@ -386,7 +386,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins to use for stability testing")
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
-		[]string{"kubernetes-kubemark-500-gce"},
+		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
