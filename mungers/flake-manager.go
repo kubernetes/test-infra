@@ -39,7 +39,7 @@ const (
 
 // issueFinder finds an issue for a given key.
 type issueFinder interface {
-	IssueForKey(key string) (int, bool)
+	AllIssuesForKey(key string) []int
 	Created(key string, number int)
 	Synced() bool
 }
@@ -116,17 +116,80 @@ func (p *FlakeManager) AddFlags(cmd *cobra.Command, config *github.Config) {}
 // Munge is unused by this munger.
 func (p *FlakeManager) Munge(obj *github.MungeObject) {}
 
+// Look through all issues filed about this test.
+// If foundIn is > 0, then the particular flake was found in that issue.
+// All open issues for this test are returned in updatableIssues.
+func (p *FlakeManager) findPreviousIssues(f cache.Flake) (foundIn int, updatableIssues []*github.MungeObject, err error) {
+	possibleIssues := p.finder.AllIssuesForKey(string(f.Test))
+	for _, previousIssue := range possibleIssues {
+		obj, err := p.config.GetObject(previousIssue)
+		if err != nil {
+			return 0, nil, fmt.Errorf("error getting object for %v: %v", previousIssue, err)
+		}
+		isRecorded, err := p.isRecorded(obj, f)
+		if err != nil {
+			return 0, nil, fmt.Errorf("error checking whether flake %v is recorded in issue %v: %v", f, previousIssue, err)
+		}
+		if isRecorded {
+			p.alreadySyncedFlakes[f] = previousIssue
+			foundIn = previousIssue
+			// keep going since we may want to close dups
+		}
+		if obj.Issue.State != nil && *obj.Issue.State == "open" {
+			updatableIssues = append(updatableIssues, obj)
+		}
+	}
+	return foundIn, updatableIssues, nil
+}
+
+// Close all of the dups.
+func (p *FlakeManager) markAsDups(dups []*github.MungeObject, of int) error {
+	// Somehow we got duplicate issues all open at once.
+	// Close all of the older ones.
+	for _, dup := range dups {
+		if err := dup.CloseIssuef("This is a duplicate of #%v; closing", of); err != nil {
+			return fmt.Errorf("failed to close %v as a dup of %v: %v", *dup.Issue.Number, of, err)
+		}
+	}
+	return nil
+}
+
 func (p *FlakeManager) syncFlake(f cache.Flake) error {
 	if _, ok := p.alreadySyncedFlakes[f]; ok {
 		return nil
 	}
-	if n, ok := p.finder.IssueForKey(string(f.Test)); ok {
-		if err := p.updateIssue(n, f); err != nil {
-			return fmt.Errorf("error updating issue %v for %v: %v", n, f, err)
+
+	foundIn, updatableIssues, err := p.findPreviousIssues(f)
+	if err != nil {
+		return err
+	}
+
+	// Close dups if there are multiple open issues
+	if n := len(updatableIssues) - 1; n > 1 {
+		obj := updatableIssues[n]
+		if err := p.markAsDups(updatableIssues[:n], *obj.Issue.Number); err != nil {
+			return err
 		}
-		p.alreadySyncedFlakes[f] = n
+	}
+
+	if foundIn > 0 {
+		// Don't need to update, we were only here to close the dups.
+		p.alreadySyncedFlakes[f] = foundIn
 		return nil
 	}
+
+	// Update an issue if possible.
+	if n := len(updatableIssues) - 1; n >= 0 {
+		obj := updatableIssues[n]
+		// Update the chosen issue
+		if err := p.updateIssue(obj, f); err != nil {
+			return fmt.Errorf("error updating issue %v for %v: %v", n, f, err)
+		}
+		p.alreadySyncedFlakes[f] = *obj.Issue.Number
+		return nil
+	}
+
+	// No issue could be updated, create a new issue.
 	n, err := p.createIssue(f)
 	if err != nil {
 		return fmt.Errorf("error making issue for %v: %v", f, err)
@@ -145,19 +208,17 @@ func (p *FlakeManager) flakeExtraInfo(flake cache.Flake) string {
 	return fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", flake.Test, flake.Reason)
 }
 
-func (p *FlakeManager) updateIssue(issueNumber int, flake cache.Flake) error {
+// Search through the body and comments to see if the given flake is already
+// mentioned in the given github issue.
+func (p *FlakeManager) isRecorded(obj *github.MungeObject, flake cache.Flake) (bool, error) {
 	flakeID := p.flakeID(flake)
-	obj, err := p.config.GetObject(issueNumber)
-	if err != nil {
-		return fmt.Errorf("error getting object for %v: %v", issueNumber, err)
+	if obj.Issue.Body != nil && strings.Contains(*obj.Issue.Body, flakeID) {
+		// We already wrote this flake
+		return true, nil
 	}
 	comments, err := obj.ListComments()
 	if err != nil {
-		return fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
-	}
-	if obj.Issue.Body != nil && strings.Contains(*obj.Issue.Body, flakeID) {
-		// We already wrote this flake
-		return nil
+		return false, fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
 	}
 	for _, c := range comments {
 		if c.Body == nil {
@@ -165,18 +226,34 @@ func (p *FlakeManager) updateIssue(issueNumber int, flake cache.Flake) error {
 		}
 		if strings.Contains(*c.Body, flakeID) {
 			// We already wrote this flake
-			return nil
+			return true, nil
 		}
 	}
-	glog.Infof("Updating issue %v with flake %v", issueNumber, flake)
-	return obj.WriteComment(flakeID + "\n" + p.flakeExtraInfo(flake))
+	return false, nil
 }
 
+// updateIssue adds a comment about the flake to the github object.
+func (p *FlakeManager) updateIssue(obj *github.MungeObject, flake cache.Flake) error {
+	body := p.flakeID(flake) + "\n" + p.flakeExtraInfo(flake)
+	glog.Infof("Updating issue %v with flake %v", *obj.Issue.Number, flake)
+	return obj.WriteComment(body)
+}
+
+// createIssue makes a new issue for the given flake. If we know about other
+// issues for the flake, then they'll be referenced.
 func (p *FlakeManager) createIssue(flake cache.Flake) (issueNumber int, err error) {
+	body := p.flakeID(flake) + "\n" + p.flakeExtraInfo(flake)
+	if previousIssues := p.finder.AllIssuesForKey(string(flake.Test)); len(previousIssues) > 0 {
+		s := []string{}
+		for _, i := range previousIssues {
+			s = append(s, fmt.Sprintf("#%v", i))
+		}
+		body = body + fmt.Sprintf("\nPrevious issues for this test: %v\n", strings.Join(s, " "))
+	}
 	obj, err := p.config.NewIssue(
-		string(flake.Test),                            // title
-		p.flakeID(flake)+"\n"+p.flakeExtraInfo(flake), // body
-		[]string{"kind/flake"},                        // labels
+		string(flake.Test), // title
+		body,               // body
+		[]string{"kind/flake"}, // labels
 	)
 	if err != nil {
 		return 0, err
