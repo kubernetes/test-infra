@@ -49,8 +49,11 @@ func stringPtr(val string) *string { return &val }
 func boolPtr(val bool) *bool       { return &val }
 func intPtr(val int) *int          { return &val }
 
-const noWhitelistUser = "UserNotInWhitelist"
-const whitelistUser = "WhitelistUser"
+const (
+	noWhitelistUser     = "UserNotInWhitelist"
+	whitelistUser       = "WhitelistUser"
+	doNotMergeMilestone = "some-milestone-you-should-not-merge"
+)
 
 func ValidPR() *github.PullRequest {
 	return github_test.PullRequest(whitelistUser, false, true, true)
@@ -85,6 +88,15 @@ func NoOKToMergeIssue() *github.Issue {
 
 func DoNotMergeIssue() *github.Issue {
 	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+}
+
+func DoNotMergeMilestoneIssue() *github.Issue {
+	issue := github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	milestone := &github.Milestone{
+		Title: stringPtr(doNotMergeMilestone),
+	}
+	issue.Milestone = milestone
+	return issue
 }
 
 func NoCLAIssue() *github.Issue {
@@ -201,6 +213,8 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 
 	sq.startTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
+
+	sq.doNotMergeMilestones = []string{doNotMergeMilestone}
 
 	sq.e2e = &fake_e2e.FakeE2ETester{
 		JobNames:           sq.JobNames,
@@ -511,7 +525,7 @@ func TestSubmitQueue(t *testing.T) {
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			// The test should never run, but if it does, make sure it fails
 			mergeAfterQueued: true,
-			reason:           merged,
+			reason:           mergedByHand,
 			state:            "success",
 		},
 		// Should merge even though github ci failed because of dont-require-e2e
@@ -753,6 +767,23 @@ func TestSubmitQueue(t *testing.T) {
 			e2ePass:         true,
 			unitPass:        true,
 			reason:          noMerge,
+			state:           "pending",
+		},
+		// Should fail because the 'do-not-merge-milestone' is set.
+		{
+			name:            "Do Not Merge Milestone Set",
+			pr:              ValidPR(),
+			issue:           DoNotMergeMilestoneIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			jenkinsJob:      SuccessJenkins(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			e2ePass:         true,
+			unitPass:        true,
+			reason:          unmergeableMilestone,
 			state:           "pending",
 		},
 		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure

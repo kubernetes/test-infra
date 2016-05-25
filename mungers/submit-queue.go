@@ -157,6 +157,7 @@ type SubmitQueue struct {
 	E2EStatusContext       string
 	UnitStatusContext      string
 	RequiredStatusContexts []string
+	doNotMergeMilestones   []string
 
 	// additionalUserWhitelist are non-committer users believed safe
 	additionalUserWhitelist *sets.String
@@ -408,6 +409,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
+	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	sq.addWhitelistCommand(cmd, config)
 }
 
@@ -561,6 +563,8 @@ func reasonToState(reason string) string {
 	switch reason {
 	case merged:
 		return "success"
+	case mergedByHand:
+		return "success"
 	case e2eFailure:
 		return "success"
 	case ghE2EQueued:
@@ -708,10 +712,12 @@ const (
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
 	e2eRecover              = "The e2e tests started passing. The submit queue is unblocked."
 	merged                  = "MERGED!"
+	mergedByHand            = "MERGED! (by hand outside of submit queue)"
 	ghE2EQueued             = "Queued to run github e2e tests a second time."
 	ghE2EWaitingStart       = "Requested and waiting for github e2e test to start running a second time."
 	ghE2ERunning            = "Running github e2e tests a second time."
 	ghE2EFailed             = "Second github e2e run failed."
+	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 )
 
 func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string {
@@ -743,8 +749,18 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 		sq.SetMergeStatus(obj, unknown)
 		return false
 	} else if m {
-		sq.SetMergeStatus(obj, merged)
+		sq.SetMergeStatus(obj, mergedByHand)
 		return false
+	}
+
+	if milestone := obj.Issue.Milestone; milestone != nil && milestone.Title != nil {
+		title := *milestone.Title
+		for _, blocked := range sq.doNotMergeMilestones {
+			if title == blocked {
+				sq.SetMergeStatus(obj, unmergeableMilestone)
+				return false
+			}
+		}
 	}
 
 	userSet := sq.userWhitelist
@@ -1167,6 +1183,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		out.WriteString("</ul>")
 		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
 	}
+	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %v</li>", sq.doNotMergeMilestones))
 	out.WriteString(fmt.Sprintf("<li>The PR either needs the label %q or the creator of the PR must be in the 'Users' list seen on the 'Info' tab.</li>", okToMergeLabel))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
