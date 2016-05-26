@@ -30,6 +30,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
+	"strings"
 )
 
 // E2ETester can be queried for E2E job stability.
@@ -261,13 +262,28 @@ func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList
 	}
 	failedTests = map[string]string{}
 
+	// junit file prefix
+	prefix := "artifacts/junit"
+	junitList, err := e.GoogleGCSBucketUtils.ListFilesInBuild(job, buildNumber, prefix)
+	if err != nil {
+		glog.Errorf("Failed to list junit files for %v/%v/%v: %v", job, buildNumber, prefix, err)
+	}
+
 	// If we're here it means that build failed, so we need to look for a reason
-	// by iterating over junit_XX.xml files and look for failures
-	for i := 1; !completeList || len(failedTests) == 0; i++ {
-		path := fmt.Sprintf("artifacts/junit_%02d.xml", i)
-		response, err := e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, buildNumber, path)
+	// by iterating over junit*.xml files and look for failures
+	for _, filePath := range junitList {
+		// if do not need complete list and we already have failed tests, then return
+		if !completeList && len(failedTests) > 0 {
+			break
+		}
+		if !strings.HasSuffix(filePath, ".xml") {
+			continue
+		}
+		split := strings.Split(filePath, "/")
+		junitFilePath := fmt.Sprintf("artifacts/%s", split[len(split)-1])
+		response, err := e.GoogleGCSBucketUtils.GetFileFromJenkinsGoogleBucket(job, buildNumber, junitFilePath)
 		if err != nil {
-			return nil, fmt.Errorf("error while getting data for %v/%v/%v: %v", job, buildNumber, path, err)
+			return nil, fmt.Errorf("error while getting data for %v/%v/%v: %v", job, buildNumber, junitFilePath, err)
 		}
 		if response.StatusCode != http.StatusOK {
 			response.Body.Close()
@@ -275,12 +291,13 @@ func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList
 		}
 		failures, err := failuresFromResp(response) // closes response.Body for us
 		if err != nil {
-			return nil, fmt.Errorf("failed to read the response for %v/%v/%v: %v", job, buildNumber, path, err)
+			return nil, fmt.Errorf("failed to read the response for %v/%v/%v: %v", job, buildNumber, junitFilePath, err)
 		}
 		for k, v := range failures {
 			failedTests[k] = v
 		}
 	}
+
 	return failedTests, nil
 }
 

@@ -91,7 +91,7 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	p.oldestTime = time.Now().Add(-time.Hour * 24)
 	p.alreadySyncedFlakes = map[cache.Flake]int{}
 	p.config = config
-	p.googleGCSBucketUtils = utils.NewUtils(URLTestStorageBucket)
+	p.googleGCSBucketUtils = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
 	return nil
 }
 

@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
+	"strings"
 )
 
 type testHandler struct {
@@ -44,6 +45,16 @@ func marshalOrDie(obj interface{}, t *testing.T) []byte {
 		t.Errorf("unexpected error: %v", err)
 	}
 	return data
+}
+
+func genMockGCSListResponse(files ...string) []byte {
+	resptemplate := "{\"items\":[%s]}"
+	itemTempalte := "{\"name\":\"%s\"}"
+	items := []string{}
+	for _, file := range files {
+		items = append(items, fmt.Sprintf(itemTempalte, file))
+	}
+	return []byte(fmt.Sprintf(resptemplate, strings.Join(items, ",")))
 }
 
 func TestCheckJenkinsBuilds(t *testing.T) {
@@ -154,6 +165,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
+				"/": genMockGCSListResponse(),
 			},
 			expectStable: true,
 			expectedStatus: map[string]BuildInfo{
@@ -173,6 +185,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
+				"/": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -202,6 +215,14 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "SUCCESS",
 					Timestamp: 999,
 				}, t),
+				"/": genMockGCSListResponse(
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				),
 			},
 			expectStable: true,
 			expectedStatus: map[string]BuildInfo{
@@ -231,6 +252,14 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 999,
 				}, t),
+				"/": genMockGCSListResponse(
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				),
 			},
 			expectStable: true,
 			expectedStatus: map[string]BuildInfo{
@@ -260,6 +289,14 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 999,
 				}, t),
+				"/": genMockGCSListResponse(
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -280,6 +317,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
+				"/": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -299,6 +337,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
+				"/": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -318,6 +357,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
+				"/": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -346,7 +386,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 				"bar",
 			},
 			BuildStatus:          map[string]BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewUtils(server.URL),
+			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
 		}
 		e2e.Init()
 
@@ -599,7 +639,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				"bar",
 			},
 			BuildStatus:          map[string]BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewUtils(server.URL),
+			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
 		}
 		e2e.Init()
 		stable := e2e.GCSWeakStable()
