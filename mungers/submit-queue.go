@@ -130,6 +130,14 @@ type submitQueueStats struct {
 	FlakesIgnored  int
 }
 
+// pull-request that has been tested as successful, but interrupted because head flaked
+type submitQueueInterruptedObject struct {
+	obj *github.MungeObject
+	// If these two items match when we're about to kick off a retest, it's safe to skip the retest.
+	interruptedMergeHeadSHA string
+	interruptedMergeBaseSHA string
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -177,11 +185,9 @@ type SubmitQueue struct {
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
 
-	// If these two items match when we're about to kick off a retest, it's safe to skip the retest.
-	interruptedMergeHeadSHA string
-	interruptedMergeBaseSHA string
-	retestsAvoided          int32
-	flakesIgnored           int32
+	interruptedObj *submitQueueInterruptedObject
+	retestsAvoided int32
+	flakesIgnored  int32
 
 	health        submitQueueHealth
 	healthHistory []healthRecord
@@ -938,110 +944,135 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 			continue
 		}
 
-		sq.Lock()
-		if len(sq.githubE2EQueue) == 0 {
-			sq.Unlock()
+		obj := sq.selectPullRequest()
+		if obj == nil {
 			continue
 		}
-		keys := sq.orderedE2EQueue()
-		obj := sq.githubE2EQueue[keys[0]]
-		sq.githubE2ERunning = obj
-		sq.Unlock()
 
 		// re-test and maybe merge
-		sq.doGithubE2EAndMerge(obj)
-
-		// remove it from the map after we finish testing
-		sq.Lock()
-		sq.githubE2ERunning = nil
-		delete(sq.githubE2EQueue, keys[0])
-		sq.Unlock()
+		if sq.doGithubE2EAndMerge(obj) {
+			// remove it from the map after we finish testing
+			sq.Lock()
+			sq.githubE2ERunning = nil
+			delete(sq.githubE2EQueue, *obj.Issue.Number)
+			sq.Unlock()
+		}
 	}
 }
 
-func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) {
+func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
+	obj.MergePR("submit-queue")
+	sq.updateMergeRate()
+	sq.SetMergeStatus(obj, merged)
+}
+
+func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
+	if sq.interruptedObj != nil {
+		return sq.interruptedObj.obj
+	}
+	sq.Lock()
+	defer sq.Unlock()
+	if len(sq.githubE2EQueue) == 0 {
+		return nil
+	}
+	keys := sq.orderedE2EQueue()
+	obj := sq.githubE2EQueue[keys[0]]
+	sq.githubE2ERunning = obj
+
+	return obj
+}
+
+func (interruptedObj *submitQueueInterruptedObject) hasSHAChanged() bool {
+	headSHA, baseRef, gotHeadSHA := interruptedObj.obj.GetHeadAndBase()
+	if !gotHeadSHA {
+		return true
+	}
+
+	baseSHA, gotBaseSHA := interruptedObj.obj.GetSHAFromRef(baseRef)
+	if !gotBaseSHA {
+		return true
+	}
+
+	return interruptedObj.interruptedMergeBaseSHA != baseSHA ||
+		interruptedObj.interruptedMergeHeadSHA != headSHA
+}
+
+func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject {
+	if headSHA, baseRef, gotHeadSHA := obj.GetHeadAndBase(); !gotHeadSHA {
+		return nil
+	} else if baseSHA, gotBaseSHA := obj.GetSHAFromRef(baseRef); !gotBaseSHA {
+		return nil
+	} else {
+		return &submitQueueInterruptedObject{obj, headSHA, baseSHA}
+	}
+}
+
+// Returns true if we can discard the PR from the queue, false if we must keep it for later.
+func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	err := obj.Refresh()
 	if err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown)
-		return
+		return true
 	}
 
 	if !sq.validForMerge(obj) {
-		return
+		return true
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {
-		obj.MergePR("submit-queue")
-		sq.SetMergeStatus(obj, merged)
-		return
+		sq.mergePullRequest(obj)
+		return true
 	}
 
-	// See if we can skip the retest.
-	headSHA, baseRef, gotHeadSHA := obj.GetHeadAndBase()
-	baseSHA := ""
-	gotBaseSHA := false
-	if gotHeadSHA {
-		baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
-	}
-	maySkipTest := gotHeadSHA && gotBaseSHA &&
-		sq.interruptedMergeBaseSHA == baseSHA &&
-		sq.interruptedMergeHeadSHA == headSHA
-
-	if maySkipTest {
+	interruptedObj := sq.interruptedObj
+	sq.interruptedObj = nil
+	if interruptedObj != nil {
+		if interruptedObj.hasSHAChanged() {
+			// This PR will have to be rested.
+			// Make sure we don't have higher priority first.
+			return false
+		}
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
 	} else {
 		if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
 			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 			sq.SetMergeStatus(obj, unknown)
-			return
+			return true
 		}
 
 		// Wait for the build to start
 		sq.SetMergeStatus(obj, ghE2EWaitingStart)
 		err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
-			s := fmt.Sprintf("Failed waiting for PR to start testing: %v", err)
-			sq.SetMergeStatus(obj, s)
-			return
-		}
-
-		// re-get the base SHA in case something merged between us checking and
-		// starting the tests.
-		if gotHeadSHA {
-			baseSHA, gotBaseSHA = obj.GetSHAFromRef(baseRef)
+			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
+			return true
 		}
 
 		// Wait for the status to go back to something other than pending
 		sq.SetMergeStatus(obj, ghE2ERunning)
 		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
 		if err != nil {
-			s := fmt.Sprintf("Failed waiting for PR to finish testing: %v", err)
-			sq.SetMergeStatus(obj, s)
-			return
+			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
+			return true
 		}
 
 		// Check if the thing we care about is success
 		if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
 			sq.SetMergeStatus(obj, ghE2EFailed)
-			return
+			return true
 		}
 	}
 
 	if !sq.e2eStable(true) {
-		if gotHeadSHA && gotBaseSHA {
-			sq.interruptedMergeBaseSHA = baseSHA
-			sq.interruptedMergeHeadSHA = headSHA
-		}
+		sq.interruptedObj = newInterruptedObject(obj)
 		sq.SetMergeStatus(obj, e2eFailure)
-		return
+		return true
 	}
 
-	obj.MergePR("submit-queue")
-	sq.updateMergeRate()
-	sq.SetMergeStatus(obj, merged)
-	return
+	sq.mergePullRequest(obj)
+	return true
 }
 
 func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Request) {
