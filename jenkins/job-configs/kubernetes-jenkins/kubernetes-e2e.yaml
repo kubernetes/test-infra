@@ -214,6 +214,7 @@
                 export PROJECT="k8s-jkns-e2e-gke-ci"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-slow':
             cron-string: '{sq-cron-string}'
             description: 'Run slow E2E tests on GKE using the latest successful build.'
