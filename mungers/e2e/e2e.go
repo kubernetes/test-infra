@@ -143,10 +143,10 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 	r := &cache.Result{
 		Job:    j,
 		Number: n,
-		Pass:   stable,
 		// TODO: StartTime:
 	}
-	if r.Pass {
+	if stable {
+		r.Status = cache.ResultStable
 		return r, nil
 	}
 
@@ -154,17 +154,19 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 	thisFailures, err := e.failureReasons(string(j), int(n), true)
 	if err != nil {
 		glog.V(4).Infof("Error looking up job failure reasons: %v, build number: %v: %v", j, n, err)
-		r.UnlistedFlakes = true
-		return r, nil
+		thisFailures = nil // ensure we fall through
 	}
 	if len(thisFailures) == 0 {
-		r.UnlistedFlakes = true
-	} else {
-		r.Flakes = map[cache.Test]string{}
-		for testName, reason := range thisFailures {
-			r.Flakes[cache.Test(testName)] = reason
-		}
+		r.Status = cache.ResultFailed
+		return r, nil
 	}
+
+	r.Flakes = map[cache.Test]string{}
+	for testName, reason := range thisFailures {
+		r.Flakes[cache.Test(testName)] = reason
+	}
+
+	r.Status = cache.ResultFlaky
 	return r, nil
 }
 
@@ -182,27 +184,27 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 		}
 
 		thisResult, err := e.GetBuildResult(job, lastBuildNumber)
-		if err != nil || (!thisResult.Pass && thisResult.UnlistedFlakes) {
+		if err != nil || thisResult.Status == cache.ResultFailed {
 			glog.V(4).Infof("Found unstable job: %v, build number: %v: (err: %v) %#v", job, lastBuildNumber, err, thisResult)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			allStable = false
 			continue
 		}
 
-		if thisResult.Pass {
+		if thisResult.Status == cache.ResultStable {
 			e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
 			continue
 		}
 
 		lastResult, err := e.GetBuildResult(job, lastBuildNumber-1)
-		if err != nil || lastResult.UnlistedFlakes {
+		if err != nil || lastResult.Status == cache.ResultFailed {
 			glog.V(4).Infof("prev job doesn't help: %v, build number: %v (the previous build); (err %v) %#v", job, lastBuildNumber-1, err, lastResult)
 			allStable = false
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
 			continue
 		}
 
-		if lastResult.Pass {
+		if lastResult.Status == cache.ResultStable {
 			ignorableFlakes = true
 			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
 			continue
