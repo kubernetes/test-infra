@@ -42,6 +42,5 @@ RUN git clone https://git.openstack.org/openstack-infra/jenkins-job-builder \
 # JJB configuration lives in /etc/jenkins_jobs/jenkins_jobs.ini
 RUN mkdir -p /etc/jenkins_jobs
 
-WORKDIR /
-RUN git clone https://github.com/kubernetes/test-infra
-WORKDIR test-infra
+RUN mkdir /test-infra
+WORKDIR /test-infra

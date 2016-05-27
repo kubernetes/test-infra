@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2015 The Kubernetes Authors All rights reserved.
 #
@@ -24,7 +24,18 @@ else
   exit 1
 fi
 
-# Run the container if it isn't present.
+IMAGE="gcr.io/google_containers/kubekins-job-builder:4"
+
+# If we're on an old image then stop it and remove it.
+if docker inspect job-builder &> /dev/null; then
+  if [[ $(docker inspect --format='{{ .Config.Image }}' job-builder) != ${IMAGE} ]]; then
+    echo "Removing outdated job-builder container"
+    docker stop job-builder > /dev/null
+    docker rm job-builder > /dev/null
+  fi
+fi
+
+# If the container doesn't exist then start it.
 if ! docker inspect job-builder &> /dev/null; then
   # jenkins_jobs.ini contains administrative credentials for Jenkins.
   # Store it in the workspace of the Jenkins job that calls this script.
@@ -33,7 +44,8 @@ if ! docker inspect job-builder &> /dev/null; then
       --net host \
       --name job-builder \
       --restart always \
-      gcr.io/google_containers/kubekins-job-builder:3
+      -v "${WORKSPACE}:/test-infra" \
+      "${IMAGE}"
     docker cp jenkins_jobs.ini job-builder:/etc/jenkins_jobs
   else
     echo "jenkins_jobs.ini not found in workspace" >&2
@@ -41,6 +53,4 @@ if ! docker inspect job-builder &> /dev/null; then
   fi
 fi
 
-docker exec job-builder git checkout master
-docker exec job-builder git pull
-docker exec job-builder jenkins-jobs update ${config_dir}
+docker exec job-builder jenkins-jobs update "${config_dir}"
