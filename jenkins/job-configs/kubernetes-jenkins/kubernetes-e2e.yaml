@@ -80,6 +80,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export KUBE_GCE_ZONE="europe-west1-c"
                 export PROJECT="k8s-jkns-e2e-gce-slow"
         - 'gce-serial':
             description: 'Run [Serial], [Disruptive], tests on GCE.'
@@ -251,6 +252,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export ZONE="europe-west1-c"
         - 'gke-serial':
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
