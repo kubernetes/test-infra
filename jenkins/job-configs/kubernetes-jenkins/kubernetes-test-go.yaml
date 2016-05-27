@@ -11,6 +11,8 @@
         - shell: |
             export KUBE_FORCE_VERIFY_CHECKS='y'
             export KUBE_VERIFY_GIT_BRANCH='{branch}'
+            export KUBE_TEST_API_VERSIONS='v1,extensions/v1beta1,metrics/v1alpha1,federation/v1alpha1;v1,autoscaling/v1,batch/v1,batch/v2alpha1,extensions/v1beta1,apps/v1alpha1,metrics/v1alpha1,federation/v1alpha1,policy/v1alpha1,rbac.authorization.k8s.io/v1alpha1'
+            export KUBE_TEST_ETCD_VERSIONS='registry,kubernetes.io/registry'
             timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/gotest-dockerized.sh && rc=$? || rc=$?
             {report-rc}
     publishers:
