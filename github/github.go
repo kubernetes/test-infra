@@ -196,6 +196,7 @@ type analytics struct {
 	RemoveLabels      analytic
 	ListCollaborators analytic
 	GetIssue          analytic
+	CloseIssue        analytic
 	CreateIssue       analytic
 	ListIssues        analytic
 	ListIssueEvents   analytic
@@ -227,6 +228,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "RemoveLabels\t%d\t\n", a.RemoveLabels.Count)
 	fmt.Fprintf(w, "ListCollaborators\t%d\t\n", a.ListCollaborators.Count)
 	fmt.Fprintf(w, "GetIssue\t%d\t\n", a.GetIssue.Count)
+	fmt.Fprintf(w, "CloseIssue\t%d\t\n", a.CloseIssue.Count)
 	fmt.Fprintf(w, "CreateIssue\t%d\t\n", a.CreateIssue.Count)
 	fmt.Fprintf(w, "ListIssues\t%d\t\n", a.ListIssues.Count)
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
@@ -1211,6 +1213,27 @@ func (obj *MungeObject) AssignPR(owner string) error {
 	}
 	if _, _, err := config.client.Issues.Edit(config.Org, config.Project, prNum, assignee); err != nil {
 		glog.Errorf("Error assigning issue# %d to %v: %v", prNum, owner, err)
+		return err
+	}
+	return nil
+}
+
+// CloseIssuef will close the given issue with a message
+func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
+	config := obj.config
+	msg := fmt.Sprintf(format, args...)
+	if err := obj.WriteComment(msg); err != nil {
+		return fmt.Errorf("failed to write comment to %v: %q: %v", *obj.Issue.Number, msg, err)
+	}
+	closed := "closed"
+	state := &github.IssueRequest{State: &closed}
+	config.analytics.CloseIssue.Call(config, nil)
+	glog.Infof("Closing issue #%d: %v", *obj.Issue.Number, msg)
+	if config.DryRun {
+		return nil
+	}
+	if _, _, err := config.client.Issues.Edit(config.Org, config.Project, *obj.Issue.Number, state); err != nil {
+		glog.Errorf("Error closing issue #%d: %v: %v", *obj.Issue.Number, msg, err)
 		return err
 	}
 	return nil
