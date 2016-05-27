@@ -156,7 +156,7 @@
               </md-chips>
               <br>
               <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
-              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted<span ng-show="cntl.StartTime.length > 0"> ({{ cntl.StartTime }})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.</p>
+              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.</p>
             </md-tab-body>
           </md-tab>
 
@@ -204,10 +204,11 @@
                     </md-toolbar>
                   </md-content>
                   <br>
-                  <h3 class=md-title>Next Run Loop: {{ cntl.nextRunTime }}</h3>
-                  <h3 class=md-title>API Calls Per Second: {{ cntl.apiCallsPerSec }}</h3>
-                  <h3 class=md-title>Github Rate Limit Count: {{ cntl.githubApiLimitCount }}</h3>
-                  <h3 class=md-title>Github Rate Limit Next Reset: {{ cntl.githubApiLimitReset }}</h3>
+                  <h3 class=md-title>Bot Started: {{ cntl.sqStats.StartTime | date:'medium' }}</h3>
+                  <h3 class=md-title>Next Sync Loop: {{ cntl.botStats.NextLoopTime | date:'medium' }}</h3>
+                  <h3 class=md-title>API Calls Per Second: {{ cntl.botStats.APIPerSec }}</h3>
+                  <h3 class=md-title>Github Rate Limit Count: {{ cntl.botStats.LimitRemaining }}</h3>
+                  <h3 class=md-title>Github Rate Limit Next Reset: {{ cntl.botStats.LimitResetTime | date:'medium' }}</h3>
                   <h3 class=md-title>Retests avoided because of e2e test flakes: {{ cntl.sqStats.RetestsAvoided }}</h3>
                   <h3 class=md-title>Flakes ignored: {{ cntl.sqStats.FlakesIgnored }}</h3>
                   <md-content class="md-whiteframe-z2">
@@ -219,12 +220,12 @@
                         <thead md-order="cntl.StatOrder">
                           <tr>
                             <th order-by="$key" name="Call"></th>
-                            <th order-by="Count" name="Count ({{ cntl.APICount }})" numeric descend-first></th>
-                            <th order-by="CachedCount" name="Cached Count ({{ cntl.CachedAPICount }})" numeric descend-first></th>
+                            <th order-by="Count" name="Count ({{ cntl.botStats.APICount }})" numeric descend-first></th>
+                            <th order-by="CachedCount" name="Cached Count ({{ cntl.botStats.CachedAPICount }})" numeric descend-first></th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr ng-repeat="stat in cntl.botStats | toArray | orderBy: cntl.StatOrder track by stat.$key">
+                          <tr ng-repeat="stat in cntl.botStats.Analytics | toArray | orderBy: cntl.StatOrder track by stat.$key">
                             <td>{{stat.$key}}</td>
                             <td>{{stat.Count}}</td>
                             <td>{{stat.CachedCount}}</td>

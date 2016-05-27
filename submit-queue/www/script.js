@@ -23,7 +23,6 @@ function SQCntl(dataService, $interval, $location) {
   self.queryNum = 0;
   self.selected = 1;
   self.OverallHealth = "";
-  self.StartTime = "";
   self.StatOrder = "-Count";
   self.location = $location;
 
@@ -77,11 +76,12 @@ function SQCntl(dataService, $interval, $location) {
       0: [refreshPRs],
       1: [refreshGithubE2E, refreshSQStats],
       2: [refreshHistoryPRs],
-      3: [refreshE2EHealth],
+      3: [refreshE2EHealth, refreshSQStats],
       4: [refreshSQStats, refreshUsers, refreshBotStats],
     }
-    if (self.tabLoaded[self.selected])
+    if (self.tabLoaded[self.selected]) {
       return;
+    }
     self.tabLoaded[self.selected] = true;
 
     var reloadFuncs = tabFunctionReloads[self.selected];
@@ -90,8 +90,9 @@ function SQCntl(dataService, $interval, $location) {
 
     for (var i = 0; i < reloadFuncs.length; i++) {
       var func = reloadFuncs[i];
-      if (self.functionLoading[func] == true)
+      if (self.functionLoading[func] == true) {
         continue;
+      }
       self.functionLoading[func] = true;
 
       var updateIntervalMinutes = reloadFunctions[func];
@@ -155,16 +156,7 @@ function SQCntl(dataService, $interval, $location) {
 
   function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
-      var nextLoop = new Date(response.data.NextLoopTime);
-      self.nextRunTime = nextLoop.toLocaleTimeString();
-
-      self.botStats = response.data.Analytics;
-      self.APICount = response.data.APICount;
-      self.CachedAPICount = response.data.CachedAPICount;
-      self.apiCallsPerSec = response.data.APIPerSec;
-      self.githubApiLimitCount = response.data.LimitRemaining;
-      var nextReset = new Date(response.data.LimitResetTime);
-      self.githubApiLimitReset = nextReset.toLocaleTimeString();
+      self.botStats = response.data;
     });
   }
 
@@ -180,7 +172,6 @@ function SQCntl(dataService, $interval, $location) {
       if (self.health.TotalLoops !== 0) {
         var percentStable = self.health.NumStable * 100.0 / self.health.TotalLoops;
         self.OverallHealth = Math.round(percentStable) + "%";
-        self.StartTime = new Date(self.health.StartTime).toLocaleString();
       }
       updateBuildStability(self.builds, self.health);
     });
@@ -317,7 +308,6 @@ function SQCntl(dataService, $interval, $location) {
   }
 
   function goToPerson(person) {
-    console.log(person);
     window.location.href = 'https://github.com/' + person;
   }
 

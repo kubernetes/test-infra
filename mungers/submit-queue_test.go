@@ -199,7 +199,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
 
-	sq.health.StartTime = sq.clock.Now()
+	sq.startTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
 
 	sq.e2e = &fake_e2e.FakeE2ETester{

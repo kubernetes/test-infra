@@ -107,7 +107,6 @@ type submitQueueStatus struct {
 // of time for the queue as a whole and the individual jobs will then be
 // NumStable[PerJob] / TotalLoops.
 type submitQueueHealth struct {
-	StartTime       time.Time
 	TotalLoops      int
 	NumStable       int
 	NumStablePerJob map[string]int
@@ -124,6 +123,7 @@ type healthRecord struct {
 // information about the sq itself including how fast things are merging and
 // how long since the last merge
 type submitQueueStats struct {
+	StartTime      time.Time
 	LastMergeTime  time.Time
 	MergeRate      float64
 	RetestsAvoided int
@@ -175,6 +175,7 @@ type SubmitQueue struct {
 	statusHistory []submitStatus          // protected by sync.Mutex
 
 	clock         util.Clock
+	startTime     time.Time // when the queue started (duh)
 	lastMergeTime time.Time
 	mergeRate     float64 // per 24 hours
 
@@ -197,6 +198,7 @@ func init() {
 	clock := util.RealClock{}
 	sq := &SubmitQueue{
 		clock:          clock,
+		startTime:      clock.Now(),
 		lastMergeTime:  clock.Now(),
 		lastE2EStable:  true,
 		prStatus:       map[string]submitStatus{},
@@ -348,7 +350,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		sq.githubE2EPollTime = githubE2EPollTime
 	}
 
-	sq.health.StartTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
 
 	go sq.handleGithubE2EAndMerge()
@@ -1118,6 +1119,7 @@ func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
 
 func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) {
 	data := submitQueueStats{
+		StartTime:      sq.startTime,
 		LastMergeTime:  sq.lastMergeTime,
 		MergeRate:      sq.calcMergeRateWithTail(),
 		RetestsAvoided: int(atomic.LoadInt32(&sq.retestsAvoided)),
