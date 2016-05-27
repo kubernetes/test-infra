@@ -31,18 +31,35 @@ type Number int
 // Test is the name of an individual test that runs in a Job.
 type Test string
 
+// ResultStatus can be stable, flaky, or failed
+type ResultStatus string
+
+const (
+	// ResultStable means green, everything passed
+	ResultStable ResultStatus = "stable"
+
+	// ResultFlaky means the job run worked, but some tests failed.
+	ResultFlaky ResultStatus = "flaky"
+
+	// ResultFailed means it failed without generating readable JUnit
+	// files, and introspection is not possible.
+	ResultFailed ResultStatus = "failed"
+)
+
 // Result records a test job completion.
 type Result struct {
+	// The jenkins job
 	Job
+	// The run number
 	Number
-	Pass bool
+
+	Status ResultStatus
 
 	StartTime time.Time
 	EndTime   time.Time
 
 	// test name to reason/desc
-	Flakes         map[Test]string
-	UnlistedFlakes bool // i.e., non-JUnit reported
+	Flakes map[Test]string
 }
 
 // Flake records a single flake occurrence.
@@ -51,6 +68,9 @@ type Flake struct {
 	Number
 	Test
 	Reason string
+
+	// Pointer back to the result this flake came from
+	*Result
 }
 
 type flakeKey struct {
@@ -138,6 +158,7 @@ func (c *Cache) populate(j Job, n Number) (*Result, error) {
 			Number: n,
 			Test:   f,
 			Reason: reason,
+			Result: r,
 		}
 	}
 	return r, nil

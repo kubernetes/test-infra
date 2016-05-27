@@ -19,22 +19,15 @@ package mungers
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
+	"k8s.io/contrib/mungegithub/mungers/sync"
 	"k8s.io/contrib/test-utils/utils"
 
-	"github.com/golang/glog"
+	// "github.com/golang/glog"
 	"github.com/spf13/cobra"
-)
-
-const (
-	// URLTestStorageBucket is a link that works for *directories* and not
-	// files, since we want to link people to something that lets them
-	// browse all the artifacts.
-	URLTestStorageBucket = "https://console.cloud.google.com/storage/kubernetes-jenkins/logs"
 )
 
 // issueFinder finds an issue for a given key.
@@ -51,14 +44,7 @@ type FlakeManager struct {
 	config               *github.Config
 	googleGCSBucketUtils *utils.Utils
 
-	oldestTime time.Time
-
-	// map of flake to the issue number
-	alreadySyncedFlakes map[cache.Flake]int
-
-	// TODO: go backwards fetching statuses until we reach oldestTime
-	// The next run number we need to check for each job
-	// jobToRunNumber map[string]int
+	syncer *sync.IssueSyncer
 }
 
 func init() {
@@ -88,10 +74,9 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	if p.sq == nil {
 		return fmt.Errorf("submit-queue not found")
 	}
-	p.oldestTime = time.Now().Add(-time.Hour * 24)
-	p.alreadySyncedFlakes = map[cache.Flake]int{}
 	p.config = config
 	p.googleGCSBucketUtils = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
+	p.syncer = sync.NewIssueSyncer(config, p.finder)
 	return nil
 }
 
@@ -116,147 +101,132 @@ func (p *FlakeManager) AddFlags(cmd *cobra.Command, config *github.Config) {}
 // Munge is unused by this munger.
 func (p *FlakeManager) Munge(obj *github.MungeObject) {}
 
-// Look through all issues filed about this test.
-// If foundIn is > 0, then the particular flake was found in that issue.
-// All open issues for this test are returned in updatableIssues.
-func (p *FlakeManager) findPreviousIssues(f cache.Flake) (foundIn int, updatableIssues []*github.MungeObject, err error) {
-	possibleIssues := p.finder.AllIssuesForKey(string(f.Test))
-	for _, previousIssue := range possibleIssues {
-		obj, err := p.config.GetObject(previousIssue)
-		if err != nil {
-			return 0, nil, fmt.Errorf("error getting object for %v: %v", previousIssue, err)
-		}
-		isRecorded, err := p.isRecorded(obj, f)
-		if err != nil {
-			return 0, nil, fmt.Errorf("error checking whether flake %v is recorded in issue %v: %v", f, previousIssue, err)
-		}
-		if isRecorded {
-			foundIn = previousIssue
-			// keep going since we may want to close dups
-		}
-		if obj.Issue.State != nil && *obj.Issue.State == "open" {
-			updatableIssues = append(updatableIssues, obj)
-		}
-	}
-	return foundIn, updatableIssues, nil
-}
-
-// Close all of the dups.
-func (p *FlakeManager) markAsDups(dups []*github.MungeObject, of int) error {
-	// Somehow we got duplicate issues all open at once.
-	// Close all of the older ones.
-	for _, dup := range dups {
-		if err := dup.CloseIssuef("This is a duplicate of #%v; closing", of); err != nil {
-			return fmt.Errorf("failed to close %v as a dup of %v: %v", *dup.Issue.Number, of, err)
-		}
-	}
-	return nil
-}
-
 func (p *FlakeManager) syncFlake(f cache.Flake) error {
-	if _, ok := p.alreadySyncedFlakes[f]; ok {
-		return nil
+	if p.isIndividualFlake(f) {
+		// Just an individual failure.
+		return p.syncer.Sync(&individualFlakeSource{f, p})
 	}
 
-	foundIn, updatableIssues, err := p.findPreviousIssues(f)
-	if err != nil {
-		return err
-	}
-
-	// Close dups if there are multiple open issues
-	if len(updatableIssues) > 1 {
-		obj := updatableIssues[0]
-		if err := p.markAsDups(updatableIssues[1:], *obj.Issue.Number); err != nil {
-			return err
-		}
-	}
-
-	if foundIn > 0 {
-		// Don't need to update, we were only here to close the dups.
-		p.alreadySyncedFlakes[f] = foundIn
-		return nil
-	}
-
-	// Update an issue if possible.
-	if len(updatableIssues) > 0 {
-		obj := updatableIssues[0]
-		// Update the chosen issue
-		if err := p.updateIssue(obj, f); err != nil {
-			return fmt.Errorf("error updating issue %v for %v: %v", *obj.Issue.Number, f, err)
-		}
-		p.alreadySyncedFlakes[f] = *obj.Issue.Number
-		return nil
-	}
-
-	// No issue could be updated, create a new issue.
-	n, err := p.createIssue(f)
-	if err != nil {
-		return fmt.Errorf("error making issue for %v: %v", f, err)
-	}
-	p.finder.Created(string(f.Test), n)
-	p.alreadySyncedFlakes[f] = n
-	return nil
+	return p.syncer.Sync(&brokenJobSource{f.Result, p})
 }
 
-// DO NOT CHANGE or it will not recognize previous entries!
-func (p *FlakeManager) flakeID(flake cache.Flake) string {
-	return p.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(string(flake.Job), int(flake.Number), "") + "\n"
-}
-
-func (p *FlakeManager) flakeExtraInfo(flake cache.Flake) string {
-	return fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", flake.Test, flake.Reason)
-}
-
-// Search through the body and comments to see if the given flake is already
-// mentioned in the given github issue.
-func (p *FlakeManager) isRecorded(obj *github.MungeObject, flake cache.Flake) (bool, error) {
-	flakeID := p.flakeID(flake)
-	if obj.Issue.Body != nil && strings.Contains(*obj.Issue.Body, flakeID) {
-		// We already wrote this flake
-		return true, nil
+func (p *FlakeManager) isIndividualFlake(f cache.Flake) bool {
+	// TODO: cache this logic when it gets more complex.
+	if f.Result.Status == cache.ResultFailed {
+		return false
 	}
-	comments, err := obj.ListComments()
-	if err != nil {
-		return false, fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
+
+	// This is the dumbest rule that could possibly be useful.
+	// TODO: more robust logic about whether a given flake is a flake or a
+	// systemic problem. We should at least account for known flakes before
+	// applying this rule.
+	if len(f.Result.Flakes) > 3 {
+		return false
 	}
-	for _, c := range comments {
-		if c.Body == nil {
-			continue
-		}
-		if strings.Contains(*c.Body, flakeID) {
-			// We already wrote this flake
-			return true, nil
-		}
-	}
-	return false, nil
+
+	return true
 }
 
-// updateIssue adds a comment about the flake to the github object.
-func (p *FlakeManager) updateIssue(obj *github.MungeObject, flake cache.Flake) error {
-	body := p.flakeID(flake) + "\n" + p.flakeExtraInfo(flake)
-	glog.Infof("Updating issue %v with flake %v", *obj.Issue.Number, flake)
-	return obj.WriteComment(body)
+type individualFlakeSource struct {
+	flake cache.Flake
+	fm    *FlakeManager
 }
 
-// createIssue makes a new issue for the given flake. If we know about other
-// issues for the flake, then they'll be referenced.
-func (p *FlakeManager) createIssue(flake cache.Flake) (issueNumber int, err error) {
-	body := p.flakeID(flake) + "\n" + p.flakeExtraInfo(flake)
-	if previousIssues := p.finder.AllIssuesForKey(string(flake.Test)); len(previousIssues) > 0 {
+// Title implements IssueSource
+func (p *individualFlakeSource) Title() string {
+	// DO NOT CHANGE or it will not recognize previous entries!
+	// Note that brokenJobSource.Body() also uses this value to find test
+	// flake issues.
+	return string(p.flake.Test)
+}
+
+// ID implements IssueSource
+func (p *individualFlakeSource) ID() string {
+	// DO NOT CHANGE or it will not recognize previous entries!
+	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
+		string(p.flake.Job),
+		int(p.flake.Number),
+		"",
+	) + "\n"
+}
+
+// Body implements IssueSource
+func (p *individualFlakeSource) Body(newIssue bool) string {
+	testName := string(p.flake.Test)
+	extraInfo := fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", testName, p.flake.Reason)
+	body := p.ID() + "\n" + extraInfo
+
+	if !newIssue {
+		return body
+	}
+
+	// If we're filing a new issue, reference previous issues if we know of any.
+	if previousIssues := p.fm.finder.AllIssuesForKey(testName); len(previousIssues) > 0 {
 		s := []string{}
 		for _, i := range previousIssues {
 			s = append(s, fmt.Sprintf("#%v", i))
 		}
 		body = body + fmt.Sprintf("\nPrevious issues for this test: %v\n", strings.Join(s, " "))
 	}
-	obj, err := p.config.NewIssue(
-		string(flake.Test), // title
-		body,               // body
-		[]string{"kind/flake"}, // labels
-	)
-	if err != nil {
-		return 0, err
+	return body
+}
+
+// Labels implements IssueSource
+func (p *individualFlakeSource) Labels() []string {
+	return []string{"kind/flake"}
+}
+
+type brokenJobSource struct {
+	result *cache.Result
+	fm     *FlakeManager
+}
+
+// Title implements IssueSource
+func (p *brokenJobSource) Title() string {
+	failures := "?"
+	if p.result.Status != cache.ResultFailed {
+		failures = fmt.Sprintf("%v", len(p.result.Flakes))
 	}
-	glog.Infof("Created issue %v for flake %v", *obj.Issue.Number, flake)
-	return *obj.Issue.Number, nil
+
+	// DO NOT CHANGE or it will not recognize previous entries!
+	return fmt.Sprintf("Broken test run: %v - %v [%v failures]", p.result.Job, p.result.Number, failures)
+}
+
+// ID implements IssueSource
+func (p *brokenJobSource) ID() string {
+	// DO NOT CHANGE or it will not recognize previous entries!
+	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
+		string(p.result.Job),
+		int(p.result.Number),
+		"",
+	) + "\n"
+}
+
+// Body implements IssueSource
+func (p *brokenJobSource) Body(newIssue bool) string {
+	if p.result.Status == cache.ResultFailed {
+		return fmt.Sprintf("%v\nRun so broken it didn't make JUnit output!", p.ID())
+	}
+	body := fmt.Sprintf("%v\nMultiple broken tests:\n\n", p.ID())
+
+	sections := []string{}
+	for testName, reason := range p.result.Flakes {
+		text := fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n", testName, reason)
+		// Reference previous issues if we know of any.
+		// (key must batch individualFlakeSource.Title()!)
+		if previousIssues := p.fm.finder.AllIssuesForKey(string(testName)); len(previousIssues) > 0 {
+			s := []string{}
+			for _, i := range previousIssues {
+				s = append(s, fmt.Sprintf("#%v", i))
+			}
+			text = text + fmt.Sprintf("Issues about this test specifically: %v\n", strings.Join(s, " "))
+		}
+		sections = append(sections, text)
+	}
+	return body + strings.Join(sections, "\n\n")
+}
+
+// Labels implements IssueSource
+func (p *brokenJobSource) Labels() []string {
+	return []string{"kind/flake", "team/test-infra"}
 }
