@@ -300,11 +300,12 @@ func (sq *SubmitQueue) calcMergeRateWithTail() float64 {
 
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
-	return sq.internalInitialize(config, features, utils.GoogleBucketURL)
+	return sq.internalInitialize(config, features, "")
 }
 
-// internalInitialize will initialize the munger for the given GCS bucket url.
-func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, GCSBucketUrl string) error {
+// internalInitialize will initialize the munger.
+// if overrideUrl is specified, will create testUtils
+func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideUrl string) error {
 	sq.Lock()
 	defer sq.Unlock()
 
@@ -319,12 +320,19 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			WeakStableJobNames: sq.WeakStableJobNames,
 		}
 	} else {
+		var gcs *utils.Utils
+		if overrideUrl != "" {
+			gcs = utils.NewTestUtils(overrideUrl)
+		} else {
+			gcs = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
+		}
+
 		sq.e2e = (&e2e.RealE2ETester{
 			JobNames:             sq.JobNames,
 			JenkinsHost:          sq.JenkinsHost,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewUtils(GCSBucketUrl),
+			GoogleGCSBucketUtils: gcs,
 		}).Init()
 	}
 
