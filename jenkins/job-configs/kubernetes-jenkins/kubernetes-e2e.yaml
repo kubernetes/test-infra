@@ -252,7 +252,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-                export ZONE="europe-west1-c"
         - 'gke-serial':
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
