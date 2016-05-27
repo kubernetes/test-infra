@@ -14,7 +14,7 @@ spec:
         command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
-        - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager
+        - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter
         - --dry-run=true
         - --weak-stable-jobs=kubernetes-kubemark-500-gce
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
