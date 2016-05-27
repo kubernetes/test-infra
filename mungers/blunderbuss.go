@@ -24,7 +24,6 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 
 	"github.com/golang/glog"
-	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -69,14 +68,6 @@ func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) 
 	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 }
 
-// u may be nil.
-func describeUser(u *githubapi.User) string {
-	if u != nil && u.Login != nil {
-		return *u.Login
-	}
-	return "<nil>"
-}
-
 func chance(val, total int64) float64 {
 	return 100.0 * float64(val) / float64(total)
 }
@@ -99,7 +90,7 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 
 	issue := obj.Issue
 	if !b.blunderbussReassign && issue.Assignee != nil {
-		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.blunderbussReassign, describeUser(issue.Assignee))
+		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.blunderbussReassign, github.DescribeUser(issue.Assignee))
 		return
 	}
 
@@ -153,6 +144,6 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 		}
 	}
 	c := chance(potentialOwners[owner], weightSum)
-	glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned (previously assigned to %v)", *issue.Number, owner, c, describeUser(issue.Assignee))
+	glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned (previously assigned to %v)", *issue.Number, owner, c, github.DescribeUser(issue.Assignee))
 	obj.AssignPR(owner)
 }

@@ -476,3 +476,62 @@ func TestRemoveLabel(t *testing.T) {
 		server.Close()
 	}
 }
+
+func TestPRGetFixesList(t *testing.T) {
+	tests := []struct {
+		issue    *github.Issue
+		body     string
+		expected []int
+	}{
+		{
+			issue: github_test.Issue("", 1, []string{"label1"}, false),
+			body: `bla resolve
+this pr closes #45545 and also fixes #679
+bla, some more bla with close here and there.
+some suggest that it resolved #5643`,
+			expected: []int{45545, 679, 5643},
+		},
+		{
+			issue: github_test.Issue("", 2, []string{"label1"}, false),
+			body: `bla resolve 345
+some suggest that it also closes #892`,
+			expected: []int{892},
+		},
+		{
+			issue: github_test.Issue("", 3, []string{"label1"}, false),
+			body: `bla resolve
+this pr closes and fixes nothing`,
+			expected: nil,
+		},
+		{
+			issue: github_test.Issue("", 4, []string{"label1"}, false),
+			body: `bla bla
+this pr Fixes #23 and FIXES #45 but not fixxx #99`,
+			expected: []int{23, 45},
+		},
+	}
+	for testNum, test := range tests {
+		client, server, _ := github_test.InitServer(t, test.issue, nil, nil, nil, nil, nil)
+		config := &Config{}
+		config.Org = "o"
+		config.Project = "r"
+		config.SetClient(client)
+
+		obj, err := config.GetObject(*test.issue.Number)
+		if err != nil {
+			t.Fatalf("%d: unable to get issue: %v", testNum, *test.issue.Number)
+		}
+		obj.Issue.Body = &test.body
+		fixes := obj.GetPRFixesList()
+		if len(test.expected) != len(fixes) {
+			t.Errorf("%d: len(fixes) not equal, expected: %v but got: %v", testNum, test.expected, fixes)
+			return
+		}
+		for i, n := range test.expected {
+			if n != fixes[i] {
+				t.Errorf("%d: expected fixes: %v but got fixes: %v", testNum, test.expected, fixes)
+			}
+		}
+		server.Close()
+	}
+}

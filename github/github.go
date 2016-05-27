@@ -56,6 +56,7 @@ const (
 var (
 	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]$`)
 	priorityLabelRE    = regexp.MustCompile(`priority/[pP]([\d]+)`)
+	fixesIssueRE       = regexp.MustCompile(`(?i)(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[\s]+#([\d]+)`)
 	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 )
 
@@ -894,6 +895,14 @@ func (config *Config) GetUser(login string) (*github.User, error) {
 	return user, err
 }
 
+// DescribeUser returns the Login string, which may be nil.
+func DescribeUser(u *github.User) string {
+	if u != nil && u.Login != nil {
+		return *u.Login
+	}
+	return "<nil>"
+}
+
 // IsPR returns if the obj is a PR or an Issue.
 func (obj *MungeObject) IsPR() bool {
 	if obj.Issue.PullRequestLinks == nil {
@@ -1370,6 +1379,26 @@ func (obj *MungeObject) MergePR(who string) error {
 		return err
 	}
 	return nil
+}
+
+// GetPRFixesList returns a list of issue numbers that are referenced in the PR body.
+func (obj *MungeObject) GetPRFixesList() []int {
+	prBody := ""
+	if obj.Issue.Body != nil {
+		prBody = *obj.Issue.Body
+	}
+	matches := fixesIssueRE.FindAllStringSubmatch(prBody, -1)
+	if matches == nil {
+		return nil
+	}
+
+	issueNums := []int{}
+	for _, match := range matches {
+		if num, err := strconv.Atoi(match[1]); err == nil {
+			issueNums = append(issueNums, num)
+		}
+	}
+	return issueNums
 }
 
 // ListComments returns all comments for the issue/PR in question
