@@ -131,7 +131,6 @@ func (p *FlakeManager) findPreviousIssues(f cache.Flake) (foundIn int, updatable
 			return 0, nil, fmt.Errorf("error checking whether flake %v is recorded in issue %v: %v", f, previousIssue, err)
 		}
 		if isRecorded {
-			p.alreadySyncedFlakes[f] = previousIssue
 			foundIn = previousIssue
 			// keep going since we may want to close dups
 		}
@@ -165,9 +164,9 @@ func (p *FlakeManager) syncFlake(f cache.Flake) error {
 	}
 
 	// Close dups if there are multiple open issues
-	if n := len(updatableIssues) - 1; n > 1 {
-		obj := updatableIssues[n]
-		if err := p.markAsDups(updatableIssues[:n], *obj.Issue.Number); err != nil {
+	if len(updatableIssues) > 1 {
+		obj := updatableIssues[0]
+		if err := p.markAsDups(updatableIssues[1:], *obj.Issue.Number); err != nil {
 			return err
 		}
 	}
@@ -179,11 +178,11 @@ func (p *FlakeManager) syncFlake(f cache.Flake) error {
 	}
 
 	// Update an issue if possible.
-	if n := len(updatableIssues) - 1; n >= 0 {
-		obj := updatableIssues[n]
+	if len(updatableIssues) > 0 {
+		obj := updatableIssues[0]
 		// Update the chosen issue
 		if err := p.updateIssue(obj, f); err != nil {
-			return fmt.Errorf("error updating issue %v for %v: %v", n, f, err)
+			return fmt.Errorf("error updating issue %v for %v: %v", *obj.Issue.Number, f, err)
 		}
 		p.alreadySyncedFlakes[f] = *obj.Issue.Number
 		return nil
