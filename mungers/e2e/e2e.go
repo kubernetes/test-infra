@@ -128,6 +128,11 @@ const (
 	ExpectedXMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 )
 
+// GetBuildResult returns (or gets) the cached result of the job and build. Public.
+func (e *RealE2ETester) GetBuildResult(job string, number int) (*cache.Result, error) {
+	return e.flakeCache.Get(cache.Job(job), cache.Number(number))
+}
+
 func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result, error) {
 	stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(string(j), int(n))
 	if err != nil {
@@ -175,7 +180,7 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 			continue
 		}
 
-		thisResult, err := e.flakeCache.Get(cache.Job(job), cache.Number(lastBuildNumber))
+		thisResult, err := e.GetBuildResult(job, lastBuildNumber)
 		if err != nil || (!thisResult.Pass && thisResult.UnlistedFlakes) {
 			glog.V(4).Infof("Found unstable job: %v, build number: %v: (err: %v) %#v", job, lastBuildNumber, err, thisResult)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
@@ -188,7 +193,7 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 			continue
 		}
 
-		lastResult, err := e.flakeCache.Get(cache.Job(job), cache.Number(lastBuildNumber-1))
+		lastResult, err := e.GetBuildResult(job, lastBuildNumber-1)
 		if err != nil || lastResult.UnlistedFlakes {
 			glog.V(4).Infof("prev job doesn't help: %v, build number: %v (the previous build); (err %v) %#v", job, lastBuildNumber-1, err, lastResult)
 			allStable = false
