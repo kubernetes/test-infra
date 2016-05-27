@@ -3,13 +3,20 @@
     description: 'Update Jenkins jobs based on configs in https://github.com/kubernetes/test-infra/tree/master/jenkins/job-configs. Test owner: spxtr.'
     logrotate:
         daysToKeep: 3
+    node: master
     triggers:
         - timed: 'H/15 * * * *'
+    scm:
+        - git:
+            url: https://github.com/kubernetes/test-infra
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            skip-tag: true
     builders:
         - shell: |
-            curl -fsS https://raw.githubusercontent.com/kubernetes/test-infra/master/jenkins/update-jobs.sh > update-jobs.sh
-            chmod +x update-jobs.sh
-            ./update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
+            ./jenkins/update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
     publishers:
       - email-ext:
           recipients: spxtr@google.com
