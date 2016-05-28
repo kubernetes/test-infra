@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/golang/glog"
@@ -198,7 +199,7 @@ func (u *Utils) CheckFinishedStatus(job string, buildNumber int) (bool, error) {
 // ListFilesInBuild takes build info and list all file names with matching prefix
 // The returned file name included the complete path from bucket root
 func (u *Utils) ListFilesInBuild(job string, buildNumber int, prefix string) ([]string, error) {
-	combinePrefix := path.Join(u.directory, job, string(buildNumber), prefix)
+	combinePrefix := path.Join(u.directory, job, strconv.Itoa(buildNumber), prefix)
 	ret, err := u.ListFilesWithPrefix(combinePrefix)
 	return ret, err
 }
