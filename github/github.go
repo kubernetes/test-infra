@@ -498,6 +498,9 @@ func (config *Config) GetObject(num int) (*MungeObject, error) {
 
 // NewIssue will file a new issue and return an object for it.
 func (config *Config) NewIssue(title, body string, labels []string) (*MungeObject, error) {
+	if config.DryRun {
+		return nil, fmt.Errorf("can't make issues in dry-run mode")
+	}
 	issue, resp, err := config.client.Issues.Create(config.Org, config.Project, &github.IssueRequest{
 		Title:  &title,
 		Body:   &body,
