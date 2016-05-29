@@ -18,6 +18,8 @@ spec:
         - --do-not-merge-milestones=,next-candidate,v1.4
         - --dry-run=true
         - --weak-stable-jobs=kubernetes-kubemark-500-gce
+        - --required-contexts="Jenkins GCE Node e2e"
+        - --number-of-old-test-results=5
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         ports:
         - name: status
