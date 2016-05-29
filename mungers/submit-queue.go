@@ -753,8 +753,12 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 		return false
 	}
 
-	if milestone := obj.Issue.Milestone; milestone != nil && milestone.Title != nil {
-		title := *milestone.Title
+	if milestone := obj.Issue.Milestone; true {
+		title := ""
+		// Net set means the empty milestone, ""
+		if milestone != nil && milestone.Title != nil {
+			title = *milestone.Title
+		}
 		for _, blocked := range sq.doNotMergeMilestones {
 			if title == blocked {
 				sq.SetMergeStatus(obj, unmergeableMilestone)
