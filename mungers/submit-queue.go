@@ -991,7 +991,6 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 
 func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
 	obj.MergePR("submit-queue")
-	sq.updateMergeRate()
 	sq.SetMergeStatus(obj, merged)
 }
 
@@ -1050,6 +1049,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	}
 
 	if obj.HasLabel(e2eNotRequiredLabel) {
+		// Do not update mergeRate when we don't do e2e tests
 		sq.mergePullRequest(obj)
 		return true
 	}
@@ -1100,6 +1100,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
+	sq.updateMergeRate()
 	sq.mergePullRequest(obj)
 	return true
 }
