@@ -1,6 +1,9 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="/static/style.css" />
+% if finished['result'] == 'SUCCESS' and not failures
+<link rel="icon" type="image/png" href="/static/favicon-green.png" />
+% endif
 <title>{{job}} #{{build}} Results</title>
 </head>
 <body>
