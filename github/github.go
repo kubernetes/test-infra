@@ -599,7 +599,7 @@ func (obj *MungeObject) LabelTime(label string) *time.Time {
 // LabelCreator returns the login name of the user who (last) created the given label
 func (obj *MungeObject) LabelCreator(label string) string {
 	event := obj.labelEvent(label)
-	if event == nil {
+	if event == nil || event.Actor == nil || event.Actor.Login == nil {
 		return ""
 	}
 	return *event.Actor.Login
