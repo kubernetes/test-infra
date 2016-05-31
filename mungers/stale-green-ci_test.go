@@ -72,7 +72,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 		issueNum := testNum + 1
 		tested := false
 
-		issue := NoOKToMergeIssue()
+		issue := LGTMIssue()
 		issue.Number = intPtr(issueNum)
 		pr := ValidPR()
 		pr.Number = intPtr(issueNum)
