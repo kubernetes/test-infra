@@ -34,15 +34,16 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
+	releaseNoteExperimental   = "release-note-experimental"
 
 	releaseNoteFormat = `Removing LGTM because the release note process has not been followed.
-One of the following labels is required %q, %q, or %q
-Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes`
-	parentReleaseNoteFormat = `The 'parent' PR of cherry-picks must have either the %q or %q label or this PR must follow the release note process.`
+One of the following labels is required %q, %q, %q or %q.
+Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes.`
+	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
 )
 
 var (
-	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteNone, releaseNoteActionRequired)
+	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteActionRequired, releaseNoteExperimental, releaseNoteNone)
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 )
 
@@ -89,15 +90,16 @@ func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) b
 
 	for _, parent := range parents {
 		// If the parent didn't set a release note, the CP must
-		if !parent.HasLabel(releaseNote) && !parent.HasLabel(releaseNoteActionRequired) {
+		if !parent.HasLabel(releaseNote) &&
+			!parent.HasLabel(releaseNoteActionRequired) {
 			if !obj.HasLabel(releaseNoteLabelNeeded) {
 				obj.WriteComment(parentReleaseNoteBody)
 			}
 			return true
 		}
 	}
-	// All of the parents set the releaseNote or releaseNoteActionRequired label, so
-	// this cherrypick PR needs to do nothing.
+	// All of the parents set the releaseNote or releaseNoteActionRequired label,
+	// so this cherrypick PR needs to do nothing.
 	return false
 }
 
@@ -136,7 +138,10 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 }
 
 func completedReleaseNoteProcess(obj *github.MungeObject) bool {
-	return obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteNone)
+	return obj.HasLabel(releaseNote) ||
+		obj.HasLabel(releaseNoteActionRequired) ||
+		obj.HasLabel(releaseNoteExperimental) ||
+		obj.HasLabel(releaseNoteNone)
 }
 
 func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
