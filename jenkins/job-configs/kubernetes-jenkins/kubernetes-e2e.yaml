@@ -309,8 +309,9 @@
                 export ALLOWED_NOTREADY_NODES="10"
                 export CLUSTER_IP_RANGE="10.8.0.0/13"
                 # We were asked (by MIG team) to not create more than 5 MIGs per zone.
-                # So setting max-nodes-per-pool=400, to have 5 MIGs.
-                export GKE_CREATE_FLAGS="--max-nodes-per-pool=400 --no-enable-cloud-monitoring --disable-addons HorizontalPodAutoscaling"
+                # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
+                # So setting max-nodes-per-pool=1000, to check if that helps.
+                export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000 --no-enable-cloud-monitoring --disable-addons HorizontalPodAutoscaling"
                 export KUBE_GKE_NETWORK="gke-large-cluster"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
     jobs:
