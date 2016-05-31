@@ -1052,7 +1052,7 @@
             suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
             step: 'upgrade-master'
             description: 'Deploys a cluster at v{version-old}, upgrades the master to v{version-new}, and runs the v{version-old} tests.'
-            timeout: 300
+            timeout: 600
             job-env: |
                 export PROJECT="kube-gke-upg-{version-infix}-upg-mas"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
@@ -1067,7 +1067,7 @@
         - 'kubernetes-e2e-{suffix}':
             suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster'
             description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-old} tests.'
-            timeout: 300
+            timeout: 600
             job-env: |
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
@@ -1082,7 +1082,7 @@
         - 'kubernetes-e2e-{suffix}':
             suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster-new'
             description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-new} tests.'
-            timeout: 300
+            timeout: 600
             job-env: |
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu-n"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
