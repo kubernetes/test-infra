@@ -314,6 +314,8 @@
             job-env: |
                 export E2E_NAME="gke-large-cluster"
                 export PROJECT="kubernetes-scale"
+                # TODO: Remove FAIL_ON_GCP_RESOURCE_LEAK when PROJECT changes back to gke-large-cluster-jenkins.
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # TODO: Remove HPA and "master services" tests after enabling Heapster.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Kubernetes\smaster\sservices\sis\sincluded\sin\scluster-info"
                 export GINKGO_PARALLEL="y"
