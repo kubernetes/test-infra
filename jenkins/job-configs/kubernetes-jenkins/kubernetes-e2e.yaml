@@ -99,7 +99,7 @@
             description: 'Run autoscaling E2E tests on GCE.'
             timeout: 210
             job-env: |
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] \
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] \
                                          --ginkgo.skip=\[Flaky\]"
                 export PROJECT="k8s-jnks-e2e-gce-autoscaling"
                 # Override GCE default for cluster size autoscaling purposes.
