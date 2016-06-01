@@ -127,6 +127,17 @@ func (p *FlakeManager) isIndividualFlake(f cache.Flake) bool {
 	return true
 }
 
+// makeGubernatorLink returns a URL to view the build results in a GCS path.
+//
+// gcsPath should be a string like "/kubernetes-jenkins/logs/e2e/1234/",
+// pointing at a bucket and path containing test results for a given build.
+//
+// Gubernator is a simple frontend that reads test result buckets to improve
+// test triaging. Its source code is in kubernetes/test-infra/gubernator
+func makeGubernatorLink(gcsPath string) string {
+	return "https://k8s-gubernator.appspot.com/build" + gcsPath
+}
+
 type individualFlakeSource struct {
 	flake cache.Flake
 	fm    *FlakeManager
@@ -146,7 +157,6 @@ func (p *individualFlakeSource) ID() string {
 	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
 		string(p.flake.Job),
 		int(p.flake.Number),
-		"",
 	) + "\n"
 }
 
@@ -154,7 +164,7 @@ func (p *individualFlakeSource) ID() string {
 func (p *individualFlakeSource) Body(newIssue bool) string {
 	testName := string(p.flake.Test)
 	extraInfo := fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", testName, p.flake.Reason)
-	body := p.ID() + "\n" + extraInfo
+	body := makeGubernatorLink(p.ID()) + "\n" + extraInfo
 
 	if !newIssue {
 		return body
@@ -198,16 +208,16 @@ func (p *brokenJobSource) ID() string {
 	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
 		string(p.result.Job),
 		int(p.result.Number),
-		"",
 	) + "\n"
 }
 
 // Body implements IssueSource
 func (p *brokenJobSource) Body(newIssue bool) string {
+	url := makeGubernatorLink(p.ID())
 	if p.result.Status == cache.ResultFailed {
-		return fmt.Sprintf("%v\nRun so broken it didn't make JUnit output!", p.ID())
+		return fmt.Sprintf("%v\nRun so broken it didn't make JUnit output!", url)
 	}
-	body := fmt.Sprintf("%v\nMultiple broken tests:\n\n", p.ID())
+	body := fmt.Sprintf("%v\nMultiple broken tests:\n\n", url)
 
 	sections := []string{}
 	for testName, reason := range p.result.Flakes {
