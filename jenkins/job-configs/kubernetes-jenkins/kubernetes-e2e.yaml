@@ -312,6 +312,7 @@
             trigger-job: ''
             # TODO(zmerlynn) change back to PROJECT="gke-large-cluster-jenkins", re-enable Heapster
             job-env: |
+                export E2E_NAME="gke-large-cluster"
                 export PROJECT="kubernetes-scale"
                 # TODO: Remove HPA and "master services" tests after enabling Heapster.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Kubernetes\smaster\sservices\sis\sincluded\sin\scluster-info"
@@ -325,7 +326,6 @@
                 # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
                 # So setting max-nodes-per-pool=1000, to check if that helps.
                 export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000 --no-enable-cloud-monitoring --disable-addons HorizontalPodAutoscaling"
-                export KUBE_GKE_NETWORK="gke-large-cluster"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
     jobs:
         - 'kubernetes-e2e-{suffix}'
