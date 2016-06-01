@@ -13,8 +13,9 @@
     disabled: '{obj:disable_job}'
     description: 'Build and push {gitproject} docker image.<br>Test Owner: {owner}.'
     node: 'node'
-    logrotate:
-        numToKeep: 200
+    properties:
+        - build-discarder:
+            num-to-keep: 200
     builders:
          - docker-build-publish:
              repoName: '{repoName}'
@@ -63,8 +64,9 @@
     description: '{gitproject} continuous e2e tests.<br>Test Owner: {owner}.'
     disabled: '{obj:disable_job}'
     node: 'node'
-    logrotate:
-        numToKeep: 200
+    properties:
+        - build-discarder:
+            num-to-keep: 200
     builders:
          - shell: |
               #!/bin/bash

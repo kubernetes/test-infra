@@ -4,8 +4,9 @@
         Grab the latest from GitHub, then run hack/verify-linkcheck.sh.<br>
         Test Owner: Build Cop
     disable_job: true # Issue #23162
-    logrotate:
-        numToKeep: 200
+    properties:
+        - build-discarder:
+            num-to-keep: 200
     builders:
         - shell: |
             export PATH=${PATH}:/usr/local/go/bin
