@@ -154,7 +154,9 @@ def build_details(build_dir):
     """
     started = gcs_read(build_dir + '/started.json')
     finished = gcs_read(build_dir + '/finished.json')
-    if not (started and finished):
+    if finished and not started:
+        started = 'null'
+    elif not (started and finished):
         # TODO: handle builds that have started but not finished properly.
         # Right now they show an empty page (404), but should show the version
         # and when the build started.
@@ -212,7 +214,10 @@ class BuildHandler(RenderingHandler):
             self.error(404)
             return
         started, finished, failures = details
-        commit = started['version'].split('+')[-1]
+        if started:
+            commit = started['version'].split('+')[-1]
+        else:
+            commit = None
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,

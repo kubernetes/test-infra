@@ -10,10 +10,14 @@
 <div id="header" class="container">
   <img src="/static/logo.svg">
   <h1><a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
+% if started
 <p>Started on {{started['timestamp']|timestamp}} and took {{(finished['timestamp']-started['timestamp'])|duration}}</p>
+% endif
 </div>
 <div id="summary">
+% if started
 <p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a></p>
+% endif
 <p>Build Result: {{finished['result']}}</p>
 <p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a> 
 <a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a></p>
