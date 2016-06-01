@@ -28,6 +28,7 @@ path		pkg/kubectl/testing/types.generated.go
 path		pkg/storage/testing/types.generated.go
 
 prefix		Godeps/
+prefix		vendor/
 prefix		api/swagger-spec/
 
 paths-from-repo .generated_docs
