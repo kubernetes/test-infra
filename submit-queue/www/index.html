@@ -182,21 +182,6 @@
                   </md-content>
                 </md-tab>
 
-                <md-tab label="Users">
-                  <md-toolbar class="md-whiteframe-z2">
-                    <h2 class="md-toolbar-tools">Users</h2>
-                  </md-toolbar>
-                  <md-list>
-                    <md-list-item class="md-2-line" ng-repeat="user in cntl.users track by user.Login" ng-click="cntl.goToPerson(user.Login)">
-                      <img ng-src="{{user.AvatarURL}}" class="md-avatar" alt="{{user.Login}}">
-                      <md-content class="md-list-item-text" layout="column">
-                        <h3 class="md-body-1">{{user.Login}}</h3>
-                        <h4 class="md-body-2">On list because: {{user.Access}}</h4>
-                      </md-content>
-                    </md-list-item>
-                  </md-list>
-                </md-tab>
-
                 <md-tab label="Bot Stats">
                   <md-content class="md-whiteframe-z2">
                     <md-toolbar>

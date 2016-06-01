@@ -10,7 +10,6 @@ app.controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
-  self.users = {};
   self.builds = {};
   self.health = {};
   self.lastMergeTime = Date();
@@ -68,7 +67,6 @@ function SQCntl(dataService, $interval, $location) {
     reloadFunctions[refreshSQStats] = 30;
     reloadFunctions[refreshHistoryPRs] = 1;
     reloadFunctions[refreshE2EHealth] = 10;
-    reloadFunctions[refreshUsers] = 15;
     reloadFunctions[refreshBotStats] = 10;
 
     // tabFunctionReloads is a map of which tabs need which functions to refresh
@@ -77,7 +75,7 @@ function SQCntl(dataService, $interval, $location) {
       1: [refreshGithubE2E, refreshSQStats],
       2: [refreshHistoryPRs],
       3: [refreshE2EHealth, refreshSQStats],
-      4: [refreshSQStats, refreshUsers, refreshBotStats],
+      4: [refreshSQStats, refreshBotStats],
     }
     if (self.tabLoaded[self.selected]) {
       return;
@@ -157,12 +155,6 @@ function SQCntl(dataService, $interval, $location) {
   function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
       self.botStats = response.data;
-    });
-  }
-
-  function refreshUsers() {
-    dataService.getData('users').then(function successCallback(response) {
-      self.users = response.data;
     });
   }
 

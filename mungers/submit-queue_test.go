@@ -50,21 +50,20 @@ func boolPtr(val bool) *bool       { return &val }
 func intPtr(val int) *int          { return &val }
 
 const (
-	noWhitelistUser     = "UserNotInWhitelist"
-	whitelistUser       = "WhitelistUser"
+	someUserName        = "someUserName"
 	doNotMergeMilestone = "some-milestone-you-should-not-merge"
 )
 
 func ValidPR() *github.PullRequest {
-	return github_test.PullRequest(whitelistUser, false, true, true)
+	return github_test.PullRequest(someUserName, false, true, true)
 }
 
 func UnMergeablePR() *github.PullRequest {
-	return github_test.PullRequest(whitelistUser, false, true, false)
+	return github_test.PullRequest(someUserName, false, true, false)
 }
 
 func UndeterminedMergeablePR() *github.PullRequest {
-	return github_test.PullRequest(whitelistUser, false, false, false)
+	return github_test.PullRequest(someUserName, false, false, false)
 }
 
 func MasterCommit() *github.RepositoryCommit {
@@ -74,24 +73,20 @@ func MasterCommit() *github.RepositoryCommit {
 	}
 }
 
-func NonWhitelistUserPR() *github.PullRequest {
-	return github_test.PullRequest(noWhitelistUser, false, true, true)
-}
-
 func BareIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{}, true)
+	return github_test.Issue(someUserName, 1, []string{}, true)
 }
 
-func NoOKToMergeIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel}, true)
+func LGTMIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 }
 
 func DoNotMergeIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
 }
 
 func DoNotMergeMilestoneIssue() *github.Issue {
-	issue := github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
 	milestone := &github.Milestone{
 		Title: stringPtr(doNotMergeMilestone),
 	}
@@ -100,23 +95,15 @@ func DoNotMergeMilestoneIssue() *github.Issue {
 }
 
 func NoCLAIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{lgtmLabel, okToMergeLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{lgtmLabel}, true)
 }
 
 func NoLGTMIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, okToMergeLabel}, true)
-}
-
-func UserNotInWhitelistNoOKToMergeIssue() *github.Issue {
-	return github_test.Issue(noWhitelistUser, 1, []string{claYesLabel, lgtmLabel}, true)
-}
-
-func UserNotInWhitelistOKToMergeIssue() *github.Issue {
-	return github_test.Issue(noWhitelistUser, 1, []string{lgtmLabel, claYesLabel, okToMergeLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel}, true)
 }
 
 func DontRequireGithubE2EIssue() *github.Issue {
-	return github_test.Issue(whitelistUser, 1, []string{claYesLabel, lgtmLabel, e2eNotRequiredLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, e2eNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []github.IssueEvent {
@@ -224,7 +211,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	if startThreads {
 		sq.internalInitialize(config, nil, server.URL)
 		sq.EachLoop()
-		sq.userWhitelist.Insert(whitelistUser)
 	}
 	return sq
 }
@@ -238,71 +224,71 @@ func TestQueueOrder(t *testing.T) {
 		{
 			name: "Just prNum",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, nil, true),
-				*github_test.Issue(whitelistUser, 3, nil, true),
-				*github_test.Issue(whitelistUser, 4, nil, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(someUserName, 2, nil, true),
+				*github_test.Issue(someUserName, 3, nil, true),
+				*github_test.Issue(someUserName, 4, nil, true),
+				*github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 3, 4, 5},
 		},
 		{
 			name: "With a priority label",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, []string{"priority/P1"}, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P1"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(someUserName, 2, []string{"priority/P1"}, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{4, 2, 3, 5},
 		},
 		{
 			name: "With two priority labels",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P1"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "With unrelated labels",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P1", "kind/design"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 5, []string{lgtmLabel, "kind/new-api"}, true),
+				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				*github_test.Issue(someUserName, 5, []string{lgtmLabel, "kind/new-api"}, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "With invalid priority label",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P0", "priorty/bob"}, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P0", "priorty/bob"}, true),
+				*github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "Unlabeled counts as P3",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, nil, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P3"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P2"}, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
+				*github_test.Issue(someUserName, 2, nil, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				*github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{4, 2, 3, 5},
 		},
 		{
 			name: "e2eNotRequiredLabel counts as P-negative 1",
 			issues: []github.Issue{
-				*github_test.Issue(whitelistUser, 2, nil, true),
-				*github_test.Issue(whitelistUser, 3, []string{"priority/P3"}, true),
-				*github_test.Issue(whitelistUser, 4, []string{"priority/P2"}, true),
-				*github_test.Issue(whitelistUser, 5, nil, true),
-				*github_test.Issue(whitelistUser, 6, []string{"priority/P3", e2eNotRequiredLabel}, true),
+				*github_test.Issue(someUserName, 2, nil, true),
+				*github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
+				*github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				*github_test.Issue(someUserName, 5, nil, true),
+				*github_test.Issue(someUserName, 6, []string{"priority/P3", e2eNotRequiredLabel}, true),
 			},
 			expected: []int{6, 4, 2, 3, 5},
 		},
@@ -475,7 +461,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test1",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -493,7 +479,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test1+prevsuccess",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -515,7 +501,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test2",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
 			ciStatus:        SuccessStatus(),
@@ -543,28 +529,11 @@ func TestSubmitQueue(t *testing.T) {
 			reason:          merged,
 			state:           "success",
 		},
-		// Should merge even though user not in whitelist because has okToMergeLabel
-		{
-			name:            "Test4",
-			pr:              ValidPR(),
-			issue:           UserNotInWhitelistOKToMergeIssue(),
-			ciStatus:        SuccessStatus(),
-			events:          NewLGTMEvents(),
-			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob:      SuccessJenkins(),
-			lastBuildNumber: LastBuildNumber(),
-			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        true,
-			reason:          merged,
-			state:           "success",
-		},
 		// Fail because PR can't automatically merge
 		{
 			name:   "Test5",
 			pr:     UnMergeablePR(),
-			issue:  NoOKToMergeIssue(),
+			issue:  LGTMIssue(),
 			reason: unmergeable,
 			state:  "pending",
 			// To avoid false errors in logs
@@ -576,7 +545,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:   "Test6",
 			pr:     UndeterminedMergeablePR(),
-			issue:  NoOKToMergeIssue(),
+			issue:  LGTMIssue(),
 			reason: undeterminedMergability,
 			state:  "pending",
 			// To avoid false errors in logs
@@ -599,23 +568,10 @@ func TestSubmitQueue(t *testing.T) {
 		// Fail because github CI tests have failed (or at least are not success)
 		{
 			name:   "Test8",
-			pr:     NonWhitelistUserPR(),
-			issue:  NoOKToMergeIssue(),
+			pr:     ValidPR(),
+			issue:  LGTMIssue(),
 			reason: ciFailure,
 			state:  "pending",
-			// To avoid false errors in logs
-			lastBuildNumber: LastBuildNumber(),
-			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-		},
-		// Fail because the user is not in the whitelist and we don't have okToMergeLabel
-		{
-			name:     "Test9",
-			pr:       ValidPR(),
-			issue:    UserNotInWhitelistNoOKToMergeIssue(),
-			ciStatus: SuccessStatus(),
-			reason:   needsok,
-			state:    "pending",
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
@@ -638,7 +594,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:     "Test11",
 			pr:       ValidPR(),
-			issue:    NoOKToMergeIssue(),
+			issue:    LGTMIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   unknown,
 			state:    "failure",
@@ -651,7 +607,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:     "Test12",
 			pr:       ValidPR(),
-			issue:    NoOKToMergeIssue(),
+			issue:    LGTMIssue(),
 			ciStatus: SuccessStatus(),
 			events:   OldLGTMEvents(),
 			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
@@ -662,7 +618,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test13",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -677,7 +633,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test14",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
@@ -692,7 +648,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test15",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -710,7 +666,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test16",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -724,7 +680,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because E2E pass, but unit test fail",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -740,7 +696,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because E2E fail, but unit test pass",
 			pr:              ValidPR(),
-			issue:           NoOKToMergeIssue(),
+			issue:           LGTMIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -791,7 +747,7 @@ func TestSubmitQueue(t *testing.T) {
 		// {
 		// 	name:            "Test20",
 		// 	pr:              ValidPR(),
-		// 	issue:           NoOKToMergeIssue(),
+		// 	issue:           LGTMIssue(),
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),
@@ -817,7 +773,7 @@ func TestSubmitQueue(t *testing.T) {
 		// {
 		// 	name:            "Test21",
 		// 	pr:              ValidPR(),
-		// 	issue:           NoOKToMergeIssue(),
+		// 	issue:           LGTMIssue(),
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),
@@ -844,7 +800,7 @@ func TestSubmitQueue(t *testing.T) {
 		// {
 		// 	name:            "Test22",
 		// 	pr:              ValidPR(),
-		// 	issue:           NoOKToMergeIssue(),
+		// 	issue:           LGTMIssue(),
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),

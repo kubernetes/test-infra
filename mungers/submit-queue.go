@@ -29,7 +29,6 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/util"
-	"k8s.io/kubernetes/pkg/util/sets"
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
@@ -45,8 +44,6 @@ import (
 
 const (
 	lgtmLabel           = "lgtm"
-	okToMergeLabel      = "ok-to-merge"
-	needsOKToMergeLabel = "needs-ok-to-merge"
 	e2eNotRequiredLabel = "e2e-not-required"
 	doNotMergeLabel     = "do-not-merge"
 	claYesLabel         = "cla: yes"
@@ -61,8 +58,6 @@ const (
 	defaultMergePriority        = 3  // when an issue is unlabeled
 
 	githubE2EPollTime = 30 * time.Second
-
-	notInWhitelistBody = "The author of this PR is not in the whitelist for merge, can one of the admins add the '" + okToMergeLabel + "' label?"
 )
 
 var (
@@ -141,7 +136,6 @@ type submitQueueInterruptedObject struct {
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
-//  if user not in whitelist PR must have okToMergeLabel"
 //  The google internal jenkins instance must be passing the JobNames e2e tests
 type SubmitQueue struct {
 	githubConfig       *github.Config
@@ -152,22 +146,11 @@ type SubmitQueue struct {
 	FakeE2E     bool
 	JenkinsHost string
 
-	Whitelist              string
 	Committers             string
 	E2EStatusContext       string
 	UnitStatusContext      string
 	RequiredStatusContexts []string
 	doNotMergeMilestones   []string
-
-	// additionalUserWhitelist are non-committer users believed safe
-	additionalUserWhitelist *sets.String
-	// CommitterList are static here in case they can't be gotten dynamically;
-	// they do not need to be whitelisted.
-	committerList *sets.String
-
-	// userWhitelist is the combination of committers and additional which
-	// we actully use
-	userWhitelist *sets.String
 
 	sync.Mutex
 	lastPRStatus  map[string]submitStatus
@@ -370,7 +353,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 func (sq *SubmitQueue) EachLoop() error {
 	sq.Lock()
 	sq.updateHealth()
-	sq.RefreshWhitelist()
 	sq.lastPRStatus = sq.prStatus
 	sq.prStatus = map[string]submitStatus{}
 
@@ -410,7 +392,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
-	sq.addWhitelistCommand(cmd, config)
 }
 
 // Hold the lock
@@ -703,7 +684,6 @@ const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR does not have " + claYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have LGTM."
-	needsok                 = "PR does not have '" + okToMergeLabel + "' label"
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
@@ -767,8 +747,6 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 		}
 	}
 
-	userSet := sq.userWhitelist
-
 	// Must pass CLA checks
 	if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) {
 		sq.SetMergeStatus(obj, noCLA)
@@ -789,21 +767,6 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	if ok := obj.IsStatusSuccess(contexts); !ok {
 		sq.SetMergeStatus(obj, ciFailure)
 		return false
-	}
-
-	// The user either must be on the whitelist or have ok-to-merge
-	if !obj.HasLabel(okToMergeLabel) && !userSet.Has(*obj.Issue.User.Login) {
-		if !obj.HasLabel(needsOKToMergeLabel) {
-			obj.AddLabels([]string{needsOKToMergeLabel})
-			obj.WriteComment(notInWhitelistBody)
-		}
-		sq.SetMergeStatus(obj, needsok)
-		return false
-	}
-
-	// Tidy up the issue list.
-	if obj.HasLabel(needsOKToMergeLabel) {
-		obj.RemoveLabel(needsOKToMergeLabel)
 	}
 
 	// Clearly
@@ -1189,7 +1152,6 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
 	}
 	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %v</li>", sq.doNotMergeMilestones))
-	out.WriteString(fmt.Sprintf("<li>The PR either needs the label %q or the creator of the PR must be in the 'Users' list seen on the 'Info' tab.</li>", okToMergeLabel))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
@@ -1228,21 +1190,7 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
 </ol> `))
 }
 
-func (sq *SubmitQueue) isStaleWhitelistComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
-		return false
-	}
-	if *comment.Body != notInWhitelistBody {
-		return false
-	}
-	stale := obj.HasLabel(okToMergeLabel)
-	if stale {
-		glog.V(6).Infof("Found stale SubmitQueue Whitelist comment")
-	}
-	return stale
-}
-
-func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -1254,10 +1202,6 @@ func (sq *SubmitQueue) isStaleSafeToMergeComment(obj *github.MungeObject, commen
 		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
 	}
 	return stale
-}
-
-func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
-	return sq.isStaleWhitelistComment(obj, comment) || sq.isStaleSafeToMergeComment(obj, comment)
 }
 
 // StaleComments returns a slice of stale comments
