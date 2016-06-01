@@ -5,7 +5,8 @@
         daysToKeep: 3
     node: master
     triggers:
-        - timed: 'H/15 * * * *'
+        - pollscm:
+            cron: '* * * * *'
     scm:
         - git:
             url: https://github.com/kubernetes/test-infra
