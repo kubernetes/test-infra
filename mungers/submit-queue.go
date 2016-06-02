@@ -1152,7 +1152,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		out.WriteString("</ul>")
 		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %v</li>", sq.doNotMergeMilestones))
+	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.doNotMergeMilestones))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
