@@ -1,8 +1,6 @@
 - job-template:
     name: 'kubernetes-soak-weekly-deploy-{suffix}'
     description: '{deploy-description} Test owner: {test-owner}'
-    logrotate:
-        daysToKeep: 14
     node: 'master'
     builders:
         - shell: |
@@ -17,6 +15,8 @@
             use-build-blocker: true
             blocking-jobs:
                 - 'kubernetes-soak-continuous-e2e-{suffix}'
+        - build-discarder:
+            days-to-keep: 14
     publishers:
         - email-ext
         - gcs-uploader
@@ -37,8 +37,6 @@
     name: 'kubernetes-soak-continuous-e2e-{suffix}'
     description: '{e2e-description} Test Owner: {test-owner}'
     workspace: '/var/lib/jenkins/jobs/kubernetes-soak-weekly-deploy-{suffix}/workspace'
-    logrotate:
-        daysToKeep: 7
     node: 'master'
     builders:
         - shell: |
@@ -54,6 +52,8 @@
             blocking-jobs:
                 - 'kubernetes-soak-weekly-deploy-{suffix}'
             queue-scanning: ALL
+        - build-discarder:
+            days-to-keep: 7
     publishers:
         - claim-build
         - email-ext

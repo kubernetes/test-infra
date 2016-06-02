@@ -13,10 +13,11 @@
 - e2e_job_defaults: &e2e_job_defaults
     name: e2e_job_defaults
     description: '{description} Test owner: {test-owner}.'
-    logrotate:
-        daysToKeep: 7
     jenkins_node: 'e2e'
     disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
     builders:
         - shell: |
             {provider-env}

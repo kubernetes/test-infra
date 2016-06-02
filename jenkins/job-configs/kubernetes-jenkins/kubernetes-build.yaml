@@ -2,8 +2,9 @@
     name: 'kubernetes-{build}'
     description: 'Grab the latest from GitHub, build. Test owner: Build Cop.'
     node: 'build'
-    logrotate:
-        numToKeep: 200
+    properties:
+        - build-discarder:
+            num-to-keep: 200
     builders:
         - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
         - shell: |

@@ -1,9 +1,10 @@
 - job-template:
     name: 'kubernetes-kubemark-{suffix}'
     description: '{description} Test owner: gmarek'
-    logrotate:
-        daysToKeep: 7
     node: 'e2e'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
     builders:
         - shell: |
             {provider-env}

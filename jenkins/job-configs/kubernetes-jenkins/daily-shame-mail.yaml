@@ -1,8 +1,9 @@
 - job:
     name: 'daily-shame-mail'
     description: 'Send the daily flaky issue shame email. Test owner: test infra team.'
-    logrotate:
-        numToKeep: 20
+    properties:
+        - build-discarder:
+            num-to-keep: 20
     triggers:
         - timed: 'H 8 * * 1-5'
     wrappers:

@@ -1,8 +1,9 @@
 - job:
     name: kubernetes-test-summary
     description: 'Create a daily test summary and upload to GCS. Test owner: spxtr.'
-    logrotate:
-        daysToKeep: 3
+    properties:
+        - build-discarder:
+            days-to-keep: 3
     triggers:
         # Run hourly
         - timed: 'H * * * *'
