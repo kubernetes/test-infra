@@ -18,6 +18,7 @@ package flakesync
 
 import (
 	"reflect"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -49,14 +50,17 @@ func TestBasic(t *testing.T) {
 }
 
 func TestThreading(t *testing.T) {
+	// Test multi-threading even in single threaded environments (like
+	// travis).
+	runtime.GOMAXPROCS(10)
 	c := NewCache(makeRandom)
 	wg := sync.WaitGroup{}
-	const threads = 100
+	const threads = 30
 	wg.Add(threads)
 	for i := 0; i < threads; i++ {
 		go func(s int) {
 			defer wg.Done()
-			for n := 0; n < 80; n++ {
+			for n := 0; n < 30; n++ {
 				// n*s means many collide a few times, but some do not
 				c.Get("foo", Number(n*s))
 			}
