@@ -145,7 +145,10 @@ class GCSClient(object):
         except (ValueError, TypeError):
             pass
         else:
-            return (str(n) for n in xrange(latest_build, 0, -1))
+            # If it looks like a jenkins build number, return all the indices
+            if latest_build < 20160000000000:
+                return (str(n) for n in xrange(latest_build, 0, -1))
+        # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
         return sorted((os.path.basename(os.path.dirname(b))
                        for b in build_paths), key=int, reverse=True)

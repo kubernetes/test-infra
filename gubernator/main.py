@@ -37,6 +37,7 @@ BUCKET_WHITELIST = {
     'kube_azure_log',
     'rktnetes-jenkins',
     'kubernetes-github-redhat',
+    'kopeio-kubernetes-e2e',
 }
 
 DEFAULT_JOBS = {
