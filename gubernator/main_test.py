@@ -106,6 +106,8 @@ class AppTest(unittest.TestCase):
         self.testbed.init_blobstore_stub()
         self.testbed.init_datastore_v3_stub()
         init_build(self.BUILD_DIR)
+        # redirect GCS calls to the local proxy
+        main.GCS_API_URL = gcs.common.local_api_url()
 
     def test_index(self):
         """Test that the index works."""
