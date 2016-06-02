@@ -9,6 +9,7 @@
         "prefix": "rktnetes$"
     },
     "gs://kopeio-kubernetes-e2e/logs/": {
-        "prefix": "kopeio$"
+        "prefix": "kopeio$",
+        "sequential": false
     }
 }
