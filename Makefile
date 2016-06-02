@@ -30,7 +30,7 @@ container: test
 
 # push the container
 push: container
-ifeq ($(REPO),$(DEFAULTREPO))
+ifneq (,$(findstring gcr.io,$(REPO)))
 	gcloud docker push $(CONTAINER)
 else
 	docker push $(CONTAINER)
