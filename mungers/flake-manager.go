@@ -183,13 +183,10 @@ type brokenJobSource struct {
 
 // Title implements IssueSource
 func (p *brokenJobSource) Title() string {
-	failures := "?"
-	if p.result.Status != cache.ResultFailed {
-		failures = fmt.Sprintf("%v", len(p.result.Flakes))
-	}
-
+	// Keep single issues for test builds and add comments when large
+	// batches of failures occur instead of making many issues.
 	// DO NOT CHANGE or it will not recognize previous entries!
-	return fmt.Sprintf("Broken test run: %v - %v [%v failures]", p.result.Job, p.result.Number, failures)
+	return fmt.Sprintf("%v: broken test run", p.result.Job)
 }
 
 // ID implements IssueSource
