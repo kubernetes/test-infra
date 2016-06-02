@@ -115,7 +115,7 @@
             timeout: 210
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling\] --ginkgo.skip=\[Flaky\]"
-                export PROJECT="k8s-jnks-e2e-gce-autoscaling-migs"
+                export PROJECT="k8s-jnks-e2e-gce-autoscl-migs"
                 # Override GCE default for cluster size autoscaling purposes.
                 export KUBE_ENABLE_NODE_AUTOSCALER="true"
                 export NUM_NODES=3
