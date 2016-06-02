@@ -79,6 +79,6 @@ func TestBrokenJobSource(t *testing.T) {
 		Number: 123,
 	}
 	source := brokenJobSource{&result, fm}
-	expect(t, source.Title(), "Broken test run: e2e-gce - 123 [0 failures]")
+	expect(t, source.Title(), "e2e-gce: broken test run")
 	checkCommon(t, &source)
 }
