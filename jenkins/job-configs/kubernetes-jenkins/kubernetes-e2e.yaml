@@ -668,11 +668,11 @@
     name: kubernetes-e2e-gce-enormous-cluster
     test-owner: 'gmarek'
     emails: 'gmarek@google.com'
-    # Run only on Sunday and Wednesday at 8 am MTV time.
-    cron-string: 'H 8 * * 0,4'
+    # TODO: Currently run it only manually. Fix it once we have all permissions.
+    cron-string: ''
     trigger-job: ''
-    description: 'Starts and deletes empty 1000 node cluster and runs Density 30 test on it. Does allow few Nodes to fail during startup.'
-    timeout: 480
+    description: 'Starts and deletes empty 2000 node cluster and runs scalability tests on it. Does allow few Nodes to fail during startup.'
+    timeout: 1440
     branch: 'master'
     suffix: 'gce-enormous-cluster'
     provider-env: '{gce-provider-env}'
@@ -685,14 +685,15 @@
         # Override GCE defaults.
         # Temporarily switch of Heapster, as this will not schedule anywhere.
         # TODO: Think of a solution to enable it.
-        export CLUSTER_IP_RANGE="10.224.0.0/13"
         export KUBE_ENABLE_CLUSTER_MONITORING="none"
-        export KUBE_GCE_ZONE="us-central1-c"
+        export CLUSTER_IP_RANGE="10.224.0.0/13"
+        # TODO: Move to us-central1-c once we have permission for it.
+        export KUBE_GCE_ZONE="us-east1-a"
         export MASTER_SIZE="n1-standard-32"
         export NODE_SIZE="n1-standard-1"
         export NODE_DISK_SIZE="50GB"
-        export NUM_NODES="1000"
-        export ALLOWED_NOTREADY_NODES="10"
+        export NUM_NODES="2000"
+        export ALLOWED_NOTREADY_NODES="20"
         # Reduce logs verbosity
         export TEST_CLUSTER_LOG_LEVEL="--v=1"
         export MAX_INSTANCES_PER_MIG="1000"
