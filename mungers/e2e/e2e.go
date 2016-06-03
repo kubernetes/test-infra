@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
-	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -38,7 +37,6 @@ type E2ETester interface {
 	GCSBasedStable() (stable, ignorableFlakes bool)
 	GCSWeakStable() bool
 	GetBuildStatus() map[string]BuildInfo
-	Stable() bool
 	Flakes() cache.Flakes
 }
 
@@ -48,10 +46,9 @@ type BuildInfo struct {
 	ID     string
 }
 
-// RealE2ETester is the object which will contact a jenkins instance and get
+// RealE2ETester is the object which will get status from a google bucket
 // information about recent jobs
 type RealE2ETester struct {
-	JenkinsHost        string
 	JobNames           []string
 	WeakStableJobNames []string
 
@@ -95,33 +92,6 @@ func (e *RealE2ETester) setBuildStatus(build, status string, id string) {
 	e.Lock()
 	defer e.Unlock()
 	e.BuildStatus[build] = BuildInfo{Status: status, ID: id}
-}
-
-// Stable is called to make sure all of the jenkins jobs are stable
-// TODO: deprecated; GCS version is better. Use that only. Delete this.
-func (e *RealE2ETester) Stable() bool {
-	// Test if the build is stable in Jenkins
-	jenkinsClient := &jenkins.JenkinsClient{Host: e.JenkinsHost}
-
-	allStable := true
-	for _, job := range e.JobNames {
-		glog.V(2).Infof("Checking build stability for %s", job)
-		build, err := jenkinsClient.GetLastCompletedBuild(job)
-		if err != nil {
-			glog.Errorf("Error checking job %v : %v", job, err)
-			e.setBuildStatus(job, "Error checking: "+err.Error(), "0")
-			allStable = false
-			continue
-		}
-		if build.IsStable() {
-			e.setBuildStatus(job, "Stable", build.ID)
-		} else {
-			e.setBuildStatus(job, "Not Stable", build.ID)
-			glog.Infof("Jenkis based check for %v build %v returned false", job, build.ID)
-			allStable = false
-		}
-	}
-	return allStable
 }
 
 const (

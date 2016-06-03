@@ -143,8 +143,7 @@ type SubmitQueue struct {
 	WeakStableJobNames []string
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
-	FakeE2E     bool
-	JenkinsHost string
+	FakeE2E bool
 
 	Committers             string
 	E2EStatusContext       string
@@ -294,9 +293,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	defer sq.Unlock()
 
 	sq.githubConfig = config
-	if len(sq.JenkinsHost) == 0 {
-		glog.Fatalf("--jenkins-host is required.")
-	}
 
 	if sq.FakeE2E {
 		sq.e2e = &fake_e2e.FakeE2ETester{
@@ -313,7 +309,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 		sq.e2e = (&e2e.RealE2ETester{
 			JobNames:             sq.JobNames,
-			JenkinsHost:          sq.JenkinsHost,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
@@ -387,7 +382,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
-	cmd.Flags().StringVar(&sq.JenkinsHost, "jenkins-host", "http://jenkins-master:8080", "The URL for the jenkins job to watch")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
 	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")

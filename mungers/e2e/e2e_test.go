@@ -26,7 +26,6 @@ import (
 	"strconv"
 	"testing"
 
-	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 	"strings"
 )
@@ -55,93 +54,6 @@ func genMockGCSListResponse(files ...string) []byte {
 		items = append(items, fmt.Sprintf(itemTempalte, file))
 	}
 	return []byte(fmt.Sprintf(resptemplate, strings.Join(items, ",")))
-}
-
-func TestCheckJenkinsBuilds(t *testing.T) {
-	tests := []struct {
-		paths          map[string][]byte
-		expectStable   bool
-		expectedStatus map[string]BuildInfo
-	}{
-		{
-			paths: map[string][]byte{
-				"/job/foo/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "SUCCESS",
-				}, t),
-				"/job/bar/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "SUCCESS",
-				}, t),
-			},
-			expectStable:   true,
-			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Stable", ""}},
-		},
-		{
-			paths: map[string][]byte{
-				"/job/foo/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "SUCCESS",
-				}, t),
-				"/job/bar/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "UNSTABLE",
-				}, t),
-			},
-			expectStable:   false,
-			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Not Stable", ""}},
-		},
-		{
-			paths: map[string][]byte{
-				"/job/foo/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "SUCCESS",
-				}, t),
-				"/job/bar/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "FAILURE",
-				}, t),
-			},
-			expectStable:   false,
-			expectedStatus: map[string]BuildInfo{"foo": {"Stable", ""}, "bar": {"Not Stable", ""}},
-		},
-		{
-			paths: map[string][]byte{
-				"/job/foo/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "FAILURE",
-				}, t),
-				"/job/bar/lastCompletedBuild/api/json": marshalOrDie(jenkins.Job{
-					Result: "SUCCESS",
-				}, t),
-			},
-			expectStable:   false,
-			expectedStatus: map[string]BuildInfo{"foo": {"Not Stable", ""}, "bar": {"Stable", ""}},
-		},
-	}
-	for _, test := range tests {
-		server := httptest.NewServer(&testHandler{
-			handler: func(res http.ResponseWriter, req *http.Request) {
-				data, found := test.paths[req.URL.Path]
-				if !found {
-					res.WriteHeader(http.StatusNotFound)
-					fmt.Fprintf(res, "Unknown path: %s", req.URL.Path)
-					return
-				}
-				res.WriteHeader(http.StatusOK)
-				res.Write(data)
-			},
-		})
-		e2e := &RealE2ETester{
-			JenkinsHost: server.URL,
-			JobNames: []string{
-				"foo",
-				"bar",
-			},
-			BuildStatus: map[string]BuildInfo{},
-		}
-		e2e.Init()
-		stable := e2e.Stable()
-		if stable != test.expectStable {
-			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)
-		}
-		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
-			t.Errorf("expected: %v, saw: %v", test.expectedStatus, e2e.BuildStatus)
-		}
-	}
 }
 
 func TestCheckGCSBuilds(t *testing.T) {
@@ -380,7 +292,6 @@ func TestCheckGCSBuilds(t *testing.T) {
 			},
 		})
 		e2e := &RealE2ETester{
-			JenkinsHost: server.URL,
 			JobNames: []string{
 				"foo",
 				"bar",
@@ -633,7 +544,6 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 			},
 		})
 		e2e := &RealE2ETester{
-			JenkinsHost: server.URL,
 			WeakStableJobNames: []string{
 				"foo",
 				"bar",

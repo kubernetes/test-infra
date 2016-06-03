@@ -38,9 +38,6 @@ func (e *FakeE2ETester) GCSBasedStable() (bool, bool) { return true, false }
 // GCSWeakStable is always true.
 func (e *FakeE2ETester) GCSWeakStable() bool { return true }
 
-// Stable is always true.
-func (e *FakeE2ETester) Stable() bool { return true }
-
 // GetBuildStatus reports "Stable" and a latest build of "1" for each build.
 func (e *FakeE2ETester) GetBuildStatus() map[string]e2e.BuildInfo {
 	out := map[string]e2e.BuildInfo{}
