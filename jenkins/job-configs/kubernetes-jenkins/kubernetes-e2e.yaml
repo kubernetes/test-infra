@@ -305,6 +305,14 @@
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-central1-f"
                 export ADDITIONAL_ZONES="us-central1-a,us-central1-b"
+        - 'gke-autoscaling':
+            description: 'Run all cluster autoscaler tests on GKE.'
+            timeout: 300
+            job-env: |
+                export PROJECT="k8s-e2e-gke-autoscaler"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:InitialResources\] \
+                                         --ginkgo.skip=\[Flaky\]"
+                export NUM_NODES=3
         - 'gke-large-cluster':
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large (1000 node) GKE cluster'
             timeout: 450
