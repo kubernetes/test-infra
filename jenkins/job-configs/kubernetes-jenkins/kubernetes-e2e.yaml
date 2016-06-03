@@ -115,7 +115,7 @@
             description: 'Run autoscaling E2E tests on GCE with multiple MIGs.'
             timeout: 210
             job-env: |
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling\] --ginkgo.skip=\[Flaky\]"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]"
                 export PROJECT="k8s-jnks-e2e-gce-autoscl-migs"
                 # Override GCE default for cluster size autoscaling purposes.
                 export KUBE_ENABLE_NODE_AUTOSCALER="true"
