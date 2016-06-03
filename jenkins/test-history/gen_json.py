@@ -35,6 +35,7 @@ from xml.etree import ElementTree
 
 import multiprocessing
 import requests
+import yaml
 
 
 MAX_AGE = 60 * 60 * 24  # 1 day
@@ -363,5 +364,5 @@ if __name__ == '__main__':
         import requests_cache
         requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    jobs_dirs = json.load(open(OPTIONS.buckets))
+    jobs_dirs = yaml.load(open(OPTIONS.buckets))
     main(jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
