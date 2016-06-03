@@ -26,6 +26,7 @@ import webapp2
 import jinja2
 
 from google.appengine.api import memcache
+import google.appengine.ext.ndb as ndb
 
 import defusedxml.ElementTree as ET
 import cloudstorage as gcs
@@ -54,6 +55,8 @@ DEFAULT_JOBS = {
         'kubernetes-test-go',
     }
 }
+
+GCS_API_URL = 'https://storage.googleapis.com'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
@@ -104,13 +107,33 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
     return wrapper
 
 
-def gcs_read(path):
-    """Read a file from GCS. Returns None on errors."""
-    try:
-        with gcs.open(path) as f:
-            return f.read()
-    except gcs.errors.Error:
-        return None
+@ndb.tasklet
+def gcs_read_async(path):
+    """
+    Asynchronously reads a file from GCS.
+
+    NOTE: for large files (>10MB), this may return a truncated response due to
+    urlfetch API limits. We don't want to read large files anyways, so this is
+    fine.
+
+    Args:
+        path: the location of the object to read
+    Returns:
+        a Future that resolve to the file's data, or None if an error occurred.
+    """
+    context = ndb.get_context()
+    url = GCS_API_URL + path
+    headers = {'accept-encoding': 'gzip, *', 'x-goog-api-version': '2'}
+    for retry in xrange(6):
+        result = yield context.urlfetch(url, headers=headers)
+        status = result.status_code
+        if status == 429 or 500 <= status < 600:
+            yield ndb.sleep(2 ** retry)
+            continue
+        if status in (200, 206):
+            raise ndb.Return(result.content)
+        logging.error("unable to fetch '%s': status code %d" % (url, status))
+        raise ndb.Return(None)
 
 
 @memcache_memoize('gs-ls://', expires=60)
@@ -141,6 +164,7 @@ def parse_junit(xml):
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
+
 @memcache_memoize('build-details://', expires=60 * 60 * 4)
 def build_details(build_dir):
     """
@@ -153,9 +177,12 @@ def build_details(build_dir):
         finished: value from finished.json {'timestamp': ..., 'result': ...}
         failures: list of (name, duration, text) tuples
     """
-    started = gcs_read(build_dir + '/started.json')
-    finished = gcs_read(build_dir + '/finished.json')
-    if not (started and finished):
+    started_fut = gcs_read_async(build_dir + '/started.json')
+    finished = gcs_read_async(build_dir + '/finished.json').get_result()
+    started = started_fut.get_result()
+    if finished and not started:
+        started = 'null'
+    elif not (started and finished):
         # TODO: handle builds that have started but not finished properly.
         # Right now they show an empty page (404), but should show the version
         # and when the build started.
@@ -165,8 +192,9 @@ def build_details(build_dir):
     failures = []
     junit_paths = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
-    for junit_path in junit_paths:
-        junit = gcs_read(junit_path)
+    junit_futures = [gcs_read_async(f) for f in junit_paths]
+    for future in junit_futures:
+        junit = future.get_result()
         if junit is None:
             continue
         failures.extend(parse_junit(decompress(junit)))
@@ -213,7 +241,10 @@ class BuildHandler(RenderingHandler):
             self.error(404)
             return
         started, finished, failures = details
-        commit = started['version'].split('+')[-1]
+        if started:
+            commit = started['version'].split('+')[-1]
+        else:
+            commit = None
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
@@ -247,15 +278,3 @@ app = webapp2.WSGIApplication([
     (r'/builds/(.*)/([^/]+)/?', BuildListHandler),
     (r'/build/(.*)/([^/]+)/(\d+)/?', BuildHandler),
 ], debug=True)
-
-if os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
-    # inject some test data so there's a page with some content
-    import tarfile
-    tf = tarfile.open('test_data/kube_results.tar.gz')
-    prefix = '/kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce/'
-    for member in tf:
-        if member.isfile():
-            with gcs.open(prefix + member.name, 'w') as f:
-                f.write(tf.extractfile(member).read())
-    with gcs.open(prefix + '5044/started.json', 'w') as f:
-        f.write('test')  # So JobHandler has more than one item.

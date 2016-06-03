@@ -47,15 +47,16 @@ Error Goes Here</failure>
 </testsuite>'''
 
 
-def init_build(build_dir):
+def init_build(build_dir, started=True):
     """Create faked files for a build."""
     def write(path, data):
         if not isinstance(data, str):
             data = json.dumps(data)
         with gcs.open(path, 'w') as f:
             f.write(data)
-    write(build_dir + 'started.json',
-          {'version': 'v1+56', 'timestamp': 1406535800})
+    if started:
+        write(build_dir + 'started.json',
+              {'version': 'v1+56', 'timestamp': 1406535800})
     write(build_dir + 'finished.json',
           {'result': 'SUCCESS', 'timestamp': 1406536800})
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
@@ -105,6 +106,8 @@ class AppTest(unittest.TestCase):
         self.testbed.init_blobstore_stub()
         self.testbed.init_datastore_v3_stub()
         init_build(self.BUILD_DIR)
+        # redirect GCS calls to the local proxy
+        main.GCS_API_URL = gcs.common.local_api_url()
 
     def test_index(self):
         """Test that the index works."""
@@ -115,6 +118,16 @@ class AppTest(unittest.TestCase):
         """Test that a missing build gives a 404."""
         response = app.get('/build' + self.BUILD_DIR.replace('1234', '1235'),
                            status=404)
+
+    def test_missing_started(self):
+        """Test that a missing started.json still renders a proper page."""
+        build_dir = '/kubernetes-jenkins/logs/job-with-no-started/1234/'
+        init_build(build_dir, started=False)
+        response = app.get('/build' + build_dir)
+        self.assertIn('Build Result: SUCCESS', response)
+        self.assertIn('job-with-no-started', response)
+        self.assertNotIn('Started', response)  # no start timestamp
+        self.assertNotIn('github.com', response)  # no version => no src links
 
     def test_build(self):
         """Test that the build page works in the happy case."""
