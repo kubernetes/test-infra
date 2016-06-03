@@ -309,8 +309,8 @@
             description: 'Run all cluster autoscaler tests on GKE.'
             timeout: 300
             job-env: |
-                export PROJECT="k8s-e2e-gke-autoscaler"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:InitialResources\] \
+                export PROJECT="k8s-e2e-gke-autoscaling"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\] \
                                          --ginkgo.skip=\[Flaky\]"
                 export NUM_NODES=3
         - 'gke-large-cluster':
