@@ -51,6 +51,11 @@ func intPtr(val int) *int          { return &val }
 const (
 	someUserName        = "someUserName"
 	doNotMergeMilestone = "some-milestone-you-should-not-merge"
+
+	notRequiredReTestContext1 = "someNotRequiredForRetest1"
+	notRequiredReTestContext2 = "someNotRequiredForRetest2"
+	requiredReTestContext1    = "someRequiredRetestContext1"
+	requiredReTestContext2    = "someRequiredRetestContext2"
 )
 
 func ValidPR() *github.PullRequest {
@@ -101,8 +106,8 @@ func NoLGTMIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel}, true)
 }
 
-func DontRequireGithubE2EIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, e2eNotRequiredLabel}, true)
+func NoRetestIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, retestNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []github.IssueEvent {
@@ -136,11 +141,15 @@ func Commits() []github.RepositoryCommit {
 }
 
 func SuccessStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext, jenkinsE2EContext}, nil, nil, nil)
+	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1, notRequiredReTestContext2}, nil, nil, nil)
 }
 
-func GithubE2EFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{travisContext, jenkinsUnitContext}, []string{jenkinsE2EContext}, nil, nil)
+func RetestFailStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, notRequiredReTestContext1, notRequiredReTestContext2}, []string{requiredReTestContext2}, nil, nil)
+}
+
+func NoRetestFailStatus() *github.CombinedStatus {
+	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1}, []string{notRequiredReTestContext2}, nil, nil)
 }
 
 func LastBuildNumber() int {
@@ -168,9 +177,8 @@ func getJUnit(testsNo int, failuresNo int) []byte {
 
 func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
 	sq := new(SubmitQueue)
-	sq.RequiredStatusContexts = []string{jenkinsUnitContext}
-	sq.E2EStatusContext = jenkinsE2EContext
-	sq.UnitStatusContext = jenkinsUnitContext
+	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
+	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
 	sq.JobNames = []string{"foo"}
 	sq.WeakStableJobNames = []string{"bar"}
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
@@ -266,13 +274,13 @@ func TestQueueOrder(t *testing.T) {
 			expected: []int{4, 2, 3, 5},
 		},
 		{
-			name: "e2eNotRequiredLabel counts as P-negative 1",
+			name: "retestNotRequiredLabel counts as P-negative 1",
 			issues: []github.Issue{
 				*github_test.Issue(someUserName, 2, nil, true),
 				*github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
 				*github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
 				*github_test.Issue(someUserName, 5, nil, true),
-				*github_test.Issue(someUserName, 6, []string{"priority/P3", e2eNotRequiredLabel}, true),
+				*github_test.Issue(someUserName, 6, []string{"priority/P3", retestNotRequiredLabel}, true),
 			},
 			expected: []int{6, 4, 2, 3, 5},
 		},
@@ -381,37 +389,37 @@ func addStatus(context string, success bool, ciStatus *github.CombinedStatus) {
 }
 
 // fakeRunGithubE2ESuccess imitates jenkins running
-func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, e2ePass, unitPass bool) {
+func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, context1Pass, context2Pass bool) {
 	ciStatus.State = stringPtr("pending")
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
-		if *status.Context == jenkinsE2EContext || *status.Context == jenkinsUnitContext {
+		if *status.Context == requiredReTestContext1 || *status.Context == requiredReTestContext2 {
 			status.State = stringPtr("pending")
 		}
 	}
 	// short sleep like the test is running
 	time.Sleep(500 * time.Millisecond)
-	if e2ePass && unitPass {
+	if context1Pass && context2Pass {
 		ciStatus.State = stringPtr("success")
 	}
-	foundE2E := false
-	foundUnit := false
+	foundContext1 := false
+	foundContext2 := false
 	for id := range ciStatus.Statuses {
 		status := &ciStatus.Statuses[id]
-		if *status.Context == jenkinsE2EContext {
-			setStatus(status, e2ePass)
-			foundE2E = true
+		if *status.Context == requiredReTestContext1 {
+			setStatus(status, context1Pass)
+			foundContext1 = true
 		}
-		if *status.Context == jenkinsUnitContext {
-			setStatus(status, unitPass)
-			foundUnit = true
+		if *status.Context == requiredReTestContext2 {
+			setStatus(status, context2Pass)
+			foundContext2 = true
 		}
 	}
-	if !foundE2E {
-		addStatus(jenkinsE2EContext, e2ePass, ciStatus)
+	if !foundContext1 {
+		addStatus(jenkinsE2EContext, context1Pass, ciStatus)
 	}
-	if !foundUnit {
-		addStatus(jenkinsUnitContext, unitPass, ciStatus)
+	if !foundContext2 {
+		addStatus(jenkinsUnitContext, context2Pass, ciStatus)
 	}
 }
 
@@ -429,8 +437,8 @@ func TestSubmitQueue(t *testing.T) {
 		gcsResult        utils.FinishedFile
 		weakResults      map[int]utils.FinishedFile
 		gcsJunit         map[string][]byte
-		e2ePass          bool
-		unitPass         bool
+		retest1Pass      bool
+		retest2Pass      bool
 		mergeAfterQueued bool
 		reason           string
 		state            string // what the github status context should be for the PR HEAD
@@ -451,8 +459,8 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        true,
+			retest1Pass:     true,
+			retest2Pass:     true,
 			reason:          merged,
 			state:           "success",
 		},
@@ -468,8 +476,8 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        true,
+			retest1Pass:     true,
+			retest2Pass:     true,
 			reason:          merged,
 			state:           "success",
 			retestsAvoided:  1,
@@ -494,17 +502,19 @@ func TestSubmitQueue(t *testing.T) {
 			reason:           mergedByHand,
 			state:            "success",
 		},
-		// Should merge even though github ci failed because of dont-require-e2e
+		// Should merge even though retest1Pass would have failed before of `retestNotRequiredLabel`
 		{
-			name:            "Test3",
+			name:            "merge because of retestNotRequired",
 			pr:              ValidPR(),
-			issue:           DontRequireGithubE2EIssue(),
-			ciStatus:        GithubE2EFailStatus(),
+			issue:           NoRetestIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     false,
+			retest2Pass:     false,
 			reason:          merged,
 			state:           "success",
 		},
@@ -662,8 +672,8 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        false,
+			retest1Pass:     true,
+			retest2Pass:     false,
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -677,8 +687,8 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         false,
-			unitPass:        true,
+			retest1Pass:     false,
+			retest2Pass:     true,
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -692,8 +702,8 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        true,
+			retest1Pass:     true,
+			retest2Pass:     true,
 			reason:          noMerge,
 			state:           "pending",
 		},
@@ -708,11 +718,42 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
-			e2ePass:         true,
-			unitPass:        true,
+			retest1Pass:     true,
+			retest2Pass:     true,
 			reason:          unmergeableMilestone,
 			state:           "pending",
 		},
+		{
+			name:            "Fail because retest status fail",
+			pr:              ValidPR(),
+			issue:           LGTMIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        RetestFailStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          ciFailure,
+			state:           "pending",
+		},
+		{
+			name:            "Fail because noretest status fail",
+			pr:              ValidPR(),
+			issue:           LGTMIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        NoRetestFailStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          ciFailure,
+			state:           "pending",
+		},
+
 		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
 		// // and because previous two builds succeeded.
 		// {
@@ -734,8 +775,8 @@ func TestSubmitQueue(t *testing.T) {
 		// 		"junit_02.xml": getJUnit(6, 0),
 		// 		"junit_03.xml": getJUnit(7, 0),
 		// 	},
-		// 	e2ePass:  true,
-		// 	unitPass: true,
+		// 	retest1Pass:  true,
+		// 	retest2Pass: true,
 		// 	reason:   merged,
 		// 	state:    "success",
 		// },
@@ -759,8 +800,8 @@ func TestSubmitQueue(t *testing.T) {
 		// 		"junit_02.xml": getJUnit(6, 1),
 		// 		"junit_03.xml": getJUnit(7, 0),
 		// 	},
-		// 	e2ePass:  true,
-		// 	unitPass: true,
+		// 	retest1Pass:  true,
+		// 	retest2Pass: true,
 		// 	reason:   e2eFailure,
 		// 	state:    "success",
 		// },
@@ -785,8 +826,8 @@ func TestSubmitQueue(t *testing.T) {
 		// 		"junit_02.xml": getJUnit(6, 0),
 		// 		"junit_03.xml": getJUnit(7, 0),
 		// 	},
-		// 	e2ePass:  true,
-		// 	unitPass: true,
+		// 	retest1Pass:  true,
+		// 	retest2Pass: true,
 		// 	reason:   e2eFailure,
 		// 	state:    "success",
 		// },
@@ -886,7 +927,7 @@ func TestSubmitQueue(t *testing.T) {
 				json.NewDecoder(r.Body).Decode(c)
 				msg := *c.Body
 				if strings.HasPrefix(msg, "@"+jenkinsBotName+" test this") {
-					go fakeRunGithubE2ESuccess(test.ciStatus, test.e2ePass, test.unitPass)
+					go fakeRunGithubE2ESuccess(test.ciStatus, test.retest1Pass, test.retest2Pass)
 				}
 				w.WriteHeader(http.StatusOK)
 				data, err := json.Marshal(github.IssueComment{})

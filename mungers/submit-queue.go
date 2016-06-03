@@ -43,26 +43,28 @@ import (
 )
 
 const (
-	lgtmLabel           = "lgtm"
-	e2eNotRequiredLabel = "e2e-not-required"
-	doNotMergeLabel     = "do-not-merge"
-	claYesLabel         = "cla: yes"
-	claHumanLabel       = "cla: human-approved"
+	lgtmLabel              = "lgtm"
+	retestNotRequiredLabel = "retest-not-required"
+	doNotMergeLabel        = "do-not-merge"
+	claYesLabel            = "cla: yes"
+	claHumanLabel          = "cla: human-approved"
 
 	jenkinsE2EContext  = "Jenkins GCE e2e"
 	jenkinsUnitContext = "Jenkins unit/integration"
+	jenkinsNodeContext = "Jenkins GCE Node e2e "
 	travisContext      = "continuous-integration/travis-ci/pr"
 	sqContext          = "Submit Queue"
 
-	e2eNotRequiredMergePriority = -1 // used for e2eNotRequiredLabel
-	defaultMergePriority        = 3  // when an issue is unlabeled
+	retestNotRequiredMergePriority = -1 // used for retestNotRequiredLabel
+	defaultMergePriority           = 3  // when an issue is unlabeled
 
 	githubE2EPollTime = 30 * time.Second
 )
 
 var (
-	_                     = fmt.Print
-	verifySafeToMergeBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
+	_ = fmt.Print
+	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
+	retestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
 )
 
 type submitStatus struct {
@@ -146,10 +148,11 @@ type SubmitQueue struct {
 	FakeE2E bool
 
 	Committers             string
-	E2EStatusContext       string
-	UnitStatusContext      string
 	RequiredStatusContexts []string
 	doNotMergeMilestones   []string
+
+	RequiredRetestContexts []string
+	retestBody             string
 
 	sync.Mutex
 	lastPRStatus  map[string]submitStatus
@@ -281,6 +284,16 @@ func (sq *SubmitQueue) calcMergeRateWithTail() float64 {
 	return calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
 }
 
+// Given a string slice with a single empty value this function will return a empty slice.
+// This is extremely useful for StringSlice flags, so the user can do --flag="" and instead
+// of getting []string{""} they will get []string{}
+func cleanStringSlice(in []string) []string {
+	if len(in) == 1 && len(in[0]) == 0 {
+		return []string{}
+	}
+	return in
+}
+
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
 	return sq.internalInitialize(config, features, "")
@@ -291,6 +304,13 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideUrl string) error {
 	sq.Lock()
 	defer sq.Unlock()
+
+	// Clean up all of our flags which we wish --flag="" to mean []string{}
+	sq.JobNames = cleanStringSlice(sq.JobNames)
+	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
+	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
+	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
+	sq.doNotMergeMilestones = cleanStringSlice(sq.doNotMergeMilestones)
 
 	sq.githubConfig = config
 
@@ -322,7 +342,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
 		http.Handle("/users", gziphandler.GzipHandler(http.HandlerFunc(sq.serveUsers)))
-		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
 		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
@@ -383,10 +402,11 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringVar(&sq.E2EStatusContext, "e2e-status-context", jenkinsE2EContext, "The name of the github status context for the e2e PR Builder")
-	cmd.Flags().StringVar(&sq.UnitStatusContext, "unit-status-context", jenkinsUnitContext, "The name of the github status context for the unit PR Builder")
+	cmd.Flags().StringSliceVar(&sq.RequiredRetestContexts, "required-retest-contexts", []string{jenkinsE2EContext, jenkinsUnitContext, jenkinsNodeContext}, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
+	cmd.Flags().StringVar(&sq.retestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
+	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
 }
 
 // Hold the lock
@@ -513,8 +533,8 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	if !ok {
 		var prio string
 		p := priority(obj)
-		if p == e2eNotRequiredMergePriority {
-			prio = e2eNotRequiredLabel
+		if p == retestNotRequiredMergePriority {
+			prio = retestNotRequiredLabel
 		} else {
 			prio = fmt.Sprintf("P%d", p) // store it a P1, P2, P3.  Not just 1,2,3
 		}
@@ -695,17 +715,6 @@ const (
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 )
 
-func (sq *SubmitQueue) requiredStatusContexts(obj *github.MungeObject) []string {
-	contexts := sq.RequiredStatusContexts
-	if len(sq.E2EStatusContext) > 0 && !obj.HasLabel(e2eNotRequiredLabel) {
-		contexts = append(contexts, sq.E2EStatusContext)
-	}
-	if len(sq.UnitStatusContext) > 0 {
-		contexts = append(contexts, sq.UnitStatusContext)
-	}
-	return contexts
-}
-
 // validForMerge is the base logic about what PR can be automatically merged.
 // PRs must pass this logic to be placed on the queue and they must pass this
 // logic a second time to be retested/merged after they get to the top of
@@ -758,8 +767,11 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Validate the status information for this PR
-	contexts := sq.requiredStatusContexts(obj)
-	if ok := obj.IsStatusSuccess(contexts); !ok {
+	if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
+		sq.SetMergeStatus(obj, ciFailure)
+		return false
+	}
+	if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
 		sq.SetMergeStatus(obj, ciFailure)
 		return false
 	}
@@ -848,8 +860,8 @@ func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
 
 func priority(obj *github.MungeObject) int {
 	// jump to the front of the queue if you don't need retested
-	if obj.HasLabel(e2eNotRequiredLabel) {
-		return e2eNotRequiredMergePriority
+	if obj.HasLabel(retestNotRequiredLabel) {
+		return retestNotRequiredMergePriority
 	}
 
 	prio := obj.Priority()
@@ -1009,7 +1021,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	if obj.HasLabel(e2eNotRequiredLabel) {
+	if obj.HasLabel(retestNotRequiredLabel) {
 		// Do not update mergeRate when we don't do e2e tests
 		sq.mergePullRequest(obj)
 		return true
@@ -1024,15 +1036,15 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
 	} else {
-		if err := obj.WriteComment(verifySafeToMergeBody); err != nil {
+		if err := obj.WriteComment(retestBody); err != nil {
 			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 			sq.SetMergeStatus(obj, unknown)
 			return true
 		}
 
-		// Wait for the build to start
+		// Wait for the retest to start
 		sq.SetMergeStatus(obj, ghE2EWaitingStart)
-		err = obj.WaitForPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
+		err = obj.WaitForPending(sq.RequiredRetestContexts)
 		if err != nil {
 			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
 			return true
@@ -1040,14 +1052,14 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 		// Wait for the status to go back to something other than pending
 		sq.SetMergeStatus(obj, ghE2ERunning)
-		err = obj.WaitForNotPending([]string{sq.E2EStatusContext, sq.UnitStatusContext})
+		err = obj.WaitForNotPending(sq.RequiredRetestContexts)
 		if err != nil {
 			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
 			return true
 		}
 
 		// Check if the thing we care about is success
-		if ok := obj.IsStatusSuccess([]string{sq.E2EStatusContext, sq.UnitStatusContext}); !ok {
+		if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
 			sq.SetMergeStatus(obj, ghE2EFailed)
 			return true
 		}
@@ -1131,23 +1143,16 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("<ol>")
 	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q</li>", claYesLabel, claHumanLabel))
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
-	contexts := sq.RequiredStatusContexts
-	exceptStr := ""
-	if len(sq.E2EStatusContext) > 0 {
-		contexts = append(contexts, sq.E2EStatusContext)
-		exceptStr = fmt.Sprintf("Note: %q is not required if the PR has the %q label", sq.E2EStatusContext, e2eNotRequiredLabel)
-	}
-	if len(sq.UnitStatusContext) > 0 {
-		contexts = append(contexts, sq.UnitStatusContext)
-	}
-	if len(contexts) > 0 {
+	if len(sq.RequiredStatusContexts) > 0 || len(sq.RequiredRetestContexts) > 0 {
 		out.WriteString("<li>All of the following github statuses must be green")
 		out.WriteString("<ul>")
-		for _, context := range contexts {
+		for _, context := range sq.RequiredStatusContexts {
+			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
+		}
+		for _, context := range sq.RequiredRetestContexts {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
-		out.WriteString(fmt.Sprintf("%s</li>", exceptStr))
 	}
 	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.doNotMergeMilestones))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
@@ -1157,8 +1162,15 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")
 	out.WriteString(fmt.Sprintf("<li>All of the <a href=http://submit-queue.k8s.io/#/e2e>continuously running e2e tests</a> must be passing</li>"))
-	out.WriteString(fmt.Sprintf("<li>The %s tests must pass a second time<br>", sq.E2EStatusContext))
-	out.WriteString(fmt.Sprintf("Note: The %s tests are not required if the %q label is present</li>", sq.E2EStatusContext, e2eNotRequiredLabel))
+	if len(sq.RequiredRetestContexts) > 0 {
+		out.WriteString("<li>All of the following tests must pass a second time")
+		out.WriteString("<ul>")
+		for _, context := range sq.RequiredRetestContexts {
+			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
+		}
+		out.WriteString("</ul>")
+		out.WriteString(fmt.Sprintf("Unless the %q label is present</li>", retestNotRequiredLabel))
+	}
 	out.WriteString("</ol>")
 	out.WriteString("And then the PR will be merged!!")
 	res.Write(out.Bytes())
@@ -1174,7 +1186,7 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
       <li>Determined by a label of the form 'priority/pX'
       <li>P0 -&gt; P1 -&gt; P2</li>
       <li>A PR with no priority label is considered equal to a P3</li>
-      <li>A PR with the '` + e2eNotRequiredLabel + `' label will come first, before even P0</li>
+      <li>A PR with the '` + retestNotRequiredLabel + `' label will come first, before even P0</li>
     </ul>
   </li>
   <li>Release milestone due date
@@ -1192,7 +1204,7 @@ func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi
 	if !mergeBotComment(comment) {
 		return false
 	}
-	if *comment.Body != verifySafeToMergeBody {
+	if *comment.Body != retestBody {
 		return false
 	}
 	stale := commentBeforeLastCI(obj, comment)
