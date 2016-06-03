@@ -1040,26 +1040,12 @@
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
-
 - job-group:
     name: 'kubernetes-e2e-{provider}-{version-old}-{version-new}'
     trigger-job: 'kubernetes-build'
     test-owner: 'ihmccreery'
     emails: 'ihmccreery@google.com'
     jobs:
-        - 'kubernetes-e2e-{suffix}':
-            suffix: '{provider}-{version-old}-{version-new}-kubectl-skew'
-            description: 'Deploys a cluster at v{version-old} and runs the Kubectl tests with v{version-new} kubectl.'
-            timeout: 120
-            job-env: |
-                export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
-                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
-                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
-                export JENKINS_USE_SKEW_KUBECTL="true"
-                export GINKGO_PARALLEL="y"
-                export E2E_OPT="--check_version_skew=false"
-                {version-env}
         - 'kubernetes-e2e-{suffix}':
             suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
             step: 'upgrade-master'
@@ -1164,3 +1150,40 @@
             version-infix: '1-2-1-3'
             version-env: ''
             legacy-ginkgo-test-args-env: ''
+
+- job-group:
+    name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
+    trigger-job: 'kubernetes-build'
+    test-owner: 'ihmccreery'
+    emails: 'ihmccreery@google.com'
+    jobs:
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-cluster}-{version-client}-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export GINKGO_PARALLEL="y"
+                export E2E_OPT="--check_version_skew=false"
+
+- project:
+    name: kubernetes-e2e-kubectl-skew-gke
+    provider: 'gke'
+    provider-env: '{gke-provider-env}'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.2'
+            version-client: '1.1'
+            version-infix: '1-2-1-1'
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.2'
+            version-client: '1.3'
+            version-infix: '1-2-1-3'
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.3'
+            version-client: '1.2'
+            version-infix: '1-3-1-2'
+        # TODO(ihmccreery) Add 1-3-1-4 when release-1.3 branches.
