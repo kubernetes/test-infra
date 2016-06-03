@@ -34,25 +34,6 @@ TEST_BUCKETS_DATA = {
 }
 
 
-class GetBucketsTest(unittest.TestCase):
-    """Tests for gen_json.get_buckets."""
-    def test_get_buckets(self):
-        """Test get_buckets() returns a list of buckets URLs."""
-        temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
-        try:
-            buckets_json = os.path.join(temp_dir, 'buckets.json')
-            with open(buckets_json, 'w') as buf:
-                json.dump(TEST_BUCKETS_DATA, buf)
-            buckets = gen_json.get_buckets(buckets_json)
-            self.assertEquals(
-                set(['gs://kubernetes-jenkins/logs/',
-                     'gs://bucket1/',
-                     'gs://bucket2/']),
-                set(buckets))
-        finally:
-            shutil.rmtree(temp_dir)
-
-
 class OptionsTest(unittest.TestCase):
     """Tests for gen_json.get_options."""
 
@@ -90,6 +71,7 @@ class MockedClient(gen_json.GCSClient):
         LOG_DIR: [LOG_DIR + 'fake/'],
         LOG_DIR + 'fake/': [JOB_DIR, LOG_DIR + 'fake/122/'],
         LOG_DIR + 'bad-latest/': [LOG_DIR + 'bad-latest/6/'],
+        LOG_DIR + 'latest/': [LOG_DIR + 'latest/4/', LOG_DIR + 'latest/3/'],
         ART_DIR: [ART_DIR + 'junit_01.xml']}
     gets = {
         JOB_DIR + 'finished.json': {'timestamp': NOW},
@@ -172,6 +154,12 @@ class GCSClientTest(unittest.TestCase):
         # fallback: still lists a directory when build-latest.txt isn't an int
         self.assertEqual(['6'], list(self.client._get_builds('bad-latest')))
 
+    def test_get_builds_non_sequential(self):
+        # fallback: setting sequential=false causes directory listing
+        self.client.metadata = {'sequential': False}
+        self.assertEqual(['4', '3'],
+                         list(self.client._get_builds('latest')))
+
     def test_get_daily_builds(self):
         builds = list(self.client.get_daily_builds(lambda x: True, set()))
         self.assertEqual(builds, [('fake', '123', self.client.NOW)])
@@ -202,7 +190,7 @@ class MainTest(unittest.TestCase):
                            client=MockedClient):
         if expected is None:
             expected = self.get_expected_json()
-        gen_json.main([self.JOBS_DIR], 'fa', outfile.name, 32, client)
+        gen_json.main({self.JOBS_DIR: {}}, 'fa', outfile.name, 32, client)
         output = json.load(outfile)
         self.assertEqual(output, expected)
 

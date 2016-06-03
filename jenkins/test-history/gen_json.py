@@ -42,8 +42,9 @@ MAX_AGE = 60 * 60 * 24  # 1 day
 
 class GCSClient(object):
 
-    def __init__(self, jobs_dir):
+    def __init__(self, jobs_dir, metadata=None):
         self.jobs_dir = jobs_dir
+        self.metadata = metadata or {}
         self.session = requests.Session()
 
     def request(self, path, params, as_json=True):
@@ -139,14 +140,13 @@ class GCSClient(object):
             yield os.path.basename(os.path.dirname(job_path))
 
     def _get_builds(self, job):
-        try:
-            latest_build = int(self.get('%s%s/latest-build.txt'
-                                        % (self.jobs_dir, job)))
-        except (ValueError, TypeError):
-            pass
-        else:
-            # If it looks like a jenkins build number, return all the indices
-            if latest_build < 20160000000000:
+        if self.metadata.get('sequential', True):
+            try:
+                latest_build = int(self.get('%s%s/latest-build.txt'
+                                            % (self.jobs_dir, job)))
+            except (ValueError, TypeError):
+                pass
+            else:
                 return (str(n) for n in xrange(latest_build, 0, -1))
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
@@ -209,14 +209,14 @@ class IndexedList(list):
         return self._index[value]
 
 
-def mp_init_worker(jobs_dir, client_class):
+def mp_init_worker(jobs_dir, metadata, client_class):
     """
     Initialize the environment for multiprocessing-based multithreading.
     """
     # Multiprocessing doesn't allow local variables for each worker, so we need
     # to make a GCSClient global variable.
     global WORKER_CLIENT
-    WORKER_CLIENT = client_class(jobs_dir)
+    WORKER_CLIENT = client_class(jobs_dir, metadata)
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # make Ctrl-C kill the worker
 
 
@@ -236,13 +236,14 @@ def get_existing_builds(jobs):
     return out
 
 
-def get_tests(names, jobs_dir, matcher, threads, client_class, jobs):
+def get_tests(names, jobs_dir, metadata, matcher, threads, client_class, jobs):
     """
     Adds information about tests to a dictionary.
 
     Args:
         names: an IndexedList of test names.
         jobs_dir: the GCS path containing jobs.
+        metadata: a dict of metadata about the jobs_dir.
         matcher: a function str->bool that determines whether to include a job.
         threads: how many threads to use to download build information.
         client_class: a constructor for a GCSClient (or a subclass).
@@ -251,7 +252,7 @@ def get_tests(names, jobs_dir, matcher, threads, client_class, jobs):
     Returns:
         jobs is modified to contain the new test information.
     """
-    gcs = client_class(jobs_dir)
+    gcs = client_class(jobs_dir, metadata)
 
     print('Loading builds from %s' % jobs_dir)
 
@@ -262,7 +263,7 @@ def get_tests(names, jobs_dir, matcher, threads, client_class, jobs):
     jobs_and_builds = gcs.get_daily_builds(matcher, builds_have)
     if threads > 1:
         pool = multiprocessing.Pool(threads, mp_init_worker,
-                                    (jobs_dir, client_class))
+                                    (jobs_dir, metadata, client_class))
         builds_tests_iterator = pool.imap_unordered(
             mp_get_tests, jobs_and_builds)
     else:
@@ -319,11 +320,12 @@ def main(jobs_dirs, match, outfile, threads, client_class=GCSClient):
     if tests is None:
         names = IndexedList()
         tests = {'test_names': names, 'buckets': {}}
-    for bucket in jobs_dirs:
+    for bucket, metadata in jobs_dirs.iteritems():
         if not bucket.endswith('/'):
             bucket += '/'
         bucket_jobs = tests['buckets'].setdefault(bucket, {})
-        get_tests(names, bucket, matcher, threads, client_class, bucket_jobs)
+        get_tests(names, bucket, metadata, matcher, threads, client_class,
+                  bucket_jobs)
     with open(outfile, 'w') as buf:
         json.dump(tests, buf, sort_keys=True)
 
@@ -355,19 +357,11 @@ def get_options(argv):
     return parser.parse_args(argv)
 
 
-def get_buckets(infile):
-    if infile is None:
-        return []
-    with open(infile) as buf:
-        buckets = json.load(buf)
-    return buckets.keys()
-
-
 if __name__ == '__main__':
     if os.getenv('REQ_CACHE'):
         # for fast test iterations, enable caching GCS HTTP responses
         import requests_cache
         requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    jobs_dirs = get_buckets(OPTIONS.buckets)
+    jobs_dirs = json.load(open(OPTIONS.buckets))
     main(jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
