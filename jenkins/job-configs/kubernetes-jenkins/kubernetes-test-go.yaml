@@ -16,7 +16,6 @@
             {report-rc}
     publishers:
         - claim-build
-        - gcs-uploader
         - log-parser
         - email-ext
         - xunit:
@@ -35,6 +34,7 @@
                 - junit:
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
+        - gcs-uploader
     scm:
         - git:
             url: https://github.com/kubernetes/kubernetes

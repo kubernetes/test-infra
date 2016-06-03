@@ -4,10 +4,10 @@
     publishers:
         - claim-build
         - junit-publisher
-        - gcs-uploader
         - log-parser
         - email-ext:
             recipients: '{recipients}'
+        - gcs-uploader
 
 # Common attributes/actions shared by all e2e jobs.
 - e2e_job_defaults: &e2e_job_defaults

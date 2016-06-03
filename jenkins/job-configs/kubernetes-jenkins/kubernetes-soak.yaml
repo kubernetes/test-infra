@@ -57,9 +57,9 @@
     publishers:
         - claim-build
         - email-ext
-        - gcs-uploader
         - junit-publisher
         - log-parser
+        - gcs-uploader
     triggers:
         - timed: '{cron-string}'
     wrappers:

@@ -13,9 +13,9 @@
             ./hack/verify-linkcheck.sh
     publishers:
         - claim-build
-        - gcs-uploader
         - email-ext:
             recipients: 'xuchao@google.com'
+        - gcs-uploader
     scm:
         - git:
             url: https://github.com/kubernetes/kubernetes
