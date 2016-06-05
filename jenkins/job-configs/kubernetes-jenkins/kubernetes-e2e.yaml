@@ -170,7 +170,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jenkins-cvm"
-                export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160517"
+                export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
         - 'gce-master-on-cvm':
             cron-string: 'H * * * *' # run once an hour
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with the master on a ContainerVM image.'
@@ -182,7 +182,8 @@
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jenkins-master-cvm"
                 export KUBE_OS_DISTRIBUTION="debian"
-                export KUBE_GCE_MASTER_IMAGE="container-vm-v20160321"
+                export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
+                export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
         - 'gce-proto':
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
