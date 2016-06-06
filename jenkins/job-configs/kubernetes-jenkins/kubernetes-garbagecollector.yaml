@@ -1,0 +1,76 @@
+- job-template:
+    name: 'kubernetes-garbagecollector-{suffix}'
+    description: '{description} Test owner: xuchao'
+    node: 'e2e'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    provider-env: |
+        export KUBERNETES_PROVIDER="gce"
+        export E2E_MIN_STARTUP_PODS="1"
+        export KUBE_GCE_ZONE="us-central1-f"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
+        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    builders:
+        - shell: |
+            {provider-env}
+            {job-env}
+            {post-env}
+            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./kubernetes/cluster/log-dump.sh _artifacts
+                fi
+            fi
+            {report-rc}
+    publishers:
+        - claim-build
+        - junit-publisher
+        - log-parser
+        - email-ext:
+            recipients: "xuchao@google.com"
+        - gcs-uploader
+    triggers:
+        - timed: '{cron-string}'
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+        - e2e-credentials-binding
+
+- project:
+    name: kubernetes-garbage-collector
+    suffix:
+        - '100-gce':  # kubernetes-garbagecollector-100-gce
+            description: 'Run the garbage collector with high workload'
+            timeout: 600
+            cron-string: 'H H/6 * * *'
+            job-env: |
+                # Start the gc in controller plane
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export E2E_NAME="garbagecollector-100"
+                export PROJECT="k8s-jenkins-garbagecollector"
+                export E2E_TEST="false"
+                export USE_KUBEMARK="true"
+                export KUBEMARK_TESTS="\[Feature:GarbageCollector\]"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+                export CREATE_SERVICES="true"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                # Override defaults to be independent from GCE defaults and set kubemark parameters
+                export NUM_NODES="3"
+                export MASTER_SIZE="n1-standard-2"
+                export NODE_SIZE="n1-standard-4"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export KUBEMARK_MASTER_SIZE="n1-standard-4"
+                export KUBEMARK_NUM_NODES="100"
+                # The kubemark scripts build a Docker image
+                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+    jobs:
+        - 'kubernetes-garbagecollector-{suffix}'
