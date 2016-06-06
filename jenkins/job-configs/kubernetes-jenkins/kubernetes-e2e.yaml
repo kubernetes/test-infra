@@ -1119,10 +1119,9 @@
                 # In v1.1 and below, NUM_MINIONS defaults to 2, so we have to override to 3 here.  NUM_MINIONS
                 # was changed to NUM_NODES in v1.2, but we don't need to override for v1.2 and above.
                 export NUM_MINIONS=3
-                # Similarly, in v1.1 and below, MINION_SIZE defaults to 'n1-standard-1', so we need to
-                # override it here (specifically for HPA tests).  MINION_SIZE was changed to
-                # NODE_SIZE in v1.2, but we don't need to override for v1.2 and above.
-                export MINION_SIZE='n1-standard-2'
+                # Similarly, in v1.1 and below, MACHINE_TYPE defaults to 'n1-standard-1', so we need to
+                # override it here (specifically for HPA tests).
+                export MACHINE_TYPE='n1-standard-2'
             legacy-ginkgo-test-args-env: |
                 # XXX This is a hack to run only the tests we care about, without importing all of
                 # the skip list vars from the v1.0 e2e.sh.
@@ -1135,10 +1134,9 @@
                 # In v1.1 and below, NUM_MINIONS defaults to 2, so we have to override to 3 here.  NUM_MINIONS
                 # was changed to NUM_NODES in v1.2, but we don't need to override for v1.2 and above.
                 export NUM_MINIONS=3
-                # Similarly, in v1.1 and below, MINION_SIZE defaults to 'n1-standard-1', so we need to
-                # override it here (specifically for HPA tests).  MINION_SIZE was changed to
-                # NODE_SIZE in v1.2, but we don't need to override for v1.2 and above.
-                export MINION_SIZE='n1-standard-2'
+                # Similarly, in v1.1 and below, MACHINE_TYPE defaults to 'n1-standard-1', so we need to
+                # override it here (specifically for HPA tests).
+                export MACHINE_TYPE='n1-standard-2'
             legacy-ginkgo-test-args-env: |
                 # XXX This is a hack to run only the tests we care about, without importing all of
                 # the skip list vars from the v1.1 e2e.sh.
@@ -1151,10 +1149,9 @@
                 # In v1.1 and below, NUM_MINIONS defaults to 2, so we have to override to 3 here.  NUM_MINIONS
                 # was changed to NUM_NODES in v1.2, but we don't need to override for v1.2 and above.
                 export NUM_MINIONS=3
-                # Similarly, in v1.1 and below, MINION_SIZE defaults to 'n1-standard-1', so we need to
-                # override it here (specifically for HPA tests).  MINION_SIZE was changed to
-                # NODE_SIZE in v1.2, but we don't need to override for v1.2 and above.
-                export MINION_SIZE='n1-standard-2'
+                # Similarly, in v1.1 and below, MACHINE_TYPE defaults to 'n1-standard-1', so we need to
+                # override it here (specifically for HPA tests).
+                export MACHINE_TYPE='n1-standard-2'
             legacy-ginkgo-test-args-env: |
                 # XXX This is a hack to run only the tests we care about, without importing all of
                 # the skip list vars from the v1.1 e2e.sh.
