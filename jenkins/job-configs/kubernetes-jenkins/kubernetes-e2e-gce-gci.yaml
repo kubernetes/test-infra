@@ -1,0 +1,279 @@
+# Common publishers shared by all e2e jobs.
+- publisher:
+    name: e2e-publishers
+    publishers:
+        - claim-build
+        - junit-publisher
+        - log-parser
+        - email-ext:
+            recipients: '{recipients}'
+        - gcs-uploader
+
+# Common attributes/actions shared by all e2e jobs.
+- e2e_job_defaults: &e2e_job_defaults
+    name: e2e_job_defaults
+    description: '{description} Test owner: {test-owner}.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    builders:
+        - shell: |
+            {provider-env}
+            {job-env}
+            {post-env}
+            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./kubernetes/cluster/log-dump.sh _artifacts
+                fi
+            fi
+            {report-rc}
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+
+# This section contains two types of jobs (all run e2e tests on GCE):
+#   * Jobs that use a "green" GCI image to test k8s continuous builds (hence
+#     the "ci" in job names). We use these to guard k8s and GCI compatibility.
+#   * Jobs that use a released k8s version to test GCI's continuous builds
+#     (dev, beta and stable). We use these to qualify GCI image releases.
+
+# e2e test jobs that run on GCE with a "green" GCI image and kubernetes'
+# continuous builds (currently only targeting `master` and `release-1.2`).
+- job-template:
+    name: 'kubernetes-e2e-gce-gci-ci-{suffix}'
+    <<: *e2e_job_defaults
+    node: '{jenkins_node}'
+    triggers:
+        - reverse:
+            jobs: '{trigger-job}'
+            result: success
+        - timed: '{cron-string}'
+    publishers:
+        - e2e-publishers:
+            recipients: '{emails}'
+        - description-setter:
+            regexp: KUBE_GCE_MASTER_IMAGE=(.*)
+        - groovy-postbuild:
+            script: |
+                def gciImageMatcher = manager.getLogMatcher("KUBE_GCE_MASTER_IMAGE=(.*)")
+                if(gciImageMatcher?.matches()) manager.addShortText("<b>GCI Image: " + gciImageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
+                if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+
+- project:
+    name: kubernetes-e2e-gce-gci-ci-master
+    trigger-job: 'kubernetes-build'
+    test-owner: 'wonderfly@google.com'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    provider-env: |
+        {gce-provider-env}
+        export JENKINS_GCI_IMAGE_TYPE="dev"
+    suffix:
+        # TODO(wonderfly): For GCI, we currently only run CI, slow and serial
+        # tests. More test coverage under way.
+        - 'master':
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the master branch.'
+            timeout: 30
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-master"
+        - 'slow-master':
+            description: 'Runs slow tests on GCE with GCI images, sequentially on the master branch.'
+            timeout: 60
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-master-slow"
+        - 'serial-master':
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images.'
+            timeout: 300
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-gci-ci-serial"
+    jobs:
+        - 'kubernetes-e2e-gce-gci-ci-{suffix}'
+
+- project:
+    name: kubernetes-e2e-gce-gci-ci-1-2
+    trigger-job: 'kubernetes-build-1.2'
+    test-owner: 'wonderfly@google.com'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    provider-env: |
+        {gce-provider-env}
+        export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+        export JENKINS_GCI_IMAGE_TYPE="dev"
+    suffix:
+        # TODO(wonderfly): For GCI, we currently only run CI, slow and serial
+        # tests. More test coverage under way.
+        - 'release-1.2':  # kubernetes-e2e-gce-gci-ci-release-1.2
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.2 branch.'
+            timeout: 30
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-1-2"
+        - 'slow-release-1.2':  # kubernetes-e2e-gce-gci-ci-slow-release-1.2
+            description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.2 branch.'
+            timeout: 60
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-slow-1-2"
+        - 'serial-release-1.2':  # kubernetes-e2e-gce-gci-ci-serial-release-1.2
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.2 branch.'
+            timeout: 300
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-gci-ci-serial-1-2"
+    jobs:
+        - 'kubernetes-e2e-gce-gci-ci-{suffix}'
+
+# Template for e2e test jobs that run on GCE with a released k8s version and
+# GCI's continuous builds (dev and beta only).
+- job-template:
+    name: 'kubernetes-e2e-gce-gci-{suffix}'
+    <<: *e2e_job_defaults
+    node: '{jenkins_node}'
+    triggers:
+        - timed: 'H H/8 * * *'
+    publishers:
+        - e2e-publishers:
+            recipients: '{emails}'
+        - description-setter:
+            regexp: KUBE_GCE_MASTER_IMAGE=(.*)
+        - groovy-postbuild:
+            script: |
+                def gciImageMatcher = manager.getLogMatcher("KUBE_GCE_MASTER_IMAGE=(.*)")
+                if(gciImageMatcher?.matches()) manager.addShortText("<b>GCI Image: " + gciImageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
+                if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+
+- project:
+    name: kubernetes-e2e-gce-gci-dev
+    test-owner: 'wonderfly@google.com'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    provider-env: |
+        {gce-provider-env}
+        export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+        export JENKINS_GCI_IMAGE_TYPE="dev"
+    suffix:
+        - 'dev-release':  # kubernetes-e2e-gce-gci-dev-release
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest GCI build and the latest k8s 1.2 release.'
+            timeout: 30
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-gci-dev"
+        - 'dev-slow':  # kubernetes-e2e-gce-gci-dev-slow
+            description: 'Run slow E2E tests on GCE with the latest GCI build with the latest k8s 1.2 release.'
+            timeout: 60
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-gci-dev-slow"
+        - 'dev-serial':  # kubernetes-e2e-gce-gci-dev-serial
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI dev images and the latest k8s 1.2 release.'
+            timeout: 300
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-gci-dev-serial"
+    jobs:
+        - 'kubernetes-e2e-gce-gci-{suffix}'
+
+- project:
+    name: kubernetes-e2e-gce-gci-beta
+    test-owner: 'wonderfly@google.com'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    provider-env: |
+        {gce-provider-env}
+        export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+        export JENKINS_GCI_IMAGE_TYPE="beta"
+    suffix:
+        - 'beta-release':  # kubernetes-e2e-gce-gci-beta-release
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest GCI beta build and the latest k8s 1.2 release.'
+            timeout: 30
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-gci-beta"
+        - 'beta-slow':  # kubernetes-e2e-gce-gci-beta-slow
+            description: 'Run slow E2E tests on GCE with the latest GCI beta build with the latest k8s 1.2 release.'
+            timeout: 60
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-e2e-gce-gci-beta-slow"
+        - 'beta-serial':  # kubernetes-e2e-gce-gci-beta-serial
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI beta images and the latest k8s 1.2 release.'
+            timeout: 300
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-gci-beta-serial"
+    jobs:
+        - 'kubernetes-e2e-gce-gci-{suffix}'
+
+# Template for e2e test jobs that run on GCE with a released k8s version and
+# GCI's continuous builds (GCI stable only works with k8s 1.1).
+- job-template:
+    name: 'kubernetes-e2e-gce-gci-stable-{suffix}'
+    <<: *e2e_job_defaults
+    node: '{jenkins_node}'
+    triggers:
+        # GCI stable images are built once per day.
+        - timed: '@daily'
+    publishers:
+        - e2e-publishers:
+            recipients: '{emails}'
+        - description-setter:
+            # In 1.1, only nodes run GCI.
+            regexp: KUBE_GCE_MINION_IMAGE=(.*)
+        - groovy-postbuild:
+            script: |
+                def gciImageMatcher = manager.getLogMatcher("KUBE_GCE_MINION_IMAGE=(.*)")
+                if(gciImageMatcher?.matches()) manager.addShortText("<b>GCI Image: " + gciImageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
+                if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+
+- project:
+    name: kubernetes-e2e-gce-gci-stable
+    test-owner: 'wonderfly@google.com'
+    branch: 'release-1.1'
+    emails: 'wonderfly@google.com,qzheng@google.com'
+    jenkins_node: 'master'
+    runner: '{old-runner-1-1}'
+    post-env: ''
+    suffix:
+        - 'release':  # kubernetes-e2e-gce-gci-stable-release
+            # Broken as it pins to the latest k8s release, which is broken by https://github.com/kubernetes/kubernetes/issues/25153
+            disable_job: true
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest Trusty stable build and the latest k8s 1.1 release.'
+            timeout: 150
+        - 'slow':  # kubernetes-e2e-gce-gci-stable-slow
+            # Broken as it pins to the latest k8s release, which is broken by https://github.com/kubernetes/kubernetes/issues/25153
+            disable_job: true
+            description: 'Run slow E2E tests on GCE with the latest Trusty stable build with the latest k8s 1.1 release.'
+            timeout: 270
+    jobs:
+        - 'kubernetes-e2e-gce-gci-stable-{suffix}'
+
+# End of GCI jobs
