@@ -127,6 +127,17 @@ func (p *FlakeManager) isIndividualFlake(f cache.Flake) bool {
 	return true
 }
 
+func (p *FlakeManager) listPreviousIssues(title string) []string {
+	if previousIssues := p.finder.AllIssuesForKey(title); len(previousIssues) > 0 {
+		s := []string{}
+		for _, i := range previousIssues {
+			s = append(s, fmt.Sprintf("#%v", i))
+		}
+		return s
+	}
+	return nil
+}
+
 // makeGubernatorLink returns a URL to view the build results in a GCS path.
 //
 // gcsPath should be a string like "/kubernetes-jenkins/logs/e2e/1234/",
@@ -162,8 +173,7 @@ func (p *individualFlakeSource) ID() string {
 
 // Body implements IssueSource
 func (p *individualFlakeSource) Body(newIssue bool) string {
-	testName := string(p.flake.Test)
-	extraInfo := fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", testName, p.flake.Reason)
+	extraInfo := fmt.Sprintf("Failed: %v\n\n```\n%v\n```\n\n", p.Title(), p.flake.Reason)
 	body := makeGubernatorLink(p.ID()) + "\n" + extraInfo
 
 	if !newIssue {
@@ -171,11 +181,7 @@ func (p *individualFlakeSource) Body(newIssue bool) string {
 	}
 
 	// If we're filing a new issue, reference previous issues if we know of any.
-	if previousIssues := p.fm.finder.AllIssuesForKey(testName); len(previousIssues) > 0 {
-		s := []string{}
-		for _, i := range previousIssues {
-			s = append(s, fmt.Sprintf("#%v", i))
-		}
+	if s := p.fm.listPreviousIssues(p.Title()); len(s) > 0 {
 		body = body + fmt.Sprintf("\nPrevious issues for this test: %v\n", strings.Join(s, " "))
 	}
 	return body
@@ -230,7 +236,18 @@ func (p *brokenJobSource) Body(newIssue bool) string {
 		}
 		sections = append(sections, text)
 	}
-	return body + strings.Join(sections, "\n\n")
+
+	body = body + strings.Join(sections, "\n\n")
+
+	if !newIssue {
+		return body
+	}
+
+	// If we're filing a new issue, reference previous issues if we know of any.
+	if s := p.fm.listPreviousIssues(p.Title()); len(s) > 0 {
+		body = body + fmt.Sprintf("\nPrevious issues for this suite: %v\n", strings.Join(s, " "))
+	}
+	return body
 }
 
 // Labels implements IssueSource
