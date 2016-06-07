@@ -995,6 +995,9 @@ func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject
 
 // Returns true if we can discard the PR from the queue, false if we must keep it for later.
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
+	interruptedObj := sq.interruptedObj
+	sq.interruptedObj = nil
+
 	err := obj.Refresh()
 	if err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
@@ -1012,8 +1015,6 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	interruptedObj := sq.interruptedObj
-	sq.interruptedObj = nil
 	if interruptedObj != nil {
 		if interruptedObj.hasSHAChanged() {
 			// This PR will have to be rested.
@@ -1053,7 +1054,9 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	}
 
 	if !sq.e2eStable(true) {
-		sq.interruptedObj = newInterruptedObject(obj)
+		if sq.validForMerge(obj) {
+			sq.interruptedObj = newInterruptedObject(obj)
+		}
 		sq.SetMergeStatus(obj, e2eFailure)
 		return true
 	}
