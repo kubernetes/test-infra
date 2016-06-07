@@ -76,6 +76,8 @@
               {shell}
     publishers:
         - claim-build
+        - junit-publisher-fully-specified:
+                allow-empty-results: true
         - gcs-uploader
         - log-parser
         - email-ext:
