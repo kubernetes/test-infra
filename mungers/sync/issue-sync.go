@@ -25,6 +25,12 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 )
 
+// OwnerMapper finds an owner for a given test name.
+type OwnerMapper interface {
+	// TestOwner returns a GitHub username for a test, or "" if none are found.
+	TestOwner(testName string) string
+}
+
 // IssueFinder finds an issue for a given key.
 type IssueFinder interface {
 	AllIssuesForKey(key string) []int
@@ -60,14 +66,16 @@ type IssueSyncer struct {
 	config *github.Config
 	finder IssueFinder
 	synced sets.String
+	owner  OwnerMapper // 'owner' may be nil, disabling issue assignment.
 }
 
 // NewIssueSyncer constructs an issue syncer.
-func NewIssueSyncer(config *github.Config, finder IssueFinder) *IssueSyncer {
+func NewIssueSyncer(config *github.Config, finder IssueFinder, owner OwnerMapper) *IssueSyncer {
 	return &IssueSyncer{
 		config: config,
 		finder: finder,
 		synced: sets.NewString(),
+		owner:  owner,
 	}
 }
 
@@ -201,10 +209,16 @@ func (s *IssueSyncer) createIssue(source IssueSource) (issueNumber int, err erro
 		panic(fmt.Errorf("Programmer error: %v does not contain %v!", body, id))
 	}
 
+	var owner string
+	if s.owner != nil {
+		owner = s.owner.TestOwner(source.Title())
+	}
+
 	obj, err := s.config.NewIssue(
 		source.Title(),
 		body,
 		source.Labels(),
+		owner,
 	)
 	if err != nil {
 		return 0, err

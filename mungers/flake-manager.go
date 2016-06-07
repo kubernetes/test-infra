@@ -24,6 +24,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/mungegithub/mungers/sync"
+	"k8s.io/contrib/mungegithub/mungers/testowner"
 	"k8s.io/contrib/test-utils/utils"
 
 	// "github.com/golang/glog"
@@ -44,7 +45,8 @@ type FlakeManager struct {
 	config               *github.Config
 	googleGCSBucketUtils *utils.Utils
 
-	syncer *sync.IssueSyncer
+	syncer    *sync.IssueSyncer
+	ownerPath string
 }
 
 func init() {
@@ -76,7 +78,16 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	}
 	p.config = config
 	p.googleGCSBucketUtils = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
-	p.syncer = sync.NewIssueSyncer(config, p.finder)
+
+	var owner *testowner.ReloadingOwnerList
+	var err error
+	if p.ownerPath != "" {
+		owner, err = testowner.NewReloadingOwnerList(p.ownerPath)
+		if err != nil {
+			return err
+		}
+	}
+	p.syncer = sync.NewIssueSyncer(config, p.finder, owner)
 	return nil
 }
 
@@ -96,7 +107,9 @@ func (p *FlakeManager) EachLoop() error {
 }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (p *FlakeManager) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (p *FlakeManager) AddFlags(cmd *cobra.Command, config *github.Config) {
+	cmd.Flags().StringVar(&p.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
+}
 
 // Munge is unused by this munger.
 func (p *FlakeManager) Munge(obj *github.MungeObject) {}
