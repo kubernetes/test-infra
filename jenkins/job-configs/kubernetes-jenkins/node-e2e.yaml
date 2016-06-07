@@ -162,5 +162,8 @@
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'pwittroc@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
+            publishers:
+              - junit-publisher
+
     jobs:
         - '{gitproject}-gce-e2e-ci'
