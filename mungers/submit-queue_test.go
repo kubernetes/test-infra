@@ -33,7 +33,6 @@ import (
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
-	"k8s.io/contrib/mungegithub/mungers/jenkins"
 	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/golang/glog"
@@ -162,18 +161,6 @@ func FailGCS() utils.FinishedFile {
 	}
 }
 
-func SuccessJenkins() jenkins.Job {
-	return jenkins.Job{
-		Result: "SUCCESS",
-	}
-}
-
-func FailJenkins() jenkins.Job {
-	return jenkins.Job{
-		Result: "FAILED",
-	}
-}
-
 func getJUnit(testsNo int, failuresNo int) []byte {
 	return []byte(fmt.Sprintf("%v\n<testsuite tests=\"%v\" failures=\"%v\" time=\"1234\">\n</testsuite>",
 		e2e.ExpectedXMLHeader, testsNo, failuresNo))
@@ -184,9 +171,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.RequiredStatusContexts = []string{jenkinsUnitContext}
 	sq.E2EStatusContext = jenkinsE2EContext
 	sq.UnitStatusContext = jenkinsUnitContext
-	if server != nil {
-		sq.JenkinsHost = server.URL
-	}
 	sq.JobNames = []string{"foo"}
 	sq.WeakStableJobNames = []string{"bar"}
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
@@ -441,7 +425,6 @@ func TestSubmitQueue(t *testing.T) {
 		commits          []github.RepositoryCommit
 		events           []github.IssueEvent
 		ciStatus         *github.CombinedStatus
-		jenkinsJob       jenkins.Job
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
 		weakResults      map[int]utils.FinishedFile
@@ -465,7 +448,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -483,7 +465,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -505,7 +486,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -522,7 +502,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        GithubE2EFailStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -622,7 +601,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob:      FailJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       FailGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -637,7 +615,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -652,7 +629,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -670,7 +646,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -684,7 +659,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -700,7 +674,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -716,7 +689,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -733,7 +705,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			jenkinsJob:      SuccessJenkins(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
@@ -751,7 +722,6 @@ func TestSubmitQueue(t *testing.T) {
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),
-		// 	jenkinsJob:      SuccessJenkins(),
 		// 	lastBuildNumber: LastBuildNumber(),
 		// 	gcsResult:       SuccessGCS(),
 		// 	weakResults: map[int]utils.FinishedFile{
@@ -777,7 +747,6 @@ func TestSubmitQueue(t *testing.T) {
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),
-		// 	jenkinsJob:      SuccessJenkins(),
 		// 	lastBuildNumber: LastBuildNumber(),
 		// 	gcsResult:       SuccessGCS(),
 		// 	weakResults: map[int]utils.FinishedFile{
@@ -804,7 +773,6 @@ func TestSubmitQueue(t *testing.T) {
 		// 	events:          NewLGTMEvents(),
 		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 		// 	ciStatus:        SuccessStatus(),
-		// 	jenkinsJob:      SuccessJenkins(),
 		// 	lastBuildNumber: LastBuildNumber(),
 		// 	gcsResult:       SuccessGCS(),
 		// 	weakResults: map[int]utils.FinishedFile{
@@ -842,21 +810,8 @@ func TestSubmitQueue(t *testing.T) {
 
 		stateSet := ""
 
-		numJenkinsCalls := 0
-		// Respond with success to jenkins requests.
-		path := "/job/foo/lastCompletedBuild/api/json"
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.jenkinsJob)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-		path = "/foo/latest-build.txt"
+		numTestChecks := 0
+		path := "/foo/latest-build.txt"
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
@@ -870,8 +825,8 @@ func TestSubmitQueue(t *testing.T) {
 			// so we don't want to modify the PR there. Instead we need
 			// to wait until the second time we check Jenkins, which happens
 			// we did the IsMerged() check.
-			numJenkinsCalls = numJenkinsCalls + 1
-			if numJenkinsCalls == 2 && test.mergeAfterQueued {
+			numTestChecks = numTestChecks + 1
+			if numTestChecks == 2 && test.mergeAfterQueued {
 				test.pr.Merged = boolPtr(true)
 				test.pr.Mergeable = nil
 			}
