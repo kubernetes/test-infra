@@ -767,13 +767,17 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Validate the status information for this PR
-	if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
-		sq.SetMergeStatus(obj, ciFailure)
-		return false
+	if len(sq.RequiredStatusContexts) > 0 {
+		if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
+			sq.SetMergeStatus(obj, ciFailure)
+			return false
+		}
 	}
-	if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
-		sq.SetMergeStatus(obj, ciFailure)
-		return false
+	if len(sq.RequiredRetestContexts) > 0 {
+		if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
+			sq.SetMergeStatus(obj, ciFailure)
+			return false
+		}
 	}
 
 	// Clearly
