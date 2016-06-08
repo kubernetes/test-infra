@@ -127,34 +127,10 @@
         fi
         echo "Exiting with code: ${{rc}}"
         exit ${{rc}}
-    branch: 'master'
-    job-env: ''
     runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/dockerized-e2e-runner.sh")
     legacy-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/e2e-runner.sh")
     old-runner-1-1: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.1/hack/jenkins/e2e.sh")
     old-runner-1-0: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.0/hack/jenkins/e2e.sh")
-    provider-env: ''
-    gce-provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="1"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-    gke-provider-env: |
-        export KUBERNETES_PROVIDER="gke"
-        export ZONE="us-central1-f"
-        # By default, GKE tests run against the GKE test endpoint using CI Cloud SDK.
-        # Release jobs (e.g. prod, staging, and test) override these two variables.
-        export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
-        export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-    aws-provider-env: |
-        export KUBERNETES_PROVIDER="aws"
-        export E2E_MIN_STARTUP_PODS="1"
-        export KUBE_AWS_ZONE="us-west-2a"
-        export MASTER_SIZE="m3.medium"
-        export NODE_SIZE="m3.medium"
-        export NUM_NODES="3"
     post-env: |
         # Nothing should want Jenkins $HOME
         export HOME=${{WORKSPACE}}

@@ -7,6 +7,12 @@
     properties:
         - build-discarder:
             days-to-keep: 7
+    provider-env: |
+        export KUBERNETES_PROVIDER="gke"
+        export ZONE="us-central1-f"
+        export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
+        export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
     builders:
         - shell: |
             {provider-env}
@@ -47,7 +53,6 @@
     name: kubernetes-e2e-gke-master
     trigger-job: 'kubernetes-build'
     test-owner: 'Build Cop'
-    provider-env: '{gke-provider-env}'
     gke-suffix:
         - 'gke':  # kubernetes-e2e-gke
             cron-string: '{sq-cron-string}'
@@ -145,14 +150,12 @@
     name: kubernetes-e2e-gke-1-2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'Build Cop'
-    provider-env: |
-        {gke-provider-env}
-        export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
     gke-suffix:
         - 'gke-release-1.2':  # kubernetes-e2e-gke-release-1.2
             description: 'Run E2E tests on GKE from the release-1.2 branch.'
             timeout: 50  # See #21138
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-1-2"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -160,6 +163,7 @@
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.2 branch.'
             timeout: 300
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-serial-1-2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
@@ -167,6 +171,7 @@
             description: 'Run slow E2E tests on GKE using the release-1.2 branch.'
             timeout: 60
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-slow-1-2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
@@ -177,20 +182,17 @@
             emails: 'beeps@google.com'
             test-owner: 'beeps'
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export PROJECT="kubernetes-gke-ingress-1-2"
-                # TODO: Enable this when we've split 1.2 tests into another project.
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO(spxtr): Enable after 1.2 in another projet
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
 - project:
     name: kubernetes-e2e-gke-version-pinned
-    # TODO(spxtr) This should float with the current release, or something.
-    trigger-job: 'kubernetes-build-1.2'
+    trigger-job: 'kubernetes-build-1.2'  # TODO(spxtr) float with current release.
     test-owner: 'GKE on-call'
-    provider-env: |
-        {gke-provider-env}
     gke-suffix:
         - 'gke-pre-release':  # kubernetes-e2e-gke-pre-release
             description: 'Run E2E tests on GKE test endpoint against the latest prerelease (alpha/beta).'
@@ -229,9 +231,9 @@
             timeout: 80
             job-env: |
                 export PROJECT="k8s-e2e-gke-staging-parallel"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
         - 'gke-prod':  # kubernetes-e2e-gke-prod
@@ -239,18 +241,18 @@
             timeout: 480
             job-env: |
                 export PROJECT="k8s-jkns-e2e-gke-prod"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export ZONE="asia-east1-b"
         - 'gke-prod-parallel':  # kubernetes-e2e-gke-prod-parallel
             description: 'Run E2E tests on GKE prod endpoint in parallel.'
             timeout: 80
             job-env: |
                 export PROJECT="k8s-e2e-gke-prod-parallel"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export ZONE="asia-east1-b"
@@ -264,7 +266,9 @@
     branch: 'release-1.1'
     jenkins_node: 'master'
     runner: '{old-runner-1-1}'
-    post-env: ''
+    job-env: ''  # Expected to be empty
+    post-env: ''  # Expected to be empty
+    provider-env: ''  # Expected to be empty
     gke-suffix:
         - 'gke-1.1':  # kubernetes-e2e-gke-1.1
             timeout: 150
@@ -283,7 +287,6 @@
             timeout: 90
             emails: 'beeps@google.com'
             test-owner: 'beeps'
-            provider-env: '{gke-provider-env}'
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export PROJECT="kubernetes-gke-ingress"
@@ -301,8 +304,6 @@
     name: kubernetes-e2e-gke-trusty
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'wonderfly@google.com'
-    provider-env: |
-        {gke-provider-env}
     emails: 'wonderfly@google.com,qzheng@google.com'
     gke-suffix:
         - 'gke-trusty-test':  # kubernetes-e2e-gke-trusty-test
@@ -331,9 +332,9 @@
             timeout: 480
             job-env: |
                 export PROJECT="e2e-gke-trusty-staging"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export E2E_NAME="gke-e2e-staging-trusty"
                 export KUBE_OS_DISTRIBUTION="trusty"
         - 'gke-trusty-staging-parallel':  # kubernetes-e2e-gke-trusty-staging-parallel
@@ -341,9 +342,9 @@
             timeout: 80
             job-env: |
                 export PROJECT="e2e-gke-trusty-staging-p"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export E2E_NAME="gke-e2e-staging-pa-trusty"
@@ -355,6 +356,7 @@
             timeout: 480
             job-env: |
                 export PROJECT="kubekins-e2e-gke-trusty-prod"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_GCE_ZONE="asia-east1-b"
@@ -367,6 +369,7 @@
             timeout: 80
             job-env: |
                 export PROJECT="e2e-gke-trusty-prod-p"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
@@ -431,7 +434,6 @@
 - project:
     name: kubernetes-e2e-upgrades-gke
     provider: 'gke'
-    provider-env: '{gke-provider-env}'
     jobs:
         - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.0-1.2
             version-old: '1.0'
@@ -506,7 +508,6 @@
 - project:
     name: 'kubernetes-e2e-kubectl-skew-gke'
     provider: 'gke'
-    provider-env: '{gke-provider-env}'
     jobs:
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.2'
