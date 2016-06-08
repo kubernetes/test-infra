@@ -42,9 +42,8 @@ import (
 
 const (
 	// stolen from https://groups.google.com/forum/#!msg/golang-nuts/a9PitPAHSSU/ziQw1-QHw3EJ
-	maxInt          = int(^uint(0) >> 1)
-	tokenLimit      = 500 // How many github api tokens to not use
-	asyncTokenLimit = 400 // How many github api tokens to not use for 'asyc' calls
+	maxInt     = int(^uint(0) >> 1)
+	tokenLimit = 250 // How many github api tokens to not use
 
 	// Unit tests take over an hour now...
 	prMaxWaitTime = 2 * time.Hour
@@ -90,15 +89,10 @@ func (c *callLimitRoundTripper) getToken() {
 	c.getTokenExcept(tokenLimit)
 }
 
-func (c *callLimitRoundTripper) getAsyncToken() {
-	c.getTokenExcept(asyncTokenLimit)
-}
-
 func (c *callLimitRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if c.delegate == nil {
 		c.delegate = http.DefaultTransport
 	}
-	// TODO Be smart about which should use getToken and which should use getAsyncToken()
 	c.getToken()
 	resp, err := c.delegate.RoundTrip(req)
 	c.Lock()
