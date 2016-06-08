@@ -84,12 +84,6 @@ type statusPullRequest struct {
 	ExtraInfo []string
 }
 
-type userInfo struct {
-	Login     string
-	AvatarURL string
-	Access    string
-}
-
 type e2eQueueStatus struct {
 	E2ERunning *statusPullRequest
 	E2EQueue   []*statusPullRequest
@@ -157,7 +151,6 @@ type SubmitQueue struct {
 	sync.Mutex
 	lastPRStatus  map[string]submitStatus
 	prStatus      map[string]submitStatus // protected by sync.Mutex
-	userInfo      map[string]userInfo     //proteted by sync.Mutex
 	statusHistory []submitStatus          // protected by sync.Mutex
 
 	clock         util.Clock
@@ -341,7 +334,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		}
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
-		http.Handle("/users", gziphandler.GzipHandler(http.HandlerFunc(sq.serveUsers)))
+		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
 		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
@@ -644,12 +637,6 @@ func (sq *SubmitQueue) prettyMarshal(data interface{}) []byte {
 		return nil
 	}
 	return b
-}
-
-func (sq *SubmitQueue) getUserInfo() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.userInfo)
 }
 
 func (sq *SubmitQueue) getQueueHistory() []byte {
@@ -1091,11 +1078,6 @@ func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Req
 		res.WriteHeader(http.StatusOK)
 		res.Write(data)
 	}
-}
-
-func (sq *SubmitQueue) serveUsers(res http.ResponseWriter, req *http.Request) {
-	data := sq.getUserInfo()
-	sq.serve(data, res, req)
 }
 
 func (sq *SubmitQueue) serveHistory(res http.ResponseWriter, req *http.Request) {
