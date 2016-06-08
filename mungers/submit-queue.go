@@ -51,7 +51,7 @@ const (
 
 	jenkinsE2EContext  = "Jenkins GCE e2e"
 	jenkinsUnitContext = "Jenkins unit/integration"
-	jenkinsNodeContext = "Jenkins GCE Node e2e "
+	jenkinsNodeContext = "Jenkins GCE Node e2e"
 	travisContext      = "continuous-integration/travis-ci/pr"
 	sqContext          = "Submit Queue"
 
