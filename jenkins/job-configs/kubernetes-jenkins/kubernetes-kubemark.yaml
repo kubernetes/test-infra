@@ -21,10 +21,10 @@
     publishers:
         - claim-build
         - junit-publisher
-        - gcs-uploader
         - log-parser
         - email-ext:
             recipients: "gmarek@google.com"
+        - gcs-uploader
     triggers:
         - timed: '{cron-string}'
     wrappers:

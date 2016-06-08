@@ -13,7 +13,6 @@
             {report-rc}
     publishers:
         - claim-build
-        - gcs-uploader
         - log-parser
         - email-ext:
             presend-script: $DEFAULT_PRESEND_SCRIPT
@@ -21,6 +20,7 @@
             fixed: true
             send-to:
                 - culprits
+        - gcs-uploader
     scm:
         - git:
             url: https://github.com/kubernetes/kubernetes
