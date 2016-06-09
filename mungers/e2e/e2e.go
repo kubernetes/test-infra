@@ -25,7 +25,6 @@ import (
 	"strings"
 	"sync"
 
-	"k8s.io/contrib/mungegithub/admin"
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -61,12 +60,23 @@ type RealE2ETester struct {
 	resolutionTracker *ResolutionTracker
 }
 
+// HTTPHandlerInstaller is anything that can hook up HTTP requests to handlers.
+// Used for installing admin functions.
+type HTTPHandlerInstaller interface {
+	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
+}
+
 // Init does construction-- call once it after setting the public fields of 'e'.
-func (e *RealE2ETester) Init() *RealE2ETester {
+// adminMux may be nil, in which case handlers for the resolution tracker won't
+// be installed.
+func (e *RealE2ETester) Init(adminMux HTTPHandlerInstaller) *RealE2ETester {
 	e.flakeCache = cache.NewCache(e.getGCSResult)
 	e.resolutionTracker = NewResolutionTracker()
-	admin.Mux.HandleFunc("/api/mark-resolved", e.resolutionTracker.SetHTTP)
-	admin.Mux.HandleFunc("/api/is-resolved", e.resolutionTracker.GetHTTP)
+	if adminMux != nil {
+		adminMux.HandleFunc("/api/mark-resolved", e.resolutionTracker.SetHTTP)
+		adminMux.HandleFunc("/api/is-resolved", e.resolutionTracker.GetHTTP)
+		adminMux.HandleFunc("/api/list-resolutions", e.resolutionTracker.ListHTTP)
+	}
 	return e
 }
 

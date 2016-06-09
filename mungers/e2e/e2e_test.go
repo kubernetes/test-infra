@@ -299,7 +299,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			BuildStatus:          map[string]BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
 		}
-		e2e.Init()
+		e2e.Init(nil)
 
 		stable, _ := e2e.GCSBasedStable()
 		if stable != test.expectStable {
@@ -551,7 +551,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 			BuildStatus:          map[string]BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
 		}
-		e2e.Init()
+		e2e.Init(nil)
 		stable := e2e.GCSWeakStable()
 		if stable != test.expectStable {
 			t.Errorf("expected: %v, saw: %v", test.expectStable, stable)

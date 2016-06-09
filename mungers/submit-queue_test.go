@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/util"
 
+	"k8s.io/contrib/mungegithub/admin"
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
@@ -176,6 +177,8 @@ func getJUnit(testsNo int, failuresNo int) []byte {
 }
 
 func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
+	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
+	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}

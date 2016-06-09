@@ -70,6 +70,29 @@ func (r *ResolutionTracker) serve(data interface{}, status int, res http.Respons
 	}
 }
 
+// ListHTTP returns a list of overrides that have been entered.
+func (r *ResolutionTracker) ListHTTP(res http.ResponseWriter, req *http.Request) {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+	type Entry struct {
+		Job      cache.Job
+		Number   cache.Number
+		Resolved bool
+	}
+	var list []Entry
+	for key, resolved := range r.resolved {
+		if !resolved {
+			continue
+		}
+		list = append(list, Entry{
+			Job:      key.job,
+			Number:   key.number,
+			Resolved: true,
+		})
+	}
+	r.serve(struct{ ManualResolutions []Entry }{list}, http.StatusOK, res)
+}
+
 // GetHTTP accepts "job" and "number" query parameters and returns a json blob
 // indicating whether the specified build has been marked as resolved.
 func (r *ResolutionTracker) GetHTTP(res http.ResponseWriter, req *http.Request) {
@@ -95,6 +118,7 @@ func (r *ResolutionTracker) SetHTTP(res http.ResponseWriter, req *http.Request) 
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.resolved[key] = req.URL.Query().Get("resolved") != "false"
+	glog.Infof("Marking manually resolved: %v %v: %v", key.job, key.number, r.resolved[key])
 	r.serveKeyLocked(key, res)
 }
 

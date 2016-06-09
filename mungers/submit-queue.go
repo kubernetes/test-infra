@@ -310,6 +310,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	sq.githubConfig = config
 
+	// TODO: This is not how injection for tests should work.
 	if sq.FakeE2E {
 		sq.e2e = &fake_e2e.FakeE2ETester{
 			JobNames:           sq.JobNames,
@@ -328,7 +329,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
-		}).Init()
+		}).Init(admin.Mux)
 	}
 
 	if len(config.Address) > 0 {
