@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import datetime
 import os
 import re
@@ -60,6 +61,22 @@ def do_linkify_stacktrace(inp, commit):
             GITHUB_VIEW_TEMPLATE % (commit, path, line), m.group(0))
     return jinja2.Markup(re.sub(r'^/\S*/kubernetes/(\S+):(\d+)$', rep, inp,
                                 flags=re.MULTILINE))
+
+
+def do_testcmd(name):
+    if name.startswith('k8s.io/'):
+        try:
+            pkg, name = name.split(' ')
+        except ValueError:  # don't block the page render
+            logging.error('Unexpected Go unit test name %r', name)
+            return name
+        return 'go test -v %s -run %s$' % (pkg, name)
+    else:
+        name = name.replace('[k8s.io] ', '')
+        name_escaped = re.escape(name).replace('\\ ', '\\s')
+
+        test_args = ('--ginkgo.focus=%s$' % name_escaped)
+        return "go run hack/e2e.go -v -test --test_args='%s'" % test_args
 
 
 do_basename = os.path.basename

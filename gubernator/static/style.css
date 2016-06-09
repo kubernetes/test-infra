@@ -25,14 +25,28 @@ body {
 #failures {
     padding: 0 0 0 10px;
 }
-pre.error {
+h3 {
+    margin: 0.67em 0 0 0;
+}
+pre {
     white-space: pre-wrap;
-    margin: 1em 0 1em 2em;
+}
+pre.error {
+    margin: .5em 0 1em 2em;
     padding: 10px;
     background-color: #eee;
     display: inline-block;
     border-radius: 10px;
     box-shadow: 5px 5px 2px 0 #aaa;
+}
+pre.cmd {
+    padding: 1em;     /* make the click target large */
+    margin: 0 0 0 0;  /* margin isn't clickable */
+    font-size: 9pt;
+    color: #777;
+}
+pre.cmd::before {
+    content: "Command: ";  /* This text isn't selectable */
 }
 span.time {
     font-weight: lighter;
