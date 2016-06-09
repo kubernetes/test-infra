@@ -45,6 +45,15 @@ class HelperTest(unittest.TestCase):
     def test_slugify(self):
         self.assertEqual('k8s-test-foo', filters.do_slugify('[k8s] Test Foo'))
 
+    def test_testcmd_unit(self):
+        self.assertEqual(
+            filters.do_testcmd('k8s.io/kubernetes/pkg/api/errors TestErrorNew'),
+            'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$')
+
+    def test_testcmd_e2e(self):
+        self.assertEqual(filters.do_testcmd('[k8s.io] Proxy works'),
+            "go run hack/e2e.go -v -test --test_args='--ginkgo.focus=Proxy\\sworks$'" )
+
 
 if __name__ == '__main__':
     unittest.main()

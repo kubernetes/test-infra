@@ -5,6 +5,7 @@
 <link rel="icon" type="image/png" href="/static/favicon-green.png" />
 % endif
 <title>{{job}} #{{build}} Results</title>
+<script src="/static/build.js"></script>
 </head>
 <body>
 <div id="header" class="container">
@@ -26,7 +27,8 @@
 <div id="failures">
 <h2>Test Failures</h1>
 % for name, time, text in failures
-<a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}} <span class="time">{{time|duration}}</span></h3></a>
+<a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 % if text
 <pre class="error">
 {{text|linkify_stacktrace(commit)}}
