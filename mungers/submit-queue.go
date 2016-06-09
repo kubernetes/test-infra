@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/util"
 
+	"k8s.io/contrib/mungegithub/admin"
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
@@ -171,6 +172,8 @@ type SubmitQueue struct {
 
 	health        submitQueueHealth
 	healthHistory []healthRecord
+
+	adminPort int
 }
 
 func init() {
@@ -353,6 +356,10 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
+
+	if sq.adminPort != 0 {
+		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.adminPort), admin.Mux)
+	}
 	return nil
 }
 
@@ -399,6 +406,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.retestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
+	cmd.Flags().IntVar(&sq.adminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
 }
 

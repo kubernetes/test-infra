@@ -22,14 +22,15 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
+	"k8s.io/contrib/mungegithub/admin"
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
-	"strings"
 )
 
 // E2ETester can be queried for E2E job stability.
@@ -56,12 +57,16 @@ type RealE2ETester struct {
 	BuildStatus          map[string]BuildInfo // protect by mutex
 	GoogleGCSBucketUtils *utils.Utils
 
-	flakeCache *cache.Cache
+	flakeCache        *cache.Cache
+	resolutionTracker *ResolutionTracker
 }
 
 // Init does construction-- call once it after setting the public fields of 'e'.
 func (e *RealE2ETester) Init() *RealE2ETester {
 	e.flakeCache = cache.NewCache(e.getGCSResult)
+	e.resolutionTracker = NewResolutionTracker()
+	admin.Mux.HandleFunc("/api/mark-resolved", e.resolutionTracker.SetHTTP)
+	admin.Mux.HandleFunc("/api/is-resolved", e.resolutionTracker.GetHTTP)
 	return e
 }
 
@@ -150,6 +155,11 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
 			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
+			continue
+		}
+
+		if e.resolutionTracker.Resolved(cache.Job(job), cache.Number(lastBuildNumber)) {
+			e.setBuildStatus(job, "Problem Resolved", strconv.Itoa(lastBuildNumber))
 			continue
 		}
 
