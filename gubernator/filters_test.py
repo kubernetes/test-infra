@@ -51,8 +51,9 @@ class HelperTest(unittest.TestCase):
             'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$')
 
     def test_testcmd_e2e(self):
-        self.assertEqual(filters.do_testcmd('[k8s.io] Proxy works'),
-            "go run hack/e2e.go -v -test --test_args='--ginkgo.focus=Proxy\\sworks$'" )
+        self.assertEqual(filters.do_testcmd('[k8s.io] Proxy [k8s.io] works'),
+            "go run hack/e2e.go -v -test --test_args='--ginkgo.focus="
+            "Proxy\\s\\[k8s\\.io\\]\\sworks$'" )
 
 
 if __name__ == '__main__':
