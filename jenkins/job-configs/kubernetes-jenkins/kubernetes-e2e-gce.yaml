@@ -329,22 +329,6 @@
         - 'kubernetes-e2e-{suffix}'
 
 - project:
-    name: kubernetes-e2e-1.0
-    trigger-job: 'kubernetes-build-1.0'
-    test-owner: 'Build Cop'
-    branch: 'release-1.0'
-    jenkins_node: 'master'
-    runner: '{old-runner-1-0}'
-    post-env: ''
-    cron-string: 'H */12 * * *'
-    suffix:
-        - 'gce-release-1.0':  # kubernetes-e2e-gce-release-1.0
-            timeout: 150
-            description: 'Run E2E tests on GCE from the release-1.0 branch.'
-    jobs:
-        - 'kubernetes-e2e-{suffix}'
-
-- project:
     name: kubernetes-e2e-gce-features
     trigger-job: 'kubernetes-build'
     suffix:
