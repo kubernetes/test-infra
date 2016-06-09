@@ -110,7 +110,7 @@
             timeout: 300
             job-env: |
                 export PROJECT="k8s-e2e-gke-autoscaling"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\] \
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] \
                                          --ginkgo.skip=\[Flaky\]"
                 export NUM_NODES=3
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
