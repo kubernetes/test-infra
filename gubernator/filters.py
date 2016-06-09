@@ -72,7 +72,7 @@ def do_testcmd(name):
             return name
         return 'go test -v %s -run %s$' % (pkg, name)
     else:
-        name = name.replace('[k8s.io] ', '')
+        name = re.sub(r'^\[k8s\.io\] ', '', name)
         name_escaped = re.escape(name).replace('\\ ', '\\s')
 
         test_args = ('--ginkgo.focus=%s$' % name_escaped)
