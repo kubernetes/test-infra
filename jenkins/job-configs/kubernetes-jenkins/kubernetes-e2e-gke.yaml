@@ -208,6 +208,7 @@
                 export PROJECT="k8s-jkns-e2e-gke-test"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
+                export E2E_OPT="--check_version_skew=false"
         - 'gke-subnet':  # kubernetes-e2e-gke-subnet
             description: 'Run E2E tests on GKE test endpoint in a subnet.'
             timeout: 480
@@ -218,6 +219,7 @@
                 export PROJECT="k8s-jkns-e2e-gke-subnet"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
+                export E2E_OPT="--check_version_skew=false"
         - 'gke-staging':  # kubernetes-e2e-gke-staging
             description: 'Run E2E tests on GKE staging endpoint.'
             timeout: 480
@@ -226,6 +228,7 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
+                export E2E_OPT="--check_version_skew=false"
         - 'gke-staging-parallel':  # kubernetes-e2e-gke-staging-parallel
             description: 'Run E2E tests on GKE staging endpoint in parallel.'
             timeout: 80
@@ -236,6 +239,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export E2E_OPT="--check_version_skew=false"
         - 'gke-prod':  # kubernetes-e2e-gke-prod
             description: 'Run E2E tests on GKE prod endpoint.'
             timeout: 480
@@ -245,6 +249,7 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export ZONE="asia-east1-b"
+                export E2E_OPT="--check_version_skew=false"
         - 'gke-prod-parallel':  # kubernetes-e2e-gke-prod-parallel
             description: 'Run E2E tests on GKE prod endpoint in parallel.'
             timeout: 80
@@ -256,6 +261,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export ZONE="asia-east1-b"
+                export E2E_OPT="--check_version_skew=false"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
