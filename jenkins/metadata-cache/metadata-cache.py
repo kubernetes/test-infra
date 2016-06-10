@@ -24,6 +24,7 @@ See README.md for instructions for the whole system.
 Usage:
   screen python metadata-cache.py
 """
+import atexit
 import collections
 import json
 import logging
@@ -40,6 +41,7 @@ app = flask.Flask(__name__)
 LOCK = threading.Lock()
 SESSION = requests
 URL = 'http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token'
+VERSION = 'VERSION_UNSET'
 logger = None
 _cached_tokens = collections.defaultdict(dict)
 _global_cache = {}
@@ -136,7 +138,9 @@ def get_root_response():
 @app.route('/<path:uri>')
 def get_path_response(uri):
   """Return the cached token as a string."""
-  if uri.endswith('/token'):
+  if uri == 'healthz':
+    return 'ok\n'
+  elif uri.endswith('/token'):
     return cached_token(uri)
   return cache_request(uri)
 
@@ -155,7 +159,7 @@ def setup_logger():
   handler = logging.handlers.SysLogHandler(
       address='/dev/log',
       facility=logging.handlers.SysLogHandler.LOG_SYSLOG)
-  formatter = logging.Formatter('metadata-cache: %(levelname)s %(message)s')
+  formatter = logging.Formatter('%(name)s[%(process)d] %(levelname)s %(funcName)s: %(message)s')
   handler.setFormatter(formatter)
   handler.setLevel(logging.DEBUG)
   logs.addHandler(handler)
@@ -168,4 +172,10 @@ def setup_logger():
 
 if __name__ == '__main__':
   logger = setup_logger()
-  app.run(host=listen_address(), port=80)
+  try:
+    logger.info('version %s starting', VERSION)
+    atexit.register(lambda: logger.info('version %s exiting', VERSION))
+    app.run(host=listen_address(), port=80)
+  except:
+    logger.exception('Dying due to uncaught exception')
+    raise
