@@ -147,6 +147,46 @@
         - 'kubernetes-e2e-{gke-suffix}'
 
 - project:
+    name: kubernetes-e2e-gke-1-3
+    trigger-job: 'kubernetes-build-1.3'
+    test-owner: 'Release owner'
+    gke-suffix:
+        - 'gke-release-1.3':  # kubernetes-e2e-gke-release-1.3
+            description: 'Run E2E tests on GKE from the release-1.3 branch.'
+            timeout: 50  # See #21138
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export PROJECT="k8s-jkns-gke-1-3"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+        - 'gke-serial-release-1.3':  # kubernetes-e2e-gke-serial-release-1.3
+            description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.3 branch.'
+            timeout: 300
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export PROJECT="k8s-jkns-gke-serial-1-3"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+        - 'gke-slow-release-1.3':  # kubernetes-e2e-gke-slow-release-1.3
+            description: 'Run slow E2E tests on GKE using the release-1.3 branch.'
+            timeout: 60
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export PROJECT="k8s-jkns-gke-slow-1-3"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+        - 'gke-reboot-release-1.3':  # kubernetes-e2e-gke-reboot-release-1.3
+            description: 'Run [Feature:Reboot] tests on GKE on the release-1.3 branch.'
+            timeout: 180
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export PROJECT="k8s-jkns-gke-reboot-1-3"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+    jobs:
+        - 'kubernetes-e2e-{gke-suffix}'
+ 
+- project:
     name: kubernetes-e2e-gke-1-2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'Build Cop'
