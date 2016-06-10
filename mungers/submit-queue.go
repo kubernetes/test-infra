@@ -394,6 +394,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gce",
 		"kubernetes-e2e-gce-slow",
 		"kubernetes-e2e-gce-serial",
+		"kubernetes-e2e-gke-serial",
 		"kubernetes-e2e-gke",
 		"kubernetes-e2e-gke-slow",
 		"kubernetes-e2e-gce-scalability",
