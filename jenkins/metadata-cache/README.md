@@ -23,12 +23,21 @@ The utility is composed of the following pieces:
 
 ## Instructions
 
+### Prerequisites
+
+You must first run
+```sh
+gcloud config set project $PROJECT
+gcloud config set compute/zone $ZONE
+```
+with appropriate values before any of the `remote_*` commands will work.
+
 ### Quick setup
 
 This is the ultimate lazy version, which does everything for you:
 
 ```sh
-# Create a new instance
+# Create a new instance (only necessary if VM doesn't exist yet)
 jenkins/metadata-cache/metadata-cache-control.sh remote_create $INSTANCE
 # Update that instance
 jenkins/metadata-cache/metadata-cache-control.sh remote_update $INSTANCE

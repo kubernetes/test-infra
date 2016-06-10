@@ -99,7 +99,7 @@ do_local() {
         echo 'Not running'
       elif [[ -n "${pids}" ]]; then
         echo "Killing ${pids}"
-        kill ${pids} || fail "Could not kill ${pids}"
+        kill -2 ${pids} || kill ${pids} || fail "Could not kill ${pids}"
       fi
       echo "stopped"
       ;;
@@ -134,8 +134,14 @@ do_local() {
     test)
       echo "Ping metadata server:"
       ping -c 1 "${MGI}"
-      echo "Download local ip from metadata server:"
-      remote_ip || fail "Could not find internal ip address from metadata server."
+      ip=$(remote_ip)
+      for attempt in {1..5}; do
+        echo "Check healthz from metadata cache on ${ip} (attempt ${attempt}):"
+        # Explicitly use the ip so we don't failover to the real metadata server
+        curl -fsS "http://${ip}/healthz" && break
+        [[ ${attempt} -lt 5 ]] || fail "metadata cache not healthy"
+        sleep ${attempt}
+      done
       echo
       ;;
     update)
@@ -175,10 +181,15 @@ do_remote() {
       gcloud compute instances get-serial-port-output "${instance}"
       ;;
     remote_copy)
-      echo "Copy files to ${instance}"
-      gcloud compute copy-files "${DIRNAME}"/* "${instance}:/home/${USER}/"
+      local version=$(git describe --long --tags --always --dirty --abbrev=14 2>/dev/null || true)
+      if [[ -z "${version}" ]]; then
+        version='unknown'
+      fi
+      echo "Copy version ${version} to ${instance}"
+      gcloud compute copy-files "${DIRNAME}"/metadata-cache* "${instance}:/home/${USER}/"
       gcloud compute ssh "${instance}" -t <<EOF
       chmod +x metadata-cache*
+      sed -i 's/VERSION_UNSET/${version}/' metadata-cache.py
       sudo mv metadata-cache-control.sh /etc/init.d/metadata-cache
       sudo mv metadata-cache.py /usr/local/bin
 EOF
