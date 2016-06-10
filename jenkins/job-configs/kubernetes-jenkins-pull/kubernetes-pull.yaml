@@ -197,5 +197,20 @@
             export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
             ./hack/jenkins/gotest-dockerized.sh
     publishers:
-        - junit-publisher
+        - xunit:
+            thresholds:
+                - failed:
+                    unstable: 0
+                    unstablenew: 0
+                    failure:
+                    failurenew:
+                - skipped:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+            types:
+                - junit:
+                    pattern: '_artifacts/**.xml'
+                    deleteoutput: false
         - gcs-uploader
