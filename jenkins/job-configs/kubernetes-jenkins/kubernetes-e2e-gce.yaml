@@ -369,6 +369,17 @@
                 export PROJECT="kubernetes-es-logging"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Elasticsearch\]"
                 export KUBE_LOGGING_DESTINATION="elasticsearch"
+        - 'gce-petset':
+            description: 'Run [Feature:PetSet] tests on GCE.'
+            timeout: 90
+            emails: 'beeps@google.com'
+            test-owner: 'beeps'
+            provider-env: '{gce-provider-env}'
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:PetSet\]"
+                export PROJECT="kubernetes-petset"
+                # TODO: Enable once we've fixed #23032
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
