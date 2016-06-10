@@ -1,5 +1,6 @@
 - job:
     name: kubernetes-pull-test-unit-integration
+    concurrent: true
     properties:
         - build-discarder:
             days-to-keep: 7
