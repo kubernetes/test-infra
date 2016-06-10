@@ -25,6 +25,38 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 )
 
+const (
+	// BotName is the name of merge-bot
+	BotName = "k8s-merge-robot"
+	// JenkinsBotName is the name of kubekins bot
+	JenkinsBotName = "k8s-bot"
+	priorityPrefix = "priority/P"
+	// PriorityP0 represents Priority P0
+	PriorityP0 = Priority(0)
+	// PriorityP1 represents Priority P1
+	PriorityP1 = Priority(1)
+	// PriorityP2 represents Priority P2
+	PriorityP2 = Priority(2)
+	// PriorityP3 represents Priority P3
+	PriorityP3 = Priority(3)
+)
+
+// RobotUser is a set of name of robot user
+var RobotUser = sets.NewString(JenkinsBotName, BotName)
+
+// Priority represents the priority label in an issue
+type Priority int
+
+// String return the priority label in string
+func (p Priority) String() string {
+	return fmt.Sprintf(priorityPrefix+"%d", p)
+}
+
+// Priority returns the priority in int
+func (p Priority) Priority() int {
+	return int(p)
+}
+
 // OwnerMapper finds an owner for a given test name.
 type OwnerMapper interface {
 	// TestOwner returns a GitHub username for a test, or "" if none are found.
@@ -59,6 +91,9 @@ type IssueSource interface {
 
 	// If an issue is filed, these labels will be applied.
 	Labels() []string
+
+	// Priority calculates and returns the priority of an flake issue
+	Priority(obj *github.MungeObject) (Priority, error)
 }
 
 // IssueSyncer implements robust issue syncing logic and won't file duplicates etc.
@@ -105,11 +140,12 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 		return nil
 	}
 
+	var obj *github.MungeObject
 	// Update an issue if possible.
 	if len(updatableIssues) > 0 {
-		obj := updatableIssues[0]
+		obj = updatableIssues[0]
 		// Update the chosen issue
-		if err := s.updateIssue(obj, source); err != nil {
+		if err = s.updateIssue(obj, source); err != nil {
 			return fmt.Errorf("error updating issue %v for %v: %v", *obj.Issue.Number, source.ID(), err)
 		}
 		s.synced.Insert(source.ID())
@@ -117,11 +153,12 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 	}
 
 	// No issue could be updated, create a new issue.
-	n, err := s.createIssue(source)
+	obj, err = s.createIssue(source)
 	if err != nil {
 		return fmt.Errorf("error making issue for %v: %v", source.ID, err)
 	}
-	s.finder.Created(source.Title(), n)
+	issueNum := *obj.Issue.Number
+	s.finder.Created(source.Title(), issueNum)
 	s.synced.Insert(source.ID())
 	return nil
 }
@@ -196,12 +233,20 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 		panic(fmt.Errorf("Programmer error: %v does not contain %v!", body, id))
 	}
 	glog.Infof("Updating issue %v with item %v", *obj.Issue.Number, source.ID())
-	return obj.WriteComment(body)
+	if err := obj.WriteComment(body); err != nil {
+		return err
+	}
+	p, err := source.Priority(obj)
+	if err != nil {
+		return err
+	}
+	return s.syncPriority(obj, p)
+
 }
 
 // createIssue makes a new issue for the given item. If we know about other
 // issues for the item, then they'll be referenced.
-func (s *IssueSyncer) createIssue(source IssueSource) (issueNumber int, err error) {
+func (s *IssueSyncer) createIssue(source IssueSource) (*github.MungeObject, error) {
 	body := source.Body(true)
 	id := source.ID()
 	if !strings.Contains(body, source.ID()) {
@@ -221,8 +266,27 @@ func (s *IssueSyncer) createIssue(source IssueSource) (issueNumber int, err erro
 		owner,
 	)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	glog.Infof("Created issue %v:\n%v", *obj.Issue.Number, body)
-	return *obj.Issue.Number, nil
+	return obj, nil
+}
+
+// syncPriority will sync the input priority to the issue if the input priority is higher than the existing ones
+func (s *IssueSyncer) syncPriority(obj *github.MungeObject, priority Priority) error {
+	if obj.Priority() <= priority.Priority() {
+		return nil
+	}
+	plabels := github.GetLabelsWithPrefix(obj.Issue.Labels, priorityPrefix)
+	err := obj.AddLabel(priority.String())
+	if err != nil {
+		return nil
+	}
+	for _, l := range plabels {
+		err = obj.RemoveLabel(l)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
