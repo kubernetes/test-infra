@@ -1,15 +1,25 @@
-- job-template:
-    name: 'kubernetes-soak-weekly-deploy-{suffix}'
-    description: '{deploy-description} Test owner: {test-owner}'
+- soak_defaults: &soak_defaults
+    name: soak_defaults
+    branch: 'master'
     node: 'master'
     builders:
         - shell: |
             {provider-env}
-            {soak-deploy}
+            {soak-env}
             {job-env}
             {post-env}
-            timeout -k {kill-timeout}m 90m {legacy-runner} && rc=$? || rc=$?
+            timeout -k {kill-timeout}m {run-timeout}m {legacy-runner} && rc=$? || rc=$?
             {report-rc}
+
+- job-template:
+    name: 'kubernetes-soak-weekly-deploy-{suffix}'
+    <<: *soak_defaults
+    description: '{deploy-description} Test owner: {test-owner}'
+    run-timeout: 90
+    soak-env: |
+        export FAIL_ON_GCP_RESOURCE_LEAK="false"
+        export E2E_TEST="false"
+        export E2E_DOWN="false"
     properties:
         - build-blocker:
             use-build-blocker: true
@@ -35,17 +45,23 @@
 
 - job-template:
     name: 'kubernetes-soak-continuous-e2e-{suffix}'
+    <<: *soak_defaults
     description: '{e2e-description} Test Owner: {test-owner}'
     workspace: '/var/lib/jenkins/jobs/kubernetes-soak-weekly-deploy-{suffix}/workspace'
-    node: 'master'
-    builders:
-        - shell: |
-            {provider-env}
-            {soak-continuous}
-            {job-env}
-            {post-env}
-            timeout -k {kill-timeout}m 360m {legacy-runner} && rc=$? || rc=$?
-            {report-rc}
+    run-timeout: 360
+    soak-env: |
+        export JENKINS_USE_EXISTING_BINARIES="y"
+        export FAIL_ON_GCP_RESOURCE_LEAK="false"
+        export E2E_UP="false"
+        export E2E_DOWN="false"
+        # Clear out any orphaned namespaces in case previous run was interrupted.
+        export E2E_CLEAN_START="true"
+        # TODO: Remove when we figure out #22166 and other docker potential slowness.
+        export DOCKER_TEST_LOG_LEVEL="--log-level=warn"
+        # We should be testing the reliability of a long-running cluster. The
+        # [Disruptive] tests kill/restart components or nodes in the cluster,
+        # defeating the purpose of a soak cluster. (#15722)
+        export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
     properties:
         - build-blocker:
             use-build-blocker: true
@@ -73,23 +89,6 @@
 - project:
     name: soak
     test-owner: 'Build Cop'
-    soak-deploy: |
-        export FAIL_ON_GCP_RESOURCE_LEAK="false"
-        export E2E_TEST="false"
-        export E2E_DOWN="false"
-    soak-continuous: |
-        export JENKINS_USE_EXISTING_BINARIES="y"
-        export FAIL_ON_GCP_RESOURCE_LEAK="false"
-        export E2E_UP="false"
-        export E2E_DOWN="false"
-        # Clear out any orphaned namespaces in case previous run was interrupted.
-        export E2E_CLEAN_START="true"
-        # TODO: Remove when we figure out #22166 and other docker potential slowness.
-        export DOCKER_TEST_LOG_LEVEL="--log-level=warn"
-        # We should be testing the reliability of a long-running cluster. The
-        # [Disruptive] tests kill/restart components or nodes in the cluster,
-        # defeating the purpose of a soak cluster. (#15722)
-        export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
     suffix:
         - 'gce':
             deploy-description: |
@@ -104,17 +103,27 @@
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
             branch: 'master'
-            provider-env: '{gce-provider-env}'
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak"
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="1"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
         - 'gce-2':
             deploy-description: Clone of kubernetes-soak-weekly-deploy-gce.
             e2e-description: Clone of kubernetes-soak-continuous-e2e-gce.
             branch: 'master'
-            provider-env: '{gce-provider-env}'
             job-env: |
                 export HAIRPIN_MODE="hairpin-veth"
                 export PROJECT="k8s-jkns-gce-soak-2"
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="1"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
         - 'gce-1.2':
             deploy-description: |
                 Deploy Kubernetes to soak cluster using the latest successful
@@ -127,10 +136,15 @@
                 If a kubernetes-soak-weekly-deploy-gce-1.2 build is enqueued,
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
-            provider-env: '{gce-provider-env}'
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak-1-2"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="1"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
         - 'gke':
             deploy-description: |
                 Deploy Kubernetes to a GKE soak cluster using the staging GKE
@@ -151,7 +165,12 @@
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
             branch: 'master'
-            provider-env: '{gke-provider-env}'
+            provider-env: |
+                export KUBERNETES_PROVIDER="gke"
+                export ZONE="us-central1-f"
+                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
             job-env: |
                 export PROJECT="k8s-jkns-gke-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests

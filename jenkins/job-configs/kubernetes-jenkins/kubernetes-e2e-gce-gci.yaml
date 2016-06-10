@@ -18,6 +18,12 @@
     properties:
         - build-discarder:
             days-to-keep: 7
+    provider-env: |
+        export KUBERNETES_PROVIDER="gce"
+        export E2E_MIN_STARTUP_PODS="1"
+        export KUBE_GCE_ZONE="us-central1-f"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
+        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
         - shell: |
             {provider-env}
@@ -76,9 +82,6 @@
     trigger-job: 'kubernetes-build'
     test-owner: 'wonderfly@google.com'
     emails: 'wonderfly@google.com,qzheng@google.com'
-    provider-env: |
-        {gce-provider-env}
-        export JENKINS_GCI_IMAGE_TYPE="dev"
     suffix:
         # TODO(wonderfly): For GCI, we currently only run CI, slow and serial
         # tests. More test coverage under way.
@@ -86,6 +89,7 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the master branch.'
             timeout: 30
             job-env: |
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-master"
@@ -93,6 +97,7 @@
             description: 'Runs slow tests on GCE with GCI images, sequentially on the master branch.'
             timeout: 60
             job-env: |
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -101,6 +106,7 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images.'
             timeout: 300
             job-env: |
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
@@ -112,10 +118,6 @@
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'wonderfly@google.com'
     emails: 'wonderfly@google.com,qzheng@google.com'
-    provider-env: |
-        {gce-provider-env}
-        export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-        export JENKINS_GCI_IMAGE_TYPE="dev"
     suffix:
         # TODO(wonderfly): For GCI, we currently only run CI, slow and serial
         # tests. More test coverage under way.
@@ -123,6 +125,8 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.2 branch.'
             timeout: 30
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-1-2"
@@ -130,6 +134,8 @@
             description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.2 branch.'
             timeout: 60
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -138,6 +144,8 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.2 branch.'
             timeout: 300
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-2"
@@ -168,15 +176,13 @@
     name: kubernetes-e2e-gce-gci-dev
     test-owner: 'wonderfly@google.com'
     emails: 'wonderfly@google.com,qzheng@google.com'
-    provider-env: |
-        {gce-provider-env}
-        export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
-        export JENKINS_GCI_IMAGE_TYPE="dev"
     suffix:
         - 'dev-release':  # kubernetes-e2e-gce-gci-dev-release
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest GCI build and the latest k8s 1.2 release.'
             timeout: 30
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-e2e-gce-gci-dev"
@@ -184,6 +190,8 @@
             description: 'Run slow E2E tests on GCE with the latest GCI build with the latest k8s 1.2 release.'
             timeout: 60
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -192,6 +200,8 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI dev images and the latest k8s 1.2 release.'
             timeout: 300
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="dev"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-dev-serial"
@@ -202,15 +212,13 @@
     name: kubernetes-e2e-gce-gci-beta
     test-owner: 'wonderfly@google.com'
     emails: 'wonderfly@google.com,qzheng@google.com'
-    provider-env: |
-        {gce-provider-env}
-        export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
-        export JENKINS_GCI_IMAGE_TYPE="beta"
     suffix:
         - 'beta-release':  # kubernetes-e2e-gce-gci-beta-release
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with the latest GCI beta build and the latest k8s 1.2 release.'
             timeout: 30
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="beta"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-e2e-gce-gci-beta"
@@ -218,6 +226,8 @@
             description: 'Run slow E2E tests on GCE with the latest GCI beta build with the latest k8s 1.2 release.'
             timeout: 60
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="beta"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -226,6 +236,8 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI beta images and the latest k8s 1.2 release.'
             timeout: 300
             job-env: |
+                export JENKINS_PUBLISHED_VERSION="release/stable-1.2"
+                export JENKINS_GCI_IMAGE_TYPE="beta"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-beta-serial"
@@ -261,7 +273,9 @@
     emails: 'wonderfly@google.com,qzheng@google.com'
     jenkins_node: 'master'
     runner: '{old-runner-1-1}'
-    post-env: ''
+    job-env: ''  # Empty expected
+    post-env: ''  # Empty expected
+    provider-env: ''  # Empty expected
     suffix:
         - 'release':  # kubernetes-e2e-gce-gci-stable-release
             # Broken as it pins to the latest k8s release, which is broken by https://github.com/kubernetes/kubernetes/issues/25153
