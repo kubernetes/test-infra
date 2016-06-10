@@ -49,7 +49,7 @@ type BuildInfo struct {
 // RealE2ETester is the object which will get status from a google bucket
 // information about recent jobs
 type RealE2ETester struct {
-	JobNames           []string
+	BlockingJobNames   []string
 	WeakStableJobNames []string
 
 	sync.Mutex
@@ -159,7 +159,7 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 	allStable = true
 
-	for _, job := range e.JobNames {
+	for _, job := range e.BlockingJobNames {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {

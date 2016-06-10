@@ -292,7 +292,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			},
 		})
 		e2e := &RealE2ETester{
-			JobNames: []string{
+			BlockingJobNames: []string{
 				"foo",
 				"bar",
 			},
