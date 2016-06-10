@@ -53,4 +53,4 @@ if ! docker inspect job-builder &> /dev/null; then
   fi
 fi
 
-docker exec job-builder jenkins-jobs update "${config_dir}"
+docker exec job-builder jenkins-jobs update --delete-old "${config_dir}"
