@@ -434,7 +434,8 @@ func (sq *SubmitQueue) updateHealth() {
 		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
-		newEntry.Jobs[job] = status.Status == "Stable"
+		// Ignore flakes.
+		newEntry.Jobs[job] = status.Status != "Not Stable"
 	}
 	sq.healthHistory = append(sq.healthHistory, newEntry)
 	// Now compute the health structure so we don't have to do it on page load
