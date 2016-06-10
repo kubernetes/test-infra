@@ -47,18 +47,19 @@ func marshalOrDie(obj interface{}, t *testing.T) []byte {
 }
 
 func genMockGCSListResponse(files ...string) []byte {
-	resptemplate := "{\"items\":[%s]}"
-	itemTempalte := "{\"name\":\"%s\"}"
+	respTemplate := "{\"items\":[%s]}"
+	itemTemplate := "{\"name\":\"%s\"}"
 	items := []string{}
 	for _, file := range files {
-		items = append(items, fmt.Sprintf(itemTempalte, file))
+		items = append(items, fmt.Sprintf(itemTemplate, file))
 	}
-	return []byte(fmt.Sprintf(resptemplate, strings.Join(items, ",")))
+	return []byte(fmt.Sprintf(respTemplate, strings.Join(items, ",")))
 }
 
 func TestCheckGCSBuilds(t *testing.T) {
 	latestBuildNumberFoo := 42
 	latestBuildNumberBar := 44
+	latestBuildNumberBaz := 99
 	tests := []struct {
 		paths             map[string][]byte
 		expectStable      bool
@@ -77,12 +78,18 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
+				"/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
+				fmt.Sprintf("/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
 				"/": genMockGCSListResponse(),
 			},
 			expectStable: true,
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "99"},
 			},
 		},
 		{
@@ -97,12 +104,18 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
+				"/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
+				fmt.Sprintf("/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
 				"/": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Not Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Stable", ID: "99"},
 			},
 		},
 		{
@@ -140,6 +153,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Ignorable flake", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 		{
@@ -177,6 +191,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Ignorable flake", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 		{
@@ -214,6 +229,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Not Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 
@@ -235,6 +251,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Stable", ID: "42"},
 				"bar": {Status: "Not Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 		{
@@ -255,6 +272,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Not Stable", ID: "42"},
 				"bar": {Status: "Not Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 		{
@@ -275,6 +293,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 			expectedStatus: map[string]BuildInfo{
 				"foo": {Status: "Not Stable", ID: "42"},
 				"bar": {Status: "Stable", ID: "44"},
+				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
 			},
 		},
 	}
@@ -295,6 +314,9 @@ func TestCheckGCSBuilds(t *testing.T) {
 			BlockingJobNames: []string{
 				"foo",
 				"bar",
+			},
+			NonBlockingJobNames: []string{
+				"baz",
 			},
 			BuildStatus:          map[string]BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),

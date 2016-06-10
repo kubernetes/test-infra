@@ -135,9 +135,10 @@ type submitQueueInterruptedObject struct {
 //  PR must have passed all github CI checks
 //  The google internal jenkins instance must be passing the BlockingJobNames e2e tests
 type SubmitQueue struct {
-	githubConfig       *github.Config
-	BlockingJobNames   []string
-	WeakStableJobNames []string
+	githubConfig        *github.Config
+	BlockingJobNames    []string
+	NonBlockingJobNames []string
+	WeakStableJobNames  []string
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
@@ -303,6 +304,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	// Clean up all of our flags which we wish --flag="" to mean []string{}
 	sq.BlockingJobNames = cleanStringSlice(sq.BlockingJobNames)
+	sq.NonBlockingJobNames = cleanStringSlice(sq.NonBlockingJobNames)
 	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
 	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
@@ -326,6 +328,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 		sq.e2e = (&e2e.RealE2ETester{
 			BlockingJobNames:     sq.BlockingJobNames,
+			NonBlockingJobNames:  sq.NonBlockingJobNames,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
@@ -387,6 +390,12 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
+	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{
+		"kubernetes-e2e-gke-prod",
+		"kubernetes-e2e-gke-subnet",
+		"kubernetes-e2e-gke-test",
+		"kubernetes-e2e-gce-examples",
+	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{
 		"kubelet-gce-e2e-ci",
 		"kubernetes-build",
@@ -398,7 +407,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gke-slow",
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
-	}, "Comma separated list of jobs in Jenkins to use for stability testing")
+	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
