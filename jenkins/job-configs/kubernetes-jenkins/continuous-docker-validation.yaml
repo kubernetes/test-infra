@@ -1,0 +1,91 @@
+# Template for continuous Docker validation tests. See
+# https://github.com/kubernetes/kubernetes/issues/25215 for details of what the
+# job does.
+
+# A custom publisher that prints out critical software versions (OS, K8s, and
+# Docker) in the build history page.
+- publisher:
+    name: version-printer
+    publishers:
+        - groovy-postbuild:
+            script: |
+                def masterImageMatcher = manager.getLogMatcher("KUBE_GCE_MASTER_IMAGE=(.*)")
+                if(masterImageMatcher?.matches()) manager.addShortText("<b>Master Image: " + masterImageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
+                if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def dockerVersionMatcher = manager.getLogMatcher("KUBE_GCI_DOCKER_VERSION=(.*)")
+                if(dockerVersionMatcher?.matches()) manager.addShortText("<b>Docker Version: " + dockerVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+
+
+# Template for the continuous Docker validation jobs.
+- job-template:
+    name: 'continuous-docker-validation-{os-distro}'
+    node: '{jenkins_node}'
+    triggers:
+        - timed: '@daily'
+    description: '{description} Test owner: {test-owner}.'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+    provider-env: |
+        export KUBERNETES_PROVIDER="gce"
+        export E2E_MIN_STARTUP_PODS="8"
+        export KUBE_GCE_ZONE="us-central1-f"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
+        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+        - claim-build
+        - junit-publisher
+        - log-parser
+        - email-ext:
+            recipients: '{emails}'
+        - gcs-uploader
+        - description-setter:
+            regexp: KUBE_GCE_MASTER_IMAGE=(.*)
+        - version-printer
+    builders:
+        - shell: |
+            {provider-env}
+            {job-env}
+            {post-env}
+            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./kubernetes/cluster/log-dump.sh _artifacts
+                fi
+            fi
+            {report-rc}
+
+    # Template defaults. Can be overriden in job definitions.
+    jenkins_node: 'e2e'
+    test-owner: 'dchen1107'
+    emails: 'dawnchen@google.com'
+
+- project:
+    name: continuous-docker-validation
+    os-distro:
+        - 'gci': # continuous-docker-validation-gci
+            description: 'Runs the default e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
+            timeout: 50
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-docker-validation-gci"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-preview-test"
+    jobs:
+        - 'continuous-docker-validation-{os-distro}'
