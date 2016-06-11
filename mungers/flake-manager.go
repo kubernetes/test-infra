@@ -124,18 +124,23 @@ func (p *FlakeManager) isIndividualFlake(f cache.Flake) bool {
 		return false
 	}
 
+	if len(f.Result.Flakes) > 0 {
+		// If this flake really represents an entire suite failure,
+		// this key will be present.
+		if _, ok := f.Result.Flakes[cache.RunBrokenTestName]; ok {
+			return false
+		}
+	}
+
 	return true
 }
 
 func (p *FlakeManager) listPreviousIssues(title string) []string {
-	if previousIssues := p.finder.AllIssuesForKey(title); len(previousIssues) > 0 {
-		s := []string{}
-		for _, i := range previousIssues {
-			s = append(s, fmt.Sprintf("#%v", i))
-		}
-		return s
+	s := []string{}
+	for _, i := range p.finder.AllIssuesForKey(title) {
+		s = append(s, fmt.Sprintf("#%v", i))
 	}
-	return nil
+	return s
 }
 
 // makeGubernatorLink returns a URL to view the build results in a GCS path.

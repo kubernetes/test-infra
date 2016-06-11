@@ -144,6 +144,11 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 	}
 	if len(thisFailures) == 0 {
 		r.Status = cache.ResultFailed
+		// We add a "flake" just to make sure this appears in the flake
+		// cache as something that needs to be synced.
+		r.Flakes = map[cache.Test]string{
+			cache.RunBrokenTestName: "Unable to get data-- please look at the logs",
+		}
 		return r, nil
 	}
 
