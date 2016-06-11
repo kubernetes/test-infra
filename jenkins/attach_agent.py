@@ -24,10 +24,9 @@ EXCLUSIVE = True
 SHARED = False
 
 INFO = {
-    'bespoke': ('bespoke', 1, EXCLUSIVE),
-    'heavy': ('build unittest', 2, EXCLUSIVE),
-    'light': ('node e2e', 20, EXCLUSIVE),
-    'pr': ('pull', 6, SHARED),
+    'heavy': ('build unittest', 1, EXCLUSIVE),
+    'light': ('node e2e', 10, EXCLUSIVE),
+    'pr': ('pull', 1, SHARED),
 }
 
 

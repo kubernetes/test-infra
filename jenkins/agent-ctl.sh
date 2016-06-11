@@ -16,22 +16,27 @@
 # Run command with no args for usage instructions.
 
 usage() {
-  echo "Usage: $(basename "${0}") [--pr] [--real] <INSTANCE> [ACTION ...]"
+  echo "Usage: $(basename "${0}") [--FLAGS] <INSTANCE> [ACTION ...]"
+  echo 'Flags:'
+  echo '  --base-image: create instance with base image instead of family'
   echo '  --pr: talk to the pull-request instead of e2e server'
   echo '  --real: use real sized instances'
   echo 'INSTANCE: the name of the instance to target'
   echo '  pr-: create a pr-builder-sized instance'
   echo '  light-: create an instance for light postcommit jobs (e2e)'
   echo '  heavy-: create an instance for heavy postcommit jobs (build)'
-  echo '  bespoke-: create a random instance for testing'
   echo 'Actions (auto by default):'
   echo '  attach: connect the instance to the jenkins master'
-  echo '  auto: detatch delete create update reboot attach'
+  echo '  auto: detatch delete create attach'
+  echo '  auto-image: delete create update copy-keys reboot update-image delete'
+  echo '  copy-keys: copy ssh keys from master to agent'
   echo '  create: insert a new vm'
+  echo '  create-image: create a new agent image'
   echo '  delete: delete a vm'
   echo '  detatch: disconnect the instance from the jenkins master'
   echo '  reboot: reboot or hard reset the VM'
   echo '  update: configure prerequisite packages to run tests'
+  echo '  update-image: update the image-family used to create new disks'
   exit 1
 }
 
@@ -47,7 +52,9 @@ REAL=
 PR=
 
 # Defaults
-IMAGE='debian-7-backports'  # TODO(fejta): debian8
+BASE_IMAGE='debian-7-backports'  # TODO(fejta): debian8
+IMAGE='jenkins-agent'
+IMAGE_FLAG="--image-family=${IMAGE}"
 SCOPES='cloud-platform,compute-rw,storage-full'  # TODO(fejta): verify
 
 if [[ -z "${1:-}" ]]; then
@@ -62,6 +69,10 @@ while true; do
       ;;
     --pr)
       PR=yes
+      shift
+      ;;
+    --base-image)
+      IMAGE_FLAG="--image=${BASE_IMAGE}"
       shift
       ;;
     *)
@@ -92,28 +103,43 @@ fi
 case "${KIND}" in
   light)
     # Current experiment:
-    # 20 executors, n1-highmem-16, 500G pd-standard
+    # 14 agents
+    # 10 executors, n1-highmem-8, 250G pd-standard
     # Results:
-    # 5.31 cores, 70G ram, <500 write IOPs, <50MB/s write
-    # Alernate experiment:
-    # 2 executors, n1-highmem-2, 100G pd-standard
+    # (1.0 cores, 20G active ram)
+    # 1.46 cores, 50G ram, <250 write IOPs, <25MB/s write
     # Results:
     # 0.2 cores, 1.3G ram, low IOPs (200 IOP spikes), low write (30MB/s spikes)
-    DISK_SIZE='500GB'
+    DISK_SIZE='250GB'
     DISK_TYPE='pd-standard'
-    MACHINE_TYPE='n1-highmem-16'
+    MACHINE_TYPE='n1-highmem-8'
     ;;
   heavy)
-    # TODO(fejta): optimize these values
-    DISK_SIZE='200GB'
+    # Current experiment:
+    # 8 agents
+    # 1 executor, n1-highmem-8, 150G pd-standard
+    # Results:
+    # 14-32 cores, 12G ram, 150 write IOPs, <20MB/s write
+    DISK_SIZE='150GB'
     DISK_TYPE='pd-standard'
-    MACHINE_TYPE='n1-standard-16'
+    MACHINE_TYPE='n1-standard-8'
     ;;
   pr)
-    # TODO(fejta): optimize these values
-    DISK_SIZE='500GB'
-    DISK_TYPE='pd-ssd'
-    MACHINE_TYPE='n1-highmem-32'
+    # Current experiment:
+    # 5 agents
+    # 6 executors, n1-highmem-32, 500G ssd
+    # Results:
+    # 80/60/40 cores, 80/60G ram, <250 IOPs, <50MB/s
+    # New experiment:
+    # 3 executors, n1-standard-16, 500G pd
+    # Results:
+    # 40/25/20 cores, 52/40G ram, <250 IOPs, <32MB/s
+    # Newer experiment:
+    # 1 executor, n1-standard-8, 200G pd
+    # Results:
+    DISK_SIZE='200GB'
+    DISK_TYPE='pd-standard'
+    MACHINE_TYPE='n1-standard-8'
     ;;
   *)
     ;;
@@ -144,6 +170,7 @@ auto-agent() {
   delete-agent
   create-agent
   update-agent
+  copy-keys-agent
   reboot-agent
   attach-agent
 }
@@ -192,6 +219,8 @@ detatch-agent() {
 attach-agent() {
   echo "Testing gcloud works on ${INSTANCE}..."
   gcloud compute ssh "${INSTANCE}" -- gcloud compute instances list "--filter=name=${INSTANCE}"
+  echo "Checking presence of ssh keys on ${INSTANCE}..."
+  gcloud compute ssh "${INSTANCE}" -- "[[ -f /var/lib/jenkins/gce_keys/google_compute_engine ]]"
   echo "Attaching ${INSTANCE}..."
   check-kind
   master-change create
@@ -200,10 +229,39 @@ attach-agent() {
 
 delete-agent() {
   echo "Delete ${INSTANCE}..."
-  if [[ -z "$(gcloud compute instances list "--filter=name=${INSTANCE}")" ]]; then
+  if [[ -z "$(gcloud compute instances list --filter="name=${INSTANCE}")" ]]; then
     return 0
   fi
   gcloud -q compute instances delete "${INSTANCE}"
+}
+
+auto-image-agent() {
+  delete-agent
+  create-agent
+  update-agent
+  copy-keys-agent
+  reboot-agent
+  update-image-agent
+  delete-agent
+}
+
+update-image-agent() {
+  family="${IMAGE}"
+  image="${family}-$(date +%Y%m%d-%H%M)"
+  echo "Create ${image} for ${family} from ${INSTANCE}..."
+  echo "  Create snapshot of ${INSTANCE}"
+  gcloud compute disks snapshot --snapshot-names="${image}" "${INSTANCE}"
+  echo "  Create disk from ${image} snapshot"
+  gcloud compute disks create --source-snapshot="${image}" "${image}"
+  echo "  Create image from ${image} image"
+  gcloud compute images create "${image}" \
+    --family="${family}" \
+    --source-disk="${image}" \
+    --description="Created by ${USER} for ${family} on $(date)"
+  echo "  Delete ${image} disk"
+  gcloud -q compute disks delete "${image}"
+  echo "  Delete ${image} snapshot"
+  gcloud -q compute snapshots delete "${image}"
 }
 
 create-agent() {
@@ -211,12 +269,34 @@ create-agent() {
   check-kind
   gcloud compute instances create \
     "${INSTANCE}" \
-    "--boot-disk-size=${DISK_SIZE}" \
-    "--boot-disk-type=${DISK_TYPE}" \
-    "--image=${IMAGE}" \
-    "--machine-type=${MACHINE_TYPE}" \
-    "--scopes=${SCOPES}" \
-    "--tags=do-not-delete,jenkins"
+    --description="created on $(date) by ${USER}" \
+    --boot-disk-size="${DISK_SIZE}" \
+    --boot-disk-type="${DISK_TYPE}" \
+    "${IMAGE_FLAG}" \
+    --machine-type="${MACHINE_TYPE}" \
+    --scopes="${SCOPES}" \
+    --tags='do-not-delete,jenkins'
+  while ! gcloud compute ssh "${INSTANCE}" uname -a < /dev/null; do
+    sleep 1
+  done
+}
+
+copy-keys-agent() {
+echo "Copying ssh keys to ${INSTANCE}..."
+gcloud compute ssh "${MASTER}" << COPY_DONE
+set -o errexit
+sudo cp /var/lib/jenkins/gce_keys/google_compute_engine* .
+sudo chown "${USER}:${USER}" google_compute_engine*
+COPY_DONE
+gcloud compute copy-files "${MASTER}:google_compute_engine*" .
+gcloud compute copy-files google_compute_engine* "${INSTANCE}:."
+gcloud compute ssh "${INSTANCE}" << PLACE_DONE
+set -o errexit
+sudo cp google_compute_engine* /var/lib/jenkins/gce_keys/
+sudo cp /var/lib/jenkins/gce_keys/google_compute_engine* /home/jenkins/.ssh/
+sudo chown jenkins:jenkins {/var/lib/jenkins/gce_keys,/home/jenkins/.ssh}/google_compute_engine{,.pub}
+sudo su -c 'gcloud compute config-ssh' jenkins
+PLACE_DONE
 }
 
 update-agent() {
@@ -279,31 +359,22 @@ sudo sh -c 'echo ${TIMEZONE} > /etc/timezone'
 sudo dpkg-reconfigure -f noninteractive tzdata
 
 # Prepare jenkins workspace
-sudo mkdir -p /var/lib/jenkins
-sudo chown jenkins:jenkins /var/lib/jenkins
-sudo su jenkins -c '
-set -o verbose
-set -o errexit
-
-gcloud compute config-ssh
-mkdir -p /var/lib/jenkins/gce_keys
-chown jenkins:jenkins /var/lib/jenkins/gce_keys
-cp ~/.ssh/google_compute_engine* /var/lib/jenkins/gce_keys/
-exit 0'
+sudo mkdir -p /var/lib/jenkins/gce_keys /home/jenkins/.ssh
+sudo chown -R jenkins:jenkins /var/lib/jenkins /home/jenkins/.ssh
 
 # Update/upgrade
 sudo apt-get -y update
 sudo apt-get -y upgrade
 INSTANTIATE_DONE
-
-echo "Installing metadata cache..."
-"$(dirname "${0}")/metadata-cache/metadata-cache-control.sh" remote_update "${INSTANCE}"
 }
 
 reboot-agent() {
   echo "Rebooting ${INSTANCE}..."
   gcloud compute ssh "${INSTANCE}" sudo reboot || gcloud compute instances reset "${INSTANCE}"
-  sleep 120  # TODO(fejta): lame but works for now
+  sleep 30  # TODO(fejta): still but sightly less lame
+  while ! gcloud compute ssh "${INSTANCE}" uname -a < /dev/null; do
+    sleep 1
+  done
 }
 
 if [[ -z "${1:-}" ]]; then
