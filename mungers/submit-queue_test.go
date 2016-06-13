@@ -182,7 +182,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq := new(SubmitQueue)
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
-	sq.JobNames = []string{"foo"}
+	sq.BlockingJobNames = []string{"foo"}
 	sq.WeakStableJobNames = []string{"bar"}
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
@@ -199,7 +199,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.doNotMergeMilestones = []string{doNotMergeMilestone}
 
 	sq.e2e = &fake_e2e.FakeE2ETester{
-		JobNames:           sq.JobNames,
+		JobNames:           sq.BlockingJobNames,
 		WeakStableJobNames: sq.WeakStableJobNames,
 	}
 

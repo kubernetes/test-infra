@@ -49,8 +49,9 @@ type BuildInfo struct {
 // RealE2ETester is the object which will get status from a google bucket
 // information about recent jobs
 type RealE2ETester struct {
-	JobNames           []string
-	WeakStableJobNames []string
+	BlockingJobNames    []string
+	NonBlockingJobNames []string
+	WeakStableJobNames  []string
 
 	sync.Mutex
 	BuildStatus          map[string]BuildInfo // protect by mutex
@@ -143,6 +144,11 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 	}
 	if len(thisFailures) == 0 {
 		r.Status = cache.ResultFailed
+		// We add a "flake" just to make sure this appears in the flake
+		// cache as something that needs to be synced.
+		r.Flakes = map[cache.Test]string{
+			cache.RunBrokenTestName: "Unable to get data-- please look at the logs",
+		}
 		return r, nil
 	}
 
@@ -159,7 +165,7 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 	allStable = true
 
-	for _, job := range e.JobNames {
+	for _, job := range e.BlockingJobNames {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
@@ -215,6 +221,23 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 		glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, lastBuildNumber, intersection)
 		allStable = false
 		e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
+	}
+
+	// Also get status for non-blocking jobs
+	for _, job := range e.NonBlockingJobNames {
+		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
+		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
+		if err != nil {
+			glog.Errorf("Error while getting data for %v: %v", job, err)
+			e.setBuildStatus(job, "[nonblocking] Not Stable", strconv.Itoa(lastBuildNumber))
+			continue
+		}
+
+		if thisResult, err := e.GetBuildResult(job, lastBuildNumber); err != nil || thisResult.Status != cache.ResultStable {
+			e.setBuildStatus(job, "[nonblocking] Not Stable", strconv.Itoa(lastBuildNumber))
+		} else {
+			e.setBuildStatus(job, "[nonblocking] Stable", strconv.Itoa(lastBuildNumber))
+		}
 	}
 
 	return allStable, ignorableFlakes

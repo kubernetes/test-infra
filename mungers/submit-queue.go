@@ -133,11 +133,12 @@ type submitQueueInterruptedObject struct {
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
-//  The google internal jenkins instance must be passing the JobNames e2e tests
+//  The google internal jenkins instance must be passing the BlockingJobNames e2e tests
 type SubmitQueue struct {
-	githubConfig       *github.Config
-	JobNames           []string
-	WeakStableJobNames []string
+	githubConfig        *github.Config
+	BlockingJobNames    []string
+	NonBlockingJobNames []string
+	WeakStableJobNames  []string
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
@@ -302,7 +303,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	defer sq.Unlock()
 
 	// Clean up all of our flags which we wish --flag="" to mean []string{}
-	sq.JobNames = cleanStringSlice(sq.JobNames)
+	sq.BlockingJobNames = cleanStringSlice(sq.BlockingJobNames)
+	sq.NonBlockingJobNames = cleanStringSlice(sq.NonBlockingJobNames)
 	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
 	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
@@ -313,7 +315,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	// TODO: This is not how injection for tests should work.
 	if sq.FakeE2E {
 		sq.e2e = &fake_e2e.FakeE2ETester{
-			JobNames:           sq.JobNames,
+			JobNames:           sq.BlockingJobNames,
 			WeakStableJobNames: sq.WeakStableJobNames,
 		}
 	} else {
@@ -325,7 +327,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		}
 
 		sq.e2e = (&e2e.RealE2ETester{
-			JobNames:             sq.JobNames,
+			BlockingJobNames:     sq.BlockingJobNames,
+			NonBlockingJobNames:  sq.NonBlockingJobNames,
 			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
@@ -387,7 +390,13 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringSliceVar(&sq.JobNames, "jenkins-jobs", []string{
+	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{
+		"kubernetes-e2e-gke-prod",
+		"kubernetes-e2e-gke-subnet",
+		"kubernetes-e2e-gke-test",
+		"kubernetes-e2e-gce-examples",
+	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{
 		"kubelet-gce-e2e-ci",
 		"kubernetes-build",
 		"kubernetes-test-go",
@@ -399,7 +408,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gke-slow",
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
-	}, "Comma separated list of jobs in Jenkins to use for stability testing")
+	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
@@ -426,7 +435,8 @@ func (sq *SubmitQueue) updateHealth() {
 		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
-		newEntry.Jobs[job] = status.Status == "Stable"
+		// Ignore flakes.
+		newEntry.Jobs[job] = status.Status != "Not Stable"
 	}
 	sq.healthHistory = append(sq.healthHistory, newEntry)
 	// Now compute the health structure so we don't have to do it on page load

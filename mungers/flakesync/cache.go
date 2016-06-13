@@ -44,6 +44,10 @@ const (
 	// ResultFailed means it failed without generating readable JUnit
 	// files, and introspection is not possible.
 	ResultFailed ResultStatus = "failed"
+
+	// RunBrokenTestName names a "flake" which really represents the fact
+	// that the entire run was broken.
+	RunBrokenTestName Test = "Suite so broken it failed to produce JUnit output"
 )
 
 // Result records a test job completion.
