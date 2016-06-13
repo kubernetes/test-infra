@@ -290,4 +290,42 @@
     jobs:
         - 'kubernetes-e2e-gce-gci-stable-{suffix}'
 
+# Template for Docker continuous validation tests, running on GCI. See
+# https://github.com/kubernetes/kubernetes/issues/25215 for details of what the
+# job does.
+- job-template:
+    <<: *e2e_job_defaults
+    name: 'continuous-docker-validation{suffix}'
+    test-owner: 'dawnchen@google.com'
+    node: '{jenkins_node}'
+    triggers:
+        - timed: '@daily'
+    publishers:
+        - e2e-publishers:
+            recipients: 'wonderfly@google.com,dawnchen@google.com'
+        - description-setter:
+            regexp: KUBE_GCI_DOCKER_VERSION=(.*)
+        - groovy-postbuild:
+            script: |
+                def gciImageMatcher = manager.getLogMatcher("KUBE_GCE_MASTER_IMAGE=(.*)")
+                if(gciImageMatcher?.matches()) manager.addShortText("<b>GCI Image: " + gciImageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
+                if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def dockerVersionMatcher = manager.getLogMatcher("KUBE_GCI_DOCKER_VERSION=(.*)")
+                if(dockerVersionMatcher?.matches()) manager.addShortText("<b>Docker Version: " + dockerVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+    timeout: 30
+    job-env: |
+        export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+        export GINKGO_PARALLEL="y"
+        export PROJECT="k8s-docker-validation"
+        export JENKINS_GCI_IMAGE_TYPE="preview-test"
+
+- project:
+    name: continuous-docker-validation
+    suffix:
+        - '':
+            description: 'Runs the default e2e tests with the latest Kubernetes green build, latest GCI daily build, and latest Docker (pre)release.'
+    jobs:
+        - 'continuous-docker-validation{suffix}'
+
 # End of GCI jobs
