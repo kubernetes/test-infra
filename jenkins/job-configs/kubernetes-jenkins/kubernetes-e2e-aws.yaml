@@ -19,9 +19,12 @@
         - email-ext:
             recipients: '{emails}'
         - gcs-uploader
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
     provider-env: |
         export KUBERNETES_PROVIDER="aws"
-        export E2E_MIN_STARTUP_PODS="1"
+        export E2E_MIN_STARTUP_PODS="8"
         export KUBE_AWS_ZONE="us-west-2a"
         export MASTER_SIZE="m3.medium"
         export NODE_SIZE="m3.medium"

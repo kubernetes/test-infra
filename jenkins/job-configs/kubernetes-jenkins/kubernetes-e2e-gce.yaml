@@ -12,9 +12,12 @@
     properties:
         - build-discarder:
             days-to-keep: 7
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
     provider-env: |
         export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="1"
+        export E2E_MIN_STARTUP_PODS="8"
         export KUBE_GCE_ZONE="us-central1-f"
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
