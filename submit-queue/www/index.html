@@ -21,7 +21,10 @@
         <h1 class="md-display-2">Submit Queue Status</h1>
         <a ng-href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" alt="kubernetes logo" class="titleLogo"></a>
       </md-toolbar>
-      <md-toolbar class="md-warn" ng-show="cntl.failedBuild">
+      <md-toolbar class="md-warn md-hue-1" ng-show="cntl.testResults.yellowBuilds">
+        <h2 class="md-toolbar-tools">E2E Tests Are Troubled But Not Failing</h2>
+      </md-toolbar>
+      <md-toolbar class="md-warn" ng-show="cntl.testResults.redBuilds">
         <h2 class="md-toolbar-tools">E2E Tests Failing. Entire submit queue blocked. Last merge&nbsp;<span am-time-ago="cntl.lastMergeTime"></span>.</h2>
       </md-toolbar>
       <md-content class="md-padding">
@@ -142,21 +145,21 @@
 
           <md-tab md-on-select="cntl.selectTab('e2e')">
             <md-tab-label>
-              <span ng-class="{'redTab':cntl.failedBuild}">E2E Tests</span>
+              <span ng-class="{'redTab':cntl.testResults.redBuilds , 'yellowTab':cntl.testResults.yellowBuilds}">E2E Tests</span>
             </md-tab-label>
             <md-tab-body>
               <md-toolbar class="md-whiteframe-z2">
                 <h2 class="md-toolbar-tools">End-to-End Results</h2>
               </md-toolbar>
-              <h2 class="md-title" ng-show="cntl.builds.length > 0">Queue-Blocking Builds</h2>
-              <md-chips ng-model="cntl.builds" readonly="true">
+              <h2 class="md-title" ng-show="cntl.testResults.blockingBuilds.length > 0">Queue-Blocking Builds</h2>
+              <md-chips ng-model="cntl.testResults.blockingBuilds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
                   <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
                 </md-chip-template>
               </md-chips>
-              <h2 class="md-title" ng-show="cntl.nonBlockingBuilds.length > 0">Non-Queue-Blocking Builds</h2>
-              <md-chips ng-model="cntl.nonBlockingBuilds" readonly="true">
+              <h2 class="md-title" ng-show="cntl.testResults.nonBlockingBuilds.length > 0">Non-Queue-Blocking Builds</h2>
+              <md-chips ng-model="cntl.testResults.nonBlockingBuilds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
                   <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
