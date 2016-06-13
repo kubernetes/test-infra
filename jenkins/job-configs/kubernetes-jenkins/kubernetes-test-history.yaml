@@ -4,6 +4,7 @@
     properties:
         - build-discarder:
             days-to-keep: 3
+    node: master
     triggers:
         # Run hourly
         - timed: 'H * * * *'
