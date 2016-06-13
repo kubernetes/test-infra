@@ -30,6 +30,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
+	"io/ioutil"
 )
 
 // E2ETester can be queried for E2E job stability.
@@ -254,21 +255,37 @@ func getJUnitFailures(r io.Reader) (failures map[string]string, err error) {
 		FailCount int        `xml:"failures,attr"`
 		Testcases []Testcase `xml:"testcase"`
 	}
-	ts := &Testsuite{}
-	// TODO: this full parse is a bit slower than the old scanf routine--
-	// could switch back for the case where we only care whether there was
-	// a failure or not if that is an issue in practice.
-	err = xml.NewDecoder(r).Decode(ts)
+	type Testsuites struct {
+		TestSuites []Testsuite `xml:"testsuite"`
+	}
+	var testSuiteList []Testsuite
+	failures = map[string]string{}
+	testSuites := &Testsuites{}
+	testSuite := &Testsuite{}
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return failures, err
 	}
-	if ts.FailCount == 0 {
-		return nil, nil
+	// first try to parse the result with <testsuites> as top tag
+	err = xml.Unmarshal(b, testSuites)
+	if err == nil && len(testSuites.TestSuites) > 0 {
+		testSuiteList = testSuites.TestSuites
+	} else {
+		// second try to parse the result with <testsuite> as top tag
+		err = xml.Unmarshal(b, testSuite)
+		if err != nil {
+			return nil, err
+		}
+		testSuiteList = []Testsuite{*testSuite}
 	}
-	failures = map[string]string{}
-	for _, tc := range ts.Testcases {
-		if tc.Failure != "" {
-			failures[fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName)] = tc.Failure
+	for _, ts := range testSuiteList {
+		if ts.FailCount == 0 {
+			continue
+		}
+		for _, tc := range ts.Testcases {
+			if tc.Failure != "" {
+				failures[fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName)] = tc.Failure
+			}
 		}
 	}
 	return failures, nil
