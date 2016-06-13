@@ -391,7 +391,8 @@ func (sq *SubmitQueue) EachLoop() error {
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{
-		"kubernetes-e2e-gke-prod",
+		"kubernetes-e2e-gke-staging",
+		"kubernetes-e2e-gke-staging-parallel",
 		"kubernetes-e2e-gke-subnet",
 		"kubernetes-e2e-gke-test",
 		"kubernetes-e2e-gce-examples",
