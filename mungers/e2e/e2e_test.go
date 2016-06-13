@@ -366,6 +366,29 @@ func getRealJUnitFailure() []byte {
 </testsuite>`)
 }
 
+func getRealJUnitFailureWithTestSuitesTag() []byte {
+	return []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+	<testsuite tests="52" failures="2" time="374.434" name="k8s.io/kubernetes/test/integration">
+		<properties>
+			<property name="go.version" value="go1.6.2"></property>
+		</properties>
+		<testcase classname="integration" name="TestMasterProcessMetrics" time="0.070"></testcase>
+		<testcase classname="integration" name="TestApiserverMetrics" time="0.070"></testcase>
+		<testcase classname="integration" name="TestMasterExportsSymbols" time="0.000"></testcase>
+		<testcase classname="integration" name="TestPersistentVolumeRecycler" time="20.460"></testcase>
+		<testcase classname="integration" name="TestPersistentVolumeMultiPVs" time="10.240">
+			<failure message="Failed" type="">persistent_volumes_test.go:254: volumes created&#xA;persistent_volumes_test.go:260: claim created&#xA;persistent_volumes_test.go:264: volume bound&#xA;persistent_volumes_test.go:266: claim bound&#xA;persistent_volumes_test.go:284: Bind mismatch! Expected pvc-2 capacity 50000000000 but got fake-pvc-72 capacity 5000000000</failure>
+		</testcase>
+		<testcase classname="integration" name="TestPersistentVolumeMultiPVsPVCs" time="3.370">
+			<failure message="Failed" type="">persistent_volumes_test.go:379: PVC &#34;pvc-0&#34; is not bound</failure>
+		</testcase>
+		<testcase classname="integration" name="TestPersistentVolumeMultiPVsDiffAccessModes" time="10.110"></testcase>
+	</testsuite>
+</testsuites>
+`)
+}
+
 func TestCheckGCSWeakBuilds(t *testing.T) {
 	latestBuildNumberFoo := 42
 	latestBuildNumberBar := 44
@@ -563,6 +586,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 }
 
 func TestJUnitFailureParse(t *testing.T) {
+	//parse junit xml result with <testsuite> as top tag
 	junitFailReader := bytes.NewReader(getRealJUnitFailure())
 	got, err := getJUnitFailures(junitFailReader)
 	if err != nil {
@@ -573,6 +597,19 @@ func TestJUnitFailureParse(t *testing.T) {
 /go/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes/test/e2e/kubectl.go:972 May 18 13:02:24.715: No pods matched the filter.
 `,
 	}, got; !reflect.DeepEqual(e, a) {
+		t.Errorf("Expected %v, got %v", e, a)
+	}
+
+	//parse junit xml result with <testsuites> as top tag
+	junitFailReader = bytes.NewReader(getRealJUnitFailureWithTestSuitesTag())
+	got, err = getJUnitFailures(junitFailReader)
+	if err != nil {
+		t.Fatalf("Parse error? %v", err)
+	}
+	if e, a := map[string]string{
+		"TestPersistentVolumeMultiPVs {integration}":     "persistent_volumes_test.go:254: volumes created&#xA;persistent_volumes_test.go:260: claim created&#xA;persistent_volumes_test.go:264: volume bound&#xA;persistent_volumes_test.go:266: claim bound&#xA;persistent_volumes_test.go:284: Bind mismatch! Expected pvc-2 capacity 50000000000 but got fake-pvc-72 capacity 5000000000",
+		"TestPersistentVolumeMultiPVsPVCs {integration}": "persistent_volumes_test.go:379: PVC &#34;pvc-0&#34; is not bound",
+	}, got; reflect.DeepEqual(e, a) {
 		t.Errorf("Expected %v, got %v", e, a)
 	}
 }
