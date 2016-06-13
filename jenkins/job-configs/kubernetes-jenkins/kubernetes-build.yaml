@@ -73,5 +73,6 @@
               export FEDERATION=true
               export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
               export KUBE_FASTBUILD=true
+              export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
     jobs:
         - 'kubernetes-{build}'
