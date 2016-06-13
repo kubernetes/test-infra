@@ -47,6 +47,8 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 		}
 		if db.Create(issueOrm).Error != nil {
 			// If we can't create, let's try update
+			// First we need to delete labels, as they are just concatenated
+			db.Delete(Label{}, "issue_id = ?", issueOrm.ID)
 			db.Save(issueOrm)
 		}
 		// Issue is updated, find if we have new comments
