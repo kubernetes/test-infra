@@ -24,11 +24,8 @@ def get_submit_queue_json(path):
     return requests.get('http://submit-queue.k8s.io/{}'.format(path)).json()
 
 def is_blocked():
-    ci = get_submit_queue_json('google-internal-ci')
-    for job in ci:
-        if ci[job]['Status'] != 'Stable':
-            return True
-    return False
+    ci = get_submit_queue_json('health')
+    return ci['MergePossibleNow'] != True
 
 def poll():
     prs = get_submit_queue_json('prs')
