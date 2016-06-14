@@ -116,11 +116,15 @@ type healthRecord struct {
 // information about the sq itself including how fast things are merging and
 // how long since the last merge
 type submitQueueStats struct {
-	StartTime      time.Time
-	LastMergeTime  time.Time
-	MergeRate      float64
-	RetestsAvoided int
-	FlakesIgnored  int
+	StartTime          time.Time
+	LastMergeTime      time.Time
+	MergesSinceRestart int
+	MergeRate          float64
+	RetestsAvoided     int
+	FlakesIgnored      int
+
+	// Will be true if we've made at least one complete pass.
+	Initialized bool
 }
 
 // pull-request that has been tested as successful, but interrupted because head flaked
@@ -159,7 +163,9 @@ type SubmitQueue struct {
 	clock         util.Clock
 	startTime     time.Time // when the queue started (duh)
 	lastMergeTime time.Time
+	totalMerges   int32
 	mergeRate     float64 // per 24 hours
+	loopStarts    int32   // if > 1, then we must have made a complete pass.
 
 	githubE2ERunning  *github.MungeObject         // protect by sync.Mutex!
 	githubE2EQueue    map[int]*github.MungeObject // protected by sync.Mutex!
@@ -250,11 +256,13 @@ func calcMergeRate(oldRate float64, last, now time.Time) float64 {
 
 // updates a smoothed rate at which PRs are merging per day.
 // returns 'Now()' and the rate.
+// Should be called once after every merge. Also updates sq.totalMerges.
 func (sq *SubmitQueue) updateMergeRate() {
 	now := sq.clock.Now()
 
 	sq.mergeRate = calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
 	sq.lastMergeTime = now
+	atomic.AddInt32(&sq.totalMerges, 1)
 }
 
 // This calculated the smoothed merge rate BUT it looks at the time since
@@ -386,6 +394,7 @@ func (sq *SubmitQueue) EachLoop() error {
 		// This should recheck it and clean up the queue, we don't care about the result
 		_ = sq.validForMerge(obj)
 	}
+	atomic.AddInt32(&sq.loopStarts, 1)
 	return nil
 }
 
@@ -1130,11 +1139,13 @@ func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
 
 func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) {
 	data := submitQueueStats{
-		StartTime:      sq.startTime,
-		LastMergeTime:  sq.lastMergeTime,
-		MergeRate:      sq.calcMergeRateWithTail(),
-		RetestsAvoided: int(atomic.LoadInt32(&sq.retestsAvoided)),
-		FlakesIgnored:  int(atomic.LoadInt32(&sq.flakesIgnored)),
+		StartTime:          sq.startTime,
+		LastMergeTime:      sq.lastMergeTime,
+		MergesSinceRestart: int(atomic.LoadInt32(&sq.totalMerges)),
+		MergeRate:          sq.calcMergeRateWithTail(),
+		RetestsAvoided:     int(atomic.LoadInt32(&sq.retestsAvoided)),
+		FlakesIgnored:      int(atomic.LoadInt32(&sq.flakesIgnored)),
+		Initialized:        atomic.LoadInt32(&sq.loopStarts) > 1,
 	}
 	sq.serve(sq.marshal(data), res, req)
 }
