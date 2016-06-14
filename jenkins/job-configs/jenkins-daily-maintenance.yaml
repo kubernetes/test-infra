@@ -22,6 +22,7 @@
 - job:
     name: 'jenkins-daily-maintenance-all'
     description: 'Run jenkins-daily-maintenance on all nodes. Test owner: spxtr.'
+    node: 'master'
     properties:
         - build-discarder:
             days-to-keep: 30
