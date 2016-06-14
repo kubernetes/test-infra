@@ -79,7 +79,7 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	p.config = config
 	p.googleGCSBucketUtils = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
 
-	var owner *testowner.ReloadingOwnerList
+	var owner sync.OwnerMapper
 	var err error
 	if p.ownerPath != "" {
 		owner, err = testowner.NewReloadingOwnerList(p.ownerPath)
