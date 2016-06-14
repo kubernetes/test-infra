@@ -1,5 +1,6 @@
 - job:
     name: 'jenkins-daily-maintenance'
+    concurrent: true
     description: 'Run gcloud components update and clean Docker images. Test owner: spxtr.'
     properties:
         - build-discarder:
