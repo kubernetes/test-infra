@@ -106,6 +106,8 @@
             branch: 'master'
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak"
+                # Lower default logging to decrease master utilization.
+                export TEST_CLUSTER_LOG_LEVEL="--v=2"
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
                 export E2E_MIN_STARTUP_PODS="1"
