@@ -1,5 +1,5 @@
-- job:
-    name: kubernetes-pull-test-unit-integration
+- job-template:
+    name: 'kubernetes-pull-{suffix}'
     concurrent: true
     properties:
         - build-discarder:
@@ -28,9 +28,9 @@
                     refspec: '+refs/heads/*:refs/remotes/upstream/*'
                 - remote:
                     url: https://github.com/kubernetes/kubernetes
-                    refspec: '+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge'
+                    refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
             branches:
-                - 'origin/pr/${ghprbPullId}/merge'
+                - 'origin/pr/${{ghprbPullId}}/merge'
             browser: githubweb
             browser-url: http://github.com/kubernetes/kubernetes
             timeout: 20
@@ -44,8 +44,8 @@
             auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
             trigger-phrase: '(?is).*@k8s-bot\s+unit\s+test\s+this.*'
             cron: 'H/2 * * * *'
-            status-context: Jenkins unit/integration
-            status-url: 'http://pr-test.k8s.io/${ghprbPullId}/${JOB_NAME}/${BUILD_NUMBER}/'
+            status-context: Jenkins {status-context}
+            status-url: 'http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
             # This should roughly line up with kubernetes-maintainers.
             admin-list:
                 - a-robinson
@@ -194,9 +194,7 @@
             colormap: xterm
     builders:
         - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
-        - shell: |
-            export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
-            ./hack/jenkins/gotest-dockerized.sh
+        - shell: '{cmd}'
     publishers:
         - xunit:
             thresholds:
@@ -215,3 +213,21 @@
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
         - gcs-uploader
+
+- project:
+    name: kubernetes-pull
+    suffix:
+      - test-unit-integration:
+          status-context: unit/integration
+          cmd: |
+            export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
+            ./hack/jenkins/gotest-dockerized.sh
+      - verify-all:
+          status-context: verification
+          cmd: |
+            export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
+            export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
+            ./hack/jenkins/gotest-dockerized.sh
+    jobs:
+        - 'kubernetes-pull-{suffix}'
+
