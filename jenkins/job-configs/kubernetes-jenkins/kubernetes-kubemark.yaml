@@ -1,169 +1,172 @@
 - job-template:
-    name: 'kubernetes-kubemark-{suffix}'
-    description: '{description} Test owner: gmarek'
-    node: 'e2e'
-    properties:
-        - build-discarder:
-            days-to-keep: 7
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="1"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
-        - shell: |
-            {provider-env}
-            {job-env}
-            {post-env}
-            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
+    - shell: |
+        {provider-env}
+        {job-env}
+        {post-env}
+        timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+        if [[ ${{rc}} -ne 0 ]]; then
+            if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                echo "Dumping logs for any remaining nodes"
+                ./kubernetes/cluster/log-dump.sh _artifacts
             fi
-            {report-rc}
+        fi
+        {report-rc}
+    description: '{description} Test owner: gmarek'
+    name: kubernetes-kubemark-{suffix}
+    node: e2e
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    provider-env: |
+      export KUBERNETES_PROVIDER="gce"
+      export E2E_MIN_STARTUP_PODS="1"
+      export KUBE_GCE_ZONE="us-central1-f"
+      export FAIL_ON_GCP_RESOURCE_LEAK="true"
+      export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     publishers:
-        - claim-build
-        - junit-publisher
-        - log-parser
-        - email-ext:
-            recipients: "gmarek@google.com"
-        - gcs-uploader
+    - claim-build
+    - junit-publisher
+    - log-parser
+    - email-ext:
+        recipients: gmarek@google.com
+    - gcs-uploader
     triggers:
-        - timed: '{cron-string}'
+    - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
-        - timeout:
-            timeout: '{jenkins-timeout}'
-            fail: true
-        - timestamps
-        - workspace-cleanup:
-            dirmatch: true
-            external-deletion-command: 'sudo rm -rf %s'
-
+    - ansicolor:
+        colormap: xterm
+    - timeout:
+        fail: true
+        timeout: '{jenkins-timeout}'
+    - timestamps
+    - workspace-cleanup:
+        dirmatch: true
+        external-deletion-command: sudo rm -rf %s
 - project:
+    jobs:
+    - kubernetes-kubemark-{suffix}
     name: kubernetes-kubemark
     suffix:
-        - '5-gce':
-            description: 'Run minimal Kubemark to make sure it is not broken.'
-            timeout: 60
-            cron-string: '{sq-cron-string}'
-            job-env: |
-                export E2E_NAME="kubemark-5"
-                export PROJECT="k8s-jenkins-kubemark"
-                export E2E_TEST="false"
-                export USE_KUBEMARK="true"
-                export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override defaults to be independent from GCE defaults and set kubemark parameters
-                export NUM_NODES="1"
-                export MASTER_SIZE="n1-standard-1"
-                export NODE_SIZE="n1-standard-2"
-                export KUBE_GCE_ZONE="us-central1-f"
-                # TODO: This is to check if that helps with #26185.
-                # Revert it after migrating to etcd3.
-                export KUBEMARK_MASTER_SIZE="n1-standard-2"
-                export KUBEMARK_NUM_NODES="5"
-                # The kubemark scripts build a Docker image
-                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-        - '100-gce':
-            description: 'Run small-ish kubemark cluster to continuously run performance experiments'
-            timeout: 240
-            cron-string: 'H H/6 * * *'
-            job-env: |
-                export E2E_NAME="kubemark-100"
-                export PROJECT="k8s-jenkins-kubemark"
-                export E2E_TEST="false"
-                export USE_KUBEMARK="true"
-                export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
-                export CREATE_SERVICES="true"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override defaults to be independent from GCE defaults and set kubemark parameters
-                export NUM_NODES="3"
-                export MASTER_SIZE="n1-standard-2"
-                export NODE_SIZE="n1-standard-4"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export KUBEMARK_MASTER_SIZE="n1-standard-4"
-                export KUBEMARK_NUM_NODES="100"
-                # The kubemark scripts build a Docker image
-                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-        - 'high-density-100-gce':
-            description: 'Run Kubemark high-density (100 pods/node) test on a fake 100 node cluster.'
-            timeout: 160
-            cron-string: 'H 20 * * 6'
-            job-env: |
-                export E2E_NAME="kubemark-100pods"
-                export PROJECT="k8s-jenkins-kubemark"
-                export E2E_TEST="false"
-                export USE_KUBEMARK="true"
-                export KUBEMARK_TESTS="\[Feature:HighDensityPerformance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override defaults to be independent from GCE defaults and set kubemark parameters
-                export NUM_NODES="3"
-                export MASTER_SIZE="n1-standard-2"
-                export NODE_SIZE="n1-standard-4"
-                export KUBE_GCE_ZONE="us-east1-d"
-                export KUBEMARK_MASTER_SIZE="n1-standard-4"
-                export KUBEMARK_NUM_NODES="100"
-                # The kubemark scripts build a Docker image
-                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-        - '500-gce':
-            description: 'Run Kubemark test on a fake 500 node cluster to test for regressions on bigger clusters'
-            timeout: 300
-            cron-string: '@hourly'
-            job-env: |
-                # XXX Not a unique project
-                export E2E_NAME="kubemark-500"
-                export PROJECT="kubernetes-scale"
-                export E2E_TEST="false"
-                export USE_KUBEMARK="true"
-                export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override defaults to be independent from GCE defaults and set kubemark parameters
-                export NUM_NODES="6"
-                export MASTER_SIZE="n1-standard-4"
-                export NODE_SIZE="n1-standard-8"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export KUBEMARK_MASTER_SIZE="n1-standard-16"
-                export KUBEMARK_NUM_NODES="500"
-                # The kubemark scripts build a Docker image
-                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-        - 'gce-scale':
-            description: 'Run Density test on Kubemark in very large cluster. Currently only scheduled to run every 12 hours so as not to waste too many resources.'
-            # 12h - load tests take really, really, really long time.
-            timeout: 720
-            cron-string: 'H H/12 * * *'
-            job-env: |
-                # XXX Not a unique project
-                export E2E_NAME="kubemark-2000"
-                export PROJECT="kubernetes-scale"
-                export E2E_TEST="false"
-                export USE_KUBEMARK="true"
-                export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override defaults to be independent from GCE defaults and set kubemark parameters
-                # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
-                export NUM_NODES="21"
-                export MASTER_SIZE="n1-standard-4"
-                # Note: can fit about 17 hollow nodes per core so NUM_NODES x
-                # cores_per_node should be set accordingly.
-                export NODE_SIZE="n1-standard-8"
-                export KUBEMARK_MASTER_SIZE="n1-standard-32"
-                export KUBEMARK_NUM_NODES="2000"
-                export KUBE_GCE_ZONE="us-central1-f"
-                # Use protobufs
-                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
-                # TODO: Uncomment when we make the final decision to store protobufs in etcd.
-                # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
-                # The kubemark scripts build a Docker image
-                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-    jobs:
-        - 'kubernetes-kubemark-{suffix}'
+    - 5-gce:
+        cron-string: '{sq-cron-string}'
+        description: Run minimal Kubemark to make sure it is not broken.
+        job-env: |
+          export E2E_NAME="kubemark-5"
+          export PROJECT="k8s-jenkins-kubemark"
+          export E2E_TEST="false"
+          export USE_KUBEMARK="true"
+          export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+          export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+          export FAIL_ON_GCP_RESOURCE_LEAK="false"
+          # Override defaults to be independent from GCE defaults and set kubemark parameters
+          export NUM_NODES="1"
+          export MASTER_SIZE="n1-standard-1"
+          export NODE_SIZE="n1-standard-2"
+          export KUBE_GCE_ZONE="us-central1-f"
+          # TODO: This is to check if that helps with #26185.
+          # Revert it after migrating to etcd3.
+          export KUBEMARK_MASTER_SIZE="n1-standard-2"
+          export KUBEMARK_NUM_NODES="5"
+          # The kubemark scripts build a Docker image
+          export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        timeout: 60
+    - 100-gce:
+        cron-string: H H/6 * * *
+        description: Run small-ish kubemark cluster to continuously run performance
+          experiments
+        job-env: |
+          export E2E_NAME="kubemark-100"
+          export PROJECT="k8s-jenkins-kubemark"
+          export E2E_TEST="false"
+          export USE_KUBEMARK="true"
+          export KUBEMARK_TESTS="\[Feature:Performance\]"
+          export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+          export CREATE_SERVICES="true"
+          export FAIL_ON_GCP_RESOURCE_LEAK="false"
+          # Override defaults to be independent from GCE defaults and set kubemark parameters
+          export NUM_NODES="3"
+          export MASTER_SIZE="n1-standard-2"
+          export NODE_SIZE="n1-standard-4"
+          export KUBE_GCE_ZONE="us-central1-f"
+          export KUBEMARK_MASTER_SIZE="n1-standard-4"
+          export KUBEMARK_NUM_NODES="100"
+          # The kubemark scripts build a Docker image
+          export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        timeout: 240
+    - high-density-100-gce:
+        cron-string: H 20 * * 6
+        description: Run Kubemark high-density (100 pods/node) test on a fake 100
+          node cluster.
+        job-env: |
+          export E2E_NAME="kubemark-100pods"
+          export PROJECT="k8s-jenkins-kubemark"
+          export E2E_TEST="false"
+          export USE_KUBEMARK="true"
+          export KUBEMARK_TESTS="\[Feature:HighDensityPerformance\]"
+          export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+          export FAIL_ON_GCP_RESOURCE_LEAK="false"
+          # Override defaults to be independent from GCE defaults and set kubemark parameters
+          export NUM_NODES="3"
+          export MASTER_SIZE="n1-standard-2"
+          export NODE_SIZE="n1-standard-4"
+          export KUBE_GCE_ZONE="us-east1-d"
+          export KUBEMARK_MASTER_SIZE="n1-standard-4"
+          export KUBEMARK_NUM_NODES="100"
+          # The kubemark scripts build a Docker image
+          export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        timeout: 160
+    - 500-gce:
+        cron-string: '@hourly'
+        description: Run Kubemark test on a fake 500 node cluster to test for regressions
+          on bigger clusters
+        job-env: |
+          # XXX Not a unique project
+          export E2E_NAME="kubemark-500"
+          export PROJECT="kubernetes-scale"
+          export E2E_TEST="false"
+          export USE_KUBEMARK="true"
+          export KUBEMARK_TESTS="\[Feature:Performance\]"
+          export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+          export FAIL_ON_GCP_RESOURCE_LEAK="false"
+          # Override defaults to be independent from GCE defaults and set kubemark parameters
+          export NUM_NODES="6"
+          export MASTER_SIZE="n1-standard-4"
+          export NODE_SIZE="n1-standard-8"
+          export KUBE_GCE_ZONE="us-central1-f"
+          export KUBEMARK_MASTER_SIZE="n1-standard-16"
+          export KUBEMARK_NUM_NODES="500"
+          # The kubemark scripts build a Docker image
+          export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        timeout: 300
+    - gce-scale:
+        cron-string: H H/12 * * *
+        description: Run Density test on Kubemark in very large cluster. Currently
+          only scheduled to run every 12 hours so as not to waste too many resources.
+        job-env: |
+          # XXX Not a unique project
+          export E2E_NAME="kubemark-2000"
+          export PROJECT="kubernetes-scale"
+          export E2E_TEST="false"
+          export USE_KUBEMARK="true"
+          export KUBEMARK_TESTS="\[Feature:Performance\]"
+          export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
+          export FAIL_ON_GCP_RESOURCE_LEAK="false"
+          # Override defaults to be independent from GCE defaults and set kubemark parameters
+          # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
+          export NUM_NODES="21"
+          export MASTER_SIZE="n1-standard-4"
+          # Note: can fit about 17 hollow nodes per core so NUM_NODES x
+          # cores_per_node should be set accordingly.
+          export NODE_SIZE="n1-standard-8"
+          export KUBEMARK_MASTER_SIZE="n1-standard-32"
+          export KUBEMARK_NUM_NODES="2000"
+          export KUBE_GCE_ZONE="us-central1-f"
+          # Use protobufs
+          export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
+          # TODO: Uncomment when we make the final decision to store protobufs in etcd.
+          # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
+          # The kubemark scripts build a Docker image
+          export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        timeout: 720
+

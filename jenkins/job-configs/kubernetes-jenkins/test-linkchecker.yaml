@@ -1,39 +1,40 @@
 - job:
-    name: 'kubernetes-test-linkchecker'
-    description: |
-        Grab the latest from GitHub, then run hack/verify-linkcheck.sh.<br>
-        Test Owner: Build Cop
-    disable_job: true # Issue #23162
-    properties:
-        - build-discarder:
-            num-to-keep: 200
     builders:
-        - shell: |
-            export PATH=${PATH}:/usr/local/go/bin
-            ./hack/verify-linkcheck.sh
+    - shell: |
+        export PATH=${PATH}:/usr/local/go/bin
+        ./hack/verify-linkcheck.sh
+    description: |
+      Grab the latest from GitHub, then run hack/verify-linkcheck.sh.<br>
+      Test Owner: Build Cop
+    disable_job: true
+    name: kubernetes-test-linkchecker
+    properties:
+    - build-discarder:
+        num-to-keep: 200
     publishers:
-        - claim-build
-        - email-ext:
-            recipients: 'xuchao@google.com'
-        - gcs-uploader
+    - claim-build
+    - email-ext:
+        recipients: xuchao@google.com
+    - gcs-uploader
     scm:
-        - git:
-            url: https://github.com/kubernetes/kubernetes
-            branches:
-                - 'master'
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/kubernetes
-            wipe-workspace: false
-            skip-tag: true
+    - git:
+        branches:
+        - master
+        browser: githubweb
+        browser-url: https://github.com/kubernetes/kubernetes
+        skip-tag: true
+        url: https://github.com/kubernetes/kubernetes
+        wipe-workspace: false
     triggers:
-        - timed: '@daily'
+    - timed: '@daily'
     wrappers:
-        - ansicolor:
-            colormap: xterm
-        - timeout:
-            timeout: 60
-            fail: true
-        - timestamps
-        - workspace-cleanup:
-            dirmatch: true
-            external-deletion-command: 'sudo rm -rf %s'
+    - ansicolor:
+        colormap: xterm
+    - timeout:
+        fail: true
+        timeout: 60
+    - timestamps
+    - workspace-cleanup:
+        dirmatch: true
+        external-deletion-command: sudo rm -rf %s
+
