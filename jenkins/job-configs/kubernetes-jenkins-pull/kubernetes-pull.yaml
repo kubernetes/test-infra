@@ -220,6 +220,7 @@
       - test-unit-integration:
           status-context: unit/integration
           cmd: |
+            export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             ./hack/jenkins/gotest-dockerized.sh
       - verify-all:
           status-context: verification
