@@ -186,20 +186,47 @@ function SQCntl(dataService, $interval, $location) {
         'name': key,
         'id': job.ID,
       };
-      if (job.Status == 'Stable') {
-        // green check mark
-        obj.state = '\u2713';
-        obj.color = 'green';
-      } else if (job.Status == 'Not Stable') {
-        // red X mark
-        obj.state = '\u2716';
-        obj.color = 'red';
-        failedBuild = true;
-      } else {
-        obj.state = 'Error';
-        obj.color = 'red';
-        obj.msg = job.Status;
-        failedBuild = true;
+      switch (job.Status) {
+        case 'Stable':
+          // green check mark
+          obj.state = '\u2713';
+          obj.color = 'green';
+          break;
+        case 'Not Stable':
+          // red X mark
+          obj.state = '\u2716';
+          obj.color = 'red';
+          failedBuild = true;
+          break;
+        case 'Ignorable flake':
+          // orange X mark
+          obj.state = '\u2716';
+          obj.color = 'orange';
+          obj.msg = 'Flake!';
+          break;
+        case '[nonblocking] Stable':
+          // green check mark
+          obj.state = '\u2713';
+          obj.color = 'green';
+          obj.msg = '[nonblocking]';
+          break;
+        case '[nonblocking] Not Stable':
+          // orange X mark
+          obj.state = '\u2716';
+          obj.color = 'orange';
+          obj.msg = '[nonblocking]';
+          break;
+        case '[nonblocking] Ignorable flake':
+          // orange X mark
+          obj.state = '\u2716';
+          obj.color = 'orange';
+          obj.msg = '[nonblocking]';
+          break;
+        default:
+          obj.state = 'Error';
+          obj.color = 'red';
+          obj.msg = job.Status;
+          failedBuild = true;
       }
       obj.stability = '';
       result.push(obj);
