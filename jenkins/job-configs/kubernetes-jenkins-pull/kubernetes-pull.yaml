@@ -7,7 +7,7 @@
         - github:
             url: https://github.com/kubernetes/kubernetes
         - throttle:
-            max-total: 12
+            max-total: 0  # Unlimited
             max-per-node: 2
             option: project
         - raw:
