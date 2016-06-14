@@ -148,12 +148,21 @@
               <md-toolbar class="md-whiteframe-z2">
                 <h2 class="md-toolbar-tools">End-to-End Results</h2>
               </md-toolbar>
+              <h2 class="md-title" ng-show="cntl.builds.length > 0">Queue-Blocking Builds</h2>
               <md-chips ng-model="cntl.builds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
                   <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
                 </md-chip-template>
               </md-chips>
+              <h2 class="md-title" ng-show="cntl.nonBlockingBuilds.length > 0">Non-Queue-Blocking Builds</h2>
+              <md-chips ng-model="cntl.nonBlockingBuilds" readonly="true">
+                <md-chip-template title="{{$chip.msg}}">
+                  <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
+                  <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
+                </md-chip-template>
+              </md-chips>
+              <br>
               <br>
               <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
               <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.</p>
