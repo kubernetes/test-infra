@@ -3,7 +3,7 @@
     description: |
         Grab the latest from GitHub, then run hack/verify-linkcheck.sh.<br>
         Test Owner: Build Cop
-    disable_job: true # Issue #23162
+    disabled: true  # Issue #23162
     properties:
         - build-discarder:
             num-to-keep: 200
