@@ -357,6 +357,11 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 			continue
 		}
 
+		if e.resolutionTracker.Resolved(cache.Job(job), cache.Number(lastBuildNumber)) {
+			e.setBuildStatus(job, "Problem Resolved", strconv.Itoa(lastBuildNumber))
+			continue
+		}
+
 		failures, err := e.failureReasons(job, lastBuildNumber, false)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v/%v: %v", job, lastBuildNumber, err)
