@@ -53,6 +53,7 @@ with open('results.txt', 'r') as f:
             dts.append(dt)
             prs.append(prs[-1])
             queued.append(queued[-1])
+            instant_happiness.append(happy)
             daily_happiness.append(happiness)
         dts.append(dt)
         prs.append(pr)
@@ -68,8 +69,9 @@ with open('results.txt', 'r') as f:
     if last_blocked is not None:
         blocked_intervals.append((last_blocked, dt))
 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.pylab as pyl
 import matplotlib.dates as mdates
 
 fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, figsize=(16, 8), dpi=100)
@@ -87,10 +89,8 @@ ax2.set_ylabel('Submit Queue Size')
 ax3.set_ylabel('Merge Health Over Last Day')
 
 
-last_week = datetime.datetime.now() - datetime.timedelta(days=14)
-
 ax3.set_ylim([0.0, 1.0])
-ax3.set_xlim(left=last_week)
+ax3.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=14))
 
 fig.autofmt_xdate()
 
@@ -99,15 +99,17 @@ for start, end in blocked_intervals:
         plot.axvspan(start, end, alpha=0.3, color='red', linewidth=0)
 
 
-week_happiness = [0, 0]
+last_week = datetime.datetime.now() - datetime.timedelta(days=7)
+week_happy, week_points = 0, 0
 for dt, instant in zip(dts, instant_happiness):
     if dt < last_week:
         continue
     if instant:
-        week_happiness[0] += 1
-    week_happiness[1] += 1
+        week_happy += 1
+    week_points += 1
 
-fig.text(.1, .08, "Health for the last week: %.0f%%" % (100.0 * week_happiness[0] / week_happiness[1]))
+if week_points > 0:
+    fig.text(.1, .08, "Health for the last week: %.0f%%" % (100.0 * week_happy / week_points))
 
 plt.savefig('k8s-queue-health.png', bbox_inches='tight')
 # plt.show()
