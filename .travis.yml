@@ -9,6 +9,11 @@ services:
     - docker
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:4
+# Install Go
+    - bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+    - source $HOME/.gvm/scripts/gvm
+    - gvm install go1.6.2 --binary
+    - gvm use go1.6.2
 install:
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
