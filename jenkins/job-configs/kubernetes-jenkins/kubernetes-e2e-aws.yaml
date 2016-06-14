@@ -1,80 +1,81 @@
 - job-template:
-    name: 'kubernetes-e2e-{aws-suffix}'
-    node: '{jenkins_node}'
-    description: '{description} Test owner: {test-owner}.'
-    jenkins_node: 'e2e'
-    disabled: '{obj:disable_job}'
-    properties:
-        - build-discarder:
-            days-to-keep: 7
-    triggers:
-        - reverse:
-            jobs: '{trigger-job}'
-            result: success
-        - timed: '{cron-string}'
-    publishers:
-        - claim-build
-        - junit-publisher
-        - log-parser
-        - email-ext:
-            recipients: '{emails}'
-        - gcs-uploader
-    provider-env: |
-        export KUBERNETES_PROVIDER="aws"
-        export E2E_MIN_STARTUP_PODS="1"
-        export KUBE_AWS_ZONE="us-west-2a"
-        export MASTER_SIZE="m3.medium"
-        export NODE_SIZE="m3.medium"
-        export NUM_NODES="3"
-        export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-        export GINKGO_PARALLEL="y"
-        export PROJECT="k8s-jkns-e2e-aws"
-        export AWS_CONFIG_FILE='/var/lib/jenkins/.aws/credentials'
-        export AWS_SSH_KEY='/var/lib/jenkins/.ssh/kube_aws_rsa'
-        export KUBE_SSH_USER='admin'
-        export AWS_SHARED_CREDENTIALS_FILE='/var/lib/jenkins/.aws/credentials'  # Needed to create PD from e2e test
     builders:
-        - shell: |
-            {provider-env}
-            {job-env}
-            {post-env}
-            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
+    - shell: |
+        {provider-env}
+        {job-env}
+        {post-env}
+        timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+        if [[ ${{rc}} -ne 0 ]]; then
+            if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                echo "Dumping logs for any remaining nodes"
+                ./kubernetes/cluster/log-dump.sh _artifacts
             fi
-            {report-rc}
+        fi
+        {report-rc}
+    description: '{description} Test owner: {test-owner}.'
+    disabled: '{obj:disable_job}'
+    jenkins_node: e2e
+    name: kubernetes-e2e-{aws-suffix}
+    node: '{jenkins_node}'
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    provider-env: |
+      export KUBERNETES_PROVIDER="aws"
+      export E2E_MIN_STARTUP_PODS="1"
+      export KUBE_AWS_ZONE="us-west-2a"
+      export MASTER_SIZE="m3.medium"
+      export NODE_SIZE="m3.medium"
+      export NUM_NODES="3"
+      export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+      export GINKGO_PARALLEL="y"
+      export PROJECT="k8s-jkns-e2e-aws"
+      export AWS_CONFIG_FILE='/var/lib/jenkins/.aws/credentials'
+      export AWS_SSH_KEY='/var/lib/jenkins/.ssh/kube_aws_rsa'
+      export KUBE_SSH_USER='admin'
+      export AWS_SHARED_CREDENTIALS_FILE='/var/lib/jenkins/.aws/credentials'  # Needed to create PD from e2e test
+    publishers:
+    - claim-build
+    - junit-publisher
+    - log-parser
+    - email-ext:
+        recipients: '{emails}'
+    - gcs-uploader
+    triggers:
+    - reverse:
+        jobs: '{trigger-job}'
+        result: success
+    - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
-        - timeout:
-            timeout: '{jenkins-timeout}'
-            fail: true
-        - timestamps
-        - workspace-cleanup:
-            dirmatch: true
-            external-deletion-command: 'sudo rm -rf %s'
-
+    - ansicolor:
+        colormap: xterm
+    - timeout:
+        fail: true
+        timeout: '{jenkins-timeout}'
+    - timestamps
+    - workspace-cleanup:
+        dirmatch: true
+        external-deletion-command: sudo rm -rf %s
 - project:
-    name: kubernetes-aws
-    test-owner: 'bburns'
-    emails: 'bburns@google.com'
-    cron-string: '@daily'
-    trigger-job: ''
-    timeout: 240
-    jenkins_node: 'master'
-    runner: '{legacy-runner}'
     aws-suffix:
-        - 'aws':  # kubernetes-e2e-aws
-            description: 'Run e2e tests on AWS using the latest successful Kubernetes build.'
-            job-env: |
-                export E2E_NAME="e2e-aws-master"
-        - 'aws-release-1.3':  # kubernetes-e2e-aws-release-1.3
-            description: 'Run e2e tests on AWS using the latest successful 1.3 Kubernetes build.'
-            job-env: |
-                export E2E_NAME="e2e-aws-1-3"
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+    - aws:
+        description: Run e2e tests on AWS using the latest successful Kubernetes build.
+        job-env: |
+          export E2E_NAME="e2e-aws-master"
+    - aws-release-1.3:
+        description: Run e2e tests on AWS using the latest successful 1.3 Kubernetes
+          build.
+        job-env: |
+          export E2E_NAME="e2e-aws-1-3"
+          export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+    cron-string: '@daily'
+    emails: bburns@google.com
+    jenkins_node: master
     jobs:
-        - 'kubernetes-e2e-{aws-suffix}'
+    - kubernetes-e2e-{aws-suffix}
+    name: kubernetes-aws
+    runner: '{legacy-runner}'
+    test-owner: bburns
+    timeout: 240
+    trigger-job: ""
+

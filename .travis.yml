@@ -9,14 +9,21 @@ services:
     - docker
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:4
+# Install Go
+    - bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+    - source $HOME/.gvm/scripts/gvm
+    - gvm install go1.6.2 --binary
+    - gvm use go1.6.2
 install:
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
     - unzip -q ${GAE_ZIP} -d ${HOME}
     - pip install -r gubernator/test_requirements.txt
     - pip install -r jenkins/test-history/requirements.txt
+    - go get -u github.com/frankbraun/kitchensink/cmd/yamlfmt
 script:
     - ./verify/verify-boilerplate.py
+    - ./verify/verify-yamlfmt.sh
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
     - cd gubernator && nosetests --with-gae --gae-lib-root=${HOME}/google_appengine/

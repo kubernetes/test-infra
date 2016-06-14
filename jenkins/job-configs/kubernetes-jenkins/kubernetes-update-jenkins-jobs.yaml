@@ -1,25 +1,26 @@
 - job:
-    name: kubernetes-update-jenkins-jobs
-    description: 'Update Jenkins jobs based on configs in https://github.com/kubernetes/test-infra/tree/master/jenkins/job-configs. Test owner: spxtr.'
-    properties:
-        - build-discarder:
-            days-to-keep: 3
-    node: master
-    triggers:
-        - pollscm:
-            cron: '* * * * *'
-    scm:
-        - git:
-            url: https://github.com/kubernetes/test-infra
-            branches:
-                - master
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/test-infra
-            skip-tag: true
     builders:
-        - shell: |
-            ./jenkins/update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
+    - shell: |
+        ./jenkins/update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
+    description: 'Update Jenkins jobs based on configs in https://github.com/kubernetes/test-infra/tree/master/jenkins/job-configs.
+      Test owner: spxtr.'
+    name: kubernetes-update-jenkins-jobs
+    node: master
+    properties:
+    - build-discarder:
+        days-to-keep: 3
     publishers:
-      - email-ext:
-          recipients: spxtr@google.com
+    - email-ext:
+        recipients: spxtr@google.com
+    scm:
+    - git:
+        branches:
+        - master
+        browser: githubweb
+        browser-url: https://github.com/kubernetes/test-infra
+        skip-tag: true
+        url: https://github.com/kubernetes/test-infra
+    triggers:
+    - pollscm:
+        cron: '* * * * *'
 

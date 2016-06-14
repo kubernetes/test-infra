@@ -1,25 +1,25 @@
 - job:
-    name: kubernetes-test-summary
-    description: 'Create a daily test summary and upload to GCS. Test owner: spxtr.'
-    properties:
-        - build-discarder:
-            days-to-keep: 3
-    node: master
-    triggers:
-        # Run hourly
-        - timed: 'H * * * *'
-    scm:
-        - git:
-            url: https://www.github.com/kubernetes/test-infra
-            branches:
-                - master
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/test-infra
-            skip-tag: true
     builders:
-        - shell: |
-            cd jenkins/test-history
-            ./gen_history
+    - shell: |
+        cd jenkins/test-history
+        ./gen_history
+    description: 'Create a daily test summary and upload to GCS. Test owner: spxtr.'
+    name: kubernetes-test-summary
+    node: master
+    properties:
+    - build-discarder:
+        days-to-keep: 3
     publishers:
-        - email-ext:
-            recipients: spxtr@google.com
+    - email-ext:
+        recipients: spxtr@google.com
+    scm:
+    - git:
+        branches:
+        - master
+        browser: githubweb
+        browser-url: https://github.com/kubernetes/test-infra
+        skip-tag: true
+        url: https://www.github.com/kubernetes/test-infra
+    triggers:
+    - timed: H * * * *
+
