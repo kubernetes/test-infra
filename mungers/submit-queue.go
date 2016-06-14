@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -181,6 +182,8 @@ type SubmitQueue struct {
 	health        submitQueueHealth
 	healthHistory []healthRecord
 
+	emergencyMergeStopFlag int32
+
 	adminPort int
 }
 
@@ -200,10 +203,38 @@ func init() {
 }
 
 // Name is the name usable in --pr-mungers
-func (sq SubmitQueue) Name() string { return "submit-queue" }
+func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (sq SubmitQueue) RequiredFeatures() []string { return []string{} }
+func (sq *SubmitQueue) RequiredFeatures() []string { return []string{} }
+
+func (sq *SubmitQueue) emergencyMergeStop() bool {
+	return atomic.LoadInt32(&sq.emergencyMergeStopFlag) != 0
+}
+
+func (sq *SubmitQueue) setEmergencyMergeStop(stopMerges bool) {
+	if stopMerges {
+		atomic.StoreInt32(&sq.emergencyMergeStopFlag, 1)
+	} else {
+		atomic.StoreInt32(&sq.emergencyMergeStopFlag, 0)
+	}
+}
+
+// EmergencyStopHTTP sets the emergency stop flag. It expects the path of
+// req.URL to contain either "emergency/stop", "emergency/resume", or "emergency/status".
+func (sq *SubmitQueue) EmergencyStopHTTP(res http.ResponseWriter, req *http.Request) {
+	switch {
+	case strings.Contains(req.URL.Path, "emergency/stop"):
+		sq.setEmergencyMergeStop(true)
+	case strings.Contains(req.URL.Path, "emergency/resume"):
+		sq.setEmergencyMergeStop(false)
+	case strings.Contains(req.URL.Path, "emergency/status"):
+	default:
+		http.NotFound(res, req)
+		return
+	}
+	sq.serve(sq.marshal(struct{ EmergencyInProgress bool }{sq.emergencyMergeStop()}), res, req)
+}
 
 func round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
@@ -361,6 +392,10 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		go http.ListenAndServe(config.Address, nil)
 	}
 
+	admin.Mux.HandleFunc("/api/emergency/stop", sq.EmergencyStopHTTP)
+	admin.Mux.HandleFunc("/api/emergency/resume", sq.EmergencyStopHTTP)
+	admin.Mux.HandleFunc("/api/emergency/status", sq.EmergencyStopHTTP)
+
 	if sq.githubE2EPollTime == 0 {
 		sq.githubE2EPollTime = githubE2EPollTime
 	}
@@ -440,21 +475,26 @@ func (sq *SubmitQueue) updateHealth() {
 	}
 	// Make the current record
 	stable, _ := sq.e2e.GCSBasedStable()
+	emergencyStop := sq.emergencyMergeStop()
 	newEntry := healthRecord{
 		Time:    time.Now(),
-		Overall: stable,
+		Overall: stable && !emergencyStop,
 		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
 		// Ignore flakes.
 		newEntry.Jobs[job] = status.Status != "Not Stable"
 	}
+	if emergencyStop {
+		// invent an "emergency stop" job that's failing.
+		newEntry.Jobs["Emergency Stop"] = false
+	}
 	sq.healthHistory = append(sq.healthHistory, newEntry)
 	// Now compute the health structure so we don't have to do it on page load
 	sq.health.TotalLoops = len(sq.healthHistory)
 	sq.health.NumStable = 0
 	sq.health.NumStablePerJob = map[string]int{}
-	sq.health.MergePossibleNow = stable
+	sq.health.MergePossibleNow = stable && !emergencyStop
 	for _, record := range sq.healthHistory {
 		if record.Overall {
 			sq.health.NumStable += 1
@@ -475,6 +515,9 @@ func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
 	wentUnstable := false
 
 	stable, ignorableFlakes := sq.e2e.GCSBasedStable()
+	if stable && sq.emergencyMergeStop() {
+		stable = false
+	}
 
 	weakStable := sq.e2e.GCSWeakStable()
 	if !weakStable {
