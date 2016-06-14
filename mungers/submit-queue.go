@@ -99,9 +99,10 @@ type submitQueueStatus struct {
 // of time for the queue as a whole and the individual jobs will then be
 // NumStable[PerJob] / TotalLoops.
 type submitQueueHealth struct {
-	TotalLoops      int
-	NumStable       int
-	NumStablePerJob map[string]int
+	TotalLoops       int
+	NumStable        int
+	NumStablePerJob  map[string]int
+	MergePossibleNow bool
 }
 
 // Generate health information using a queue of healthRecords. The bools are
@@ -444,6 +445,7 @@ func (sq *SubmitQueue) updateHealth() {
 	sq.health.TotalLoops = len(sq.healthHistory)
 	sq.health.NumStable = 0
 	sq.health.NumStablePerJob = map[string]int{}
+	sq.health.MergePossibleNow = stable
 	for _, record := range sq.healthHistory {
 		if record.Overall {
 			sq.health.NumStable += 1
