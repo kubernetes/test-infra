@@ -204,6 +204,12 @@ function SQCntl(dataService, $interval, $location) {
           obj.color = 'orange';
           obj.msg = 'Flake!';
           break;
+        case 'Problem Resolved':
+          // orange X mark
+          obj.state = '\u2716';
+          obj.color = 'orange';
+          obj.msg = 'Manual override';
+          break;
         case '[nonblocking] Stable':
           // green check mark
           obj.state = '\u2713';
