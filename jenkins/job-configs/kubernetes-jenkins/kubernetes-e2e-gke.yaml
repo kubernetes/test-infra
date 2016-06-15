@@ -183,6 +183,17 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="k8s-jkns-gke-reboot-1-3"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+        - 'gke-ingress-release-1.3':  # kubernetes-e2e-gke-ingress-release-1.3
+            description: 'Run [Feature:Ingress] tests on GKE on the release-1.3 branch.'
+            timeout: 90
+            emails: 'beeps@google.com'
+            test-owner: 'beeps'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
+                export PROJECT="kubernetes-gke-ingress-1-2"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO(spxtr): Enable after 1.2 in another projet
+ 
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
  
@@ -216,16 +227,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-        - 'gke-ingress-release-1.2':  # kubernetes-e2e-gke-ingress-release-1.2
-            description: 'Run [Feature:Ingress] tests on GKE on the release-1.2 branch.'
-            timeout: 90
-            emails: 'beeps@google.com'
-            test-owner: 'beeps'
-            job-env: |
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
-                export PROJECT="kubernetes-gke-ingress-1-2"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO(spxtr): Enable after 1.2 in another projet
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
