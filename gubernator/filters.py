@@ -52,7 +52,7 @@ def do_slugify(inp):
 
 def do_linkify_stacktrace(inp, commit):
     """Add links to a source code viewer for every mentioned source line."""
-    inp = str(jinja2.escape(inp))
+    inp = unicode(jinja2.escape(inp))
     if not commit:
         return jinja2.Markup(inp)  # this was already escaped, mark it safe!
     def rep(m):

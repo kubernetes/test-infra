@@ -42,6 +42,11 @@ class HelperTest(unittest.TestCase):
         self.assertIn('<a href="https://github.com/kubernetes/kubernetes/blob/'
                       'VERSION/test/example.go#L123">', linked)
 
+    def test_linkify_unicode(self):
+        # Check that Unicode characters pass through cleanly.
+        linked = filters.do_linkify_stacktrace(u'\u883c', 'VERSION')
+        self.assertEqual(linked, u'\u883c')
+
     def test_slugify(self):
         self.assertEqual('k8s-test-foo', filters.do_slugify('[k8s] Test Foo'))
 

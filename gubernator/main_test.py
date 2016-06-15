@@ -118,6 +118,7 @@ class AppTest(unittest.TestCase):
         """Test that a missing build gives a 404."""
         response = app.get('/build' + self.BUILD_DIR.replace('1234', '1235'),
                            status=404)
+        self.assertIn('1235', response)
 
     def test_missing_started(self):
         """Test that a missing started.json still renders a proper page."""
