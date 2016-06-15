@@ -1,6 +1,7 @@
 - job:
     name: 'daily-shame-mail'
     description: 'Send the daily flaky issue shame email. Test owner: test infra team.'
+    node: 'master'
     properties:
         - build-discarder:
             num-to-keep: 20
