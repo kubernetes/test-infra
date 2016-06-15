@@ -20,7 +20,7 @@ usage() {
   echo 'Flags:'
   echo '  --base-image: create instance with base image instead of family'
   echo '  --pr: talk to the pull-request instead of e2e server'
-  echo '  --real: use real sized instances'
+  echo '  --fake: use tiny instance'
   echo 'INSTANCE: the name of the instance to target'
   echo '  pr-: create a pr-builder-sized instance'
   echo '  light-: create an instance for light postcommit jobs (e2e)'
@@ -37,6 +37,14 @@ usage() {
   echo '  reboot: reboot or hard reset the VM'
   echo '  update: configure prerequisite packages to run tests'
   echo '  update-image: update the image-family used to create new disks'
+  echo 'Common commands:'
+  echo '  # Refresh image'
+  echo '  $(basename "${0}") --base-image light-agent auto-image'
+  echo '  # Retire agent'
+  echo '  $(basename "${0}") agent-heavy-666 detatch delete'
+  echo '  # Refresh agent'
+  echo '  $(basename "${0}") agent-light-666'
+  echo '  $(basename "${0}") --pr agent-pr-666'
   exit 1
 }
 
@@ -48,7 +56,7 @@ DOCKER_VERSION='1.9.1-0~wheezy'
 GO_VERSION='go1.6.2.linux-amd64'
 TIMEZONE='America/Los_Angeles'
 
-REAL=
+FAKE=
 PR=
 
 # Defaults
@@ -63,8 +71,8 @@ fi
 
 while true; do
   case "${1:-}" in
-    --real)
-      REAL=yes
+    --fake)
+      FAKE=yes
       shift
       ;;
     --pr)
@@ -116,27 +124,19 @@ case "${KIND}" in
     ;;
   heavy)
     # Current experiment:
-    # 8 agents
-    # 1 executor, n1-highmem-8, 150G pd-standard
+    # 6 agents
+    # 1 executor, n1-standard-8, 150G pd-standard
     # Results:
-    # 14-32 cores, 12G ram, 150 write IOPs, <20MB/s write
+    # load 14-32, 12G ram, 150 write IOPs, <20MB/s write
     DISK_SIZE='150GB'
     DISK_TYPE='pd-standard'
     MACHINE_TYPE='n1-standard-8'
     ;;
   pr)
     # Current experiment:
-    # 5 agents
-    # 6 executors, n1-highmem-32, 500G ssd
-    # Results:
-    # 80/60/40 cores, 80/60G ram, <250 IOPs, <50MB/s
-    # New experiment:
-    # 3 executors, n1-standard-16, 500G pd
-    # Results:
-    # 40/25/20 cores, 52/40G ram, <250 IOPs, <32MB/s
-    # Newer experiment:
     # 1 executor, n1-standard-8, 200G pd
     # Results:
+    # load 10-30, 10G ram
     DISK_SIZE='200GB'
     DISK_TYPE='pd-standard'
     MACHINE_TYPE='n1-standard-8'
@@ -145,7 +145,7 @@ case "${KIND}" in
     ;;
 esac
 
-if [[ -z "${REAL}" ]]; then
+if [[ -n "${FAKE}" ]]; then
   DISK_SIZE='200GB'
   DISK_TYPE='pd-standard'
   MACHINE_TYPE='n1-standard-1'
