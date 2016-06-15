@@ -1,26 +1,31 @@
 - job:
-    name: 'jenkins-daily-maintenance'
+    name: 'jenkins-hourly-maintenance'
     concurrent: true
-    description: 'Run gcloud components update. Test owner: test-infra-maintainers.'
+    description: 'Clean docker images. Test owner: test-infra-maintainers.'
     properties:
         - build-discarder:
-            days-to-keep: 30
+            days-to-keep: 7
     builders:
         - shell: |
-            sudo chown -R jenkins:jenkins /usr/local/share/google
-            gcloud components update
-            gcloud components update alpha
-            gcloud components update beta
+            # A sort of work-around for https://github.com/kubernetes/kubernetes/issues/24661
+            # Try to avoid running at exactly :00 without worrying about a fancy solution
+            [[ "$(date +%-M)" -gt 3 ]] || sleep 180
+            # Select only exited or dead containers that weren't created this hour.
+            containers_to_remove=($(docker ps -a -f 'status=exited' -f 'status=dead' --format='{{.CreatedAt}}\t{{.ID}}' | grep -v ^$(date +'%Y-%m-%d %H') | cut -f2 || true))
+            # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
+            docker rm -v "${containers_to_remove[@]:+${containers_to_remove[@]}}" || true
+            docker rmi $(docker images -q -f 'dangling=true') || true
+            docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes
 
 - job:
-    name: 'jenkins-daily-maintenance-all'
-    description: 'Run jenkins-daily-maintenance on all nodes. Test owner: test-infra-maintainers.'
+    name: 'jenkins-hourly-maintenance-all'
+    description: 'Run jenkins-hourly-maintenance on all nodes. Test owner: test-infra-maintainers.'
     node: 'master'
     properties:
         - build-discarder:
-            days-to-keep: 30
+            days-to-keep: 7
     builders:
-        # Run jenkins-daily-maintenance on all nodes.
+        # Run jenkins-hourly-maintenance on all nodes.
         - raw:
             xml: |
                 <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.29">
@@ -30,7 +35,7 @@
                             <configFactories>
                                 <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNodesBuildParameterFactory plugin="nodelabelparameter@1.7"/>
                             </configFactories>
-                            <projects>jenkins-daily-maintenance</projects>
+                            <projects>jenkins-hourly-maintenance</projects>
                             <condition>ALWAYS</condition>
                             <triggerWithNoParameters>false</triggerWithNoParameters>
                             <block>
@@ -58,4 +63,4 @@
                     </configs>
                 </hudson.plugins.parameterizedtrigger.TriggerBuilder>
     triggers:
-        - timed: '@daily'
+        - timed: '@hourly'
