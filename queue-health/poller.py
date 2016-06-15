@@ -27,24 +27,27 @@ def is_blocked():
     ci = get_submit_queue_json('health')
     return ci['MergePossibleNow'] != True
 
+def get_stats():
+    stats = get_submit_queue_json('sq-stats')
+    return stats['Initialized'] == True, stats['MergesSinceRestart']
+
 def poll():
     prs = get_submit_queue_json('prs')
     e2e = get_submit_queue_json('github-e2e-queue')
-    return len(prs['PRStatus']), len(e2e['E2EQueue']), len(e2e['E2ERunning']), is_blocked()
+    online, mergeCount = get_stats()
+    return online, len(prs['PRStatus']), len(e2e['E2EQueue']), len(e2e['E2ERunning']), is_blocked(), mergeCount
 
 with open('results.txt', 'a') as f:
     while True:
         try:
             now = datetime.datetime.now()
             try:
-                prs, queue, running, blocked = poll()
-                online = True
+                online, prs, queue, running, blocked, mergeCount = poll()
             except KeyboardInterrupt:
                 raise
             except Exception:
-                prs, queue, running, blocked = 0, 0, 0, False
-                online = False
-            data = '{} {} {} {} {} {}'.format(now, online, prs, queue, running, blocked)
+                online, prs, queue, running, blocked, mergeCount = False, 0, 0, 0, False, 0
+            data = '{} {} {} {} {} {} {}'.format(now, online, prs, queue, running, blocked, mergeCount)
             print(data)
             print(data, file=f)
             f.flush()
