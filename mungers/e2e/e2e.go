@@ -162,6 +162,52 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 	return r, nil
 }
 
+func (e *RealE2ETester) checkPassFail(job string, number int) (stable, ignorableFlakes bool) {
+	if e.resolutionTracker.Resolved(cache.Job(job), cache.Number(number)) {
+		e.setBuildStatus(job, "Problem Resolved", strconv.Itoa(number))
+		return true, true
+	}
+
+	thisResult, err := e.GetBuildResult(job, number)
+	if err != nil || thisResult.Status == cache.ResultFailed {
+		glog.V(4).Infof("Found unstable job: %v, build number: %v: (err: %v) %#v", job, number, err, thisResult)
+		e.setBuildStatus(job, "Not Stable", strconv.Itoa(number))
+		return false, false
+	}
+
+	if thisResult.Status == cache.ResultStable {
+		e.setBuildStatus(job, "Stable", strconv.Itoa(number))
+		return true, false
+	}
+
+	lastResult, err := e.GetBuildResult(job, number-1)
+	if err != nil || lastResult.Status == cache.ResultFailed {
+		glog.V(4).Infof("prev job doesn't help: %v, build number: %v (the previous build); (err %v) %#v", job, number-1, err, lastResult)
+		e.setBuildStatus(job, "Not Stable", strconv.Itoa(number))
+		return true, false
+	}
+
+	if lastResult.Status == cache.ResultStable {
+		e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(number))
+		return true, true
+	}
+
+	intersection := sets.NewString()
+	for testName := range thisResult.Flakes {
+		if _, ok := lastResult.Flakes[testName]; ok {
+			intersection.Insert(string(testName))
+		}
+	}
+	if len(intersection) == 0 {
+		glog.V(2).Infof("Ignoring failure of %v/%v since it didn't happen the previous run this run = %v; prev run = %v.", job, number, thisResult.Flakes, lastResult.Flakes)
+		e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(number))
+		return true, true
+	}
+	glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, number, intersection)
+	e.setBuildStatus(job, "Not Stable", strconv.Itoa(number))
+	return false, false
+}
+
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
 func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 	allStable = true
@@ -175,53 +221,9 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 			continue
 		}
 
-		if e.resolutionTracker.Resolved(cache.Job(job), cache.Number(lastBuildNumber)) {
-			e.setBuildStatus(job, "Problem Resolved", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		thisResult, err := e.GetBuildResult(job, lastBuildNumber)
-		if err != nil || thisResult.Status == cache.ResultFailed {
-			glog.V(4).Infof("Found unstable job: %v, build number: %v: (err: %v) %#v", job, lastBuildNumber, err, thisResult)
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			allStable = false
-			continue
-		}
-
-		if thisResult.Status == cache.ResultStable {
-			e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		lastResult, err := e.GetBuildResult(job, lastBuildNumber-1)
-		if err != nil || lastResult.Status == cache.ResultFailed {
-			glog.V(4).Infof("prev job doesn't help: %v, build number: %v (the previous build); (err %v) %#v", job, lastBuildNumber-1, err, lastResult)
-			allStable = false
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		if lastResult.Status == cache.ResultStable {
-			ignorableFlakes = true
-			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		intersection := sets.NewString()
-		for testName := range thisResult.Flakes {
-			if _, ok := lastResult.Flakes[testName]; ok {
-				intersection.Insert(string(testName))
-			}
-		}
-		if len(intersection) == 0 {
-			glog.V(2).Infof("Ignoring failure of %v/%v since it didn't happen the previous run this run = %v; prev run = %v.", job, lastBuildNumber, thisResult.Flakes, lastResult.Flakes)
-			ignorableFlakes = true
-			e.setBuildStatus(job, "Ignorable flake", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-		glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, lastBuildNumber, intersection)
-		allStable = false
-		e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
+		stable, flakes := e.checkPassFail(job, lastBuildNumber)
+		allStable = allStable && stable
+		ignorableFlakes = ignorableFlakes || flakes
 	}
 
 	// Also get status for non-blocking jobs
