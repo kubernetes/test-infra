@@ -11,6 +11,7 @@ function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
   self.builds = {};
+  self.nonBlockingBuilds = {};
   self.health = {};
   self.lastMergeTime = Date();
   self.prQuerySearch = prQuerySearch;
@@ -165,7 +166,7 @@ function SQCntl(dataService, $interval, $location) {
         var percentStable = self.health.NumStable * 100.0 / self.health.TotalLoops;
         self.OverallHealth = Math.round(percentStable) + "%";
       }
-      updateBuildStability(self.builds, self.health);
+      updateBuildStability(self.builds, self.nonBlockingBuilds, self.health);
     });
   }
 
@@ -173,13 +174,15 @@ function SQCntl(dataService, $interval, $location) {
     dataService.getData('google-internal-ci').then(function successCallback(response) {
       var result = getE2E(response.data);
       self.builds = result.builds;
-      updateBuildStability(self.builds, self.health);
+      self.nonBlockingBuilds = result.nonBlockingBuilds;
+      updateBuildStability(self.builds, self.nonBlockingBuilds, self.health);
       self.failedBuild = result.failedBuild;
     });
   }
 
   function getE2E(builds) {
     var result = [];
+    var nonBlockingResult = [];
     var failedBuild = false;
     angular.forEach(builds, function(job, key) {
       var obj = {
@@ -235,19 +238,25 @@ function SQCntl(dataService, $interval, $location) {
           failedBuild = true;
       }
       obj.stability = '';
-      result.push(obj);
+      if (!obj.msg) {
+        result.push(obj);
+      } else {
+        if (obj.msg.includes('[nonblocking]')) {
+          obj.msg = obj.msg.replace('[nonblocking]', '');
+          nonBlockingResult.push(obj);
+        } else {
+          result.push(obj);
+        }
+      }
     });
     return {
       builds: result,
+      nonBlockingBuilds: nonBlockingResult,
       failedBuild: failedBuild,
     };
   }
 
-  function updateBuildStability(builds, health) {
-    if (Object.keys(builds).length === 0 ||
-        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
-      return;
-    }
+  function updateBuildStabilityHelper(builds, health) {
     angular.forEach(builds, function(build) {
       var key = build.name;
       if (key in self.health.NumStablePerJob) {
@@ -255,6 +264,15 @@ function SQCntl(dataService, $interval, $location) {
         build.stability = Math.round(percentStable) + "%"
       }
     });
+  }
+
+  function updateBuildStability(builds, nonBlockingBuilds, health) {
+    if (Object.keys(builds).length === 0 ||
+        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
+      return;
+    }
+    updateBuildStabilityHelper(builds, health);
+    updateBuildStabilityHelper(nonBlockingBuilds, health);
   }
 
   function searchTermsContain(terms, value) {
