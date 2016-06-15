@@ -1130,6 +1130,15 @@ func TestCalcMergeRate(t *testing.T) {
 				return rate > 2 && rate < 3
 			},
 		},
+		{
+			name:     "24fast",
+			preRate:  24,
+			interval: time.Duration(4 * time.Minute),
+			expected: func(rate float64) bool {
+				// Should be no change
+				return rate == 24
+			},
+		},
 	}
 	for testNum, test := range tests {
 		sq := getTestSQ(false, nil, nil)

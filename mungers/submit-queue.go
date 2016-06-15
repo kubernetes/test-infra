@@ -272,8 +272,15 @@ func getSmoothFactor(dur time.Duration) float64 {
 //    of guess-and-test and intuition. Someone who knows about this stuff
 //    is likely to laugh at the naivete. Point him to where someone intelligent
 //    has thought about this stuff and he will gladly do something smart.
+// Merges that took less than 5 minutes are ignored completely for the rate
+// calculation.
 func calcMergeRate(oldRate float64, last, now time.Time) float64 {
 	since := now.Sub(last)
+	if since <= 5*time.Minute {
+		// retest-not-required PR merges shouldn't affect our best
+		// guess about the rate.
+		return oldRate
+	}
 	var rate float64
 	if since == 0 {
 		rate = 96
@@ -285,15 +292,15 @@ func calcMergeRate(oldRate float64, last, now time.Time) float64 {
 	return toFixed(mergeRate)
 }
 
-// updates a smoothed rate at which PRs are merging per day.
-// returns 'Now()' and the rate.
-// Should be called once after every merge. Also updates sq.totalMerges.
+// Updates a smoothed rate at which PRs are merging per day.
+// Updates merge stats. Should be called once for every merge.
 func (sq *SubmitQueue) updateMergeRate() {
 	now := sq.clock.Now()
-
 	sq.mergeRate = calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
-	sq.lastMergeTime = now
+
+	// Update stats
 	atomic.AddInt32(&sq.totalMerges, 1)
+	sq.lastMergeTime = now
 }
 
 // This calculated the smoothed merge rate BUT it looks at the time since
@@ -1028,6 +1035,7 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
 	obj.MergePR("submit-queue")
 	sq.SetMergeStatus(obj, merged)
+	sq.updateMergeRate()
 }
 
 func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
@@ -1088,7 +1096,6 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	}
 
 	if obj.HasLabel(retestNotRequiredLabel) {
-		// Do not update mergeRate when we don't do e2e tests
 		sq.mergePullRequest(obj)
 		return true
 	}
@@ -1139,7 +1146,6 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	sq.updateMergeRate()
 	sq.mergePullRequest(obj)
 	return true
 }
