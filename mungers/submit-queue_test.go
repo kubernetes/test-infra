@@ -142,15 +142,15 @@ func Commits() []github.RepositoryCommit {
 }
 
 func SuccessStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1, notRequiredReTestContext2}, nil, nil, nil)
+	return github_test.Status("mysha", []string{requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1, notRequiredReTestContext2}, nil, nil, nil)
 }
 
 func RetestFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, notRequiredReTestContext1, notRequiredReTestContext2}, []string{requiredReTestContext2}, nil, nil)
+	return github_test.Status("mysha", []string{requiredReTestContext1, notRequiredReTestContext1, notRequiredReTestContext2}, []string{requiredReTestContext2}, nil, nil)
 }
 
 func NoRetestFailStatus() *github.CombinedStatus {
-	return github_test.Status("mysha", []string{travisContext, requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1}, []string{notRequiredReTestContext2}, nil, nil)
+	return github_test.Status("mysha", []string{requiredReTestContext1, requiredReTestContext2, notRequiredReTestContext1}, []string{notRequiredReTestContext2}, nil, nil)
 }
 
 func LastBuildNumber() int {

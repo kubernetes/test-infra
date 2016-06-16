@@ -51,11 +51,11 @@ const (
 	claYesLabel            = "cla: yes"
 	claHumanLabel          = "cla: human-approved"
 
-	jenkinsE2EContext  = "Jenkins GCE e2e"
-	jenkinsUnitContext = "Jenkins unit/integration"
-	jenkinsNodeContext = "Jenkins GCE Node e2e"
-	travisContext      = "continuous-integration/travis-ci/pr"
-	sqContext          = "Submit Queue"
+	jenkinsE2EContext    = "Jenkins GCE e2e"
+	jenkinsUnitContext   = "Jenkins unit/integration"
+	jenkinsVerifyContext = "Jenkins verification"
+	jenkinsNodeContext   = "Jenkins GCE Node e2e"
+	sqContext            = "Submit Queue"
 
 	retestNotRequiredMergePriority = -1 // used for retestNotRequiredLabel
 	defaultMergePriority           = 3  // when an issue is unlabeled
@@ -67,6 +67,13 @@ var (
 	_ = fmt.Print
 	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
 	retestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
+
+	requiredContexts = []string{
+		jenkinsUnitContext,
+		jenkinsE2EContext,
+		jenkinsNodeContext,
+		jenkinsVerifyContext,
+	}
 )
 
 type submitStatus struct {
@@ -453,6 +460,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubelet-gce-e2e-ci",
 		"kubernetes-build",
 		"kubernetes-test-go",
+		"kubernetes-verify-master",
 		"kubernetes-e2e-gce",
 		"kubernetes-e2e-gce-slow",
 		"kubernetes-e2e-gce-serial",
@@ -466,7 +474,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringSliceVar(&sq.RequiredRetestContexts, "required-retest-contexts", []string{jenkinsE2EContext, jenkinsUnitContext, jenkinsNodeContext}, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
+	cmd.Flags().StringSliceVar(&sq.RequiredRetestContexts, "required-retest-contexts", requiredContexts, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
 	cmd.Flags().StringVar(&sq.retestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
