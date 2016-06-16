@@ -80,6 +80,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-e2e-serial"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-reboot':  # kubernetes-e2e-gke-reboot
             description: 'Run [Feature:Reboot] tests on GKE using the latest successful build.'
             timeout: 180
