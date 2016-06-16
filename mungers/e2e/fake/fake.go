@@ -25,6 +25,7 @@ import (
 type FakeE2ETester struct {
 	JobNames           []string
 	WeakStableJobNames []string
+	NotStableJobNames  []string
 }
 
 // Flakes returns nil.
@@ -46,6 +47,9 @@ func (e *FakeE2ETester) GetBuildStatus() map[string]e2e.BuildInfo {
 	}
 	for _, name := range e.WeakStableJobNames {
 		out[name] = e2e.BuildInfo{"Stable", "1"}
+	}
+	for _, name := range e.NotStableJobNames {
+		out[name] = e2e.BuildInfo{"Not Stable", "1"}
 	}
 	return out
 }

@@ -36,6 +36,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+	"k8s.io/contrib/mungegithub/mungers/shield"
 	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/NYTimes/gziphandler"
@@ -393,6 +394,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
+		http.Handle("/health.svg", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealthSVG)))
 		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
 		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
 		config.ServeDebugStats("/stats")
@@ -1267,6 +1269,40 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
   </li>
   <li>PR number</li>
 </ol> `))
+}
+
+func (sq *SubmitQueue) getHealthSVG() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	blocked := false
+	blockingJobs := make([]string, 0)
+	blocked = !sq.health.MergePossibleNow
+	status := "running"
+	color := "brightgreen"
+	if blocked {
+		status = "blocked"
+		color = "red"
+		for job, status := range sq.e2e.GetBuildStatus() {
+			if status.Status == "Not Stable" {
+				job = strings.Replace(job, "kubernetes-", "", -1)
+				blockingJobs = append(blockingJobs, job)
+			}
+		}
+		sort.Strings(blockingJobs)
+		if len(blockingJobs) > 3 {
+			blockingJobs = append(blockingJobs[:3], "...")
+		}
+		if len(blockingJobs) > 0 {
+			status += " by " + strings.Join(blockingJobs, ", ")
+		}
+	}
+	return shield.Make("queue", status, color)
+}
+
+func (sq *SubmitQueue) serveHealthSVG(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-type", "image/svg+xml")
+	res.WriteHeader(http.StatusOK)
+	res.Write(sq.getHealthSVG())
 }
 
 func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {

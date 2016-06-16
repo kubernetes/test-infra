@@ -1276,3 +1276,26 @@ func TestHealth(t *testing.T) {
 		t.Errorf("updateHealth didn't truncate old entries: %v", sq.healthHistory)
 	}
 }
+
+func TestHealthSVG(t *testing.T) {
+	sq := getTestSQ(false, nil, nil)
+	e2e := sq.e2e.(*fake_e2e.FakeE2ETester)
+
+	for _, state := range []struct {
+		mergePossible bool
+		expected      string
+		notStable     []string
+	}{
+		{true, "running", nil},
+		{false, "blocked</text>", nil},
+		{false, "blocked by kubemark-500", []string{"kubernetes-kubemark-500"}},
+		{false, "blocked by a, b, c, ...", []string{"a", "b", "c", "d"}},
+	} {
+		sq.health.MergePossibleNow = state.mergePossible
+		e2e.NotStableJobNames = state.notStable
+		res := string(sq.getHealthSVG())
+		if !strings.Contains(res, state.expected) {
+			t.Errorf("SVG doesn't contain `%s`: %v", state.expected, res)
+		}
+	}
+}
