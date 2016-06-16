@@ -72,6 +72,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-serial':  # kubernetes-e2e-gke-serial
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
