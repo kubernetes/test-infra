@@ -1,31 +1,28 @@
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="/static/style.css" />
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/style.css" />
 % if finished['result'] == 'SUCCESS' and not failures
 <link rel="icon" type="image/png" href="/static/favicon-green.png" />
 % endif
 <title>{{job}} #{{build}} Results</title>
 <script src="/static/build.js"></script>
-</head>
-<body>
 <div id="header" class="container">
-  <img src="/static/logo.svg">
-  <h1><a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
+<img src="/static/logo.svg">
+<h1><a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
 % if started
-<p>Started on {{started['timestamp']|timestamp}} and took {{(finished['timestamp']-started['timestamp'])|duration}}</p>
+<p>Started on {{started['timestamp']|timestamp}} and took {{(finished['timestamp']-started['timestamp'])|duration}}
 % endif
 </div>
 <div id="summary">
 % if started
-<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a></p>
+<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
 % endif
-<p>Build Result: {{finished['result']}}</p>
-<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a> 
-<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a></p>
+<p>Build Result: {{finished['result']}}
+<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
+<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
 </div>
 % if failures
 <div id="failures">
-<h2>Test Failures</h1>
+<h2>Test Failures</h2>
 % for name, time, text in failures
 <a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 <pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
@@ -39,5 +36,3 @@
 <h2>No Test Failures!</h2>
 </div>
 % endif
-</body>
-</html>

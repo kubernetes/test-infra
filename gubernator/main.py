@@ -236,9 +236,9 @@ class BuildHandler(RenderingHandler):
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
-            self.response.write("Unable to load build details from %s"
-                                % job_dir)
-            self.error(404)
+            logging.warning("unable to load %s", build_dir)
+            self.render('build_404.html', {"build_dir": build_dir})
+            self.response.set_status(404)
             return
         started, finished, failures = details
         if started:
