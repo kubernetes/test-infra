@@ -45,17 +45,8 @@ job runs e2e tests and uploads the results.
 
 ### Include results in test history
 
-Modify scripts that collect results from federate test jobs to include
-the Google Cloud Storage bucket in the list of buckets that are read.
-
-1. Add the name of the Google Cloud Storage bucket to
-   `BUCKET_WHITELIST` in [gubernator/main.py](gubnerator/main.py).
-2. Add an entry for the test job in
-   [`jenkins/test-history/buckets.json`](jenkins/test-history/buckets.json).
-   The key for each entry is a Google Cloud Storage bucket URL.  Each
-   bucket has a `prefix` field that used to identify tests in the
-   test history dashboard.
-
+Collect results from federated test jobs by adding the Google Cloud Storage
+bucket to [`buckets.yaml`](/buckets.yaml).
 
 ### e2e-runner Environment Variables
 

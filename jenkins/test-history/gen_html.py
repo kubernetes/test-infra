@@ -20,15 +20,16 @@
 from __future__ import division
 from __future__ import print_function
 
-
 import argparse
 import collections
-import jinja2
 import json
 import os
 import re
 import sys
 import time
+
+import jinja2
+import yaml
 
 
 BLOCKING_JOBS = [
@@ -59,7 +60,7 @@ JobSummary = collections.namedtuple('JobSummary', [
 def load_prefixes(in_file):
     """Returns a dictionary from bucket to prefix using in_file."""
     result = {}
-    buckets = json.load(in_file)
+    buckets = yaml.load(in_file)
     for bucket, data in buckets.iteritems():
         result[bucket] = data['prefix']
     return result

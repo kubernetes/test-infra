@@ -23,6 +23,8 @@ import StringIO
 import tempfile
 import unittest
 
+import yaml
+
 import gen_html
 
 
@@ -188,10 +190,10 @@ class GenHtmlTest(unittest.TestCase):
             tests_json = os.path.join(temp_dir, 'tests.json')
             with open(tests_json, 'w') as buf:
                 json.dump(TEST_DATA, buf)
-            buckets_json = os.path.join(temp_dir, 'buckets.json')
-            with open(buckets_json, 'w') as buf:
-                buf.write(json.dumps(TEST_BUCKETS_DATA))
-            gen_html.main(tests_json, buckets_json, temp_dir)
+            buckets_yaml = os.path.join(temp_dir, 'buckets.yaml')
+            with open(buckets_yaml, 'w') as buf:
+                yaml.dump(TEST_BUCKETS_DATA, buf)
+            gen_html.main(tests_json, buckets_yaml, temp_dir)
             for page in (
                     'index',
                     'suite-kubernetes-release',

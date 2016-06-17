@@ -24,6 +24,7 @@ import zlib
 
 import webapp2
 import jinja2
+import yaml
 
 from google.appengine.api import memcache
 import google.appengine.ext.ndb as ndb
@@ -34,11 +35,8 @@ import cloudstorage as gcs
 import filters
 
 BUCKET_WHITELIST = {
-    'kubernetes-jenkins',
-    'kube_azure_log',
-    'rktnetes-jenkins',
-    'kubernetes-github-redhat',
-    'kopeio-kubernetes-e2e',
+    re.match(r'gs://([^/]+)', path).group(1)
+    for path in yaml.load(open("buckets.yaml"))
 }
 
 DEFAULT_JOBS = {
