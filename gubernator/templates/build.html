@@ -20,8 +20,8 @@
 <p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
 <a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
 </div>
-% if failures
 <div id="failures">
+% if failures
 <h2>Test Failures</h2>
 % for name, time, text in failures
 <a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time"> {{time|duration}}</span></h3></a>
@@ -34,5 +34,11 @@
 % endfor
 % else
 <h2>No Test Failures!</h2>
-</div>
+% if build_log
+<h3>Error lines from build-log.txt</h3>
+<pre>
+{{build_log | safe}}
+</pre>
 % endif
+% endif
+</div>

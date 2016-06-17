@@ -47,13 +47,15 @@ Error Goes Here</failure>
 </testsuite>'''
 
 
+def write(path, data):
+    if not isinstance(data, str):
+        data = json.dumps(data)
+    with gcs.open(path, 'w') as f:
+        f.write(data)
+
+
 def init_build(build_dir, started=True):
     """Create faked files for a build."""
-    def write(path, data):
-        if not isinstance(data, str):
-            data = json.dumps(data)
-        with gcs.open(path, 'w') as f:
-            f.write(data)
     if started:
         write(build_dir + 'started.json',
               {'version': 'v1+56', 'timestamp': 1406535800})
@@ -109,6 +111,9 @@ class AppTest(unittest.TestCase):
         # redirect GCS calls to the local proxy
         main.GCS_API_URL = gcs.common.local_api_url()
 
+    def get_build_page(self):
+        return app.get('/build' + self.BUILD_DIR)
+
     def test_index(self):
         """Test that the index works."""
         response = app.get('/')
@@ -132,7 +137,7 @@ class AppTest(unittest.TestCase):
 
     def test_build(self):
         """Test that the build page works in the happy case."""
-        response = app.get('/build' + self.BUILD_DIR)
+        response = self.get_build_page()
         self.assertIn('2014-07-28', response)  # started
         self.assertIn('16m40s', response)      # build duration
         self.assertIn('Third', response)       # test name
@@ -144,15 +149,34 @@ class AppTest(unittest.TestCase):
     def test_build_no_failures(self):
         """Test that builds with no Junit artifacts work."""
         gcs.delete(self.BUILD_DIR + 'artifacts/junit_01.xml')
-        response = app.get('/build' + self.BUILD_DIR)
+        response = self.get_build_page()
         self.assertIn('No Test Failures', response)
+
+    def test_build_show_log(self):
+        """Test that builds that failed with no failures show the build log."""
+        gcs.delete(self.BUILD_DIR + 'artifacts/junit_01.xml')
+        write(self.BUILD_DIR + 'finished.json',
+              {'result': 'FAILURE', 'timestamp': 1406536800})
+
+        # Unable to fetch build-log.txt, still works.
+        response = self.get_build_page()
+        self.assertNotIn('Error lines', response)
+
+        self.testbed.init_memcache_stub()  # clear cached result
+        write(self.BUILD_DIR + 'build-log.txt',
+              u'ERROR: test \u039A\n\n\n\n\n\n\n\n\nblah'.encode('utf8'))
+        response = self.get_build_page()
+        self.assertIn('Error lines', response)
+        self.assertIn('No Test Failures', response)
+        self.assertIn('ERROR</span>: test', response)
+        self.assertNotIn('blah', response)
 
     def test_cache(self):
         """Test that caching works at some level."""
-        response = app.get('/build' + self.BUILD_DIR)
+        response = self.get_build_page()
         gcs.delete(self.BUILD_DIR + 'started.json')
         gcs.delete(self.BUILD_DIR + 'finished.json')
-        response2 = app.get('/build' + self.BUILD_DIR)
+        response2 = self.get_build_page()
         self.assertEqual(str(response), str(response2))
 
     def test_build_list(self):
