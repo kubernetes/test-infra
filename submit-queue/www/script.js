@@ -10,9 +10,8 @@ app.controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
-  self.builds = {};
-  self.nonBlockingBuilds = {};
   self.health = {};
+  self.testResults = {};
   self.lastMergeTime = Date();
   self.prQuerySearch = prQuerySearch;
   self.historyQuerySearch = historyQuerySearch;
@@ -102,8 +101,8 @@ function SQCntl(dataService, $interval, $location) {
 
   // This data is shown in a top banner (when the Queue is blocked),
   // so it's always loaded.
-  refreshGoogleInternalCI();
-  $interval(refreshGoogleInternalCI, 60000);  // Refresh every minute
+  refreshContinuousTests();
+  $interval(refreshContinuousTests, 60000);  // Refresh every minute
 
   // Request Avatars that are only as large necessary (CSS limits them to 40px)
   function fixPRAvatars(prs) {
@@ -166,24 +165,22 @@ function SQCntl(dataService, $interval, $location) {
         var percentStable = self.health.NumStable * 100.0 / self.health.TotalLoops;
         self.OverallHealth = Math.round(percentStable) + "%";
       }
-      updateBuildStability(self.builds, self.nonBlockingBuilds, self.health);
+      updateBuildStability(self.testResults.blockingBuilds, self.testResults.nonBlockingBuilds, self.health);
     });
   }
 
-  function refreshGoogleInternalCI() {
+  function refreshContinuousTests() {
     dataService.getData('google-internal-ci').then(function successCallback(response) {
-      var result = getE2E(response.data);
-      self.builds = result.builds;
-      self.nonBlockingBuilds = result.nonBlockingBuilds;
-      updateBuildStability(self.builds, self.nonBlockingBuilds, self.health);
-      self.failedBuild = result.failedBuild;
+      self.testResults = processTests(response.data);
+      updateBuildStability(self.testResults.blockingBuilds, self.testResults.nonBlockingBuilds, self.health);
     });
   }
 
-  function getE2E(builds) {
-    var result = [];
+  function processTests(builds) {
+    var blockingResult = [];
     var nonBlockingResult = [];
-    var failedBuild = false;
+    var redBuilds = false;
+    var yellowBuilds = false;
     angular.forEach(builds, function(job, key) {
       var obj = {
         'name': key,
@@ -199,19 +196,21 @@ function SQCntl(dataService, $interval, $location) {
           // red X mark
           obj.state = '\u2716';
           obj.color = 'red';
-          failedBuild = true;
+          redBuilds = true;
           break;
         case 'Ignorable flake':
           // orange X mark
           obj.state = '\u2716';
-          obj.color = 'orange';
+          obj.color = '#FF8A65';
           obj.msg = 'Flake!';
+          yellowBuilds = true;
           break;
         case 'Problem Resolved':
           // orange X mark
           obj.state = '\u2716';
-          obj.color = 'orange';
+          obj.color = '#FF8A65';
           obj.msg = 'Manual override';
+          yellowBuilds = true;
           break;
         case '[nonblocking] Stable':
           // green check mark
@@ -222,41 +221,49 @@ function SQCntl(dataService, $interval, $location) {
         case '[nonblocking] Not Stable':
           // orange X mark
           obj.state = '\u2716';
-          obj.color = 'orange';
+          obj.color = '#FF8A65';
           obj.msg = '[nonblocking]';
           break;
         case '[nonblocking] Ignorable flake':
           // orange X mark
           obj.state = '\u2716';
-          obj.color = 'orange';
-          obj.msg = '[nonblocking]';
+          obj.color = '#FF8A65';
+          obj.msg = '[nonblocking] Flake!';
           break;
         default:
           obj.state = 'Error';
           obj.color = 'red';
           obj.msg = job.Status;
-          failedBuild = true;
+          redBuilds = true;
       }
       obj.stability = '';
       if (!obj.msg) {
-        result.push(obj);
+        blockingResult.push(obj);
       } else {
         if (obj.msg.includes('[nonblocking]')) {
           obj.msg = obj.msg.replace('[nonblocking]', '');
           nonBlockingResult.push(obj);
         } else {
-          result.push(obj);
+          blockingResult.push(obj);
         }
       }
     });
+    if (redBuilds) {
+      yellowBuilds = false;
+    }
     return {
-      builds: result,
+      blockingBuilds: blockingResult,
       nonBlockingBuilds: nonBlockingResult,
-      failedBuild: failedBuild,
+      yellowBuilds: yellowBuilds,
+      redBuilds: redBuilds,
     };
   }
 
   function updateBuildStabilityHelper(builds, health) {
+    if (builds === undefined || Object.keys(builds).length === 0 ||
+        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
+      return;
+    }
     angular.forEach(builds, function(build) {
       var key = build.name;
       if (key in self.health.NumStablePerJob) {
@@ -266,12 +273,8 @@ function SQCntl(dataService, $interval, $location) {
     });
   }
 
-  function updateBuildStability(builds, nonBlockingBuilds, health) {
-    if (Object.keys(builds).length === 0 ||
-        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
-      return;
-    }
-    updateBuildStabilityHelper(builds, health);
+  function updateBuildStability(blockingBuilds, nonBlockingBuilds, health) {
+    updateBuildStabilityHelper(blockingBuilds, health);
     updateBuildStabilityHelper(nonBlockingBuilds, health);
   }
 

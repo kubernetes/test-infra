@@ -13,8 +13,14 @@ md-list-item > .md-avatar img {
   width: 40px;
 }
 
+.yellowTab {
+  padding: 14px;
+  background-color: #FF8A65;
+  color: black;
+}
+
 .redTab {
   padding: 14px;
-  background-color: #F44336;
+  background-color: #F4511E;
   color: white;
 }

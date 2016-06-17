@@ -91,6 +91,7 @@ help:
 	@echo " deploy:       launches/updates the app on a kubernetes cluster"
 	@echo " local_dryrun: tries to launch the container locally with docker"
 	@echo " deployment:   updates $(APP)/deployment.yaml and places results in $(APP)/local.deployment.yaml"
+	@echo " ui-stub:      grab upstream submit-queue data and launch the web ui on port 8000"
 	@echo " secret:       updates $(APP)/secret.yaml with TOKEN an creates $(APP)/local.secret.yaml"
 	@echo " clean:        deletes the binary and local files (does not delete old containers)"
 
