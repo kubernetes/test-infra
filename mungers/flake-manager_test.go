@@ -87,7 +87,7 @@ func TestBrokenJobSource(t *testing.T) {
 }
 
 func flakecomment(id int, createdAt time.Time) github.IssueComment {
-	return github_testing.Comment(id, "k8s-bot", createdAt, "Failed:")
+	return github_testing.Comment(id, "k8s-bot", createdAt, "Failed: something failed")
 }
 
 func TestAutoPrioritize(t *testing.T) {
