@@ -87,6 +87,7 @@
             job-env: |
                 export PROJECT="k8s-jkns-e2e-gke-ci-reboot"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-flaky':  # kubernetes-e2e-gke-flaky
             description: |
                 Run flaky e2e tests using the following config:<br>
@@ -120,6 +121,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] \
                                          --ginkgo.skip=\[Flaky\]"
                 export NUM_NODES=3
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
@@ -143,6 +145,7 @@
                 # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
                 # So setting max-nodes-per-pool=1000, to check if that helps.
                 export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
