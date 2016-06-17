@@ -192,6 +192,7 @@
           cmd: |
             export KUBE_SKIP_PUSH_GCS=y
             export KUBE_RUN_FROM_OUTPUT=y
+            export KUBE_FASTBUILD=true
             ./hack/jenkins/build.sh
             if [[ "${{ghprbTargetBranch:-}}" == "master" || "${{ghprbTargetBranch:-}}" == "release-1.2" || "${{ghprbTargetBranch:-}}" == "release-1.3" ]]; then
               # Nothing should want Jenkins $HOME
