@@ -210,6 +210,7 @@
                     failurenew:
             types:
                 - junit:
+                    skip-if-no-test-files: '{skip-if-no-test-files}'
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
         - gcs-uploader
@@ -219,11 +220,13 @@
     suffix:
       - test-unit-integration: # kubernetes-pull-test-unit-integration
           status-context: unit/integration
+          skip-if-no-test-files: false
           cmd: |
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             ./hack/jenkins/gotest-dockerized.sh
       - verify-all: # kubernetes-pull-verify-all
           status-context: verification
+          skip-if-no-test-files: true
           cmd: |
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
