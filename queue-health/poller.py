@@ -14,22 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
+import cStringIO
 import datetime
 import requests
+import subprocess
+import sys
 import time
+import traceback
+
 
 def get_submit_queue_json(path):
-    return requests.get('http://submit-queue.k8s.io/{}'.format(path)).json()
+    for n in range(3):
+        uri = 'http://submit-queue.k8s.io/%s' % path
+        print >>sys.stderr, 'GET %s' % uri
+        resp = requests.get(uri)
+        if resp.ok:
+            break
+        time.sleep(2**n)
+    resp.raise_for_status()
+    return resp.json()
+
 
 def is_blocked():
     ci = get_submit_queue_json('health')
     return ci['MergePossibleNow'] != True
 
+
 def get_stats():
     stats = get_submit_queue_json('sq-stats')
     return stats['Initialized'] == True, stats['MergesSinceRestart']
+
 
 def poll():
     prs = get_submit_queue_json('prs')
@@ -37,20 +51,60 @@ def poll():
     online, mergeCount = get_stats()
     return online, len(prs['PRStatus']), len(e2e['E2EQueue']), len(e2e['E2ERunning']), is_blocked(), mergeCount
 
-with open('results.txt', 'a') as f:
+
+def load_stats(uri):
     while True:
         try:
+            return subprocess.check_output(['gsutil', 'cat', uri])
+        except subprocess.CalledProcessError:
+            traceback.print_exc()
+            time.sleep(5)
+
+
+def save_stats(uri, buf):
+    proc = subprocess.Popen(
+        # TODO(fejta): add -Z if this gets resolved:
+        # https://github.com/GoogleCloudPlatform/gsutil/issues/364
+        ['gsutil', '-q', 'cp', '-a', 'public-read', '-', uri],
+        stdin=subprocess.PIPE)
+    proc.communicate(buf.getvalue())
+    code = proc.wait()
+    if code:
+      print >>sys.stderr, 'Failed to copy stats to %s: %d' % (uri, code)
+
+
+def poll_forever(uri):
+    print >>sys.stderr, 'Loading historical stats from %s...' % uri
+    buf = cStringIO.StringIO()
+    buf.write(load_stats(uri))
+    secs = 60
+
+    while True:
+        try:
+            print >>sys.stderr, 'Waiting %ds...' % secs
+            time.sleep(secs)
             now = datetime.datetime.now()
+            print >>sys.stderr, 'Polling current status...'
+            online, prs, queue, running, blocked, mergeCount = False, 0, 0, 0, False, 0
             try:
                 online, prs, queue, running, blocked, mergeCount = poll()
             except KeyboardInterrupt:
                 raise
-            except Exception:
-                online, prs, queue, running, blocked, mergeCount = False, 0, 0, 0, False, 0
-            data = '{} {} {} {} {} {} {}'.format(now, online, prs, queue, running, blocked, mergeCount)
-            print(data)
-            print(data, file=f)
-            f.flush()
-            time.sleep(60)
+            except KeyError:
+                traceback.print_exc()
+            except IOError:
+                traceback.print_exc()
+                pass
+
+            data = '{} {} {} {} {} {} {}\n'.format(now, online, prs, queue, running, blocked, mergeCount)
+            print >>sys.stderr, 'Appending to history: %s' % data
+            buf.write(data)
+
+            print >>sys.stderr, 'Saving historical stats to %s...' % uri
+            save_stats(uri, buf)
         except KeyboardInterrupt:
             break
+
+
+if __name__ == '__main__':
+    poll_forever(*sys.argv[1:])
