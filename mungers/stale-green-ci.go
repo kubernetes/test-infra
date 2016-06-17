@@ -35,10 +35,7 @@ const (
 Tests are more than %d hours old. Re-running tests.`
 )
 
-var (
-	greenMsgBody     = fmt.Sprintf(greenMsgFormat, staleGreenCIHours)
-	requiredContexts = []string{jenkinsUnitContext, jenkinsE2EContext}
-)
+var greenMsgBody = fmt.Sprintf(greenMsgFormat, staleGreenCIHours)
 
 // StaleGreenCI will re-run passed tests for LGTM PRs if they are more than
 // 96 hours old.

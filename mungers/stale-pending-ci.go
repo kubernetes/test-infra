@@ -76,8 +76,6 @@ func (StalePendingCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (StalePendingCI) Munge(obj *github.MungeObject) {
-	requiredContexts := []string{jenkinsUnitContext, jenkinsE2EContext}
-
 	if !obj.IsPR() {
 		return
 	}
