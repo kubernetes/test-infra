@@ -55,7 +55,7 @@ def poll():
 def load_stats(uri):
     while True:
         try:
-            return subprocess.check_output(['gsutil', 'cat', uri])
+            return subprocess.check_output(['gsutil', '-q', 'cat', uri])
         except subprocess.CalledProcessError:
             traceback.print_exc()
             time.sleep(5)
@@ -65,7 +65,8 @@ def save_stats(uri, buf):
     proc = subprocess.Popen(
         # TODO(fejta): add -Z if this gets resolved:
         # https://github.com/GoogleCloudPlatform/gsutil/issues/364
-        ['gsutil', '-q', 'cp', '-a', 'public-read', '-', uri],
+        ['gsutil', '-q', '-h', 'Content-Type:text/plain',
+         'cp', '-a', 'public-read', '-', uri],
         stdin=subprocess.PIPE)
     proc.communicate(buf.getvalue())
     code = proc.wait()

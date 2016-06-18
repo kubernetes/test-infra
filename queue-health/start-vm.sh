@@ -36,7 +36,7 @@ gcloud compute instances create \
   "${NAME}" \
   --boot-disk-size=50GB \
   --description="Created by ${USER} to monitor submit-queue health on $(date)" \
-  --machine-type=n1-standard-1 \
+  --machine-type=g1-small \
   --metadata=startup-script-url=gs://kubernetes-test-history/sq/startup.sh \
   --project="${PROJECT}" \
   --scopes=storage-rw

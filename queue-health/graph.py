@@ -29,6 +29,11 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+def parse_line(
+        date, time, online, pr, queue,
+        run, blocked, merge_count=0):  # merge_count may be missing
+    return (date, time, online, pr, queue, run, blocked, merge_count)
+
 
 def render(history_lines, out_file):
     """Read historical data and save to out_file as png."""
@@ -45,8 +50,9 @@ def render(history_lines, out_file):
     daily_sum = 0
     for line in history_lines:
         try:
-            date, time, online, pr, queue, run, blocked = line.strip().split(' ')
-        except ValueError:  # line does not fit expected criteria
+            date, time, online, pr, queue, run, blocked, _ = parse_line(
+                *line.strip().split(' '))
+        except TypeError:  # line does not fit expected criteria
             continue
         pr, queue, run = int(pr), int(queue), int(run)
         dt = datetime.datetime.strptime('{} {}'.format(date, time), '%Y-%m-%d %H:%M:%S.%f')
@@ -121,6 +127,7 @@ def render(history_lines, out_file):
         fig.text(.1, .08, 'Health for the last week: %.0f%%' % (100.0 * week_happy / week_points))
 
     plt.savefig(out_file, bbox_inches='tight')
+    plt.close()
 
 
 def render_forever(history_uri, png_uri):
@@ -132,7 +139,8 @@ def render_forever(history_uri, png_uri):
         buf.truncate()
         print >>sys.stderr, 'Cat latest results from %s...' % history_uri
         try:
-            history = subprocess.check_output(['gsutil', 'cat', history_uri])
+            history = subprocess.check_output(
+                ['gsutil', '-q', 'cat', history_uri])
         except subprocess.CalledProcessError:
             traceback.print_exc()
             time.sleep(10)
@@ -143,7 +151,9 @@ def render_forever(history_uri, png_uri):
 
         print >>sys.stderr, 'Copy buffer to %s...' % png_uri
         proc = subprocess.Popen(
-            ['gsutil', '-q', '-h', 'Content-Type:image/png',
+            ['gsutil', '-q',
+             '-h', 'Content-Type:image/png',
+             '-h', 'Cache-Control:public, max-age=60',
              'cp', '-a', 'public-read', '-', png_uri],
             stdin=subprocess.PIPE)
         proc.communicate(buf.getvalue())
