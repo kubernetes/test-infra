@@ -454,7 +454,8 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{
 		"kubernetes-e2e-gke-staging",
 		"kubernetes-e2e-gke-staging-parallel",
-		"kubernetes-e2e-gke-subnet",
+		"kubernetes-e2e-gce-serial",
+		"kubernetes-e2e-gke-serial",
 		"kubernetes-e2e-gke-test",
 		"kubernetes-e2e-gce-examples",
 	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
@@ -465,8 +466,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-verify-master",
 		"kubernetes-e2e-gce",
 		"kubernetes-e2e-gce-slow",
-		"kubernetes-e2e-gce-serial",
-		"kubernetes-e2e-gke-serial",
 		"kubernetes-e2e-gke",
 		"kubernetes-e2e-gke-slow",
 		"kubernetes-e2e-gce-scalability",
