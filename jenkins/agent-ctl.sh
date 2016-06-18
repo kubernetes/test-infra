@@ -39,12 +39,12 @@ usage() {
   echo '  update-image: update the image-family used to create new disks'
   echo 'Common commands:'
   echo '  # Refresh image'
-  echo '  $(basename "${0}") --base-image light-agent auto-image'
+  echo "  $(basename "${0}") --base-image light-agent auto-image"
   echo '  # Retire agent'
-  echo '  $(basename "${0}") agent-heavy-666 detatch delete'
+  echo "  $(basename "${0}") agent-heavy-666 detatch delete"
   echo '  # Refresh agent'
-  echo '  $(basename "${0}") agent-light-666'
-  echo '  $(basename "${0}") --pr agent-pr-666'
+  echo "  $(basename "${0}") agent-light-666"
+  echo "  $(basename "${0}") --pr agent-pr-666"
   exit 1
 }
 
@@ -139,7 +139,7 @@ case "${KIND}" in
     # load 10-30, 10G ram
     DISK_SIZE='200GB'
     DISK_TYPE='pd-standard'
-    MACHINE_TYPE='n1-standard-8'
+    MACHINE_TYPE='n1-highcpu-16'
     ;;
   *)
     ;;
@@ -169,9 +169,6 @@ auto-agent() {
   detatch-agent
   delete-agent
   create-agent
-  update-agent
-  copy-keys-agent
-  reboot-agent
   attach-agent
 }
 
