@@ -27,6 +27,11 @@ echo "Check for previous version of ${NAME}..."
 PREVIOUS="$(gcloud compute instances list \
   --filter="name=${NAME}" --project="${PROJECT}" || true)"
 if [[ -n "${PREVIOUS}" ]]; then
+  if [[ "${1}" == "--reset" ]]; then
+    echo "Reset ${NAME}..."
+    gcloud compute instances reset "${NAME}" --project="${PROJECT}"
+    exit 0
+  fi
   echo "Delete previous version of ${NAME}..."
   gcloud -q compute instances delete "${NAME}" --project="${PROJECT}"
 fi

@@ -48,8 +48,15 @@ def get_stats():
 def poll():
     prs = get_submit_queue_json('prs')
     e2e = get_submit_queue_json('github-e2e-queue')
-    online, mergeCount = get_stats()
-    return online, len(prs['PRStatus']), len(e2e['E2EQueue']), len(e2e['E2ERunning']), is_blocked(), mergeCount
+    online, merge_count = get_stats()
+    return (
+        online,  # Is mergebot initialized?
+        len(prs['PRStatus']),  # number of open PRs
+        len(e2e['E2EQueue']),  # number of items in the e2e queue
+        len(e2e['E2ERunning']),  # Worthless: number of keys in this dict.
+        is_blocked(),  # Whether we can merge
+        merge_count,  # Number of merges the bot has done
+    )
 
 
 def load_stats(uri):
@@ -86,9 +93,9 @@ def poll_forever(uri):
             time.sleep(secs)
             now = datetime.datetime.now()
             print >>sys.stderr, 'Polling current status...'
-            online, prs, queue, running, blocked, mergeCount = False, 0, 0, 0, False, 0
+            online, prs, queue, running, blocked, merge_count = False, 0, 0, 0, False, 0
             try:
-                online, prs, queue, running, blocked, mergeCount = poll()
+                online, prs, queue, running, blocked, merge_count = poll()
             except KeyboardInterrupt:
                 raise
             except KeyError:
@@ -97,7 +104,7 @@ def poll_forever(uri):
                 traceback.print_exc()
                 pass
 
-            data = '{} {} {} {} {} {} {}\n'.format(now, online, prs, queue, running, blocked, mergeCount)
+            data = '{} {} {} {} {} {} {}\n'.format(now, online, prs, queue, running, blocked, merge_count)
             print >>sys.stderr, 'Appending to history: %s' % data
             buf.write(data)
 
