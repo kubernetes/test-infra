@@ -106,9 +106,12 @@
             branch: 'master'
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak"
+            # Need the 8 essential kube-system pods ready before declaring cluster ready
+            # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+            # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="1"
+                export E2E_MIN_STARTUP_PODS="8"
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
@@ -121,7 +124,7 @@
                 export PROJECT="k8s-jkns-gce-soak-2"
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="1"
+                export E2E_MIN_STARTUP_PODS="8"
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
@@ -139,7 +142,7 @@
                 deployment is complete.<br>
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="1"
+                export E2E_MIN_STARTUP_PODS="8"
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
@@ -189,6 +192,7 @@
             branch: 'master'
             provider-env: |
                 export KUBERNETES_PROVIDER="gke"
+                export E2E_MIN_STARTUP_PODS="8"
                 export ZONE="us-central1-f"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
