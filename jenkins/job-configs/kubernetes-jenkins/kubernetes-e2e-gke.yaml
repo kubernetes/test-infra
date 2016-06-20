@@ -133,7 +133,9 @@
                 export PROJECT="kubernetes-scale"
                 # TODO: Remove FAIL_ON_GCP_RESOURCE_LEAK when PROJECT changes back to gke-large-cluster-jenkins.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] \
+                # TODO: should test kube-proxy test is not designed to run in large clusters.
+                #   We should change it start running it here too.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|should\stest\skube-proxy \
                                          --system-pods-startup-timeout=240m"
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-central1-b"
