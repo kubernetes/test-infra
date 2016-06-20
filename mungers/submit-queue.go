@@ -395,6 +395,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gke-subnet",
 		"kubernetes-e2e-gke-test",
 		"kubernetes-e2e-gce-examples",
+		"kubernetes-e2e-gce-federation",
 	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{
 		"kubelet-gce-e2e-ci",
