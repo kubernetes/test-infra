@@ -1308,6 +1308,7 @@ func (sq *SubmitQueue) getHealthSVG() []byte {
 
 func (sq *SubmitQueue) serveHealthSVG(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-type", "image/svg+xml")
+	res.Header().Set("Cache-Control", "max-age=60")
 	res.WriteHeader(http.StatusOK)
 	res.Write(sq.getHealthSVG())
 }
