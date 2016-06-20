@@ -33,6 +33,7 @@ import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
 import filters
+import log_parser
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -129,7 +130,10 @@ def gcs_read_async(path):
             yield ndb.sleep(2 ** retry)
             continue
         if status in (200, 206):
-            raise ndb.Return(result.content)
+            content = result.content
+            if result.headers.get('content-encoding') == 'gzip':
+                content = zlib.decompress(result.content, 15 | 16)
+            raise ndb.Return(content)
         logging.error("unable to fetch '%s': status code %d" % (url, status))
         raise ndb.Return(None)
 
@@ -174,6 +178,7 @@ def build_details(build_dir):
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
         failures: list of (name, duration, text) tuples
+        build_log: a hilighted portion of errors in the build log. May be None.
     """
     started_fut = gcs_read_async(build_dir + '/started.json')
     finished = gcs_read_async(build_dir + '/finished.json').get_result()
@@ -195,15 +200,15 @@ def build_details(build_dir):
         junit = future.get_result()
         if junit is None:
             continue
-        failures.extend(parse_junit(decompress(junit)))
-    return started, finished, failures
-
-
-def decompress(data):
-    """Decompress data if GZIP-compressed, but pass normal data thorugh."""
-    if data.startswith('\x1f\x8b'):  # gzip magic
-        return zlib.decompress(data, 15 | 16)
-    return data
+        failures.extend(parse_junit(junit))
+    build_log = None
+    if finished.get('result') == 'FAILURE' and len(failures) == 0:
+        build_log = gcs_read_async(build_dir + '/build-log.txt').get_result()
+        if build_log:
+            build_log = log_parser.digest(build_log.decode('utf8', 'replace'))
+            logging.warning('fallback log parser emitted %d lines',
+                            build_log.count('\n'))
+    return started, finished, failures, build_log
 
 
 class RenderingHandler(webapp2.RequestHandler):
@@ -238,7 +243,7 @@ class BuildHandler(RenderingHandler):
             self.render('build_404.html', {"build_dir": build_dir})
             self.response.set_status(404)
             return
-        started, finished, failures = details
+        started, finished, failures, build_log = details
         if started:
             commit = started['version'].split('+')[-1]
         else:
@@ -246,7 +251,7 @@ class BuildHandler(RenderingHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures))
+            failures=failures, build_log=build_log))
 
 
 class BuildListHandler(RenderingHandler):

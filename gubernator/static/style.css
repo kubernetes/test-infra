@@ -48,6 +48,15 @@ pre.cmd {
 pre.cmd::before {
     content: "Command: ";  /* This text isn't selectable */
 }
+span.hilight {
+    background-color: palegoldenrod;
+}
+span.keyword {
+    font-weight: bolder;
+}
+span.skip {
+    color: #999;
+}
 span.time {
     font-weight: lighter;
     font-family: monospace;
