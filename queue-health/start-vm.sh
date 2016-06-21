@@ -27,6 +27,11 @@ echo "Check for previous version of ${NAME}..."
 PREVIOUS="$(gcloud compute instances list \
   --filter="name=${NAME}" --project="${PROJECT}" || true)"
 if [[ -n "${PREVIOUS}" ]]; then
+  if [[ "${1}" == "--reset" ]]; then
+    echo "Reset ${NAME}..."
+    gcloud compute instances reset "${NAME}" --project="${PROJECT}"
+    exit 0
+  fi
   echo "Delete previous version of ${NAME}..."
   gcloud -q compute instances delete "${NAME}" --project="${PROJECT}"
 fi
@@ -36,7 +41,7 @@ gcloud compute instances create \
   "${NAME}" \
   --boot-disk-size=50GB \
   --description="Created by ${USER} to monitor submit-queue health on $(date)" \
-  --machine-type=n1-standard-1 \
+  --machine-type=g1-small \
   --metadata=startup-script-url=gs://kubernetes-test-history/sq/startup.sh \
   --project="${PROJECT}" \
   --scopes=storage-rw
