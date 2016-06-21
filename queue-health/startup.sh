@@ -33,11 +33,11 @@ install-deps() {
 
 copy-to-old-location() {  # TODO(fejta): remove after pushing queue
   local old='gs://kubernetes-test-history/k8s-queue-health.png'
-  while ps ax | grep -v grep | grep "${GRAPHER}"; do
+  while ps ax | grep -v grep | grep "${GRAPH}"; do
     sleep 60
     gsutil cp "${GRAPH}" "${old}" || true
   done
-  echo "${GRAPHER} no longer running, stopping copy to ${old}"
+  echo "${GRAPH} no longer running, stopping copy to ${old}"
 }
 
 install-deps
