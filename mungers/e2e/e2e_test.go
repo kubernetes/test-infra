@@ -629,9 +629,9 @@ func TestJUnitFailureParse(t *testing.T) {
 		t.Fatalf("Parse error? %v", err)
 	}
 	if e, a := map[string]string{
-		"TestPersistentVolumeMultiPVs {integration}":     "persistent_volumes_test.go:254: volumes created&#xA;persistent_volumes_test.go:260: claim created&#xA;persistent_volumes_test.go:264: volume bound&#xA;persistent_volumes_test.go:266: claim bound&#xA;persistent_volumes_test.go:284: Bind mismatch! Expected pvc-2 capacity 50000000000 but got fake-pvc-72 capacity 5000000000",
-		"TestPersistentVolumeMultiPVsPVCs {integration}": "persistent_volumes_test.go:379: PVC &#34;pvc-0&#34; is not bound",
-	}, got; reflect.DeepEqual(e, a) {
+		"TestPersistentVolumeMultiPVs {integration}":     "persistent_volumes_test.go:254: volumes created\npersistent_volumes_test.go:260: claim created\npersistent_volumes_test.go:264: volume bound\npersistent_volumes_test.go:266: claim bound\npersistent_volumes_test.go:284: Bind mismatch! Expected pvc-2 capacity 50000000000 but got fake-pvc-72 capacity 5000000000",
+		"TestPersistentVolumeMultiPVsPVCs {integration}": `persistent_volumes_test.go:379: PVC "pvc-0" is not bound`,
+	}, got; !reflect.DeepEqual(e, a) {
 		t.Errorf("Expected %v, got %v", e, a)
 	}
 }
