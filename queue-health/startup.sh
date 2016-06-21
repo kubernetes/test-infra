@@ -17,7 +17,7 @@ set -o verbose
 set -o errexit
 
 HISTORY='gs://kubernetes-test-history/sq/history.txt'
-GRAPH='gs://kubernetes-test-history/k8s-queue-health.png'
+GRAPH='gs://kubernetes-test-history/k8s-queue-health.svg'
 
 POLLER='gs://kubernetes-test-history/sq/poller.py'
 GRAPHER='gs://kubernetes-test-history/sq/graph.py'
@@ -31,8 +31,18 @@ install-deps() {
   return 1
 }
 
+copy-to-old-location() {  # TODO(fejta): remove after pushing queue
+  local old='gs://kubernetes-test-history/k8s-queue-health.png'
+  while ps ax | grep -v grep | grep "${GRAPHER}"; do
+    sleep 60
+    gsutil cp "${GRAPH}" "${old}" || true
+  done
+  echo "${GRAPHER} no longer running, stopping copy to ${old}"
+}
+
 install-deps
 
 gsutil cat "${POLLER}" | python - "${HISTORY}" 2>&1 | tee /var/log/poller.log &
-gsutil cat "${GRAPHER}" | python - "${HISTORY}" "${GRAPH}" 2>&1 | tee /var/log/render.log
+gsutil cat "${GRAPHER}" | python - "${HISTORY}" "${GRAPH}" 2>&1 | tee /var/log/render.log &
+copy-to-old-location
 wait

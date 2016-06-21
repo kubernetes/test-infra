@@ -19,6 +19,8 @@ from __future__ import division
 import collections
 import cStringIO
 import datetime
+import gzip
+import os
 import subprocess
 import sys
 import time
@@ -60,7 +62,7 @@ def happy_color(health):
 
 
 def render(history_lines, out_file):
-    """Read historical data and save to out_file as png."""
+    """Read historical data and save to out_file as img."""
     dts = []
     prs = []
     queued = []
@@ -166,7 +168,7 @@ def render(history_lines, out_file):
         color=health_color)
 
     ax_offline.set_ylabel('Queue offline')
-    ax_queued.set_ylabel('%d PRs queued' % queued[-1], color='b')
+    ax_queued.set_ylabel('Queued PRs: %d' % queued[-1], color='b')
 
 
     ax_health.set_ylim([0.0, 1.0])
@@ -199,12 +201,12 @@ def render(history_lines, out_file):
             horizontalalignment='center',
         )
 
-    plt.savefig(out_file, bbox_inches='tight')
+    plt.savefig(out_file, bbox_inches='tight', format='svg')
     plt.close()
 
 
-def render_forever(history_uri, png_uri):
-    """Download results from history_uri, render to png and save to png_uri."""
+def render_forever(history_uri, img_uri):
+    """Download results from history_uri, render to svg and save to img_uri."""
     buf = cStringIO.StringIO()
     while True:
         print >>sys.stderr, 'Truncate render buffer'
@@ -220,14 +222,17 @@ def render_forever(history_uri, png_uri):
             continue
 
         print >>sys.stderr, 'Render results to buffer...'
-        render(history.split('\n')[-60*24*21:], buf)  # Last 21 days
+        with gzip.GzipFile(
+            os.path.basename(img_uri), mode='wb', fileobj=buf) as compressed:
+            render(history.split('\n')[-60*24*21:], compressed)  # Last 21 days
 
-        print >>sys.stderr, 'Copy buffer to %s...' % png_uri
+        print >>sys.stderr, 'Copy buffer to %s...' % img_uri
         proc = subprocess.Popen(
             ['gsutil', '-q',
-             '-h', 'Content-Type:image/png',
+             '-h', 'Content-Type:image/svg+xml',
              '-h', 'Cache-Control:public, max-age=60',
-             'cp', '-a', 'public-read', '-', png_uri],
+             '-h', 'Content-Encoding:gzip',  # GCS decompresses if necessary
+             'cp', '-a', 'public-read', '-', img_uri],
             stdin=subprocess.PIPE)
         proc.communicate(buf.getvalue())
         code = proc.wait()
