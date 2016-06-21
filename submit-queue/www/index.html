@@ -168,7 +168,11 @@
               <br>
               <br>
               <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
-              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.</p>
+              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.
+              </p>
+              <p>
+                <img src="http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.png" style="max-width: 100%"/>
+              </p>
             </md-tab-body>
           </md-tab>
 
@@ -230,6 +234,15 @@
                         </tbody>
                       </table>
                     </md-data-table-container>
+                  </md-content>
+                </md-tab>
+
+                <md-tab label="Health">
+                  <md-toolbar class="md-whiteframe-z2">
+                    <h2 class="md-toolbar-tools">Health chart for the past week</h2>
+                  </md-toolbar>
+                  <md-content class="md-padding">
+                    <span><img src="http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.png" style="max-width: 100%"/></span>
                   </md-content>
                 </md-tab>
               </md-tabs>
