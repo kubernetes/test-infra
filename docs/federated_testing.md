@@ -46,7 +46,9 @@ job runs e2e tests and uploads the results.
 ### Include results in test history
 
 Collect results from federated test jobs by adding the Google Cloud Storage
-bucket to [`buckets.yaml`](/buckets.yaml).
+bucket to [`buckets.yaml`](/buckets.yaml). This will also allow Gubernator to
+track your jobs. To add buckets to the TestGrid, open an issue against this
+repo.
 
 ### e2e-runner Environment Variables
 
