@@ -203,6 +203,10 @@
               export KUBE_GCE_ZONE="us-central1-f"
               export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
+              # Experimental flake detection-- harmlessly does nothing until
+              # ginkgo changes get made, but allows for testing them in a PR.
+              export GINKGO_TOLERATE_FLAKES="y"
+
               # XXX Not a unique project
               export E2E_NAME="e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
               export GINKGO_PARALLEL="y"
