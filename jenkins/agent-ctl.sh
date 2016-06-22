@@ -174,22 +174,22 @@ auto-agent() {
 
 tunnel-to-master() {
   for i in {1..10}; do
-    if sudo netstat -anp | grep 8080 > /dev/null 2>&1 ; then
+    if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
       sleep 1
     else
       break
     fi
   done
-  sudo netstat -anp | grep 8080 && echo "8080 already used" && exit 1 \
+  sudo netstat -anp | grep :8080 && echo "8080 already used" && exit 1 \
     || echo "Tunneling to ${MASTER}..."
   gcloud compute ssh "${MASTER}" --ssh-flag='-L8080:localhost:8080' sleep 5 &
   for i in {1..10}; do
-    if sudo netstat -anp | grep 8080 > /dev/null 2>&1 ; then
+    if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
       break
     fi
     sleep 1
   done
-  sudo netstat -anp | grep 8080 > /dev/null 2>&1 || exit 1
+  sudo netstat -anp | grep :8080 > /dev/null 2>&1 || exit 1
 }
 
 
