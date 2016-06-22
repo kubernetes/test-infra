@@ -25,16 +25,20 @@ func TestGetDSN(t *testing.T) {
 	}{
 		{
 			MySQLConfig{"localhost", 3306, "github", "root", "password"},
-			"root:password@tcp(localhost:3306)/?parseTime=True",
+			"root:password@tcp(localhost:3306)/github?parseTime=True",
 		},
 		{
 			MySQLConfig{"localhost", 3306, "github", "root", ""},
+			"root@tcp(localhost:3306)/github?parseTime=True",
+		},
+		{
+			MySQLConfig{"localhost", 3306, "", "root", ""},
 			"root@tcp(localhost:3306)/?parseTime=True",
 		},
 	}
 
 	for _, test := range tests {
-		actualDSN := test.config.getDSN()
+		actualDSN := test.config.getDSN(test.config.Db)
 		if actualDSN != test.expectedDSN {
 			t.Error("Actual:", actualDSN, "doesn't match expected:", test.expectedDSN)
 		}

@@ -32,30 +32,32 @@ type MySQLConfig struct {
 	Password string
 }
 
-func (config *MySQLConfig) getDSN() string {
+func (config *MySQLConfig) getDSN(db string) string {
 	var password string
 	if config.Password != "" {
 		password = ":" + config.Password
 	}
 
-	return fmt.Sprintf("%v%v@tcp(%v:%d)/?parseTime=True",
+	return fmt.Sprintf("%v%v@tcp(%v:%d)/%s?parseTime=True",
 		config.User,
 		password,
 		config.Host,
-		config.Port)
+		config.Port,
+		db)
 }
 
 // CreateDatabase for the MySQLConfig
 func (config *MySQLConfig) CreateDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open("mysql", config.getDSN())
+	db, err := gorm.Open("mysql", config.getDSN(""))
 	if err != nil {
 		return nil, err
 	}
 
 	db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %v;", config.Db))
-	db.Exec(fmt.Sprintf("use %v;", config.Db))
+	db.Close()
 
-	err = db.AutoMigrate(&Issue{}, &IssueEvent{}, &Label{}).Error
+	db, err = gorm.Open("mysql", config.getDSN(config.Db))
+	err = db.AutoMigrate(&Issue{}, &IssueEvent{}, &Label{}, &Comment{}).Error
 	if err != nil {
 		return nil, err
 	}
