@@ -65,7 +65,7 @@
     # Template defaults.
     jenkins_node: 'e2e'
     test-owner: 'wonderfly'
-    emails: 'wonderfly@google.com,qzheng@google.com,lakitu-dev@google.com'
+    emails: 'gci-alerts+kubekins@google.com'
 
 - project:
     name: kubernetes-e2e-gce-gci-ci
