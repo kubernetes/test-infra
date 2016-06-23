@@ -53,6 +53,7 @@ func TestThreading(t *testing.T) {
 	// travis).
 	runtime.GOMAXPROCS(10)
 	c := NewCache(makeRandom)
+	c.maxFlakes = 15
 	wg := sync.WaitGroup{}
 	const threads = 30
 	wg.Add(threads)
@@ -63,7 +64,13 @@ func TestThreading(t *testing.T) {
 				// n*s means many collide a few times, but some do not
 				c.Get("foo", Number(n*s))
 			}
+			if len(c.Flakes()) > 15 {
+				t.Errorf("Max flakes doesn't seem to work, got %v", len(c.Flakes()))
+			}
 		}(i)
 	}
 	wg.Wait()
+	if len(c.Flakes()) > 15 {
+		t.Errorf("Max flakes doesn't seem to work, got %v", len(c.Flakes()))
+	}
 }
