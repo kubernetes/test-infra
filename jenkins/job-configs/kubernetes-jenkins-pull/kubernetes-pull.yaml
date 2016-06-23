@@ -165,6 +165,74 @@
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
             ./hack/jenkins/gotest-dockerized.sh
+      - build-test-e2e-gke: # kubernetes-pull-build-test-e2e-gke
+          status-context: GKE e2e
+          max-total: 12
+          skip-if-no-test-files: false  # We expect JUnit output from this job.
+          success-comment: ''
+          failure-comment: ''
+          error-comment: ''
+          trigger-phrase: 'e2e\s+test'
+          cmd: |
+            export KUBE_SKIP_PUSH_GCS=y
+            export KUBE_RUN_FROM_OUTPUT=y
+            export KUBE_FASTBUILD=true
+            ./hack/jenkins/build.sh
+            if [[ "${{ghprbTargetBranch:-}}" == "master" || "${{ghprbTargetBranch:-}}" == "release-1.2" || "${{ghprbTargetBranch:-}}" == "release-1.3" ]]; then
+              # Nothing should want Jenkins $HOME
+              export HOME=${{WORKSPACE}}
+
+              export KUBERNETES_PROVIDER="gke"
+              export E2E_MIN_STARTUP_PODS="1"
+              export KUBE_GCE_ZONE="us-central1-f"
+              export FAIL_ON_GCP_RESOURCE_LEAK="true"
+
+              # Experimental flake detection-- harmlessly does nothing until
+              # ginkgo changes get made, but allows for testing them in a PR.
+              export GINKGO_TOLERATE_FLAKES="y"
+
+              export E2E_NAME="e2e-gke-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+              export GINKGO_PARALLEL="y"
+              # Just run a smoke test.
+              export GINKGO_TEST_ARGS="--ginkgo.focus=Guestbook"
+              export FAIL_ON_GCP_RESOURCE_LEAK="false"
+              export PROJECT="k8s-jkns-pr-gke"
+              # Since we're only running one test, just use two nodes.
+              export NUM_NODES="2"
+
+              # Assume we're upping, testing, and downing a cluster
+              export E2E_UP="true"
+              export E2E_TEST="true"
+              export E2E_DOWN="true"
+
+              # Skip gcloud update checking
+              export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+
+              # GKE variables
+              export CLUSTER_NAME=${{E2E_NAME}}
+              export KUBE_GKE_NETWORK=${{E2E_NAME}}
+
+              # Get golang into our PATH so we can run e2e.go
+              export PATH=${{PATH}}:/usr/local/go/bin
+
+              timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+              if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                  echo "Dumping logs for any remaining nodes"
+                  ./cluster/log-dump.sh _artifacts
+                fi
+              fi
+              if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+                echo "Build timed out" >&2
+              elif [[ ${{rc}} -ne 0 ]]; then
+                echo "Build failed" >&2
+              fi
+              echo "Exiting with code: ${{rc}}"
+              exit ${{rc}}
+            else
+              echo "PR GKE job disabled for legacy branches."
+            fi
+ 
       - build-test-e2e-gce: # kubernetes-pull-build-test-e2e-gce
           status-context: GCE e2e
           max-total: 12
@@ -207,7 +275,6 @@
               # ginkgo changes get made, but allows for testing them in a PR.
               export GINKGO_TOLERATE_FLAKES="y"
 
-              # XXX Not a unique project
               export E2E_NAME="e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
               export GINKGO_PARALLEL="y"
               # This list should match the list in kubernetes-e2e-gce.
@@ -218,25 +285,18 @@
               export NUM_NODES="3"
 
               # Assume we're upping, testing, and downing a cluster
-              export E2E_UP="${{E2E_UP:-true}}"
-              export E2E_TEST="${{E2E_TEST:-true}}"
-              export E2E_DOWN="${{E2E_DOWN:-true}}"
+              export E2E_UP="true"
+              export E2E_TEST="true"
+              export E2E_DOWN="true"
 
               # Skip gcloud update checking
               export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
-              # AWS variables
-              export KUBE_AWS_INSTANCE_PREFIX=${{E2E_NAME:-'jenkins-e2e'}}
-
               # GCE variables
-              export INSTANCE_PREFIX=${{E2E_NAME:-'jenkins-e2e'}}
-              export KUBE_GCE_NETWORK=${{E2E_NAME:-'jenkins-e2e'}}
-              export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME:-'jenkins-e2e'}}
+              export INSTANCE_PREFIX=${{E2E_NAME}}
+              export KUBE_GCE_NETWORK=${{E2E_NAME}}
+              export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
               export GCE_SERVICE_ACCOUNT=$(gcloud auth list 2> /dev/null | grep active | cut -f3 -d' ')
-
-              # GKE variables
-              export CLUSTER_NAME=${{E2E_NAME:-'jenkins-e2e'}}
-              export KUBE_GKE_NETWORK=${{E2E_NAME:-'jenkins-e2e'}}
 
               # Get golang into our PATH so we can run e2e.go
               export PATH=${{PATH}}:/usr/local/go/bin
