@@ -9,6 +9,7 @@ body {
     text-align: center;
     padding: 8px;
     box-shadow: 0px 0px 10px #666;
+    min-height: 100px;
 }
 #header a {
     color: white;
@@ -66,4 +67,23 @@ a.anchor, pre.error>a {
 }
 a.anchor:target {
     color: blue;
+}
+table.pr {
+    margin: 20px;
+}
+table.pr td {
+    padding: 5px;
+    white-space: nowrap;
+}
+td.pr-build-success {
+    background-color: lightgreen;
+}
+td.pr-build-failure {
+    background-color: #F88;
+}
+td.pr-build-unset {
+    background-color: lightgrey;
+}
+td.pr-build-unstable {
+    background-color: yellow;
 }

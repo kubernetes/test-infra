@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/style.css" />
+<title>PR #{{pr}}</title>
+<script src="/static/build.js"></script>
+<div id="header" class="container">
+<img src="/static/logo.svg">
+<h1>PR #{{pr}} Results</h1>
+<p><a href="https://github.com/kubernetes/kubernetes/pull/{{pr}}">View on GitHub</a></p>
+</div>
+% if not details
+<h2>No Results</h2>
+% else
+<table class="pr">
+<thead>
+<tr><th>Job</th><th colspan="{{max_builds}}">Build</th></tr>
+</thead>
+% for job, builds in details.items()|sort
+<tr><td>{{job}}</td>
+% for build, status in builds
+<td class="pr-build-{{status | slugify}}"><a href="/build/{{prefix}}/{{pr}}/{{job}}/{{build}}/" title="Result: {{status}}">{{build}}</a></td>
+% endfor
+</tr>
+% endfor
+% endif

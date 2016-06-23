@@ -24,6 +24,7 @@ To run these tests:
 import json
 import os
 import unittest
+import urlparse
 
 import webtest
 import webapp2
@@ -62,6 +63,50 @@ def init_build(build_dir, started=True):
     write(build_dir + 'finished.json',
           {'result': 'SUCCESS', 'timestamp': 1406536800})
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
+
+
+def add_gcs_json_handler(stub, structure):
+    '''
+    Add a stub to mock out GCS JSON API ListObject requests-- with
+    just enough detail for our code.
+
+    This is based on google.appengine.ext.cloudstorage.stub_dispatcher.
+
+    Args:
+        stub: a URLFetch stub, to register our new handler against.
+        structure: a dictionary of {paths: subdirectory names}.
+            This will be transformed into the (more verbose) form
+            that the ListObject API returns.
+    '''
+    prefixes_for_paths = {}
+
+    for path, subdirs in structure.iteritems():
+        path = 'pr-logs/pull/' + path
+        prefixes_for_paths[path] = ['%s%s/' % (path, d) for d in subdirs]
+
+    def matches(url):
+        return url.startswith(main.STORAGE_API_URL)
+
+    def dispatch(method, url, payload):
+        if method != 'GET':
+            raise ValueError('unhandled method %s' % method)
+        parsed = urlparse.urlparse(url)
+        path = parsed.path
+        param_dict = urlparse.parse_qs(parsed.query, True)
+        prefix = param_dict['prefix'][0]
+        return json.dumps({'prefixes': prefixes_for_paths[prefix]})
+
+    def fetch_stub(url, payload, method, headers, request, response,
+                   follow_redirects=False, deadline=None,
+                   validate_certificate=None):
+        result = dispatch(method, url, payload)
+        response.set_statuscode(200)
+        response.set_content(result)
+        header = response.add_header()
+        header.set_key('content-length')
+        header.set_value(str(len(result)))
+
+    stub._urlmatchers_to_fetch_functions.append((matches, fetch_stub))
 
 
 class HelperTest(unittest.TestCase):
@@ -189,3 +234,47 @@ class AppTest(unittest.TestCase):
         response = app.get('/jobs/kubernetes-jenkins/logs')
         self.assertIn('somejob/">somejob</a>', response)
 
+    def init_pr_directory(self):
+        add_gcs_json_handler(self.testbed.get_stub('urlfetch'),
+            {'123/': ['build', 'e2e'],
+             '123/build/': ['11', '10', '12'],  # out of order
+             '123/e2e/': ['47', '46']})
+
+        def set_finished(path, result):
+            write('/%s/123/%s/finished.json' % (main.PR_PREFIX, path),
+                  json.dumps({'result': result}))
+
+        set_finished('build/11', 'PASSED')
+        set_finished('build/10', 'FAILED')
+        set_finished('e2e/47', '[UNSET]')
+        # e2e/46 has no finished.json
+        # build/12 has no finished.json
+
+    def test_pr_details(self):
+        self.init_pr_directory()
+        details = main.pr_details('123')
+        self.assertEqual(details,
+            {'build': [('12', '???'), ('11', 'PASSED'), ('10', 'FAILED')],
+             'e2e': [('47', '[UNSET]'), ('46', '???')]})
+
+    def test_pr_handler(self):
+        self.init_pr_directory()
+        response = app.get('/pr/123')
+        self.assertIn('e2e/47', response)
+        self.assertIn('PASSED', response)
+        self.assertIn('colspan="3"', response)  # header
+        self.assertIn('github.com/kubernetes/kubernetes/pull/123', response)
+
+    def test_pr_handler_missing(self):
+        add_gcs_json_handler(self.testbed.get_stub('urlfetch'),
+            {'124/': []})
+        response = app.get('/pr/124')
+        self.assertIn('No Results', response)
+
+    def test_build_page_pr_link(self):
+        ''' The build page for a PR build links to the PR results.'''
+        build_dir = '/%s/123/e2e/567/' % main.PR_PREFIX
+        init_build(build_dir)
+        response = app.get('/build' + build_dir)
+        self.assertIn('PR #123', response)
+        self.assertIn('href="/pr/123"', response)
