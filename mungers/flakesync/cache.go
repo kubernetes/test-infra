@@ -198,11 +198,13 @@ func (f Flakes) Less(i, j int) bool {
 // Flakes lists all the current flakes, sorted.
 func (c *Cache) Flakes() Flakes {
 	flakes := Flakes{}
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	for _, f := range c.flakeQueue {
-		flakes = append(flakes, *f)
-	}
+	func() {
+		c.lock.Lock()
+		defer c.lock.Unlock()
+		for _, f := range c.flakeQueue {
+			flakes = append(flakes, *f)
+		}
+	}()
 	sort.Sort(flakes)
 	return flakes
 }

@@ -43,8 +43,7 @@ func TestBasic(t *testing.T) {
 	if !reflect.DeepEqual(r1, r2) {
 		t.Errorf("expected to match: %#v, %#v", r1, r2)
 	}
-	i := 6
-	for len(c.Flakes()) == 0 {
+	for i := 0; len(c.Flakes()) == 0; i++ {
 		c.Get("foo", Number(i))
 	}
 }
