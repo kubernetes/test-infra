@@ -6,10 +6,17 @@ merge queue's admin console.
 **They require you to have kubectl installed and pointing at the cluster running
 the submit queue.** 
 
-## resolved.sh
+Credentials can be acquired quickly using the gcloud CLI
+```console
+$ gcloud container clusters get-credentials utility-cluster --project kubernetes-jenkins
+```
 
-Use `resolved.sh` to mark a test as manually resolved (or not), so the merge
+## resolve.sh
+
+Use `resolve.sh` to mark a test as manually resolved (or not), so the merge
 queue will merge in spite of a failure. Arguments are the job name and run number.
+
+```./resolve.sh jobname runnumber [true/false]```
 
 ## emergency.sh
 
