@@ -338,9 +338,9 @@
                 export PROJECT="kubernetes-ingress-1-3"
         - 'gce-scalability-release-1.3':  # kubernetes-e2e-gce-scalability-release-1.3
             timeout: 120
-            description: 'Run scalability E2E tests on GCE from the release-1.2 branch.'
-            # Run on Saturday 8 am
-            cron-string: 'H 8 * * 6'
+            description: 'Run scalability E2E tests on GCE from the release-1.3 branch.'
+            # Run daily until 1.3 is out the door. See issue #27962.
+            cron-string: '@daily'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export E2E_NAME="e2e-scalability-1-3"
