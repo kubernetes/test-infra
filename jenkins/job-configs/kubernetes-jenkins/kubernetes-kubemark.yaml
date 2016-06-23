@@ -76,8 +76,7 @@
             cron-string: 'H H/6 * * *'
             job-env: |
                 export E2E_NAME="kubemark-100"
-                # TODO: Move it back to k8s-jenkins-kubemark once we confirm that the project works.
-                export PROJECT="k8s-jenkins-blocking-kubemark"
+                export PROJECT="k8s-jenkins-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
@@ -119,9 +118,8 @@
             timeout: 300
             cron-string: '@hourly'
             job-env: |
-                # XXX Not a unique project
                 export E2E_NAME="kubemark-500"
-                export PROJECT="kubernetes-scale"
+                export PROJECT="k8s-jenkins-blocking-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
