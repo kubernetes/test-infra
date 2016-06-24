@@ -166,7 +166,7 @@
             export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
             ./hack/jenkins/gotest-dockerized.sh
       - build-test-e2e-gke: # kubernetes-pull-build-test-e2e-gke
-          status-context: GKE e2e
+          status-context: GKE smoke e2e
           max-total: 12
           skip-if-no-test-files: false  # We expect JUnit output from this job.
           success-comment: ''
