@@ -55,13 +55,14 @@ def write(path, data):
         f.write(data)
 
 
-def init_build(build_dir, started=True):
+def init_build(build_dir, started=True, finished=True):
     """Create faked files for a build."""
     if started:
         write(build_dir + 'started.json',
               {'version': 'v1+56', 'timestamp': 1406535800})
-    write(build_dir + 'finished.json',
-          {'result': 'SUCCESS', 'timestamp': 1406536800})
+    if finished:
+        write(build_dir + 'finished.json',
+              {'result': 'SUCCESS', 'timestamp': 1406536800})
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
 
 
@@ -179,6 +180,15 @@ class AppTest(unittest.TestCase):
         self.assertIn('job-with-no-started', response)
         self.assertNotIn('Started', response)  # no start timestamp
         self.assertNotIn('github.com', response)  # no version => no src links
+
+    def test_missing_finished(self):
+        """Test that a missing finished.json still renders a proper page."""
+        build_dir = '/kubernetes-jenkins/logs/job-still-running/1234/'
+        init_build(build_dir, finished=False)
+        response = app.get('/build' + build_dir)
+        self.assertIn('Build Result: Not Finished', response)
+        self.assertIn('job-still-running', response)
+        self.assertIn('Started', response)
 
     def test_build(self):
         """Test that the build page works in the happy case."""

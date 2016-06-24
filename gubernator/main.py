@@ -218,10 +218,9 @@ def build_details(build_dir):
     started = started_fut.get_result()
     if finished and not started:
         started = 'null'
+    if started and not finished:
+	finished = 'null'
     elif not (started and finished):
-        # TODO: handle builds that have started but not finished properly.
-        # Right now they show an empty page (404), but should show the version
-        # and when the build started.
         return
     started = json.loads(started)
     finished = json.loads(finished)
@@ -235,7 +234,7 @@ def build_details(build_dir):
             continue
         failures.extend(parse_junit(junit))
     build_log = None
-    if finished.get('result') != 'SUCCESS' and len(failures) == 0:
+    if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
         build_log = gcs_read_async(build_dir + '/build-log.txt').get_result()
         if build_log:
             build_log = log_parser.digest(build_log.decode('utf8', 'replace'))
@@ -272,7 +271,7 @@ class BuildHandler(RenderingHandler):
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
-            logging.warning("unable to load %s", build_dir)
+            logging.warning('unable to load %s', build_dir)
             self.render('build_404.html', {"build_dir": build_dir})
             self.response.set_status(404)
             return
