@@ -184,6 +184,7 @@
 
               export KUBERNETES_PROVIDER="gke"
               export E2E_MIN_STARTUP_PODS="1"
+              export KUBE_GCE_ZONE="us-central1-f"
               export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
               # Experimental flake detection-- harmlessly does nothing until
@@ -209,11 +210,7 @@
 
               # GKE variables
               export CLUSTER_NAME=${{E2E_NAME}}
-              export ZONE="us-central1-f"
               export KUBE_GKE_NETWORK=${{E2E_NAME}}
-              export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
-              export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
-              export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 
               # Get golang into our PATH so we can run e2e.go
               export PATH=${{PATH}}:/usr/local/go/bin
