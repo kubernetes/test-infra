@@ -72,7 +72,7 @@
                             <commitStatusContext>Jenkins {status-context}</commitStatusContext>
                             <triggeredStatus></triggeredStatus>
                             <startedStatus></startedStatus>
-                            <statusUrl>http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/</statusUrl>
+                            <statusUrl>https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/</statusUrl>
                             <addTestResults>true</addTestResults>
                             <completedStatus>
                                 <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
@@ -240,11 +240,13 @@
           skip-if-no-test-files: false  # We expect JUnit output from this job.
           success-comment: |
             GCE e2e build/test **passed** for commit ${{ghprbActualCommit}}.
+            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
             * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
             * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
             * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
           failure-comment: |
             GCE e2e build/test **failed** for commit ${{ghprbActualCommit}}.
+            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
             * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
             * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
             * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
@@ -252,6 +254,7 @@
             Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
           error-comment: |
             GCE e2e build/test **errored** for commit ${{ghprbActualCommit}}.
+            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
             * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
             * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
             * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
