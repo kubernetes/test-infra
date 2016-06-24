@@ -288,6 +288,7 @@
               export E2E_UP="true"
               export E2E_TEST="true"
               export E2E_DOWN="true"
+              export E2E_OPT="--check_version_skew=false"
 
               # Skip gcloud update checking
               export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
