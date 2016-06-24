@@ -113,9 +113,12 @@ def render(history_lines, out_file):
         happy = online and not blocked
         happy_sum += happy
 
-        did_merge = last_merge and merged != last_merge
-        last_merge = merged
+        if merged >= last_merge:
+            did_merge = merged - last_merge
+        else:  # Might be negative in case of restart
+            did_merge = merged
         merge_sum += did_merge
+        last_merge = merged
 
         daily_queue.append(happy)
         daily_merged.append(did_merge)
