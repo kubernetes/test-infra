@@ -17,6 +17,7 @@ limitations under the License.
 package flakesync
 
 import (
+	"container/list"
 	"sort"
 	"sync"
 	"time"
@@ -48,6 +49,9 @@ const (
 	// RunBrokenTestName names a "flake" which really represents the fact
 	// that the entire run was broken.
 	RunBrokenTestName Test = "Suite so broken it failed to produce JUnit output"
+
+	// Maximum number of flakes to keep in memory.
+	maxFlakes = 20000
 )
 
 // Result records a test job completion.
@@ -98,6 +102,8 @@ type Cache struct {
 	lock       sync.Mutex
 	byJob      jobMap
 	flakeQueue flakeMap
+	expireList *list.List
+	maxFlakes  int // tests can modify this
 
 	// only one expensive lookup at a time. Also, don't lock the cache
 	// while we're doing an expensive update. If you lock both locks, you
@@ -115,7 +121,9 @@ func NewCache(getFunc ResultFunc) *Cache {
 	c := &Cache{
 		byJob:             jobMap{},
 		flakeQueue:        flakeMap{},
+		expireList:        list.New(),
 		doExpensiveLookup: getFunc,
+		maxFlakes:         maxFlakes,
 	}
 	return c
 }
@@ -157,12 +165,20 @@ func (c *Cache) populate(j Job, n Number) (*Result, error) {
 
 	// Add any flakes to the queue.
 	for f, reason := range r.Flakes {
-		c.flakeQueue[flakeKey{j, n, f}] = &Flake{
+		k := flakeKey{j, n, f}
+		c.flakeQueue[k] = &Flake{
 			Job:    j,
 			Number: n,
 			Test:   f,
 			Reason: reason,
 			Result: r,
+		}
+		c.expireList.PushFront(k)
+		// kick out old flakes if we have too many.
+		for len(c.flakeQueue) > c.maxFlakes {
+			e := c.expireList.Back()
+			delete(c.flakeQueue, e.Value.(flakeKey))
+			c.expireList.Remove(e)
 		}
 	}
 	return r, nil
