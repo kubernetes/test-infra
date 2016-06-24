@@ -20,6 +20,7 @@ spec:
         - --weak-stable-jobs=kubernetes-kubemark-500-gce
         - --required-contexts="Jenkins GCE Node e2e"
         - --number-of-old-test-results=5
+        - --http-cache-dir=/cache/httpcache
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         ports:
         - name: status
@@ -34,6 +35,8 @@ spec:
           name: secret-volume
         - mountPath: /gitrepos
           name: kubernetes-repo
+        - mountPath: /cache
+          name: cache-volume
       volumes:
       - name: secret-volume
         secret:
@@ -42,3 +45,6 @@ spec:
         gitRepo:
           repository: "https://github.com/kubernetes/kubernetes.git"
           revision: "master"
+      - name: cache-volume
+        persistentVolumeClaim:
+          claimName: submit-queue-cache

@@ -36,6 +36,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/gregjones/httpcache"
+	"github.com/gregjones/httpcache/diskcache"
+	"github.com/peterbourgon/diskv"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
@@ -150,6 +152,9 @@ type Config struct {
 	Address string // if a munger runs a web server, where it should live
 	WWWRoot string
 
+	HTTPCacheDir  string
+	HTTPCacheSize uint64
+
 	MinPRNumber int
 	MaxPRNumber int
 
@@ -158,8 +163,6 @@ type Config struct {
 
 	// Defaults to 30 seconds.
 	PendingWaitTime *time.Duration
-
-	useMemoryCache bool
 
 	// When we clear analytics we store the last values here
 	lastAnalytics analytics
@@ -292,13 +295,14 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().IntVar(&config.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with")
 	cmd.PersistentFlags().IntVar(&config.MaxPRNumber, "max-pr-number", maxInt, "The maximum PR to start with")
 	cmd.PersistentFlags().BoolVar(&config.DryRun, "dry-run", true, "If true, don't actually merge anything")
-	cmd.PersistentFlags().BoolVar(&config.useMemoryCache, "use-http-cache", true, "If true, use a client side HTTP cache for API requests.")
 	cmd.PersistentFlags().StringVar(&config.Org, "organization", "kubernetes", "The github organization to scan")
 	cmd.PersistentFlags().StringVar(&config.Project, "project", "kubernetes", "The github project to scan")
 	cmd.PersistentFlags().StringVar(&config.state, "state", "open", "State of PRs to process: 'open', 'all', etc")
 	cmd.PersistentFlags().StringSliceVar(&config.labels, "labels", []string{}, "CSV list of label which should be set on processed PRs. Unset is all labels.")
 	cmd.PersistentFlags().StringVar(&config.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	cmd.PersistentFlags().StringVar(&config.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
+	cmd.PersistentFlags().StringVar(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
+	cmd.PersistentFlags().Uint64Var(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
@@ -337,16 +341,25 @@ func (config *Config) PreExecute() error {
 	config.apiLimit = callLimitTransport
 	transport = callLimitTransport
 
-	if config.useMemoryCache {
-		t := httpcache.NewMemoryCacheTransport()
-		t.Transport = transport
-
-		zeroCacheTransport := &zeroCacheRoundTripper{
-			delegate: t,
-		}
-
-		transport = zeroCacheTransport
+	var t *httpcache.Transport
+	if config.HTTPCacheDir != "" {
+		maxBytes := config.HTTPCacheSize * 1000000 // convert M to B. This is storage so not base 2...
+		d := diskv.New(diskv.Options{
+			BasePath:     config.HTTPCacheDir,
+			CacheSizeMax: maxBytes,
+		})
+		cache := diskcache.NewWithDiskv(d)
+		t = httpcache.NewTransport(cache)
+	} else {
+		t = httpcache.NewMemoryCacheTransport()
 	}
+	t.Transport = transport
+
+	zeroCacheTransport := &zeroCacheRoundTripper{
+		delegate: t,
+	}
+
+	transport = zeroCacheTransport
 
 	if len(token) > 0 {
 		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
