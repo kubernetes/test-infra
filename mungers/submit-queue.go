@@ -677,7 +677,7 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	status := obj.GetStatus(sqContext)
 	if status == nil || *status.Description != reason {
 		state := reasonToState(reason)
-		url := fmt.Sprintf("http://submit-queue.k8s.io/#?prDisplay=%d&historyDisplay=%d", *obj.Issue.Number, *obj.Issue.Number)
+		url := fmt.Sprintf("http://submit-queue.k8s.io/#/prs/?prDisplay=%d&historyDisplay=%d", *obj.Issue.Number, *obj.Issue.Number)
 		_ = obj.SetStatus(state, url, reason, sqContext)
 	}
 
