@@ -115,10 +115,14 @@ def render(history_lines, out_file):
 
         if merged >= last_merge:
             did_merge = merged - last_merge
-        else:  # Might be negative in case of restart
+        elif online:  # Restarts reset the number to 0
             did_merge = merged
-        merge_sum += did_merge
-        last_merge = merged
+        else:
+            did_merge = 0
+
+        if online:  # Ignore offline status
+            merge_sum += did_merge
+            last_merge = merged
 
         daily_queue.append(happy)
         daily_merged.append(did_merge)
