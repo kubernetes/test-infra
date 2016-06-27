@@ -37,13 +37,13 @@
                     condition-worst: UNSTABLE
                     condition-best: UNSTABLE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=UNSTABLE "${WORKSPACE}./_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=UNSTABLE "${WORKSPACE}/_tmp/upload-to-gcs.sh"'
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: FAILURE
                     condition-best: FAILURE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=FAILURE "${WORKSPACE}./_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=FAILURE "${WORKSPACE}/_tmp/upload-to-gcs.sh"'
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: ABORTED
