@@ -497,7 +497,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=Disks"
                 export PROJECT="kubekins-e2e-gce-pd-test"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export JENKINS_USE_SERVER_VERSION="y"
                 export E2E_NAME="gce-pd-e2e-test"
                 export KUBE_OS_DISTRIBUTION="debian"
                 export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
