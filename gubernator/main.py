@@ -27,11 +27,11 @@ import jinja2
 import yaml
 
 from google.appengine.api import memcache
-import google.appengine.ext.ndb as ndb
 
 import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
+import gcs_async
 import filters
 import log_parser
 
@@ -56,9 +56,6 @@ DEFAULT_JOBS = {
 }
 
 PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
-
-GCS_API_URL = 'https://storage.googleapis.com'
-STORAGE_API_URL = 'https://www.googleapis.com/storage/v1/b'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
@@ -109,68 +106,6 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
     return wrapper
 
 
-@ndb.tasklet
-def gcs_get_async(url):
-    context = ndb.get_context()
-    headers = {'accept-encoding': 'gzip, *', 'x-goog-api-version': '2'}
-    for retry in xrange(6):
-        result = yield context.urlfetch(url, headers=headers)
-        status = result.status_code
-        if status == 429 or 500 <= status < 600:
-            yield ndb.sleep(2 ** retry)
-            continue
-        if status in (200, 206):
-            content = result.content
-            if result.headers.get('content-encoding') == 'gzip':
-                content = zlib.decompress(result.content, 15 | 16)
-            raise ndb.Return(content)
-        logging.error("unable to fetch '%s': status code %d" % (url, status))
-        raise ndb.Return(None)
-
-
-def gcs_read_async(path):
-    """
-    Asynchronously reads a file from GCS.
-
-    NOTE: for large files (>10MB), this may return a truncated response due to
-    urlfetch API limits. We don't want to read large files anyways, so this is
-    fine.
-
-    Args:
-        path: the location of the object to read
-    Returns:
-        a Future that resolves to the file's data, or None if an error occurred.
-    """
-    url = GCS_API_URL + path
-    return gcs_get_async(url)
-
-
-@ndb.tasklet
-def gcs_listdirs_async(path):
-    """
-    Asynchronously list directories present on GCS.
-
-    NOTE: This returns at most 1000 results. The API supports pagination, but
-    it's not yet been implemented.
-
-    Args:
-        path: the GCS bucket directory to list subdirectories of
-    Returns:
-        a Future that resolves to a list of directories, or None if an error
-        occurred.
-    """
-    if path[-1] != '/':
-        path += '/'
-    assert path[0] != '/'
-    bucket, prefix = path.split('/', 1)
-    url = '%s/%s/o?delimiter=/&prefix=%s' % (STORAGE_API_URL, bucket, prefix)
-    res = yield gcs_get_async(url)
-    if res is None:
-        raise ndb.Return(None)
-    prefixes = json.loads(res).get('prefixes', [])
-    raise ndb.Return(['%s/%s' % (bucket, prefix) for prefix in prefixes])
-
-
 @memcache_memoize('gs-ls://', expires=60)
 def gcs_ls(path):
     """Enumerate files in a GCS directory. Returns a list of FileStats."""
@@ -213,8 +148,8 @@ def build_details(build_dir):
         failures: list of (name, duration, text) tuples
         build_log: a hilighted portion of errors in the build log. May be None.
     """
-    started_fut = gcs_read_async(build_dir + '/started.json')
-    finished = gcs_read_async(build_dir + '/finished.json').get_result()
+    started_fut = gcs_async.read(build_dir + '/started.json')
+    finished = gcs_async.read(build_dir + '/finished.json').get_result()
     started = started_fut.get_result()
     if finished and not started:
         started = 'null'
@@ -227,7 +162,7 @@ def build_details(build_dir):
     failures = []
     junit_paths = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
-    junit_futures = [gcs_read_async(f) for f in junit_paths]
+    junit_futures = [gcs_async.read(f) for f in junit_paths]
     for future in junit_futures:
         junit = future.get_result()
         if junit is None:
@@ -235,7 +170,7 @@ def build_details(build_dir):
         failures.extend(parse_junit(junit))
     build_log = None
     if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
-        build_log = gcs_read_async(build_dir + '/build-log.txt').get_result()
+        build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
         if build_log:
             build_log = log_parser.digest(build_log.decode('utf8', 'replace'))
             logging.info('fallback log parser emitted %d lines',
@@ -312,17 +247,17 @@ class JobListHandler(RenderingHandler):
 
 @memcache_memoize('pr-details://', expires=60 * 3)
 def pr_details(pr):
-    jobs_dirs_fut = gcs_listdirs_async('%s/%s' % (PR_PREFIX, pr))
+    jobs_dirs_fut = gcs_async.listdirs('%s/%s' % (PR_PREFIX, pr))
 
     def base(path):
         return os.path.basename(os.path.dirname(path))
 
-    jobs_futures = [(job, gcs_listdirs_async(job)) for job in jobs_dirs_fut.get_result()]
+    jobs_futures = [(job, gcs_async.listdirs(job)) for job in jobs_dirs_fut.get_result()]
     futures = []
 
     for job, builds_fut in jobs_futures:
         for build in builds_fut.get_result():
-            fut = gcs_read_async('/%sfinished.json' % build)
+            fut = gcs_async.read('/%sfinished.json' % build)
             futures.append([base(job), base(build), fut])
 
     jobs = {}
