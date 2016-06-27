@@ -19,8 +19,6 @@ import json
 import logging
 import re
 import os
-import urllib
-import zlib
 
 import webapp2
 import jinja2
@@ -178,6 +176,36 @@ def build_details(build_dir):
     return started, finished, failures, build_log
 
 
+@memcache_memoize('pr-details://', expires=60 * 3)
+def pr_details(pr):
+    jobs_dirs_fut = gcs_async.listdirs('%s/%s' % (PR_PREFIX, pr))
+
+    def base(path):
+        return os.path.basename(os.path.dirname(path))
+
+    jobs_futures = [(job, gcs_async.listdirs(job)) for job in jobs_dirs_fut.get_result()]
+    futures = []
+
+    for job, builds_fut in jobs_futures:
+        for build in builds_fut.get_result():
+            fut = gcs_async.read('/%sfinished.json' % build)
+            futures.append([base(job), base(build), fut])
+
+    jobs = {}
+
+    futures.sort(key=lambda (job, build, _): (job, pad_numbers(build)), reverse=True)
+
+    for job, build, fut in futures:
+        res = fut.get_result()
+        if res is None:
+            status = '???'
+        else:
+            status = json.loads(res).get('result', '???')
+        jobs.setdefault(job, []).append((build, status))
+
+    return jobs
+
+
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
     def render(self, template, context):
@@ -243,36 +271,6 @@ class JobListHandler(RenderingHandler):
         fstats = gcs_ls(jobs_dir)
         fstats.sort()
         self.render('job_list.html', dict(jobs_dir=jobs_dir, fstats=fstats))
-
-
-@memcache_memoize('pr-details://', expires=60 * 3)
-def pr_details(pr):
-    jobs_dirs_fut = gcs_async.listdirs('%s/%s' % (PR_PREFIX, pr))
-
-    def base(path):
-        return os.path.basename(os.path.dirname(path))
-
-    jobs_futures = [(job, gcs_async.listdirs(job)) for job in jobs_dirs_fut.get_result()]
-    futures = []
-
-    for job, builds_fut in jobs_futures:
-        for build in builds_fut.get_result():
-            fut = gcs_async.read('/%sfinished.json' % build)
-            futures.append([base(job), base(build), fut])
-
-    jobs = {}
-
-    futures.sort(key=lambda (job, build, _): (job, pad_numbers(build)), reverse=True)
-
-    for job, build, fut in futures:
-        res = fut.get_result()
-        if res is None:
-            status = '???'
-        else:
-            status = json.loads(res).get('result', '???')
-        jobs.setdefault(job, []).append((build, status))
-
-    return jobs
 
 
 class PRHandler(RenderingHandler):
