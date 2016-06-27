@@ -117,7 +117,8 @@
         - ansicolor:
             colormap: xterm
     builders:
-        - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
+        - ensure-upload-to-gcs-script
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: '{cmd}'
     publishers:
         - xunit:
