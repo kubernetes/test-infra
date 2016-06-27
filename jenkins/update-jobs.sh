@@ -24,7 +24,7 @@ else
   exit 1
 fi
 
-IMAGE="gcr.io/google_containers/kubekins-job-builder:4"
+IMAGE="gcr.io/google_containers/kubekins-job-builder:5"
 
 # If we're on an old image then stop it and remove it.
 if docker inspect job-builder &> /dev/null; then
