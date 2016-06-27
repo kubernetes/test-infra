@@ -39,74 +39,154 @@
             wipe-workspace: false
             skip-tag: true
     triggers:
-        # GitHub PR Builder Plugin. JJB doesn't handle multiple extensions properly.
-        - raw:
-            xml: |
-                <org.jenkinsci.plugins.ghprb.GhprbTrigger>
-                    <spec>H/2 * * * *</spec>
-                    <adminlist>
-                        a-robinson alex-mohr amygdala aronchick ArtfulCoder bgrant0607 bgrant0607-nocc bprashanth brendandburns caesarxuchao childsb cjcullen david-mcmahon davidopp dchen1107 deads2k derekwaynecarr eparis erictune fabioy fejta fgrzadkowski freehan ghodss gmarek goltermann hurf ihmccreery ixdy jackgr janetkuo jbeda jdef jlowdermilk jsafrane jszczepkowski justinsb k8s-merge-robot karlkfi kelseyhightower kevin-wangzefeng krousey lavalamp liggitt luxas madhusudancs maisem mansoorj mikedanese MikeJeffrey mml mwielgus ncdc nikhiljindal piosz pmorie pwittrock Q-Lee quinton-hoole Random-Liu rjnagal rmmh roberthbailey saad-ali sarahnovotny satnam6502 smarterclayton spxtr sttts swagiaal thockin timothysc timstclair vishh vmarmol wojtek-t xiang90 yifan-gu yujuhong zmerlynn
-                    </adminlist>
-                    <allowMembersOfWhitelistedOrgsAsAdmin>false</allowMembersOfWhitelistedOrgsAsAdmin>
-                    <whitelist>
-                        abhgupta AdoHe AnanyaKumar andronat andyzheng0831 apeeyush aronchick aveshagarwal bcbroussard BenTheElder burmanm caseydavenport chrisleck csrwng dalanlan deads2k ericchiang feihujiang gouyang HaiyangDING huangyuqi imkin jackgr jayunit100 jiangyaoguo jimmidyson kargakis luxas matthewdupre mfojtik mikeln mqliang ncdc pweil- resouer s-urbaniak sdminonne socaa soltysh spothanis stefwalter timstclair therc uluyol uruddarraju wonderfly yifan-gu zhengguoyong
-                    </whitelist>
-                    <orgslist>kubernetes</orgslist>
-                    <cron>H/2 * * * *</cron>
-                    <triggerPhrase>(?is).*@k8s-bot\s+{trigger-phrase}\s+this.*</triggerPhrase>
-                        <onlyTriggerPhrase>false</onlyTriggerPhrase>
-                        <useGitHubHooks>false</useGitHubHooks>
-                        <permitAll>false</permitAll>
-                        <autoCloseFailedPullRequests>false</autoCloseFailedPullRequests>
-                        <whiteListTargetBranches>
-                            <org.jenkinsci.plugins.ghprb.GhprbBranch>
-                                <branch>master</branch>
-                            </org.jenkinsci.plugins.ghprb.GhprbBranch>
-                            <org.jenkinsci.plugins.ghprb.GhprbBranch>
-                                <branch>release-.*</branch>
-                            </org.jenkinsci.plugins.ghprb.GhprbBranch>
-                        </whiteListTargetBranches>
-                    <gitHubAuthId>f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8</gitHubAuthId>
-                    <extensions>
-                        <org.jenkinsci.plugins.ghprb.extensions.status.GhprbSimpleStatus>
-                            <commitStatusContext>Jenkins {status-context}</commitStatusContext>
-                            <triggeredStatus></triggeredStatus>
-                            <startedStatus></startedStatus>
-                            <statusUrl>https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/</statusUrl>
-                            <addTestResults>true</addTestResults>
-                            <completedStatus>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message></message>
-                                    <result>SUCCESS</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message></message>
-                                    <result>ERROR</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message></message>
-                                    <result>FAILURE</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                            </completedStatus>
-                        </org.jenkinsci.plugins.ghprb.extensions.status.GhprbSimpleStatus>
-                        <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildStatus>
-                            <messages>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message>{success-comment}</message>
-                                    <result>SUCCESS</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message>{failure-comment}</message>
-                                    <result>FAILURE</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                <org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                                    <message>{error-comment}</message>
-                                    <result>ERROR</result>
-                                </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildResultMessage>
-                            </messages>
-                        </org.jenkinsci.plugins.ghprb.extensions.comments.GhprbBuildStatus>
-                    </extensions>
-                </org.jenkinsci.plugins.ghprb.GhprbTrigger>
+        - github-pull-request:
+            # This is the Jenkins GHPRB plugin ID, not the actual github token.
+            auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
+            trigger-phrase: '(?is).*@k8s-bot\s+{trigger-phrase}\s+this.*'
+            cron: 'H/2 * * * *'
+            status-context: Jenkins {status-context}
+            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
+            status-add-test-results: '{status-add-test-results}'
+            # This should roughly line up with kubernetes-maintainers.
+            admin-list:
+                - a-robinson
+                - alex-mohr
+                - amygdala
+                - aronchick
+                - ArtfulCoder
+                - bgrant0607
+                - bgrant0607-nocc
+                - bprashanth
+                - brendandburns
+                - caesarxuchao
+                - childsb
+                - cjcullen
+                - david-mcmahon
+                - davidopp
+                - dchen1107
+                - deads2k
+                - derekwaynecarr
+                - eparis
+                - erictune
+                - fabioy
+                - fejta
+                - fgrzadkowski
+                - freehan
+                - ghodss
+                - gmarek
+                - goltermann
+                - hurf
+                - ihmccreery
+                - ixdy
+                - jackgr
+                - janetkuo
+                - jbeda
+                - jdef
+                - jlowdermilk
+                - jsafrane
+                - jszczepkowski
+                - justinsb
+                - k8s-merge-robot
+                - karlkfi
+                - kelseyhightower
+                - kevin-wangzefeng
+                - krousey
+                - lavalamp
+                - liggitt
+                - luxas
+                - madhusudancs
+                - maisem
+                - mansoorj
+                - mikedanese
+                - MikeJeffrey
+                - mml
+                - mwielgus
+                - ncdc
+                - nikhiljindal
+                - piosz
+                - pmorie
+                - pwittrock
+                - Q-Lee
+                - quinton-hoole
+                - Random-Liu
+                - rjnagal
+                - rmmh
+                - roberthbailey
+                - saad-ali
+                - sarahnovotny
+                - satnam6502
+                - smarterclayton
+                - spxtr
+                - sttts
+                - swagiaal
+                - thockin
+                - timothysc
+                - timstclair
+                - vishh
+                - vmarmol
+                - wojtek-t
+                - xiang90
+                - yifan-gu
+                - yujuhong
+                - zmerlynn
+            # This should roughly line up with kubernetes-contributors.
+            white-list:
+                - abhgupta
+                - AdoHe
+                - AnanyaKumar
+                - andronat
+                - andyzheng0831
+                - apeeyush
+                - aronchick
+                - aveshagarwal
+                - bcbroussard
+                - BenTheElder
+                - burmanm
+                - caseydavenport
+                - chrisleck
+                - csrwng
+                - dalanlan
+                - deads2k
+                - ericchiang
+                - feihujiang
+                - gouyang
+                - HaiyangDING
+                - huangyuqi
+                - imkin
+                - jackgr
+                - jayunit100
+                - jiangyaoguo
+                - jimmidyson
+                - kargakis
+                - luxas
+                - matthewdupre
+                - mfojtik
+                - mikeln
+                - mqliang
+                - ncdc
+                - pweil-
+                - resouer
+                - s-urbaniak
+                - sdminonne
+                - socaa
+                - soltysh
+                - spothanis
+                - stefwalter
+                - timstclair
+                - therc
+                - uluyol
+                - uruddarraju
+                - wonderfly
+                - yifan-gu
+                - zhengguoyong
+            org-list:
+                - kubernetes
+            white-list-target-branches:
+                - master
+                - release-.*
+            success-comment: '{success-comment}'
+            failure-comment: '{failure-comment}'
+            error-comment: '{error-comment}'
     wrappers:
         - workspace-cleanup:
             dirmatch: true
@@ -147,6 +227,7 @@
           status-context: unit/integration
           max-total: 0 # Unlimited
           skip-if-no-test-files: false  # We expect JUnit output from this job.
+          status-add-test-results: true
           success-comment: ''
           failure-comment: ''
           error-comment: ''
@@ -158,6 +239,7 @@
           status-context: verification
           max-total: 0 # Unlimited
           skip-if-no-test-files: true  # We do not expect JUnit output from this job.
+          status-add-test-results: false
           success-comment: ''
           failure-comment: ''
           error-comment: ''
@@ -170,6 +252,7 @@
           status-context: GKE smoke e2e
           max-total: 12
           skip-if-no-test-files: false  # We expect JUnit output from this job.
+          status-add-test-results: true
           success-comment: ''
           failure-comment: ''
           error-comment: ''
@@ -234,11 +317,12 @@
             else
               echo "PR GKE job disabled for legacy branches."
             fi
- 
+
       - build-test-e2e-gce: # kubernetes-pull-build-test-e2e-gce
           status-context: GCE e2e
           max-total: 12
           skip-if-no-test-files: false  # We expect JUnit output from this job.
+          status-add-test-results: true
           success-comment: |
             GCE e2e build/test **passed** for commit ${{ghprbActualCommit}}.
             * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
