@@ -467,8 +467,10 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-verify-master",
 		"kubernetes-e2e-gce",
 		"kubernetes-e2e-gce-slow",
+		"kubernetes-soak-continuous-e2e-gce",
 		"kubernetes-e2e-gke",
 		"kubernetes-e2e-gke-slow",
+		"kubernetes-soak-continuous-e2e-gke",
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
