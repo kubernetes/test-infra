@@ -281,7 +281,6 @@ class BuildHandler(RenderingHandler):
         else:
             commit = None
         pr = None
-        logging.info("PREFIX: %s / %s", prefix, PR_PREFIX)
         if prefix.startswith(PR_PREFIX):
             pr = os.path.basename(prefix)
         self.render('build.html', dict(
