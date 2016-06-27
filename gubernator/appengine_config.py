@@ -15,6 +15,7 @@
 import os
 
 from google.appengine.ext import vendor
+from google.appengine.api import urlfetch
 
 # Add any libraries installed in the "third_party" folder.
 vendor.add('third_party')
@@ -22,3 +23,7 @@ vendor.add('third_party')
 # Use remote GCS calls for local development.
 if os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
     os.environ['SERVER_SOFTWARE'] += ' remote_api'
+
+# The default deadline of 5 seconds is too aggressive of a target for GCS
+# directory listing operations.
+urlfetch.set_default_fetch_deadline(60)
