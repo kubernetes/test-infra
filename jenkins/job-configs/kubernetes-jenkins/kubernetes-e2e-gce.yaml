@@ -487,7 +487,6 @@
     name: kubernetes-e2e-gce-pd
     trigger-job: 'kubernetes-build'
     test-owner: 'saadali@google.com'
-    provider-env: ''
     emails: 'saadali@google.com,dawnchen@google.com'
     suffix:
         - 'gce-pd-test':
