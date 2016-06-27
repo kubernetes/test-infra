@@ -24,7 +24,7 @@ import webapp2
 import jinja2
 import yaml
 
-from google.appengine.api import memcache
+from google.appengine.api import memcache, urlfetch
 
 import defusedxml.ElementTree as ET
 import cloudstorage as gcs
@@ -208,6 +208,12 @@ def pr_details(pr):
 
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
+    def __init__(self, *args, **kwargs):
+        super(RenderingHandler, self).__init__(*args, **kwargs)
+        # The default deadline of 5 seconds is too aggressive of a target for GCS
+        # directory listing operations.
+        urlfetch.set_default_fetch_deadline(60)
+
     def render(self, template, context):
         """Render a context dictionary using a given template."""
         template = JINJA_ENVIRONMENT.get_template(template)
