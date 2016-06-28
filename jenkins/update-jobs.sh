@@ -38,17 +38,18 @@ fi
 # If the container doesn't exist then start it.
 if ! docker inspect job-builder &> /dev/null; then
   # jenkins_jobs.ini contains administrative credentials for Jenkins.
-  # Store it in the workspace of the Jenkins job that calls this script.
-  if [[ -e jenkins_jobs.ini ]]; then
+  # Store it in /jenkins-master-data.
+  readonly config_path="/jenkins-master-data/jenkins_jobs.ini"
+  if [[ -e "${config_path}" ]]; then
     docker run -idt \
       --net host \
       --name job-builder \
       --restart always \
       -v "${WORKSPACE}:/test-infra" \
       "${IMAGE}"
-    docker cp jenkins_jobs.ini job-builder:/etc/jenkins_jobs
+    docker cp "${config_path}" job-builder:/etc/jenkins_jobs
   else
-    echo "jenkins_jobs.ini not found in workspace" >&2
+    echo "${config_path} not found" >&2
     exit 1
   fi
 fi
