@@ -1,17 +1,22 @@
-# A mapping of bucket URLs to bucket metadata
+# A mapping of bucket URLs to bucket metadata.
 #
 # Possible bucket metadata:
+#   contact: github name to contact
 #   prefix: the identifier used for this bucket on the test-history dashboard.
 #   sequential: an optional boolean that indicates whether test runs in this
 #     bucket are numbered sequentially. This is used for an optimization in the
 #     test-history collection phase, and defaults to true.
 
 gs://kubernetes-jenkins/logs/:
+  contact: "fejta"
   prefix: ""
 gs://kube_azure_log/:
+  contact: "travisnewhouse"
   prefix: "azure:"
 gs://rktnetes-jenkins/logs/:
+  contact: "euank"
   prefix: "rktnetes:"
 gs://kopeio-kubernetes-e2e/logs/:
+  contact: "justinsb"
   prefix: "kopeio:"
   sequential: false
