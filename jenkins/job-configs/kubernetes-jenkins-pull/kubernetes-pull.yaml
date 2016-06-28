@@ -1,11 +1,19 @@
 - job-template:
-    name: 'kubernetes-pull-{suffix}'
+    name: '{git-project}-pull-{suffix}'
+    # defaults
+    success-comment: ''
+    failure-comment: ''
+    error-comment: ''
+    git-basedir: ''
+    skip-if-no-test-files: false
+    status-add-test-results: true
+
     concurrent: true
     properties:
         - build-discarder:
             days-to-keep: 7
         - github:
-            url: https://github.com/kubernetes/kubernetes
+            url: 'https://github.com/{repo-name}'
         - throttle:
             max-total: '{max-total}'
             max-per-node: 2
@@ -24,15 +32,16 @@
         - git:
             remotes:
                 - remote:
-                    url: https://github.com/kubernetes/kubernetes
+                    url: 'https://github.com/{repo-name}'
                     refspec: '+refs/heads/*:refs/remotes/upstream/*'
                 - remote:
-                    url: https://github.com/kubernetes/kubernetes
+                    url: 'https://github.com/{repo-name}'
                     refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
             branches:
                 - 'origin/pr/${{ghprbPullId}}/merge'
+            basedir: '{git-basedir}'
             browser: githubweb
-            browser-url: http://github.com/kubernetes/kubernetes
+            browser-url: 'http://github.com/{repo-name}'
             timeout: 20
             clean:
                 after: true
@@ -188,18 +197,25 @@
             failure-comment: '{failure-comment}'
             error-comment: '{error-comment}'
     wrappers:
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
         - timeout:
-            timeout: 80
+            timeout: 90
             fail: true
         - ansicolor:
             colormap: xterm
     builders:
         - ensure-upload-to-gcs-script
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
-        - shell: '{cmd}'
+        - shell: |
+              if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; done
+              {cmd}
     publishers:
         - xunit:
             thresholds:
@@ -222,15 +238,12 @@
 
 - project:
     name: kubernetes-pull
+    git-project: 'kubernetes'
+    repo-name: 'kubernetes/kubernetes'
     suffix:
       - test-unit-integration: # kubernetes-pull-test-unit-integration
           status-context: unit/integration
           max-total: 0 # Unlimited
-          skip-if-no-test-files: false  # We expect JUnit output from this job.
-          status-add-test-results: true
-          success-comment: ''
-          failure-comment: ''
-          error-comment: ''
           trigger-phrase: 'unit\s+test'
           cmd: |
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
@@ -240,9 +253,6 @@
           max-total: 0 # Unlimited
           skip-if-no-test-files: true  # We do not expect JUnit output from this job.
           status-add-test-results: false
-          success-comment: ''
-          failure-comment: ''
-          error-comment: ''
           trigger-phrase: 'verify'
           cmd: |
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
@@ -251,11 +261,6 @@
       - build-test-e2e-gke: # kubernetes-pull-build-test-e2e-gke
           status-context: GKE smoke e2e
           max-total: 12
-          skip-if-no-test-files: false  # We expect JUnit output from this job.
-          status-add-test-results: true
-          success-comment: ''
-          failure-comment: ''
-          error-comment: ''
           trigger-phrase: 'e2e\s+test'
           cmd: |
             export KUBE_SKIP_PUSH_GCS=y
@@ -321,8 +326,6 @@
       - build-test-e2e-gce: # kubernetes-pull-build-test-e2e-gce
           status-context: GCE e2e
           max-total: 12
-          skip-if-no-test-files: false  # We expect JUnit output from this job.
-          status-add-test-results: true
           success-comment: |
             GCE e2e build/test **passed** for commit ${{ghprbActualCommit}}.
             * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
@@ -408,4 +411,98 @@
               ./hack/jenkins/e2e.sh
             fi
     jobs:
-        - 'kubernetes-pull-{suffix}'
+        - '{git-project}-pull-{suffix}'
+
+- project:
+    name: node-pull
+    git-project:
+        - 'cadvisor':
+            repo-name: 'google/cadvisor'
+            git-basedir: 'go/src/github.com/google/cadvisor'
+            suffix: 'build-test-e2e'
+            owner: 'stclair@google.com'
+            max-total: 1
+            skip-if-no-test-files: true  # no JUnit produced
+            status-add-test-results: false
+            trigger-phrase: 'test'
+            status-context: 'GCE e2e'
+            success-comment: |
+                Jenkins GCE e2e
+
+                Build/test **passed** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            failure-comment: |
+                Jenkins GCE e2e
+
+                Build/test **failed** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            error-comment: |
+                Jenkins GCE e2e
+
+                Build/test **errored** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            cmd: |
+                cd go/src/github.com/google/cadvisor
+                go get -u github.com/tools/godep
+                ./build/presubmit.sh
+
+                godep go build -tags test github.com/google/cadvisor/integration/runner
+                ./runner --logtostderr --test-retry-count=8 --test-retry-whitelist=integration/runner/retrywhitelist.txt \
+                --ssh-options "-i /var/lib/jenkins/gce_keys/google_compute_engine -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o CheckHostIP=no -o StrictHostKeyChecking=no" \
+                e2e-cadvisor-ubuntu-trusty \
+                e2e-cadvisor-container-vm-v20151215 \
+                e2e-cadvisor-container-vm-v20160127 \
+                e2e-cadvisor-rhel-7
+
+                # Temporarily disabled for #1344
+                # e2e-cadvisor-coreos-beta \
+
+                # Old Images:
+                #e2e-cadvisor-ubuntu-trusty-docker19 \
+                #e2e-cadvisor-coreos-beta \
+                #e2e-cadvisor-rhel-7-docker111 \
+                #e2e-cadvisor-container-vm-v20160321
+                # TODO: Add test on GCI
+
+                # TODO: enable when docker 1.10 is working
+                #e2e-cadvisor-ubuntu-trusty-docker110 \
+
+                # e2e-cadvisor-centos-v7
+        - 'heapster':
+            repo-name: 'kubernetes/heapster'
+            git-basedir: 'go/src/k8s.io/heapster'
+            suffix: 'build-test-e2e'
+            owner: 'pszczesniak@google.com'
+            max-total: 1
+            skip-if-no-test-files: true  # no JUnit produced
+            status-add-test-results: false
+            trigger-phrase: 'test'
+            status-context: 'GCE e2e'
+            success-comment: |
+                Jenkins GCE e2e
+
+                Build/test **passed** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            failure-comment: |
+                Jenkins GCE e2e
+
+                Build/test **failed** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            error-comment: |
+                Jenkins GCE e2e
+
+                Build/test **errored** for commit ${{ghprbActualCommit}}.
+                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            cmd: 'make test-unit test-integration'
+        - 'node':  # kubelet on post-commit Jenkins
+            repo-name: 'kubernetes/kubernetes'
+            git-basedir: 'go/src/k8s.io/kubernetes'
+            suffix: 'build-e2e-test'
+            owner: 'pwittroc@google.com'
+            max-total: 10
+            skip-if-no-test-files:   # old branches may not produce JUnit
+            trigger-phrase: 'node e2e test'
+            status-context: 'GCE Node e2e'
+            cmd: './test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/jenkins-pull.properties'
+    jobs:
+        - '{git-project}-pull-{suffix}'
