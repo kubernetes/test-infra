@@ -380,7 +380,10 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		if overrideUrl != "" {
 			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
 		} else {
-			gcs = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
+			gcs = utils.NewWithPresubmitDetection(
+				utils.KubekinsBucket, utils.LogDir,
+				utils.PullKey, utils.PullLogDir,
+			)
 		}
 
 		sq.e2e = (&e2e.RealE2ETester{

@@ -60,6 +60,7 @@ func (p *OldTestGetter) Initialize(config *github.Config, features *features.Fea
 		return fmt.Errorf("submit-queue not found")
 	}
 	p.ran = map[string]bool{}
+	p.pullJobToLastRun = map[string]int{}
 	return nil
 }
 
@@ -112,10 +113,13 @@ func (p *OldTestGetter) getPresubmitTests(jobs []string, e2eTester *e2e.RealE2ET
 		}
 		for n := lastLoad + 1; n <= mostRecent; n++ {
 			glog.Infof("Getting results for past test result: %v %v", job, n)
-			if _, err := e2eTester.GetBuildResult(job, n); err != nil {
+			if r, err := e2eTester.GetBuildResult(job, n); err != nil {
 				glog.Errorf("Couldn't get result for %v %v: %v", job, n, err)
+			} else {
+				glog.Infof("result from %v/%v:\n%#v", job, n, r)
 			}
 		}
+		p.pullJobToLastRun[job] = mostRecent
 	}
 }
 

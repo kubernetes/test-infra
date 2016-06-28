@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"k8s.io/contrib/mungegithub/features"
@@ -35,6 +36,12 @@ import (
 
 // failedStr is for comment matching during auto prioritization
 const failedStr = "Failed: "
+
+var (
+	// pullRE is a regexp that will extract the PR# from a path to a flake
+	// that happened on a PR.
+	pullRE = regexp.MustCompile("pull/([0-9]+)/")
+)
 
 // issueFinder finds an issue for a given key.
 type issueFinder interface {
@@ -82,7 +89,10 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 		return fmt.Errorf("submit-queue not found")
 	}
 	p.config = config
-	p.googleGCSBucketUtils = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
+	p.googleGCSBucketUtils = utils.NewWithPresubmitDetection(
+		utils.KubekinsBucket, utils.LogDir,
+		utils.PullKey, utils.PullLogDir,
+	)
 
 	var owner sync.OwnerMapper
 	var err error
@@ -197,8 +207,12 @@ func (p *individualFlakeSource) ID() string {
 
 // Body implements IssueSource
 func (p *individualFlakeSource) Body(newIssue bool) string {
+	id := p.ID()
 	extraInfo := fmt.Sprintf(failedStr+"%v\n\n```\n%v\n```\n\n", p.Title(), p.flake.Reason)
-	body := makeGubernatorLink(p.ID()) + "\n" + extraInfo
+	if parts := pullRE.FindStringSubmatch(id); len(parts) > 1 {
+		extraInfo += fmt.Sprintf("Happened on a presubmit run in #%v.\n\n", parts[1])
+	}
+	body := makeGubernatorLink(id) + "\n" + extraInfo
 
 	if !newIssue {
 		return body
