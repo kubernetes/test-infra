@@ -32,6 +32,7 @@ import cloudstorage as gcs
 import gcs_async
 import filters
 import log_parser
+import pull_request
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -152,7 +153,7 @@ def build_details(build_dir):
     if finished and not started:
         started = 'null'
     if started and not finished:
-	finished = 'null'
+        finished = 'null'
     elif not (started and finished):
         return
     started = json.loads(started)
@@ -177,7 +178,15 @@ def build_details(build_dir):
 
 
 @memcache_memoize('pr-details://', expires=60 * 3)
-def pr_details(pr):
+def pr_builds(pr):
+    """
+    Get information for all builds run by a PR.
+
+    Args:
+        pr: the PR number
+    Returns:
+        A dictionary of {job: [(build_number, started_json, finished.json)]}
+    """
     jobs_dirs_fut = gcs_async.listdirs('%s/%s' % (PR_PREFIX, pr))
 
     def base(path):
@@ -188,20 +197,21 @@ def pr_details(pr):
 
     for job, builds_fut in jobs_futures:
         for build in builds_fut.get_result():
-            fut = gcs_async.read('/%sfinished.json' % build)
-            futures.append([base(job), base(build), fut])
+            sta_fut = gcs_async.read('/%sstarted.json' % build)
+            fin_fut = gcs_async.read('/%sfinished.json' % build)
+            futures.append([base(job), base(build), sta_fut, fin_fut])
+
+    futures.sort(key=lambda (job, build, s, f): (job, pad_numbers(build)), reverse=True)
 
     jobs = {}
-
-    futures.sort(key=lambda (job, build, _): (job, pad_numbers(build)), reverse=True)
-
-    for job, build, fut in futures:
-        res = fut.get_result()
-        if res is None:
-            status = '???'
-        else:
-            status = json.loads(res).get('result', '???')
-        jobs.setdefault(job, []).append((build, status))
+    for job, build, started_fut, finished_fut in futures:
+        started = started_fut.get_result()
+        finished = finished_fut.get_result()
+        if started is not None:
+            started = json.loads(started)
+        if finished is not None:
+            finished = json.loads(finished)
+        jobs.setdefault(job, []).append((build, started, finished))
 
     return jobs
 
@@ -282,10 +292,10 @@ class JobListHandler(RenderingHandler):
 class PRHandler(RenderingHandler):
     """Show a list of test runs for a PR."""
     def get(self, pr):
-        details = pr_details(pr)
-        max_builds = max(len(builds) for builds in details.values() + [[]])
+        builds = pr_builds(pr)
+        max_builds, headings, rows = pull_request.builds_to_table(builds)
         self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX,
-            details=details, max_builds=max_builds))
+            max_builds=max_builds, header=headings, rows=rows))
 
 
 app = webapp2.WSGIApplication([

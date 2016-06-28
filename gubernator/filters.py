@@ -21,12 +21,19 @@ import jinja2
 
 
 GITHUB_VIEW_TEMPLATE = 'https://github.com/kubernetes/kubernetes/blob/%s/%s#L%s'
+GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
+
 
 
 def do_timestamp(unix_time):
     """Convert an int Unix timestamp into a human-readable datetime."""
     t = datetime.datetime.fromtimestamp(unix_time)
     return t.strftime('%F %H:%M')
+
+
+def do_shorttimestamp(unix_time):
+    t = datetime.datetime.fromtimestamp(unix_time)
+    return t.strftime('%d %H:%M')
 
 
 def do_duration(seconds):
@@ -63,6 +70,11 @@ def do_linkify_stacktrace(inp, commit):
                                 flags=re.MULTILINE))
 
 
+def do_github_commit_link(commit):
+    commit_url = jinja2.escape(GITHUB_COMMIT_TEMPLATE % commit)
+    return jinja2.Markup('<a href="%s">%s</a>' % (commit_url, commit[:6]))
+
+
 def do_testcmd(name):
     if name.startswith('k8s.io/'):
         try:
@@ -77,7 +89,6 @@ def do_testcmd(name):
 
         test_args = ('--ginkgo.focus=%s$' % name_escaped)
         return "go run hack/e2e.go -v -test --test_args='%s'" % test_args
-
 
 do_basename = os.path.basename
 do_dirname = os.path.dirname
