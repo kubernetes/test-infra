@@ -208,6 +208,11 @@ func (e *RealE2ETester) checkPassFail(job string, number int) (stable, ignorable
 	return false, false
 }
 
+// LatestRunOfJob returns the number of the most recent completed run of the given job.
+func (e *RealE2ETester) LatestRunOfJob(jobName string) (int, error) {
+	return e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(jobName)
+}
+
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
 func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 	allStable = true
