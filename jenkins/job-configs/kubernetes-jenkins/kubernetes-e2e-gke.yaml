@@ -306,7 +306,7 @@
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export ZONE="asia-east1-b"
+                export ZONE="us-central1-b"
                 export E2E_OPT="--check_version_skew=false"
         - 'gke-prod-parallel':  # kubernetes-e2e-gke-prod-parallel
             description: 'Run E2E tests on GKE prod endpoint in parallel.'
@@ -317,6 +317,18 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export ZONE="us-central1-b"
+                export E2E_OPT="--check_version_skew=false"
+        - 'gke-prod-smoke':  # kubernetes-e2e-gke-prod-smoke
+            description: 'Run smoke tests on GKE prod day 1 zone (asia-east1-b).'
+            timeout: 80
+            job-env: |
+                export PROJECT="k8s-e2e-gke-prod-smoke"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
+                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
+                export JENKINS_USE_SERVER_VERSION="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
                 export GINKGO_PARALLEL="y"
                 export ZONE="asia-east1-b"
                 export E2E_OPT="--check_version_skew=false"
