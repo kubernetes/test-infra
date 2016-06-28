@@ -284,7 +284,7 @@ def render_forever(history_uri, img_uri):
         proc.communicate(buf.getvalue())
         code = proc.wait()
         if code:
-          print >>sys.stderr, 'Failed to copy rendering to %s: %d' % (png_uri, code)
+          print >>sys.stderr, 'Failed to copy rendering to %s: %d' % (img_uri, code)
         time.sleep(60)
 
 

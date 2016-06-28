@@ -16,11 +16,12 @@
 
 import cStringIO
 import datetime
-import requests
 import subprocess
 import sys
 import time
 import traceback
+
+import requests
 
 
 def get_submit_queue_json(path):

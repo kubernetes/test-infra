@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: queue-health-graph-dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: queue-health-graph-dev
+    spec:  # Test graph, prod history, no poller
+      containers:
+      - name: grapher
+        image: gcr.io/google-containers/queue-health-graph
+        env:
+        - name: GRAPH  # Test svg uri
+          value: "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
+        - name: HISTORY  # prod history uri
+          value: "gs://kubernetes-test-history/sq/history.txt"
