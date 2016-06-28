@@ -201,6 +201,11 @@
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: '{cmd}'
     publishers:
+        - text-finder:
+            regexp: "Test Suite Failed"
+            also-check-console-output: true
+            succeed-if-found: false
+            unstable-if-found: true
         - xunit:
             thresholds:
                 - failed:
