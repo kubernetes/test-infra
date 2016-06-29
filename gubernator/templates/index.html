@@ -1,6 +1,4 @@
-<html>
 <title>Gubernator</title>
-<body>
 <h1>Kubernetes Test Results Viewer</h1>
 <ul>
 % for prefix, jobset in jobs.iteritems()
@@ -14,5 +12,5 @@ Blocking Jobs:
 </ul>
 </li>
 % endfor
-</body>
-</html>
+<p>Bookmarklet to go from GCS to Gubernator (drag into bookmarks toolbar!): <a href="javascript:url=document.location.toString();if(url.match(/storage\/browser/))document.location='https://k8s-gubernator.appspot.com/build/'+url.match(/kubernetes-jenkins\/.*\/\d+/)[0]">→Gubernator</a>
+
