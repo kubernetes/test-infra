@@ -86,6 +86,15 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-e2e-serial"
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+        - 'gke-updown':  # kubernetes-e2e-gke-updown
+            cron-string: '{sq-cron-string}'
+            description: 'Brings a cluster up, checks networking, brings it down (against GKE test endpoint)'
+            timeout: 30  # See #21138
+            job-env: |
+                export PROJECT="kubernetes-e2e-gke-updown"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+                export GINKGO_PARALLEL="y"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-reboot':  # kubernetes-e2e-gke-reboot
             description: 'Run [Feature:Reboot] tests on GKE using the latest successful build.'
             timeout: 180
