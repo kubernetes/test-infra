@@ -29,13 +29,10 @@
         export MASTER_SIZE="m3.medium"
         export NODE_SIZE="m3.medium"
         export NUM_NODES="3"
-        export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-        export GINKGO_PARALLEL="y"
-        export PROJECT="k8s-jkns-e2e-aws"
-        export AWS_CONFIG_FILE='/var/lib/jenkins/.aws/credentials'
-        export AWS_SSH_KEY='/var/lib/jenkins/.ssh/kube_aws_rsa'
-        export KUBE_SSH_USER='admin'
-        export AWS_SHARED_CREDENTIALS_FILE='/var/lib/jenkins/.aws/credentials'  # Needed to create PD from e2e test
+        export AWS_CONFIG_FILE=/workspace/.aws/credentials
+        # This is needed to be able to create PD from the e2e test
+        export AWS_SHARED_CREDENTIALS_FILE=/workspace/.aws/credentials
+        export KUBE_SSH_USER=admin
     builders:
         - shell: |
             {provider-env}
@@ -52,6 +49,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
@@ -67,17 +65,21 @@
     cron-string: '@daily'
     trigger-job: ''
     timeout: 240
-    jenkins_node: 'master'
-    runner: '{legacy-runner}'
     aws-suffix:
         - 'aws':  # kubernetes-e2e-aws
             description: 'Run e2e tests on AWS using the latest successful Kubernetes build.'
             job-env: |
                 export E2E_NAME="e2e-aws-master"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-aws"
         - 'aws-release-1.3':  # kubernetes-e2e-aws-release-1.3
             description: 'Run e2e tests on AWS using the latest successful 1.3 Kubernetes build.'
             job-env: |
                 export E2E_NAME="e2e-aws-1-3"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-aws"
     jobs:
         - 'kubernetes-e2e-{aws-suffix}'

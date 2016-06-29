@@ -33,6 +33,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
