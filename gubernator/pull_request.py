@@ -39,6 +39,8 @@ def builds_to_table(jobs):
             if not started:
                 continue
             version = commit(started['version'])
+            if not version:
+                continue
             versions.setdefault(version, {}).setdefault(job, 0)
             versions[version][job] += 1
             begin = int(started['timestamp'])
@@ -61,7 +63,7 @@ def builds_to_table(jobs):
         row = []
         n = 0
         for build, started, finished in builds:
-            if not started:
+            if not started or not started['version']:
                 minspan = 0
             else:
                 minspan = version_colstart[commit(started['version'])]

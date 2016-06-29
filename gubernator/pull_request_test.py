@@ -20,7 +20,7 @@ import pull_request
 
 
 def make(number, version, result, start_time=1000):
-	started = version and {'timestamp': start_time, 'version': version}
+	started = None if version is None else {'timestamp': start_time, 'version': version}
 	finished = result and {'result': result}
 	return (number, started, finished)
 
@@ -37,6 +37,6 @@ class TableTest(unittest.TestCase):
 								('J2', [None, None, (5, 'C'), (4, 'D')])])
 
 	def test_builds_to_table_no_header(self):
-		jobs = {'J': [make(5, None, 'A', 3), make(4, None, 'B', 2)]}
+		jobs = {'J': [make(5, None, 'A', 3), make(4, '', 'B', 2)]}
 		self.assertEqual(pull_request.builds_to_table(jobs),
 						 (0, [], [('J', [(5, 'A'), (4, 'B')])]))
