@@ -75,5 +75,6 @@
               export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
               export KUBE_FASTBUILD=true
               export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
+              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
     jobs:
         - 'kubernetes-{build}'
