@@ -442,7 +442,6 @@
                 Build/test **errored** for commit ${{ghprbActualCommit}}.
                 * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
             cmd: |
-                cd go/src/github.com/google/cadvisor
                 go get -u github.com/tools/godep
                 ./build/presubmit.sh
 
