@@ -8,7 +8,7 @@ cache: pip
 services:
     - docker
 before_install:
-    - docker pull gcr.io/google_containers/kubekins-job-builder:4
+    - docker pull gcr.io/google_containers/kubekins-job-builder:5
 install:
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
