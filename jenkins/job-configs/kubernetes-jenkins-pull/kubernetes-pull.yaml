@@ -214,7 +214,7 @@
         - ensure-upload-to-gcs-script
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: |
-              if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; done
+              if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
               {cmd}
     publishers:
         - xunit:

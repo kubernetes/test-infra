@@ -5,13 +5,14 @@
           _script_tmp_path="${WORKSPACE}/_tmp/upload-to-gcs.sh"
           _script_repo_path='hack/jenkins/upload-to-gcs.sh'
           mkdir -p "${WORKSPACE}/_tmp"
-          if [[ "${ghprbTargetBranch:-}" == 'master' ]]; then
+          if [[ "${ghprbTargetBranch:-}" == 'master' && -x "${_script_repo_path}" ]]; then
             # Force using the checked-out version if we're testing the master branch
             ln -sf "${WORKSPACE}/${_script_repo_path}" "${_script_tmp_path}"
           fi
           # Download only if necessary; if this is called multiple times,
           # we only want to download this script the first time.
           if [[ ! -x "${_script_tmp_path}" ]]; then
+            rm -f "${_script_tmp_path}"
             curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/${_script_repo_path}" > "${_script_tmp_path}"
             chmod +x "${_script_tmp_path}"
           fi
