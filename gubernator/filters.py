@@ -27,13 +27,15 @@ GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
 
 def do_timestamp(unix_time):
     """Convert an int Unix timestamp into a human-readable datetime."""
-    t = datetime.datetime.fromtimestamp(unix_time)
-    return t.strftime('%F %H:%M')
+    t = datetime.datetime.utcfromtimestamp(unix_time)
+    return jinja2.Markup('<span class="timestamp" data-epoch="%s">%s</span>' %
+                         (unix_time, t.strftime('%F %H:%M')))
 
 
 def do_shorttimestamp(unix_time):
-    t = datetime.datetime.fromtimestamp(unix_time)
-    return t.strftime('%d %H:%M')
+    t = datetime.datetime.utcfromtimestamp(unix_time)
+    return jinja2.Markup('<span class="shorttimestamp" data-epoch="%s">%s</span>' %
+                         (unix_time, t.strftime('%d %H:%M')))
 
 
 def do_duration(seconds):

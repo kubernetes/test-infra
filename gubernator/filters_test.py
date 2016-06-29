@@ -21,7 +21,10 @@ import filters
 
 class HelperTest(unittest.TestCase):
     def test_timestamp(self):
-        self.assertEqual('2016-04-19 21:22', filters.do_timestamp(1461100940))
+        self.assertEqual(
+            '<span class="timestamp" data-epoch="1461100940">'
+            '2016-04-19 21:22</span>',
+            filters.do_timestamp(1461100940))
 
     def test_duration(self):
         for duration, expected in {

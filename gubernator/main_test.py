@@ -254,7 +254,7 @@ class PRTest(unittest.TestCase, TestMixin):
         self.assertIn('PASSED', response)
         self.assertIn('colspan="3"', response)  # header
         self.assertIn('github.com/kubernetes/kubernetes/pull/123', response)
-        self.assertIn('28 13:44', response)
+        self.assertIn('28 20:44', response)
 
     def test_pr_handler_missing(self):
         gcs_async_test.install_handler(self.testbed.get_stub('urlfetch'),

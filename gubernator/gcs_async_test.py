@@ -60,7 +60,6 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
         path = parsed.path
         param_dict = urlparse.parse_qs(parsed.query, True)
         prefix = param_dict['prefix'][0]
-        print prefixes_for_paths
         return json.dumps({'prefixes': prefixes_for_paths[prefix]})
 
     def fetch_stub(url, payload, method, headers, request, response,
