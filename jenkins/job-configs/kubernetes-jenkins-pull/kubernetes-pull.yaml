@@ -220,8 +220,8 @@
         - xunit:
             thresholds:
                 - failed:
-                    unstable: 0
-                    unstablenew: 0
+                    unstable:
+                    unstablenew:
                     failure:
                     failurenew:
                 - skipped:
