@@ -163,6 +163,15 @@ class GenHtmlTest(unittest.TestCase):
         check(['--buckets=baz', '--input=bar', '--output-dir=foo'],
               'foo', 'bar', 'baz')
 
+    def test_failure_class(self):
+        for passed, failed, expected in [
+            (0, 0, ''),
+            (0, 10, 'job-broken'),
+            (10, 5, 'job-troubled'),
+            (100, 9, 'job-flaky'),
+        ]:
+            self.assertEqual(gen_html.failure_class(passed, failed), expected)
+
     def test_get_options_missing(self):
         """Test missing arguments raise an exception."""
         def check(args):
