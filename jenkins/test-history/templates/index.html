@@ -25,7 +25,7 @@
                 {% for job in job_group %}
                 <tr>
                     <td class="numeric">{{ job.passed }}</td>
-                    <td class="numeric">{% if job.latest_failure is none %}{{ job.failed }}{% else %}<a title="Latest Failure" href="{{ job.latest_failure }}">{{ job.failed }}</a>{% endif %}</td>
+                    <td class="numeric {{failure_class(job.passed, job.failed)}}">{% if job.latest_failure is none %}{{ job.failed }}{% else %}<a title="Latest Failure" href="{{ job.latest_failure }}">{{ job.failed }}</a>{% endif %}</td>
                     <td style="white-space: nowrap">{% if job.tests > 0 %}<a href="suite-{{ job.name | urlencode }}.html">{{ job.name }}</a>{% else %}{{ job.name }}{% endif %}</td>
                     <td class="numeric">{{ job.tests }}</td>
                     <td class="numeric">{{ job.stable }}</td>

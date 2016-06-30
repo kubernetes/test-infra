@@ -58,6 +58,10 @@ a {
     text-decoration: none;
 }
 
+td a {
+    display: block;
+}
+
 td.numeric {
     text-align: right;
 }
@@ -66,3 +70,7 @@ caption {
     text-align: justify;
     padding: 10px;
 }
+
+td.job-flaky    { background-color: #fd9; }
+td.job-troubled { background-color: #f96; }
+td.job-broken   { background-color: #f66; }

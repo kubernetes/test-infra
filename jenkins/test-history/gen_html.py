@@ -57,6 +57,28 @@ JobSummary = collections.namedtuple('JobSummary', [
 ])
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+JINJA_ENV = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(BASE_DIR + '/templates/'),
+    extensions=['jinja2.ext.autoescape'],
+    trim_blocks=True,
+    autoescape=True)
+
+
+def failure_class(passed, failed):
+    if failed == 0:
+        return ''
+    elif passed == 0:
+        return 'job-broken'
+    elif passed / 10 < failed:
+        return 'job-troubled'
+    else:
+        return 'job-flaky'
+
+JINJA_ENV.globals['failure_class'] = failure_class
+
+
 def load_prefixes(in_file):
     """Returns a dictionary from bucket to prefix using in_file."""
     result = {}
@@ -164,7 +186,7 @@ def job_results(bucket, prefix, job_name, job_data, test_names):
         stable,
         unstable,
         broken)
-    tests = sorted(tests, key=lambda t: (t['failed'], t['passed']), reverse=True)
+    tests.sort(key=lambda t: (t['failed'], t['passed']), reverse=True)
     return job_summary, tests
 
 
@@ -222,23 +244,21 @@ def main(in_path, buckets_path, out_dir):
             merge_bad_tests(bad_tests, tests)
         summaries.append(job)
         if job.tests > 0:
-            with open('{}/job.html'.format(templates_path)) as job_template_file:
-                job_template = jinja2.Template(job_template_file.read())
+            job_template = JINJA_ENV.get_template('job.html')
             job_html = job_template.render({
                 'job_name': job_name,
                 'tests': tests,
             })
             with open('{}/suite-{}.html'.format(out_dir, full_name), 'w') as job_file:
                 job_file.write(job_html)
-    summaries = sorted(summaries)
+    summaries.sort()
     blocking_job_summaries = filter(lambda s: s.name in BLOCKING_JOBS, summaries)
 
-    with open('{}/index.html'.format(templates_path)) as index_template_file:
-        index_template = jinja2.Template(index_template_file.read())
+    index_template = JINJA_ENV.get_template('index.html')
     index_html = index_template.render({
         'last_updated': time.strftime('%a %b %d %T %Z'),
         'job_groups': [blocking_job_summaries, summaries],
-        'bad_tests': sorted(bad_tests.values(), key=lambda t: t['failed'], reverse=True),
+        'bad_tests': sorted(bad_tests.values(), key=lambda t: t['failed'] / (t['passed'] + t['failed']), reverse=True),
     })
     with open('{}/index.html'.format(out_dir), 'w') as index_file:
         index_file.write(index_html)
