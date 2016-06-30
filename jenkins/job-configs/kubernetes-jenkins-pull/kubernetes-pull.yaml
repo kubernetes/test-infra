@@ -217,23 +217,6 @@
               if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
               {cmd}
     publishers:
-        - xunit:
-            thresholds:
-                - failed:
-                    unstable: 0
-                    unstablenew: 0
-                    failure:
-                    failurenew:
-                - skipped:
-                    unstable:
-                    unstablenew:
-                    failure:
-                    failurenew:
-            types:
-                - junit:
-                    skip-if-no-test-files: '{skip-if-no-test-files}'
-                    pattern: '_artifacts/**.xml'
-                    deleteoutput: false
         - gcs-uploader
 
 - project:
