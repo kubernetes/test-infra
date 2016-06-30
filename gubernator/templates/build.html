@@ -4,7 +4,9 @@
 <link rel="icon" type="image/png" href="/static/favicon-green.png" />
 % endif
 <title>{{job}} #{{build}} Results</title>
+<script src="/static/moment.min.js"></script>
 <script src="/static/build.js"></script>
+<script>window.onload = fix_timestamps;</script>
 <div id="header" class="container">
 <img src="/static/logo.svg">
 <h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>

@@ -71,6 +71,9 @@ a.anchor:target {
 table.pr {
     margin: 20px;
 }
+tr.pr-version th {
+    background-color: lightgrey;
+}
 table.pr td {
     padding: 5px;
     white-space: nowrap;
