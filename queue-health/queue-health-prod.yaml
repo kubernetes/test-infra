@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: queue-health
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: queue-health
+    spec:  # Override with production targets
+      containers:
+      - name: grapher
+        image: gcr.io/google-containers/queue-health-graph:v20160627
+        env:
+        - name: GRAPH
+          value: "gs://kubernetes-test-history/k8s-queue-health.svg"
+        - name: HISTORY
+          value: "gs://kubernetes-test-history/sq/history.txt"
+      - name: poller
+        image: gcr.io/google-containers/queue-health-poll:v20160627
+        env:
+        - name: HISTORY
+          value: "gs://kubernetes-test-history/sq/history.txt"
