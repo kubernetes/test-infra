@@ -11,14 +11,30 @@ spec:
     spec:  # Override with production targets
       containers:
       - name: grapher
-        image: gcr.io/google-containers/queue-health-graph:v20160627
+        image: gcr.io/google-containers/queue-health-graph:v20160701
         env:
         - name: GRAPH
           value: "gs://kubernetes-test-history/k8s-queue-health.svg"
         - name: HISTORY
           value: "gs://kubernetes-test-history/sq/history.txt"
+        - name: SERVICE
+          value: '/creds/service-account.json'
+        volumeMounts:
+        - name: service-account
+          mountPath: /creds
+          readOnly: true
       - name: poller
-        image: gcr.io/google-containers/queue-health-poll:v20160627
+        image: gcr.io/google-containers/queue-health-poll:v20160701
         env:
         - name: HISTORY
           value: "gs://kubernetes-test-history/sq/history.txt"
+        - name: SERVICE
+          value: '/creds/service-account.json'
+        volumeMounts:
+        - name: service-account
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: service-account
+        secret:
+          secretName: queue-health-service-account

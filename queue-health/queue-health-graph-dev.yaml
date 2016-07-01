@@ -17,3 +17,13 @@ spec:
           value: "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
         - name: HISTORY  # prod history uri
           value: "gs://kubernetes-test-history/sq/history.txt"
+        - name: SERVICE
+          value: '/creds/service-account.json'
+        volumeMounts:
+        - name: service-account
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: service-account
+        secret:
+          secretName: queue-health-service-account

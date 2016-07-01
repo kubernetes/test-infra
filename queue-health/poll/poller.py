@@ -82,7 +82,11 @@ def save_stats(uri, buf):
       print >>sys.stderr, 'Failed to copy stats to %s: %d' % (uri, code)
 
 
-def poll_forever(uri):
+def poll_forever(uri, service_account=None):
+    if service_account:
+      print >>sys.stderr, 'Activating service account using: %s' % service_account
+      subprocess.check_call(
+          ['gcloud', 'auth', 'activate-service-account', '--key-file=%s' % service_account])
     print >>sys.stderr, 'Loading historical stats from %s...' % uri
     buf = cStringIO.StringIO()
     buf.write(load_stats(uri))

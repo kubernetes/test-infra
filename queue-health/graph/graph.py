@@ -252,8 +252,12 @@ def render(history_lines, out_file):
     plt.close()
 
 
-def render_forever(history_uri, img_uri):
+def render_forever(history_uri, img_uri, service_account=None):
     """Download results from history_uri, render to svg and save to img_uri."""
+    if service_account:
+      print >>sys.stderr, 'Activating service account using: %s' % service_account
+      subprocess.check_call(
+          ['gcloud', 'auth', 'activate-service-account', '--key-file=%s' % service_account])
     buf = cStringIO.StringIO()
     while True:
         print >>sys.stderr, 'Truncate render buffer'
