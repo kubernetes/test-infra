@@ -12,5 +12,23 @@ spec:
       containers:
       - name: grapher
         image: gcr.io/google-containers/queue-health-graph
+        env:
+        - name: SERVICE
+          value: '/creds/service-account.json'
+        volumeMounts:
+        - name: service-account
+          mountPath: /creds
+          readOnly: true
       - name: poller
         image: gcr.io/google-containers/queue-health-poll
+        env:
+        - name: SERVICE
+          value: '/creds/service-account.json'
+        volumeMounts:
+        - name: service-account
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: service-account
+        secret:
+          secretName: queue-health-service-account
