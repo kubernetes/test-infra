@@ -141,6 +141,9 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-1-2"
+                # build-1.2 is not using the kubernetes-release-dev bucket yet
+                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
+                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'slow-release-1.2':  # kubernetes-e2e-gce-gci-ci-slow-release-1.2
             description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.2 branch.'
             timeout: 60
@@ -152,6 +155,9 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-slow-1-2"
+                # build-1.2 is not using the kubernetes-release-dev bucket yet
+                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
+                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'serial-release-1.2':  # kubernetes-e2e-gce-gci-ci-serial-release-1.2
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.2 branch.'
             timeout: 300
@@ -162,5 +168,8 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-2"
+                # build-1.2 is not using the kubernetes-release-dev bucket yet
+                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
+                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
     jobs:
         - 'kubernetes-e2e-gce-gci-ci-{suffix}'
