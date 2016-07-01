@@ -481,26 +481,3 @@
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
     jobs:
         - 'kubernetes-e2e-{suffix}'
-
-# Jobs that run e2e tests on GCE with container-vm-v20160321 image to do some
-# experimental (docker 1.9.1 and Kubernetes 1.3) for
-# https://github.com/kubernetes/kubernetes/issues/27691
-- project:
-    name: kubernetes-e2e-gce-pd
-    trigger-job: 'kubernetes-build'
-    test-owner: 'saadali@google.com'
-    emails: 'saadali@google.com,dawnchen@google.com'
-    suffix:
-        - 'gce-pd-test':
-            description: 'Run E2E slow tests on GCE test endpoint.'
-            timeout: 150
-            job-env: |
-                export GINKGO_TEST_ARGS="--ginkgo.focus=Disks"
-                export PROJECT="kubekins-e2e-gce-pd-test"
-                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gce-pd-e2e-test"
-                export KUBE_OS_DISTRIBUTION="debian"
-                export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
-                export KUBE_GCE_NODE_IMAGE="container-vm-v20160321"
-    jobs:
-        - 'kubernetes-e2e-{suffix}'
