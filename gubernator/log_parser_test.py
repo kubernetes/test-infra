@@ -59,5 +59,18 @@ class LogParserTest(unittest.TestCase):
                          '<span class="hilight"><span class="keyword">'
                          'error</span>-blah</span>')
 
+    def test_error_re(self):
+        for text, matches in [
+            ('errno blah', False),
+            ('ERROR: woops', True),
+            ('Build timed out', True),
+            ('something timed out', False),
+            ('misc. fatality', False),
+            ('there was a FaTaL error', True),
+            ('we failed to read logs', True),
+        ]:
+            self.assertEqual(bool(log_parser.error_re.search(text)), matches,
+                'error_re.search(%r) should be %r' % (text, matches))
+
 if __name__ == '__main__':
     unittest.main()

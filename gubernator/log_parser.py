@@ -20,7 +20,7 @@ import re
 
 import jinja2
 
-error_re = re.compile(r'\b(error|fatal|failed)\b', re.IGNORECASE)
+error_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
 
 
 def hilight(line):
