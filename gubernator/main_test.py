@@ -81,6 +81,7 @@ class ParseJunitTest(unittest.TestCase):
 
     def test_normal(self):
         failures = self.parse(JUNIT_SUITE)
+
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
         self.assertEqual(failures, [('Third', 96.49, stack)])
 

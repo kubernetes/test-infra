@@ -25,6 +25,7 @@
 <div id="failures">
 % if failures
 <h2>Test Failures</h2>
+<hr>
 % for name, time, text in failures
 <a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 <pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
@@ -33,6 +34,11 @@
 {{text|linkify_stacktrace(commit)}}
 </pre>
 % endif
+% if pods[name, time, text]
+<h4>Mentions in kubelet.log file of <a class="anchor" id="{{pods[name, time, text]|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pods[name, time, text]}}&junit={{junits[fps[name,time,text]]}}">{{pods[name, time, text]}}</a></h4>
+% endif
+<h5>Above failure found in: {{fps[name,time,text]}}</h5>
+<hr>
 % endfor
 % else
 <h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
