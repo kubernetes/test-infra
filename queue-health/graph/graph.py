@@ -121,13 +121,16 @@ def render(history_lines, out_file):
             did_merge = 0
 
         if online:  # Ignore offline status
-            merge_sum += did_merge
             last_merge = merged
 
         daily_queue.append(happy)
-        daily_merged.append(did_merge)
         if len(daily_queue) > 60*24:
             happy_sum -= daily_queue.popleft()
+
+        if queue or did_merge:  # Only add samples when things are in the queue.
+            merge_sum += did_merge
+            daily_merged.append(did_merge)
+        if len(daily_merged) > 60*24:
             merge_sum -= daily_merged.popleft()
 
         if not start_offline and not online:
