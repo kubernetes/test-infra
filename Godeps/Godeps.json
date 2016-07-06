@@ -1,0 +1,18 @@
+{
+	"ImportPath": "k8s.io/test-infra",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./github-stats"
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/google/go-github/github",
+			"Rev": "b5e5babef39c18002f177a134fc49dc5013374ba"
+		},
+		{
+			"ImportPath": "github.com/google/go-querystring/query",
+			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
+		}
+	]
+}
