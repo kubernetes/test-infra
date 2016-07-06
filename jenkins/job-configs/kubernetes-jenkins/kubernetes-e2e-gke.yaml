@@ -118,7 +118,7 @@
                                          --ginkgo.skip=\[Feature:.+\]"
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
         - 'gke-multizone':  # kubernetes-e2e-gke-multizone
-            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel, and in a multi-zone (Ubernetes-lite) cluster.'
+            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel, and in a multi-zone cluster.'
             timeout: 150
             emails: 'arob@google.com, quinton@google.com'
             job-env: |

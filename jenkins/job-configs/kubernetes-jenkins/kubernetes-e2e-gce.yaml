@@ -202,8 +202,8 @@
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Example\]"
                 export PROJECT="k8s-jkns-e2e-examples"
-        - 'gce-ubernetes-lite':  # kubernetes-e2e-gce-ubernetes-lite
-            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE, in parallel, and in a multi-zone (Ubernetes-lite) cluster.'
+        - 'gce-multizone':  # kubernetes-e2e-gce-multizone
+            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE, in parallel, and in a multi-zone cluster.'
             timeout: 150
             emails: 'quinton@google.com, justin@fathomdb.com'
             test-owner: 'quinton'
