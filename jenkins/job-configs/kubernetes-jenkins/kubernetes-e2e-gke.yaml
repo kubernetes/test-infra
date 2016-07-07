@@ -350,7 +350,7 @@
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export ZONE="asia-east1-b"
                 export E2E_OPT="--check_version_skew=false"
