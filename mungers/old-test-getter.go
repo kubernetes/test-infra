@@ -33,6 +33,7 @@ type OldTestGetter struct {
 	// Keep track of which jobs we've done this for.
 	ran                   map[string]bool
 	numberOfOldTestsToGet int
+	pullJobToLastRun      map[string]int
 	sq                    *SubmitQueue
 }
 
@@ -59,6 +60,7 @@ func (p *OldTestGetter) Initialize(config *github.Config, features *features.Fea
 		return fmt.Errorf("submit-queue not found")
 	}
 	p.ran = map[string]bool{}
+	p.pullJobToLastRun = map[string]int{}
 	return nil
 }
 
@@ -71,6 +73,14 @@ func (p *OldTestGetter) EachLoop() error {
 	if !ok {
 		return fmt.Errorf("Need real e2e tester, not fake")
 	}
+
+	p.getOldPostsubmitTests(e2eTester)
+	p.getPresubmitTests(p.sq.PresubmitJobNames, e2eTester)
+
+	return nil
+}
+
+func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 	for job, status := range e2eTester.GetBuildStatus() {
 		if p.ran[job] {
 			continue
@@ -88,7 +98,29 @@ func (p *OldTestGetter) EachLoop() error {
 		}
 		p.ran[job] = true
 	}
-	return nil
+}
+
+func (p *OldTestGetter) getPresubmitTests(jobs []string, e2eTester *e2e.RealE2ETester) {
+	for _, job := range jobs {
+		mostRecent, err := e2eTester.LatestRunOfJob(job)
+		if err != nil {
+			glog.Errorf("Couldn't get run number for job %v: %v", job, err)
+			continue
+		}
+		lastLoad, ok := p.pullJobToLastRun[job]
+		if !ok {
+			lastLoad = mostRecent - p.numberOfOldTestsToGet
+		}
+		for n := lastLoad + 1; n <= mostRecent; n++ {
+			glog.Infof("Getting results for past test result: %v %v", job, n)
+			if r, err := e2eTester.GetBuildResult(job, n); err != nil {
+				glog.Errorf("Couldn't get result for %v %v: %v", job, n, err)
+			} else {
+				glog.Infof("result from %v/%v:\n%#v", job, n, r)
+			}
+		}
+		p.pullJobToLastRun[job] = mostRecent
+	}
 }
 
 // AddFlags will add any request flags to the cobra `cmd`

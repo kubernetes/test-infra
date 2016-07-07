@@ -122,6 +122,21 @@ func (e *RealE2ETester) GetBuildResult(job string, number int) (*cache.Result, e
 }
 
 func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result, error) {
+	// The difference between pre- and post-submit tests is that in the
+	// former, we look for flakes when they pass, and in the latter, we
+	// look for flakes when they fail. This is because presubmit tests will
+	// run multiple times and pass if at least one run passed, but
+	// postsubmit tests run each test only once. For postsubmit tests, we
+	// detect flakiness by comparing between runs, but that's not possible
+	// for presubmit tests, because the PR author might have actually
+	// broken something.
+	if strings.Contains(string(j), "pull") {
+		return e.getGCSPresubmitResult(j, n)
+	}
+	return e.getGCSPostsubmitResult(j, n)
+}
+
+func (e *RealE2ETester) getGCSPostsubmitResult(j cache.Job, n cache.Number) (*cache.Result, error) {
 	stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(string(j), int(n))
 	if err != nil {
 		glog.V(4).Infof("Error looking up job: %v, build number: %v", j, n)
@@ -150,6 +165,45 @@ func (e *RealE2ETester) getGCSResult(j cache.Job, n cache.Number) (*cache.Result
 		r.Flakes = map[cache.Test]string{
 			cache.RunBrokenTestName: "Unable to get data-- please look at the logs",
 		}
+		return r, nil
+	}
+
+	r.Flakes = map[cache.Test]string{}
+	for testName, reason := range thisFailures {
+		r.Flakes[cache.Test(testName)] = reason
+	}
+
+	r.Status = cache.ResultFlaky
+	return r, nil
+}
+
+func (e *RealE2ETester) getGCSPresubmitResult(j cache.Job, n cache.Number) (*cache.Result, error) {
+	stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(string(j), int(n))
+	if err != nil {
+		return nil, fmt.Errorf("error looking up job: %v, build number: %v", j, n)
+	}
+	r := &cache.Result{
+		Status: cache.ResultStable,
+		Job:    j,
+		Number: n,
+	}
+	if !stable {
+		r.Status = cache.ResultFailed
+		// We do *not* add a "run completely broken" flake entry since
+		// this is presumably the author's fault, and we don't want to
+		// file issues for things like that.
+		return r, nil
+	}
+
+	// Check to see if there were any individual failures (even though the
+	// run as a whole succeeded).
+	thisFailures, err := e.failureReasons(string(j), int(n), true)
+	if err != nil {
+		glog.V(2).Infof("Error looking up job failure reasons: %v, build number: %v: %v", j, n, err)
+		return r, nil
+	}
+	if len(thisFailures) == 0 {
+		glog.V(2).Infof("No flakes in %v/%v.", j, n)
 		return r, nil
 	}
 
@@ -206,6 +260,11 @@ func (e *RealE2ETester) checkPassFail(job string, number int) (stable, ignorable
 	glog.V(2).Infof("Failure of %v/%v is legit. Tests that failed multiple times in a row: %v", job, number, intersection)
 	e.setBuildStatus(job, "Not Stable", strconv.Itoa(number))
 	return false, false
+}
+
+// LatestRunOfJob returns the number of the most recent completed run of the given job.
+func (e *RealE2ETester) LatestRunOfJob(jobName string) (int, error) {
+	return e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(jobName)
 }
 
 // GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
@@ -281,9 +340,6 @@ func getJUnitFailures(r io.Reader) (failures map[string]string, err error) {
 		testSuiteList = []Testsuite{*testSuite}
 	}
 	for _, ts := range testSuiteList {
-		if ts.FailCount == 0 {
-			continue
-		}
 		for _, tc := range ts.Testcases {
 			if tc.Failure != "" {
 				failures[fmt.Sprintf("%v {%v}", tc.Name, tc.ClassName)] = tc.Failure

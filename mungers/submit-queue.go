@@ -152,6 +152,7 @@ type SubmitQueue struct {
 	githubConfig        *github.Config
 	BlockingJobNames    []string
 	NonBlockingJobNames []string
+	PresubmitJobNames   []string
 	WeakStableJobNames  []string
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
@@ -360,6 +361,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	// Clean up all of our flags which we wish --flag="" to mean []string{}
 	sq.BlockingJobNames = cleanStringSlice(sq.BlockingJobNames)
 	sq.NonBlockingJobNames = cleanStringSlice(sq.NonBlockingJobNames)
+	sq.PresubmitJobNames = cleanStringSlice(sq.PresubmitJobNames)
 	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
 	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
@@ -376,9 +378,12 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	} else {
 		var gcs *utils.Utils
 		if overrideUrl != "" {
-			gcs = utils.NewTestUtils(overrideUrl)
+			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
 		} else {
-			gcs = utils.NewUtils(utils.KubekinsBucket, utils.LogDir)
+			gcs = utils.NewWithPresubmitDetection(
+				utils.KubekinsBucket, utils.LogDir,
+				utils.PullKey, utils.PullLogDir,
+			)
 		}
 
 		sq.e2e = (&e2e.RealE2ETester{
@@ -474,6 +479,9 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
+	cmd.Flags().StringSliceVar(&sq.PresubmitJobNames, "presubmit-jobs", []string{
+		"kubernetes-pull-build-test-e2e-gce",
+	}, "Comma separated list of jobs in Jenkins that run presubmit and should have issues filed for flakes.")
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")

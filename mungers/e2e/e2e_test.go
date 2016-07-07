@@ -68,22 +68,22 @@ func TestCheckGCSBuilds(t *testing.T) {
 	}{
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
-				fmt.Sprintf("/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
+				fmt.Sprintf("/bucket/logs/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				"/": genMockGCSListResponse(),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectStable: true,
 			expectedStatus: map[string]BuildInfo{
@@ -94,22 +94,22 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				"/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
-				fmt.Sprintf("/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/baz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBaz)),
+				fmt.Sprintf("/bucket/logs/baz/%v/finished.json", latestBuildNumberBaz): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/": genMockGCSListResponse(),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -120,33 +120,33 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 999,
 				}, t),
-				"/": genMockGCSListResponse(
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
 				),
 			},
 			expectStable: true,
@@ -158,33 +158,33 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getOtherRealJUnitFailure(),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getOtherRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 999,
 				}, t),
-				"/": genMockGCSListResponse(
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
 				),
 			},
 			expectStable: true,
@@ -196,33 +196,33 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getRealJUnitFailure(),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1): getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar):   getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 999,
 				}, t),
-				"/": genMockGCSListResponse(
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
-					fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
-					fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar-1),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
 				),
 			},
 			expectStable: false,
@@ -235,17 +235,17 @@ func TestCheckGCSBuilds(t *testing.T) {
 
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
-				"/": genMockGCSListResponse(),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -256,17 +256,17 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				"/": genMockGCSListResponse(),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -277,17 +277,17 @@ func TestCheckGCSBuilds(t *testing.T) {
 		},
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/": genMockGCSListResponse(),
+				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -319,7 +319,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 				"baz",
 			},
 			BuildStatus:          map[string]BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
+			GoogleGCSBucketUtils: utils.NewTestUtils("bucket", "logs", server.URL),
 		}
 		e2e.Init(nil)
 
@@ -423,13 +423,13 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// Simple case - both succeeds
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
@@ -443,21 +443,21 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// If last build was successful we shouldn't be looking any further
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar-1): marshalOrDie(utils.FinishedFile{
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
@@ -472,22 +472,22 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// an infrastructure failure. Build should succeed if at least one of two builds were fully successful.
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1233,
 				}, t),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1232,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
@@ -502,22 +502,22 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// an infrastructure failure. Build should fail more than both recent builds failed.
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo-1): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1233,
 				}, t),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo-2): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1232,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
@@ -531,16 +531,16 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// If the last build was unsuccessful and there's a failed test in a JUnit file we should fail.
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
-				fmt.Sprintf("/foo/%v/artifacts/junit_02.xml", latestBuildNumberFoo): getJUnit(5, 1),
-				fmt.Sprintf("/foo/%v/artifacts/junit_03.xml", latestBuildNumberFoo): getJUnit(5, 0),
-				"/bar/latest-build.txt":                                             []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				fmt.Sprintf("/bucket/logs/foo/%v/artifacts/junit_01.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/foo/%v/artifacts/junit_02.xml", latestBuildNumberFoo): getJUnit(5, 1),
+				fmt.Sprintf("/bucket/logs/foo/%v/artifacts/junit_03.xml", latestBuildNumberFoo): getJUnit(5, 0),
+				"/bucket/logs/bar/latest-build.txt":                                             []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
@@ -554,19 +554,19 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 		// Result shouldn't depend on order.
 		{
 			paths: map[string][]byte{
-				"/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
-				fmt.Sprintf("/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/foo/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberFoo)),
+				fmt.Sprintf("/bucket/logs/foo/%v/finished.json", latestBuildNumberFoo): marshalOrDie(utils.FinishedFile{
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
-				"/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
-				fmt.Sprintf("/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
+				"/bucket/logs/bar/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberBar)),
+				fmt.Sprintf("/bucket/logs/bar/%v/finished.json", latestBuildNumberBar): marshalOrDie(utils.FinishedFile{
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
-				fmt.Sprintf("/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar): getJUnit(5, 0),
-				fmt.Sprintf("/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar): getJUnit(5, 1),
-				fmt.Sprintf("/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar): getJUnit(5, 1),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar): getJUnit(5, 1),
+				fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar): getJUnit(5, 1),
 			},
 			expectStable: false,
 			expectedStatus: map[string]BuildInfo{
@@ -594,7 +594,7 @@ func TestCheckGCSWeakBuilds(t *testing.T) {
 				"bar",
 			},
 			BuildStatus:          map[string]BuildInfo{},
-			GoogleGCSBucketUtils: utils.NewTestUtils(server.URL),
+			GoogleGCSBucketUtils: utils.NewTestUtils("bucket", "logs", server.URL),
 		}
 		e2e.Init(nil)
 		stable := e2e.GCSWeakStable()

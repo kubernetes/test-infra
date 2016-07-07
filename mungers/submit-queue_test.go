@@ -880,7 +880,7 @@ func TestSubmitQueue(t *testing.T) {
 		wasMerged := false
 
 		numTestChecks := 0
-		path := "/foo/latest-build.txt"
+		path := "/bucket/logs/foo/latest-build.txt"
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
@@ -900,7 +900,7 @@ func TestSubmitQueue(t *testing.T) {
 				test.pr.Mergeable = nil
 			}
 		})
-		path = fmt.Sprintf("/foo/%v/finished.json", test.lastBuildNumber)
+		path = fmt.Sprintf("/bucket/logs/foo/%v/finished.json", test.lastBuildNumber)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
@@ -912,7 +912,7 @@ func TestSubmitQueue(t *testing.T) {
 			}
 			w.Write(data)
 		})
-		path = "/bar/latest-build.txt"
+		path = "/bucket/logs/bar/latest-build.txt"
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "GET" {
 				t.Errorf("Unexpected method: %s", r.Method)
@@ -921,7 +921,7 @@ func TestSubmitQueue(t *testing.T) {
 			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
 		})
 		for buildNumber := range test.weakResults {
-			path = fmt.Sprintf("/bar/%v/finished.json", buildNumber)
+			path = fmt.Sprintf("/bucket/logs/bar/%v/finished.json", buildNumber)
 			// workaround go for loop semantics
 			buildNumberCopy := buildNumber
 			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -937,7 +937,7 @@ func TestSubmitQueue(t *testing.T) {
 			})
 		}
 		for junitFile, xml := range test.gcsJunit {
-			path = fmt.Sprintf("/bar/%v/artifacts/%v", test.lastBuildNumber, junitFile)
+			path = fmt.Sprintf("/bucket/logs/bar/%v/artifacts/%v", test.lastBuildNumber, junitFile)
 			// workaround go for loop semantics
 			xmlCopy := xml
 			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {

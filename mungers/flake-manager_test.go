@@ -152,3 +152,22 @@ func TestAutoPrioritize(t *testing.T) {
 		}
 	}
 }
+
+func TestPullRE(t *testing.T) {
+	table := []struct {
+		path   string
+		expect string
+	}{
+		{"/kubernetes-jenkins/pr-logs/pull/27898/kubernetes-pull-build-test-e2e-gce/47123/", "27898"},
+		{"kubernetes-jenkins/logs/kubernetes-e2e-gke-test/13095/", ""},
+	}
+	for _, tt := range table {
+		got := ""
+		if parts := pullRE.FindStringSubmatch(tt.path); len(parts) > 1 {
+			got = parts[1]
+		}
+		if got != tt.expect {
+			t.Errorf("Expected %v, got %v", tt.expect, got)
+		}
+	}
+}
