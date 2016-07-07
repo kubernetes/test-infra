@@ -12,8 +12,20 @@ CONTAINER := $(REPO)/$(APP):$(TAG)
 
 KUBECONFIG ?= $(HOME)/.kube/config
 
+KUBEDIR ?= $(GOPATH)/src/k8s.io/kubernetes
+CACHEDIR ?= /tmp/mungegithub-cache
+WWW ?= $(PWD)/$(APP)/www
+
+ifeq ($(APP),submit-queue)
+MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter"
+else ifeq ($(APP),cherrypick)
+MUNGERS ?= "cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue"
+endif
+
+
 TOKEN ?= "./token"
-token=$(shell base64 $(TOKEN))
+token=$(shell cat $(TOKEN))
+token64=$(shell base64 $(TOKEN))
 
 READONLY ?= true
 
@@ -43,10 +55,14 @@ deploy: push deployment
 	# Deploy the new deployment
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.deployment.yaml --record
 
+ensure_dirs:
+	-mkdir -p $(KUBEDIR)
+	-mkdir -p $(CACHEDIR)
+
 # Try to run the binary locally using docker, doesn't need to push or have a running kube cluster.
 # Binary is exposed on port 8080
-local_dryrun: container
-	docker run --rm -v $(TOKEN):/token -p 8080:8080 $(CONTAINER)
+local_dryrun: container ensure_dirs
+	docker run --rm -v $(KUBEDIR):/gitrepos/kubernetes:z -v $(CACHEDIR):/cache/httpcache:z -v $(WWW):/www:z -p 8080:8080 $(CONTAINER) --pr-mungers=$(MUNGERS) --http-cache-dir=/cache/httpcache --www=/www --token=$(token)
 
 # updates the deployment.yaml with current build information and sets it to --dry-run
 deployment:
@@ -63,8 +79,8 @@ endif
 
 # simple transformation of a github oauth secret file to a kubernetes secret
 secret:
-	@echo $(token)
-	sed -e 's|1234567890123456789012345678901234567890123456789012345=|$(token)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
+	@echo $(token64)
+	sed -e 's|1234567890123456789012345678901234567890123456789012345=|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
 
 clean:
 	rm -f mungegithub $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
