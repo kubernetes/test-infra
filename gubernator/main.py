@@ -122,15 +122,15 @@ def get_pod_name(text):
     else: 
         return ""
 
-def parse_junit(xml):
-    """Generate failed tests as a series of (name, duration, text) tuples."""
+def parse_junit(xml, filename):
+    """Generate failed tests as a series of (name, duration, text, filename) tuples."""
     tree = ET.fromstring(xml)
     if tree.tag == 'testsuite':
         for child in tree:
             name = child.attrib['name']
             time = float(child.attrib['time'])
             for param in child.findall('failure'):
-                yield name, time, param.text
+                yield name, time, param.text, filename
     elif tree.tag == 'testsuites':
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
@@ -138,7 +138,7 @@ def parse_junit(xml):
                 name = '%s %s' % (suite_name, child.attrib['name'])
                 time = float(child.attrib['time'])
                 for param in child.findall('failure'):
-                    yield name, time, param.text
+                    yield name, time, param.text, filename
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
@@ -169,26 +169,18 @@ def build_details(build_dir):
     finished = json.loads(finished)
 
     failures = []
-    junit_futures = {}
     junit_paths = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
     
-    fps = []
-    last_len = 0
-    total_len = 0
+    junit_futures = {}
     for f in junit_paths:
         junit_futures[gcs_async.read(f)] = f
-
 
     for future in junit_futures:
         junit = future.get_result()
         if junit is None:
             continue
-        failures.extend(parse_junit(junit))
-        total_len = len(fps)
-        last_len = len(failures) - total_len
-        for i in xrange(last_len):
-            fps.append(junit_futures[future])
+        failures.extend(parse_junit(junit, junit_futures[future]))
 
     build_log = None
     if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
@@ -197,7 +189,7 @@ def build_details(build_dir):
             build_log = log_parser.digest(build_log.decode('utf8', 'replace'))
             logging.info('fallback log parser emitted %d lines',
                          build_log.count('\n'))
-    return started, finished, failures, build_log, fps
+    return started, finished, failures, build_log
 
 def parse_kubelet(pod, junit, build_dir):
     junit_file = "junit_" + junit + ".xml"
@@ -205,17 +197,17 @@ def parse_kubelet(pod, junit, build_dir):
             if re.match(r'.*/tmp-node.*', f.filename)]    
 
     junit_regex = r".*" + junit_file + r".*"
-    kubelet_fp = ""
+    kubelet_filename = ""
     for folder in tmps:
         tmp_contents = [f.filename for f in gcs_ls(folder)]
         for f in tmp_contents:
             if re.match(junit_regex, f):
                 for file in tmp_contents:
                     if re.match(r'.*kubelet\.log', file):
-                        kubelet_fp = file
-    if kubelet_fp == "":
+                        kubelet_filename = file
+    if kubelet_filename == "":
         return False
-    kubelet_log = gcs_async.read(kubelet_fp).get_result()
+    kubelet_log = gcs_async.read(kubelet_filename).get_result()
 
     if kubelet_log:
         kubelet_log = kubelet_parser.digest(kubelet_log.decode('utf8', 
@@ -261,7 +253,6 @@ def pr_builds(pr):
 
     return jobs
 
-
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
     def __init__(self, *args, **kwargs):
@@ -300,20 +291,18 @@ class BuildHandler(RenderingHandler):
             self.render('build_404.html', {"build_dir": build_dir})
             self.response.set_status(404)
             return
-        started, finished, failures, build_log, fps = details
+        started, finished, failures, build_log = details
         
-        # map failure to the junit file it was in
-        failures_files = {}
+        # map failure to podname and failure to filename
         failures_pod = {}
-        for i in xrange(len(failures)):
-            failures_pod[failures[i]] = get_pod_name(failures[i][-1])
-            failures_files[failures[i]] = fps[i] 
-
         junit_file = {}
-        for fp in fps:
-            num = re.search(r'.*(\d\d)\.xml', fp)
-            junit_file[fp] = num.group(1)
+        for failure in failures:
+            name, time, text, filename = failure
+            failures_pod[failure] = get_pod_name(text)
+            num = re.search(r'.*(\d\d)\.xml', filename)
+            junit_file[filename] = num.group(1)
 
+        print junit_file
         if started:
             commit = started['version'].split('+')[-1]
         else:
@@ -324,8 +313,8 @@ class BuildHandler(RenderingHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr, fps=failures_files,
-            junits=junit_file, pods=failures_pod))
+            failures=failures, build_log=build_log, pr=pr, 
+            pods=failures_pod, junits=junit_file))
 
 class BuildListHandler(RenderingHandler):
     """Show a list of Builds for a Job."""

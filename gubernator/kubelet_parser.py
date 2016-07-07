@@ -21,8 +21,8 @@ import re
 import jinja2
 
 
-def hilight(line, error_re):
-    line = error_re.sub(r'<span class="keyword">\1</span>', line)
+def hilight(line, pod_re):
+    line = pod_re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
 
@@ -34,10 +34,11 @@ def digest(data, pod, skip_fmt=lambda l: '... skipping %d lines ...' % l):
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
     regex = r'\b(' + pod + r')\b'
-    error_re = re.compile(regex, re.IGNORECASE)
+    pod_re = re.compile(regex, re.IGNORECASE)
 
     lines = unicode(jinja2.escape(data)).split('\n')
-    matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
+
+    matched_lines = [n for n, line in enumerate(lines) if pod_re.search(line)]
     output = []
     CONTEXT = 4
 
@@ -58,7 +59,7 @@ def digest(data, pod, skip_fmt=lambda l: '... skipping %d lines ...' % l):
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match], error_re))
+        output.append(hilight(lines[match], pod_re))
         last_match = match
 
     return '\n'.join(output)
