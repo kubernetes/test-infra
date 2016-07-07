@@ -210,8 +210,10 @@ def parse_kubelet(pod, junit, build_dir):
     kubelet_log = gcs_async.read(kubelet_filename).get_result()
 
     if kubelet_log:
-        kubelet_log = kubelet_parser.digest(kubelet_log.decode('utf8', 
-            'replace'), pod=pod)
+        regex = r'\b(' + pod + r')\b'
+        pod_re = re.compile(regex, re.IGNORECASE)
+        kubelet_log = log_parser.digest(kubelet_log.decode('utf8', 
+            'replace'), error_re=pod_re)
 
     return kubelet_log
 

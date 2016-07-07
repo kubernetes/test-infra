@@ -69,7 +69,8 @@ class LogParserTest(unittest.TestCase):
             ('there was a FaTaL error', True),
             ('we failed to read logs', True),
         ]:
-            self.assertEqual(bool(log_parser.error_re.search(text)), matches,
+            error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+            self.assertEqual(bool(error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))
 
 if __name__ == '__main__':

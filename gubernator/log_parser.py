@@ -20,15 +20,14 @@ import re
 
 import jinja2
 
-error_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
 
-
-def hilight(line):
+def hilight(line, error_re):
     line = error_re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l):
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, 
+    error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.
@@ -57,7 +56,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l):
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match]))
+        output.append(hilight(lines[match], error_re))
         last_match = match
 
     return '\n'.join(output)
