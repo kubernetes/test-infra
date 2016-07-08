@@ -20,52 +20,27 @@ import re
 
 import jinja2
 
+def parse(lines, error_re, hilight_res, filters):
+    matched_lines = []
+    UID = ""
 
-def hilight(line, pod_re):
-    line = pod_re.sub(r'<span class="keyword">\1</span>', line)
-    return '<span class="hilight">%s</span>' % line
+    end = 0
+    event_re = re.compile(r'.*Event\(api\.ObjectReference.*UID:&#34;(.*)&#34;, A.*')
+    for n, line in enumerate(lines):
+        if error_re.search(line):
+            matched_lines.append(n)
+            if filters["uid"] and UID == "":
+                s = event_re.search(line)
+                if s and s.group(1) != "":
+                    end = n
+                    UID = s.group(1)
+                    regex = r'\b(' + UID + r')\b'
+                    uid_re = re.compile(regex, re.IGNORECASE)
+                    hilight_res.append(uid_re)
 
+        if UID != "" and matched_lines[-1] != n:
+            if uid_re.search(line):
+                matched_lines.append(n)
+        matched_lines.sort()
 
-def digest(data, pod, skip_fmt=lambda l: '... skipping %d lines ...' % l):
-    """
-    Given a build log, return a chunk of HTML code suitable for
-    inclusion in a <pre> tag, with "interesting" errors hilighted.
-
-    This is similar to the output of `grep -C4` with an appropriate regex.
-    """
-    regex = r'\b(' + pod + r')\b'
-    pod_re = re.compile(regex, re.IGNORECASE)
-
-    lines = unicode(jinja2.escape(data)).split('\n')
-
-    matched_lines = [n for n, line in enumerate(lines) if pod_re.search(line)]
-    output = []
-    CONTEXT = 4
-
-    matched_lines.append(len(lines))  # sentinel value
-
-    last_match = None
-    for match in matched_lines:
-        if last_match is not None:
-            previous_end = min(match, last_match + CONTEXT + 1)
-            output.extend(lines[last_match + 1: previous_end])
-        else:
-            previous_end = 0
-        skip_amount = match - previous_end - CONTEXT
-        if skip_amount > 1:
-            output.append('<span class="skip">%s</span>' % skip_fmt(skip_amount))
-        elif skip_amount == 1:  # pointless say we skipped 1 line
-            output.append(lines[previous_end])
-        if match == len(lines):
-            break
-        output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match], pod_re))
-        last_match = match
-
-    return '\n'.join(output)
-
-if __name__ == '__main__':
-    import sys
-    for f in sys.argv[1:]:
-        print digest(open(f).read().decode('utf8'))
-
+    return matched_lines, hilight_res

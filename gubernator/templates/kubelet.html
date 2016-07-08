@@ -10,6 +10,11 @@
 <div id="failures">
 % if kubelet_log
 <h3>Lines from kubelet.log containing pod {{pod}}</h3>
+% if uid
+<h4>Click to unhighlight: <a href="/build{{build_dir}}/nodelog?pod={{pod}}&junit={{junit}}&UID=">Pod UID</a></h4>
+% else
+<h4>Click to highlight: <a href="/build{{build_dir}}/nodelog?pod={{pod}}&junit={{junit}}&UID=True">Pod UID</a></h4>
+% endif
 <pre>
 {{kubelet_log | safe}}
 </pre>

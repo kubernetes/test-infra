@@ -20,13 +20,16 @@ import re
 
 import jinja2
 
+import kubelet_parser
 
-def hilight(line, error_re):
-    line = error_re.sub(r'<span class="keyword">\1</span>', line)
+def hilight(line, hilight_res):
+    for re in hilight_res:
+        if re.search(line):
+            line = re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, 
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"uid":""},
     error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)):
     """
     Given a build log, return a chunk of HTML code suitable for
@@ -35,7 +38,14 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
     lines = unicode(jinja2.escape(data)).split('\n')
-    matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
+    hilight_res = [error_re]
+    
+    if not filters["uid"]:
+        matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
+    else:
+        matched_lines, hilight_res = kubelet_parser.parse(lines, error_re, 
+            hilight_res, filters)
+
     output = []
     CONTEXT = 4
 
@@ -56,7 +66,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match], error_re))
+        output.append(hilight(lines[match], hilight_res))
         last_match = match
 
     return '\n'.join(output)

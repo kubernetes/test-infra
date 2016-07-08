@@ -33,7 +33,6 @@ import gcs_async
 import filters
 import log_parser
 import pull_request
-import kubelet_parser
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -117,10 +116,10 @@ def get_pod_name(text):
     """Find the pod name from the failure and return the pod name."""
     p = re.search(r'(.*) pod (.*?) .*', text)
     if p:
-        remove = re.compile(r'(\'|\"|\\)')
-        return remove.sub('', p.group(2))                     
+        return re.sub(r'(\'|\"|\\)', '', p.group(2))                  
     else: 
         return ""
+
 
 def parse_junit(xml, filename):
     """Generate failed tests as a series of (name, duration, text, filename) tuples."""
@@ -191,8 +190,8 @@ def build_details(build_dir):
                          build_log.count('\n'))
     return started, finished, failures, build_log
 
-def parse_kubelet(pod, junit, build_dir):
-    junit_file = "junit_" + junit + ".xml"
+def parse_kubelet(pod, junit, build_dir, filters):
+    junit_file = junit + ".xml"
     tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
             if re.match(r'.*/tmp-node.*', f.filename)]    
 
@@ -213,7 +212,7 @@ def parse_kubelet(pod, junit, build_dir):
         regex = r'\b(' + pod + r')\b'
         pod_re = re.compile(regex, re.IGNORECASE)
         kubelet_log = log_parser.digest(kubelet_log.decode('utf8', 
-            'replace'), error_re=pod_re)
+            'replace'), error_re=pod_re, filters=filters)
 
     return kubelet_log
 
@@ -301,10 +300,9 @@ class BuildHandler(RenderingHandler):
         for failure in failures:
             name, time, text, filename = failure
             failures_pod[failure] = get_pod_name(text)
-            num = re.search(r'.*(\d\d)\.xml', filename)
+            num = re.search(r'.*(junit.*)\.xml', filename)
             junit_file[filename] = num.group(1)
 
-        print junit_file
         if started:
             commit = started['version'].split('+')[-1]
         else:
@@ -335,7 +333,9 @@ class NodeLogHandler(RenderingHandler):
         build_dir = job_dir + build
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
-        result = parse_kubelet(pod_name, junit, build_dir)
+        uid = self.request.get("UID")
+        filters = {"uid":uid}
+        result = parse_kubelet(pod_name, junit, build_dir, filters)
         if not result:
             self.render('node_404.html', {"build_dir": build_dir, 
                 "pod_name":pod_name, "junit":junit})
@@ -343,7 +343,7 @@ class NodeLogHandler(RenderingHandler):
             return
         self.render('kubelet.html', dict(
             job_dir=job_dir, build_dir=build_dir,kubelet_log=result, job=job, 
-            build=build, pod=pod_name))
+            build=build, pod=pod_name, junit=junit, uid=uid))
 
 class JobListHandler(RenderingHandler):
     """Show a list of Jobs in a directory."""
