@@ -24,18 +24,25 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func findLatestIssueUpdate(db *gorm.DB) time.Time {
+func findLatestIssueUpdate(db *gorm.DB) (time.Time, error) {
 	var issue Issue
 	issue.IssueUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	db.Select("issue_updated_at").Order("issue_updated_at desc").First(&issue)
+	query := db.Select("issue_updated_at").Order("issue_updated_at desc").First(&issue)
+	if !query.RecordNotFound() && query.Error != nil {
+		return time.Time{}, query.Error
+	}
 
-	return issue.IssueUpdatedAt
+	return issue.IssueUpdatedAt, nil
 }
 
 // UpdateIssues downloads new issues and saves in database
 func UpdateIssues(db *gorm.DB, client ClientInterface) {
-	latest := findLatestIssueUpdate(db)
+	latest, err := findLatestIssueUpdate(db)
+	if err != nil {
+		glog.Error("Failed to find last issue update: ", err)
+		return
+	}
 	c := make(chan *github.Issue, 200)
 
 	go client.FetchIssues(latest, c)

@@ -57,7 +57,10 @@ func TestFindLatestUpdate(t *testing.T) {
 		}
 		tx.Commit()
 
-		actualLatest := findLatestEvent(db)
+		actualLatest, err := findLatestEvent(db)
+		if err != nil {
+			t.Error("findLatestEvent failed:", err)
+		}
 		if actualLatest == nil {
 			if test.expectedLatest != 0 {
 				t.Error("Didn't found event, expected:", test.expectedLatest)

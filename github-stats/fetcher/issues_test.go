@@ -57,7 +57,10 @@ func TestFindLatestIssueUpdate(t *testing.T) {
 		}
 		tx.Commit()
 
-		actualLatest := findLatestIssueUpdate(db)
+		actualLatest, err := findLatestIssueUpdate(db)
+		if err != nil {
+			t.Error("findLatestIssueUpdate failed:", err)
+		}
 		if actualLatest != test.expectedLatest {
 			t.Error("Actual:", actualLatest,
 				"doesn't match expected:", test.expectedLatest)

@@ -22,21 +22,28 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func findLatestEvent(db *gorm.DB) *int {
+func findLatestEvent(db *gorm.DB) (*int, error) {
 	var latestEvent IssueEvent
 
-	db.Select("id, event_created_at").Order("event_created_at desc").First(&latestEvent)
-	if latestEvent.EventCreatedAt.IsZero() {
-		return nil
+	query := db.Select("id, event_created_at").Order("event_created_at desc").First(&latestEvent)
+	if query.RecordNotFound() {
+		return nil, nil
+	}
+	if query.Error != nil {
+		return nil, query.Error
 	}
 
-	return &latestEvent.ID
+	return &latestEvent.ID, nil
 }
 
 // UpdateIssueEvents fetches all events until we find the most recent we
 // have in db, and saves everything in database
 func UpdateIssueEvents(db *gorm.DB, client ClientInterface) {
-	latest := findLatestEvent(db)
+	latest, err := findLatestEvent(db)
+	if err != nil {
+		glog.Error("Failed to find last event: ", err)
+		return
+	}
 	c := make(chan *github.IssueEvent, 500)
 
 	go client.FetchIssueEvents(latest, c)
