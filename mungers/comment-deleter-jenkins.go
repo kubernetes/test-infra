@@ -31,11 +31,18 @@ const (
 \* \[Build Log\]\([^)]+\)
 \* \[Test Artifacts\]\([^)]+\)
 \* \[Internal Jenkins Results\]\([^)]+\)`
+	commentRegexpStrUpdated = `GCE e2e( test)? build/test \*\*(passed|failed)\*\* for commit [[:xdigit:]]+\.
+\* \[Test Results\]\([^)]+\)
+\* \[Build Log\]\([^)]+\)
+\* \[Test Artifacts\]\([^)]+\)
+\* \[Internal Jenkins Results\]\([^)]+\)`
 )
 
 var (
-	_             = glog.Infof
-	commentRegexp = regexp.MustCompile(commentRegexpStr)
+	_ = glog.Infof
+	//Changed so that this variable is true if it compiles old or updated
+	commentRegexp        = regexp.MustCompile(commentRegexpStr)
+	updatedCommentRegexp = regexp.MustCompile(commentRegexpStrUpdated)
 )
 
 // CommentDeleterJenkins looks for jenkins comments which are no longer useful
@@ -48,7 +55,7 @@ func init() {
 }
 
 func isJenkinsTestComment(body string) bool {
-	return commentRegexp.MatchString(body)
+	return updatedCommentRegexp.MatchString(body) || commentRegexp.MatchString(body)
 }
 
 // StaleComments returns a slice of comments which are stale
