@@ -96,10 +96,13 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
                 return data
             else:
                 data = func(arg)
-                if data:
-                    memcache.add(key, data, expires, namespace=namespace)
-                else:
-                    memcache.add(key, data, neg_expires, namespace=namespace)
+                try:
+                    if data:
+                        memcache.add(key, data, expires, namespace=namespace)
+                    else:
+                        memcache.add(key, data, neg_expires, namespace=namespace)
+                except ValueError:
+                    logging.exception('unable to write to memcache')
                 return data
         return wrapped
     return wrapper
