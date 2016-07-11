@@ -18,6 +18,7 @@ package testowner
 
 import (
 	"encoding/csv"
+	"errors"
 	"io"
 	"os"
 	"regexp"
@@ -76,13 +77,16 @@ func NewOwnerListFromCsv(r io.Reader) (*OwnerList, error) {
 				switch strings.ToLower(val) {
 				case "owner":
 					ownerCol = col
-				case "test name":
+				case "name":
 					nameCol = col
 				}
 			}
 		} else {
 			mapping[record[nameCol]] = record[ownerCol]
 		}
+	}
+	if len(mapping) == 0 {
+		return nil, errors.New("no mappings found in test owners CSV")
 	}
 	return NewOwnerList(mapping), nil
 }
