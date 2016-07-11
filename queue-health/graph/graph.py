@@ -47,9 +47,9 @@ def parse_line(
 
 
 def merges_color(merges):
-    if merges > 20:
+    if merges > 30:
         return 'g'
-    if merges > 10:
+    if merges > 15:
         return 'y'
     return 'r'
 
@@ -83,24 +83,48 @@ def format_timedelta(delta):
         delta.days, delta.seconds / 3600, (delta.seconds % 3600) / 60)
 
 
+class Sampler(object):
+    total = 0
+
+    def __init__(self, maxlen=60*24):
+        self.maxlen = maxlen
+        self.samples = collections.deque()
+
+    def __iadd__(self, sample):
+        self.samples.append(sample)
+        self.total += sample
+        while len(self.samples) > self.maxlen:
+            self.total -= self.samples.popleft()
+        return self
+
+    @property
+    def mean(self):
+        return float(self.total) / len(self.samples)
+
+
 def render(history_lines, out_file):
     """Read historical data and save to out_file as img."""
     dts = []
     prs = []
     queued = []
-    daily_happiness = []
-    daily_merges = []
+    daily_happiness = []  # Percentage of last day queue was not blocked
+    merge_rate = []  # Merge rate for the past 24 active hours
+    real_merge_rate = []  # Merge rate including when queue is empty
+    merges = []
 
     blocked_intervals = []
     offline_intervals = []
-    daily_queue = collections.deque()
+
+    active_merges = Sampler()
+    real_merges = Sampler()
+    happy_moments = Sampler()
+
     daily_merged = collections.deque()
+    actually_merged = collections.deque()
 
     start_blocked = None
     start_offline = None
-    happy_sum = 0
-    merge_sum = 0
-    last_merge = 0
+    last_merge = 0  # Number of merges last sample, resets on queue restart
 
     for line in history_lines:
         try:
@@ -110,8 +134,6 @@ def render(history_lines, out_file):
             continue
         if dt < datetime.datetime.now() - datetime.timedelta(days=30):
             continue
-        happy = online and not blocked
-        happy_sum += happy
 
         if merged >= last_merge:
             did_merge = merged - last_merge
@@ -123,15 +145,11 @@ def render(history_lines, out_file):
         if online:  # Ignore offline status
             last_merge = merged
 
-        daily_queue.append(happy)
-        if len(daily_queue) > 60*24:
-            happy_sum -= daily_queue.popleft()
+        happy_moments += int(bool(online and not blocked))
 
-        if queue or did_merge:  # Only add samples when things are in the queue.
-            merge_sum += did_merge
-            daily_merged.append(did_merge)
-        if len(daily_merged) > 60*24:
-            merge_sum -= daily_merged.popleft()
+        real_merges += did_merge
+        if queue or did_merge:  # Only add samples when queue is busy.
+            active_merges += did_merge
 
         if not start_offline and not online:
             start_offline = dt
@@ -142,19 +160,22 @@ def render(history_lines, out_file):
         if not online:  # Skip offline entries
             continue
 
-        happiness = happy_sum / len(daily_queue)
         # Make them steps instead of slopes.
         if dts:
             dts.append(dt)
             prs.append(prs[-1])
             queued.append(queued[-1])
-            daily_happiness.append(happiness)
-            daily_merges.append(merge_sum)
+            daily_happiness.append(happy_moments.mean)
+            merge_rate.append(active_merges.total)
+            real_merge_rate.append(real_merges.total)
+            merges.append(did_merge)
         dts.append(dt)
         prs.append(pr)
         queued.append(queue)
-        daily_happiness.append(happiness)
-        daily_merges.append(merge_sum)
+        daily_happiness.append(happy_moments.mean)
+        merge_rate.append(active_merges.total)
+        real_merge_rate.append(real_merges.total)
+        merges.append(did_merge)
 
         if not start_blocked and blocked:
             start_blocked = dt
@@ -173,23 +194,24 @@ def render(history_lines, out_file):
     ax_health = ax_blocked.twinx()
 
     ax_open.plot(dts, prs, 'b-')
-    merge_color = merges_color(daily_merges[-1])
-    ax_merged.plot(dts, daily_merges, '%s-' % merge_color)
-    ax_offline.plot(dts, daily_merges, '%s-' % merge_color)
+    merge_color = merges_color(merge_rate[-1])
+    ax_merged.plot(dts, merge_rate, '%s-' % merge_color)
+    ax_offline.plot(dts, real_merge_rate, '%s--' % merge_color, alpha=0.5)
 
     health_color = happy_color(daily_happiness[-1])
     health_line = '%s-' % health_color
-    ax_health.plot(dts, daily_happiness, health_line)
     ax_blocked.plot(dts, daily_happiness, health_line)
+    ax_health.plot(dts, daily_happiness, health_line)
 
     ax_queued.plot(dts, queued, '%s-' % depth_color(queued[-1]))
-
 
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
     ax_open.set_ylabel('Open PRs: %d' % prs[-1], color='b')
-    ax_merged.set_ylabel('Merges: %d/d' % daily_merges[-1], color=merge_color)
+    ax_queued.set_ylabel(
+        'Queued PRs: %d' % queued[-1],
+        color=depth_color(queued[-1]))
 
     ax_blocked.set_ylabel('Queue blocked', color='brown')
     ax_health.set_ylabel(
@@ -197,13 +219,11 @@ def render(history_lines, out_file):
         color=health_color)
 
     ax_offline.set_ylabel('Queue offline')
-    ax_queued.set_ylabel(
-        'Queued PRs: %d' % queued[-1],
-        color=depth_color(queued[-1]))
+    ax_merged.set_ylabel('Merge capacity: %d/d' % merge_rate[-1], color=merge_color)
 
-
-    ax_health.set_ylim([0.0, 1.0])
-    ax_health.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
+    for sub in [ax_health, ax_blocked]:
+        sub.set_ylim([0.0, 1.0])
+        sub.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
 
     fig.autofmt_xdate()
 
@@ -216,21 +236,27 @@ def render(history_lines, out_file):
 
     last_week = datetime.datetime.now() - datetime.timedelta(days=6)
 
-    week_merges = numpy.mean([
-        m for (d, m) in zip(dts, daily_merges)
-        if d >= last_week and d > datetime.datetime(2016,6,18)])
     fig.text(
-        .5, .04,
-        'Merged %.1f PRs/day this week' % week_merges,
-        color=merges_color(week_merges),
+        .5, 0.08, 'Weekly statistics', horizontalalignment='center')
+
+    weekly_merge_rate = numpy.mean([
+        m for (d, m) in zip(dts, merge_rate) if d >= last_week])
+    weekly_merges = sum(
+        m for (d, m) in zip(dts, merges) if d >= last_week)
+
+    fig.text(
+        .5, .00,
+        'Merge capacity: %.1f PRs/day (merged %d)' % (
+            weekly_merge_rate, weekly_merges),
+        color=merges_color(weekly_merge_rate),
         horizontalalignment='center',
     )
 
     week_happiness = numpy.mean(
         [h for (d, h) in zip(dts, daily_happiness) if d >= last_week])
     fig.text(
-        .5, .08,
-        'Healthy %.1f%% of this week' % (100 * week_happiness),
+        .5, .04,
+        'Unblocked %.1f%% of this week' % (100 * week_happiness),
         color=happy_color(week_happiness),
         horizontalalignment='center',
     )
@@ -238,14 +264,14 @@ def render(history_lines, out_file):
     if not queued[-1]:
       delta = datetime.timedelta(0)
       wait = 'clear'
-    elif not daily_merges[-1]:
+    elif not merge_rate[-1]:
       delta = datetime.timedelta(days=90)
       wait = 'forever'
     else:
-      delta = datetime.timedelta(float(queued[-1]) / daily_merges[-1])
+      delta = datetime.timedelta(float(queued[-1]) / merge_rate[-1])
       wait = format_timedelta(delta)
     fig.text(
-        .5, 0.0,
+        .5, -0.04,
         'Queue backlog: %s' % wait,
         color=wait_color(delta),
         horizontalalignment='center',
