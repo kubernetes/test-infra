@@ -40,6 +40,17 @@ Please reference the [list of currently known flakes](https://github.com/kuberne
 * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/13006/kubernetes-pull-build-test-e2e-gce/26147/build-log.txt)
 * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/13006/kubernetes-pull-build-test-e2e-gce/26147/artifacts/)
 * [Internal Jenkins Results](http://goto.google.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//26147)`
+	updatedPassComment = `GCE e2e build/test **passed** for commit 4c92572bef90215de02be96436364ff06a7a5435.
+* [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/28636/kubernetes-pull-build-test-e2e-gce/48147)
+* [Build Log](http://pr-test.k8s.io/28636/kubernetes-pull-build-test-e2e-gce/48147/build-log.txt)
+* [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/28636/kubernetes-pull-build-test-e2e-gce/48147/artifacts/)
+* [Internal Jenkins Results](http://goto.google.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//48147)`
+	//Updated fail comment's links are the same as updated pass's
+	updatedFailComment = `GCE e2e build/test **failed** for commit 4c92572bef90215de02be96436364ff06a7a5435.
+* [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/28636/kubernetes-pull-build-test-e2e-gce/48147)
+* [Build Log](http://pr-test.k8s.io/28636/kubernetes-pull-build-test-e2e-gce/48147/build-log.txt)
+* [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/28636/kubernetes-pull-build-test-e2e-gce/48147/artifacts/)
+* [Internal Jenkins Results](http://goto.google.com/prkubekins/job/kubernetes-pull-build-test-e2e-gce//48147)`
 )
 
 func TestIsJenkinsTestComment(t *testing.T) {
@@ -50,7 +61,17 @@ func TestIsJenkinsTestComment(t *testing.T) {
 	}{
 		{
 			name:      "success comment",
+			value:     updatedPassComment,
+			isJenkins: true,
+		},
+		{
+			name:      "success comment",
 			value:     passComment,
+			isJenkins: true,
+		},
+		{
+			name:      "fail comment",
+			value:     updatedFailComment,
 			isJenkins: true,
 		},
 		{
