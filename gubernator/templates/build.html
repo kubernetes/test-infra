@@ -34,8 +34,9 @@
 {{text|linkify_stacktrace(commit)}}
 </pre>
 % endif
-% if pods[name, time, text, filename]
-<h4>Mentions in kubelet.log file of <a class="anchor" id="{{pods[name, time, text, filename]|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pods[name, time, text, filename]}}&junit={{junits[filename]}}">{{pods[name, time, text, filename]}}</a></h4>
+% set pod_name = text|parse_pod_name
+% if pod_name
+<h4>Mentions in kubelet.log file of <a class="anchor" id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{junits[filename]}}">{{pod_name}}</a></h4>
 % endif
 <h5>Above failure found in: <a href="https://storage.googleapis.com{{filename}}">{{filename}}</a></h5>
 <hr>

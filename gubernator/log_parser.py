@@ -22,14 +22,16 @@ import jinja2
 
 import kubelet_parser
 
-def hilight(line, hilight_res):
-    for re in hilight_res:
-        if re.search(line):
-            line = re.sub(r'<span class="keyword">\1</span>', line)
+error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+    
+def hilight(line, hilight_words):
+    # Join all the words that need to be bolded into one regex
+    words_re = re.compile(r'\b(%s)\b' % '|'.join(hilight_words), re.IGNORECASE)     
+    line = words_re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"uid":""},
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"uid":"", "pod":""},
     error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)):
     """
     Given a build log, return a chunk of HTML code suitable for
@@ -38,13 +40,16 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"u
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
     lines = unicode(jinja2.escape(data)).split('\n')
-    hilight_res = [error_re]
-    
+
+    hilight_words=["error", "fatal", "failed", "build timed out"]
+    if filters["pod"]:
+        hilight_words = [filters["pod"]]
+
     if not filters["uid"]:
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
-        matched_lines, hilight_res = kubelet_parser.parse(lines, error_re, 
-            hilight_res, filters)
+        matched_lines, hilight_words = kubelet_parser.parse(lines, error_re, 
+            hilight_words, filters)
 
     output = []
     CONTEXT = 4
@@ -66,7 +71,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"u
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match], hilight_res))
+        output.append(hilight(lines[match], hilight_words))
         last_match = match
 
     return '\n'.join(output)

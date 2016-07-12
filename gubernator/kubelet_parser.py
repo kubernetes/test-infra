@@ -20,27 +20,39 @@ import re
 
 import jinja2
 
-def parse(lines, error_re, hilight_res, filters):
+import regex
+
+def parse(lines, error_re, hilight_words, filters):
+    """
+    Given filters returns indeces of wanted lines from the kubelet log
+
+    Args:
+        lines: array of kubelet log lines
+        error_re: regular expression of the failed pod name
+        hilight_words: array of words that need to be bolded
+        filters: dictionary of which filters to apply
+    Returns:
+        matched_lines: ordered array of indeces of lines to display
+        hilight_words: updated hilight_words
+    """
     matched_lines = []
-    UID = ""
+    uid = ""
 
     end = 0
-    event_re = re.compile(r'.*Event\(api\.ObjectReference.*UID:&#34;(.*)&#34;, A.*')
     for n, line in enumerate(lines):
         if error_re.search(line):
             matched_lines.append(n)
-            if filters["uid"] and UID == "":
-                s = event_re.search(line)
+            if filters["uid"] and uid == "":
+                s = regex.uidobj_re.search(line)
                 if s and s.group(1) != "":
                     end = n
-                    UID = s.group(1)
-                    regex = r'\b(' + UID + r')\b'
-                    uid_re = re.compile(regex, re.IGNORECASE)
-                    hilight_res.append(uid_re)
+                    uid = s.group(1)
+                    hilight_words.append(uid)
 
-        if UID != "" and matched_lines[-1] != n:
+        if uid != "" and matched_lines[-1] != n:
+            uid_re = regex.wordRE(uid)
             if uid_re.search(line):
                 matched_lines.append(n)
         matched_lines.sort()
 
-    return matched_lines, hilight_res
+    return matched_lines, hilight_words

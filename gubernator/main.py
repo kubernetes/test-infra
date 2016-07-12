@@ -33,6 +33,7 @@ import gcs_async
 import filters
 import log_parser
 import pull_request
+import regex
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -112,15 +113,6 @@ def gcs_ls(path):
       path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
-def get_pod_name(text):
-    """Find the pod name from the failure and return the pod name."""
-    p = re.search(r'(.*) pod (.*?) .*', text)
-    if p:
-        return re.sub(r'(\'|\"|\\)', '', p.group(2))                  
-    else: 
-        return ""
-
-
 def parse_junit(xml, filename):
     """Generate failed tests as a series of (name, duration, text, filename) tuples."""
     tree = ET.fromstring(xml)
@@ -140,7 +132,6 @@ def parse_junit(xml, filename):
                     yield name, time, param.text, filename
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
-
 
 @memcache_memoize('build-details://', expires=60 * 60 * 4)
 def build_details(build_dir):
@@ -209,8 +200,7 @@ def parse_kubelet(pod, junit, build_dir, filters):
     kubelet_log = gcs_async.read(kubelet_filename).get_result()
 
     if kubelet_log:
-        regex = r'\b(' + pod + r')\b'
-        pod_re = re.compile(regex, re.IGNORECASE)
+        pod_re = regex.wordRE(pod)
         kubelet_log = log_parser.digest(kubelet_log.decode('utf8', 
             'replace'), error_re=pod_re, filters=filters)
 
@@ -299,7 +289,6 @@ class BuildHandler(RenderingHandler):
         junit_file = {}
         for failure in failures:
             name, time, text, filename = failure
-            failures_pod[failure] = get_pod_name(text)
             num = re.search(r'.*(junit.*)\.xml', filename)
             junit_file[filename] = num.group(1)
 
@@ -313,8 +302,7 @@ class BuildHandler(RenderingHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr, 
-            pods=failures_pod, junits=junit_file))
+            failures=failures, build_log=build_log, pr=pr, junits=junit_file))
 
 class BuildListHandler(RenderingHandler):
     """Show a list of Builds for a Job."""
@@ -334,7 +322,7 @@ class NodeLogHandler(RenderingHandler):
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         uid = self.request.get("UID")
-        filters = {"uid":uid}
+        filters = {"uid":uid, "pod":pod_name}
         result = parse_kubelet(pod_name, junit, build_dir, filters)
         if not result:
             self.render('node_404.html', {"build_dir": build_dir, 
