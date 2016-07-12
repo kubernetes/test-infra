@@ -141,6 +141,14 @@ class GCSClientTest(unittest.TestCase):
             ('Lazy', 0, False, True),
         ])
 
+    def test_get_tests_empty_time(self):
+        gets = dict(self.client.gets)
+        gets[self.client.ART_DIR + 'junit_01.xml'] = (
+            '<testsuite><testcase name="Empty" time="" /></testsuite>')
+        self.client.gets = gets
+        tests = list(self.client.get_tests_from_build('fake', '123'))
+        self.assertEqual(tests, [('Empty', 0.0, False, False)])
+
     def test_get_builds_normal_list(self):
         # normal case: lists a directory
         self.assertEqual(['123', '122'], self.client._get_builds('fake'))
@@ -169,6 +177,7 @@ class GCSClientTest(unittest.TestCase):
         have = {('fake', '123')}
         builds = list(self.client.get_daily_builds(lambda x: True, have))
         self.assertEqual(builds, [])
+
 
 class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""

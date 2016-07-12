@@ -125,7 +125,7 @@ class GCSClient(object):
 
         for child in root:
             name = child.attrib['name']
-            ctime = float(child.attrib['time'])
+            ctime = float(child.attrib['time'] or 0)
             failed = False
             skipped = False
             for param in child:
@@ -225,8 +225,12 @@ def mp_get_tests((job, build, timestamp)):
     """
     Inside a multiprocessing worker, get the tests for a given job and build.
     """
-    return job, build, timestamp, list(
-        WORKER_CLIENT.get_tests_from_build(job, build))
+    try:
+        return job, build, timestamp, list(
+            WORKER_CLIENT.get_tests_from_build(job, build))
+    except:
+        logging.exception('failed to get tests for %s/%s', job, build)
+        raise
 
 
 def get_existing_builds(jobs):
