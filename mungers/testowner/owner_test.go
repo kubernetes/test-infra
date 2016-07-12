@@ -54,7 +54,7 @@ func TestOwnerList(t *testing.T) {
 
 func TestOwnerListFromCsv(t *testing.T) {
 	r := bytes.NewReader([]byte(",,header nonsense,\n" +
-		",owner,suggested owner,test name\n" +
+		",owner,suggested owner,name\n" +
 		",foo,other,Test name\n" +
 		",bar,foo,other test\n"))
 	list, err := NewOwnerListFromCsv(r)
@@ -77,7 +77,7 @@ func TestReloadingOwnerList(t *testing.T) {
 	defer os.Remove(tempfile.Name())
 	defer tempfile.Close()
 	writer := bufio.NewWriter(tempfile)
-	_, err = writer.WriteString("owner,test name\nfoo,flake\n")
+	_, err = writer.WriteString("owner,name\nfoo,flake\n")
 	if err != nil {
 		t.Error(err)
 	}
@@ -99,7 +99,7 @@ func TestReloadingOwnerList(t *testing.T) {
 
 	tempfile.Seek(0, os.SEEK_SET)
 	writer.Reset(tempfile)
-	_, err = writer.WriteString("owner,test name\nbar,flake\n")
+	_, err = writer.WriteString("owner,name\nbar,flake\n")
 	if err != nil {
 		t.Error(err)
 	}
