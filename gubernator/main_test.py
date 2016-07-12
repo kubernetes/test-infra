@@ -262,3 +262,9 @@ class PRTest(unittest.TestCase, TestMixin):
         response = app.get('/pr/124')
         self.assertIn('No Results', response)
 
+    def test_pr_build_log_redirect(self):
+        path = '123/some-job/55/build-log.txt'
+        response = app.get('/pr/' + path)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('https://storage.googleapis.com', response.location)
+        self.assertIn(path, response.location)
