@@ -75,10 +75,5 @@
             # Every 3 hours
             cron-string: 'H H/3 * * *'
             timeout: 100
-        - 'go-release-1.1':
-            branch: 'release-1.1'
-            # Every 6 hours
-            cron-string: 'H H/12 * * *'
-            timeout: 60
     jobs:
         - 'kubernetes-test-{suffix}'
