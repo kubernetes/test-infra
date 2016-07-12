@@ -301,10 +301,16 @@ class PRHandler(RenderingHandler):
             max_builds=max_builds, header=headings, rows=rows))
 
 
+class PRBuildLogHandler(webapp2.RequestHandler):
+    def get(self, path):
+        self.redirect('https://storage.googleapis.com/%s/%s' % (PR_PREFIX, path))
+
+
 app = webapp2.WSGIApplication([
     (r'/', IndexHandler),
     (r'/jobs/(.*)$', JobListHandler),
     (r'/builds/(.*)/([^/]+)/?', BuildListHandler),
     (r'/build/(.*)/([^/]+)/(\d+)/?', BuildHandler),
     (r'/pr/(\d+)', PRHandler),
+    (r'/pr/(.*/build-log.txt)', PRBuildLogHandler),
 ], debug=True)
