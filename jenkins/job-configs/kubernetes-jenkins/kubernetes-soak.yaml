@@ -164,9 +164,6 @@
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak-1-2"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
                 export E2E_MIN_STARTUP_PODS="1"

@@ -258,9 +258,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gce-1-2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'gce-reboot-release-1.2':  # kubernetes-e2e-gce-reboot-release-1.2
             description: 'Run [Feature:Reboot] tests on GCE on the release-1.2 branch.'
             timeout: 180
@@ -268,9 +265,6 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export PROJECT="k8s-jkns-e2e-gce-reboot-1-2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'gce-slow-release-1.2':  # kubernetes-e2e-gce-slow-release-1.2
             description: 'Runs slow tests on GCE, sequentially on the release-1.2 branch.'
             timeout: 60
@@ -280,9 +274,6 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gce-slow-1-2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'gce-serial-release-1.2':  # kubernetes-e2e-gce-serial-release-1.2
             description: 'Run [Serial], [Disruptive], tests on GCE on the release-1.2 branch.'
             timeout: 300
@@ -291,9 +282,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-serial-1-2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -343,9 +331,6 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export PROJECT="kubernetes-ingress-1-2"
-                # build-1.2 is not using the kubernetes-release-dev bucket yet
-                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
         - 'gce-ingress-release-1.3':  # kubernetes-e2e-gce-ingress-release-1.3
             description: 'Run [Feature:Ingress] tests on GCE on the release-1.3 branch.'
             timeout: 90
@@ -390,27 +375,6 @@
     jobs:
         - 'kubernetes-e2e-{suffix}'
  
-- project:
-    name: kubernetes-e2e-gce-1.1
-    trigger-job: 'kubernetes-build-1.1'
-    test-owner: 'Build Cop'
-    branch: 'release-1.1'
-    jenkins_node: 'master'
-    runner: '{old-runner-1-1}'
-    post-env: ''  # Empty expected
-    provider-env: ''  # Empty expected
-    job-env: |
-        # build-1.1 is not using the kubernetes-release-dev bucket yet
-        export KUBE_GCS_RELEASE_BUCKET=kubernetes-release
-        export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-release
-    cron-string: 'H */6 * * *'
-    suffix:
-        - 'gce-release-1.1':  # kubernetes-e2e-gce-release-1.1
-            timeout: 175
-            description: 'Run E2E tests on GCE from the release-1.1 branch.'
-    jobs:
-        - 'kubernetes-e2e-{suffix}'
-
 - project:
     name: kubernetes-e2e-gce-features
     trigger-job: 'kubernetes-build'
