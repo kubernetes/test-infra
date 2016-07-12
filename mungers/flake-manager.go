@@ -59,6 +59,7 @@ type FlakeManager struct {
 
 	syncer    *sync.IssueSyncer
 	ownerPath string
+	features  *features.Features
 }
 
 func init() {
@@ -69,7 +70,7 @@ func init() {
 func (p *FlakeManager) Name() string { return "flake-manager" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (p *FlakeManager) RequiredFeatures() []string { return nil }
+func (p *FlakeManager) RequiredFeatures() []string { return []string{features.GCSFeature} }
 
 // Initialize will initialize the munger
 func (p *FlakeManager) Initialize(config *github.Config, features *features.Features) error {
@@ -90,8 +91,8 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	}
 	p.config = config
 	p.googleGCSBucketUtils = utils.NewWithPresubmitDetection(
-		utils.KubekinsBucket, utils.LogDir,
-		utils.PullKey, utils.PullLogDir,
+		features.GCSInfo.BucketName, features.GCSInfo.LogDir,
+		features.GCSInfo.PullKey, features.GCSInfo.PullLogDir,
 	)
 
 	var owner sync.OwnerMapper

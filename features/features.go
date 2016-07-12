@@ -26,8 +26,9 @@ import (
 // Features are all features the code know about. Care should be taken
 // not to try to use a feature which isn't 'active'
 type Features struct {
-	Repos  *RepoInfo
-	active []feature
+	Repos   *RepoInfo
+	GCSInfo *GCSInfo
+	active  []feature
 }
 
 type feature interface {
@@ -47,7 +48,7 @@ func (f *Features) GetActive() []feature {
 // Initialize should be called with the set of all features needed by all (active) mungers
 func (f *Features) Initialize(requestedFeatures []string) error {
 	for _, name := range requestedFeatures {
-		glog.Infof("Initilizing feature: %v", name)
+		glog.Infof("Initializing feature: %v", name)
 		feat, found := featureMap[name]
 		if !found {
 			return fmt.Errorf("Could not find a feature named: %s", name)
@@ -59,6 +60,8 @@ func (f *Features) Initialize(requestedFeatures []string) error {
 		switch name {
 		case RepoFeatureName:
 			f.Repos = feat.(*RepoInfo)
+		case GCSFeature:
+			f.GCSInfo = feat.(*GCSInfo)
 		}
 	}
 	return nil
