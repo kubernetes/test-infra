@@ -58,6 +58,10 @@ span.keyword {
 span.skip {
     color: #999;
 }
+span.inset-filename {
+    float: right;
+    color: #777;
+}
 span.time {
     font-weight: lighter;
     font-family: monospace;
