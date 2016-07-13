@@ -51,12 +51,7 @@ const (
 	doNotMergeLabel        = "do-not-merge"
 	claYesLabel            = "cla: yes"
 	claHumanLabel          = "cla: human-approved"
-
-	jenkinsE2EContext    = "Jenkins GCE e2e"
-	jenkinsUnitContext   = "Jenkins unit/integration"
-	jenkinsVerifyContext = "Jenkins verification"
-	jenkinsNodeContext   = "Jenkins GCE Node e2e"
-	sqContext            = "Submit Queue"
+	sqContext              = "Submit Queue"
 
 	retestNotRequiredMergePriority = -1 // used for retestNotRequiredLabel
 	defaultMergePriority           = 3  // when an issue is unlabeled
@@ -68,13 +63,6 @@ var (
 	_ = fmt.Print
 	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
 	retestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
-
-	requiredContexts = []string{
-		jenkinsUnitContext,
-		jenkinsE2EContext,
-		jenkinsNodeContext,
-		jenkinsVerifyContext,
-	}
 )
 
 type submitStatus struct {
@@ -222,7 +210,9 @@ func init() {
 func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (sq *SubmitQueue) RequiredFeatures() []string { return []string{features.GCSFeature} }
+func (sq *SubmitQueue) RequiredFeatures() []string {
+	return []string{features.GCSFeature, features.TestOptionsFeature}
+}
 
 func (sq *SubmitQueue) emergencyMergeStop() bool {
 	return atomic.LoadInt32(&sq.emergencyMergeStopFlag) != 0
@@ -357,6 +347,7 @@ func cleanStringSlice(in []string) []string {
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
 	sq.features = features
+	sq.RequiredRetestContexts = features.TestOptions.RequiredRetestContexts
 	return sq.internalInitialize(config, features, "")
 }
 
@@ -494,7 +485,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringSliceVar(&sq.RequiredRetestContexts, "required-retest-contexts", requiredContexts, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
 	cmd.Flags().StringVar(&sq.retestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
@@ -1353,7 +1343,7 @@ func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi
 	if *comment.Body != retestBody {
 		return false
 	}
-	stale := commentBeforeLastCI(obj, comment)
+	stale := commentBeforeLastCI(obj, comment, sq.RequiredRetestContexts)
 	if stale {
 		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
 	}

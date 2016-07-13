@@ -26,9 +26,10 @@ import (
 // Features are all features the code know about. Care should be taken
 // not to try to use a feature which isn't 'active'
 type Features struct {
-	Repos   *RepoInfo
-	GCSInfo *GCSInfo
-	active  []feature
+	Repos       *RepoInfo
+	GCSInfo     *GCSInfo
+	TestOptions *TestOptions
+	active      []feature
 }
 
 type feature interface {
@@ -62,6 +63,8 @@ func (f *Features) Initialize(requestedFeatures []string) error {
 			f.Repos = feat.(*RepoInfo)
 		case GCSFeature:
 			f.GCSInfo = feat.(*GCSInfo)
+		case TestOptionsFeature:
+			f.TestOptions = feat.(*TestOptions)
 		}
 	}
 	return nil

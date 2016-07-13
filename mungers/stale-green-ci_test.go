@@ -32,9 +32,23 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	jenkinsE2EContext    = "Jenkins GCE e2e"
+	jenkinsUnitContext   = "Jenkins unit/integration"
+	jenkinsVerifyContext = "Jenkins verification"
+	jenkinsNodeContext   = "Jenkins GCE Node e2e"
+)
+
 var (
 	_ = fmt.Printf
 	_ = glog.Errorf
+
+	requiredContexts = []string{
+		jenkinsUnitContext,
+		jenkinsE2EContext,
+		jenkinsNodeContext,
+		jenkinsVerifyContext,
+	}
 )
 
 func timePtr(t time.Time) *time.Time { return &t }
@@ -130,6 +144,9 @@ func TestOldUnitTestMunge(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 
+		s.getRetestContexts = func() []string {
+			return requiredContexts
+		}
 		s.Munge(obj)
 
 		if tested != test.tested {
