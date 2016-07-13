@@ -76,7 +76,7 @@
             timeout: 50
             trigger-job: 'kubernetes-build'
             job-env: |
-                # The master branch will always uses GCI images built from its
+                # The master branch will always use GCI images built from its
                 # tip of tree, categorized in family `gci-canary`.
                 export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
