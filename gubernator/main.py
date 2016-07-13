@@ -33,6 +33,7 @@ import gcs_async
 import filters
 import log_parser
 import pull_request
+import regex
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -115,16 +116,15 @@ def gcs_ls(path):
       path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
-
-def parse_junit(xml):
-    """Generate failed tests as a series of (name, duration, text) tuples."""
+def parse_junit(xml, filename):
+    """Generate failed tests as a series of (name, duration, text, filename) tuples."""
     tree = ET.fromstring(xml)
     if tree.tag == 'testsuite':
         for child in tree:
             name = child.attrib['name']
             time = float(child.attrib['time'])
             for param in child.findall('failure'):
-                yield name, time, param.text
+                yield name, time, param.text, filename
     elif tree.tag == 'testsuites':
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
@@ -132,10 +132,9 @@ def parse_junit(xml):
                 name = '%s %s' % (suite_name, child.attrib['name'])
                 time = float(child.attrib['time'])
                 for param in child.findall('failure'):
-                    yield name, time, param.text
+                    yield name, time, param.text, filename
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
-
 
 @memcache_memoize('build-details://', expires=60 * 60 * 4)
 def build_details(build_dir):
@@ -161,15 +160,21 @@ def build_details(build_dir):
         return
     started = json.loads(started)
     finished = json.loads(finished)
+
     failures = []
     junit_paths = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
-    junit_futures = [gcs_async.read(f) for f in junit_paths]
+    
+    junit_futures = {}
+    for f in junit_paths:
+        junit_futures[gcs_async.read(f)] = f
+
     for future in junit_futures:
         junit = future.get_result()
         if junit is None:
             continue
-        failures.extend(parse_junit(junit))
+        failures.extend(parse_junit(junit, junit_futures[future]))
+
     build_log = None
     if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
         build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
@@ -179,6 +184,30 @@ def build_details(build_dir):
                          build_log.count('\n'))
     return started, finished, failures, build_log
 
+def parse_kubelet(pod, junit, build_dir, filters):
+    junit_file = junit + ".xml"
+    tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+            if re.match(r'.*/tmp-node.*', f.filename)]    
+
+    junit_regex = r".*" + junit_file + r".*"
+    kubelet_filename = ""
+    for folder in tmps:
+        tmp_contents = [f.filename for f in gcs_ls(folder)]
+        for f in tmp_contents:
+            if re.match(junit_regex, f):
+                for file in tmp_contents:
+                    if re.match(r'.*kubelet\.log', file):
+                        kubelet_filename = file
+    if kubelet_filename == "":
+        return False
+    kubelet_log = gcs_async.read(kubelet_filename).get_result()
+
+    if kubelet_log:
+        pod_re = regex.wordRE(pod)
+        kubelet_log = log_parser.digest(kubelet_log.decode('utf8', 
+            'replace'), error_re=pod_re, filters=filters)
+
+    return kubelet_log
 
 @memcache_memoize('pr-details://', expires=60 * 3)
 def pr_builds(pr):
@@ -217,7 +246,6 @@ def pr_builds(pr):
         jobs.setdefault(job, []).append((build, started, finished))
 
     return jobs
-
 
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
@@ -258,6 +286,15 @@ class BuildHandler(RenderingHandler):
             self.response.set_status(404)
             return
         started, finished, failures, build_log = details
+        
+        # map failure to podname and failure to filename
+        failures_pod = {}
+        junit_file = {}
+        for failure in failures:
+            name, time, text, filename = failure
+            num = re.search(r'.*(junit.*)\.xml', filename)
+            junit_file[filename] = num.group(1)
+
         if started:
             commit = started['version'].split('+')[-1]
         else:
@@ -268,8 +305,7 @@ class BuildHandler(RenderingHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr))
-
+            failures=failures, build_log=build_log, pr=pr, junits=junit_file))
 
 class BuildListHandler(RenderingHandler):
     """Show a list of Builds for a Job."""
@@ -281,6 +317,24 @@ class BuildListHandler(RenderingHandler):
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir, fstats=fstats))
 
+class NodeLogHandler(RenderingHandler):
+    def get(self, prefix, job, build):
+        self.check_bucket(prefix)
+        job_dir = '/%s/%s/' % (prefix, job)
+        build_dir = job_dir + build
+        pod_name = self.request.get("pod")
+        junit = self.request.get("junit")
+        uid = self.request.get("UID")
+        filters = {"uid":uid, "pod":pod_name}
+        result = parse_kubelet(pod_name, junit, build_dir, filters)
+        if not result:
+            self.render('node_404.html', {"build_dir": build_dir, 
+                "pod_name":pod_name, "junit":junit})
+            self.response.set_status(404)
+            return
+        self.render('kubelet.html', dict(
+            job_dir=job_dir, build_dir=build_dir,kubelet_log=result, job=job, 
+            build=build, pod=pod_name, junit=junit, uid=uid))
 
 class JobListHandler(RenderingHandler):
     """Show a list of Jobs in a directory."""
@@ -311,6 +365,7 @@ app = webapp2.WSGIApplication([
     (r'/jobs/(.*)$', JobListHandler),
     (r'/builds/(.*)/([^/]+)/?', BuildListHandler),
     (r'/build/(.*)/([^/]+)/(\d+)/?', BuildHandler),
+    (r'/build/(.*)/([^/]+)/(\d+)/nodelog*', NodeLogHandler),
     (r'/pr/(\d+)', PRHandler),
     (r'/pr/(.*/build-log.txt)', PRBuildLogHandler),
 ], debug=True)

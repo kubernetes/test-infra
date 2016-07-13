@@ -77,12 +77,12 @@ class HelperTest(unittest.TestCase):
 
 class ParseJunitTest(unittest.TestCase):
     def parse(self, xml):
-        return list(main.parse_junit(xml))
+        return list(main.parse_junit(xml, "fp"))
 
     def test_normal(self):
         failures = self.parse(JUNIT_SUITE)
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack)])
+        self.assertEqual(failures, [('Third', 96.49, stack, "fp")])
 
     def test_testsuites(self):
         failures = self.parse('''
@@ -97,7 +97,7 @@ class ParseJunitTest(unittest.TestCase):
                 </testsuite>
             </testsuites>''')
         self.assertEqual(failures,
-                         [('k8s.io/suite TestBad', 0.1, 'something bad')])
+                         [('k8s.io/suite TestBad', 0.1, 'something bad', "fp")])
 
     def test_bad_xml(self):
         self.assertEqual(self.parse('''<body />'''), [])
