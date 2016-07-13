@@ -20,7 +20,7 @@ spec:
         - --required-contexts="Jenkins GCE Node e2e"
         - --number-of-old-test-results=5
         - --http-cache-dir=/cache/httpcache
-        - --test-owners-csv=/gitrepos/kubernetes/test_owners.csv
+        - --test-owners-csv=/gitrepos/kubernetes/test/test_owners.csv
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         ports:
         - name: status
