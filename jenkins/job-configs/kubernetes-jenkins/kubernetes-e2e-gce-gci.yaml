@@ -76,8 +76,9 @@
             timeout: 50
             trigger-job: 'kubernetes-build'
             job-env: |
-                # This should become 54 once it's available.
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                # The master branch will always uses GCI images built from its
+                # tip of tree, categorized in family `gci-canary`.
+                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-master"
@@ -86,7 +87,7 @@
             timeout: 150  #  See #24072
             trigger-job: 'kubernetes-build'
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -96,7 +97,7 @@
             timeout: 300
             trigger-job: 'kubernetes-build'
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"

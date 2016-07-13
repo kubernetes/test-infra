@@ -86,6 +86,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-docker-validation-gci"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-preview-test"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-canary-test"
     jobs:
         - 'continuous-docker-validation-{os-distro}'
