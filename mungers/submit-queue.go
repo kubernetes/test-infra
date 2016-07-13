@@ -464,6 +464,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gke-test",
 		"kubernetes-e2e-gce-examples",
 		"kubernetes-e2e-gce-federation",
+		"kubernetes-e2e-gce-scalability",
 		"kubernetes-soak-continuous-e2e-gce",
 		"kubernetes-soak-continuous-e2e-gke",
 	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
@@ -476,7 +477,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		"kubernetes-e2e-gce-slow",
 		"kubernetes-e2e-gke",
 		"kubernetes-e2e-gke-slow",
-		"kubernetes-e2e-gce-scalability",
 		"kubernetes-kubemark-5-gce",
 	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
 	cmd.Flags().StringSliceVar(&sq.PresubmitJobNames, "presubmit-jobs", []string{
