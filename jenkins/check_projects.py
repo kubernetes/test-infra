@@ -84,9 +84,8 @@ def CheckProjects(needed, fix=False):
   for role, needs in sorted(needed.items()):
     print >>sys.stderr, '  %s: %s' % (role, ','.join(Sane(n) for n in needs))
 
-  mutate = fix == '--fix'
   threads = [
-      threading.Thread(target=Check, args=(p, needed, mutate))
+      threading.Thread(target=Check, args=(p, needed, fix))
       for p in sorted(projects)
   ]
 
