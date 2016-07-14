@@ -28,8 +28,9 @@ import traceback
 
 import matplotlib
 matplotlib.use('Agg')  # For savefig
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy
 
 def parse_line(
@@ -187,20 +188,21 @@ def render(history_lines, out_file):
     if start_offline:
         offline_intervals.append((start_offline, dt))
 
-    fig, (ax_open, ax_offline, ax_blocked) = plt.subplots(
+    fig, (ax_open, ax_merged, ax_health) = plt.subplots(
         3, sharex=True, figsize=(16, 8), dpi=100)
     ax_queued = ax_open.twinx()
-    ax_merged = ax_offline.twinx()
-    ax_health = ax_blocked.twinx()
+    ax_merged.yaxis.tick_right()
+    ax_merged.yaxis.set_label_position('right')
+    ax_health.yaxis.tick_right()
+    ax_health.yaxis.set_label_position('right')
 
     ax_open.plot(dts, prs, 'b-')
     merge_color = merges_color(merge_rate[-1])
-    ax_merged.plot(dts, merge_rate, '%s-' % merge_color)
-    ax_offline.plot(dts, real_merge_rate, '%s--' % merge_color, alpha=0.5)
+    p_merge, = ax_merged.plot(dts, merge_rate, '%s-' % merge_color)
+    p_real_merge, = ax_merged.plot(dts, real_merge_rate, '%s:' % merge_color, alpha=0.5)
 
     health_color = happy_color(daily_happiness[-1])
     health_line = '%s-' % health_color
-    ax_blocked.plot(dts, daily_happiness, health_line)
     ax_health.plot(dts, daily_happiness, health_line)
 
     ax_queued.plot(dts, queued, '%s-' % depth_color(queued[-1]))
@@ -213,31 +215,35 @@ def render(history_lines, out_file):
         'Queued PRs: %d' % queued[-1],
         color=depth_color(queued[-1]))
 
-    ax_blocked.set_ylabel('Queue blocked', color='brown')
     ax_health.set_ylabel(
         'Queue health: %.2f' % daily_happiness[-1],
         color=health_color)
 
-    ax_offline.set_ylabel('Queue offline')
     ax_merged.set_ylabel('Merge capacity: %d/d' % merge_rate[-1], color=merge_color)
 
-    for sub in [ax_health, ax_blocked]:
-        sub.set_ylim([0.0, 1.0])
-        sub.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
+    ax_health.set_ylim([0.0, 1.0])
+    ax_health.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
 
     fig.autofmt_xdate()
 
     for start, end in offline_intervals:
-        ax_offline.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
-        ax_blocked.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
+        ax_merged.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
+        ax_health.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
 
     for start, end in blocked_intervals:
-        ax_blocked.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
+        ax_health.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
+
+    p_blocked = mpatches.Patch(color='brown', label='blocked', alpha=0.2)
+    p_offline = mpatches.Patch(color='black', label='offline', alpha=0.2)
+    ax_health.legend([p_offline, p_blocked], ['offline', 'blocked'], 'lower left', fontsize='x-small')
+    ax_merged.legend([p_merge, p_real_merge, p_offline], ['capacity', 'actual', 'offline'], 'lower left', fontsize='x-small')
 
     last_week = datetime.datetime.now() - datetime.timedelta(days=6)
 
+    halign = 'center'
+    xpos = 0.5
     fig.text(
-        .5, 0.08, 'Weekly statistics', horizontalalignment='center')
+        xpos, 0.08, 'Weekly statistics', horizontalalignment=halign)
 
     weekly_merge_rate = numpy.mean([
         m for (d, m) in zip(dts, merge_rate) if d >= last_week])
@@ -245,20 +251,20 @@ def render(history_lines, out_file):
         m for (d, m) in zip(dts, merges) if d >= last_week)
 
     fig.text(
-        .5, .00,
+        xpos, .00,
         'Merge capacity: %.1f PRs/day (merged %d)' % (
             weekly_merge_rate, weekly_merges),
         color=merges_color(weekly_merge_rate),
-        horizontalalignment='center',
+        horizontalalignment=halign,
     )
 
     week_happiness = numpy.mean(
         [h for (d, h) in zip(dts, daily_happiness) if d >= last_week])
     fig.text(
-        .5, .04,
+        xpos, .04,
         'Unblocked %.1f%% of this week' % (100 * week_happiness),
         color=happy_color(week_happiness),
-        horizontalalignment='center',
+        horizontalalignment=halign,
     )
 
     if not queued[-1]:
@@ -271,11 +277,12 @@ def render(history_lines, out_file):
       delta = datetime.timedelta(float(queued[-1]) / merge_rate[-1])
       wait = format_timedelta(delta)
     fig.text(
-        .5, -0.04,
+        xpos, -0.04,
         'Queue backlog: %s' % wait,
         color=wait_color(delta),
-        horizontalalignment='center',
+        horizontalalignment=halign,
     )
+
 
     plt.savefig(out_file, bbox_inches='tight', format='svg')
     plt.close()
@@ -310,7 +317,7 @@ def render_forever(history_uri, img_uri, service_account=None):
         proc = subprocess.Popen(
             ['gsutil', '-q',
              '-h', 'Content-Type:image/svg+xml',
-             '-h', 'Cache-Control:public, max-age=60',
+             '-h', 'Cache-Control:public, max-age=%d' % (60 if service_account else 5),
              '-h', 'Content-Encoding:gzip',  # GCS decompresses if necessary
              'cp', '-a', 'public-read', '-', img_uri],
             stdin=subprocess.PIPE)
