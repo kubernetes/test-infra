@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit -o pipefail -o nounset
-export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.6"
-cd "$(dirname "$0")"
-pylint ../gubernator
+import webapp2
+
+import handlers
+
+
+app = webapp2.WSGIApplication([
+    (r'/webhook', handlers.GithubHandler),
+    (r'/events', handlers.Events),
+    (r'/status', handlers.Status),
+    (r'/timeline', handlers.Timeline),
+], debug=True)
