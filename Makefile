@@ -17,7 +17,7 @@ CACHEDIR ?= /tmp/mungegithub-cache
 WWW ?= $(PWD)/$(APP)/www
 
 ifeq ($(APP),submit-queue)
-MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter"
+MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr"
 else ifeq ($(APP),cherrypick)
 MUNGERS ?= "cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue"
 endif
