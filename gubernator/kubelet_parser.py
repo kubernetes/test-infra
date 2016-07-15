@@ -44,29 +44,6 @@ def parse(lines, error_re, hilight_words, filters):
         if error_re.search(line):
             matched_lines.append(n)
 
-            # If the line is the ObjectReference line, make a dictionary
-            objref = regex.objref(line)
-            if objref and objref.group(1) != "":
-                objref_dict = objref.group(1)        
-                keys = regex.keys_re.findall(objref_dict)
-                
-                for k in keys:
-                    objref_dict = regex.key_to_string(k, objref_dict)
 
-                # Convert string into dictionary
-                objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
-
-                if uid == "" and filters["uid"] and objref_dict["UID"]:
-                    uid = objref_dict["UID"]
-                    hilight_words.append(uid)
-                if namespace == "" and filters["namespace"] and objref_dict["Namespace"]:
-                    namespace = objref_dict["Namespace"]
-                    hilight_words.append(namespace)
-
-        if uid != "" and matched_lines[-1] != n:
-            uid_re = regex.wordRE(uid)
-            if uid_re.search(line):
-                matched_lines.append(n)
-        matched_lines.sort()
 
     return matched_lines, hilight_words

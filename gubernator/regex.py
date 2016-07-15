@@ -16,6 +16,7 @@
 
 import re
 
+
 # Match a specific word
 def wordRE(word):
 	return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
