@@ -46,12 +46,13 @@ import (
 )
 
 const (
-	lgtmLabel              = "lgtm"
-	retestNotRequiredLabel = "retest-not-required"
-	doNotMergeLabel        = "do-not-merge"
-	claYesLabel            = "cla: yes"
-	claHumanLabel          = "cla: human-approved"
-	sqContext              = "Submit Queue"
+	lgtmLabel                      = "lgtm"
+	retestNotRequiredLabel         = "retest-not-required"
+	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
+	doNotMergeLabel                = "do-not-merge"
+	claYesLabel                    = "cla: yes"
+	claHumanLabel                  = "cla: human-approved"
+	sqContext                      = "Submit Queue"
 
 	retestNotRequiredMergePriority = -1 // used for retestNotRequiredLabel
 	defaultMergePriority           = 3  // when an issue is unlabeled
@@ -959,7 +960,7 @@ func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
 
 func priority(obj *github.MungeObject) int {
 	// jump to the front of the queue if you don't need retested
-	if obj.HasLabel(retestNotRequiredLabel) {
+	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
 		return retestNotRequiredMergePriority
 	}
 
@@ -1121,7 +1122,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	if obj.HasLabel(retestNotRequiredLabel) {
+	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
 		atomic.AddInt32(&sq.instantMerges, 1)
 		sq.mergePullRequest(obj)
 		return true
@@ -1270,7 +1271,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
-		out.WriteString(fmt.Sprintf("Unless the %q label is present</li>", retestNotRequiredLabel))
+		out.WriteString(fmt.Sprintf("Unless the %q or %q label is present</li>", retestNotRequiredLabel, retestNotRequiredDocsOnlyLabel))
 	}
 	out.WriteString("</ol>")
 	out.WriteString("And then the PR will be merged!!")
@@ -1287,7 +1288,7 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
       <li>Determined by a label of the form 'priority/pX'
       <li>P0 -&gt; P1 -&gt; P2</li>
       <li>A PR with no priority label is considered equal to a P3</li>
-      <li>A PR with the '` + retestNotRequiredLabel + `' label will come first, before even P0</li>
+      <li>A PR with the '` + retestNotRequiredLabel + `' or '` + retestNotRequiredDocsOnlyLabel + `' label will come first, before even P0</li>
     </ul>
   </li>
   <li>Release milestone due date
