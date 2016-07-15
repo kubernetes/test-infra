@@ -46,7 +46,7 @@ class RegexTest(unittest.TestCase):
                 'wordRE(abcdef).search(%r) should be %r' % (text, matches))
 
 
-    def test_errors_re(self):
+    def test_error_re(self):
         for text, matches in [
             ('errno blah', False),
             ('ERROR: woops', True),
@@ -56,7 +56,7 @@ class RegexTest(unittest.TestCase):
             ('there was a FaTaL error', True),
             ('we failed to read logs', True),
         ]:
-            self.assertEqual(bool(regex.errors_re.search(text)), matches,
+            self.assertEqual(bool(regex.error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))
 
 

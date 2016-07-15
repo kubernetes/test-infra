@@ -17,6 +17,7 @@ import logging
 import datetime
 import os
 import re
+import ast
 
 import jinja2
 
@@ -38,16 +39,25 @@ def parse(lines, error_re, hilight_words, filters):
     matched_lines = []
     uid = ""
 
-    end = 0
     for n, line in enumerate(lines):
         if error_re.search(line):
             matched_lines.append(n)
-            if filters["uid"] and uid == "":
-                s = regex.uidobj_re.search(line)
-                if s and s.group(1) != "":
-                    end = n
-                    uid = s.group(1)
-                    hilight_words.append(uid)
+
+            # If the line is the ObjectReference line, make a dictionary
+            objref = regex.objref(line)
+            if objref and objref.group(1) != "":
+                objref_dict = objref.group(1)        
+                keys = regex.keys_re.findall(objref_dict)
+                
+                for k in keys:
+                    objref_dict = regex.key_to_string(k, objref_dict)
+                
+                # Convert string into dictionary
+                objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
+
+                if filters["uid"] and uid == "":
+                        uid = objref_dict["UID"]
+                        hilight_words.append(uid)
 
         if uid != "" and matched_lines[-1] != n:
             uid_re = regex.wordRE(uid)

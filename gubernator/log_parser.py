@@ -31,7 +31,7 @@ def hilight(line, hilight_words):
 
 
 def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"uid":"", "pod":""},
-    error_re=regex.errors_re):
+    error_re=regex.error_re):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.

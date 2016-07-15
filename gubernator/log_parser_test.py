@@ -22,7 +22,7 @@ import regex
 
 class LogParserTest(unittest.TestCase):
     def digest(self, data, strip=True, filters={"uid":"", "pod":""},
-        error_re=regex.errors_re):
+        error_re=regex.error_re):
         digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re, 
                                      skip_fmt=lambda l: 's%d' % l, filters=filters)
         if strip:

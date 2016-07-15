@@ -16,12 +16,26 @@
 
 import re
 
-# Matches UID from the object reference 
+# Match UID from the object reference 
 uidobj_re = re.compile(r'Event\(api\.ObjectReference\{[^}].*UID:&#34;(.*?)&#34;(, [^}]*)?\}')
 
-# Matches a specific word
+# Match a specific word
 def wordRE(word):
 	return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
 
-# Matches against words suggesting an error
-errors_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+# Match lines with error messages
+error_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+
+# Match the keys in the object reference string
+keys_re = re.compile(r'[\s|\{](.*?):')
+
+# Match the dictionary string in the given line
+def objref(line):
+	return re.search(r'Event\(api\.ObjectReference(\{.*\})', line)
+
+# Make the key of the objref dict a string, ie: {UID:"pod"} -> {"UID":"pod"}
+def key_to_string(k, objref_dict):
+	return re.sub(r'(%s):'%k, '\"%s\":'%k, objref_dict)
+
+def fix_quotes(objref_dict):
+	return re.sub(r'&#34;', '\"', objref_dict)
