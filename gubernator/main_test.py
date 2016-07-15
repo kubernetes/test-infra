@@ -216,6 +216,22 @@ class AppTest(unittest.TestCase, TestMixin):
         response = app.get('/jobs/kubernetes-jenkins/logs')
         self.assertIn('somejob/">somejob</a>', response)
 
+    def test_nodelog_missing_kubelet(self):
+        """Test that a missing kubelet log gives a 404."""
+        build_dir = self.BUILD_DIR + 'nodelog?pod=abc'
+        response = app.get('/build' + build_dir, status=404)
+        self.assertIn('Missing kubelet.log', response)
+
+    def test_nodelog_kubelet(self):
+        """Test for a kubelet file."""
+        build_dir = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
+        response = app.get('/build' + build_dir)
+        self.assertIn('Lines from kubelet.log', response)
+
+
 class PRTest(unittest.TestCase, TestMixin):
     BUILDS = {
         'build': [('12', {'version': 'bb', 'timestamp': 1467147654}, None),
