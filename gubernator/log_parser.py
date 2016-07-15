@@ -21,8 +21,7 @@ import re
 import jinja2
 
 import kubelet_parser
-
-error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+import regex
     
 def hilight(line, hilight_words):
     # Join all the words that need to be bolded into one regex
@@ -32,7 +31,7 @@ def hilight(line, hilight_words):
 
 
 def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, filters={"uid":"", "pod":""},
-    error_re=re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)):
+    error_re=regex.errors_re):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.

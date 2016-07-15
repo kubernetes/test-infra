@@ -16,30 +16,12 @@
 
 import re
 
-''' Matches against: kubelet.log
-Purpose: Match UID from the object reference 
-Example:
-	line: Event(api.ObjectReference{Kind:"Pod",
-	  Namespace:"e2e-tests-configmap-oi12h",
-	  Name:"pod-configmaps-b5b876cb-3e1e-11e6-8956-42010af0001d",
-	  UID:"b5b8a59e-3e1e-11e6-b358-42010af0001d", APIVersion:"v1",
-	  ResourceVersion:"331", FieldPath:""}): type: 'Warning' reason:
-	  'MissingClusterDNS' kubelet does not have ClusterDNS IP configured and
-	  cannot create Pod using "ClusterFirst" policy. Falling back to DNSDefault
-	  policy.
-	matches: b5b8a59e-3e1e-11e6-b358-42010af0001d
-'''
+# Matches UID from the object reference 
 uidobj_re = re.compile(r'Event\(api\.ObjectReference\{[^}].*UID:&#34;(.*?)&#34;(, [^}]*)?\}')
 
-'''
-Purpose: Match a specific word
-Example: word(abcdef)
-	line: 'Pod abcdef failed'
-	matches: abcdef
-	line: 'Podname(abcdef)'
-	matches: abcdef
-	line: '/abcdef/'
-	matches: abcdef
-'''
+# Matches a specific word
 def wordRE(word):
 	return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
+
+# Matches against words suggesting an error
+errors_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
