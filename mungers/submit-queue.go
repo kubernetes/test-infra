@@ -200,6 +200,7 @@ type SubmitQueue struct {
 	emergencyMergeStopFlag int32
 
 	adminPort int
+	features  *features.Features
 }
 
 func init() {
@@ -221,7 +222,7 @@ func init() {
 func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (sq *SubmitQueue) RequiredFeatures() []string { return []string{} }
+func (sq *SubmitQueue) RequiredFeatures() []string { return []string{features.GCSFeature} }
 
 func (sq *SubmitQueue) emergencyMergeStop() bool {
 	return atomic.LoadInt32(&sq.emergencyMergeStopFlag) != 0
@@ -355,6 +356,7 @@ func cleanStringSlice(in []string) []string {
 
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
+	sq.features = features
 	return sq.internalInitialize(config, features, "")
 }
 
@@ -387,8 +389,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
 		} else {
 			gcs = utils.NewWithPresubmitDetection(
-				utils.KubekinsBucket, utils.LogDir,
-				utils.PullKey, utils.PullLogDir,
+				sq.features.GCSInfo.BucketName, sq.features.GCSInfo.LogDir,
+				sq.features.GCSInfo.PullKey, sq.features.GCSInfo.PullLogDir,
 			)
 		}
 

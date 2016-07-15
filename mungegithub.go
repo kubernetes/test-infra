@@ -95,13 +95,15 @@ func main() {
 			if len(config.PRMungersList) == 0 {
 				glog.Fatalf("must include at least one --pr-mungers")
 			}
-			err := mungers.InitializeMungers(config.PRMungersList, &config.Config, &config.Features)
-			if err != nil {
-				glog.Fatalf("unable to initialize requested mungers: %v", err)
+			if err := mungers.RegisterMungers(config.PRMungersList); err != nil {
+				glog.Fatalf("unable to find requested mungers: %v", err)
 			}
 			requestedFeatures := mungers.RequestedFeatures()
 			if err := config.Features.Initialize(requestedFeatures); err != nil {
 				return err
+			}
+			if err := mungers.InitializeMungers(&config.Config, &config.Features); err != nil {
+				glog.Fatalf("unable to initialize mungers: %v", err)
 			}
 			return doMungers(config)
 		},

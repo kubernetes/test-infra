@@ -69,15 +69,22 @@ func RequestedFeatures() []string {
 	return out.List()
 }
 
-// InitializeMungers will call munger.Initialize() for all mungers requested
-// in --pr-mungers
-func InitializeMungers(requestedMungers []string, config *github.Config, features *features.Features) error {
+// RegisterMungers will check if a requested munger exists and add it to
+// the list.
+func RegisterMungers(requestedMungers []string) error {
 	for _, name := range requestedMungers {
 		munger, found := mungerMap[name]
 		if !found {
 			return fmt.Errorf("couldn't find a munger named: %s", name)
 		}
 		mungers = append(mungers, munger)
+	}
+	return nil
+}
+
+// InitializeMungers will call munger.Initialize() for the requested mungers.
+func InitializeMungers(config *github.Config, features *features.Features) error {
+	for _, munger := range mungers {
 		if err := munger.Initialize(config, features); err != nil {
 			return err
 		}
