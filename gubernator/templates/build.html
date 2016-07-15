@@ -25,21 +25,19 @@
 <div id="failures">
 % if failures
 <h2>Test Failures</h2>
-<hr>
 % for name, time, text, filename in failures
-<a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}"><h3>{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 <pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 % if text
 <pre class="error">
-{{text|linkify_stacktrace(commit)}}
+{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
 </pre>
 % endif
 % set pod_name = text|parse_pod_name
 % if pod_name
-<h4>Mentions in kubelet.log file of <a class="anchor" id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{junits[filename]}}">{{pod_name}}</a></h4>
-% endif
-<h5>Above failure found in: <a href="https://storage.googleapis.com{{filename}}">{{filename}}</a></h5>
+<h4>Mentions in kubelet.log file of <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}">{{pod_name}}</a></h4>
 <hr>
+% endif
 % endfor
 % else
 <h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>

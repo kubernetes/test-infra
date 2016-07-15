@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <link rel="stylesheet" href="/static/style.css" />
 
-<title>{{job}} #{{build}} Results</title>
+<title>{{job}} #{{build}} Kubelet Log</title>
 <script src="/static/build.js"></script>
 <div id="header" class="container">
 <img src="/static/logo.svg">
-<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
+<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> Kubelet Log</h1>
 </div>
 <div id="failures">
 % if kubelet_log
 <h3>Lines from kubelet.log containing pod {{pod}}</h3>
-% if uid
-<h4>Click to unhighlight: <a href="/build{{build_dir}}/nodelog?pod={{pod}}&junit={{junit}}&UID=">Pod UID</a></h4>
-% else
-<h4>Click to highlight: <a href="/build{{build_dir}}/nodelog?pod={{pod}}&junit={{junit}}&UID=True">Pod UID</a></h4>
-% endif
+<form method="get" onchange="submit()">
+<input type="hidden" name="pod" value="{{pod}}">
+<input type="hidden" name="junit" value="{{junit}}">
+<h4>Highlight Pod UID <input type="checkbox" name="UID"{% if uid %} checked{% endif %}></h4>
+</form>
 <pre>
 {{kubelet_log | safe}}
 </pre>
