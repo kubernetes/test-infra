@@ -179,7 +179,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jenkins-master-cvm"
-                export KUBE_OS_DISTRIBUTION="debian"
+                export KUBE_MASTER_OS_DISTRIBUTION="debian"
                 export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
                 export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
@@ -374,7 +374,7 @@
                 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
     jobs:
         - 'kubernetes-e2e-{suffix}'
- 
+
 - project:
     name: kubernetes-e2e-gce-features
     trigger-job: 'kubernetes-build'
