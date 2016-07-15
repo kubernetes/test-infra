@@ -58,7 +58,7 @@ def write(path, data):
         f.write(data)
 
 
-def init_build(build_dir, started=True, finished=True, kubelet=False):
+def init_build(build_dir, started=True, finished=True):
     """Create faked files for a build."""
     if started:
         write(build_dir + 'started.json',
@@ -67,9 +67,6 @@ def init_build(build_dir, started=True, finished=True, kubelet=False):
         write(build_dir + 'finished.json',
               {'result': 'SUCCESS', 'timestamp': 1406536800})
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
-    if kubelet:
-        write(build_dir + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
-        write(build_dir + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
 
 
 class HelperTest(unittest.TestCase):
@@ -228,7 +225,9 @@ class AppTest(unittest.TestCase, TestMixin):
     def test_nodelog_kubelet(self):
         """Test for a kubelet file."""
         build_dir = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
-        init_build(self.BUILD_DIR, kubelet=True)
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
         response = app.get('/build' + build_dir)
         self.assertIn('Lines from kubelet.log', response)
 
