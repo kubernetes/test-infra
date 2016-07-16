@@ -14,13 +14,33 @@ spec:
         command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
+        - --organization=kubernetes
+        - --project=kubernetes
+        - --state=open
         - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr
         - --dry-run=true
-        - --weak-stable-jobs=kubernetes-kubemark-500-gce
         - --required-contexts="Jenkins GCE Node e2e"
-        - --number-of-old-test-results=5
         - --http-cache-dir=/cache/httpcache
+        - --path-label-config=path-label.txt
+        - --block-path-config=block-path.yaml
+        - --path-label-config=path-label.txt
+        - --kubernetes-dir=/gitrepos/kubernetes
         - --test-owners-csv=/gitrepos/kubernetes/test/test_owners.csv
+        - --number-of-old-test-results=5
+        - --fixes-issue-reassign=false
+        - --blunderbuss-reassign=false
+        - --generated-files-config=generated-files.txt
+        - --nonblocking-jenkins-jobs=kubernetes-e2e-gke-staging,kubernetes-e2e-gke-staging-parallel,kubernetes-e2e-gce-serial,kubernetes-e2e-gke-serial,kubernetes-e2e-gke-test,kubernetes-e2e-gce-examples,kubernetes-e2e-gce-federation,kubernetes-e2e-gce-scalability,kubernetes-soak-continuous-e2e-gce,kubernetes-soak-continuous-e2e-gke
+        - --jenkins-jobs=kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gce,kubernetes-e2e-gce-slow,kubernetes-e2e-gke,kubernetes-e2e-gke-slow,kubernetes-kubemark-5-gce
+        - --presubmit-jobs=kubernetes-pull-build-test-e2e-gce
+        - --weak-stable-jobs=kubernetes-kubemark-500-gce
+        - --required-retest-contexts="Jenkins GCE e2e","Jenkins unit/integration","Jenkins verification","Jenkins GCE Node e2e"
+        - --do-not-merge-milestones=""
+        - --admin-port=9999
+        - --gcs-bucket=kubernetes-jenkins
+        - --gcs-logs-dir=logs
+        - --pull-logs-dir=pr-logs
+        - --pull-key=pull
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         ports:
         - name: status

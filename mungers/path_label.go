@@ -117,7 +117,7 @@ func (p *PathLabelMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "path-label.txt", "file containing the pathname to label mappings")
+	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
 }
 
 // Munge is the workhorse the will actually make updates to the PR

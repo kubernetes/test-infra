@@ -14,10 +14,14 @@ spec:
         command:
         - /mungegithub
         - --token-file=/etc/secret-volume/token
+        - --organization=kubernetes
+        - --project=kubernetes
         - --pr-mungers=cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue
         - --state=all
         - --labels=cherrypick-candidate
+        - --http-cache-dir=/cache/httpcache
         - --dry-run=true
+        - --admin-port=9999
         - --kubernetes-dir=/gitrepo/kubernetes
         - --period=3m
         image: docker.io/eparis/cherrypick:2016-03-14-7fb1dae

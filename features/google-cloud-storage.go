@@ -17,8 +17,8 @@ limitations under the License.
 package features
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -65,8 +65,8 @@ func (g *GCSInfo) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (g *GCSInfo) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&g.BucketName, "gcs-bucket", "kubernetes-jenkins", "Name of GCS bucket.")
-	cmd.Flags().StringVar(&g.LogDir, "gcs-logs-dir", "logs", "Directory containing test logs.")
-	cmd.Flags().StringVar(&g.PullLogDir, "pull-logs-dir", "pr-logs", "Directory of the PR builder.")
-	cmd.Flags().StringVar(&g.PullKey, "pull-key", "pull", "String to look for in job name for it to be a pull (presubmit) job.")
+	cmd.Flags().StringVar(&g.BucketName, "gcs-bucket", "", "Name of GCS bucket.")
+	cmd.Flags().StringVar(&g.LogDir, "gcs-logs-dir", "", "Directory containing test logs.")
+	cmd.Flags().StringVar(&g.PullLogDir, "pull-logs-dir", "", "Directory of the PR builder.")
+	cmd.Flags().StringVar(&g.PullKey, "pull-key", "", "String to look for in job name for it to be a pull (presubmit) job.")
 }

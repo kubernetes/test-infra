@@ -107,7 +107,7 @@ func (b *BlockPath) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlockPath) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&b.path, "block-path-config", "block-path.yaml", "file containing the pathnames to block or not block")
+	cmd.Flags().StringVar(&b.path, "block-path-config", "", "file containing the pathnames to block or not block")
 }
 
 func matchesAny(path string, regs []regexp.Regexp) bool {

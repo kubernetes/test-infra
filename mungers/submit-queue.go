@@ -467,32 +467,9 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{
-		"kubernetes-e2e-gke-staging",
-		"kubernetes-e2e-gke-staging-parallel",
-		"kubernetes-e2e-gce-serial",
-		"kubernetes-e2e-gke-serial",
-		"kubernetes-e2e-gke-test",
-		"kubernetes-e2e-gce-examples",
-		"kubernetes-e2e-gce-federation",
-		"kubernetes-e2e-gce-scalability",
-		"kubernetes-soak-continuous-e2e-gce",
-		"kubernetes-soak-continuous-e2e-gke",
-	}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
-	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{
-		"kubelet-gce-e2e-ci",
-		"kubernetes-build",
-		"kubernetes-test-go",
-		"kubernetes-verify-master",
-		"kubernetes-e2e-gce",
-		"kubernetes-e2e-gce-slow",
-		"kubernetes-e2e-gke",
-		"kubernetes-e2e-gke-slow",
-		"kubernetes-kubemark-5-gce",
-	}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
-	cmd.Flags().StringSliceVar(&sq.PresubmitJobNames, "presubmit-jobs", []string{
-		"kubernetes-pull-build-test-e2e-gce",
-	}, "Comma separated list of jobs in Jenkins that run presubmit and should have issues filed for flakes.")
+	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
+	cmd.Flags().StringSliceVar(&sq.PresubmitJobNames, "presubmit-jobs", []string{""}, "Comma separated list of jobs in Jenkins that run presubmit and should have issues filed for flakes.")
 	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")

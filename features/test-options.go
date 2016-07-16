@@ -17,25 +17,13 @@ limitations under the License.
 package features
 
 import (
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
 const (
 	// TestOptionsFeature is how mungers should indicate this is required.
-	TestOptionsFeature   = "test-options"
-	jenkinsE2EContext    = "Jenkins GCE e2e"
-	jenkinsUnitContext   = "Jenkins unit/integration"
-	jenkinsVerifyContext = "Jenkins verification"
-	jenkinsNodeContext   = "Jenkins GCE Node e2e"
-)
-
-var (
-	requiredContexts = []string{
-		jenkinsUnitContext,
-		jenkinsE2EContext,
-		jenkinsNodeContext,
-		jenkinsVerifyContext,
-	}
+	TestOptionsFeature = "test-options"
 )
 
 // TestOptions is a struct that handles parameters required by mungers
@@ -55,6 +43,7 @@ func (t *TestOptions) Name() string {
 
 // Initialize will initialize the feature.
 func (t *TestOptions) Initialize() error {
+	glog.Infof("required-retest-contexts: %#v\n", t.RequiredRetestContexts)
 	return nil
 }
 
@@ -65,5 +54,5 @@ func (t *TestOptions) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (t *TestOptions) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringSliceVar(&t.RequiredRetestContexts, "required-retest-contexts", requiredContexts, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
+	cmd.Flags().StringSliceVar(&t.RequiredRetestContexts, "required-retest-contexts", []string{}, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
 }
