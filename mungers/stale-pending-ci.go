@@ -49,33 +49,37 @@ var (
 // But this is our world and so we should really do this for all PRs which
 // aren't likely to get another push (everything that is mergeable). Since that
 // can be a lot of PRs, I'm just doing it for the LGTM PRs automatically...
-type StalePendingCI struct{}
+type StalePendingCI struct {
+	features *features.Features
+}
 
 func init() {
-	s := StalePendingCI{}
+	s := &StalePendingCI{}
 	RegisterMungerOrDie(s)
 	RegisterStaleComments(s)
 }
 
 // Name is the name usable in --pr-mungers
-func (StalePendingCI) Name() string { return "stale-pending-ci" }
+func (s *StalePendingCI) Name() string { return "stale-pending-ci" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (StalePendingCI) RequiredFeatures() []string { return []string{} }
+func (s *StalePendingCI) RequiredFeatures() []string { return []string{features.TestOptionsFeature} }
 
 // Initialize will initialize the munger
-func (StalePendingCI) Initialize(config *github.Config, features *features.Features) error {
+func (s *StalePendingCI) Initialize(config *github.Config, features *features.Features) error {
+	s.features = features
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
-func (StalePendingCI) EachLoop() error { return nil }
+func (s *StalePendingCI) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (StalePendingCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (s *StalePendingCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
-func (StalePendingCI) Munge(obj *github.MungeObject) {
+func (s *StalePendingCI) Munge(obj *github.MungeObject) {
+	requiredContexts := s.features.TestOptions.RequiredRetestContexts
 	if !obj.IsPR() {
 		return
 	}
@@ -106,14 +110,14 @@ func (StalePendingCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (StalePendingCI) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
 	if *comment.Body != pendingMsgBody {
 		return false
 	}
-	stale := commentBeforeLastCI(obj, comment)
+	stale := commentBeforeLastCI(obj, comment, s.features.TestOptions.RequiredRetestContexts)
 	if stale {
 		glog.V(6).Infof("Found stale StalePendingCI comment")
 	}
@@ -121,6 +125,6 @@ func (StalePendingCI) isStaleComment(obj *github.MungeObject, comment githubapi.
 }
 
 // StaleComments returns a slice of stale comments
-func (s StalePendingCI) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s *StalePendingCI) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }
