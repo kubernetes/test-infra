@@ -38,6 +38,7 @@ def parse(lines, error_re, hilight_words, filters):
     """
     matched_lines = []
     uid = ""
+    namespace = ""
 
     for n, line in enumerate(lines):
         if error_re.search(line):
@@ -56,8 +57,11 @@ def parse(lines, error_re, hilight_words, filters):
                 objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
 
                 if filters["uid"] and uid == "":
-                        uid = objref_dict["UID"]
-                        hilight_words.append(uid)
+                    uid = objref_dict["UID"]
+                    hilight_words.append(uid)
+                if filters["namespace"] and namespace == "":
+                    namespace = objref_dict["Namespace"]
+                    hilight_words.append(namespace)
 
         if uid != "" and matched_lines[-1] != n:
             uid_re = regex.wordRE(uid)

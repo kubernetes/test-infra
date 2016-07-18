@@ -319,7 +319,8 @@ class NodeLogHandler(RenderingHandler):
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         uid = bool(self.request.get("UID"))
-        filters = {"uid":uid, "pod":pod_name}
+        namespace = bool(self.request.get("Namespace"))
+        filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
         kubelet_filename = find_kubelet_log((build_dir, junit))
         result = None
         if kubelet_filename:
@@ -331,7 +332,7 @@ class NodeLogHandler(RenderingHandler):
             return
         self.render('kubelet.html', dict(
             job_dir=job_dir, build_dir=build_dir,kubelet_log=result, job=job,
-            build=build, pod=pod_name, junit=junit, uid=uid))
+            build=build, pod=pod_name, junit=junit, uid=uid, namespace=namespace))
 
 
 class JobListHandler(RenderingHandler):
