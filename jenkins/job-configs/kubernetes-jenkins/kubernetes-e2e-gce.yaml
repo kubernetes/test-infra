@@ -214,7 +214,7 @@
             trigger-job: 'kubernetes-federation-build'
             description: 'Run all federation e2e tests.'
             timeout: 300
-            emails: 'quinton@google.com, colin.hom@coreos.com'
+            emails: 'quinton@google.com, colin.hom@coreos.com, madhusudancs@google.com'
             test-owner: 'quinton'
             job-env: |
                 export PROJECT="k8s-jkns-e2e-gce-federation"
