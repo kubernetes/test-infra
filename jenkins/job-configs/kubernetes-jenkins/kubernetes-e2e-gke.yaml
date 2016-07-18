@@ -370,8 +370,8 @@
 - project:
     name: kubernetes-e2e-gke-trusty
     trigger-job: 'kubernetes-build-1.2'
-    test-owner: 'wonderfly@google.com'
-    emails: 'wonderfly@google.com,qzheng@google.com'
+    test-owner: 'wonderfly'
+    emails: 'gci-alerts+kubekins@google.com'
     gke-suffix:
         - 'gke-trusty-test':  # kubernetes-e2e-gke-trusty-test
             description: 'Run E2E tests on GKE test endpoint.'
