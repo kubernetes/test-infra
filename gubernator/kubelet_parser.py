@@ -52,14 +52,14 @@ def parse(lines, error_re, hilight_words, filters):
                 
                 for k in keys:
                     objref_dict = regex.key_to_string(k, objref_dict)
-                
+
                 # Convert string into dictionary
                 objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
 
-                if filters["uid"] and uid == "":
+                if uid == "" and filters["uid"]:
                     uid = objref_dict["UID"]
                     hilight_words.append(uid)
-                if filters["namespace"] and namespace == "":
+                if namespace == "" and filters["namespace"]:
                     namespace = objref_dict["Namespace"]
                     hilight_words.append(namespace)
 

@@ -21,18 +21,6 @@ import regex
 
 class RegexTest(unittest.TestCase):
 
-    def test_uidobj_re(self):
-        for text, matches in [
-        	('Event(api.ObjectReference{Name:&#34;podA&#34;, UID:&#34;podabc&#34;})', True),
-            ('Event(api.ObjectReference{Name:&#34;podA&#34;, UID:&#34;podabc&#34;, ResourceVersion:&#34;331&#34;}): ', True),
-	        ('The Event(api.ObjectReference{Name:&#34;podA&#34;, UID:&#34;podabc&#34;}): ', True),
-			('Event(api.ObjectReference{Name:&#34;podA&#34;, PodName:&#34;podabc&#34;}): ', False),
-			('Event(api.ObjectReference{Name:&#34;podA&#34;, UID:&#34;podabc&#34;}): failed', True),
-        ]:
-            self.assertEqual(bool(regex.uidobj_re.search(text)), matches,
-                'uidobj_re.search(%r) should be %r' % (text, matches))
-
-
     def test_wordRE(self):
         for text, matches in [
             ('/abcdef/', True),
@@ -58,6 +46,44 @@ class RegexTest(unittest.TestCase):
         ]:
             self.assertEqual(bool(regex.error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))
+
+
+    def test_keys_re(self):
+        for text, matches in [
+            ('{Pod:\"abc\"}', True),
+            ('{Pod:\"abc\", Namespace:\"pod abc\"}', True),
+            ('ERROR: woops', True),
+        ]:
+            self.assertEqual(bool(regex.keys_re.search(text)), matches,
+                'keys_re.search(%r) should be %r' % (text, matches))
+
+
+    def test_objref(self):
+        for text, matches in [
+            ('Event(api.ObjectReference{Kind:\"Pod\"}) failed', True),
+            ('{Pod:\"abc\", Namespace:\"pod abc\"}', False),
+            ('Jan 1: Event(api.ObjectReference{Kind:\"Pod\", Podname:\"abc\"}) failed', True),
+        ]:
+            self.assertEqual(bool(regex.objref(text)), matches,
+                'objref(%r) should be %r' % (text, matches))
+
+
+    def test_key_to_string(self):
+        for text, matches in [
+            ('{Kind:"Pod"}', '{"Kind":"Pod"}'),
+            ('{Pod:"abc", Kind:"pod abc"}', '{Pod:"abc", "Kind":"pod abc"}'),
+        ]:
+            self.assertEqual(regex.key_to_string("Kind", text), matches,
+                'key_to_string(%r) should be %r' % (text, matches))
+
+
+    def test_fix_quotes(self):
+        for text, matches in [
+            ('{&#34;Kind&#34;:"Pod"}', '{"Kind":"Pod"}'),
+            ('{Pod:"abc", &#34;Kind&#34;:"pod abc"}', '{Pod:"abc", "Kind":"pod abc"}'),
+        ]:
+            self.assertEqual(regex.fix_quotes(text), matches,
+                'fix_quotes(%r) should be %r' % (text, matches))    
 
 
 if __name__ == '__main__':
