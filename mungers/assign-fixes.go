@@ -45,6 +45,8 @@ func (a *AssignFixesMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (a *AssignFixesMunger) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("fixes-issue-reassign: %#v\n", a.assignfixesReassign)
+
 	a.features = features
 	a.config = config
 	return nil

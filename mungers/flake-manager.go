@@ -74,6 +74,8 @@ func (p *FlakeManager) RequiredFeatures() []string { return []string{features.GC
 
 // Initialize will initialize the munger
 func (p *FlakeManager) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("test-owners-csv: %#v\n", p.ownerPath)
+
 	// TODO: don't get the mungers from the global list, they should be passed in...
 	for _, m := range GetAllMungers() {
 		if m.Name() == "issue-cacher" {

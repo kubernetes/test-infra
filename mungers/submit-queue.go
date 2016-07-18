@@ -367,6 +367,17 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
 	sq.doNotMergeMilestones = cleanStringSlice(sq.doNotMergeMilestones)
 
+	glog.Infof("jenkins-jobs: %#v\n", sq.BlockingJobNames)
+	glog.Infof("nonblocking-jenkins-jobs: %#v\n", sq.NonBlockingJobNames)
+	glog.Infof("presubmit-jobs: %#v\n", sq.PresubmitJobNames)
+	glog.Infof("weak-stable-jobs: %#v\n", sq.WeakStableJobNames)
+	glog.Infof("required-contexts: %#v\n", sq.RequiredStatusContexts)
+	glog.Infof("required-retest-contexts: %#v\n", sq.RequiredRetestContexts)
+	glog.Infof("do-not-merge-milestones: %#v\n", sq.doNotMergeMilestones)
+	glog.Infof("admin-port: %#v\n", sq.adminPort)
+	glog.Infof("retest-body: %#v\n", sq.retestBody)
+	glog.Infof("fake-e2e: %#v\n", sq.FakeE2E)
+
 	sq.githubConfig = config
 
 	// TODO: This is not how injection for tests should work.

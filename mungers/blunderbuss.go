@@ -56,6 +56,8 @@ func (b *BlunderbussMunger) RequiredFeatures() []string { return []string{featur
 
 // Initialize will initialize the munger
 func (b *BlunderbussMunger) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("blunderbuss-reassign: %#v\n", b.blunderbussReassign)
+
 	b.features = features
 	return nil
 }

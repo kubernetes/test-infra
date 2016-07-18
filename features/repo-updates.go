@@ -135,8 +135,9 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 // Initialize will initialize the munger
 func (o *RepoInfo) Initialize() error {
-	o.enabled = true
+	glog.Infof("kubernetes-dir: %#v\n", o.kubernetesDir)
 
+	o.enabled = true
 	if len(o.kubernetesDir) == 0 {
 		glog.Fatalf("--kubernetes-dir is required with selected munger(s)")
 	}

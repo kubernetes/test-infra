@@ -49,6 +49,8 @@ func (p *OldTestGetter) RequiredFeatures() []string { return nil }
 
 // Initialize will initialize the munger
 func (p *OldTestGetter) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("number-of-old-test-results: %#v\n", p.numberOfOldTestsToGet)
+
 	// TODO: don't get the mungers from the global list, they should be passed in...
 	for _, m := range GetAllMungers() {
 		if m.Name() == "submit-queue" {

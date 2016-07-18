@@ -65,6 +65,8 @@ func (p *PathLabelMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (p *PathLabelMunger) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("path-label-config: %#v\n", p.pathLabelFile)
+
 	allLabels := sets.NewString()
 	out := []labelMap{}
 	file := p.pathLabelFile

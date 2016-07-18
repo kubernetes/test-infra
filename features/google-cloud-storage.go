@@ -18,6 +18,7 @@ package features
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/golang/glog"
 )
 
 const (
@@ -50,6 +51,10 @@ func (g *GCSInfo) Name() string {
 
 // Initialize will initialize the feature.
 func (g *GCSInfo) Initialize() error {
+	glog.Infof("gcs-bucket: %#v\n", g.BucketName)
+	glog.Infof("gcs-logs-dir: %#v\n", g.LogDir)
+	glog.Infof("pull-logs-dir: %#v\n", g.PullLogDir)
+	glog.Infof("pull-key: %#v\n", g.PullKey)
 	return nil
 }
 

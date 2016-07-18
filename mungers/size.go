@@ -63,6 +63,8 @@ func (SizeMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *SizeMunger) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("generated-files-config: %#v\n", s.generatedFilesFile)
+
 	return nil
 }
 

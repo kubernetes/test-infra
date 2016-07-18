@@ -66,6 +66,8 @@ func (b *BlockPath) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (b *BlockPath) Initialize(config *github.Config, features *features.Features) error {
+	glog.Infof("block-path-config: %#v\n", b.path)
+
 	if len(b.path) == 0 {
 		glog.Fatalf("--block-path-config is required with the block-path munger")
 	}
