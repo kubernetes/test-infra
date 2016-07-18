@@ -389,6 +389,7 @@
               export INSTANCE_PREFIX=${{E2E_NAME}}
               export KUBE_GCE_NETWORK=${{E2E_NAME}}
               export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
+              export GCE_SERVICE_ACCOUNT=$(gcloud auth list 2> /dev/null | grep active | cut -f3 -d' ')
 
               # Get golang into our PATH so we can run e2e.go
               export PATH=${{PATH}}:/usr/local/go/bin
