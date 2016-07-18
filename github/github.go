@@ -200,6 +200,7 @@ type analytics struct {
 	ListIssueEvents    analytic
 	ListCommits        analytic
 	GetCommit          analytic
+	ListFiles          analytic
 	GetCombinedStatus  analytic
 	SetStatus          analytic
 	GetPR              analytic
@@ -233,6 +234,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
 	fmt.Fprintf(w, "GetCommit\t%d\t\n", a.GetCommit.Count)
+	fmt.Fprintf(w, "ListFiles\t%d\t\n", a.ListFiles.Count)
 	fmt.Fprintf(w, "GetCombinedStatus\t%d\t\n", a.GetCombinedStatus.Count)
 	fmt.Fprintf(w, "SetStatus\t%d\t\n", a.SetStatus.Count)
 	fmt.Fprintf(w, "GetPR\t%d\t\n", a.GetPR.Count)
@@ -262,6 +264,7 @@ type MungeObject struct {
 	events      []github.IssueEvent
 	comments    []github.IssueComment
 	prComments  []github.PullRequestComment
+	commitFiles []github.CommitFile
 	Annotations map[string]string //annotations are things you can set yourself.
 }
 
@@ -1212,6 +1215,42 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 	}
 	obj.commits = filledCommits
 	return filledCommits, nil
+}
+
+// ListFiles returns all changed files in a pull-request
+func (obj *MungeObject) ListFiles() ([]github.CommitFile, error) {
+	if obj.commitFiles != nil {
+		return obj.commitFiles, nil
+	}
+
+	pr, err := obj.GetPR()
+	if err != nil {
+		return nil, err
+	}
+
+	prNum := *pr.Number
+	allFiles := []github.CommitFile{}
+
+	listOpts := &github.ListOptions{}
+
+	config := obj.config
+	page := 1
+	for {
+		listOpts.Page = page
+		glog.V(8).Infof("Fetching page %d of changed files for issue %d", page, prNum)
+		files, response, err := obj.config.client.PullRequests.ListFiles(config.Org, config.Project, prNum, listOpts)
+		config.analytics.ListFiles.Call(config, response)
+		if err != nil {
+			return nil, err
+		}
+		allFiles = append(allFiles, files...)
+		if response.LastPage == 0 || response.LastPage <= page {
+			break
+		}
+		page++
+	}
+	obj.commitFiles = allFiles
+	return allFiles, nil
 }
 
 // GetPR will return the PR of the object.

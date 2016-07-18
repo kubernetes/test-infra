@@ -169,25 +169,23 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	}
 	dels := *pr.Deletions
 
-	commits, err := obj.GetCommits()
+	files, err := obj.ListFiles()
 	if err != nil {
 		return
 	}
 
-	for _, c := range commits {
-		for _, f := range c.Files {
-			for _, p := range genPrefixes {
-				if strings.HasPrefix(*f.Filename, p) {
-					adds = adds - *f.Additions
-					dels = dels - *f.Deletions
-					continue
-				}
-			}
-			if genFiles.Has(*f.Filename) {
+	for _, f := range files {
+		for _, p := range genPrefixes {
+			if strings.HasPrefix(*f.Filename, p) {
 				adds = adds - *f.Additions
 				dels = dels - *f.Deletions
 				continue
 			}
+		}
+		if genFiles.Has(*f.Filename) {
+			adds = adds - *f.Additions
+			dels = dels - *f.Deletions
+			continue
 		}
 	}
 
