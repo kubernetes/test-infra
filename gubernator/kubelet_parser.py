@@ -56,10 +56,10 @@ def parse(lines, error_re, hilight_words, filters):
                 # Convert string into dictionary
                 objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
 
-                if uid == "" and filters["uid"]:
+                if uid == "" and filters["uid"] and objref_dict["UID"]:
                     uid = objref_dict["UID"]
                     hilight_words.append(uid)
-                if namespace == "" and filters["namespace"]:
+                if namespace == "" and filters["namespace"] and objref_dict["Namespace"]:
                     namespace = objref_dict["Namespace"]
                     hilight_words.append(namespace)
 
