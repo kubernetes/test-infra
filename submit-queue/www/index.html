@@ -162,7 +162,7 @@
               <md-chips ng-model="cntl.testResults.nonBlockingBuilds" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="http://ci-test.k8s.io/{{$chip.name}}/{{$chip.id}}/">{{$chip.name}}</a>
-                  <span style="color: {{$chip.color}}">{{$chip.msg}}</span> <span title="Job stability">{{$chip.stability}}</span>
+                  <span style="color: {{$chip.color}}">{{$chip.msg}}</span>
                 </md-chip-template>
               </md-chips>
               <br>
