@@ -40,9 +40,17 @@ def parse(lines, error_re, hilight_words, filters):
     uid = ""
     namespace = ""
 
+    if filters["uid"] and uid == "":
+        uid = objref_dict["UID"]
+        hilight_words.append(uid)
+    if filters["namespace"] and namespace == "":
+        namespace = objref_dict["Namespace"]
+        hilight_words.append(namespace)
+
     for n, line in enumerate(lines):
         if error_re.search(line):
             matched_lines.append(n)
+
 
 
 

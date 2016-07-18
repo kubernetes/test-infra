@@ -333,7 +333,6 @@ class NodeLogHandler(RenderingHandler):
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return
-
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, log=result, job=job,
             build=build, full_path=filename, log_file=log_file,
