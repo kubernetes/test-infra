@@ -23,7 +23,7 @@ import jinja2
 
 import regex
 
-def parse(lines, error_re, hilight_words, filters):
+def parse(lines, error_re, hilight_words, filters, objref_dict):
     """
     Given filters returns indeces of wanted lines from the kubelet log
 
@@ -37,21 +37,21 @@ def parse(lines, error_re, hilight_words, filters):
         hilight_words: updated hilight_words
     """
     matched_lines = []
-    uid = ""
-    namespace = ""
-
-    if filters["uid"] and uid == "":
+    
+    if filters["uid"] and objref_dict["UID"]:
         uid = objref_dict["UID"]
         hilight_words.append(uid)
-    if filters["namespace"] and namespace == "":
+    if filters["namespace"] and objref_dict["Namespace"]:
         namespace = objref_dict["Namespace"]
         hilight_words.append(namespace)
 
+    words_re = re.compile(r'\b(%s)\b' % '|'.join(hilight_words), re.IGNORECASE)     
+
     for n, line in enumerate(lines):
-        if error_re.search(line):
+        if words_re.search(line):
             matched_lines.append(n)
 
 
-
-
     return matched_lines, hilight_words
+
+

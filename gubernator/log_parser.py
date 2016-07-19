@@ -17,6 +17,7 @@ import logging
 import datetime
 import os
 import re
+import ast
 
 import jinja2
 
@@ -30,7 +31,7 @@ def hilight(line, hilight_words):
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, 
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict={},
     filters={"uid":"", "pod":"", "namespace":""}, error_re=regex.error_re):
     """
     Given a build log, return a chunk of HTML code suitable for
@@ -48,7 +49,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
         matched_lines, hilight_words = kubelet_parser.parse(lines, error_re, 
-            hilight_words, filters)
+            hilight_words, filters, objref_dict)
 
     output = []
     CONTEXT = 4
@@ -74,6 +75,26 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
         last_match = match
 
     return '\n'.join(output)
+
+
+def make_dict(data, pod_re):
+    lines = unicode(jinja2.escape(data)).split('\n')
+    for line in lines:
+        if pod_re.search(line):
+            objref = regex.objref(line)
+            if objref and objref.group(1) != "":
+                objref_dict = objref.group(1)        
+                keys = regex.keys_re.findall(objref_dict)
+                
+                for k in keys:
+                    objref_dict = regex.key_to_string(k, objref_dict)
+
+                # Convert string into dictionary
+                objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
+                return objref_dict
+
+
+
 
 if __name__ == '__main__':
     import sys
