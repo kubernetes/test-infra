@@ -51,7 +51,6 @@ def parse(lines, error_re, hilight_words, filters, objref_dict):
         if words_re.search(line):
             matched_lines.append(n)
 
-
     return matched_lines, hilight_words
 
 

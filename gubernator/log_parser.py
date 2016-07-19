@@ -94,8 +94,6 @@ def make_dict(data, pod_re):
                 return objref_dict
 
 
-
-
 if __name__ == '__main__':
     import sys
     for f in sys.argv[1:]:
