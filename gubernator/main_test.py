@@ -224,11 +224,11 @@ class AppTest(unittest.TestCase, TestMixin):
 
     def test_nodelog_kubelet(self):
         """Test for a kubelet file."""
-        build_dir = self.BUILD_DIR + 'nodelog?logfile=kubelet.log&pod=abc&junit=junit_01.xml'
+        nodelog_url = self.BUILD_DIR + 'nodelog?logfile=kubelet.log&pod=abc&junit=junit_01.xml'
         init_build(self.BUILD_DIR)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
-        response = app.get('/build' + build_dir)
+        response = app.get('/build' + nodelog_url)
         self.assertIn('Lines from kubelet.log', response)
 
 

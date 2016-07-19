@@ -8,7 +8,6 @@
 <h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> Kubelet Log</h1>
 </div>
 <div id="failures">
-% if log
 <h3>Lines from {{log_file}} containing pod {{pod}}</h3>
 <form method="get" onchange="submit()">
 <input type="hidden" name="logfile" value="{{log_file}}">
@@ -17,6 +16,7 @@
 <h4>Highlight Pod UID <input type="checkbox" name="UID"{% if uid %} checked{% endif %}>
 Highlight Namespace <input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}></h4>
 </form>
+% if log
 <pre>
 {{log | safe}}
 </pre>
