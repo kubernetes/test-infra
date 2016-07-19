@@ -24,7 +24,7 @@ spec:
         - --path-label-config=path-label.txt
         - --block-path-config=block-path.yaml
         - --path-label-config=path-label.txt
-        - --kubernetes-dir=/gitrepos/kubernetes
+        - --repo-dir=/gitrepos
         - --test-owners-csv=/gitrepos/kubernetes/test/test_owners.csv
         - --number-of-old-test-results=5
         - --fixes-issue-reassign=false
@@ -54,17 +54,15 @@ spec:
         - mountPath: /etc/secret-volume
           name: secret-volume
         - mountPath: /gitrepos
-          name: kubernetes-repo
+          name: repo
         - mountPath: /cache
           name: cache-volume
       volumes:
       - name: secret-volume
         secret:
           secretName: github-token
-      - name: kubernetes-repo
-        gitRepo:
-          repository: "https://github.com/kubernetes/kubernetes.git"
-          revision: "master"
+      - name: repo
+        emptyDir: {}
       - name: cache-volume
         persistentVolumeClaim:
           claimName: submit-queue-cache
