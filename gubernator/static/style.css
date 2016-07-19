@@ -32,6 +32,9 @@ h3 {
 pre {
     white-space: pre-wrap;
 }
+pre.nowrap{
+    white-space: pre;
+}
 pre.error {
     margin: .5em 0 1em 2em;
     padding: 10px;

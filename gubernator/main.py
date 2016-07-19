@@ -326,6 +326,7 @@ class NodeLogHandler(RenderingHandler):
         junit = self.request.get("junit")
         uid = bool(self.request.get("UID"))
         namespace = bool(self.request.get("Namespace"))
+        wrap = bool(self.request.get("wrap"))
         filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
         filename = find_log((build_dir, junit, log_file))
 
@@ -350,7 +351,7 @@ class NodeLogHandler(RenderingHandler):
             job_dir=job_dir, build_dir=build_dir, log=result, job=job,
             build=build, full_path=filename, log_file=log_file,
             pod=pod_name, junit=junit, uid=uid,
-            namespace=namespace))
+            namespace=namespace, wrap=wrap))
 
 
 class JobListHandler(RenderingHandler):

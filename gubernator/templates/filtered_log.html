@@ -12,11 +12,14 @@
 		<input type="hidden" name="logfile" value="{{log_file}}">
 		<input type="hidden" name="pod" value="{{pod}}">
 		<input type="hidden" name="junit" value="{{junit}}">
+		<hr>
+		<input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on
+		<hr>
 		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID</label><br>
 		<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace</label>
 	</form>
 	% if log
-		<pre>
+		{% if wrap %}<pre>{% else %}<pre class="nowrap">{% endif %}
 		{{log | safe}}
 		</pre>
 	% endif
