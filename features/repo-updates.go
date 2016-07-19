@@ -139,7 +139,7 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 // Initialize will initialize the munger
 func (o *RepoInfo) Initialize(config *github.Config) error {
-	glog.Infof("kubernetes-dir: %#v\n", o.baseDir)
+	glog.Infof("repo-dir: %#v\n", o.baseDir)
 
 	o.enabled = true
 	o.config = config

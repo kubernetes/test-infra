@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: submit-queue
+spec:
+  rules:
+  - host: kubernetes.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: kubernetes-sq-status
+            servicePort: 80

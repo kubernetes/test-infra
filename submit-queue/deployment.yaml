@@ -1,49 +1,190 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: submit-queue
+  name: @@-submit-queue
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: submit-queue
+        target-repo: @@
     spec:
       containers:
       - name: submit-queue
         command:
         - /mungegithub
-        - --token-file=/etc/secret-volume/token
-        - --organization=kubernetes
-        - --project=kubernetes
-        - --state=open
-        - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
         - --dry-run=true
-        - --required-contexts="Jenkins GCE Node e2e"
-        - --http-cache-dir=/cache/httpcache
-        - --path-label-config=path-label.txt
-        - --block-path-config=block-path.yaml
-        - --path-label-config=path-label.txt
-        - --repo-dir=/gitrepos
-        - --test-owners-csv=/gitrepos/kubernetes/test/test_owners.csv
-        - --number-of-old-test-results=5
-        - --fixes-issue-reassign=false
-        - --blunderbuss-reassign=false
-        - --generated-files-config=generated-files.txt
-        - --nonblocking-jenkins-jobs=kubernetes-e2e-gke-staging,kubernetes-e2e-gke-staging-parallel,kubernetes-e2e-gce-serial,kubernetes-e2e-gke-serial,kubernetes-e2e-gke-test,kubernetes-e2e-gce-examples,kubernetes-e2e-gce-federation,kubernetes-e2e-gce-scalability,kubernetes-soak-continuous-e2e-gce,kubernetes-soak-continuous-e2e-gke
-        - --jenkins-jobs=kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gce,kubernetes-e2e-gce-slow,kubernetes-e2e-gke,kubernetes-e2e-gke-slow,kubernetes-kubemark-5-gce
-        - --presubmit-jobs=kubernetes-pull-build-test-e2e-gce
-        - --weak-stable-jobs=kubernetes-kubemark-500-gce
-        - --required-retest-contexts="Jenkins GCE e2e","Jenkins unit/integration","Jenkins verification","Jenkins GCE Node e2e"
-        - --do-not-merge-milestones=""
-        - --admin-port=9999
-        - --gcs-bucket=kubernetes-jenkins
-        - --gcs-logs-dir=logs
-        - --pull-logs-dir=pr-logs
-        - --pull-key=pull
-        - --chart-url=http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
-        - --history-url=http://storage.googleapis.com/kubernetes-test-history/static/index.html
+        - --http-cache-dir=$(HTTP_CACHE_DIR)
+        - --organization=$(ORGANIZATION)
+        - --project=$(PROJECT)
+        - --pr-mungers=$(PR_MUNGERS)
+        - --state=$(STATE)
+        - --token-file=$(TOKEN_FILE)
+        - --required-retest-contexts=$(REQUIRED_RETEST_CONTEXTS)
+        - --required-contexts=$(REQUIRED_CONTEXTS)
+        - --nonblocking-jenkins-jobs=$(NONBLOCKING_JENKINS_JOBS)
+        - --jenkins-jobs=$(JENKINS_JOBS)
+        - --presubmit-jobs=$(PRESUBMIT_JOBS)
+        - --weak-stable-jobs=$(WEAK_STABLE_JOBS)
+        - --do-not-merge-milestones=$(DO_NOT_MERGE_MILESTONES)
+        - --admin-port=$(ADMIN_PORT)
+        - --gcs-bucket=$(GCS_BUCKET)
+        - --gcs-logs-dir=$(GCS_LOGS_DIR)
+        - --pull-logs-dir=$(PULL_LOGS_DIR)
+        - --pull-key=$(PULL_KEY)
+        - --path-label-config=$(PATH_LABEL_CONFIG)
+        - --block-path-config=$(BLOCK_PATH_CONFIG)
+        - --repo-dir=$(REPO_DIR)
+        - --test-owners-csv=$(TEST_OWNERS_CSV)
+        - --number-of-old-test-results=$(NUMBER_OF_OLD_TEST_RESULTS)
+        - --fixes-issue-reassign=$(FIXES_ISSUE_REASSIGN)
+        - --blunderbuss-reassign=$(BLUNDERBUSS_REASSIGN)
+        - --generated-files-config=$(GENERATED_FILES_CONFIG)
+        - --chart-url=$(CHART_URL)
+        - --history-url=$(HISTORY_URL)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
+        env:
+          - name: HTTP_CACHE_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.http-cache-dir
+          - name: ORGANIZATION
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.organization
+          - name: PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.project
+          - name: PR_MUNGERS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.pr-mungers
+          - name: STATE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.state
+          - name: TOKEN_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.token-file
+          - name: REQUIRED_RETEST_CONTEXTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: test-options.required-retest-contexts
+          - name: REQUIRED_CONTEXTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.required-contexts
+          - name: NONBLOCKING_JENKINS_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.nonblocking-jenkins-jobs
+          - name: JENKINS_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.jenkins-jobs
+          - name: PRESUBMIT_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.presubmit-jobs
+          - name: WEAK_STABLE_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.weak-stable-jobs
+          - name: DO_NOT_MERGE_MILESTONES
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.do-not-merge-milestones
+          - name: ADMIN_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.admin-port
+          - name: GCS_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.gcs-bucket
+          - name: GCS_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.gcs-logs-dir
+          - name: PULL_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.pull-logs-dir
+          - name: PULL_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.pull-key
+          - name: PATH_LABEL_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: path-label.path-label-config
+          - name: BLOCK_PATH_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: block-path.block-path-config
+          - name: REPO_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gitrepo.repo-dir
+          - name: TEST_OWNERS_CSV
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: flake-manager.test-owners-csv
+          - name: NUMBER_OF_OLD_TEST_RESULTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: old-test-getter.number-of-old-test-results
+          - name: FIXES_ISSUE_REASSIGN
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: assign-fixes.fixes-issue-reassign
+          - name: BLUNDERBUSS_REASSIGN
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: blunderbuss.blunderbuss-reassign
+          - name: GENERATED_FILES_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: size.generated-files-config
+          - name: CHART_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.chart-url
+          - name: HISTORY_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.history-url
         ports:
         - name: status
           containerPort: 8080
@@ -62,9 +203,9 @@ spec:
       volumes:
       - name: secret-volume
         secret:
-          secretName: github-token
+          secretName: @@-github-token
       - name: repo
         emptyDir: {}
       - name: cache-volume
         persistentVolumeClaim:
-          claimName: submit-queue-cache
+          claimName: @@-cache

@@ -1,30 +1,82 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: cherrypick
+  name: @@-cherrypick
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: cherrypick
+        target-repo: @@
     spec:
       containers:
       - name: cherrypick
         command:
         - /mungegithub
-        - --token-file=/etc/secret-volume/token
-        - --organization=kubernetes
-        - --project=kubernetes
-        - --pr-mungers=cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue
-        - --state=all
-        - --labels=cherrypick-candidate
-        - --http-cache-dir=/cache/httpcache
         - --dry-run=true
-        - --admin-port=9999
-        - --repo-dir=/gitrepo
-        - --period=3m
-        image: docker.io/eparis/cherrypick:2016-03-14-7fb1dae
+        - --token-file=$(TOKEN_FILE)
+        - --organization=$(ORGANIZATION)
+        - --project=$(PROJECT)
+        - --pr-mungers=$(PR_MUNGERS)
+        - --state=$(STATE)
+        - --labels=$(LABELS)
+        - --http-cache-dir=$(HTTP_CACHE_DIR)
+        - --admin-port=$(ADMIN_PORT)
+        - --repo-dir=$(REPO_DIR)
+        - --period=$(PERIOD)
+        image: gcr.io/google_containers/cherrypick:2016-03-14-7fb1dae
+        env:
+          - name: TOKEN_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.token-file
+          - name: ORGANIZATION
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.organization
+          - name: PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.project
+          - name: PR_MUNGERS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.pr-mungers
+          - name: STATE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.state
+          - name: LABELS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.labels
+          - name: HTTP_CACHE_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.http-cache-dir
+          - name: ADMIN_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: submit-queue.admin-port
+          - name: REPO_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: gitrepo.repo-dir
+          - name: PERIOD
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.period
         ports:
         - name: status
           containerPort: 8080

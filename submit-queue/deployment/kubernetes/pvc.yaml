@@ -1,7 +1,10 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: submit-queue-cache
+  labels:
+    app: submit-queue
+    target-repo: kubernetes
+  name: kubernetes-cache
 spec:
   accessModes:
     - ReadWriteOnce

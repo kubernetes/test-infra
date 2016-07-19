@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-sq-config
+data:
+  # basic config options.
+  config.http-cache-dir: /cache/httpcache
+  config.organization: kubernetes
+  config.project: kubernetes
+  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
+  config.state: open
+  config.token-file: /etc/secret-volume/token
+
+  # test-options feature options.
+  test-options.required-retest-contexts: "\"Jenkins GCE e2e\",\"Jenkins unit/integration\",\"Jenkins verification\",\"Jenkins GCE Node e2e\""
+
+  # submit-queue options.
+  submit-queue.required-contexts: "Jenkins GCE Node e2e"
+  submit-queue.nonblocking-jenkins-jobs: kubernetes-e2e-gke-staging,kubernetes-e2e-gke-staging-parallel,kubernetes-e2e-gce-serial,kubernetes-e2e-gke-serial,kubernetes-e2e-gke-test,kubernetes-e2e-gce-examples,kubernetes-e2e-gce-federation,kubernetes-e2e-gce-scalability,kubernetes-soak-continuous-e2e-gce,kubernetes-soak-continuous-e2e-gke
+  submit-queue.jenkins-jobs: kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gce,kubernetes-e2e-gce-slow,kubernetes-e2e-gke,kubernetes-e2e-gke-slow,kubernetes-kubemark-5-gce
+  submit-queue.presubmit-jobs: kubernetes-pull-build-test-e2e-gce
+  submit-queue.weak-stable-jobs: kubernetes-kubemark-500-gce
+  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.admin-port: "9999"
+  submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
+  submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
+
+  # options used by the GCS feature.
+  gcs.gcs-bucket: kubernetes-jenkins
+  gcs.gcs-logs-dir: logs
+  gcs.pull-logs-dir: pr-logs
+  gcs.pull-key: pull
+
+  # munger specific options.
+  path-label.path-label-config: path-label.txt
+  block-path.block-path-config: block-path.yaml
+  gitrepo.repo-dir: /gitrepos
+  flake-manager.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
+  old-test-getter.number-of-old-test-results: "5"
+  assign-fixes.fixes-issue-reassign: "false"
+  blunderbuss.blunderbuss-reassign: "false"
+  size.generated-files-config: generated-files.txt
+
+

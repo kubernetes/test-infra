@@ -3,7 +3,8 @@ kind: PersistentVolume
 metadata:
   labels:
     app: submit-queue
-  name: submit-queue-cache
+    target-repo: kubernetes
+  name: kubernetes-cache
 spec:
   capacity:
     storage: 10Gi
@@ -11,5 +12,5 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   gcePersistentDisk:
-    pdName: submit-queue
+    pdName: kubernetes-submit-queue
     fsType: ext4

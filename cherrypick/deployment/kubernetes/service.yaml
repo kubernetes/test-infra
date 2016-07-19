@@ -3,6 +3,7 @@ kind: Service
 metadata:
   labels:
     app: cherrypick
+    target-repo: kubernetes
   name: cherrypick-status
   namespace: default
 spec:
