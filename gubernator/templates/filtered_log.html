@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <link rel="stylesheet" href="/static/style.css" />
 
-<title>{{job}} #{{build}} Kubelet Log</title>
+<title>{{job}} #{{build}} {{log_file}}</title>
 <script src="/static/build.js"></script>
 <div id="header" class="container">
 <img src="/static/logo.svg">
-<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> Kubelet Log</h1>
+<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
 </div>
 <div id="failures">
 <h3>Lines from {{log_file}} containing pod {{pod}}</h3>
