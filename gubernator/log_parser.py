@@ -26,7 +26,7 @@ import regex
     
 def hilight(line, hilight_words):
     # Join all the words that need to be bolded into one regex
-    words_re = re.compile(r'\b(%s)\b' % '|'.join(hilight_words), re.IGNORECASE)     
+    words_re = regex.combine_wordsRE(hilight_words)
     line = words_re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
@@ -78,6 +78,12 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict
 
 
 def make_dict(data, pod_re):
+    """
+    Given the kubelet log file and the failed pod name, returns a dictionary
+    containing the namespace and UID associated with the pod.
+
+    This dictionary is lifted from the line with the ObjectReference
+    """
     lines = unicode(jinja2.escape(data)).split('\n')
     for line in lines:
         if pod_re.search(line):

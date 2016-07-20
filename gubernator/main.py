@@ -342,7 +342,7 @@ class NodeLogHandler(RenderingHandler):
             result = parse_log_file(filename, pod_name, filters, objref_dict=objref_dict)
 
         if filename is None or result is None:
-            self.render('node_404.html', {"build_dir": build_dir,
+            self.render('node_404.html', {"build_dir": build_dir, "log_file": log_file,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return

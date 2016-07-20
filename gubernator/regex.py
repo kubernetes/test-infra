@@ -38,3 +38,6 @@ def key_to_string(k, objref_dict):
 # Replace &#34; with \"
 def fix_quotes(objref_dict):
 	return re.sub(r'&#34;', '\"', objref_dict)
+
+def combine_wordsRE(words_list):
+	return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)

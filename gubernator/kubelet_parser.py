@@ -45,7 +45,7 @@ def parse(lines, error_re, hilight_words, filters, objref_dict):
         namespace = objref_dict["Namespace"]
         hilight_words.append(namespace)
 
-    words_re = re.compile(r'\b(%s)\b' % '|'.join(hilight_words), re.IGNORECASE)     
+    words_re = regex.combine_wordsRE(hilight_words)
 
     for n, line in enumerate(lines):
         if words_re.search(line):

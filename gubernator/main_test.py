@@ -236,7 +236,7 @@ class AppTest(unittest.TestCase, TestMixin):
         """Test that a missing kubelet log gives a 404."""
         build_dir = self.BUILD_DIR + 'nodelog?pod=abc'
         response = app.get('/build' + build_dir, status=404)
-        self.assertIn('Missing kubelet.log', response)
+        self.assertIn('Unable to find', response)
 
     def test_nodelog_kubelet(self):
         """Test for a kubelet file."""
