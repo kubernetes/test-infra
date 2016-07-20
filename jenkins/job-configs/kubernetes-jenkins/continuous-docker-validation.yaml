@@ -17,26 +17,17 @@
                 if(dockerVersionMatcher?.matches()) manager.addShortText("<b>Docker Version: " + dockerVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
 
 
-# Template for the continuous Docker validation jobs.
+# Template for the continuous e2e Docker validation jobs.
 - job-template:
-    name: 'continuous-docker-validation-{os-distro}'
-    node: '{jenkins_node}'
-    triggers:
-        - timed: '@daily'
+    name: 'continuous-e2e-docker-validation-{os-distro}'
+    node: '{jenkins_node}' 
     description: '{description} Test owner: {test-owner}.'
     disabled: '{obj:disable_job}'
     properties:
         - build-discarder:
             days-to-keep: 7
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="8"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    triggers:
+        - timed: '@daily'
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -57,6 +48,15 @@
         - description-setter:
             regexp: KUBE_GCE_MASTER_IMAGE=(.*)
         - version-printer
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+    provider-env: |
+        export KUBERNETES_PROVIDER="gce"
+        export E2E_MIN_STARTUP_PODS="8"
+        export KUBE_GCE_ZONE="us-central1-f"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
+        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
         - shell: |
             {provider-env}
@@ -76,10 +76,73 @@
     test-owner: 'dchen1107'
     emails: 'dawnchen@google.com'
 
+# Template for the continuous node e2e Docker validation jobs.
+- job-template:
+    name: 'continuous-node-e2e-docker-validation-{os-distro}'
+    description: '{description} Test Owner: {test-owner}.'
+    disabled: '{obj:disable_job}'
+    node: 'node'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    repoName: 'kubernetes/kubernetes'
+    gitbasedir: 'k8s.io/kubernetes'
+    scm:
+        - git:
+            url: 'https://github.com/{repoName}'
+            browser: githubweb
+            browser-url: 'https://github.com/{repoName}'
+            branches:
+                - 'master'
+            skip-tag: true
+            basedir: 'go/src/{gitbasedir}'
+    triggers:
+        - pollscm:
+            cron: 'H H/6 * * *'
+        - timed: '@daily'
+    publishers:
+        - claim-build
+        - junit-publisher-fully-specified:
+                allow-empty-results: true
+        - gcs-uploader
+        - log-parser
+        - email-ext:
+            recipients: '{emails}'
+        - gcs-uploader
+        - version-printer
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - timeout:
+            timeout: 90
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+    go-env: |
+        export GOROOT=/usr/local/go
+        export GOPATH=$WORKSPACE/go
+        export PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-docker-validation.properties'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            set -x
+            {go-env}
+            cd go/src/{gitbasedir}
+            {shell}
+
+    # Template defaults. Can be overriden in job definitions.
+    test-owner: 'random-liu'
+    emails: 'lantaol@google.com'
+
 - project:
     name: continuous-docker-validation
-    os-distro:
-        - 'gci': # continuous-docker-validation-gci
+    jobs:
+        - 'continuous-e2e-docker-validation-{os-distro}':
+            os-distro: 'gci'
             description: 'Runs the default e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
             timeout: 50
             job-env: |
@@ -87,5 +150,7 @@
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-docker-validation-gci"
                 export JENKINS_GCI_IMAGE_FAMILY="gci-canary-test"
-    jobs:
-        - 'continuous-docker-validation-{os-distro}'
+        - 'continuous-node-e2e-docker-validation-{os-distro}':
+            os-distro: 'gci'
+            description: 'Runs the node e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
+
