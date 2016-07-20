@@ -187,25 +187,25 @@ def build_details(build_dir):
     return started, finished, failures, build_log
 
 
-@memcache_memoize('kubelet-log://', expires=60*60*4)
-def find_kubelet_log((build_dir, junit)):
+@memcache_memoize('log-file://', expires=60*60*4)
+def find_log((build_dir, junit, log_file)):
     tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
             if '/tmp-node' in f.filename]
     for folder in tmps:
         filenames = [f.filename for f in gcs_ls(folder)]
         if folder + junit in filenames:
-            kubelet_path = folder + 'kubelet.log'
-            if kubelet_path in filenames:
-                return kubelet_path
+            path = folder + log_file
+            if path in filenames:
+                return path
 
 
-def parse_kubelet(kubelet_filename, pod, filters):
-    kubelet_log = gcs_async.read(kubelet_filename).get_result()
-    if kubelet_log is None:
+def parse_log_file(log_filename, pod, filters):
+    log = gcs_async.read(log_filename).get_result()
+    if log is None:
         return None
     pod_re = regex.wordRE(pod)
-    return log_parser.digest(kubelet_log.decode('utf8',
-        'replace'), error_re=pod_re, filters=filters)
+    return log_parser.digest(log.decode('utf8','replace'), 
+        error_re=pod_re, filters=filters)
 
 
 @memcache_memoize('pr-details://', expires=60 * 3)
@@ -316,23 +316,27 @@ class NodeLogHandler(RenderingHandler):
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
+        log_file = self.request.get("logfile")
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         uid = bool(self.request.get("UID"))
         namespace = bool(self.request.get("Namespace"))
         filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
-        kubelet_filename = find_kubelet_log((build_dir, junit))
+        filename = find_log((build_dir, junit, log_file))
+
         result = None
-        if kubelet_filename:
-            result = parse_kubelet(kubelet_filename, pod_name, filters)
-        if kubelet_filename is None or result is None:
+        if filename:
+            result = parse_log_file(filename, pod_name, filters)
+        if filename is None or result is None:
             self.render('node_404.html', {"build_dir": build_dir,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return
-        self.render('kubelet.html', dict(
-            job_dir=job_dir, build_dir=build_dir,kubelet_log=result, job=job,
-            build=build, pod=pod_name, junit=junit, uid=uid, namespace=namespace))
+
+        self.render('filtered_log.html', dict(
+            job_dir=job_dir, build_dir=build_dir, log=result, job=job,
+            build=build, log_file=log_file, pod=pod_name, junit=junit, uid=uid,
+            namespace=namespace))
 
 
 class JobListHandler(RenderingHandler):

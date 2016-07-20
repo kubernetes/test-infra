@@ -26,6 +26,7 @@
 % if failures
 <h2>Test Failures</h2>
 % for name, time, text, filename in failures
+<hr>
 <h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 <pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 % if text
@@ -35,8 +36,8 @@
 % endif
 % set pod_name = text|parse_pod_name
 % if pod_name
-<h4>Mentions in kubelet.log file of <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}">{{pod_name}}</a></h4>
-<hr>
+<h4>Mentions in kubelet.log file of <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?logfile=kubelet.log&pod={{pod_name}}&junit={{filename|basename}}">{{pod_name}}</a></h4>
+<h4>Mentions in kube-apiserver.log file of <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?logfile=kube-apiserver.log&pod={{pod_name}}&junit={{filename|basename}}">{{pod_name}}</a></h4>
 % endif
 % endfor
 % else
