@@ -319,7 +319,11 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 	} else if closeIn <= startWarning {
 		checkAndWarn(obj, inactiveFor, closeIn)
 	} else {
-		// Pull-request is active. Do nothing
+		// Pull-request is active. Remove previous potential warning
+		comment := findLatestWarningComment(obj)
+		if comment != nil {
+			obj.DeleteComment(comment)
+		}
 	}
 }
 
