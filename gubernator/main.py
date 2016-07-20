@@ -350,8 +350,8 @@ class NodeLogHandler(RenderingHandler):
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, log=result, job=job,
             build=build, full_path=filename, log_file=log_file,
-            pod=pod_name, junit=junit, uid=uid,
-            namespace=namespace, wrap=wrap))
+            pod=pod_name, junit=junit, uid=uid, namespace=namespace,
+            wrap=wrap, objref_dict=objref_dict))
 
 
 class JobListHandler(RenderingHandler):

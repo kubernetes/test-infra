@@ -15,8 +15,8 @@
 		<hr>
 		<input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on
 		<hr>
-		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID</label><br>
-		<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace</label>
+		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID: <b>{{objref_dict["UID"]}}</b></label><br>
+		<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace: <b>{{objref_dict["Namespace"]}}</b></label>
 	</form>
 	% if log
 		{% if wrap %}<pre>{% else %}<pre class="nowrap">{% endif %}
