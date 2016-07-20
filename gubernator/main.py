@@ -176,6 +176,7 @@ def build_details(build_dir):
         if junit is None:
             continue
         failures.extend(parse_junit(junit, junit_futures[future]))
+    failures.sort()
 
     build_log = None
     if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
@@ -335,7 +336,8 @@ class NodeLogHandler(RenderingHandler):
 
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, log=result, job=job,
-            build=build, log_file=log_file, pod=pod_name, junit=junit, uid=uid,
+            build=build, full_path=filename, log_file=log_file,
+            pod=pod_name, junit=junit, uid=uid,
             namespace=namespace))
 
 
