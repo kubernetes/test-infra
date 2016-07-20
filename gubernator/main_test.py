@@ -23,6 +23,7 @@ To run these tests:
 
 import json
 import os
+import re
 import unittest
 import urlparse
 
@@ -229,7 +230,7 @@ class AppTest(unittest.TestCase, TestMixin):
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
         response = app.get('/build' + nodelog_url)
-        self.assertIn('Lines from kubelet.log', response)
+        self.assertRegexpMatches(str(response), re.compile(r'Lines from.*kubelet.log'))
 
 
 class PRTest(unittest.TestCase, TestMixin):

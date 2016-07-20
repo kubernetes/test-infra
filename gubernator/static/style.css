@@ -94,3 +94,6 @@ td.pr-build-unset {
 td.pr-build-unstable {
     background-color: yellow;
 }
+label:hover {
+    cursor: pointer;
+}
