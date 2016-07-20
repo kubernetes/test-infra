@@ -40,7 +40,7 @@ const (
 
 %s
 You can add 'keep-open' label to prevent this from happening again, or add a comment to keep it open another 90 days`
-	warningComment = `This PR hasn't been active in %s. It will be closed in %s.
+	warningComment = `This PR hasn't been active in %s. It will be closed in %s (%s).
 
 %s
 You can add 'keep-open' label to prevent this from happening, or add a comment to keep it open another 90 days`
@@ -270,10 +270,13 @@ func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, clos
 		mention = "cc " + mention + "\n"
 	}
 
+	closeDate := time.Now().Add(closeIn).Format("Jan 2, 2006")
+
 	obj.WriteComment(fmt.Sprintf(
 		warningComment,
 		durationToDays(inactiveFor),
 		durationToDays(closeIn),
+		closeDate,
 		mention,
 	))
 }
