@@ -17,7 +17,7 @@ spec:
         - --organization=kubernetes
         - --project=kubernetes
         - --state=open
-        - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr
+        - --pr-mungers=blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
         - --dry-run=true
         - --required-contexts="Jenkins GCE Node e2e"
         - --http-cache-dir=/cache/httpcache
