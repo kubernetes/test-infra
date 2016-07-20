@@ -457,7 +457,6 @@
     name: 'kubernetes-e2e-{provider}-{version-old}-{version-new}'
     trigger-job: 'kubernetes-build'
     test-owner: 'ihmccreery'
-    emails: 'ihmccreery@google.com'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
@@ -576,7 +575,6 @@
     name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
     trigger-job: 'kubernetes-build'
     test-owner: 'ihmccreery'
-    emails: 'ihmccreery@google.com'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-cluster}-{version-client}-kubectl-skew'
