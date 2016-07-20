@@ -13,7 +13,8 @@
 <form method="get" onchange="submit()">
 <input type="hidden" name="pod" value="{{pod}}">
 <input type="hidden" name="junit" value="{{junit}}">
-<h4>Highlight Pod UID <input type="checkbox" name="UID"{% if uid %} checked{% endif %}></h4>
+<h4>Highlight Pod UID <input type="checkbox" name="UID"{% if uid %} checked{% endif %}>
+Highlight Namespace <input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}></h4>
 </form>
 <pre>
 {{kubelet_log | safe}}
