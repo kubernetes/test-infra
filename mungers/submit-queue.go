@@ -135,6 +135,16 @@ type submitQueueInterruptedObject struct {
 	interruptedMergeBaseSHA string
 }
 
+// Contains metadata about this instance of the submit queue such as URLs.
+// Consumed by the template system.
+type submitQueueMetadata struct {
+	ProjectName string
+
+	ChartUrl    string
+	HistoryUrl  string
+	RepoPullUrl string
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -184,6 +194,7 @@ type SubmitQueue struct {
 	retestsAvoided int32 // Increments whenever we skip due to head not changing.
 
 	health        submitQueueHealth
+	metadata      submitQueueMetadata
 	healthHistory []healthRecord
 
 	emergencyMergeStopFlag int32
@@ -377,7 +388,11 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	glog.Infof("admin-port: %#v\n", sq.adminPort)
 	glog.Infof("retest-body: %#v\n", sq.retestBody)
 	glog.Infof("fake-e2e: %#v\n", sq.FakeE2E)
+	glog.Infof("chart-url: %#v\n", sq.metadata.ChartUrl)
+	glog.Infof("history-url: %#v\n", sq.metadata.HistoryUrl)
 
+	sq.metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
+	sq.metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
 
 	// TODO: This is not how injection for tests should work.
@@ -420,6 +435,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/health.svg", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealthSVG)))
 		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
 		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
+		http.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
@@ -479,6 +495,8 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	cmd.Flags().IntVar(&sq.adminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
+	cmd.Flags().StringVar(&sq.metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
+	cmd.Flags().StringVar(&sq.metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 }
 
 // Hold the lock
@@ -769,6 +787,12 @@ func (sq *SubmitQueue) getHealth() []byte {
 	sq.Lock()
 	defer sq.Unlock()
 	return sq.marshal(sq.health)
+}
+
+func (sq *SubmitQueue) getMetaData() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.metadata)
 }
 
 const (
@@ -1223,6 +1247,11 @@ func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) 
 func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
 	data := sq.e2e.Flakes()
 	sq.serve(sq.prettyMarshal(data), res, req)
+}
+
+func (sq *SubmitQueue) serveMetadata(res http.ResponseWriter, req *http.Request) {
+	data := sq.getMetaData()
+	sq.serve(data, res, req)
 }
 
 func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {

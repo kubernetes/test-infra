@@ -11,6 +11,7 @@ function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
   self.health = {};
+  self.metadata = {};
   self.testResults = {};
   self.lastMergeTime = Date();
   self.prQuerySearch = prQuerySearch;
@@ -54,6 +55,9 @@ function SQCntl(dataService, $interval, $location) {
           break;
       }
   }
+
+  // Populate data about the submit-queue instance.
+  refreshMetadata();
 
   loadTab(self.selected);
 
@@ -121,6 +125,15 @@ function SQCntl(dataService, $interval, $location) {
       self.prSearchTerms = getPRSearchTerms();
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
+    });
+  }
+
+  function refreshMetadata() {
+    dataService.getData('metadata').then(function successCallback(response) {
+      var metadata = response.data;
+      self.metadata = metadata;
+    }, function errorCallback(response) {
+      console.log("Error: Getting MetaData for SubmitQueue");
     });
   }
 

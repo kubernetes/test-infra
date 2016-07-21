@@ -41,6 +41,8 @@ spec:
         - --gcs-logs-dir=logs
         - --pull-logs-dir=pr-logs
         - --pull-key=pull
+        - --chart-url=http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
+        - --history-url=http://storage.googleapis.com/kubernetes-test-history/static/index.html
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         ports:
         - name: status
