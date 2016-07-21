@@ -102,7 +102,7 @@ func TestIsJenkinsTestComment(t *testing.T) {
 	}
 }
 
-func comment(id int, body string) githubapi.IssueComment {
+func comment(id int, body string) *githubapi.IssueComment {
 	return github_test.Comment(id, jenkinsBotName, time.Now(), passComment)
 }
 
@@ -111,33 +111,33 @@ func TestJenkinsStaleComments(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		comments []githubapi.IssueComment
-		expected []githubapi.IssueComment
+		comments []*githubapi.IssueComment
+		expected []*githubapi.IssueComment
 	}{
 		{
 			name: "single pass",
-			comments: []githubapi.IssueComment{
+			comments: []*githubapi.IssueComment{
 				comment(1, passComment),
 			},
 		},
 		{
 			name: "double pass",
-			comments: []githubapi.IssueComment{
+			comments: []*githubapi.IssueComment{
 				comment(1, passComment),
 				comment(2, passComment),
 			},
-			expected: []githubapi.IssueComment{
+			expected: []*githubapi.IssueComment{
 				comment(1, passComment),
 			},
 		},
 		{
 			name: "pass fail pass",
-			comments: []githubapi.IssueComment{
+			comments: []*githubapi.IssueComment{
 				comment(1, passComment),
 				comment(2, failComment),
 				comment(3, passComment),
 			},
-			expected: []githubapi.IssueComment{
+			expected: []*githubapi.IssueComment{
 				comment(1, passComment),
 				comment(2, failComment),
 			},

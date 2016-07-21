@@ -41,8 +41,8 @@ func boolPtr(val bool) *bool       { return &val }
 func timePtr(val time.Time) *time.Time { return &val }
 
 // Comment is a helper to create a valid-ish comment for testing
-func Comment(id int, login string, createdAt time.Time, body string) github.IssueComment {
-	comment := github.IssueComment{
+func Comment(id int, login string, createdAt time.Time, body string) *github.IssueComment {
+	return &github.IssueComment{
 		ID:        &id,
 		Body:      &body,
 		CreatedAt: &createdAt,
@@ -50,7 +50,6 @@ func Comment(id int, login string, createdAt time.Time, body string) github.Issu
 			Login: &login,
 		},
 	}
-	return comment
 }
 
 // PullRequest returns a filled out github.PullRequest
@@ -116,11 +115,11 @@ type LabelTime struct {
 
 // Events returns a slice of github.IssueEvent where the specified labels were
 // applied at the specified times
-func Events(labels []LabelTime) []github.IssueEvent {
+func Events(labels []LabelTime) []*github.IssueEvent {
 	// putting it in a map means ordering is non-deterministic
-	eMap := map[int]github.IssueEvent{}
+	eMap := map[int]*github.IssueEvent{}
 	for i, l := range labels {
-		event := github.IssueEvent{
+		event := &github.IssueEvent{
 			Event: stringPtr("labeled"),
 			Label: &github.Label{
 				Name: stringPtr(l.Label),
@@ -132,7 +131,7 @@ func Events(labels []LabelTime) []github.IssueEvent {
 		}
 		eMap[i] = event
 	}
-	out := []github.IssueEvent{}
+	out := []*github.IssueEvent{}
 	for _, e := range eMap {
 		out = append(out, e)
 	}
@@ -151,19 +150,19 @@ func Commit(sha string, t int64) *github.Commit {
 
 // Commits returns an array of github.RepositoryCommits. The first commit
 // will have happened at time `time`, the next commit `time + 1`, etc
-func Commits(num int, time int64) []github.RepositoryCommit {
+func Commits(num int, time int64) []*github.RepositoryCommit {
 	// putting it in a map means ordering is non-deterministic
-	cMap := map[int]github.RepositoryCommit{}
+	cMap := map[int]*github.RepositoryCommit{}
 	for i := 0; i < num; i++ {
 		sha := fmt.Sprintf("mysha%d", i)
 		t := time + int64(i)
-		commit := github.RepositoryCommit{
+		commit := &github.RepositoryCommit{
 			SHA:    stringPtr(sha),
 			Commit: Commit(sha, t),
 		}
 		cMap[i] = commit
 	}
-	out := []github.RepositoryCommit{}
+	out := []*github.RepositoryCommit{}
 	for _, c := range cMap {
 		out = append(out, c)
 	}
@@ -248,9 +247,9 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 			data, err = json.Marshal(thing)
 		case *github.PullRequest:
 			data, err = json.Marshal(thing)
-		case []github.IssueEvent:
+		case []*github.IssueEvent:
 			data, err = json.Marshal(thing)
-		case []github.RepositoryCommit:
+		case []*github.RepositoryCommit:
 			data, err = json.Marshal(thing)
 		case github.RepositoryCommit:
 			data, err = json.Marshal(thing)
@@ -258,7 +257,7 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 			data, err = json.Marshal(thing)
 		case *github.CombinedStatus:
 			data, err = json.Marshal(thing)
-		case []github.User:
+		case []*github.User:
 			data, err = json.Marshal(thing)
 		}
 		if err != nil {
@@ -275,7 +274,7 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 // InitServer will return a github.Client which will talk to httptest.Server,
 // to retrieve information from the http.ServeMux. If an issue, pr, events, or
 // commits are supplied it will repond with those on o/r/
-func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, events []github.IssueEvent, commits []github.RepositoryCommit, status *github.CombinedStatus, masterCommit *github.RepositoryCommit) (*github.Client, *httptest.Server, *http.ServeMux) {
+func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, events []*github.IssueEvent, commits []*github.RepositoryCommit, status *github.CombinedStatus, masterCommit *github.RepositoryCommit) (*github.Client, *httptest.Server, *http.ServeMux) {
 	// test server
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)

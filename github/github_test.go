@@ -352,7 +352,7 @@ func TestComputeStatus(t *testing.T) {
 
 func TestGetLastModified(t *testing.T) {
 	tests := []struct {
-		commits      []github.RepositoryCommit
+		commits      []*github.RepositoryCommit
 		expectedTime *time.Time
 	}{
 		{
@@ -371,7 +371,7 @@ func TestGetLastModified(t *testing.T) {
 		},
 		{
 			//  We can't represent the same time in 2 commits using github_test.Commits()
-			commits: []github.RepositoryCommit{
+			commits: []*github.RepositoryCommit{
 				{
 					SHA: stringPtr("mysha1"),
 					Commit: &github.Commit{

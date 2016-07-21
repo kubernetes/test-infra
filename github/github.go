@@ -260,11 +260,11 @@ type MungeObject struct {
 	config      *Config
 	Issue       *github.Issue
 	pr          *github.PullRequest
-	commits     []github.RepositoryCommit
-	events      []github.IssueEvent
-	comments    []github.IssueComment
-	prComments  []github.PullRequestComment
-	commitFiles []github.CommitFile
+	commits     []*github.RepositoryCommit
+	events      []*github.IssueEvent
+	comments    []*github.IssueComment
+	prComments  []*github.PullRequestComment
+	commitFiles []*github.CommitFile
 	Annotations map[string]string //annotations are things you can set yourself.
 }
 
@@ -283,7 +283,7 @@ type DebugStats struct {
 // TestObject should NEVER be used outside of _test.go code. It creates a
 // MungeObject with the given fields. Normally these should be filled in lazily
 // as needed
-func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []github.RepositoryCommit, events []github.IssueEvent) *MungeObject {
+func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []*github.RepositoryCommit, events []*github.IssueEvent) *MungeObject {
 	return &MungeObject{
 		config:      config,
 		Issue:       issue,
@@ -497,7 +497,7 @@ func (obj *MungeObject) Refresh() error {
 }
 
 // ListMilestones will return all milestones of the given `state`
-func (config *Config) ListMilestones(state string) []github.Milestone {
+func (config *Config) ListMilestones(state string) []*github.Milestone {
 	listopts := github.MilestoneListOptions{
 		State: state,
 	}
@@ -600,10 +600,10 @@ func (obj *MungeObject) LastModifiedTime() *time.Time {
 // labelEvent returns the most recent event where the given label was added to an issue
 func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 	var labelTime *time.Time
-	var out github.IssueEvent
+	var out *github.IssueEvent
 	events, err := obj.GetEvents()
 	if err != nil {
-		return &out
+		return out
 	}
 	index := 0
 	for i, event := range events {
@@ -617,7 +617,7 @@ func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 	}
 	// Want this information next time we hit the bug where it can't find the most recent LGTM label.
 	glog.Infof("%v labelEvent: searched %v events for label %v, found at index %v", *obj.Issue.Number, len(events), label, index)
-	return &out
+	return out
 }
 
 // LabelTime returns the last time the request label was added to an issue.
@@ -787,7 +787,7 @@ func (obj *MungeObject) SetMilestone(title string) error {
 			continue
 		}
 		if *m.Title == title {
-			milestone = &m
+			milestone = m
 			break
 		}
 	}
@@ -877,9 +877,9 @@ func (obj *MungeObject) Priority() int {
 // MungeFunction is the type that must be implemented and passed to ForEachIssueDo
 type MungeFunction func(*MungeObject) error
 
-func (config *Config) fetchAllCollaborators() ([]github.User, error) {
+func (config *Config) fetchAllCollaborators() ([]*github.User, error) {
 	page := 1
-	var result []github.User
+	var result []*github.User
 	for {
 		glog.V(4).Infof("Fetching page %d of all users", page)
 		listOpts := &github.ListOptions{PerPage: 100, Page: page}
@@ -901,9 +901,9 @@ func (config *Config) fetchAllCollaborators() ([]github.User, error) {
 // access. The second set is the specific set of user with pull access. If the
 // repo is public all users will have pull access, but some with have it
 // explicitly
-func (config *Config) UsersWithAccess() ([]github.User, []github.User, error) {
-	pushUsers := []github.User{}
-	pullUsers := []github.User{}
+func (config *Config) UsersWithAccess() ([]*github.User, []*github.User, error) {
+	pushUsers := []*github.User{}
+	pullUsers := []*github.User{}
 
 	users, err := config.fetchAllCollaborators()
 	if err != nil {
@@ -951,10 +951,10 @@ func (obj *MungeObject) IsPR() bool {
 }
 
 // GetEvents returns a list of all events for a given pr.
-func (obj *MungeObject) GetEvents() ([]github.IssueEvent, error) {
+func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, error) {
 	config := obj.config
 	prNum := *obj.Issue.Number
-	events := []github.IssueEvent{}
+	events := []*github.IssueEvent{}
 	page := 1
 	// Try to work around not finding events--suspect some cache invalidation bug when the number of pages changes.
 	tryNextPageAnyway := false
@@ -1192,12 +1192,12 @@ func (obj *MungeObject) WaitForNotPending(requiredContexts []string) error {
 }
 
 // GetCommits returns all of the commits for a given PR
-func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
+func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, error) {
 	if obj.commits != nil {
 		return obj.commits, nil
 	}
 	config := obj.config
-	commits := []github.RepositoryCommit{}
+	commits := []*github.RepositoryCommit{}
 	page := 0
 	for {
 		commitsPage, response, err := config.client.PullRequests.ListCommits(config.Org, config.Project, *obj.Issue.Number, &github.ListOptions{PerPage: 100, Page: page})
@@ -1213,7 +1213,7 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 		page++
 	}
 
-	filledCommits := []github.RepositoryCommit{}
+	filledCommits := []*github.RepositoryCommit{}
 	for _, c := range commits {
 		if c.SHA == nil {
 			glog.Errorf("Invalid Repository Commit: %v", c)
@@ -1225,14 +1225,14 @@ func (obj *MungeObject) GetCommits() ([]github.RepositoryCommit, error) {
 			glog.Errorf("Can't load commit %s %s %s: %v", config.Org, config.Project, *c.SHA, err)
 			continue
 		}
-		filledCommits = append(filledCommits, *commit)
+		filledCommits = append(filledCommits, commit)
 	}
 	obj.commits = filledCommits
 	return filledCommits, nil
 }
 
 // ListFiles returns all changed files in a pull-request
-func (obj *MungeObject) ListFiles() ([]github.CommitFile, error) {
+func (obj *MungeObject) ListFiles() ([]*github.CommitFile, error) {
 	if obj.commitFiles != nil {
 		return obj.commitFiles, nil
 	}
@@ -1243,7 +1243,7 @@ func (obj *MungeObject) ListFiles() ([]github.CommitFile, error) {
 	}
 
 	prNum := *pr.Number
-	allFiles := []github.CommitFile{}
+	allFiles := []*github.CommitFile{}
 
 	listOpts := &github.ListOptions{}
 
@@ -1457,7 +1457,7 @@ func (obj *MungeObject) MergePR(who string) error {
 		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, issueBody)
 	}
 
-	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody)
+	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody, nil)
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates
 	// we will only get the bellow error if we provided a particular sha to merge PUT. We aren't doing that
@@ -1467,7 +1467,7 @@ func (obj *MungeObject) MergePR(who string) error {
 	// then merge this PR, so try again.
 	if err != nil && strings.Contains(err.Error(), "branch was modified. Review and try the merge again.") {
 		if mergeable, _ := obj.IsMergeable(); mergeable {
-			_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody)
+			_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody, nil)
 		}
 	}
 	if err != nil {
@@ -1498,7 +1498,7 @@ func (obj *MungeObject) GetPRFixesList() []int {
 }
 
 // ListReviewComments returns all review (diff) comments for the PR in question
-func (obj *MungeObject) ListReviewComments() ([]github.PullRequestComment, error) {
+func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, error) {
 	if obj.prComments != nil {
 		return obj.prComments, nil
 	}
@@ -1508,7 +1508,7 @@ func (obj *MungeObject) ListReviewComments() ([]github.PullRequestComment, error
 		return nil, err
 	}
 	prNum := *pr.Number
-	allComments := []github.PullRequestComment{}
+	allComments := []*github.PullRequestComment{}
 
 	listOpts := &github.PullRequestListCommentsOptions{}
 
@@ -1533,10 +1533,10 @@ func (obj *MungeObject) ListReviewComments() ([]github.PullRequestComment, error
 }
 
 // ListComments returns all comments for the issue/PR in question
-func (obj *MungeObject) ListComments() ([]github.IssueComment, error) {
+func (obj *MungeObject) ListComments() ([]*github.IssueComment, error) {
 	config := obj.config
 	issueNum := *obj.Issue.Number
-	allComments := []github.IssueComment{}
+	allComments := []*github.IssueComment{}
 
 	if obj.comments != nil {
 		return obj.comments, nil
@@ -1599,7 +1599,7 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 	if which != -1 {
 		// We do this crazy delete since users might be iterating over `range obj.comments`
 		// Make a completely new copy and leave their ranging alone.
-		temp := make([]github.IssueComment, len(obj.comments)-1)
+		temp := make([]*github.IssueComment, len(obj.comments)-1)
 		copy(temp, obj.comments[:which])
 		copy(temp[which:], obj.comments[which+1:])
 		obj.comments = temp
@@ -1706,7 +1706,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 			return err
 		}
 		for i := range issues {
-			issue := &issues[i]
+			issue := issues[i]
 			if issue.Number == nil {
 				glog.Infof("Skipping issue with no number, very strange")
 				continue
@@ -1757,7 +1757,7 @@ func (config *Config) ListAllIssues(listOpts *github.IssueListByRepoOptions) ([]
 			return nil, err
 		}
 		for i := range issues {
-			issue := &issues[i]
+			issue := issues[i]
 			if issue.Number == nil {
 				glog.Infof("Skipping issue with no number, very strange")
 				continue

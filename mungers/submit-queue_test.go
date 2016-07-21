@@ -111,7 +111,7 @@ func NoRetestIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, retestNotRequiredLabel}, true)
 }
 
-func OldLGTMEvents() []github.IssueEvent {
+func OldLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
 		{"bob", lgtmLabel, 6},
 		{"bob", lgtmLabel, 7},
@@ -119,7 +119,7 @@ func OldLGTMEvents() []github.IssueEvent {
 	})
 }
 
-func NewLGTMEvents() []github.IssueEvent {
+func NewLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
 		{"bob", lgtmLabel, 10},
 		{"bob", lgtmLabel, 11},
@@ -127,7 +127,7 @@ func NewLGTMEvents() []github.IssueEvent {
 	})
 }
 
-func OverlappingLGTMEvents() []github.IssueEvent {
+func OverlappingLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
 		{"bob", lgtmLabel, 8},
 		{"bob", lgtmLabel, 9},
@@ -137,7 +137,7 @@ func OverlappingLGTMEvents() []github.IssueEvent {
 
 // Commits returns a slice of github.RepositoryCommit of len==3 which
 // happened at times 7, 8, 9
-func Commits() []github.RepositoryCommit {
+func Commits() []*github.RepositoryCommit {
 	return github_test.Commits(3, 7)
 }
 
@@ -213,77 +213,77 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 func TestQueueOrder(t *testing.T) {
 	tests := []struct {
 		name     string
-		issues   []github.Issue
+		issues   []*github.Issue
 		expected []int
 	}{
 		{
 			name: "Just prNum",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, nil, true),
-				*github_test.Issue(someUserName, 3, nil, true),
-				*github_test.Issue(someUserName, 4, nil, true),
-				*github_test.Issue(someUserName, 5, nil, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, nil, true),
+				github_test.Issue(someUserName, 3, nil, true),
+				github_test.Issue(someUserName, 4, nil, true),
+				github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 3, 4, 5},
 		},
 		{
 			name: "With a priority label",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, []string{"priority/P1"}, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(someUserName, 5, nil, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, []string{"priority/P1"}, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{4, 2, 3, 5},
 		},
 		{
 			name: "With two priority labels",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(someUserName, 5, nil, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "With unrelated labels",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
-				*github_test.Issue(someUserName, 5, []string{lgtmLabel, "kind/new-api"}, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 5, []string{lgtmLabel, "kind/new-api"}, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "With invalid priority label",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P0", "priorty/bob"}, true),
-				*github_test.Issue(someUserName, 5, nil, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P0", "priorty/bob"}, true),
+				github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{2, 4, 3, 5},
 		},
 		{
 			name: "Unlabeled counts as P3",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, nil, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
-				*github_test.Issue(someUserName, 5, nil, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, nil, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				github_test.Issue(someUserName, 5, nil, true),
 			},
 			expected: []int{4, 2, 3, 5},
 		},
 		{
 			name: "retestNotRequiredLabel counts as P-negative 1",
-			issues: []github.Issue{
-				*github_test.Issue(someUserName, 2, nil, true),
-				*github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
-				*github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
-				*github_test.Issue(someUserName, 5, nil, true),
-				*github_test.Issue(someUserName, 6, []string{"priority/P3", retestNotRequiredLabel}, true),
+			issues: []*github.Issue{
+				github_test.Issue(someUserName, 2, nil, true),
+				github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				github_test.Issue(someUserName, 5, nil, true),
+				github_test.Issue(someUserName, 6, []string{"priority/P3", retestNotRequiredLabel}, true),
 			},
 			expected: []int{6, 4, 2, 3, 5},
 		},
@@ -296,7 +296,7 @@ func TestQueueOrder(t *testing.T) {
 		config.SetClient(client)
 		sq := getTestSQ(false, config, server)
 		for i := range test.issues {
-			issue := &test.issues[i]
+			issue := test.issues[i]
 			github_test.ServeIssue(t, mux, issue)
 
 			issueNum := *issue.Number
@@ -322,8 +322,8 @@ func TestQueueOrder(t *testing.T) {
 
 func TestValidateLGTMAfterPush(t *testing.T) {
 	tests := []struct {
-		issueEvents []github.IssueEvent
-		commits     []github.RepositoryCommit
+		issueEvents []*github.IssueEvent
+		commits     []*github.RepositoryCommit
 		shouldPass  bool
 	}{
 		{
@@ -433,8 +433,8 @@ func TestSubmitQueue(t *testing.T) {
 		name             string // because when the fail, counting is hard
 		pr               *github.PullRequest
 		issue            *github.Issue
-		commits          []github.RepositoryCommit
-		events           []github.IssueEvent
+		commits          []*github.RepositoryCommit
+		events           []*github.IssueEvent
 		ciStatus         *github.CombinedStatus
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile

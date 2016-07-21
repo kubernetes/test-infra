@@ -1325,7 +1325,7 @@ func (sq *SubmitQueue) serveHealthSVG(res http.ResponseWriter, req *http.Request
 	res.Write(sq.getHealthSVG())
 }
 
-func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -1340,6 +1340,6 @@ func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment githubapi
 }
 
 // StaleComments returns a slice of stale comments
-func (sq *SubmitQueue) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (sq *SubmitQueue) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, sq.isStaleComment)
 }

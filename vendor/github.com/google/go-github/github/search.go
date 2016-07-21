@@ -15,9 +15,7 @@ import (
 // in the GitHub API.
 //
 // GitHub API docs: http://developer.github.com/v3/search/
-type SearchService struct {
-	client *Client
-}
+type SearchService service
 
 // SearchOptions specifies optional parameters to the SearchService methods.
 type SearchOptions struct {
@@ -148,7 +146,7 @@ func (s *SearchService) search(searchType string, query string, opt *SearchOptio
 		return nil, err
 	}
 
-	if opt.TextMatch {
+	if opt != nil && opt.TextMatch {
 		// Accept header defaults to "application/vnd.github.v3+json"
 		// We change it here to fetch back text-match metadata
 		req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")

@@ -12,28 +12,32 @@ import (
 
 // Deployment represents a deployment in a repo
 type Deployment struct {
-	URL         *string         `json:"url,omitempty"`
-	ID          *int            `json:"id,omitempty"`
-	SHA         *string         `json:"sha,omitempty"`
-	Ref         *string         `json:"ref,omitempty"`
-	Task        *string         `json:"task,omitempty"`
-	Payload     json.RawMessage `json:"payload,omitempty"`
-	Environment *string         `json:"environment,omitempty"`
-	Description *string         `json:"description,omitempty"`
-	Creator     *User           `json:"creator,omitempty"`
-	CreatedAt   *Timestamp      `json:"created_at,omitempty"`
-	UpdatedAt   *Timestamp      `json:"pushed_at,omitempty"`
+	URL           *string         `json:"url,omitempty"`
+	ID            *int            `json:"id,omitempty"`
+	SHA           *string         `json:"sha,omitempty"`
+	Ref           *string         `json:"ref,omitempty"`
+	Task          *string         `json:"task,omitempty"`
+	Payload       json.RawMessage `json:"payload,omitempty"`
+	Environment   *string         `json:"environment,omitempty"`
+	Description   *string         `json:"description,omitempty"`
+	Creator       *User           `json:"creator,omitempty"`
+	CreatedAt     *Timestamp      `json:"created_at,omitempty"`
+	UpdatedAt     *Timestamp      `json:"pushed_at,omitempty"`
+	StatusesURL   *string         `json:"statuses_url,omitempty"`
+	RepositoryURL *string         `json:"repository_url,omitempty"`
 }
 
 // DeploymentRequest represents a deployment request
 type DeploymentRequest struct {
-	Ref              *string   `json:"ref,omitempty"`
-	Task             *string   `json:"task,omitempty"`
-	AutoMerge        *bool     `json:"auto_merge,omitempty"`
-	RequiredContexts *[]string `json:"required_contexts,omitempty"`
-	Payload          *string   `json:"payload,omitempty"`
-	Environment      *string   `json:"environment,omitempty"`
-	Description      *string   `json:"description,omitempty"`
+	Ref                   *string   `json:"ref,omitempty"`
+	Task                  *string   `json:"task,omitempty"`
+	AutoMerge             *bool     `json:"auto_merge,omitempty"`
+	RequiredContexts      *[]string `json:"required_contexts,omitempty"`
+	Payload               *string   `json:"payload,omitempty"`
+	Environment           *string   `json:"environment,omitempty"`
+	Description           *string   `json:"description,omitempty"`
+	TransientEnvironment  *bool     `json:"transient_environment,omitempty"`
+	ProductionEnvironment *bool     `json:"production_environment,omitempty"`
 }
 
 // DeploymentsListOptions specifies the optional parameters to the
@@ -57,7 +61,7 @@ type DeploymentsListOptions struct {
 // ListDeployments lists the deployments of a repository.
 //
 // GitHub API docs: https://developer.github.com/v3/repos/deployments/#list-deployments
-func (s *RepositoriesService) ListDeployments(owner, repo string, opt *DeploymentsListOptions) ([]Deployment, *Response, error) {
+func (s *RepositoriesService) ListDeployments(owner, repo string, opt *DeploymentsListOptions) ([]*Deployment, *Response, error) {
 	u := fmt.Sprintf("repos/%v/%v/deployments", owner, repo)
 	u, err := addOptions(u, opt)
 	if err != nil {
@@ -69,7 +73,7 @@ func (s *RepositoriesService) ListDeployments(owner, repo string, opt *Deploymen
 		return nil, nil, err
 	}
 
-	deployments := new([]Deployment)
+	deployments := new([]*Deployment)
 	resp, err := s.client.Do(req, deployments)
 	if err != nil {
 		return nil, resp, err
@@ -89,6 +93,9 @@ func (s *RepositoriesService) CreateDeployment(owner, repo string, request *Depl
 		return nil, nil, err
 	}
 
+	// TODO: remove custom Accept header when deployment support fully launches
+	req.Header.Set("Accept", mediaTypeDeploymentStatusPreview)
+
 	d := new(Deployment)
 	resp, err := s.client.Do(req, d)
 	if err != nil {
@@ -101,26 +108,33 @@ func (s *RepositoriesService) CreateDeployment(owner, repo string, request *Depl
 // DeploymentStatus represents the status of a
 // particular deployment.
 type DeploymentStatus struct {
-	ID          *int       `json:"id,omitempty"`
-	State       *string    `json:"state,omitempty"`
-	Creator     *User      `json:"creator,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	TargetURL   *string    `json:"target_url,omitempty"`
-	CreatedAt   *Timestamp `json:"created_at,omitempty"`
-	UpdatedAt   *Timestamp `json:"pushed_at,omitempty"`
+	ID *int `json:"id,omitempty"`
+	// State is the deployment state.
+	// Possible values are: "pending", "success", "failure", "error", "inactive".
+	State         *string    `json:"state,omitempty"`
+	Creator       *User      `json:"creator,omitempty"`
+	Description   *string    `json:"description,omitempty"`
+	TargetURL     *string    `json:"target_url,omitempty"`
+	CreatedAt     *Timestamp `json:"created_at,omitempty"`
+	UpdatedAt     *Timestamp `json:"pushed_at,omitempty"`
+	DeploymentURL *string    `json:"deployment_url,omitempty"`
+	RepositoryURL *string    `json:"repository_url,omitempty"`
 }
 
 // DeploymentStatusRequest represents a deployment request
 type DeploymentStatusRequest struct {
-	State       *string `json:"state,omitempty"`
-	TargetURL   *string `json:"target_url,omitempty"`
-	Description *string `json:"description,omitempty"`
+	State          *string `json:"state,omitempty"`
+	TargetURL      *string `json:"target_url,omitempty"` // Deprecated. Use LogURL instead.
+	LogURL         *string `json:"log_url,omitempty"`
+	Description    *string `json:"description,omitempty"`
+	EnvironmentURL *string `json:"environment_url,omitempty"`
+	AutoInactive   *bool   `json:"auto_inactive,omitempty"`
 }
 
 // ListDeploymentStatuses lists the statuses of a given deployment of a repository.
 //
 // GitHub API docs: https://developer.github.com/v3/repos/deployments/#list-deployment-statuses
-func (s *RepositoriesService) ListDeploymentStatuses(owner, repo string, deployment int, opt *ListOptions) ([]DeploymentStatus, *Response, error) {
+func (s *RepositoriesService) ListDeploymentStatuses(owner, repo string, deployment int, opt *ListOptions) ([]*DeploymentStatus, *Response, error) {
 	u := fmt.Sprintf("repos/%v/%v/deployments/%v/statuses", owner, repo, deployment)
 	u, err := addOptions(u, opt)
 	if err != nil {
@@ -132,7 +146,7 @@ func (s *RepositoriesService) ListDeploymentStatuses(owner, repo string, deploym
 		return nil, nil, err
 	}
 
-	statuses := new([]DeploymentStatus)
+	statuses := new([]*DeploymentStatus)
 	resp, err := s.client.Do(req, statuses)
 	if err != nil {
 		return nil, resp, err
@@ -151,6 +165,9 @@ func (s *RepositoriesService) CreateDeploymentStatus(owner, repo string, deploym
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// TODO: remove custom Accept header when deployment support fully launches
+	req.Header.Set("Accept", mediaTypeDeploymentStatusPreview)
 
 	d := new(DeploymentStatus)
 	resp, err := s.client.Do(req, d)

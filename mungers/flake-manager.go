@@ -28,10 +28,11 @@ import (
 	"k8s.io/contrib/mungegithub/mungers/testowner"
 	"k8s.io/contrib/test-utils/utils"
 
+	"time"
+
 	"github.com/golang/glog"
 	libgithub "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 // failedStr is for comment matching during auto prioritization
@@ -317,7 +318,7 @@ func (p *brokenJobSource) Priority(obj *github.MungeObject) (sync.Priority, erro
 }
 
 // autoPrioritize prioritize flake issue based on the number of flakes
-func autoPrioritize(comments []libgithub.IssueComment, issueCreatedAt *time.Time) sync.Priority {
+func autoPrioritize(comments []*libgithub.IssueComment, issueCreatedAt *time.Time) sync.Priority {
 	occurence := []*time.Time{issueCreatedAt}
 	lastMonth := time.Now().Add(-1 * 30 * 24 * time.Hour)
 	lastWeek := time.Now().Add(-1 * 7 * 24 * time.Hour)

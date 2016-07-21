@@ -110,7 +110,7 @@ func (s *StalePendingCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -125,6 +125,6 @@ func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment githuba
 }
 
 // StaleComments returns a slice of stale comments
-func (s *StalePendingCI) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s *StalePendingCI) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }

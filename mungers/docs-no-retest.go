@@ -61,7 +61,7 @@ func (DocsNeedNoRetest) EachLoop() error { return nil }
 func (DocsNeedNoRetest) AddFlags(cmd *cobra.Command, config *github.Config) {
 }
 
-func areFilesDocOnly(files []githubapi.CommitFile) bool {
+func areFilesDocOnly(files []*githubapi.CommitFile) bool {
 	for _, file := range files {
 		if !ignoreFilesRegex.MatchString(*file.Filename) {
 			return false
@@ -91,6 +91,6 @@ func (DocsNeedNoRetest) Munge(obj *github.MungeObject) {
 }
 
 // StaleComments returns a slice of stale comments
-func (s *DocsNeedNoRetest) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s *DocsNeedNoRetest) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return nil
 }

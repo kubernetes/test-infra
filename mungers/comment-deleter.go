@@ -45,7 +45,7 @@ func init() {
 // StaleComment is an interface for a munger which writes comments which might go stale
 // and which should be cleaned up
 type StaleComment interface {
-	StaleComments(*github.MungeObject, []githubapi.IssueComment) []githubapi.IssueComment
+	StaleComments(*github.MungeObject, []*githubapi.IssueComment) []*githubapi.IssueComment
 }
 
 // RegisterStaleComments is the method for a munger to register that it creates comment
@@ -69,7 +69,7 @@ func (CommentDeleter) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (CommentDeleter) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
-func validComment(comment githubapi.IssueComment) bool {
+func validComment(comment *githubapi.IssueComment) bool {
 	if comment.User == nil || comment.User.Login == nil {
 		return false
 	}
@@ -93,7 +93,7 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	validComments := []githubapi.IssueComment{}
+	validComments := []*githubapi.IssueComment{}
 	for i := range comments {
 		comment := comments[i]
 		if !validComment(comment) {
@@ -104,22 +104,22 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 	for _, d := range deleters {
 		stale := d.StaleComments(obj, validComments)
 		for _, comment := range stale {
-			obj.DeleteComment(&comment)
+			obj.DeleteComment(comment)
 		}
 	}
 }
 
-func mergeBotComment(comment githubapi.IssueComment) bool {
+func mergeBotComment(comment *githubapi.IssueComment) bool {
 	return *comment.User.Login == botName
 }
 
-func jenkinsBotComment(comment githubapi.IssueComment) bool {
+func jenkinsBotComment(comment *githubapi.IssueComment) bool {
 	return *comment.User.Login == jenkinsBotName
 }
 
 // Checks each comment in `comments` and returns a slice of comments for which the `stale` function was true
-func forEachCommentTest(obj *github.MungeObject, comments []githubapi.IssueComment, stale func(*github.MungeObject, githubapi.IssueComment) bool) []githubapi.IssueComment {
-	out := []githubapi.IssueComment{}
+func forEachCommentTest(obj *github.MungeObject, comments []*githubapi.IssueComment, stale func(*github.MungeObject, *githubapi.IssueComment) bool) []*githubapi.IssueComment {
+	out := []*githubapi.IssueComment{}
 
 	for _, comment := range comments {
 		if stale(obj, comment) {

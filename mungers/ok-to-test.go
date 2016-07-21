@@ -78,7 +78,7 @@ func (ok *OkToTestMunger) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (ok *OkToTestMunger) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (ok *OkToTestMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -93,6 +93,6 @@ func (ok *OkToTestMunger) isStaleComment(obj *github.MungeObject, comment github
 }
 
 // StaleComments returns a slice of comments which are stale
-func (ok *OkToTestMunger) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (ok *OkToTestMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, ok.isStaleComment)
 }

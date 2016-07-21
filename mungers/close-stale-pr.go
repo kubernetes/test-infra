@@ -206,7 +206,7 @@ func findLatestWarningComment(obj *github.MungeObject) *githubapi.IssueComment {
 			if lastFoundComment != nil {
 				obj.DeleteComment(lastFoundComment)
 			}
-			lastFoundComment = &comment
+			lastFoundComment = comment
 		}
 	}
 
@@ -284,7 +284,7 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (CloseStalePR) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (CloseStalePR) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -297,6 +297,6 @@ func (CloseStalePR) isStaleComment(obj *github.MungeObject, comment githubapi.Is
 }
 
 // StaleComments returns a slice of stale comments
-func (s CloseStalePR) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s CloseStalePR) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }

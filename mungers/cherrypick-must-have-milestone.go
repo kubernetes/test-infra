@@ -80,7 +80,7 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -95,6 +95,6 @@ func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment git
 }
 
 // StaleComments returns a slice of stale comments
-func (p PickMustHaveMilestone) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (p PickMustHaveMilestone) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, p.isStaleComment)
 }

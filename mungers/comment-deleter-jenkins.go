@@ -59,8 +59,8 @@ func isJenkinsTestComment(body string) bool {
 }
 
 // StaleComments returns a slice of comments which are stale
-func (CommentDeleterJenkins) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
-	out := []githubapi.IssueComment{}
+func (CommentDeleterJenkins) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	out := []*githubapi.IssueComment{}
 	var last *githubapi.IssueComment
 
 	for i := range comments {
@@ -73,9 +73,9 @@ func (CommentDeleterJenkins) StaleComments(obj *github.MungeObject, comments []g
 			continue
 		}
 		if last != nil {
-			out = append(out, *last)
+			out = append(out, last)
 		}
-		last = &comment
+		last = comment
 	}
 	return out
 }
