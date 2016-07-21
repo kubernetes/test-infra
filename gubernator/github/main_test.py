@@ -48,13 +48,16 @@ class AppTest(TestBase):
     def setUp(self):
         self.init_stubs()
 
+    def get_response(self, event, body):
+        signature = handlers.make_signature(body)
+        return app.post('/webhook', body,
+            {'X-Github-Event': event,
+             'X-Hub-Signature': signature})
+
     def test_webhook(self):
         body_json = {'action': 'blah'}
         body = json.dumps(body_json)
-        signature = handlers.make_signature(body)
-        app.post('/webhook', body,
-            {'X-Github-Event': 'test',
-             'X-Hub-Signature': signature})
+        self.get_response('test', body)
         hooks = list(models.GithubWebhookRaw.query())
         self.assertEqual(len(hooks), 1)
         self.assertIsNotNone(hooks[0].timestamp)
@@ -72,10 +75,7 @@ class AppTest(TestBase):
 
     def test_webhook_unicode(self):
         body = json.dumps({'action': u'blah\u03BA'})
-        signature = handlers.make_signature(body)
-        app.post('/webhook', body,
-            {'X-Github-Event': 'test',
-             'X-Hub-Signature': signature})
+        self.get_response('test', body)
 
     def test_webhook_status(self):
         args = {
@@ -89,10 +89,7 @@ class AppTest(TestBase):
             'updated_at': '2016-07-07T02:03:12Z',
         }
         body = json.dumps(args)
-        signature = handlers.make_signature(body)
-        app.post('/webhook', body,
-            {'X-Github-Event': 'status',
-             'X-Hub-Signature': signature})
+        self.get_response('status', body)
         statuses = list(models.GHStatus.query_for_sha('owner/repo', '1234'))
         self.assertEqual(len(statuses), 1)
         status = statuses[0]
@@ -104,3 +101,25 @@ class AppTest(TestBase):
             except AttributeError:
                 pass
             assert status_val == value, '%r != %r' % (getattr(status, key), value)
+
+    def test_webhook_pr_open(self):
+        body = json.dumps({
+            'repository': {'full_name': 'test/test'},
+            'pull_request': {
+                'number': 123,
+                'head': 'cafe',
+                'updated_at': '2016-07-07T02:03:12Z',
+                'state': 'open',
+                'user': {'login': 'rmmh'},
+                'assignees': [{'login': 'spxtr'}],
+                'title': 'test pr',
+            },
+            'action': 'opened',
+        })
+        self.get_response('pull_request', body)
+        digest = models.GHIssueDigest.get('test/test', 123)
+        self.assertTrue(digest.is_pr)
+        self.assertTrue(digest.is_open)
+        self.assertEqual(digest.involved, ['rmmh', 'spxtr'])
+        self.assertEqual(digest.payload['title'], 'test pr')
+        self.assertEqual(digest.payload['needs_rebase'], False)

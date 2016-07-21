@@ -18,12 +18,13 @@ import hashlib
 import hmac
 import logging
 import json
+import traceback
 
 import webapp2
 
-from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
 
+import classifier
 import models
 
 
@@ -77,7 +78,7 @@ class GithubHandler(webapp2.RequestHandler):
 
         parent = None
         if number:
-            parent = ndb.Key(models.GithubResource, '%s %s' % (repo, number))
+            parent = models.GithubResource.make_key(repo, number)
 
         kwargs = {}
         timestamp = self.request.headers.get('x-timestamp')
@@ -92,6 +93,18 @@ class GithubHandler(webapp2.RequestHandler):
 
         if event == 'status':
             models.save_if_newer(models.GHStatus.from_json(body_json))
+
+        if number is not None:
+            update_issue_digest(repo, number)
+
+
+def update_issue_digest(repo, number, always_put=False):
+    digest = models.GHIssueDigest.make(repo, number,
+        *classifier.classify_issue(repo, number))
+    if always_put:
+        digest.put()
+    else:
+        models.save_if_newer(digest)
 
 
 class Events(webapp2.RequestHandler):
@@ -162,16 +175,21 @@ class Timeline(webapp2.RequestHandler):
     '''
     Render all the information in the datastore about a particular issue.
 
-    This is used for manual debugging and planning future event parsers.
+    This is used for debugging and investigations.
     '''
-    def get(self):
-        repo = self.request.get('repo')
-        number = self.request.get('number')
-        ancestor = ndb.Key(models.GithubResource, '%s %s' % (repo, number))
+    def emit_classified(self, repo, number):
+        try:
+            ret = classifier.classify_issue(repo, number)
+            self.response.write('<pre>%s</pre>' % cgi.escape(
+                repr(ret[:3]) + "\n" + json.dumps(ret[3], indent=2, sort_keys=True)))
+            self.__getattribute__esponse.write(len(json.dumps(ret[3])))
+        except BaseException:
+            self.response.write('<pre>%s</pre>' % traceback.format_exc())
+
+    def emit_events(self, repo, number):
+        ancestor = models.GithubResource.make_key(repo, number)
         events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
         events.sort(key=lambda e: e.timestamp)
-        self.response.write(
-            '<style>td pre{max-height:200px;overflow:scroll}</style>')
         self.response.write('<h3>%d Results</h3>' % (len(events)))
         self.response.write('<table border=2>')
         merged = {}
@@ -188,6 +206,15 @@ class Timeline(webapp2.RequestHandler):
             self.response.write('<tr><td>%s\n' % '<td>'.join(str(x) for x in
                 [event.timestamp, event.event, action, sender,
                  '<pre>' + cgi.escape(body)]))
+        return merged
+
+    def get(self):
+        self.response.write(
+            '<style>td pre{max-height:200px;overflow:scroll}</style>')
+        repo = self.request.get('repo')
+        number = self.request.get('number')
+        self.emit_classified(repo, number)
+        merged = self.emit_events(repo, number)
         if 'head' in merged:
             sha = merged['head']['sha']
             results = models.GHStatus.query_for_sha(repo, sha)

@@ -20,7 +20,9 @@ import google.appengine.ext.ndb as ndb
 class GithubResource(ndb.Model):
     # A key holder used to define an entitygroup for
     # each Issue/PR, for easy ancestor queries.
-    pass
+    @staticmethod
+    def make_key(repo, number):
+        return ndb.Key(GithubResource, '%s %s' % (repo, number))
 
 
 class GithubWebhookRaw(ndb.Model):
@@ -47,6 +49,13 @@ def make_kwargs(body, fields):
 
 class GHStatus(ndb.Model):
     # Key: {repo}\t{sha}\t{context}
+    state = ndb.StringProperty(indexed=False)
+    target_url = ndb.StringProperty(indexed=False)
+    description = ndb.TextProperty()
+
+    created_at = ndb.DateTimeProperty(indexed=False)
+    updated_at = ndb.DateTimeProperty(indexed=False)
+
 
     @staticmethod
     def make_key(repo, sha, context):
@@ -82,12 +91,37 @@ class GHStatus(ndb.Model):
     def context(self):
         return self.key.id().split('\t', 2)[2]
 
-    state = ndb.StringProperty(indexed=False)
-    target_url = ndb.StringProperty(indexed=False)
-    description = ndb.TextProperty()
 
-    created_at = ndb.DateTimeProperty(indexed=False)
-    updated_at = ndb.DateTimeProperty(indexed=False)
+class GHIssueDigest(ndb.Model):
+    # Key: {repo} {number}
+    is_pr = ndb.BooleanProperty()
+    is_open = ndb.BooleanProperty()
+    involved = ndb.StringProperty(repeated=True)
+    payload = ndb.JsonProperty()
+    updated_at = ndb.DateTimeProperty()
+
+    @staticmethod
+    def make_key(repo, number):
+        return ndb.Key(GHIssueDigest, '%s %s' % (repo, number))
+
+    @staticmethod
+    def make(repo, number, is_pr, is_open, involved, payload, updated_at):
+        return GHIssueDigest(key=GHIssueDigest.make_key(repo, number),
+            is_pr=is_pr, is_open=is_open, involved=involved, payload=payload,
+            updated_at=updated_at)
+
+    @staticmethod
+    def get(repo, number):
+        return GHIssueDigest.make_key(repo, number).get()
+
+    @property
+    def repo(self):
+        return self.key.id().split()[0]
+
+    @property
+    def number(self):
+        return int(self.key.id().split()[1])
+
 
 
 @ndb.transactional
