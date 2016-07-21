@@ -321,7 +321,6 @@ class NodeLogHandler(RenderingHandler):
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
-        log_file = self.request.get("logfile")
         log_files = self.request.get_all("logfiles")
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
@@ -329,40 +328,36 @@ class NodeLogHandler(RenderingHandler):
         namespace = bool(self.request.get("Namespace"))
         wrap = bool(self.request.get("wrap"))
         filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
-        filename = find_log((build_dir, junit, log_file))
 
-        result = None
-        if log_file == "" and log_files == []:
+        if log_files == []:
             log_files = ["kubelet.log"]
 
-        filename = find_log((build_dir, junit, log_file))
         kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
 
         if kubelet_filename and pod_name:
             objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
 
-        result = None
+        full_paths = {}
         results = {}
-        if filename:
-            result = parse_log_file(filename, pod_name, filters, objref_dict=objref_dict)
-        elif log_files:
+        if log_files:
             for file in log_files:
                 filename = find_log((build_dir, junit, file))
                 if filename:
+                    full_paths[file] = filename
                     parsed_file = parse_log_file(filename, pod_name, filters, 
                         objref_dict=objref_dict)
                     if parsed_file:
                         results[file] = parsed_file
 
-        if result is None and results == {}:
-            self.render('node_404.html', {"build_dir": build_dir, "log_file": log_file,
+        if results == {}:
+            self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return
 
         self.render('filtered_log.html', dict(
-            job_dir=job_dir, build_dir=build_dir, log=result, logs=results, job=job,
-            build=build, full_path=filename, log_file=log_file, log_files=log_files,
+            job_dir=job_dir, build_dir=build_dir, logs=results, job=job,
+            build=build, full_paths=full_paths, log_files=log_files,
             pod=pod_name, junit=junit, uid=uid, namespace=namespace,
             wrap=wrap, objref_dict=objref_dict))
 

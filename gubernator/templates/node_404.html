@@ -1,3 +1,3 @@
 <!DOCTYPE html>
-<title>Missing {{log_file}} file</title>
-Unable to find {{log_file}} file from <a href="https://console.cloud.google.com/storage/browser{{build_dir}}">gs:/{{build_dir}}</a> for {{pod_name}}
+<title>Missing {% for log_file in log_files %} {{log_file}} file {% endfor %} </title>
+Unable to find {% for log_file in log_files %} {{log_file}} {% endfor %} file from <a href="https://console.cloud.google.com/storage/browser{{build_dir}}">gs:/{{build_dir}}</a> for {{pod_name}}
