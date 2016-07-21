@@ -32,6 +32,7 @@ import cloudstorage as gcs
 import gcs_async
 import filters
 import log_parser
+import kubelet_parser
 import pull_request
 import regex
 
@@ -207,7 +208,7 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
     pod_re = regex.wordRE(pod)
 
     if make_dict:
-        return log_parser.make_dict(log.decode('utf8','replace'), pod_re)
+        return kubelet_parser.make_dict(log.decode('utf8','replace'), pod_re)
     else:
         return log_parser.digest(log.decode('utf8','replace'), 
         error_re=pod_re, filters=filters, objref_dict=objref_dict)

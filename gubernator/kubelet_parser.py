@@ -23,13 +23,12 @@ import jinja2
 
 import regex
 
-def parse(lines, error_re, hilight_words, filters, objref_dict):
+def parse(lines, hilight_words, filters, objref_dict):
     """
     Given filters returns indeces of wanted lines from the kubelet log
 
     Args:
         lines: array of kubelet log lines
-        error_re: regular expression of the failed pod name
         hilight_words: array of words that need to be bolded
         filters: dictionary of which filters to apply
     Returns:
@@ -54,3 +53,24 @@ def parse(lines, error_re, hilight_words, filters, objref_dict):
     return matched_lines, hilight_words
 
 
+def make_dict(data, pod_re):
+    """
+    Given the kubelet log file and the failed pod name, returns a dictionary
+    containing the namespace and UID associated with the pod.
+
+    This dictionary is lifted from the line with the ObjectReference
+    """
+    lines = unicode(jinja2.escape(data)).split('\n')
+    for line in lines:
+        if pod_re.search(line):
+            objref = regex.objref(line)
+            if objref and objref.group(1) != "":
+                objref_dict = objref.group(1)        
+                keys = regex.keys_re.findall(objref_dict)
+                
+                for k in keys:
+                    objref_dict = regex.key_to_string(k, objref_dict)
+
+                # Convert string into dictionary
+                objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
+                return objref_dict
