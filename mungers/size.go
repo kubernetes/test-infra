@@ -240,7 +240,7 @@ func calculateSize(adds, dels int) string {
 	return sizeXXL
 }
 
-func (s *SizeMunger) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (s *SizeMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -252,6 +252,6 @@ func (s *SizeMunger) isStaleComment(obj *github.MungeObject, comment githubapi.I
 }
 
 // StaleComments returns a slice of stale comments
-func (s *SizeMunger) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s *SizeMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }

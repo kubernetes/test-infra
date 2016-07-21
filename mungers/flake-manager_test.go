@@ -20,12 +20,13 @@ import (
 	"strings"
 	"testing"
 
+	"time"
+
 	"github.com/google/go-github/github"
 	github_testing "k8s.io/contrib/mungegithub/github/testing"
 	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/mungegithub/mungers/sync"
 	"k8s.io/contrib/test-utils/utils"
-	"time"
 )
 
 func makeTestFlakeManager() *FlakeManager {
@@ -86,31 +87,31 @@ func TestBrokenJobSource(t *testing.T) {
 	checkCommon(t, &source)
 }
 
-func flakecomment(id int, createdAt time.Time) github.IssueComment {
+func flakecomment(id int, createdAt time.Time) *github.IssueComment {
 	return github_testing.Comment(id, "k8s-bot", createdAt, "Failed: something failed")
 }
 
 func TestAutoPrioritize(t *testing.T) {
 	testcases := []struct {
-		comments       []github.IssueComment
+		comments       []*github.IssueComment
 		issueCreatedAt time.Time
 		expectPriority int
 	}{
 		// New flake issue
 		{
-			comments:       []github.IssueComment{},
+			comments:       []*github.IssueComment{},
 			issueCreatedAt: time.Now(),
 			expectPriority: 2,
 		},
 		{
-			comments: []github.IssueComment{
+			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 			},
 			issueCreatedAt: time.Now().Add(-1 * 29 * 24 * time.Hour),
 			expectPriority: 1,
 		},
 		{
-			comments: []github.IssueComment{
+			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 				flakecomment(1, time.Now().Add(-1*3*24*time.Hour)),
 				flakecomment(1, time.Now().Add(-1*6*24*time.Hour)),
@@ -119,7 +120,7 @@ func TestAutoPrioritize(t *testing.T) {
 			expectPriority: 0,
 		},
 		{
-			comments: []github.IssueComment{
+			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 				flakecomment(1, time.Now().Add(-8*24*time.Hour)),
 			},
@@ -127,7 +128,7 @@ func TestAutoPrioritize(t *testing.T) {
 			expectPriority: 1,
 		},
 		{
-			comments: []github.IssueComment{
+			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 				flakecomment(1, time.Now().Add(-8*24*time.Hour)),
 				flakecomment(1, time.Now().Add(-15*24*time.Hour)),
@@ -137,7 +138,7 @@ func TestAutoPrioritize(t *testing.T) {
 			expectPriority: 1,
 		},
 		{
-			comments: []github.IssueComment{
+			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 				flakecomment(1, time.Now().Add(-1*3*24*time.Hour)),
 			},

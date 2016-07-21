@@ -92,7 +92,7 @@ func (r *RebuildMunger) Munge(obj *github.MungeObject) {
 	}
 
 	for ix := range comments {
-		comment := &comments[ix]
+		comment := comments[ix]
 		// Skip all robot comments
 		if r.robots.Has(*comment.User.Login) {
 			glog.V(4).Infof("Skipping comment by robot %s: %s", *comment.User.Login, *comment.Body)
@@ -126,7 +126,7 @@ func rebuildCommentMissingIssueNumber(comment *githubapi.IssueComment) bool {
 	return !issueMatcher.MatchString(*comment.Body)
 }
 
-func (r *RebuildMunger) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (r *RebuildMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -141,6 +141,6 @@ func (r *RebuildMunger) isStaleComment(obj *github.MungeObject, comment githubap
 }
 
 // StaleComments returns a slice of stale comments
-func (r *RebuildMunger) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (r *RebuildMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, r.isStaleComment)
 }

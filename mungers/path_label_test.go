@@ -41,16 +41,16 @@ func docsProposalIssue() *github.Issue {
 }
 
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
-func pathsCommit(path []string) []github.RepositoryCommit {
-	c := github.Commit{
+func pathsCommit(path []string) []*github.RepositoryCommit {
+	c := &github.Commit{
 		SHA: stringPtr("mysha"),
 		Committer: &github.CommitAuthor{
 			Date: timePtr(time.Unix(10, 0)),
 		},
 	}
-	rc := github.RepositoryCommit{
+	rc := &github.RepositoryCommit{
 		SHA:    stringPtr("mysha"),
-		Commit: &c,
+		Commit: c,
 	}
 	files := []github.CommitFile{}
 	for _, p := range path {
@@ -60,17 +60,17 @@ func pathsCommit(path []string) []github.RepositoryCommit {
 		files = append(files, f)
 	}
 	rc.Files = files
-	return []github.RepositoryCommit{rc}
+	return []*github.RepositoryCommit{rc}
 }
 
-func BotAddedDesign() []github.IssueEvent {
+func BotAddedDesign() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
 		{botName, "kind/design", 9},
 		{"bob", "kind/design", 8},
 	})
 }
 
-func OtherAddedDesign() []github.IssueEvent {
+func OtherAddedDesign() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
 		{botName, "kind/design", 8},
 		{"bob", "kind/design", 9},
@@ -81,8 +81,8 @@ func TestPathLabelMunge(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
-		commits     []github.RepositoryCommit
-		events      []github.IssueEvent
+		commits     []*github.RepositoryCommit
+		events      []*github.IssueEvent
 		mustHave    []string
 		mustNotHave []string
 	}{

@@ -107,7 +107,7 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (s *StaleGreenCI) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (s *StaleGreenCI) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -122,11 +122,11 @@ func (s *StaleGreenCI) isStaleComment(obj *github.MungeObject, comment githubapi
 }
 
 // StaleComments returns a slice of stale comments
-func (s *StaleGreenCI) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (s *StaleGreenCI) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }
 
-func commentBeforeLastCI(obj *github.MungeObject, comment githubapi.IssueComment, requiredContexts []string) bool {
+func commentBeforeLastCI(obj *github.MungeObject, comment *githubapi.IssueComment, requiredContexts []string) bool {
 	if !obj.IsStatusSuccess(requiredContexts) {
 		return false
 	}

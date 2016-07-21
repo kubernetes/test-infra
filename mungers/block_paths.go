@@ -146,7 +146,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment githubapi.IssueComment) bool {
+func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -161,6 +161,6 @@ func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment githubapi.Is
 }
 
 // StaleComments returns a slice of stale comments
-func (b *BlockPath) StaleComments(obj *github.MungeObject, comments []githubapi.IssueComment) []githubapi.IssueComment {
+func (b *BlockPath) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, b.isStaleComment)
 }
