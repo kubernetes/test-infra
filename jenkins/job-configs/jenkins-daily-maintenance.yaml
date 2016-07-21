@@ -11,6 +11,10 @@
             gcloud components update
             gcloud components update alpha
             gcloud components update beta
+    wrappers:
+        - timeout:
+            timeout: 15
+            fail: true
 
 - job:
     name: 'jenkins-daily-maintenance-all'
