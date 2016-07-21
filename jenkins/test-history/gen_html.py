@@ -36,13 +36,13 @@ BLOCKING_JOBS = [
     'kubelet-gce-e2e-ci',
     'kubernetes-build',
     'kubernetes-e2e-gce',
-    'kubernetes-e2e-gce-scalability',
     'kubernetes-e2e-gce-slow',
     'kubernetes-e2e-gke',
     'kubernetes-e2e-gke-slow',
     'kubernetes-kubemark-5-gce',
     'kubernetes-kubemark-500-gce',
     'kubernetes-test-go',
+    'kubernetes-verify-master',
 ]
 
 JobSummary = collections.namedtuple('JobSummary', [
