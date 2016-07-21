@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <link rel="stylesheet" href="/static/style.css" />
-
 <title>{{job}} #{{build}} {{log_file}}</title>
 <script src="/static/build.js"></script>
 <div id="header" class="container">
-<img src="/static/logo.svg">
-<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
+	<img src="/static/logo.svg">
+	<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
 </div>
 <div id="failures">
-<h3>Lines from <a href="https://storage.googleapis.com{{full_path}}">{{log_file}}</a> containing pod {{pod}}</h3>
-<form method="get" onchange="submit()">
-<input type="hidden" name="logfile" value="{{log_file}}">
-<input type="hidden" name="pod" value="{{pod}}">
-<input type="hidden" name="junit" value="{{junit}}">
-<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID</label><br>
-<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace</label>
-</form>
-% if log
-<pre>
-{{log | safe}}
-</pre>
-% endif
+	<h3>Lines from <a href="https://storage.googleapis.com{{full_path}}">{{log_file}}</a> containing pod {{pod}}</h3>
+	<form method="get" onchange="submit()">
+		<input type="hidden" name="logfile" value="{{log_file}}">
+		<input type="hidden" name="pod" value="{{pod}}">
+		<input type="hidden" name="junit" value="{{junit}}">
+		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID</label><br>
+		<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace</label>
+	</form>
+	% if log
+		<pre>
+		{{log | safe}}
+		</pre>
+	% endif
 </div>
