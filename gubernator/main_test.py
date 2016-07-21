@@ -191,6 +191,21 @@ class AppTest(unittest.TestCase, TestMixin):
         self.assertIn('ERROR</span>: test', response)
         self.assertNotIn('blah', response)
 
+    def test_build_failure_no_text(self):
+        # Some failures don't have any associated text.
+        write(self.BUILD_DIR + 'artifacts/junit_01.xml', '''
+            <testsuites>
+                <testsuite tests="1" failures="1" time="3.274" name="k8s.io/test/integration">
+                    <testcase classname="integration" name="TestUnschedulableNodes" time="0.210">
+                        <failure message="Failed" type=""/>
+                    </testcase>
+                </testsuite>
+            </testsuites>''')
+        response = self.get_build_page()
+        self.assertIn('TestUnschedulableNodes', response)
+        self.assertIn('junit_01.xml', response)
+
+
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
         build_dir = '/%s/123/e2e/567/' % main.PR_PREFIX
