@@ -6,6 +6,7 @@
 package github
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 )
@@ -32,7 +33,7 @@ func (r RepositoryCommit) String() string {
 	return Stringify(r)
 }
 
-// CommitStats represents the number of additions / deletions from a file in a given RepositoryCommit.
+// CommitStats represents the number of additions / deletions from a file in a given RepositoryCommit or GistCommit.
 type CommitStats struct {
 	Additions *int `json:"additions,omitempty"`
 	Deletions *int `json:"deletions,omitempty"`
@@ -103,7 +104,7 @@ type CommitsListOptions struct {
 // ListCommits lists the commits of a repository.
 //
 // GitHub API docs: http://developer.github.com/v3/repos/commits/#list
-func (s *RepositoriesService) ListCommits(owner, repo string, opt *CommitsListOptions) ([]RepositoryCommit, *Response, error) {
+func (s *RepositoriesService) ListCommits(owner, repo string, opt *CommitsListOptions) ([]*RepositoryCommit, *Response, error) {
 	u := fmt.Sprintf("repos/%v/%v/commits", owner, repo)
 	u, err := addOptions(u, opt)
 	if err != nil {
@@ -115,7 +116,7 @@ func (s *RepositoriesService) ListCommits(owner, repo string, opt *CommitsListOp
 		return nil, nil, err
 	}
 
-	commits := new([]RepositoryCommit)
+	commits := new([]*RepositoryCommit)
 	resp, err := s.client.Do(req, commits)
 	if err != nil {
 		return nil, resp, err
@@ -137,6 +138,9 @@ func (s *RepositoriesService) GetCommit(owner, repo, sha string) (*RepositoryCom
 		return nil, nil, err
 	}
 
+	// TODO: remove custom Accept header when this API fully launches.
+	req.Header.Set("Accept", mediaTypeGitSigningPreview)
+
 	commit := new(RepositoryCommit)
 	resp, err := s.client.Do(req, commit)
 	if err != nil {
@@ -144,6 +148,32 @@ func (s *RepositoriesService) GetCommit(owner, repo, sha string) (*RepositoryCom
 	}
 
 	return commit, resp, err
+}
+
+// GetCommitSHA1 gets the SHA-1 of a commit reference.  If a last-known SHA1 is
+// supplied and no new commits have occurred, a 304 Unmodified response is returned.
+//
+// GitHub API docs: https://developer.github.com/v3/repos/commits/#get-the-sha-1-of-a-commit-reference
+func (s *RepositoriesService) GetCommitSHA1(owner, repo, ref, lastSHA string) (string, *Response, error) {
+	u := fmt.Sprintf("repos/%v/%v/commits/%v", owner, repo, ref)
+
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return "", nil, err
+	}
+	if lastSHA != "" {
+		req.Header.Set("If-None-Match", `"`+lastSHA+`"`)
+	}
+
+	req.Header.Set("Accept", mediaTypeV3SHA)
+
+	var buf bytes.Buffer
+	resp, err := s.client.Do(req, &buf)
+	if err != nil {
+		return "", resp, err
+	}
+
+	return buf.String(), resp, err
 }
 
 // CompareCommits compares a range of commits with each other.
