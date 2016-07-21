@@ -12,22 +12,36 @@ One may also look in the `example-one-off` directory for a small skeleton progra
 
 ## Building and running
 
-Executing `make help` inside the `mungegithub` directory should inform you about the functions provided by the Makefile. A common pattern for me when developing is to run something like:
+Executing `make help` inside the `mungegithub` directory should inform you about the functions provided by the Makefile. A common pattern when developing is to run something like:
 ```sh
-make mungegithub && ./mungegithub --dry-run --token-file=/path/to/token --once --www=submit-queue/www --kube-dir=$GOPATH/src/k8s.io/kubernetes --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500
+make mungegithub && ./mungegithub --dry-run --token-file=/path/to/token --once --www=submit-queue/www --kube-dir=$GOPATH/src/k8s.io/kubernetes --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500 --organization=kubernetes --project=kubernetes --repo-dir=/tmp
 ```
 
-I typically have both a test and a prod cluster. However there is no reason a test/prod instance couldn't be done on the same cluster in 2 namespaces. It's just how your kubeconfig is set up. You will need a github oauth, even in readonly/test mode. Obviously for production you will want a token with write access to the repo in question. https://help.github.com/articles/creating-an-access-token-for-command-line-use/ should discuss how to get an oauth token. These tokens will need to be loaded into kubernetes `secret`s for use by the submit and/or cherry-pick queue. It is extremely easy to use up the 5,000 API calls per hour so the production token should not be re-used for tests.
+A Github oauth token is required, even in readonly/test mode. For production, we use a token with write access to the repo in question. https://help.github.com/articles/creating-an-access-token-for-command-line-use/ discusses the procedure to get a personal oauth token. These tokens will need to be loaded into kubernetes `secret`s for use by the submit and/or cherry-pick queue. It is extremely easy to use up the 5,000 API calls per hour so the production token should not be re-used for tests.
 
-After successfully running the local binary I will typically build, test, and deploy in readonly mode to a real kube cluster. To do so you must make sure your kubeconfig file is set up for the test/read-only cluster by running any necessary `kubectl config` commands by hand. After which it is as simple as something like:
+After successfully running the local binary one may build, test, and deploy in readonly mode to a real kube cluster. To do so, one must make sure that one's kubeconfig file is set up for the test/read-only cluster by running any necessary `kubectl config` commands by hand. One may also need a container repository with read & write access. It is just as easy to create a new dockerhub account, and a public repository named `submit-queue` within that. We will refer to the repository as `docker.io/$USERNAME` where `$USERNAME` is a placeholder. The steps required to deploy on a real cluster for the submit-queue application are as follows. The instructions to run the cherrypick application are along the same lines. Below, we explain the steps to run on the kubernetes main repository. Running on other repositories is similar, except that the corresponding YAML files are in a directory for that repository.
+
+- Store your personal access token in a plain text file named (token) in the mungegithub directory.
+- Run `APP=submit-queue; TARGET=<reponame>; make secret` to generate a local.secret.yaml.
+- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/local.secret.yaml` to load the secret.
+- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pv.yaml` to create a persistent volume. (If you are running a local cluster, and not on GCP, use `mungegithub/submit-queue/pv-local.yaml` to create a persistent volume on your host. The file may need to be modified to match the expected name of the persistent volume by the deployment). 
+- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pvc.yaml` to create a persistent volume claim.
+- Check that the persistent volume claim is bound by checking `kubectl --kubeconfig=... get pvc`.
+
+After these steps, we may need to push a configmap, in case any of the commandline arguments were changed. Pushing a new configmap for the kubernetes repository looks like the following:
 ```sh
-REPO=docker.io/eparis APP=submit-queue KUBECONFIG=/path/to/kubeconfig make deploy
+TARGET=kubernetes APP=submit-queue KUBECONFIG=/path/to/kubeconfig make push_config
 ```
 
-After this has successfully deployed to the test cluster in read-only mode running in production required running any required `kubectl config` commands and then running
+It can finally deployed as:
 ```sh
-REPO=docker.io/eparis APP=submit-queue KUBECONFIG=/path/to/kubeconfig READONLY=false make deploy
+TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig make deploy
 ```
+
+After this has successfully deployed to the test cluster in read-only mode, running in production involves running any required `kubectl config` commands to point to the production cluster, pushing a configmap if necessary, and then running:
+```sh
+TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig READONLY=false make deploy
+``` 
 
 ## About the mungers
 
