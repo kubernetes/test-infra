@@ -10,46 +10,46 @@
 <div id="header" class="container">
 <img src="/static/logo.svg">
 <h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
-% if started
-<p>Started on {{started['timestamp']|timestamp}}{% if finished %} and took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
-% endif
+	% if started
+	<p>Started on {{started['timestamp']|timestamp}}{% if finished %} and took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+	% endif
 </div>
 <div id="summary">
-% if started
-<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
-% endif
-<p>Build Result: {{finished['result'] if finished else 'Not Finished'}}
-<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
-<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
-</div>
-<div id="failures">
-% if failures
-<h2>Test Failures</h2>
-% for name, time, text, filename in failures
-<hr>
-<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
-<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
-% if text
-<pre class="error">
-{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
-</pre>
-% set pod_name = text|parse_pod_name
-% if pod_name
-<p>Find <tt>{{pod_name}}</tt> mentions in
-<a href="/build{{build_dir}}/nodelog?logfile=kubelet.log&pod={{pod_name}}&junit={{filename|basename}}">kubelet.log</a>,
-<a href="/build{{build_dir}}/nodelog?logfile=kube-apiserver.log&pod={{pod_name}}&junit={{filename|basename}}">kube-apiserver.log</a>.</h4>
-% endif
-% else
-<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
-% endif
-% endfor
-% else
-<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
-% if build_log
-<h3>Error lines from build-log.txt</h3>
-<pre>
-{{build_log | safe}}
-</pre>
-% endif
-% endif
+	% if started
+		<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
+	% endif
+	<p>Build Result: {{finished['result'] if finished else 'Not Finished'}}
+	<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
+	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
+	</div>
+	<div id="failures">
+	% if failures
+		<h2>Test Failures</h2>
+		% for name, time, text, filename in failures
+			<hr>
+			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+			<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% if text
+				<pre class="error">
+				{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
+				</pre>
+				% set pod_name = text|parse_pod_name
+				% if pod_name
+					<p>Find <tt>{{pod_name}}</tt> mentions in
+					<a href="/build{{build_dir}}/nodelog?logfile=kubelet.log&pod={{pod_name}}&junit={{filename|basename}}">kubelet.log</a>,
+					<a href="/build{{build_dir}}/nodelog?logfile=kube-apiserver.log&pod={{pod_name}}&junit={{filename|basename}}">kube-apiserver.log</a>.</h4>
+				% endif
+			% else
+				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
+			% endif
+		% endfor
+	% else
+		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
+		% if build_log
+			<h3>Error lines from build-log.txt</h3>
+			<pre>
+			{{build_log | safe}}
+			</pre>
+		% endif
+	% endif
 </div>
