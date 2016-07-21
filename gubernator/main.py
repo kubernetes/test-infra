@@ -322,6 +322,7 @@ class NodeLogHandler(RenderingHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
         log_file = self.request.get("logfile")
+        log_files = self.request.get_all("logfiles")
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         uid = bool(self.request.get("UID"))
@@ -331,6 +332,8 @@ class NodeLogHandler(RenderingHandler):
         filename = find_log((build_dir, junit, log_file))
 
         result = None
+        if log_file == "" and log_files == []:
+            log_files = ["kubelet.log"]
 
         filename = find_log((build_dir, junit, log_file))
         kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
@@ -338,18 +341,28 @@ class NodeLogHandler(RenderingHandler):
         if kubelet_filename and pod_name:
             objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
 
+        result = None
+        results = {}
         if filename:
             result = parse_log_file(filename, pod_name, filters, objref_dict=objref_dict)
+        elif log_files:
+            for file in log_files:
+                filename = find_log((build_dir, junit, file))
+                if filename:
+                    parsed_file = parse_log_file(filename, pod_name, filters, 
+                        objref_dict=objref_dict)
+                    if parsed_file:
+                        results[file] = parsed_file
 
-        if filename is None or result is None:
+        if result is None and results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_file": log_file,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return
 
         self.render('filtered_log.html', dict(
-            job_dir=job_dir, build_dir=build_dir, log=result, job=job,
-            build=build, full_path=filename, log_file=log_file,
+            job_dir=job_dir, build_dir=build_dir, log=result, logs=results, job=job,
+            build=build, full_path=filename, log_file=log_file, log_files=log_files,
             pod=pod_name, junit=junit, uid=uid, namespace=namespace,
             wrap=wrap, objref_dict=objref_dict))
 

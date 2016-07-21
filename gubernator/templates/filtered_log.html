@@ -19,8 +19,11 @@
 		<label><input type="checkbox" name="Namespace"{% if namespace %} checked{% endif %}> Highlight Namespace: <b>{{objref_dict["Namespace"]}}</b></label>
 	</form>
 	% if log
-		{% if wrap %}<pre>{% else %}<pre class="nowrap">{% endif %}
-		{{log | safe}}
+	% for file in log_files
+		<h3>{{file}}</h3>
+		<pre {% if not wrap %} style="white-space:pre"{% endif %}>
+			{{logs[file] | safe}}
 		</pre>
+	% endfor
 	% endif
 </div>
