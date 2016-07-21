@@ -1,6 +1,8 @@
 ## Usage
 
-See the [Makefile](Makefile) for details.
+See the [Makefile](Makefile) for details. This is a work in progress. Once it
+has settled down we will stop using the makefile for cluster management in
+favor of static YAML files.
 
 ### Start a cluster
 
@@ -14,3 +16,8 @@ Now run `make create-cluster`. This will take a few minutes. It will create
 a GKE cluster and the `hook` image, deployment, and service. Once it finishes,
 it will wait for the external IP to show up and print out the webhook address.
 Add that to your GitHub webhook.
+
+### Update images
+
+Bump the image version of whatever you are updating and run `make
+update-cluster`.

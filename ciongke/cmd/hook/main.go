@@ -38,6 +38,9 @@ var (
 	team      = flag.Int("team", 0, "GitHub team to trust.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
 
+	testPRImage  = flag.String("test-pr-image", "", "Image to use for testing PRs.")
+	sourceBucket = flag.String("source-bucket", "", "Bucket to store source tars in.")
+
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/hmac/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/oauth/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
@@ -56,6 +59,9 @@ type Server struct {
 	GitHubClient github.Client
 	HMACSecret   []byte
 	DryRun       bool
+
+	TestPRImage  string
+	SourceBucket string
 
 	KubeClient kube.Client
 	Namespace  string
@@ -105,6 +111,9 @@ func main() {
 		GitHubClient: githubClient,
 		HMACSecret:   webhookSecret,
 		DryRun:       *dryRun,
+
+		TestPRImage:  *testPRImage,
+		SourceBucket: *sourceBucket,
 
 		KubeClient: kubeClient,
 		Namespace:  *namespace,
@@ -220,9 +229,17 @@ func (s *Server) buildPR(pr github.PullRequest) error {
 					Containers: []kube.Container{
 						{
 							Name:  "test-pr",
-							Image: "alpine:3.4",
-							Command: []string{
-								"/bin/sh", "-c", "echo \"TODO\"",
+							Image: s.TestPRImage,
+							Args: []string{
+								"-repo-url=" + pr.Base.Repo.HTMLURL,
+								"-repo-name=" + pr.Base.Repo.Name,
+								"-pr=" + strconv.Itoa(pr.Number),
+								"-branch=" + pr.Base.Ref,
+								"-head=" + pr.Head.SHA,
+								"-namespace=" + s.Namespace,
+								"-dry-run=" + strconv.FormatBool(s.DryRun),
+								"-source-bucket=" + s.SourceBucket,
+								"-github-token-file=/etc/oauth/oauth",
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
