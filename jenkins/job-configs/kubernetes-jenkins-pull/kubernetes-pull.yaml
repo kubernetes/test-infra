@@ -57,12 +57,20 @@
             status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
             status-add-test-results: '{status-add-test-results}'
             # This should roughly line up with kubernetes-maintainers.
+            # To update:
+            #   curl -s "https://api.github.com/teams/1674435/members?per_page=100&access_token=TOKEN" \
+            #     | jq -r .[].login | sort -f
+            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
+            #
+            # Note that k8s-merge-robot is not in this team, so is explicitly listed here.
             admin-list:
-                - a-robinson
+                - k8s-merge-robot
                 - alex-mohr
                 - amygdala
+                - andyzheng0831
+                - apelisse
+                - a-robinson
                 - aronchick
-                - ArtfulCoder
                 - bgrant0607
                 - bgrant0607-nocc
                 - bprashanth
@@ -75,6 +83,7 @@
                 - dchen1107
                 - deads2k
                 - derekwaynecarr
+                - dubstack
                 - eparis
                 - erictune
                 - fabioy
@@ -82,20 +91,24 @@
                 - fgrzadkowski
                 - freehan
                 - ghodss
+                - girishkalele
                 - gmarek
                 - goltermann
+                - grodrigues3
                 - hurf
-                - ihmccreery
+                - ingvagabund
                 - ixdy
                 - jackgr
                 - janetkuo
                 - jbeda
                 - jdef
+                - jfrazelle
+                - jingxu97
                 - jlowdermilk
                 - jsafrane
                 - jszczepkowski
                 - justinsb
-                - k8s-merge-robot
+                - kargakis
                 - karlkfi
                 - kelseyhightower
                 - kevin-wangzefeng
@@ -106,9 +119,11 @@
                 - madhusudancs
                 - maisem
                 - mansoorj
+                - matchstick
+                - mbohlool
                 - mikedanese
-                - MikeJeffrey
                 - mml
+                - mtaufen
                 - mwielgus
                 - ncdc
                 - nikhiljindal
@@ -118,76 +133,109 @@
                 - Q-Lee
                 - quinton-hoole
                 - Random-Liu
-                - rjnagal
                 - rmmh
                 - roberthbailey
+                - ronnielai
                 - saad-ali
                 - sarahnovotny
-                - satnam6502
                 - smarterclayton
+                - soltysh
                 - spxtr
                 - sttts
                 - swagiaal
                 - thockin
                 - timothysc
                 - timstclair
+                - tmrts
                 - vishh
-                - vmarmol
+                - vulpecula
                 - wojtek-t
                 - xiang90
                 - yifan-gu
                 - yujuhong
                 - zmerlynn
-            # This should roughly line up with kubernetes-contributors.
+            # This should roughly line up with kubernetes-collaborators.
+            # To update:
+            #   curl -s "https://api.github.com/teams/1696393/members?per_page=100&access_token=TOKEN" \
+            #     | jq -r .[].login | sort -f
+            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
             white-list:
-                - abhgupta
+                - aaronlevy
                 - AdoHe
-                - AnanyaKumar
-                - andronat
-                - andyzheng0831
-                - apeeyush
+                - amygdala
                 - aronchick
+                - arun-gupta
+                - ashcrow
                 - aveshagarwal
-                - bcbroussard
-                - BenTheElder
-                - burmanm
-                - caseydavenport
-                - chrisleck
-                - csrwng
-                - dalanlan
+                - bgrant0607
+                - bparees
+                - brendandburns
+                - briyenga08
+                - cameronbrunner
+                - childsb
+                - chrislovecnm
+                - colemickens
+                - david-mcmahon
+                - dchen1107
                 - deads2k
-                - ericchiang
+                - detiber
+                - Dingshujie
+                - DirectXMan12
                 - feihujiang
-                - gouyang
+                - feiskyer
+                - foxish
+                - ghodss
+                - grodrigues3
                 - HaiyangDING
-                - huangyuqi
-                - imkin
+                - Hui-Zhi
+                - hurf
+                - idvoretskyi
+                - ingvagabund
+                - ironcladlou
                 - jackgr
                 - jayunit100
-                - jiangyaoguo
-                - jimmidyson
-                - kargakis
+                - jeremyeder
+                - johnwilkes
+                - jsafrane
+                - kevin-wangzefeng
+                - lavalamp
                 - luxas
-                - matthewdupre
-                - mfojtik
-                - mikeln
+                - maisem
+                - marekbiskup
+                - markturansky
+                - matchstick
+                - mattf
+                - mbohlool
+                - mgr01
+                - mikedanese
+                - mksalawa
+                - mml
+                - mnshaw
                 - mqliang
+                - mtaufen
+                - mwringe
                 - ncdc
+                - nhlfr
+                - philips
+                - preillyme
                 - pweil-
+                - Q-Lee
                 - resouer
-                - s-urbaniak
-                - sdminonne
-                - socaa
+                - ronnielai
+                - rootfs
+                - rrati
+                - saad-ali
+                - sarahnovotny
+                - senorflor
+                - sjenning
                 - soltysh
-                - spothanis
-                - stefwalter
-                - timstclair
+                - spiffxp
+                - swagiaal
                 - therc
-                - uluyol
-                - uruddarraju
-                - wonderfly
-                - yifan-gu
-                - zhengguoyong
+                - timothysc
+                - timstclair
+                - wattsteve
+                - yujuhong
             org-list:
                 - kubernetes
             white-list-target-branches:
