@@ -202,6 +202,7 @@ def find_log((build_dir, junit, log_file)):
 
 
 def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict=None):
+    """Based on make_dict, either returns the objref_dict or the parsed log file"""
     log = gcs_async.read(log_filename).get_result()
     if log is None:
         return None
@@ -319,6 +320,15 @@ class BuildListHandler(RenderingHandler):
 
 class NodeLogHandler(RenderingHandler):
     def get(self, prefix, job, build):
+        """
+        Example variables
+        log_files: ["kubelet.log", "kube-apiserver.log"]
+        pod_name: "pod-abcdef123"
+        junit: "junit_01.xml"
+        uid, namespace, wrap: "on" 
+        full_paths: {"kubelet.log":"/storage/path/to/kubelet.log"}
+        logs: {"kubelet.log":"parsed kubelet log for html"}
+        """
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
@@ -330,25 +340,26 @@ class NodeLogHandler(RenderingHandler):
         wrap = bool(self.request.get("wrap"))
         filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
 
+        # default to filtering kubelet log if user unchecks both checkboxes
         if log_files == []:
             log_files = ["kubelet.log"]
 
         kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
-
+        
+        results = {}
         if kubelet_filename and pod_name:
             objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
 
-        full_paths = {}
-        results = {}
-        if log_files:
-            for file in log_files:
-                filename = find_log((build_dir, junit, file))
-                if filename:
-                    full_paths[file] = filename
-                    parsed_file = parse_log_file(filename, pod_name, filters, 
-                        objref_dict=objref_dict)
-                    if parsed_file:
-                        results[file] = parsed_file
+            full_paths = {}
+            if log_files and objref_dict:
+                for file in log_files:
+                    filename = find_log((build_dir, junit, file))
+                    if filename:
+                        full_paths[file] = filename
+                        parsed_file = parse_log_file(filename, pod_name, filters, 
+                            objref_dict=objref_dict)
+                        if parsed_file:
+                            results[file] = parsed_file
 
         if results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,

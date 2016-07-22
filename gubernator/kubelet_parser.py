@@ -25,10 +25,10 @@ import regex
 
 def parse(lines, hilight_words, filters, objref_dict):
     """
-    Given filters returns indeces of wanted lines from the kubelet log
+    Given filters returns indeces of wanted lines from log
 
     Args:
-        lines: array of kubelet log lines
+        lines: array of log lines
         hilight_words: array of words that need to be bolded
         filters: dictionary of which filters to apply
     Returns:
@@ -55,8 +55,8 @@ def parse(lines, hilight_words, filters, objref_dict):
 
 def make_dict(data, pod_re):
     """
-    Given the kubelet log file and the failed pod name, returns a dictionary
-    containing the namespace and UID associated with the pod.
+    Given the log file and the failed pod name, returns a dictionary
+    containing the namespace, UID, and other information associated with the pod.
 
     This dictionary is lifted from the line with the ObjectReference
     """
