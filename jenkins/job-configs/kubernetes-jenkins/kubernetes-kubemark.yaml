@@ -117,7 +117,7 @@
         - '500-gce':
             description: 'Run Kubemark test on a fake 500 node cluster to test for regressions on bigger clusters'
             timeout: 300
-            cron-string: '@hourly'
+            cron-string: '{sq-cron-string}'
             job-env: |
                 export E2E_NAME="kubemark-500"
                 export PROJECT="k8s-jenkins-blocking-kubemark"
