@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="SubmitQueueModule" ng-controller="SQCntl as cntl">
 
 <head>
   <link rel="stylesheet" href="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.0.7/angular-material.min.css" type="text/css">
@@ -9,16 +9,17 @@
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png">
   <meta name="viewport" content="initial-scale=1">
 
-  <title>Kubernetes Submit Queue</title>
+  <title ng-bind-template="{{cntl.metadata.ProjectName}} Submit Queue">Submit Queue</title>
+
 </head>
 
-<body ng-app="SubmitQueueModule" ng-controller="SQCntl as cntl">
+<body>
   <!-- Indent the whole thing -->
   <md-content class="md-padding" layout="column">
     <!-- Display the white border around the indented portion -->
     <md-content class="md-whiteframe-z2">
       <md-toolbar layout="row" layout-align="space-around center">
-        <h1 class="md-display-2">Submit Queue Status</h1>
+        <h1 class="md-display-2">{{cntl.metadata.ProjectName}} Submit Queue Status</h1>
         <a ng-href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" alt="kubernetes logo" class="titleLogo"></a>
       </md-toolbar>
       <md-toolbar class="md-warn md-hue-1" ng-show="cntl.testResults.yellowBuilds">
@@ -48,7 +49,7 @@
             </md-content>
             <md-list>
               <md-list-item class="md-3-line" ng-repeat="pr in cntl.prs | loginOrPR:cntl.prDisplayValue | orderBy:'Number' track by pr.Number">
-                <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.Login}}">
                   <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                 </a>
                 <md-content class="md-list-item-text" layout="column">
@@ -75,7 +76,7 @@
               <md-subheader class="md-primary">CURRENTLY RUNNING</md-subheader>
               <md-list layout-padding>
                 <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2erunning track by pr.Number">
-                  <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                  <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
                   <md-content class="md-list-item-text" layout="column">
@@ -93,7 +94,7 @@
               <md-subheader class="md-primary">QUEUE</md-subheader>
               <md-list layout-padding>
                 <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2equeue track by pr.Number">
-                  <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                  <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
                   <md-content class="md-list-item-text" layout="column">
@@ -128,7 +129,7 @@
             </md-content>
             <md-list>
               <md-list-item class="md-3-line" ng-repeat="pr in cntl.historyPRs | loginOrPR:cntl.historyDisplayValue | orderBy: '-Time' track by pr.Time">
-                <a class="md-avatar" ng-href="https://github.com/kubernetes/kubernetes/pulls/{{pr.Login}}">
+                <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.Login}}">
                   <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                 </a>
                 <md-content class="md-list-item-text" layout="column">
@@ -168,10 +169,10 @@
               <br>
               <br>
               <h2 class="md-title" ng-show="cntl.OverallHealth.length > 0">Overall Health: {{ cntl.OverallHealth }}</h2>
-              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a href="http://storage.googleapis.com/kubernetes-test-history/static/index.html"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.
+              <p>Health percents are the fraction of the time that a given job is stable for the last day, or since the submit queue restarted ({{ cntl.sqStats.StartTime | date:'medium'}})</span>, whichever is shorter. The <a ng-href="{{cntl.metadata.HistoryUrl}}"><strong>24-Hour Test Report</strong></a> shows more detail, along with a list of flaky and broken tests in merge-blocking jobs.
               </p>
               <p>
-                <img src="http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg" style="max-width: 100%"/>
+                <img ng-src="{{cntl.metadata.ChartUrl}}" style="max-width: 100%"/>
               </p>
             </md-tab-body>
           </md-tab>
@@ -242,7 +243,7 @@
                     <h2 class="md-toolbar-tools">Health chart for the past week</h2>
                   </md-toolbar>
                   <md-content class="md-padding">
-                    <span><img src="http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg" style="max-width: 100%"/></span>
+                    <span><img ng-src="{{cntl.metadata.ChartUrl}}" style="max-width: 100%"/></span>
                   </md-content>
                 </md-tab>
               </md-tabs>
