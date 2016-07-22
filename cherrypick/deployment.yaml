@@ -22,7 +22,7 @@ spec:
         - --http-cache-dir=/cache/httpcache
         - --dry-run=true
         - --admin-port=9999
-        - --kubernetes-dir=/gitrepo/kubernetes
+        - --repo-dir=/gitrepo
         - --period=3m
         image: docker.io/eparis/cherrypick:2016-03-14-7fb1dae
         ports:
@@ -37,12 +37,10 @@ spec:
         - mountPath: /etc/secret-volume
           name: cherrypick-secret-volume
         - mountPath: /gitrepo
-          name: kubernetes-repo
+          name: repo
       volumes:
       - name: cherrypick-secret-volume
         secret:
           secretName: cherrypick-secret-volume
-      - name: kubernetes-repo
-        gitRepo:
-          repository: "https://github.com/kubernetes/kubernetes.git"
-          revision: "master"
+      - name: repo
+        emptyDir: {}

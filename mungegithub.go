@@ -104,7 +104,7 @@ func main() {
 				glog.Fatalf("unable to find requested mungers: %v", err)
 			}
 			requestedFeatures := mungers.RequestedFeatures()
-			if err := config.Features.Initialize(requestedFeatures); err != nil {
+			if err := config.Features.Initialize(&config.Config, requestedFeatures); err != nil {
 				return err
 			}
 			if err := mungers.InitializeMungers(&config.Config, &config.Features); err != nil {
