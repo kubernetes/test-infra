@@ -40,7 +40,6 @@ type DocsNeedNoRetest struct{}
 func init() {
 	munger := &DocsNeedNoRetest{}
 	RegisterMungerOrDie(munger)
-	RegisterStaleComments(munger)
 }
 
 // Name is the name usable in --pr-mungers
@@ -88,9 +87,4 @@ func (DocsNeedNoRetest) Munge(obj *github.MungeObject) {
 	} else if !docsOnly && obj.HasLabel(labelSkipRetest) {
 		obj.RemoveLabel(labelSkipRetest)
 	}
-}
-
-// StaleComments returns a slice of stale comments
-func (s *DocsNeedNoRetest) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return nil
 }
