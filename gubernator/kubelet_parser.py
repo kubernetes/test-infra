@@ -31,18 +31,18 @@ def parse(lines, hilight_words, filters, objref_dict):
         lines: array of log lines
         hilight_words: array of words that need to be bolded
         filters: dictionary of which filters to apply
+        objref_dict: a dictionary where the keys are possible filters 
+        and the values are the words to be hilighted 
     Returns:
         matched_lines: ordered array of indeces of lines to display
         hilight_words: updated hilight_words
     """
     matched_lines = []
     
-    if filters["uid"] and objref_dict["UID"]:
-        uid = objref_dict["UID"]
-        hilight_words.append(uid)
-    if filters["namespace"] and objref_dict["Namespace"]:
-        namespace = objref_dict["Namespace"]
-        hilight_words.append(namespace)
+    # If the filter is on, look for it in the objref_dict
+    for k in filters:
+        if k != "pod" and filters[k] and objref_dict[k]:
+            hilight_words.append(objref_dict[k])
 
     words_re = regex.combine_wordsRE(hilight_words)
 

@@ -21,7 +21,7 @@ import log_parser
 import regex
 
 class LogParserTest(unittest.TestCase):
-    def digest(self, data, strip=True, filters={"uid":"", "pod":"", "namespace":""},
+    def digest(self, data, strip=True, filters={"UID":"", "pod":"", "Namespace":""},
         error_re=regex.error_re):
         digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re, 
                                      skip_fmt=lambda l: 's%d' % l, filters=filters)
@@ -63,12 +63,12 @@ class LogParserTest(unittest.TestCase):
     def test_pod(self):
         self.assertEqual(self.digest('pod-blah', 
             error_re=regex.wordRE("pod"),
-            filters={"pod":"pod", "uid":"", "namespace":""}, strip=False), ''
+            filters={"pod":"pod", "UID":"", "Namespace":""}, strip=False), ''
                          '<span class="hilight"><span class="keyword">'
                          'pod</span>-blah</span>')
         self.assertEqual(self.digest('0 1 2 3 4 5 pod 6 7 8 9 10', 
-            error_re=regex.wordRE("pod"), filters={"pod":"pod", "uid":"", 
-            "namespace":""}), 's2 2 3 4 5 pod 6 7 8 9')
+            error_re=regex.wordRE("pod"), filters={"pod":"pod", "UID":"", 
+            "Namespace":""}), 's2 2 3 4 5 pod 6 7 8 9')
         
 
 if __name__ == '__main__':

@@ -338,7 +338,7 @@ class NodeLogHandler(RenderingHandler):
         uid = bool(self.request.get("UID"))
         namespace = bool(self.request.get("Namespace"))
         wrap = bool(self.request.get("wrap"))
-        filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
+        filters = {"UID":uid, "pod":pod_name, "Namespace":namespace}
 
         # default to filtering kubelet log if user unchecks both checkboxes
         if log_files == []:

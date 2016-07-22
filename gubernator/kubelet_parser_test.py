@@ -22,7 +22,7 @@ import regex
 
 lines = ["line 0", "pod 2 3", "abcd podName", "line 3", "failed",
 "Event(api.ObjectReference{Namespace:\"podName\", Name:\"abc\", UID:\"uid\"}", "uid"]
-filters = {"uid":"", "pod":"", "namespace":""}
+filters = {"UID":"", "pod":"", "Namespace":""}
 
 class KubeletParserTest(unittest.TestCase):
 	def test_parse_error_re(self):
@@ -53,12 +53,12 @@ class KubeletParserTest(unittest.TestCase):
 	def test_parse_filters(self):
 		"""Test for filters"""
 		filters["pod"] = "pod"
-		filters["uid"] = "on"
-		filters["namespace"] = "on"
+		filters["UID"] = "on"
+		filters["Namespace"] = "on"
 		matched_lines, hilight_words = kubelet_parser.parse(lines,
 			["pod"], filters, {"UID":"uid", "Namespace":"podName"})
 		self.assertEqual(matched_lines, [1, 2, 5, 6])
-		self.assertEqual(hilight_words, ["pod", "uid", "podName"])	
+		self.assertEqual(hilight_words, ["pod", "podName", "uid"])	
 
 
 	def test_make_dict(self):

@@ -32,7 +32,7 @@ def hilight(line, hilight_words):
 
 
 def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict={},
-    filters={"uid":"", "pod":"", "namespace":""}, error_re=regex.error_re):
+    filters={"UID":"", "pod":"", "Namespace":""}, error_re=regex.error_re):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.
@@ -45,7 +45,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
-    if not (filters["uid"] or filters["namespace"]):
+    if not (filters["UID"] or filters["Namespace"]):
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
         matched_lines, hilight_words = kubelet_parser.parse(lines,
