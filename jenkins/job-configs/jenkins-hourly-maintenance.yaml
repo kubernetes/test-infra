@@ -16,6 +16,10 @@
             docker rm -v "${containers_to_remove[@]:+${containers_to_remove[@]}}" || true
             docker rmi $(docker images -q -f 'dangling=true') || true
             docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes
+    wrappers:
+        - timeout:
+            timeout: 15
+            fail: true
 
 - job:
     name: 'jenkins-hourly-maintenance-all'
