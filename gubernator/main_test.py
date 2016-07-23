@@ -74,6 +74,7 @@ class TestBase(unittest.TestCase):
 
 
 class AppTest(TestBase):
+    # pylint: disable=too-many-public-methods
     BUILD_DIR = '/kubernetes-jenkins/logs/somejob/1234/'
 
     def setUp(self):
@@ -204,7 +205,7 @@ class AppTest(TestBase):
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
             'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
         response = app.get('/build' + nodelog_url)
-        self.assertIn("Line wrapping on", response)
+        self.assertIn("Wrap line", response)
 
     def test_nodelog_apiserver(self):
         """Test for default apiserver file
@@ -216,7 +217,7 @@ class AppTest(TestBase):
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kube-apiserver.log',
             'apiserver pod abc\n')
         response = app.get('/build' + nodelog_url)
-        self.assertIn("Line wrapping on", response)
+        self.assertIn("Wrap line", response)
 
     def test_nodelog_no_junit(self):
         """Test for when no junit in same folder
@@ -257,4 +258,108 @@ class AppTest(TestBase):
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
             'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
         response = app.get('/build' + nodelog_url)
-        self.assertIn("Line wrapping on", response)
+        self.assertIn("Wrap line", response)
+
+    def test_parse_by_timestamp(self):
+        """Test parse_by_timestamp and get_woven_logs
+         - Weave separate logs together by timestamp
+         - Check that lines without timestamp are combined
+         - Test different timestamp formats"""
+        kubelet_filepath = self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log'
+        kubeapi_filepath = self.BUILD_DIR + 'artifacts/tmp-node-image/kube-apiserver.log'
+        query_string = 'nodelog?pod=abc&junit=junit_01.xml&weave=on&logfiles=%s&logfiles=%s' % (
+            kubelet_filepath, kubeapi_filepath)
+        nodelog_url = self.BUILD_DIR + query_string
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(kubelet_filepath,
+            'abc\n0101 01:01:01.001 Event(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        write(kubeapi_filepath,
+            '0101 01:01:01.000 kubeapi\n0101 01:01:01.002 pod\n01-01T01:01:01.005Z last line')
+        expected = ('0101 01:01:01.000 kubeapi\n'
+                    '<span class="hilight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
+                    '&#34;<span class="keyword">abc</span>&#34;, UID:&#34;podabc&#34;})</span>\n'
+                    '0101 01:01:01.002 pod\n'
+                    '01-01T01:01:01.005Z last line')
+        response = app.get('/build' + nodelog_url)
+        print response
+        self.assertIn(expected, response)
+
+    def test_timestamp_no_apiserver(self):
+        """Test parse_by_timestamp and get_woven_logs
+         - Weave separate logs together by timestamp
+         - Check that lines without timestamp are combined
+         - Test different timestamp formats
+         - no kube-apiserver.log"""
+        kubelet_filepath = self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log'
+        proxy_filepath = self.BUILD_DIR + 'artifacts/tmp-node-image/kube-proxy.log'
+        query_string = 'nodelog?pod=abc&junit=junit_01.xml&weave=on&logfiles=%s&logfiles=%s' % (
+            kubelet_filepath, proxy_filepath)
+        nodelog_url = self.BUILD_DIR + query_string
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(kubelet_filepath,
+            'abc\n0101 01:01:01.001 Event(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        write(proxy_filepath,
+            '0101 01:01:01.000 proxy\n0101 01:01:01.002 pod\n01-01T01:01:01.005Z last line')
+        expected = ('0101 01:01:01.000 proxy\n'
+                    '<span class="hilight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
+                    '&#34;<span class="keyword">abc</span>&#34;, UID:&#34;podabc&#34;})</span>\n'
+                    '0101 01:01:01.002 pod\n'
+                    '01-01T01:01:01.005Z last line')
+        response = app.get('/build' + nodelog_url)
+        self.assertIn(expected, response)
+
+
+class PRTest(TestBase):
+    BUILDS = {
+        'build': [('12', {'version': 'bb', 'timestamp': 1467147654}, None),
+                  ('11', {'version': 'bb', 'timestamp': 1467146654}, {'result': 'PASSED'}),
+                  ('10', {'version': 'aa', 'timestamp': 1467136654}, {'result': 'FAILED'})],
+        'e2e': [('47', {'version': 'bb', 'timestamp': '1467147654'}, {'result': '[UNSET]'}),
+                ('46', {'version': 'aa', 'timestamp': '1467136700'}, {'result': '[UNSET]'})]
+    }
+
+    def setUp(self):
+        self.init_stubs()
+
+    def init_pr_directory(self):
+        gcs_async_test.install_handler(self.testbed.get_stub('urlfetch'),
+            {'123/': ['build', 'e2e'],
+             '123/build/': ['11', '10', '12'],  # out of order
+             '123/e2e/': ['47', '46']})
+
+        for job, builds in self.BUILDS.iteritems():
+            for build, started, finished in builds:
+                path = '/%s/123/%s/%s/' % (view_pr.PR_PREFIX, job, build)
+                if started:
+                    write(path + 'started.json', started)
+                if finished:
+                    write(path + 'finished.json', finished)
+
+    def test_pr_builds(self):
+        self.init_pr_directory()
+        builds = view_pr.pr_builds('123')
+        self.assertEqual(builds, self.BUILDS)
+
+    def test_pr_handler(self):
+        self.init_pr_directory()
+        response = app.get('/pr/123')
+        self.assertIn('e2e/47', response)
+        self.assertIn('PASSED', response)
+        self.assertIn('colspan="3"', response)  # header
+        self.assertIn('github.com/kubernetes/kubernetes/pull/123', response)
+        self.assertIn('28 20:44', response)
+
+    def test_pr_handler_missing(self):
+        gcs_async_test.install_handler(self.testbed.get_stub('urlfetch'),
+            {'124/': []})
+        response = app.get('/pr/124')
+        self.assertIn('No Results', response)
+
+    def test_pr_build_log_redirect(self):
+        path = '123/some-job/55/build-log.txt'
+        response = app.get('/pr/' + path)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('https://storage.googleapis.com', response.location)
+        self.assertIn(path, response.location)

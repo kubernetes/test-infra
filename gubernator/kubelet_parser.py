@@ -62,6 +62,7 @@ def make_dict(data, pod_re, objref_dict):
     This dictionary is lifted from the line with the ObjectReference
     """
     pod_in_file = False
+
     lines = unicode(jinja2.escape(data)).split('\n')
     for line in lines:
         if pod_re.search(line):

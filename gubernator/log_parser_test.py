@@ -24,6 +24,7 @@ def digest(data, strip=True, filters=None,
            error_re=regex.error_re):
     if filters is None:
         filters = {"UID":"", "pod":"", "Namespace":"", "ContainerID":""}
+
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
     if strip:

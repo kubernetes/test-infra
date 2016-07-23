@@ -67,5 +67,6 @@ class KubeletParserTest(unittest.TestCase):
         objref_dict = kubelet_parser.make_dict(["pod failed"], regex.wordRE("abc"), {})
         self.assertEqual(objref_dict, ({}, False))
 
+
 if __name__ == '__main__':
     unittest.main()

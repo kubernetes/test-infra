@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 
 import gcs_async
 import log_parser
@@ -167,6 +168,55 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
     return all_logs, results, objref_dict, log_files
 
 
+def get_woven_logs(log_files, pod, filters, objref_dict):
+    lines = []
+    combined_lines = []
+    first_combined = ""
+    pod_re = regex.wordRE(pod)
+
+    # Produce a list of lines of all the selected logs
+    for log_file in log_files:
+        log = gcs_async.read(log_file).get_result()
+        log = log.decode('utf8', 'replace')
+        lines.extend(log.split('\n'))
+    # Combine lines without timestamp into previous line, except if it comes at the
+    # beginning of the file, in which case add it to the line with the first timestamp
+    for line in lines:
+        timestamp_re = regex.timestamp(line)
+        if timestamp_re and timestamp_re.group(0):
+            if not combined_lines:
+                # add beginning of file to first timestamp line
+                line = first_combined + line
+            combined_lines.append(line)
+        else:
+            if not combined_lines:
+                first_combined = first_combined + line
+            else:
+                combined_lines[-1] = combined_lines[-1] + line
+    lines = sorted(combined_lines, key=regex.sub_timestamp)
+    data = '\n'.join(lines)
+    woven_logs = log_parser.digest(data, error_re=pod_re,
+        filters=filters, objref_dict=objref_dict)
+    return woven_logs
+
+
+def parse_by_timestamp((build_dir, junit, log_files, pod, filters, objref_dict)):
+    """
+    Returns:
+        woven_logs: HTML code of chosen logs woven together by timestamp
+        all_logs: Dictionary of logs relevant for filtering
+    """
+    woven_logs = get_woven_logs(log_files, pod, filters, objref_dict)
+
+    apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
+    if apiserver_filename:
+        artifact_filename = re.sub("/kube-apiserver.log", "", apiserver_filename)
+        all_logs = get_all_logs((artifact_filename, False))
+    if not apiserver_filename:
+        all_logs = get_all_logs((build_dir, True))
+    return woven_logs, all_logs
+
+
 class NodeLogHandler(view_base.BaseHandler):
     def get(self, prefix, job, build):
         """
@@ -193,9 +243,13 @@ class NodeLogHandler(view_base.BaseHandler):
         namespace = bool(self.request.get("Namespace"))
         containerID = bool(self.request.get("ContainerID"))
         wrap = bool(self.request.get("wrap"))
+        weave = bool(self.request.get("weave"))
         filters = {"UID":uid, "pod":pod_name, "Namespace":namespace, "ContainerID":containerID}
+
         objref_dict = {}
         results = {}
+
+        woven_logs = ""
 
         if cID:
             objref_dict["ContainerID"] = cID
@@ -205,14 +259,20 @@ class NodeLogHandler(view_base.BaseHandler):
             objref_dict["Namespace"] = ns
 
         apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
-        if apiserver_filename and pod_name:
-            all_logs, results, objref_dict, log_files = get_logs_junit((log_files,
-                pod_name, filters, objref_dict, apiserver_filename))
-        if not apiserver_filename:
-            all_logs, results, objref_dict, log_files = get_logs(build_dir, log_files,
-                pod_name, filters, objref_dict)
 
-        if results == {}:
+        if not weave or len(log_files) == 1:
+            weave = False
+            if apiserver_filename and pod_name:
+                all_logs, results, objref_dict, log_files = get_logs_junit((log_files,
+                    pod_name, filters, objref_dict, apiserver_filename))
+            if not apiserver_filename:
+                all_logs, results, objref_dict, log_files = get_logs(build_dir, log_files,
+                    pod_name, filters, objref_dict)
+        else:
+            woven_logs, all_logs = parse_by_timestamp((build_dir, junit, log_files, pod_name,
+                filters, objref_dict))
+
+        if (not weave and results == {}) or (weave and woven_logs == ""):
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
@@ -221,5 +281,5 @@ class NodeLogHandler(view_base.BaseHandler):
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, logs=results, job=job,
             build=build, log_files=log_files, containerID=containerID,
-            pod=pod_name, junit=junit, uid=uid, namespace=namespace,
-            wrap=wrap, objref_dict=objref_dict, all_logs=all_logs))
+            pod=pod_name, junit=junit, uid=uid, namespace=namespace, weave=weave,
+            wrap=wrap, objref_dict=objref_dict, all_logs=all_logs, woven_logs=woven_logs))
