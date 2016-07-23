@@ -7,21 +7,28 @@
 	<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
 </div>
 <div id="failures">
+	<h3> Failed pod: {{pod}} </h3>
 	<form method="get" onchange="submit()">
 		<input type="hidden" name="pod" value="{{pod}}">
 		<input type="hidden" name="junit" value="{{junit}}">
 		<hr>
 		<label><input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on</label>
+		% for folder, filenames in all_logs.items()
+			<hr>
+			<h4> {{folder}} </h4>
+			% for filename in filenames
+			% set log_name = filename|basename
+			<label><input type="checkbox" name="logfiles" value={{filename}} {% if filename in log_files %} checked {% endif %}> {{log_name}}</label> 
+			<a href="https://storage.googleapis.com{{filename}}">(Full Log)</a> <br>
+			% endfor
+		% endfor
 		<hr>
-		<label><input type="checkbox" name="logfiles" value="kubelet.log" {% if "kubelet.log" in log_files %} checked {% endif %}> kubelet.log</label>
-		<label><input type="checkbox" name="logfiles" value="kube-apiserver.log" {% if "kube-apiserver.log" in log_files %} checked {% endif %}> kube-apiserver.log</label>
-		<hr>
-		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID: <b>{{objref_dict["UID"]}}</b></label><br>
+		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <b>{{objref_dict["UID"]}}</b></label><br>
 		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <b>{{objref_dict["Namespace"]}}</b></label>
 	</form>
 	% for file in log_files
-		<h3><a href="https://storage.googleapis.com{{full_paths[file]}}">{{file}}</a></h3>
-		<pre {% if not wrap %} style="white-space:pre"{% endif %}>
+		<h3>{{file}}</a></h3>
+		<pre {% if not wrap %} style="white-space:pre"{% endif %}> 
 			{{logs[file] | safe}}
 		</pre>
 	% endfor

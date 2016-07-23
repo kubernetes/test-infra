@@ -192,14 +192,55 @@ def build_details(build_dir):
 
 @memcache_memoize('log-file://', expires=60*60*4)
 def find_log((build_dir, junit, log_file)):
-    tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
-            if '/tmp-node' in f.filename]
-    for folder in tmps:
-        filenames = [f.filename for f in gcs_ls(folder)]
-        if folder + junit in filenames:
-            path = folder + log_file
-            if path in filenames:
-                return path
+    '''
+    Given a junit file, looks in build_dir for log_file in a folder that
+    also includes the junit file.
+    If not given a junit file, returns list of files named log_file in
+    all folders in build_dir.
+    '''
+    if junit:
+        tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+                if '/tmp-node' in f.filename]
+        for folder in tmps:
+            filenames = [f.filename for f in gcs_ls(folder)]
+            if folder + junit in filenames:
+                path = folder + log_file
+                if path in filenames:
+                    return path
+    else:
+        dirs = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+                if f.is_dir]
+        if not dirs:
+            path = re.sub(r'kubelet\.log', '', build_dir)
+            files = [f.filename for f in gcs_ls(path)]
+            if path + log_file in files:
+                return path + log_file
+            return ""
+        log_files = []
+        for folder in dirs:
+            filenames = [f.filename for f in gcs_ls(folder)]
+            if folder + log_file in filenames:
+                path = folder + log_file
+                if path in filenames:
+                    log_files.append(path)
+        return log_files
+
+
+@memcache_memoize('all-logs://', expires=60*60*4)
+def get_all_logs((directory, artifacts)):
+    log_files = {}
+    if artifacts:
+        dirs = [f.filename for f in gcs_ls('%s/artifacts' % directory)
+                if f.is_dir]
+    else:
+        dirs = [directory]
+    for d in dirs:
+        log_files[d] = []
+        for f in gcs_ls(d):
+            log_name = regex.log_re.search(f.filename)
+            if log_name:
+                log_files[d].append(f.filename)
+    return log_files
 
 
 def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict=None):
@@ -322,13 +363,13 @@ class BuildListHandler(RenderingHandler):
 class NodeLogHandler(RenderingHandler):
     def get(self, prefix, job, build):
         """
-        Example variables
+        Examples of variables
         log_files: ["kubelet.log", "kube-apiserver.log"]
         pod_name: "pod-abcdef123"
         junit: "junit_01.xml"
-        uid, namespace, wrap: "on"
-        full_paths: {"kubelet.log":"/storage/path/to/kubelet.log"}
+        uid, namespace, wrap: "on" 
         logs: {"kubelet.log":"parsed kubelet log for html"}
+        all_logs: {"folder_name":["a.log", "b.log"]}
         """
         # pylint: disable=too-many-locals
         self.check_bucket(prefix)
@@ -342,26 +383,45 @@ class NodeLogHandler(RenderingHandler):
         wrap = bool(self.request.get("wrap"))
         filters = {"UID":uid, "pod":pod_name, "Namespace":namespace}
 
-        # default to filtering kubelet log if user unchecks both checkboxes
-        if log_files == []:
-            log_files = ["kubelet.log"]
-
-        kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
-
+        all_logs = {}
         results = {}
-        if kubelet_filename and pod_name:
-            objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
 
-            full_paths = {}
-            if log_files and objref_dict:
-                for filename in log_files:
-                    path = find_log((build_dir, junit, filename))
-                    if path:
-                        full_paths[filename] = path
-                        parsed_file = parse_log_file(path, pod_name, filters,
+        apiserver_filename = find_log((build_dir, junit, "kube-apiserver.log"))
+
+        # For node e2e tests, the folder with the corresponding junit file is the only
+        # relevant one
+        if apiserver_filename and pod_name:
+            # default to filtering kube-apiserver log if user unchecks both checkboxes
+            if log_files == []:
+                log_files = [apiserver_filename]
+        
+            artifact_filename = re.sub("/kube-apiserver.log", "", apiserver_filename)
+            all_logs = get_all_logs((artifact_filename, False))
+            objref_dict = parse_log_file("%s/kubelet.log" % artifact_filename, 
+                pod_name, make_dict=True)
+            if log_files:
+                for file in log_files:
+                    parsed_file = parse_log_file(file, pod_name, filters, 
+                        objref_dict=objref_dict)
+                    if parsed_file:
+                        results[file] = parsed_file
+        # For other tests, give option to investigate across different folders
+        if not apiserver_filename:
+            all_logs = get_all_logs((build_dir, True))
+            kubelet_filenames = find_log((build_dir, False, "kubelet.log"))
+            for kubelet_log in kubelet_filenames:
+                objref_dict = parse_log_file(kubelet_log, pod_name, make_dict=True)
+                if objref_dict:
+                    if log_files == []:
+                        log_files = [kubelet_log]
+                    for file in log_files:
+                        filename = find_log_dirs((kubelet_log, file))
+                        parsed_file = parse_log_file(file, pod_name, filters,
                             objref_dict=objref_dict)
                         if parsed_file:
-                            results[filename] = parsed_file
+                            results[file] = parsed_file
+                    break
+
 
         if results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,
@@ -371,9 +431,9 @@ class NodeLogHandler(RenderingHandler):
 
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, logs=results, job=job,
-            build=build, full_paths=full_paths, log_files=log_files,
+            build=build, log_files=log_files,
             pod=pod_name, junit=junit, uid=uid, namespace=namespace,
-            wrap=wrap, objref_dict=objref_dict))
+            wrap=wrap, objref_dict=objref_dict, all_logs=all_logs))
 
 
 class JobListHandler(RenderingHandler):

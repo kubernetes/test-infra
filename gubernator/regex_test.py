@@ -49,9 +49,9 @@ class RegexTest(unittest.TestCase):
 
     def test_objref(self):
         for text, matches in [
-            ('Event(api.ObjectReference{Kind:\"Pod\"}) failed', True),
-            ('{Pod:\"abc\", Namespace:\"pod abc\"}', False),
-            ('Jan 1: Event(api.ObjectReference{Kind:\"Pod\", Podname:\"abc\"}) failed', True),
+            ('api.ObjectReference{Kind:&#34;Pod&#34;} failed', True),
+            ('{Pod:&#34;abc&#34;, Namespace:\"pod abc\"}', False),
+            ('Jan 1: Event(api.ObjectReference{Kind:&#34;Pod&#34;, Podname:&#34;abc&#34;}) failed', True),
         ]:
             self.assertEqual(bool(regex.objref(text)), matches,
                 'objref(%r) should be %r' % (text, matches))

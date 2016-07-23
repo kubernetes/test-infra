@@ -38,7 +38,7 @@ def parse(lines, hilight_words, filters, objref_dict):
 
     # If the filter is on, look for it in the objref_dict
     for k in filters:
-        if k != "pod" and filters[k] and objref_dict[k]:
+        if k != "pod" and filters[k] and k in objref_dict:
             hilight_words.append(objref_dict[k])
 
     words_re = regex.combine_wordsRE(hilight_words)
@@ -66,3 +66,5 @@ def make_dict(data, pod_re):
                 objref_dict = re.sub(r'(\w+):', r'"\1": ', objref_dict)
                 objref_dict = objref_dict.replace('&#34;', '"')
                 return json.loads(objref_dict)
+    return {}
+    

@@ -33,7 +33,7 @@
 				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% set pod_name = text|parse_pod_name
 				% if pod_name
-					<p>Find <tt>{{pod_name}}</tt> mentions in <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?logfiles=kubelet.log&pod={{pod_name}}&junit={{filename|basename}}&wrap=on">log files</a>
+					<p>Find <tt>{{pod_name}}</tt> mentions in <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}&wrap=on">log files</a>
 				% endif
 			% else
 				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>

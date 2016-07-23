@@ -29,6 +29,7 @@ error_re = re.compile(
 def objref(line):
     return re.search(r'Event\(api\.ObjectReference(\{.+\})', line)
 
-
 def combine_wordsRE(words_list):
-    return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
+	return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
+
+log_re = re.compile(r'[^/]+\.log$')
