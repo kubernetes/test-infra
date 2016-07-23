@@ -5,7 +5,7 @@
 # A custom publisher that prints out critical software versions (OS, K8s, and
 # Docker) in the build history page.
 - publisher:
-    name: version-printer
+    name: e2e-version-printer
     publishers:
         - groovy-postbuild:
             script: |
@@ -15,7 +15,6 @@
                 if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
                 def dockerVersionMatcher = manager.getLogMatcher("KUBE_GCI_DOCKER_VERSION=(.*)")
                 if(dockerVersionMatcher?.matches()) manager.addShortText("<b>Docker Version: " + dockerVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
-
 
 # Template for the continuous e2e Docker validation jobs.
 - job-template:
@@ -47,7 +46,7 @@
         - gcs-uploader
         - description-setter:
             regexp: KUBE_GCE_MASTER_IMAGE=(.*)
-        - version-printer
+        - e2e-version-printer
     # Need the 8 essential kube-system pods ready before declaring cluster ready
     # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
     # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
@@ -75,6 +74,18 @@
     jenkins_node: 'e2e'
     test-owner: 'dchen1107'
     emails: 'dawnchen@google.com'
+
+# A custom publisher that prints out critical software versions (OS, and
+# Docker) in the build history page.
+- publisher:
+    name: node-e2e-version-printer
+    publishers:
+        - groovy-postbuild:
+            script: |
+                def imageMatcher = manager.getLogMatcher("GCI_IMAGE=(.*)")
+                if(imageMatcher?.matches()) manager.addShortText("<b>Image: " + imageMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
+                def dockerVersionMatcher = manager.getLogMatcher("DOCKER_VERSION=(.*)")
+                if(dockerVersionMatcher?.matches()) manager.addShortText("<b>Docker Version: " + dockerVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
 
 # Template for the continuous node e2e Docker validation jobs.
 - job-template:
@@ -109,7 +120,7 @@
         - email-ext:
             recipients: '{emails}'
         - gcs-uploader
-        - version-printer
+        - node-e2e-version-printer
     wrappers:
         - ansicolor:
             colormap: xterm
