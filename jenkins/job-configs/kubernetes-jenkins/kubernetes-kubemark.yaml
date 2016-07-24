@@ -152,10 +152,6 @@
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
                 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
-                # Increase throughput in Kubemark master components.
-                export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
-                # Increase throughput in Load test.
-                export LOAD_TEST_THROUGHPUT=50
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
