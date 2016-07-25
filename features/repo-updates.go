@@ -155,15 +155,28 @@ func (o *RepoInfo) Initialize(config *github.Config) error {
 	if !finfo.IsDir() {
 		return fmt.Errorf("--repo-dir is not a directory")
 	}
+
+	// check if the cloned dir already exists, if yes, cleanup.
+	if _, err := os.Stat(o.projectDir); !os.IsNotExist(err) {
+		if err := o.cleanUp(o.projectDir); err != nil {
+			return fmt.Errorf("Unable to remove old clone directory at %v: %v", o.projectDir, err)
+		}
+	}
+
 	if cloneUrl, err := o.cloneRepo(); err != nil {
 		return fmt.Errorf("Unable to clone %v: %v", cloneUrl, err)
 	}
 	return o.updateRepoUsers()
 }
 
+func (o *RepoInfo) cleanUp(path string) error {
+	err := os.RemoveAll(path)
+	return err
+}
+
 func (o *RepoInfo) cloneRepo() (string, error) {
 	cloneUrl := fmt.Sprintf("https://github.com/%s/%s.git", o.config.Org, o.config.Project)
-	_, err := o.gitCommandDir([]string{"clone", cloneUrl}, o.baseDir)
+	_, err := o.gitCommandDir([]string{"clone", cloneUrl, o.projectDir}, o.baseDir)
 	return cloneUrl, err
 }
 
