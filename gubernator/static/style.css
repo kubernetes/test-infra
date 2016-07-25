@@ -103,3 +103,22 @@ td.pr-build-unstable {
 label:hover {
     cursor: pointer;
 }
+table.pr-dash {
+    border-spacing: 0;
+}
+table.pr-dash tr {
+    cursor: pointer;
+}
+table.pr-dash tbody tr:nth-child(odd) {
+    background: #EEE;
+}
+table.pr-dash tbody tr:hover {
+    background: #e3e9ff;
+}
+#userBox {
+    margin: 10px 0 0 40px;
+    width: 10em;
+}
+h3.pr-section {
+    margin: 1em 0 0 1em;
+}

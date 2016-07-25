@@ -29,6 +29,7 @@ from google.appengine.api import memcache, urlfetch
 import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
+import github.models as ghm
 import gcs_async
 import filters as jinja_filters
 import log_parser
@@ -393,6 +394,33 @@ class PRHandler(RenderingHandler):
         self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX,
             max_builds=max_builds, header=headings, rows=rows))
 
+class PRDashboard(RenderingHandler):
+    def get(self, user=None):
+        # pylint: disable=singleton-comparison
+        qs = [ghm.GHIssueDigest.is_pr == True]
+        if not self.request.get('all', False):
+            qs.append(ghm.GHIssueDigest.is_open == True)
+        if user is not None:
+            qs.append(ghm.GHIssueDigest.involved == user)
+        prs = list(ghm.GHIssueDigest.query(*qs))
+        prs.sort(key=lambda x: x.updated_at, reverse=True)
+        trim = 0
+        if all(pr.repo.startswith('kubernetes/') for pr in prs):
+            trim = len('kubernetes/')
+        if user:
+            cats = [
+                ('Needs Attention', lambda p: user in p.payload['attn'], ''),
+                ('Incoming', lambda p: user in p.payload['assignees'],
+                 'is:open is:pr user:kubernetes assignee:%s' % user),
+                ('Outgoing', lambda p: user == p.payload['author'],
+                 'is:open is:pr user:kubernetes author:%s' % user),
+            ]
+        else:
+            cats = [('Open Kubernetes PRs', lambda x: True,
+                'is:open is:pr user:kubernetes')]
+
+        self.render('pr_dashboard.html', dict(prs=prs,
+            cats=cats, trim=trim, user=user))
 
 class PRBuildLogHandler(webapp2.RequestHandler):
     def get(self, path):
@@ -406,5 +434,7 @@ app = webapp2.WSGIApplication([
     (r'/build/(.*)/([^/]+)/(\d+)/?', BuildHandler),
     (r'/build/(.*)/([^/]+)/(\d+)/nodelog*', NodeLogHandler),
     (r'/pr/(\d+)', PRHandler),
+    (r'/pr/?', PRDashboard),
+    (r'/pr/([-\w]+)', PRDashboard),
     (r'/pr/(.*/build-log.txt)', PRBuildLogHandler),
 ], debug=True)
