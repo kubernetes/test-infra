@@ -14,7 +14,6 @@
 
 import json
 import logging
-import urllib
 import zlib
 
 import google.appengine.ext.ndb as ndb
