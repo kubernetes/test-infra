@@ -236,16 +236,16 @@ class AppTest(unittest.TestCase, TestMixin):
         """Test that a missing kubelet log gives a 404."""
         build_dir = self.BUILD_DIR + 'nodelog?pod=abc'
         response = app.get('/build' + build_dir, status=404)
-        self.assertIn('Missing kubelet.log', response)
+        self.assertIn('Unable to find', response)
 
     def test_nodelog_kubelet(self):
         """Test for a kubelet file."""
-        nodelog_url = self.BUILD_DIR + 'nodelog?logfile=kubelet.log&pod=abc&junit=junit_01.xml'
+        nodelog_url = self.BUILD_DIR + 'nodelog?logfiles=kubelet.log&pod=abc&junit=junit_01.xml'
         init_build(self.BUILD_DIR)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
-        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:&#34;abc&#34;, UID:&#34;podabc&#34;})\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
         response = app.get('/build' + nodelog_url)
-        self.assertRegexpMatches(str(response), re.compile(r'Lines from.*kubelet.log'))
+        self.assertIn("Event(api.ObjectReference{Name", response)
 
 
 class PRTest(unittest.TestCase, TestMixin):

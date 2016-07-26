@@ -17,6 +17,7 @@ import logging
 import datetime
 import os
 import re
+import ast
 
 import jinja2
 
@@ -25,13 +26,13 @@ import regex
     
 def hilight(line, hilight_words):
     # Join all the words that need to be bolded into one regex
-    words_re = re.compile(r'\b(%s)\b' % '|'.join(hilight_words), re.IGNORECASE)     
+    words_re = regex.combine_wordsRE(hilight_words)
     line = words_re.sub(r'<span class="keyword">\1</span>', line)
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, 
-    filters={"uid":"", "pod":"", "namespace":""}, error_re=regex.error_re):
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict={},
+    filters={"UID":"", "pod":"", "Namespace":""}, error_re=regex.error_re):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.
@@ -44,11 +45,11 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
-    if not (filters["uid"] or filters["namespace"]):
+    if not (filters["UID"] or filters["Namespace"]):
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
-        matched_lines, hilight_words = kubelet_parser.parse(lines, error_re, 
-            hilight_words, filters)
+        matched_lines, hilight_words = kubelet_parser.parse(lines,
+            hilight_words, filters, objref_dict)
 
     output = []
     CONTEXT = 4
@@ -74,6 +75,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
         last_match = match
 
     return '\n'.join(output)
+
 
 if __name__ == '__main__':
     import sys

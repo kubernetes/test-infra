@@ -23,28 +23,46 @@ import jinja2
 
 import regex
 
-def parse(lines, error_re, hilight_words, filters):
+def parse(lines, hilight_words, filters, objref_dict):
     """
-    Given filters returns indeces of wanted lines from the kubelet log
+    Given filters returns indeces of wanted lines from log
 
     Args:
-        lines: array of kubelet log lines
-        error_re: regular expression of the failed pod name
+        lines: array of log lines
         hilight_words: array of words that need to be bolded
         filters: dictionary of which filters to apply
+        objref_dict: a dictionary where the keys are possible filters 
+        and the values are the words to be hilighted 
     Returns:
         matched_lines: ordered array of indeces of lines to display
         hilight_words: updated hilight_words
     """
     matched_lines = []
-    uid = ""
-    namespace = ""
+    
+    # If the filter is on, look for it in the objref_dict
+    for k in filters:
+        if k != "pod" and filters[k] and objref_dict[k]:
+            hilight_words.append(objref_dict[k])
+
+    words_re = regex.combine_wordsRE(hilight_words)
 
     for n, line in enumerate(lines):
-        if error_re.search(line):
+        if words_re.search(line):
             matched_lines.append(n)
 
-            # If the line is the ObjectReference line, make a dictionary
+    return matched_lines, hilight_words
+
+
+def make_dict(data, pod_re):
+    """
+    Given the log file and the failed pod name, returns a dictionary
+    containing the namespace, UID, and other information associated with the pod.
+
+    This dictionary is lifted from the line with the ObjectReference
+    """
+    lines = unicode(jinja2.escape(data)).split('\n')
+    for line in lines:
+        if pod_re.search(line):
             objref = regex.objref(line)
             if objref and objref.group(1) != "":
                 objref_dict = objref.group(1)        
@@ -55,18 +73,4 @@ def parse(lines, error_re, hilight_words, filters):
 
                 # Convert string into dictionary
                 objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
-
-                if uid == "" and filters["uid"] and objref_dict["UID"]:
-                    uid = objref_dict["UID"]
-                    hilight_words.append(uid)
-                if namespace == "" and filters["namespace"] and objref_dict["Namespace"]:
-                    namespace = objref_dict["Namespace"]
-                    hilight_words.append(namespace)
-
-        if uid != "" and matched_lines[-1] != n:
-            uid_re = regex.wordRE(uid)
-            if uid_re.search(line):
-                matched_lines.append(n)
-        matched_lines.sort()
-
-    return matched_lines, hilight_words
+                return objref_dict

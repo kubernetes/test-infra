@@ -32,6 +32,7 @@ import cloudstorage as gcs
 import gcs_async
 import filters
 import log_parser
+import kubelet_parser
 import pull_request
 import regex
 
@@ -200,13 +201,18 @@ def find_log((build_dir, junit, log_file)):
                 return path
 
 
-def parse_log_file(log_filename, pod, filters):
+def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict=None):
+    """Based on make_dict, either returns the objref_dict or the parsed log file"""
     log = gcs_async.read(log_filename).get_result()
     if log is None:
         return None
     pod_re = regex.wordRE(pod)
-    return log_parser.digest(log.decode('utf8','replace'), 
-        error_re=pod_re, filters=filters)
+
+    if make_dict:
+        return kubelet_parser.make_dict(log.decode('utf8','replace'), pod_re)
+    else:
+        return log_parser.digest(log.decode('utf8','replace'), 
+        error_re=pod_re, filters=filters, objref_dict=objref_dict)
 
 
 @memcache_memoize('pr-details://', expires=60 * 3)
@@ -314,31 +320,58 @@ class BuildListHandler(RenderingHandler):
 
 class NodeLogHandler(RenderingHandler):
     def get(self, prefix, job, build):
+        """
+        Example variables
+        log_files: ["kubelet.log", "kube-apiserver.log"]
+        pod_name: "pod-abcdef123"
+        junit: "junit_01.xml"
+        uid, namespace, wrap: "on" 
+        full_paths: {"kubelet.log":"/storage/path/to/kubelet.log"}
+        logs: {"kubelet.log":"parsed kubelet log for html"}
+        """
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
-        log_file = self.request.get("logfile")
+        log_files = self.request.get_all("logfiles")
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         uid = bool(self.request.get("UID"))
         namespace = bool(self.request.get("Namespace"))
-        filters = {"uid":uid, "pod":pod_name, "namespace":namespace}
-        filename = find_log((build_dir, junit, log_file))
+        wrap = bool(self.request.get("wrap"))
+        filters = {"UID":uid, "pod":pod_name, "Namespace":namespace}
 
-        result = None
-        if filename:
-            result = parse_log_file(filename, pod_name, filters)
-        if filename is None or result is None:
-            self.render('node_404.html', {"build_dir": build_dir,
+        # default to filtering kubelet log if user unchecks both checkboxes
+        if log_files == []:
+            log_files = ["kubelet.log"]
+
+        kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
+        
+        results = {}
+        if kubelet_filename and pod_name:
+            objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
+
+            full_paths = {}
+            if log_files and objref_dict:
+                for file in log_files:
+                    filename = find_log((build_dir, junit, file))
+                    if filename:
+                        full_paths[file] = filename
+                        parsed_file = parse_log_file(filename, pod_name, filters, 
+                            objref_dict=objref_dict)
+                        if parsed_file:
+                            results[file] = parsed_file
+
+        if results == {}:
+            self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,
                 "pod_name":pod_name, "junit":junit})
             self.response.set_status(404)
             return
 
         self.render('filtered_log.html', dict(
-            job_dir=job_dir, build_dir=build_dir, log=result, job=job,
-            build=build, full_path=filename, log_file=log_file,
-            pod=pod_name, junit=junit, uid=uid,
-            namespace=namespace))
+            job_dir=job_dir, build_dir=build_dir, logs=results, job=job,
+            build=build, full_paths=full_paths, log_files=log_files,
+            pod=pod_name, junit=junit, uid=uid, namespace=namespace,
+            wrap=wrap, objref_dict=objref_dict))
 
 
 class JobListHandler(RenderingHandler):
