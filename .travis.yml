@@ -3,7 +3,7 @@ cache: pip
 python:
     - "2.7"
 env:
-    - GAE_ZIP=google_appengine_1.9.36.zip
+    - GAE_ZIP=google_appengine_1.9.40.zip GAE_ROOT=${HOME}/google_appengine
 cache: pip
 services:
     - docker
@@ -19,4 +19,6 @@ script:
     - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
-    - cd gubernator && nosetests --with-gae --gae-lib-root=${HOME}/google_appengine/
+    - cd gubernator
+    - nosetests --with-gae --gae-lib-root=${GAE_ROOT}
+    - ./lint.sh

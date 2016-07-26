@@ -1,2 +1,3 @@
 webtest
 nosegae
+pylint==1.6.4
