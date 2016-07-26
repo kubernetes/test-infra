@@ -23,7 +23,7 @@ import jinja2
 
 import kubelet_parser
 import regex
-    
+
 def hilight(line, hilight_words):
     # Join all the words that need to be bolded into one regex
     words_re = regex.combine_wordsRE(hilight_words)

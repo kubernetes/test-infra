@@ -20,5 +20,5 @@ from google.appengine.ext import vendor
 vendor.add('third_party')
 
 # Use remote GCS calls for local development.
-if os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
+if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
     os.environ['SERVER_SOFTWARE'] += ' remote_api'

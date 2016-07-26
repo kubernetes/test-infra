@@ -19,25 +19,27 @@ import re
 
 # Match a specific word
 def wordRE(word):
-	return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
+    return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
 
 # Match lines with error messages
-error_re = re.compile(r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
+error_re = re.compile(
+    r'\b(error|fatal|failed|build timed out)\b', re.IGNORECASE)
 
 # Match the keys in the object reference string
 keys_re = re.compile(r'[\s|\{]([^:]*)')
 
 # Match the dictionary string in the given line
 def objref(line):
-	return re.search(r'Event\(api\.ObjectReference(\{.*\})', line)
+    return re.search(r'Event\(api\.ObjectReference(\{.*\})', line)
 
 # Make the key of the objref dict a string, ie: {UID:"pod"} -> {"UID":"pod"}
 def key_to_string(k, objref_dict):
-	return re.sub(r'(%s):'%k, '\"%s\":'%k, objref_dict)
+    return re.sub(r'(%s):' % k, '\"%s\":' % k, objref_dict)
 
 # Replace &#34; with \"
 def fix_quotes(objref_dict):
-	return re.sub(r'&#34;', '\"', objref_dict)
+    return re.sub(r'&#34;', '\"', objref_dict)
+
 
 def combine_wordsRE(words_list):
-	return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
+    return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)

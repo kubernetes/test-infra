@@ -94,5 +94,5 @@ class GCSAsyncTest(unittest.TestCase):
     def test_listdirs(self):
         install_handler(self.testbed.get_stub('urlfetch'),
             {'foo/': ['bar', 'baz']}, base='base/')
-        self.assertEqual(gcs_async.listdirs('buck/base/foo/').get_result(), 
+        self.assertEqual(gcs_async.listdirs('buck/base/foo/').get_result(),
             ['buck/base/foo/bar/', 'buck/base/foo/baz/'])
