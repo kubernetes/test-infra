@@ -30,7 +30,7 @@ import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
 import gcs_async
-import filters
+import filters as jinja_filters
 import log_parser
 import kubelet_parser
 import pull_request
@@ -64,7 +64,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     trim_blocks=True,
     autoescape=True)
 JINJA_ENVIRONMENT.line_statement_prefix = '%'
-filters.register(JINJA_ENVIRONMENT.filters)
+jinja_filters.register(JINJA_ENVIRONMENT.filters)
 
 
 def pad_numbers(s):
@@ -114,7 +114,7 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
 def gcs_ls(path):
     """Enumerate files in a GCS directory. Returns a list of FileStats."""
     if path[-1] != '/':
-      path += '/'
+        path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
 
@@ -329,6 +329,7 @@ class NodeLogHandler(RenderingHandler):
         full_paths: {"kubelet.log":"/storage/path/to/kubelet.log"}
         logs: {"kubelet.log":"parsed kubelet log for html"}
         """
+        # pylint: disable=too-many-locals
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
@@ -352,14 +353,14 @@ class NodeLogHandler(RenderingHandler):
 
             full_paths = {}
             if log_files and objref_dict:
-                for file in log_files:
-                    filename = find_log((build_dir, junit, file))
-                    if filename:
-                        full_paths[file] = filename
-                        parsed_file = parse_log_file(filename, pod_name, filters,
+                for filename in log_files:
+                    path = find_log((build_dir, junit, filename))
+                    if path:
+                        full_paths[filename] = path
+                        parsed_file = parse_log_file(path, pod_name, filters,
                             objref_dict=objref_dict)
                         if parsed_file:
-                            results[file] = parsed_file
+                            results[filename] = parsed_file
 
         if results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,

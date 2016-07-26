@@ -53,11 +53,10 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
     def matches(url):
         return url.startswith(gcs_async.STORAGE_API_URL)
 
-    def dispatch(method, url, payload):
+    def dispatch(method, url, _payload):
         if method != 'GET':
             raise ValueError('unhandled method %s' % method)
         parsed = urlparse.urlparse(url)
-        path = parsed.path
         param_dict = urlparse.parse_qs(parsed.query, True)
         prefix = param_dict['prefix'][0]
         return json.dumps({'prefixes': prefixes_for_paths[prefix]})
@@ -65,6 +64,7 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
     def fetch_stub(url, payload, method, headers, request, response,
                    follow_redirects=False, deadline=None,
                    validate_certificate=None):
+        # pylint: disable=too-many-arguments,unused-argument
         result = dispatch(method, url, payload)
         response.set_statuscode(200)
         response.set_content(result)
@@ -73,6 +73,7 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
         header.set_value(str(len(result)))
 
     # this is gross, but there doesn't appear to be a better way
+    # pylint: disable=protected-access
     stub._urlmatchers_to_fetch_functions.append((matches, fetch_stub))
 
 

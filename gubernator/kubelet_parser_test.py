@@ -68,8 +68,7 @@ class KubeletParserTest(unittest.TestCase):
 
     def test_make_dict_fail(self):
         """Test when objref line not in file"""
-        lines = ["pod failed"]
-        objref_dict = kubelet_parser.make_dict(lines, regex.wordRE("abc"))
+        objref_dict = kubelet_parser.make_dict(["pod failed"], regex.wordRE("abc"))
         self.assertEqual(objref_dict, None)
 
 if __name__ == '__main__':

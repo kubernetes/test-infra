@@ -38,7 +38,7 @@ def get(url):
             if result.headers.get('content-encoding') == 'gzip':
                 content = zlib.decompress(result.content, 15 | 16)
             raise ndb.Return(content)
-        logging.error("unable to fetch '%s': status code %d" % (url, status))
+        logging.error("unable to fetch '%s': status code %d", url, status)
         raise ndb.Return(None)
 
 
@@ -83,4 +83,3 @@ def listdirs(path):
         raise ndb.Return(None)
     prefixes = json.loads(res).get('prefixes', [])
     raise ndb.Return(['%s/%s' % (bucket, prefix) for prefix in prefixes])
-

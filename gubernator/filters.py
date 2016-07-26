@@ -42,7 +42,6 @@ def do_duration(seconds):
     """Convert a numeric duration in seconds into a human-readable string."""
     hours, seconds = divmod(seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
-    out = ''
     if hours:
         return '%dh%dm' % (hours, minutes)
     if minutes:
