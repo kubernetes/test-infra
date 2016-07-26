@@ -28,3 +28,13 @@ function fix_timestamps() {
 	replace('timestamp', 'YYYY-MM-DD HH:mm z')
 	replace('shorttimestamp', 'DD HH:mm')
 }
+
+function toggle_skipped(className) {
+	if (document.getElementById(className).style.display == "none") { 
+		document.getElementById(className).style.display = "block"; 
+	}
+	else { 
+		document.getElementById(className).style.display = "none"; 
+	}
+}
+

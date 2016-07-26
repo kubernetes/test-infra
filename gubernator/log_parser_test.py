@@ -43,7 +43,7 @@ class LogParserTest(unittest.TestCase):
 
     def test_context(self):
         self.expect('0 1 2 3 4 5 error 6 7 8 9 10',
-                    's2 2 3 4 5 error 6 7 8 9')
+                    's2  0 1  2 3 4 5 error 6 7 8 9')
 
     def test_multi_context(self):
         self.expect('0 1 2 3 4 error-1 6 error-2 8 9 10 11 12',
@@ -51,7 +51,7 @@ class LogParserTest(unittest.TestCase):
 
     def test_skip_count(self):
         self.expect('error 1 2 3 4 5 6 7 8 9 A error-2',
-                    'error 1 2 3 4 s2 7 8 9 A error-2')
+                    'error 1 2 3 4 s2  5 6  7 8 9 A error-2')
 
     def test_skip_at_least_two(self):
         self.expect('error 1 2 3 4 5 6 7 8 error-2',
