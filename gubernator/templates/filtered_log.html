@@ -13,9 +13,10 @@
 		<input type="hidden" name="junit" value="{{junit}}">
 		<hr>
 		<label><input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on</label>
-		% for folder, filenames in all_logs.items()
+		% for folder, filenames in all_logs.items()|sort
 			<hr>
-			<h4> {{folder}} </h4>
+			% set artifact = folder|dirname|basename
+			<h4> {{artifact}} </h4>
 			% for filename in filenames
 			% set log_name = filename|basename
 			<label><input type="checkbox" name="logfiles" value={{filename}} {% if filename in log_files %} checked {% endif %}> {{log_name}}</label> 

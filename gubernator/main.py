@@ -408,12 +408,15 @@ class NodeLogHandler(RenderingHandler):
         # For other tests, give option to investigate across different folders
         if not apiserver_filename:
             all_logs = get_all_logs((build_dir, True))
+            apiserver_filename = find_log((build_dir, False, "kube-apiserver.log"))
             kubelet_filenames = find_log((build_dir, False, "kubelet.log"))
             for kubelet_log in kubelet_filenames:
                 objref_dict = parse_log_file(kubelet_log, pod_name, make_dict=True)
                 if objref_dict:
                     if log_files == []:
                         log_files = [kubelet_log]
+                        if apiserver_filename:
+                            log_files.extend(apiserver_filename)
                     for file in log_files:
                         filename = find_log_dirs((kubelet_log, file))
                         parsed_file = parse_log_file(file, pod_name, filters,
