@@ -27,9 +27,12 @@ error_re = re.compile(
 
 # Match the dictionary string in the given line
 def objref(line):
-    return re.search(r'Event\(api\.ObjectReference(\{.+\})', line)
+    return re.search(r'api\.ObjectReference(\{.*?&#34;\})', line)
 
 def combine_wordsRE(words_list):
-	return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
+    return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
 
 log_re = re.compile(r'[^/]+\.log$')
+
+def containerID(line):
+    return re.search(r'ContainerID:([0-9A-Fa-f]*)', line)

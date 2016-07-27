@@ -75,13 +75,13 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
     lines = unicode(jinja2.escape(data)).split('\n')
 
     if filters is None:
-        filters = {'Namespace': '', 'UID': '', 'pod': ''}
+        filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
     hilight_words = ["error", "fatal", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
-    if not (filters["UID"] or filters["Namespace"]):
+    if not (filters["UID"] or filters["Namespace"] or filters["ContainerID"]):
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
         matched_lines, hilight_words = kubelet_parser.parse(lines,

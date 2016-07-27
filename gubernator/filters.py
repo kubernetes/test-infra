@@ -97,11 +97,12 @@ def do_testcmd(name):
         test_args = ('--ginkgo.focus=%s$' % name_escaped)
         return "go run hack/e2e.go -v -test --test_args='%s'" % test_args
 
+
 def do_parse_pod_name(text):
     """Find the pod name from the failure and return the pod name."""
     p = re.search(r'(.*) pod (.*?) .*', text)
     if p:
-        return re.sub(r'(\'|\"|\\)', '', p.group(2))
+        return re.sub(r'[\'"\\:]', '', p.group(2))
     else:
         return ""
 
