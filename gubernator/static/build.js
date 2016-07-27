@@ -29,12 +29,7 @@ function fix_timestamps() {
 	replace('shorttimestamp', 'DD HH:mm')
 }
 
-function toggle_skipped(className) {
-	if (document.getElementById(className).style.display == "none") { 
-		document.getElementById(className).style.display = "block"; 
-	}
-	else { 
-		document.getElementById(className).style.display = "none"; 
-	}
+function show_skipped(ID) {
+	document.getElementById(ID).style.display = "block"; 
 }
 

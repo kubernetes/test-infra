@@ -69,6 +69,9 @@ span.time {
     font-weight: lighter;
     font-family: monospace;
 }
+span.skipped{
+    color: #666666;
+}
 a.anchor, pre.error>a {
     color: inherit;
 }

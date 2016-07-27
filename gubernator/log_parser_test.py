@@ -71,7 +71,7 @@ class LogParserTest(unittest.TestCase):
         self.assertEqual(digest('0 1 2 3 4 5 pod 6 7 8 9 10',
             error_re=regex.wordRE("pod"),
             filters={"pod": "pod", "UID": "", "Namespace": ""}),
-            's2 2 3 4 5 pod 6 7 8 9')
+            's2  0 1  2 3 4 5 pod 6 7 8 9')
 
 
 if __name__ == '__main__':

@@ -64,10 +64,14 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
             previous_end = 0
         skip_amount = match - previous_end - CONTEXT
         if skip_amount > 1:
-            output.append('<span class="skip"><a href="javascript:toggle_skipped(%s)">%s</a></span>' % (match, skip_fmt(skip_amount)))
-            output.append('<div id="%s" style = "display:none;"><p>' % match)
+            output.append('<span class="skip"><a href="javascript:show_skipped(\'skip_%s\')"'
+                % match)
+            output.append('onclick="this.style.display=\'none\'">%s</a></span>'
+                % skip_fmt(skip_amount))
+            output.append('<div id="skip_%s" style="display:none;"><p><span class="skipped">'
+                % match)
             output.extend(lines[previous_end:match-CONTEXT])
-            output.append('</p></div>')
+            output.append('</span></p></div>')
         elif skip_amount == 1:  # pointless say we skipped 1 line
             output.append(lines[previous_end])
         if match == len(lines):
