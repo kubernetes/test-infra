@@ -126,18 +126,16 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	commits, err := obj.GetCommits()
+	files, err := obj.ListFiles()
 	if err != nil {
 		return
 	}
 
 	needsLabels := sets.NewString()
-	for _, c := range commits {
-		for _, f := range c.Files {
-			for _, lm := range p.labelMap {
-				if lm.regexp.MatchString(*f.Filename) {
-					needsLabels.Insert(lm.label)
-				}
+	for _, f := range files {
+		for _, lm := range p.labelMap {
+			if lm.regexp.MatchString(*f.Filename) {
+				needsLabels.Insert(lm.label)
 			}
 		}
 	}
