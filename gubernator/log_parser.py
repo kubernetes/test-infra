@@ -28,6 +28,40 @@ def hilight(line, hilight_words):
     return '<span class="hilight">%s</span>' % line
 
 
+def log_html(lines, matched_lines, hilight_words, skip_fmt):
+    output = []
+
+    matched_lines.append(len(lines))  # sentinel value
+
+    last_match = None
+    for match in matched_lines:
+        if last_match is not None:
+            previous_end = min(match, last_match + CONTEXT + 1)
+            output.extend(lines[last_match + 1: previous_end])
+        else:
+            previous_end = 0
+        skip_amount = match - previous_end - CONTEXT
+        if skip_amount > 1:
+            skip_id = 'skip_%s' % match
+            output.append('<span class="skip"><a href="javascript:show_skipped(\'%s\')"'
+                % skip_id)
+            output.append('onclick="this.style.display=\'none\'">%s</a></span>'
+                % skip_fmt(skip_amount))
+            output.append('<div id="%s" style="display:none;"><p><span class="skipped">'
+                % skip_id)
+            output.extend(lines[previous_end:match-CONTEXT])
+            output.append('</span></p></div>')
+        elif skip_amount == 1:  # pointless say we skipped 1 line
+            output.append(lines[previous_end])
+        if match == len(lines):
+            break
+        output.extend(lines[max(previous_end, match - CONTEXT): match])
+        output.append(hilight(lines[match], hilight_words))
+        last_match = match
+
+    return output
+
+
 def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
       objref_dict=None, filters=None, error_re=regex.error_re):
     """
@@ -51,34 +85,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
         matched_lines, hilight_words = kubelet_parser.parse(lines,
             hilight_words, filters, objref_dict)
 
-    output = []
-
-    matched_lines.append(len(lines))  # sentinel value
-
-    last_match = None
-    for match in matched_lines:
-        if last_match is not None:
-            previous_end = min(match, last_match + CONTEXT + 1)
-            output.extend(lines[last_match + 1: previous_end])
-        else:
-            previous_end = 0
-        skip_amount = match - previous_end - CONTEXT
-        if skip_amount > 1:
-            output.append('<span class="skip"><a href="javascript:show_skipped(\'skip_%s\')"'
-                % match)
-            output.append('onclick="this.style.display=\'none\'">%s</a></span>'
-                % skip_fmt(skip_amount))
-            output.append('<div id="skip_%s" style="display:none;"><p><span class="skipped">'
-                % match)
-            output.extend(lines[previous_end:match-CONTEXT])
-            output.append('</span></p></div>')
-        elif skip_amount == 1:  # pointless say we skipped 1 line
-            output.append(lines[previous_end])
-        if match == len(lines):
-            break
-        output.extend(lines[max(previous_end, match - CONTEXT): match])
-        output.append(hilight(lines[match], hilight_words))
-        last_match = match
+    output = log_html(lines, matched_lines, hilight_words, skip_fmt)
 
     return '\n'.join(output)
 
