@@ -58,7 +58,7 @@ func TestAssignFixes(t *testing.T) {
 	}
 	for _, test := range tests {
 		test.prIssue.Body = &test.prBody
-		client, server, mux := github_test.InitServer(t, test.prIssue, test.pr, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, test.prIssue, test.pr, nil, nil, nil, nil, nil)
 		path := fmt.Sprintf("/repos/o/r/issues/%d", *test.fixesIssue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			data, err := json.Marshal(test.fixesIssue)

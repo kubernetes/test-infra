@@ -115,7 +115,7 @@ func TestCherrypickAuthApprove(t *testing.T) {
 
 		pr := ValidPR()
 		pr.Base.Ref = &test.prBranch
-		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil, nil, nil)
 
 		path := fmt.Sprintf("/repos/o/r/issues/%d/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
