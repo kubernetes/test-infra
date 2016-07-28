@@ -26,9 +26,10 @@ def builds_to_table(jobs):
         headings: a list of [(version, column width, timestamp)]
         rows: a list of [(build, [(number, status) or None])]
     """
+    # pylint: disable=too-many-locals
 
     def commit(version):
-         return version.split('+')[-1]
+        return version.split('+')[-1]
 
     # Compute the headings first -- versions and their maximum build counts.
 

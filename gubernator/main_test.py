@@ -21,11 +21,8 @@ To run these tests:
     $ nosetests --with-gae --gae-lib-root ~/google_appengine/
 """
 
-import json
 import os
-import re
 import unittest
-import urlparse
 
 import webtest
 
@@ -52,13 +49,6 @@ Error Goes Here</failure>
 </testsuite>'''
 
 
-def write(path, data):
-    if not isinstance(data, str):
-        data = json.dumps(data)
-    with gcs.open(path, 'w') as f:
-        f.write(data)
-
-
 def init_build(build_dir, started=True, finished=True):
     """Create faked files for a build."""
     if started:
@@ -77,7 +67,8 @@ class HelperTest(unittest.TestCase):
 
 
 class ParseJunitTest(unittest.TestCase):
-    def parse(self, xml):
+    @staticmethod
+    def parse(xml):
         return list(main.parse_junit(xml, "fp"))
 
     def test_normal(self):
@@ -104,7 +95,7 @@ class ParseJunitTest(unittest.TestCase):
         self.assertEqual(self.parse('''<body />'''), [])
 
 
-class TestMixin(object):
+class TestBase(unittest.TestCase):
     def init_stubs(self):
         self.testbed.init_memcache_stub()
         self.testbed.init_app_identity_stub()
@@ -115,7 +106,7 @@ class TestMixin(object):
         gcs_async.GCS_API_URL = gcs.common.local_api_url()
 
 
-class AppTest(unittest.TestCase, TestMixin):
+class AppTest(TestBase):
     BUILD_DIR = '/kubernetes-jenkins/logs/somejob/1234/'
 
     def setUp(self):
@@ -243,12 +234,13 @@ class AppTest(unittest.TestCase, TestMixin):
         nodelog_url = self.BUILD_DIR + 'nodelog?logfiles=kubelet.log&pod=abc&junit=junit_01.xml'
         init_build(self.BUILD_DIR)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
-        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log', 'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
+            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
         response = app.get('/build' + nodelog_url)
         self.assertIn("Event(api.ObjectReference{Name", response)
 
 
-class PRTest(unittest.TestCase, TestMixin):
+class PRTest(TestBase):
     BUILDS = {
         'build': [('12', {'version': 'bb', 'timestamp': 1467147654}, None),
                   ('11', {'version': 'bb', 'timestamp': 1467146654}, {'result': 'PASSED'}),

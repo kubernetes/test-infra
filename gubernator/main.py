@@ -30,7 +30,7 @@ import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
 import gcs_async
-import filters
+import filters as jinja_filters
 import log_parser
 import kubelet_parser
 import pull_request
@@ -64,7 +64,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     trim_blocks=True,
     autoescape=True)
 JINJA_ENVIRONMENT.line_statement_prefix = '%'
-filters.register(JINJA_ENVIRONMENT.filters)
+jinja_filters.register(JINJA_ENVIRONMENT.filters)
 
 
 def pad_numbers(s):
@@ -114,7 +114,7 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
 def gcs_ls(path):
     """Enumerate files in a GCS directory. Returns a list of FileStats."""
     if path[-1] != '/':
-      path += '/'
+        path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
 
@@ -209,9 +209,9 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
     pod_re = regex.wordRE(pod)
 
     if make_dict:
-        return kubelet_parser.make_dict(log.decode('utf8','replace'), pod_re)
+        return kubelet_parser.make_dict(log.decode('utf8', 'replace'), pod_re)
     else:
-        return log_parser.digest(log.decode('utf8','replace'), 
+        return log_parser.digest(log.decode('utf8', 'replace'),
         error_re=pod_re, filters=filters, objref_dict=objref_dict)
 
 
@@ -325,10 +325,11 @@ class NodeLogHandler(RenderingHandler):
         log_files: ["kubelet.log", "kube-apiserver.log"]
         pod_name: "pod-abcdef123"
         junit: "junit_01.xml"
-        uid, namespace, wrap: "on" 
+        uid, namespace, wrap: "on"
         full_paths: {"kubelet.log":"/storage/path/to/kubelet.log"}
         logs: {"kubelet.log":"parsed kubelet log for html"}
         """
+        # pylint: disable=too-many-locals
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
@@ -345,21 +346,21 @@ class NodeLogHandler(RenderingHandler):
             log_files = ["kubelet.log"]
 
         kubelet_filename = find_log((build_dir, junit, "kubelet.log"))
-        
+
         results = {}
         if kubelet_filename and pod_name:
             objref_dict = parse_log_file(kubelet_filename, pod_name, make_dict=True)
 
             full_paths = {}
             if log_files and objref_dict:
-                for file in log_files:
-                    filename = find_log((build_dir, junit, file))
-                    if filename:
-                        full_paths[file] = filename
-                        parsed_file = parse_log_file(filename, pod_name, filters, 
+                for filename in log_files:
+                    path = find_log((build_dir, junit, filename))
+                    if path:
+                        full_paths[filename] = path
+                        parsed_file = parse_log_file(path, pod_name, filters,
                             objref_dict=objref_dict)
                         if parsed_file:
-                            results[file] = parsed_file
+                            results[filename] = parsed_file
 
         if results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,

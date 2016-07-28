@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import unittest
 
 import regex
@@ -83,7 +82,7 @@ class RegexTest(unittest.TestCase):
             ('{Pod:"abc", &#34;Kind&#34;:"pod abc"}', '{Pod:"abc", "Kind":"pod abc"}'),
         ]:
             self.assertEqual(regex.fix_quotes(text), matches,
-                'fix_quotes(%r) should be %r' % (text, matches))    
+                'fix_quotes(%r) should be %r' % (text, matches))
 
 
 if __name__ == '__main__':

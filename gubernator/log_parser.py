@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import datetime
-import os
-import re
-import ast
-
 import jinja2
 
 import kubelet_parser
 import regex
-    
+
+CONTEXT = 4
+
+
 def hilight(line, hilight_words):
     # Join all the words that need to be bolded into one regex
     words_re = regex.combine_wordsRE(hilight_words)
@@ -31,8 +28,8 @@ def hilight(line, hilight_words):
     return '<span class="hilight">%s</span>' % line
 
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict={},
-    filters={"UID":"", "pod":"", "Namespace":""}, error_re=regex.error_re):
+def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
+      objref_dict=None, filters=None, error_re=regex.error_re):
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.
@@ -41,7 +38,10 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict
     """
     lines = unicode(jinja2.escape(data)).split('\n')
 
-    hilight_words=["error", "fatal", "failed", "build timed out"]
+    if filters is None:
+        filters = {'Namespace': '', 'UID': '', 'pod': ''}
+
+    hilight_words = ["error", "fatal", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
@@ -52,7 +52,6 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l, objref_dict
             hilight_words, filters, objref_dict)
 
     output = []
-    CONTEXT = 4
 
     matched_lines.append(len(lines))  # sentinel value
 

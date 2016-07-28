@@ -61,7 +61,7 @@ class HelperTest(unittest.TestCase):
     def test_testcmd_e2e(self):
         self.assertEqual(filters.do_testcmd('[k8s.io] Proxy [k8s.io] works'),
             "go run hack/e2e.go -v -test --test_args='--ginkgo.focus="
-            "Proxy\\s\\[k8s\\.io\\]\\sworks$'" )
+            "Proxy\\s\\[k8s\\.io\\]\\sworks$'")
 
 
 if __name__ == '__main__':

@@ -20,23 +20,25 @@ import pull_request
 
 
 def make(number, version, result, start_time=1000):
-	started = None if version is None else {'timestamp': start_time, 'version': version}
-	finished = result and {'result': result}
-	return (number, started, finished)
+    started = None if version is None else {
+        'timestamp': start_time, 'version': version}
+    finished = result and {'result': result}
+    return (number, started, finished)
 
 
 class TableTest(unittest.TestCase):
-	def test_builds_to_table(self):
-		jobs = {'J1': [make(4, 'v2', 'A', 9), make(3, 'v2', 'B', 10)],
-				'J2': [make(5, 'v1', 'C', 7), make(4, 'v1', 'D', 6)]}
-		max_builds, headings, rows = pull_request.builds_to_table(jobs)
 
-		self.assertEqual(max_builds, 4)
-		self.assertEqual(headings, [('v2', 2, 9), ('v1', 2, 6)])
-		self.assertEqual(rows, [('J1', [(4, 'A'), (3, 'B')]),
-								('J2', [None, None, (5, 'C'), (4, 'D')])])
+    def test_builds_to_table(self):
+        jobs = {'J1': [make(4, 'v2', 'A', 9), make(3, 'v2', 'B', 10)],
+                'J2': [make(5, 'v1', 'C', 7), make(4, 'v1', 'D', 6)]}
+        max_builds, headings, rows = pull_request.builds_to_table(jobs)
 
-	def test_builds_to_table_no_header(self):
-		jobs = {'J': [make(5, None, 'A', 3), make(4, '', 'B', 2)]}
-		self.assertEqual(pull_request.builds_to_table(jobs),
-						 (0, [], [('J', [(5, 'A'), (4, 'B')])]))
+        self.assertEqual(max_builds, 4)
+        self.assertEqual(headings, [('v2', 2, 9), ('v1', 2, 6)])
+        self.assertEqual(rows, [('J1', [(4, 'A'), (3, 'B')]),
+                                ('J2', [None, None, (5, 'C'), (4, 'D')])])
+
+    def test_builds_to_table_no_header(self):
+        jobs = {'J': [make(5, None, 'A', 3), make(4, '', 'B', 2)]}
+        self.assertEqual(pull_request.builds_to_table(jobs),
+                         (0, [], [('J', [(5, 'A'), (4, 'B')])]))

@@ -42,7 +42,6 @@ def do_duration(seconds):
     """Convert a numeric duration in seconds into a human-readable string."""
     hours, seconds = divmod(seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
-    out = ''
     if hours:
         return '%dh%dm' % (hours, minutes)
     if minutes:
@@ -96,8 +95,8 @@ def do_parse_pod_name(text):
     """Find the pod name from the failure and return the pod name."""
     p = re.search(r'(.*) pod (.*?) .*', text)
     if p:
-        return re.sub(r'(\'|\"|\\)', '', p.group(2))                  
-    else: 
+        return re.sub(r'(\'|\"|\\)', '', p.group(2))
+    else:
         return ""
 
 do_basename = os.path.basename

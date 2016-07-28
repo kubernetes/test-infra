@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from google.appengine.ext import vendor
-
-# Add any libraries installed in the "third_party" folder.
-vendor.add('third_party')
-
-# Use remote GCS calls for local development.
-if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
-    os.environ['SERVER_SOFTWARE'] += ' remote_api'
+set -o errexit -o pipefail -o nounset
+export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.6"
+cd "$(dirname "$0")"
+pylint *.py
