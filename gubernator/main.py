@@ -399,6 +399,15 @@ class PRBuildLogHandler(webapp2.RequestHandler):
         self.redirect('https://storage.googleapis.com/%s/%s' % (PR_PREFIX, path))
 
 
+class ParenRedirector(webapp2.RequestHandler):
+    '''
+    I don't know where these links are coming from, but many people hit 404s
+    trying to get pages with )s on the end. Try to help them along
+    '''
+    def get(self, path):
+        self.redirect(path)
+
+
 app = webapp2.WSGIApplication([
     (r'/', IndexHandler),
     (r'/jobs/(.*)$', JobListHandler),
@@ -407,4 +416,5 @@ app = webapp2.WSGIApplication([
     (r'/build/(.*)/([^/]+)/(\d+)/nodelog*', NodeLogHandler),
     (r'/pr/(\d+)', PRHandler),
     (r'/pr/(.*/build-log.txt)', PRBuildLogHandler),
+    (r'(.*)\)', ParenRedirector),  # this is a catch-all handler.
 ], debug=True)

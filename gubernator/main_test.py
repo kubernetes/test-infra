@@ -292,3 +292,9 @@ class PRTest(TestBase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('https://storage.googleapis.com', response.location)
         self.assertIn(path, response.location)
+
+    def test_paren_redirect(self):
+        path = '/abc/123/def'
+        response = app.get(path + ')')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'http://localhost' + path)
