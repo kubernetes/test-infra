@@ -66,20 +66,9 @@ def GetConfig(string):
     return json.loads(fp.read())
 
 
-def CheckProjects(needed, fix=False):
-  bad_config = False
-  for role, members in DEFAULT.items():
-    memberships = set(needed.get(role, []))
-    missing = set(members) - set(needed.get(role, []))
-    if missing:
-      bad_config = True
-      print >>sys.stderr, 'Missing required memberships for %s:' % role
-      for member in missing:
-        print >>sys.stderr, '  %s' % member
-  if bad_config:
-    sys.exit(1)
-
-  projects = LoadProjects(os.path.dirname(__file__) or '.')
+def CheckProjects(needed, job_filename_filter, fix=False):
+  projects = LoadProjects(os.path.dirname(__file__) or '.',
+                          job_filename_filter)
   print >>sys.stderr, 'Checking %d projects for iam bindings:' % len(projects)
   for role, needs in sorted(needed.items()):
     print >>sys.stderr, '  %s: %s' % (role, ','.join(Sane(n) for n in needs))
@@ -119,13 +108,14 @@ def Sane(member):
   return email.split('@')[0]
 
 
-def LoadProjects(configs):
+def LoadProjects(configs, job_filename_filter):
   projects = set()
   for dirname, _, files in os.walk(os.path.dirname(__file__) or '.'):
     for path in files:
-      if not path.endswith('.yaml'):
+      full_path = os.path.join(dirname, path)
+      if not job_filename_filter in full_path or not path.endswith('.yaml'):
         continue
-      with open(os.path.join(dirname, path)) as fp:
+      with open(full_path) as fp:
         for project in re.findall(r'PROJECT="(.+)"', fp.read()):
           if '{' not in project:
             projects.add(project)
@@ -212,6 +202,7 @@ def Check(project, needed, mutate):
     with lock:
       print >>sys.stderr, 'Will not --fix ',
       print project
+      print >>sys.stderr, '  wanted fixes: ', fixes
       errors.add(project)
       return
 
@@ -235,5 +226,8 @@ if __name__ == '__main__':
       '--fix', action='store_true', help='Add missing memberships')
   parser.add_argument(
       'config', type=GetConfig, default='', nargs='?', help='Path to json configuration')
+  parser.add_argument(
+      '--job_filename_filter', default='',
+      help='Only look for projects in job YAML paths containing this string')
   args = parser.parse_args()
-  CheckProjects(args.config, args.fix)
+  CheckProjects(args.config, args.job_filename_filter, args.fix)
