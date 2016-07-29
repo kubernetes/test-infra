@@ -12,5 +12,5 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   gcePersistentDisk:
-    pdName: kubernetes-submit-queue
+    pdName: kubernetes-cache
     fsType: ext4
