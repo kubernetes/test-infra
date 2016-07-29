@@ -528,6 +528,8 @@
                 * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
             cmd: 'make test-unit test-integration'
         - 'node':  # kubelet on post-commit Jenkins
+            # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-pull.properties:
+            # PROJECT="k8s-jkns-pr-node-e2e"
             repo-name: 'kubernetes/kubernetes'
             git-basedir: 'go/src/k8s.io/kubernetes'
             suffix: 'build-e2e-test'

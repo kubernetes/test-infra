@@ -149,6 +149,8 @@
             shell: 'make test-unit test-integration'
             disable_job: true  # Issue #23538
         - 'kubelet':
+            # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-ci.properties:
+            # PROJECT="kubernetes-jenkins"
             cron-string: '{sq-cron-string}'
             repoName: 'kubernetes/kubernetes'
             gitbasedir: 'k8s.io/kubernetes'
