@@ -237,7 +237,6 @@ func (s *Server) buildPR(pr github.PullRequest) error {
 								"-repo-name=" + pr.Base.Repo.Name,
 								"-pr=" + strconv.Itoa(pr.Number),
 								"-branch=" + pr.Base.Ref,
-								"-head=" + pr.Head.SHA,
 								"-namespace=" + s.Namespace,
 								"-dry-run=" + strconv.FormatBool(s.DryRun),
 								"-source-bucket=" + s.SourceBucket,

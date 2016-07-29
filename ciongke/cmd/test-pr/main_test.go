@@ -69,7 +69,6 @@ func TestCheckoutPRMergeable(t *testing.T) {
 		RepoURL:     gitDir,
 		Branch:      "master",
 		PRNumber:    1,
-		Head:        "origin/pr-1",
 		ExecCommand: exec.Command,
 	}
 	merged, err := tc.checkoutPR()
@@ -121,7 +120,6 @@ func TestCheckoutPRUnmergable(t *testing.T) {
 		RepoURL:     gitDir,
 		Branch:      "master",
 		PRNumber:    1,
-		Head:        "origin/pr-1",
 		ExecCommand: exec.Command,
 	}
 	merged, err := tc.checkoutPR()

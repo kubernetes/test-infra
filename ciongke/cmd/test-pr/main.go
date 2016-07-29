@@ -36,7 +36,6 @@ var (
 	repoName  = flag.String("repo-name", "", "Name of the repo to test.")
 	pr        = flag.Int("pr", 0, "Pull request to test.")
 	branch    = flag.String("branch", "", "Target branch.")
-	head      = flag.String("head", "", "Head SHA.")
 	workspace = flag.String("workspace", "/workspace", "Where to checkout the repo.")
 	namespace = flag.String("namespace", "default", "Namespace for all CI objects.")
 
@@ -53,7 +52,6 @@ type testClient struct {
 	RepoName string
 	PRNumber int
 	Branch   string
-	Head     string
 
 	Workspace    string
 	SourceBucket string
@@ -82,7 +80,6 @@ func main() {
 		RepoName: *repoName,
 		PRNumber: *pr,
 		Branch:   *branch,
-		Head:     *head,
 
 		Workspace:    *workspace,
 		SourceBucket: *sourceBucket,
@@ -121,8 +118,8 @@ func (c *testClient) checkoutPR() (bool, error) {
 	clonePath := filepath.Join(c.Workspace, c.RepoName)
 	cloneCommand := c.ExecCommand("git", "clone", "--no-checkout", c.RepoURL, clonePath)
 	checkoutCommand := c.ExecCommand("git", "checkout", c.Branch)
-	fetchCommand := c.ExecCommand("git", "fetch", "origin", fmt.Sprintf("pull/%d/head", c.PRNumber))
-	mergeCommand := c.ExecCommand("git", "merge", c.Head, "--no-edit")
+	fetchCommand := c.ExecCommand("git", "fetch", "origin", fmt.Sprintf("pull/%d/head:pr", c.PRNumber))
+	mergeCommand := c.ExecCommand("git", "merge", "pr", "--no-edit")
 	if err := cmdlog.RunWithLogs(cloneCommand); err != nil {
 		return false, err
 	}
@@ -143,7 +140,7 @@ func (c *testClient) checkoutPR() (bool, error) {
 
 // uploadSource tars and uploads the repo to GCS.
 func (c *testClient) uploadSource() error {
-	tarName := c.Head + ".tar.gz"
+	tarName := fmt.Sprintf("%d.tar.gz", c.PRNumber)
 	sourcePath := filepath.Join(c.Workspace, tarName)
 	tar := c.ExecCommand("tar", "czf", sourcePath, c.RepoName)
 	tar.Dir = c.Workspace
