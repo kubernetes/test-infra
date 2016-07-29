@@ -82,6 +82,8 @@ func main() {
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
+	// TODO: Watch this file so that we don't need to manually restart when
+	// we update the token.
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
 		log.Fatalf("Could not read oauth secret file: %s", err)
