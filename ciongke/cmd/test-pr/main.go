@@ -17,10 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -30,7 +28,6 @@ import (
 
 	"github.com/kubernetes/test-infra/ciongke/cmdlog"
 	"github.com/kubernetes/test-infra/ciongke/gcs"
-	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/kube"
 )
 
@@ -42,11 +39,8 @@ var (
 	head      = flag.String("head", "", "Head SHA.")
 	workspace = flag.String("workspace", "/workspace", "Where to checkout the repo.")
 	namespace = flag.String("namespace", "default", "Namespace for all CI objects.")
-	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
 
 	sourceBucket = flag.String("source-bucket", "", "Bucket for source tars.")
-
-	githubTokenFile = flag.String("github-token-file", "/etc/oauth/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
 type testDescription struct {
@@ -64,30 +58,13 @@ type testClient struct {
 	Workspace    string
 	SourceBucket string
 
-	GitHubClient github.Client
-	KubeClient   kube.Client
-	GCSClient    gcs.Client
-	ExecCommand  func(name string, arg ...string) *exec.Cmd
+	KubeClient  kube.Client
+	GCSClient   gcs.Client
+	ExecCommand func(name string, arg ...string) *exec.Cmd
 }
 
 func main() {
 	flag.Parse()
-
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		log.Printf("Could not read oauth secret file: %s", err)
-		return
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
-	tc := oauth2.NewClient(oauth2.NoContext, ts)
-	var githubClient github.Client
-	if *dryRun {
-		githubClient = github.NewDryRunClient(tc)
-	} else {
-		githubClient = github.NewClient(tc)
-	}
 
 	kubeClient, err := kube.NewClientInCluster(*namespace)
 	if err != nil {
@@ -110,10 +87,9 @@ func main() {
 		Workspace:    *workspace,
 		SourceBucket: *sourceBucket,
 
-		GitHubClient: githubClient,
-		KubeClient:   kubeClient,
-		GCSClient:    gcsClient,
-		ExecCommand:  exec.Command,
+		KubeClient:  kubeClient,
+		GCSClient:   gcsClient,
+		ExecCommand: exec.Command,
 	}
 	if err := client.TestPR(); err != nil {
 		log.Printf("Error testing PR: %s", err)
