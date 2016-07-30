@@ -68,7 +68,10 @@ delete-cluster:
 clean:
 	rm cmd/hook/hook cmd/test-pr/test-pr
 
-.PHONY: create-cluster delete-cluster clean
+test:
+	go test -cover $$(go list ./... | grep -v "\/vendor\/")
+
+.PHONY: create-cluster delete-cluster clean test
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
