@@ -10,3 +10,15 @@ spec:
         - backend:
             serviceName: kubernetes-sq-status
             servicePort: 80
+  - host: contrib.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: contrib-sq-status
+            servicePort: 80
+  - host: docs.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: docs-sq-status
+            servicePort: 80
