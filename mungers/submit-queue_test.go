@@ -290,7 +290,7 @@ func TestQueueOrder(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
@@ -344,7 +344,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil, nil)
+		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
@@ -866,7 +866,7 @@ func TestSubmitQueue(t *testing.T) {
 		issueNumStr := strconv.Itoa(issueNum)
 
 		test.issue.Number = &issueNum
-		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus, test.masterCommit)
+		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus, test.masterCommit, nil)
 
 		config := &github_util.Config{}
 		config.Org = "o"

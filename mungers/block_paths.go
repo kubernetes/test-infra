@@ -129,21 +129,19 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	commits, err := obj.GetCommits()
+	files, err := obj.ListFiles()
 	if err != nil {
 		return
 	}
 
-	for _, c := range commits {
-		for _, f := range c.Files {
-			if matchesAny(*f.Filename, b.blockRegexp) {
-				if matchesAny(*f.Filename, b.doNotBlockRegexp) {
-					continue
-				}
-				obj.WriteComment(blockPathBody)
-				obj.AddLabels([]string{doNotMergeLabel})
-				return
+	for _, f := range files {
+		if matchesAny(*f.Filename, b.blockRegexp) {
+			if matchesAny(*f.Filename, b.doNotBlockRegexp) {
+				continue
 			}
+			obj.WriteComment(blockPathBody)
+			obj.AddLabels([]string{doNotMergeLabel})
+			return
 		}
 	}
 }
