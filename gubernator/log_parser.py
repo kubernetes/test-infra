@@ -41,7 +41,9 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
         else:
             previous_end = 0
         skip_amount = match - previous_end - CONTEXT
-        if skip_amount > 1:
+        if skip_amount > 100:
+            output.append('<span class="skip">%s</span>' % skip_fmt(skip_amount))
+        elif skip_amount > 1:
             skip_id = 'skip_%s' % match
             output.append('<span class="skip"><a href="javascript:show_skipped(\'%s\')"'
                 % skip_id)
