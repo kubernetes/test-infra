@@ -103,11 +103,9 @@ def poll_forever(uri, service_account=None):
                 online, prs, queue, running, blocked, merge_count = poll()
             except KeyboardInterrupt:
                 raise
-            except KeyError:
+            except (KeyError, IOError):
                 traceback.print_exc()
-            except IOError:
-                traceback.print_exc()
-                pass
+                continue
 
             data = '{} {} {} {} {} {} {}\n'.format(now, online, prs, queue, running, blocked, merge_count)
             print >>sys.stderr, 'Appending to history: %s' % data

@@ -46,6 +46,11 @@ def parse_line(
         int(merge_count),  # Number of merges
     )
 
+def fresh_color(dt):
+    if datetime.datetime.utcnow() - dt < datetime.timedelta(hours=1):
+        return 'black'
+    return 'r'
+
 
 def merges_color(merges):
     if merges > 30:
@@ -85,6 +90,7 @@ def format_timedelta(delta):
 
 
 class Sampler(object):
+    mean = 0
     total = 0
 
     def __init__(self, maxlen=60*24):
@@ -96,11 +102,8 @@ class Sampler(object):
         self.total += sample
         while len(self.samples) > self.maxlen:
             self.total -= self.samples.popleft()
+        self.mean = float(self.total) / len(self.samples)
         return self
-
-    @property
-    def mean(self):
-        return float(self.total) / len(self.samples)
 
 
 def render(history_lines, out_file):
@@ -123,6 +126,7 @@ def render(history_lines, out_file):
     daily_merged = collections.deque()
     actually_merged = collections.deque()
 
+    dt = None
     start_blocked = None
     start_offline = None
     last_merge = 0  # Number of merges last sample, resets on queue restart
@@ -135,6 +139,8 @@ def render(history_lines, out_file):
             continue
         if dt < datetime.datetime.now() - datetime.timedelta(days=30):
             continue
+        if not pr and not queue and not merged:  # Bad sample
+            continue
 
         if merged >= last_merge:
             did_merge = merged - last_merge
@@ -143,9 +149,7 @@ def render(history_lines, out_file):
         else:
             did_merge = 0
 
-        if online:  # Ignore offline status
-            last_merge = merged
-
+        last_merge = merged
         happy_moments += int(bool(online and not blocked))
 
         real_merges += did_merge
@@ -164,19 +168,23 @@ def render(history_lines, out_file):
         # Make them steps instead of slopes.
         if dts:
             dts.append(dt)
+
+            # Append the previous value at the current time
+            # which makes all changes move at right angles.
+            daily_happiness.append(daily_happiness[-1])
+            merge_rate.append(merge_rate[-1])
+            merges.append(did_merge)
             prs.append(prs[-1])
             queued.append(queued[-1])
-            daily_happiness.append(happy_moments.mean)
-            merge_rate.append(active_merges.total)
-            real_merge_rate.append(real_merges.total)
-            merges.append(did_merge)
+            real_merge_rate.append(real_merge_rate[-1])
         dts.append(dt)
-        prs.append(pr)
-        queued.append(queue)
+
         daily_happiness.append(happy_moments.mean)
         merge_rate.append(active_merges.total)
-        real_merge_rate.append(real_merges.total)
         merges.append(did_merge)
+        prs.append(pr)
+        queued.append(queue)
+        real_merge_rate.append(real_merges.total)
 
         if not start_blocked and blocked:
             start_blocked = dt
@@ -249,6 +257,7 @@ def render(history_lines, out_file):
         m for (d, m) in zip(dts, merge_rate) if d >= last_week])
     weekly_merges = sum(
         m for (d, m) in zip(dts, merges) if d >= last_week)
+    weekly_merges /= 2  # Due to steps
 
     fig.text(
         xpos, .00,
@@ -283,6 +292,17 @@ def render(history_lines, out_file):
         horizontalalignment=halign,
     )
 
+    if dt:
+        fig.text(
+            0.1, -0.04,
+            'image: %s, sample: %s' % (
+                datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M'),
+                dt.strftime('%Y-%m-%d %H:%M'),
+            ),
+            horizontalalignment='left',
+            fontsize='x-small',
+            color=fresh_color(dt),
+        )
 
     plt.savefig(out_file, bbox_inches='tight', format='svg')
     plt.close()
