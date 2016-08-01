@@ -29,6 +29,17 @@ def hilight(line, hilight_words):
 
 
 def log_html(lines, matched_lines, hilight_words, skip_fmt):
+    """
+    Constructs the html for the filtered log
+    Given:
+        lines: list of all lines in the log
+        matched_lines: list of lines that have a filtered string in them
+        hilight_words: list of words to be bolded
+        skip_fmt: function producing string to replace the skipped lines
+    Returns:
+        output: list of a lines HTML code suitable for inclusion in a <pre>
+        tag, with "interesting" errors hilighted
+    """
     output = []
 
     matched_lines.append(len(lines))  # sentinel value

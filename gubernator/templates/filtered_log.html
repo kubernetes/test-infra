@@ -7,9 +7,9 @@
 	<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
 </div>
 <div id="failures">
-	<h3> Failed pod: {{pod}} </h3>
 	<form method="get" onchange="submit()">
-		<input type="hidden" name="pod" value="{{pod}}">
+		<h3> Failed pod: <input type="text" name="pod" value="{{pod}}" style="width: 300px;">
+		</h3>
 		<input type="hidden" name="junit" value="{{junit}}">
 		<hr>
 		<label><input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on</label>
@@ -23,9 +23,9 @@
 			% endfor
 		% endfor
 		<hr>
-		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <b>{% if objref_dict["UID"] %}{{objref_dict["UID"]}}<input type="hidden" name="poduid" value="{{objref_dict['UID']}}">{% else %}<input type="text" name="poduid">{% endif %}</b></label><br>
-		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <b>{% if objref_dict["Namespace"] %}{{objref_dict["Namespace"]}}<input type="hidden" name="ns" value="{{objref_dict['Namespace']}}">{% else %}<input type="text" name="ns">{% endif %}</b></label><br>
-		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <b>{% if objref_dict["ContainerID"] %}{{objref_dict["ContainerID"]}}<input type="hidden" name="cID" value="{{objref_dict['ContainerID']}}">{% else %}<input type="text" name="cID">{% endif %}</b></label>
+		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <input type="text" name="poduid" value="{{objref_dict['UID']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <input type="text" name="ns" value="{{objref_dict['Namespace']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <input type="text" name="cID" value="{{objref_dict['ContainerID']}}" style="width: 300px;"></label>
 	</form>
 	% for file in log_files|sort
 		<h3>{{file}}</a></h3>

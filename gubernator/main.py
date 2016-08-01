@@ -256,9 +256,7 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
 
 
 def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filename)):
-    '''
-    Get the logs in the case where the junit file with the failure is in a specific folder
-    '''
+    # Get the logs in the case where the junit file with the failure is in a specific folder
     all_logs = {}
     results = {}
 
@@ -269,7 +267,7 @@ def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filenam
     artifact_filename = os.path.dirname(apiserver_filename)
     all_logs = get_all_logs((artifact_filename, False))
     parsed_dict, _ = parse_log_file(os.path.join(artifact_filename, "kubelet.log"),
-        pod_name, make_dict=True)
+        pod_name, make_dict=True, objref_dict=objref_dict)
     objref_dict.update(parsed_dict)
     if log_files:
         for log_file in log_files:
@@ -280,10 +278,34 @@ def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filenam
     return all_logs, results, objref_dict, log_files
 
 
+def get_logs_no_pod(apiserver_filename, kubelet_filenames, filters, objref_dict, all_logs):
+    # Get results of parsing logs when no pod name is given
+    results = {}
+    if apiserver_filename:
+        for apiserver_log in apiserver_filename:
+            parsed_file = parse_log_file(apiserver_log, "", filters,
+            objref_dict=objref_dict)
+            if parsed_file:
+                results[apiserver_log] = parsed_file
+        return all_logs, results, objref_dict, apiserver_filename
+    else:
+        for kubelet_log in kubelet_filenames:
+            parsed_file = parse_log_file(kubelet_log, "", filters,
+            objref_dict=objref_dict)
+            if parsed_file:
+                results[kubelet_log] = parsed_file
+        return all_logs, results, objref_dict, kubelet_filenames
+
+
 def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
-    '''
+    """
     Get the logs in the case where all logs in artifacts folder may be relevant
-    '''
+    Returns:
+        all_logs: dictionary of all logs that can be filtered
+        results: dictionary of log file to the parsed text
+        obref_dict: dictionary of name of filter to the string to be filtered
+        log_files: list of files that are being displayed/filtered
+    """
     all_logs = {}
     results = {}
     old_dict_len = len(objref_dict)
@@ -291,10 +313,15 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
     all_logs = get_all_logs((build_dir, True))
     apiserver_filename = find_log_files(all_logs, "kube-apiserver.log")
     kubelet_filenames = find_log_files(all_logs, "kubelet.log")
+    if not pod_name and not objref_dict:
+        return get_logs_no_pod(apiserver_filename, kubelet_filenames, filters,
+            objref_dict, all_logs)
     for kubelet_log in kubelet_filenames:
-        parsed_dict, pod_in_file = parse_log_file(kubelet_log, pod_name, make_dict=True)
-        objref_dict.update(parsed_dict)
-        if len(objref_dict) > old_dict_len or pod_in_file:
+        if pod_name:
+            parsed_dict, pod_in_file = parse_log_file(kubelet_log, pod_name, make_dict=True,
+                objref_dict=objref_dict)
+            objref_dict.update(parsed_dict)
+        if len(objref_dict) > old_dict_len or not pod_name or pod_in_file:
             if log_files == []:
                 log_files = [kubelet_log]
                 if apiserver_filename:
@@ -421,7 +448,8 @@ class NodeLogHandler(RenderingHandler):
         pod_name: "pod-abcdef123"
         junit: "junit_01.xml"
         uid, namespace, wrap: "on"
-        logs: {"kubelet.log":"parsed kubelet log for html"}
+        cID, poduid, ns: strings entered into textboxes
+        results, logs: {"kubelet.log":"parsed kubelet log for html"}
         all_logs: {"folder_name":["a.log", "b.log"]}
         """
         # pylint: disable=too-many-locals
@@ -440,6 +468,7 @@ class NodeLogHandler(RenderingHandler):
         wrap = bool(self.request.get("wrap"))
         filters = {"UID":uid, "pod":pod_name, "Namespace":namespace, "ContainerID":containerID}
         objref_dict = {}
+        results = {}
 
         if cID:
             objref_dict["ContainerID"] = cID

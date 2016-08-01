@@ -29,10 +29,13 @@ error_re = re.compile(
 def objref(line):
     return re.search(r'api\.ObjectReference(\{.*?&#34;\})', line)
 
+# Combine a list of words into one regex that match any of them
 def combine_wordsRE(words_list):
     return re.compile(r'\b(%s)\b' % '|'.join(words_list), re.IGNORECASE)
 
+# Match the file name of a log given a filepath to the log
 log_re = re.compile(r'[^/]+\.log$')
 
+# Match the container id given a line containing the pod name
 def containerID(line):
     return re.search(r'ContainerID:([0-9A-Fa-f]*)', line)
