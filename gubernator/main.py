@@ -244,7 +244,7 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
     """Based on make_dict, either returns the objref_dict or the parsed log file"""
     log = gcs_async.read(log_filename).get_result()
     if log is None:
-        return None, False if make_dict else None
+        return {}, False if make_dict else None
     pod_re = regex.wordRE(pod)
     if objref_dict is None:
         objref_dict = {}
@@ -450,8 +450,8 @@ class NodeLogHandler(RenderingHandler):
 
         apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
         if apiserver_filename and pod_name:
-            all_logs, results, objref_dict, log_files = get_logs_junit((build_dir, log_files,
-                junit, pod_name, filters, objref_dict, apiserver_filename))
+            all_logs, results, objref_dict, log_files = get_logs_junit((log_files,
+                pod_name, filters, objref_dict, apiserver_filename))
         if not apiserver_filename:
             all_logs, results, objref_dict, log_files = get_logs(build_dir, log_files,
                 pod_name, filters, objref_dict)

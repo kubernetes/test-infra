@@ -196,7 +196,6 @@ class AppTest(TestBase):
         self.assertIn('TestUnschedulableNodes', response)
         self.assertIn('junit_01.xml', response)
 
-
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
         build_dir = '/%s/123/e2e/567/' % main.PR_PREFIX
@@ -223,15 +222,69 @@ class AppTest(TestBase):
         response = app.get('/jobs/kubernetes-jenkins/logs')
         self.assertIn('somejob/">somejob</a>', response)
 
-    def test_nodelog_missing_kubelet(self):
-        """Test that a missing kubelet log gives a 404."""
+    def test_nodelog_missing_files(self):
+        """Test that a missing all files gives a 404."""
         build_dir = self.BUILD_DIR + 'nodelog?pod=abc'
         response = app.get('/build' + build_dir, status=404)
         self.assertIn('Unable to find', response)
 
     def test_nodelog_kubelet(self):
-        """Test for a kubelet file."""
+        """Test for a kubelet file with junit file.
+         - missing the default kube-apiserver"""
         nodelog_url = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
+            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        response = app.get('/build' + nodelog_url)
+        self.assertIn("Line wrapping on", response)
+
+    def test_nodelog_apiserver(self):
+        """Test for default apiserver file
+         - no kubelet file to find objrefdict
+         - no file with junit file"""
+        nodelog_url = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kube-apiserver.log',
+            'apiserver pod abc\n')
+        response = app.get('/build' + nodelog_url)
+        self.assertIn("Line wrapping on", response)
+
+    def test_nodelog_no_junit(self):
+        """Test for when no junit in same folder
+         - multiple folders"""
+        nodelog_url = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kube-apiserver.log',
+            'apiserver pod abc\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-2/kube-apiserver.log',
+            'apiserver pod abc\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
+            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        response = app.get('/build' + nodelog_url)
+        self.assertIn("tmp-node-2", response)
+
+    def test_nodelog_no_junit_apiserver(self):
+        """Test for when no junit in same folder
+         - multiple folders
+         - no kube-apiserver.log"""
+        nodelog_url = self.BUILD_DIR + 'nodelog?pod=abc&junit=junit_01.xml'
+        init_build(self.BUILD_DIR)
+        write(self.BUILD_DIR + 'artifacts/junit_01.xml', JUNIT_SUITE)
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/docker.log',
+            'Containers\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-2/kubelet.log',
+            'apiserver pod abc\n')
+        write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
+            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+        response = app.get('/build' + nodelog_url)
+        self.assertIn("tmp-node-2", response)
+
+    def test_no_failed_pod(self):
+        """Test that filtering page still loads when no failed pod name is given"""
+        nodelog_url = self.BUILD_DIR + 'nodelog?junit=junit_01.xml'
         init_build(self.BUILD_DIR)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
