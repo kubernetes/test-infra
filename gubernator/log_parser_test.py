@@ -27,6 +27,8 @@ def digest(data, strip=True, filters=None,
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
     if strip:
+        digested = re.sub(r'<span class="skipped">([^<]*)</span>', r'(\1)',
+            digested, flags=re.MULTILINE)
         digested = re.sub(r'<[^>]*>', '', digested)
     return digested.replace('\n', ' ')
 
@@ -39,23 +41,22 @@ class LogParserTest(unittest.TestCase):
         self.expect('no problems here!', '')
 
     def test_escaping(self):
-        self.expect('error &c', 'error &amp;c')
+        self.expect('error &c',
+            'error &amp;c')
 
     def test_context(self):
-        self.expect('0 1 2 3 4 5 error 6 7 8 9 10',
-                    's2  0 1  2 3 4 5 error 6 7 8 9')
+        self.expect('0 1 2 3 4 5 error 6 7 8 9 10', 's2 ( 0 1 ) 2 3 4 5 error 6 7 8 9')
 
     def test_multi_context(self):
         self.expect('0 1 2 3 4 error-1 6 error-2 8 9 10 11 12',
-                    '0 1 2 3 4 error-1 6 error-2 8 9 10 11')
+            '0 1 2 3 4 error-1 6 error-2 8 9 10 11')
 
     def test_skip_count(self):
         self.expect('error 1 2 3 4 5 6 7 8 9 A error-2',
-                    'error 1 2 3 4 s2  5 6  7 8 9 A error-2')
+            'error 1 2 3 4 s2 ( 5 6 ) 7 8 9 A error-2')
 
     def test_skip_at_least_two(self):
-        self.expect('error 1 2 3 4 5 6 7 8 error-2',
-                    'error 1 2 3 4 5 6 7 8 error-2')
+        self.expect('error 1 2 3 4 5 6 7 8 error-2', 'error 1 2 3 4 5 6 7 8 error-2')
 
     def test_html(self):
         self.assertEqual(digest('error-blah', strip=False), ''
@@ -71,7 +72,7 @@ class LogParserTest(unittest.TestCase):
         self.assertEqual(digest('0 1 2 3 4 5 pod 6 7 8 9 10',
             error_re=regex.wordRE("pod"),
             filters={"pod": "pod", "UID": "", "Namespace": ""}),
-            's2  0 1  2 3 4 5 pod 6 7 8 9')
+            's2 ( 0 1 ) 2 3 4 5 pod 6 7 8 9')
 
 
 if __name__ == '__main__':
