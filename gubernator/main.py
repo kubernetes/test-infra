@@ -190,44 +190,41 @@ def build_details(build_dir):
     return started, finished, failures, build_log
 
 
-@memcache_memoize('log-file://', expires=60*60*4)
-def find_log((build_dir, junit, log_file)):
+@memcache_memoize('log-file-junit://', expires=60*60*4)
+def find_log_junit((build_dir, junit, log_file)):
     '''
-    Given a junit file, looks in build_dir for log_file in a folder that
+    Looks in build_dir for log_file in a folder that
     also includes the junit file.
-    If not given a junit file, returns list of files named log_file in
-    all folders in build_dir.
     '''
-    if junit:
-        tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
-                if '/tmp-node' in f.filename]
-        for folder in tmps:
-            filenames = [f.filename for f in gcs_ls(folder)]
-            if folder + junit in filenames:
-                path = folder + log_file
-                if path in filenames:
-                    return path
-    else:
-        dirs = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
-                if f.is_dir]
-        if not dirs:
-            path = re.sub(r'kubelet\.log', '', build_dir)
-            files = [f.filename for f in gcs_ls(path)]
-            if path + log_file in files:
-                return path + log_file
-            return ""
-        log_files = []
-        for folder in dirs:
-            filenames = [f.filename for f in gcs_ls(folder)]
-            if folder + log_file in filenames:
-                path = folder + log_file
-                if path in filenames:
-                    log_files.append(path)
-        return log_files
+    tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+            if '/tmp-node' in f.filename]
+    for folder in tmps:
+        filenames = [f.filename for f in gcs_ls(folder)]
+        if folder + junit in filenames:
+            path = folder + log_file
+            if path in filenames:
+                return path
+
+
+def find_log_files(all_logs, log_file):
+    '''
+    Returns list of files named log_file from values in all_logs
+    '''
+    log_files = []
+    for folder in all_logs.itervalues():
+        for log in folder:
+            if log_file in log:
+                log_files.append(log)
+
+    return log_files
 
 
 @memcache_memoize('all-logs://', expires=60*60*4)
 def get_all_logs((directory, artifacts)):
+    '''
+    returns dictionary given the artifacts folder with the keys being the
+    folders, and the values being the log files within the corresponding folder
+    '''
     log_files = {}
     if artifacts:
         dirs = [f.filename for f in gcs_ls('%s/artifacts' % directory)
@@ -258,48 +255,57 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
         error_re=pod_re, filters=filters, objref_dict=objref_dict)
 
 
-def get_logs((build_dir, log_files, junit, pod_name, filters, objref_dict)):
-    # pylint: disable=too-many-locals
+def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filename)):
+    '''
+    Get the logs in the case where the junit file with the failure is in a specific folder
+    '''
     all_logs = {}
     results = {}
-    apiserver_filename = find_log((build_dir, junit, "kube-apiserver.log"))
-    old_dict_len = len(objref_dict)
-    # For tests that have the junit file with the failure in a specific folder, only
-    # that folder is relevant. ie: node e2e tests
-    if apiserver_filename and pod_name:
-        # default to filtering kube-apiserver log if user unchecks both checkboxes
-        if log_files == []:
-            log_files = [apiserver_filename]
 
-        artifact_filename = os.path.dirname(apiserver_filename)
-        all_logs = get_all_logs((artifact_filename, False))
-        parsed_dict, pod_in_file = parse_log_file(os.path.join(artifact_filename, "kubelet.log"),
-            pod_name, make_dict=True)
+    # default to filtering kube-apiserver log if user unchecks both checkboxes
+    if log_files == []:
+        log_files = [apiserver_filename]
+
+    artifact_filename = os.path.dirname(apiserver_filename)
+    all_logs = get_all_logs((artifact_filename, False))
+    parsed_dict, _ = parse_log_file(os.path.join(artifact_filename, "kubelet.log"),
+        pod_name, make_dict=True)
+    objref_dict.update(parsed_dict)
+    if log_files:
+        for log_file in log_files:
+            parsed_file = parse_log_file(log_file, pod_name, filters, objref_dict=objref_dict)
+            if parsed_file:
+                results[log_file] = parsed_file
+
+    return all_logs, results, objref_dict, log_files
+
+
+def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
+    '''
+    Get the logs in the case where all logs in artifacts folder may be relevant
+    '''
+    all_logs = {}
+    results = {}
+    old_dict_len = len(objref_dict)
+
+    all_logs = get_all_logs((build_dir, True))
+    apiserver_filename = find_log_files(all_logs, "kube-apiserver.log")
+    kubelet_filenames = find_log_files(all_logs, "kubelet.log")
+    for kubelet_log in kubelet_filenames:
+        parsed_dict, pod_in_file = parse_log_file(kubelet_log, pod_name, make_dict=True)
         objref_dict.update(parsed_dict)
-        if log_files:
+        if len(objref_dict) > old_dict_len or pod_in_file:
+            if log_files == []:
+                log_files = [kubelet_log]
+                if apiserver_filename:
+                    log_files.extend(apiserver_filename)
             for log_file in log_files:
-                parsed_file = parse_log_file(log_file, pod_name, filters, objref_dict=objref_dict)
+                parsed_file = parse_log_file(log_file, pod_name, filters,
+                    objref_dict=objref_dict)
                 if parsed_file:
                     results[log_file] = parsed_file
-    # For other tests, give option to investigate across different folders
-    if not apiserver_filename:
-        all_logs = get_all_logs((build_dir, True))
-        apiserver_filename = find_log((build_dir, False, "kube-apiserver.log"))
-        kubelet_filenames = find_log((build_dir, False, "kubelet.log"))
-        for kubelet_log in kubelet_filenames:
-            parsed_dict, pod_in_file = parse_log_file(kubelet_log, pod_name, make_dict=True)
-            objref_dict.update(parsed_dict)
-            if len(objref_dict) > old_dict_len or pod_in_file:
-                if log_files == []:
-                    log_files = [kubelet_log]
-                    if apiserver_filename:
-                        log_files.extend(apiserver_filename)
-                for log_file in log_files:
-                    parsed_file = parse_log_file(log_file, pod_name, filters,
-                        objref_dict=objref_dict)
-                    if parsed_file:
-                        results[log_file] = parsed_file
-                break
+            break
+
     return all_logs, results, objref_dict, log_files
 
 
@@ -340,6 +346,7 @@ def pr_builds(pr):
         jobs.setdefault(job, []).append((build, started, finished))
 
     return jobs
+
 
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
@@ -441,8 +448,13 @@ class NodeLogHandler(RenderingHandler):
         if ns:
             objref_dict["Namespace"] = ns
 
-        all_logs, results, objref_dict, log_files = get_logs((build_dir, log_files,
-            junit, pod_name, filters, objref_dict))
+        apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
+        if apiserver_filename and pod_name:
+            all_logs, results, objref_dict, log_files = get_logs_junit((build_dir, log_files,
+                junit, pod_name, filters, objref_dict, apiserver_filename))
+        if not apiserver_filename:
+            all_logs, results, objref_dict, log_files = get_logs(build_dir, log_files,
+                pod_name, filters, objref_dict)
 
         if results == {}:
             self.render('node_404.html', {"build_dir": build_dir, "log_files": log_files,
