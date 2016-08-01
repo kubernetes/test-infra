@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
+import re
+import json
 
 import jinja2
 
@@ -60,13 +61,8 @@ def make_dict(data, pod_re):
     for line in lines:
         if pod_re.search(line):
             objref = regex.objref(line)
-            if objref and objref.group(1) != "":
+            if objref:
                 objref_dict = objref.group(1)
-                keys = regex.keys_re.findall(objref_dict)
-
-                for k in keys:
-                    objref_dict = regex.key_to_string(k, objref_dict)
-
-                # Convert string into dictionary
-                objref_dict = ast.literal_eval(regex.fix_quotes(objref_dict))
-                return objref_dict
+                objref_dict = re.sub(r'(\w+):', r'"\1": ', objref_dict)
+                objref_dict = objref_dict.replace('&#34;', '"')
+                return json.loads(objref_dict)
