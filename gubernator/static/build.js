@@ -28,3 +28,8 @@ function fix_timestamps() {
 	replace('timestamp', 'YYYY-MM-DD HH:mm z')
 	replace('shorttimestamp', 'DD HH:mm')
 }
+
+function show_skipped(ID) {
+	document.getElementById(ID).style.display = "block"; 
+}
+
