@@ -48,14 +48,14 @@
 - project:
     name: kubernetes-garbage-collector
     suffix:
-        - '100-gce':  # kubernetes-garbagecollector-100-gce
-            description: 'Run the garbage collector with high workload'
+        - 'feature':  # kubernetes-garbagecollector-feature
+            description: 'Run the garbage collector specific tests'
             timeout: 600
             cron-string: 'H H/6 * * *'
             job-env: |
                 # Start the gc in controller plane
                 export ENABLE_GARBAGE_COLLECTOR="true"
-                export E2E_NAME="garbagecollector-100"
+                export E2E_NAME="garbagecollector-feature"
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
@@ -72,5 +72,15 @@
                 export KUBEMARK_NUM_NODES="100"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+        - 'e2e-gce':  # kubernetes-garbagecollector-e2e-gce
+            cron-string: 'H H/6 * * *'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel, with the Garbage Collector turned on'
+            timeout: 50
+            job-env: |
+                # This list should match the list in kubernetes-pull-build-test-e2e-gce.
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jenkins-garbagecollector-e2e-gce"
     jobs:
         - 'kubernetes-garbagecollector-{suffix}'
