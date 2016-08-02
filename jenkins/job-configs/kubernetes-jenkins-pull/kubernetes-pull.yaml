@@ -312,14 +312,23 @@
           max-total: 12
           trigger-phrase: 'e2e\s+test'
           cmd: |
-            export KUBE_SKIP_PUSH_GCS=y
-            export KUBE_RUN_FROM_OUTPUT=y
-            export KUBE_FASTBUILD=true
-            ./hack/jenkins/build.sh
             if [[ "${{ghprbTargetBranch:-}}" == "release-1.0" || "${{ghprbTargetBranch:-}}" == "release-1.1" ]]; then
               echo "PR GKE job disabled for legacy branches."
               exit
             fi
+
+            export KUBE_SKIP_PUSH_GCS=n
+            export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+            export KUBE_RUN_FROM_OUTPUT=y
+            export KUBE_FASTBUILD=true
+
+            ./hack/jenkins/build.sh
+
+            version=$(source build/util.sh && echo $(kube::release::semantic_version))
+            gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${{version}}" "gs://kubernetes-release-dev/ci/${{version}}-pull"
+            # Strip off the leading 'v' from the cluster version.
+            export CLUSTER_API_VERSION="${{version:1}}-pull"
+
             # Nothing should want Jenkins $HOME
             export HOME=${{WORKSPACE}}
 
@@ -353,6 +362,7 @@
             export CLUSTER_NAME=${{E2E_NAME}}
             export KUBE_GKE_NETWORK=${{E2E_NAME}}
             export ZONE="us-central1-f"
+            export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
 
             # Get golang into our PATH so we can run e2e.go
             export PATH=${{PATH}}:/usr/local/go/bin
