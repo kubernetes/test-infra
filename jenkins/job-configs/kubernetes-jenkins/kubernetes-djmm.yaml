@@ -1,0 +1,65 @@
+- job-template:
+    name: 'djmm-{build}'
+    description: 'Grab the latest from GitHub, build. Test owner: djmm@google.com.'
+    node: 'build'
+    properties:
+        - build-discarder:
+            num-to-keep: 20
+    builders:
+        - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
+        - shell: |
+            {job-env}
+            timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/build.sh && rc=$? || rc=$?
+            {report-rc}
+    publishers:
+        - claim-build
+        - log-parser
+        - email-ext:
+            presend-script: $DEFAULT_PRESEND_SCRIPT
+            fail: true
+            fixed: true
+            send-to:
+                - culprits
+        - gcs-uploader
+    scm:
+        - git:
+            url: https://github.com/kubernetes/kubernetes
+            branches:
+                - '{branch}'
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/kubernetes
+            wipe-workspace: false
+            skip-tag: true
+    triggers:
+        - pollscm:
+            cron: 'H/2 * * * *'
+    wrappers:
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    name: djmm-builds
+    build:
+        - 'build':
+            branch: 'master'
+            timeout: 50
+            job-env: |
+              export RELEASE_INFRA_PUSH=true
+        - 'federation-build':
+            branch: 'master'
+            timeout: 50
+            job-env: |
+              export RELEASE_INFRA_PUSH=true
+              export PROJECT="k8s-jkns-e2e-gce-federation"
+              export FEDERATION=true
+              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
+              export KUBE_FASTBUILD=true
+              export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
+              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
+    jobs:
+        - 'djmm-{build}'
