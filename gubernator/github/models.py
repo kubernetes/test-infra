@@ -99,6 +99,7 @@ class GHIssueDigest(ndb.Model):
     involved = ndb.StringProperty(repeated=True)
     payload = ndb.JsonProperty()
     updated_at = ndb.DateTimeProperty()
+    head = ndb.StringProperty()
 
     @staticmethod
     def make_key(repo, number):
@@ -108,7 +109,7 @@ class GHIssueDigest(ndb.Model):
     def make(repo, number, is_pr, is_open, involved, payload, updated_at):
         return GHIssueDigest(key=GHIssueDigest.make_key(repo, number),
             is_pr=is_pr, is_open=is_open, involved=involved, payload=payload,
-            updated_at=updated_at)
+            updated_at=updated_at, head=payload.get('head'))
 
     @staticmethod
     def get(repo, number):
@@ -122,6 +123,11 @@ class GHIssueDigest(ndb.Model):
     def number(self):
         return int(self.key.id().split()[1])
 
+    @staticmethod
+    def find_head(repo, head):
+        return GHIssueDigest.query(GHIssueDigest.key > GHIssueDigest.make_key(repo, ''),
+                                   GHIssueDigest.key < GHIssueDigest.make_key(repo, '~'),
+                                   GHIssueDigest.head == head)
 
 
 @ndb.transactional
@@ -132,7 +138,7 @@ def save_if_newer(obj):
         obj.put()
         return True
     else:
-        if old.updated_at is None or obj.updated_at > old.updated_at:
+        if old.updated_at is None or obj.updated_at >= old.updated_at:
             obj.put()
             return True
         return False

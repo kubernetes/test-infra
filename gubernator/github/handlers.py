@@ -92,7 +92,11 @@ class GithubHandler(webapp2.RequestHandler):
         webhook.put()
 
         if event == 'status':
-            models.save_if_newer(models.GHStatus.from_json(body_json))
+            status = models.GHStatus.from_json(body_json)
+            models.save_if_newer(status)
+            query = models.GHIssueDigest.find_head(repo, status.sha)
+            for issue in query.fetch():
+                update_issue_digest(issue.repo, issue.number)
 
         if number is not None:
             update_issue_digest(repo, number)
@@ -182,7 +186,7 @@ class Timeline(webapp2.RequestHandler):
             ret = classifier.classify_issue(repo, number)
             self.response.write('<pre>%s</pre>' % cgi.escape(
                 repr(ret[:3]) + "\n" + json.dumps(ret[3], indent=2, sort_keys=True)))
-            self.__getattribute__esponse.write(len(json.dumps(ret[3])))
+            self.response.write(len(json.dumps(ret[3])))
         except BaseException:
             self.response.write('<pre>%s</pre>' % traceback.format_exc())
 

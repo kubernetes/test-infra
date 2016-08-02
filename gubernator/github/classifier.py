@@ -37,7 +37,15 @@ def classify_issue(repo, number):
     events.sort(key=lambda e: e.timestamp)
     logging.debug('classifying %s %s (%d events)', repo, number, len(events))
     event_pairs = [(event.event, json.loads(event.body)) for event in events]
-    return tuple(list(classify(event_pairs)) + [events[-1].timestamp])
+    is_pr, is_open, involved, payload = classify(event_pairs)
+    last_event_timestamp = events[-1].timestamp
+    if 'head' in payload:
+        payload['status'] = {}
+        for status in models.GHStatus.query_for_sha(repo, payload['head']):
+            last_event_timestamp = max(last_event_timestamp, status.updated_at)
+            payload['status'][status.context] = [
+                status.state, status.target_url, status.description]
+    return is_pr, is_open, involved, payload, last_event_timestamp
 
 
 def get_merged(events):
@@ -177,6 +185,8 @@ def classify(events):
             payload['needs_rebase'] = 'needs-rebase' in labels or merged.get('mergeable') == 'false'
         payload['additions'] = merged.get('additions', 0)
         payload['deletions'] = merged.get('deletions', 0)
+        if 'head' in merged:
+            payload['head'] = merged['head']['sha']
 
     payload['attn'] = calculate_attention(payload, comments, commit_change_time)
 
