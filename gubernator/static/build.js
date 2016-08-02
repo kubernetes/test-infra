@@ -21,12 +21,26 @@ function fix_timestamps() {
 			var el = els[i];
 			var epoch = el.getAttribute('data-epoch');
 			if (epoch) {
-				el.innerText = moment(1000 * epoch).tz(tz).format(fmt);
+				var time = moment(1000 * epoch).tz(tz);
+				if (typeof fmt === 'function') {
+					el.innerText = fmt(time);
+				} else {
+					el.innerText = time.format(fmt);
+				}
 			}
 		}
 	}
 	replace('timestamp', 'YYYY-MM-DD HH:mm z')
 	replace('shorttimestamp', 'DD HH:mm')
+	replace('humantimestamp', function(t) {
+		var fmt = 'MMM D, Y';
+		if (t.isAfter(moment().startOf('day'))) {
+			fmt = 'h:mm A';
+		} else if (t.isAfter(moment().startOf('year'))) {
+			fmt = 'MMM D';
+		}
+		return t.format(fmt);
+	})
 }
 
 function show_skipped(ID) {

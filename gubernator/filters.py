@@ -16,6 +16,8 @@ import logging
 import datetime
 import os
 import re
+import time
+import urllib
 
 import jinja2
 
@@ -25,11 +27,15 @@ GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
 
 
 
-def do_timestamp(unix_time):
+def do_timestamp(unix_time, css_class='timestamp'):
     """Convert an int Unix timestamp into a human-readable datetime."""
     t = datetime.datetime.utcfromtimestamp(unix_time)
-    return jinja2.Markup('<span class="timestamp" data-epoch="%s">%s</span>' %
-                         (unix_time, t.strftime('%F %H:%M')))
+    return jinja2.Markup('<span class="%s" data-epoch="%s">%s</span>' %
+                         (css_class, unix_time, t.strftime('%F %H:%M')))
+
+
+def do_dt_to_epoch(dt):
+    return time.mktime(dt.timetuple())
 
 
 def do_shorttimestamp(unix_time):
@@ -99,8 +105,46 @@ def do_parse_pod_name(text):
     else:
         return ""
 
+def do_label_attr(labels, name):
+    '''
+    >> do_label_attr(['needs-rebase', 'size/XS'], 'size')
+    'XS'
+    '''
+    name += '/'
+    for label in labels:
+        if label.startswith(name):
+            return label[len(name):]
+    return ''
+
+def do_classify_size(payload):
+    '''
+    Determine the size class for a PR, based on either its labels or
+    on the magnitude of its changes.
+    '''
+    size = do_label_attr(payload['labels'], 'size')
+    if not size and 'additions' in payload and 'deletions' in payload:
+        lines = payload['additions'] + payload['deletions']
+        # based on mungegithub/mungers/size.go
+        for limit, label in [
+            (10, 'XS'),
+            (30, 'S'),
+            (100, 'M'),
+            (500, 'L'),
+            (1000, 'XL')
+        ]:
+            if lines < limit:
+                return label
+        return 'XXL'
+    return size
+
+
+def do_select(seq, pred):
+    return filter(pred, seq)
+
+
 do_basename = os.path.basename
 do_dirname = os.path.dirname
+do_quote_plus = urllib.quote_plus
 
 
 def register(filters):
