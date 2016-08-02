@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: contrib
-  config.pr-mungers: blunderbuss,size
+  config.pr-mungers: blunderbuss,submit-queue
   config.state: open
   config.token-file: /etc/secret-volume/token
   gitrepo.repo-dir: /gitrepos
@@ -16,7 +16,7 @@ data:
   test-options.required-retest-contexts: "\"\""
 
   # submit-queue options.
-  submit-queue.required-contexts: "\"\""
+  submit-queue.required-contexts: "continuous-integration/travis-ci/pr"
   submit-queue.nonblocking-jenkins-jobs: "\"\""
   submit-queue.jenkins-jobs: "\"\""
   submit-queue.presubmit-jobs: "\"\""
