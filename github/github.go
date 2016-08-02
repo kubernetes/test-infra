@@ -190,32 +190,34 @@ type analytics struct {
 	cachedAPICount     int       // how many api calls were answered by the local cache
 	apiPerSec          float64
 
-	AddLabels          analytic
-	RemoveLabels       analytic
-	ListCollaborators  analytic
-	GetIssue           analytic
-	CloseIssue         analytic
-	CreateIssue        analytic
-	ListIssues         analytic
-	ListIssueEvents    analytic
-	ListCommits        analytic
-	GetCommit          analytic
-	ListFiles          analytic
-	GetCombinedStatus  analytic
-	SetStatus          analytic
-	GetPR              analytic
-	AssignPR           analytic
-	ClosePR            analytic
-	OpenPR             analytic
-	GetContents        analytic
-	ListComments       analytic
-	ListReviewComments analytic
-	CreateComment      analytic
-	DeleteComment      analytic
-	Merge              analytic
-	GetUser            analytic
-	SetMilestone       analytic
-	ListMilestones     analytic
+	AddLabels            analytic
+	AddLabelToRepository analytic
+	RemoveLabels         analytic
+	ListCollaborators    analytic
+	GetIssue             analytic
+	CloseIssue           analytic
+	CreateIssue          analytic
+	ListIssues           analytic
+	ListIssueEvents      analytic
+	ListCommits          analytic
+	ListLabels           analytic
+	GetCommit            analytic
+	ListFiles            analytic
+	GetCombinedStatus    analytic
+	SetStatus            analytic
+	GetPR                analytic
+	AssignPR             analytic
+	ClosePR              analytic
+	OpenPR               analytic
+	GetContents          analytic
+	ListComments         analytic
+	ListReviewComments   analytic
+	CreateComment        analytic
+	DeleteComment        analytic
+	Merge                analytic
+	GetUser              analytic
+	SetMilestone         analytic
+	ListMilestones       analytic
 }
 
 func (a analytics) print() {
@@ -225,6 +227,7 @@ func (a analytics) print() {
 	w := new(tabwriter.Writer)
 	w.Init(buf, 0, 0, 1, ' ', tabwriter.AlignRight)
 	fmt.Fprintf(w, "AddLabels\t%d\t\n", a.AddLabels.Count)
+	fmt.Fprintf(w, "AddLabelToRepository\t%d\t\n", a.AddLabelToRepository.Count)
 	fmt.Fprintf(w, "RemoveLabels\t%d\t\n", a.RemoveLabels.Count)
 	fmt.Fprintf(w, "ListCollaborators\t%d\t\n", a.ListCollaborators.Count)
 	fmt.Fprintf(w, "GetIssue\t%d\t\n", a.GetIssue.Count)
@@ -233,6 +236,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "ListIssues\t%d\t\n", a.ListIssues.Count)
 	fmt.Fprintf(w, "ListIssueEvents\t%d\t\n", a.ListIssueEvents.Count)
 	fmt.Fprintf(w, "ListCommits\t%d\t\n", a.ListCommits.Count)
+	fmt.Fprintf(w, "ListLabels\t%d\t\n", a.ListLabels.Count)
 	fmt.Fprintf(w, "GetCommit\t%d\t\n", a.GetCommit.Count)
 	fmt.Fprintf(w, "ListFiles\t%d\t\n", a.ListFiles.Count)
 	fmt.Fprintf(w, "GetCombinedStatus\t%d\t\n", a.GetCombinedStatus.Count)
@@ -1782,4 +1786,43 @@ func (config *Config) ListAllIssues(listOpts *github.IssueListByRepoOptions) ([]
 		page++
 	}
 	return allIssues, nil
+}
+
+// GetLabels grabs all labels from a particular repository so you don't have to
+// worry about paging.
+func (config *Config) GetLabels() ([]*github.Label, error) {
+	var listOpts github.ListOptions
+	var allLabels []*github.Label
+	page := 1
+	for {
+		glog.V(4).Infof("Fetching page %d of labels", page)
+		listOpts = github.ListOptions{PerPage: 100, Page: page}
+		labels, response, err := config.client.Issues.ListLabels(config.Org, config.Project, &listOpts)
+		config.analytics.ListLabels.Call(config, response)
+		if err != nil {
+			return nil, err
+		}
+		for i := range labels {
+			allLabels = append(allLabels, labels[i])
+		}
+		if response.LastPage == 0 || response.LastPage <= page {
+			break
+		}
+		page++
+	}
+	return allLabels, nil
+}
+
+// AddLabel adds a single github label to the repository.
+func (config *Config) AddLabel(label *github.Label) error {
+	config.analytics.AddLabelToRepository.Call(config, nil)
+	glog.Infof("Adding label %v to %v, %v", *label.Name, config.Org, config.Project)
+	if config.DryRun {
+		return nil
+	}
+	_, _, err := config.client.Issues.CreateLabel(config.Org, config.Project, label)
+	if err != nil {
+		return err
+	}
+	return nil
 }
