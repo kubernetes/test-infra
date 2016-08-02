@@ -14,12 +14,6 @@
     publishers:
         - claim-build
         - log-parser
-        - email-ext:
-            presend-script: $DEFAULT_PRESEND_SCRIPT
-            fail: true
-            fixed: true
-            send-to:
-                - culprits
         - gcs-uploader
     scm:
         - git:
