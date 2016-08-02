@@ -95,7 +95,7 @@
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
-        - timed: 'H/30 * * * *'
+        - timed: '{cron-string}'
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -154,5 +154,11 @@
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'pwittroc@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
+        - 'kubelet-serial':
+            cron-string: '* H * * * *'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            owner: 'lantaol@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-serial.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
