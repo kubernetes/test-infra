@@ -41,7 +41,7 @@ func TestNormalize(t *testing.T) {
 }
 
 func TestOwnerList(t *testing.T) {
-	list := NewOwnerList(map[string]string{"Perf [performane]": "me"})
+	list := NewOwnerList(map[string]string{"Perf [performance]": "me"})
 	owner := list.TestOwner("perf [flaky]")
 	if owner != "me" {
 		t.Error("Unexpected return value ", owner)
@@ -49,6 +49,27 @@ func TestOwnerList(t *testing.T) {
 	owner = list.TestOwner("Unknown test")
 	if owner != "" {
 		t.Errorf("Unexpected return value ", owner)
+	}
+}
+
+func TestOwnerListDefault(t *testing.T) {
+	list := NewOwnerList(map[string]string{"DEFAULT": "elves"})
+	owner := list.TestOwner("some random new test")
+	if owner != "elves" {
+		t.Error("Unexpected return value ", owner)
+	}
+}
+
+func TestOwnerListRandom(t *testing.T) {
+	list := NewOwnerList(map[string]string{"testname": "a/b/c/d"})
+	counts := map[string]int{"a": 0, "b": 0, "c": 0, "d": 0}
+	for i := 0; i < 1000; i++ {
+		counts[list.TestOwner("testname")]++
+	}
+	for name, count := range counts {
+		if count <= 200 {
+			t.Errorf("Too few assigments to %s: only %d, expected > 200", name, count)
+		}
 	}
 }
 

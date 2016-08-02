@@ -20,6 +20,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"io"
+	"math/rand"
 	"os"
 	"regexp"
 	"strings"
@@ -41,18 +42,28 @@ func normalize(name string) string {
 // OwnerList uses a map to get owners for a given test name.
 type OwnerList struct {
 	mapping map[string]string
+	rng     *rand.Rand
 }
 
-// TestOwner returns the owner for a test, or the empty string if none is found.
+// TestOwner returns the owner for a test, an owner from default if present,
+// or else the empty string if none is found.
 func (o *OwnerList) TestOwner(testName string) string {
 	name := normalize(testName)
 	owner, _ := o.mapping[name]
+	if owner == "" {
+		owner, _ = o.mapping["default"]
+	}
+	if strings.Contains(owner, "/") {
+		ownerSet := strings.Split(owner, "/")
+		owner = ownerSet[o.rng.Intn(len(ownerSet))]
+	}
 	return owner
 }
 
 // NewOwnerList constructs an OwnerList given a mapping from test names to test owners.
 func NewOwnerList(mapping map[string]string) *OwnerList {
 	list := OwnerList{}
+	list.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 	list.mapping = make(map[string]string)
 	for input, output := range mapping {
 		list.mapping[normalize(input)] = output
