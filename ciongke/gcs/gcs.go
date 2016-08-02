@@ -28,17 +28,12 @@ const (
 	scope = storage.DevstorageFullControlScope
 )
 
-// Client is a GCS client.
-type Client interface {
-	Upload(r io.Reader, bucket, name string) error
-}
-
-type client struct {
-	Service *storage.Service
+type Client struct {
+	service *storage.Service
 }
 
 // NewClient creates a client from within the cluster.
-func NewClient() (Client, error) {
+func NewClient() (*Client, error) {
 	c, err := google.DefaultClient(context.Background(), scope)
 	if err != nil {
 		return nil, err
@@ -47,15 +42,15 @@ func NewClient() (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &client{
-		Service: service,
+	return &Client{
+		service: service,
 	}, nil
 }
 
 // Upload uploads everything from the reader into the given bucket/object name
 // without verifying any generation numbers or anything like that.
-func (c *client) Upload(r io.Reader, bucket, name string) error {
+func (c *Client) Upload(r io.Reader, bucket, name string) error {
 	object := &storage.Object{Name: name}
-	_, err := c.Service.Objects.Insert(bucket, object).Media(r).Do()
+	_, err := c.service.Objects.Insert(bucket, object).Media(r).Do()
 	return err
 }

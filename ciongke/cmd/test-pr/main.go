@@ -57,7 +57,7 @@ type testClient struct {
 	SourceBucket string
 
 	KubeClient  kube.Client
-	GCSClient   gcs.Client
+	GCSClient   *gcs.Client
 	ExecCommand func(name string, arg ...string) *exec.Cmd
 }
 
