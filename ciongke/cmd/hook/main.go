@@ -56,14 +56,14 @@ type Server struct {
 	Port         int
 	Org          string
 	Team         int
-	GitHubClient github.Client
+	GitHubClient githubClient
 	HMACSecret   []byte
 	DryRun       bool
 
 	TestPRImage  string
 	SourceBucket string
 
-	KubeClient kube.Client
+	KubeClient kubeClient
 	Namespace  string
 }
 
@@ -71,6 +71,22 @@ type Server struct {
 type Event struct {
 	Type    string
 	Payload []byte
+}
+
+// kubeClient is satisfied by kube.Client.
+type kubeClient interface {
+	ListPods(labels map[string]string) ([]kube.Pod, error)
+	DeletePod(name string) error
+
+	ListJobs(labels map[string]string) ([]kube.Job, error)
+	CreateJob(j kube.Job) (kube.Job, error)
+	DeleteJob(name string) error
+}
+
+// githubClient is satisfied by github.Client.
+type githubClient interface {
+	IsMember(org, user string) (bool, error)
+	IsTeamMember(team int, user string) (bool, error)
 }
 
 func main() {
@@ -92,7 +108,7 @@ func main() {
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
 	tc := oauth2.NewClient(oauth2.NoContext, ts)
-	var githubClient github.Client
+	var githubClient *github.Client
 	if *dryRun {
 		githubClient = github.NewDryRunClient(tc)
 	} else {
