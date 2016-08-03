@@ -101,5 +101,5 @@ func (s *LabelMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	obj.AddLabels(strings.Split(string(response), ";"))
+	obj.AddLabels(strings.Split(string(response), ","))
 }
