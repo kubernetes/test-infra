@@ -15,6 +15,9 @@
         - claim-build
         - log-parser
         - gcs-uploader
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
     scm:
         - git:
             url: https://github.com/kubernetes/kubernetes
