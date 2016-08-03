@@ -43,6 +43,7 @@ spec:
         - --generated-files-config=$(GENERATED_FILES_CONFIG)
         - --chart-url=$(CHART_URL)
         - --history-url=$(HISTORY_URL)
+        - --enable-md-yaml=$(ENABLE_MD_YAML)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -150,6 +151,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: gitrepo.repo-dir
+          - name: ENABLE_MD_YAML
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gitrepo.enable-md-yaml
           - name: TEST_OWNERS_CSV
             valueFrom:
               configMapKeyRef:

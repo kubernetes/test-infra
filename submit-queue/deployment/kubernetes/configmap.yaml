@@ -35,6 +35,7 @@ data:
   path-label.path-label-config: path-label.txt
   block-path.block-path-config: block-path.yaml
   gitrepo.repo-dir: /gitrepos
+  gitrepo.enable-md-yaml: "false"
   flake-manager.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
   old-test-getter.number-of-old-test-results: "5"
   assign-fixes.fixes-issue-reassign: "false"
