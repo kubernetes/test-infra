@@ -74,27 +74,19 @@ type Repo struct {
 	HTMLURL string `json:"html_url"`
 }
 
-// Client is used to interact with GitHub.
-type Client interface {
-	IsMember(org, user string) (bool, error)
-	IsTeamMember(team int, user string) (bool, error)
-
-	CreateStatus(owner, repo, ref string, s Status) error
-}
-
 func logRateLimit(desc string, resp *github.Response) {
 	log.Printf("GitHub API Tokens: %d/%d (resets at %v) (%s)", resp.Remaining, resp.Limit, resp.Reset, desc)
 }
 
 // TODO: Be aware of rate limits.
-type realClient struct {
+type Client struct {
 	cl  *github.Client
 	dry bool
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(httpClient *http.Client) Client {
-	return &realClient{
+func NewClient(httpClient *http.Client) *Client {
+	return &Client{
 		cl:  github.NewClient(httpClient),
 		dry: false,
 	}
@@ -103,15 +95,15 @@ func NewClient(httpClient *http.Client) Client {
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(httpClient *http.Client) Client {
-	return &realClient{
+func NewDryRunClient(httpClient *http.Client) *Client {
+	return &Client{
 		cl:  github.NewClient(httpClient),
 		dry: true,
 	}
 }
 
 // IsMember returns whether or not the user is a member of the org.
-func (c *realClient) IsMember(org, user string) (bool, error) {
+func (c *Client) IsMember(org, user string) (bool, error) {
 	member, resp, err := c.cl.Organizations.IsMember(org, user)
 	if err != nil {
 		return false, err
@@ -121,7 +113,7 @@ func (c *realClient) IsMember(org, user string) (bool, error) {
 }
 
 // IsTeamMember returns whether or not the user is a member of the team.
-func (c *realClient) IsTeamMember(team int, user string) (bool, error) {
+func (c *Client) IsTeamMember(team int, user string) (bool, error) {
 	member, resp, err := c.cl.Organizations.IsTeamMember(team, user)
 	if err != nil {
 		return false, err
@@ -131,7 +123,7 @@ func (c *realClient) IsTeamMember(team int, user string) (bool, error) {
 }
 
 // CreateStatus creates or updates the status of a commit.
-func (c *realClient) CreateStatus(owner, repo, ref string, s Status) error {
+func (c *Client) CreateStatus(owner, repo, ref string, s Status) error {
 	if c.dry {
 		return nil
 	}

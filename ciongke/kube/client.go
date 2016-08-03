@@ -28,31 +28,19 @@ import (
 	"strings"
 )
 
-// Client interacts with the Kubernetes API server.
-type Client interface {
-	ListPods(labels map[string]string) ([]Pod, error)
-	DeletePod(name string) error
-
-	GetJob(name string) (Job, error)
-	ListJobs(labels map[string]string) ([]Job, error)
-	CreateJob(j Job) (Job, error)
-	DeleteJob(name string) error
-}
-
 const (
 	inClusterBaseURL = "https://kubernetes"
 )
 
-// client implements the Client interface using credentials that are
-// automatically added to Kubernetes pods.
-type client struct {
+// Client interacts with the Kubernetes api-server.
+type Client struct {
 	baseURL   string
 	client    *http.Client
 	token     string
 	namespace string
 }
 
-func (c client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
+func (c *Client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
 	url := c.baseURL + urlPath
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -81,8 +69,8 @@ func (c client) request(method, urlPath string, query map[string]string, body io
 	return rb, nil
 }
 
-// NewClientInCluster returns a Client that works from within a Kubernetes pod.
-func NewClientInCluster(namespace string) (Client, error) {
+// NewClientInCluster creates a Client that works from within a pod.
+func NewClientInCluster(namespace string) (*Client, error) {
 	tokenFile := "/var/run/secrets/kubernetes.io/serviceaccount/token"
 	token, err := ioutil.ReadFile(tokenFile)
 	if err != nil {
@@ -105,7 +93,7 @@ func NewClientInCluster(namespace string) (Client, error) {
 		},
 	}
 	c := &http.Client{Transport: tr}
-	return client{
+	return &Client{
 		baseURL:   inClusterBaseURL,
 		client:    c,
 		token:     string(token),
@@ -113,7 +101,7 @@ func NewClientInCluster(namespace string) (Client, error) {
 	}, nil
 }
 
-func (c client) ListPods(labels map[string]string) ([]Pod, error) {
+func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
 	var sel []string
 	for k, v := range labels {
 		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
@@ -136,13 +124,13 @@ func (c client) ListPods(labels map[string]string) ([]Pod, error) {
 	return pl.Items, nil
 }
 
-func (c client) DeletePod(name string) error {
+func (c *Client) DeletePod(name string) error {
 	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
 	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
 	return err
 }
 
-func (c client) GetJob(name string) (Job, error) {
+func (c *Client) GetJob(name string) (Job, error) {
 	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
 	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
 	if err != nil {
@@ -155,7 +143,7 @@ func (c client) GetJob(name string) (Job, error) {
 	return retJob, nil
 }
 
-func (c client) ListJobs(labels map[string]string) ([]Job, error) {
+func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
 	var sel []string
 	for k, v := range labels {
 		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
@@ -178,7 +166,7 @@ func (c client) ListJobs(labels map[string]string) ([]Job, error) {
 	return jl.Items, nil
 }
 
-func (c client) CreateJob(j Job) (Job, error) {
+func (c *Client) CreateJob(j Job) (Job, error) {
 	b, err := json.Marshal(j)
 	if err != nil {
 		return Job{}, err
@@ -196,7 +184,7 @@ func (c client) CreateJob(j Job) (Job, error) {
 	return retJob, nil
 }
 
-func (c client) DeleteJob(name string) error {
+func (c *Client) DeleteJob(name string) error {
 	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
 	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
 	return err

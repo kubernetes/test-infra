@@ -25,10 +25,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
-	"github.com/kubernetes/test-infra/ciongke/cmdlog"
 	"github.com/kubernetes/test-infra/ciongke/gcs"
-	"github.com/kubernetes/test-infra/ciongke/kube"
 )
 
 var (
@@ -56,19 +55,12 @@ type testClient struct {
 	Workspace    string
 	SourceBucket string
 
-	KubeClient  kube.Client
 	GCSClient   *gcs.Client
 	ExecCommand func(name string, arg ...string) *exec.Cmd
 }
 
 func main() {
 	flag.Parse()
-
-	kubeClient, err := kube.NewClientInCluster(*namespace)
-	if err != nil {
-		log.Printf("Error getting Kubernetes client: %s", err)
-		return
-	}
 
 	gcsClient, err := gcs.NewClient()
 	if err != nil {
@@ -84,7 +76,6 @@ func main() {
 		Workspace:    *workspace,
 		SourceBucket: *sourceBucket,
 
-		KubeClient:  kubeClient,
 		GCSClient:   gcsClient,
 		ExecCommand: exec.Command,
 	}
@@ -120,19 +111,19 @@ func (c *testClient) checkoutPR() (bool, error) {
 	checkoutCommand := c.ExecCommand("git", "checkout", c.Branch)
 	fetchCommand := c.ExecCommand("git", "fetch", "origin", fmt.Sprintf("pull/%d/head:pr", c.PRNumber))
 	mergeCommand := c.ExecCommand("git", "merge", "pr", "--no-edit")
-	if err := cmdlog.RunWithLogs(cloneCommand); err != nil {
+	if err := runAndLogCommand(cloneCommand); err != nil {
 		return false, err
 	}
 	checkoutCommand.Dir = clonePath
-	if err := cmdlog.RunWithLogs(checkoutCommand); err != nil {
+	if err := runAndLogCommand(checkoutCommand); err != nil {
 		return false, err
 	}
 	fetchCommand.Dir = clonePath
-	if err := cmdlog.RunWithLogs(fetchCommand); err != nil {
+	if err := runAndLogCommand(fetchCommand); err != nil {
 		return false, err
 	}
 	mergeCommand.Dir = clonePath
-	if err := cmdlog.RunWithLogs(mergeCommand); err != nil {
+	if err := runAndLogCommand(mergeCommand); err != nil {
 		return false, nil
 	}
 	return true, nil
@@ -144,7 +135,7 @@ func (c *testClient) uploadSource() error {
 	sourcePath := filepath.Join(c.Workspace, tarName)
 	tar := c.ExecCommand("tar", "czf", sourcePath, c.RepoName)
 	tar.Dir = c.Workspace
-	if err := cmdlog.RunWithLogs(tar); err != nil {
+	if err := runAndLogCommand(tar); err != nil {
 		return fmt.Errorf("tar failed: %s", err)
 	}
 	tarFile, err := os.Open(sourcePath)
@@ -177,4 +168,13 @@ func (c *testClient) startTests() error {
 		log.Printf("TODO: start %s (%s)", test.Name, test.Image)
 	}
 	return nil
+}
+
+func runAndLogCommand(cmd *exec.Cmd) error {
+	log.Printf("Running: %s", strings.Join(cmd.Args, " "))
+	b, err := cmd.CombinedOutput()
+	if len(b) > 0 {
+		log.Print(string(b))
+	}
+	return err
 }
