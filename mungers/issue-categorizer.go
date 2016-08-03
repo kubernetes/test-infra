@@ -80,7 +80,7 @@ func (s *LabelMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	cLabels := github.GetLabelsWithPrefix(issue.Labels, "components/")
+	cLabels := github.GetLabelsWithPrefix(issue.Labels, "component/")
 	if len(cLabels) != 0 {
 		//already labeled
 		return
