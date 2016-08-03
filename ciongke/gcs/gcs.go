@@ -21,6 +21,7 @@ import (
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/googleapi"
 	storage "google.golang.org/api/storage/v1"
 )
 
@@ -51,6 +52,6 @@ func NewClient() (*Client, error) {
 // without verifying any generation numbers or anything like that.
 func (c *Client) Upload(r io.Reader, bucket, name string) error {
 	object := &storage.Object{Name: name}
-	_, err := c.service.Objects.Insert(bucket, object).Media(r).Do()
+	_, err := c.service.Objects.Insert(bucket, object).Media(r, googleapi.ContentType("")).Do()
 	return err
 }
