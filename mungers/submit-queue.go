@@ -1148,35 +1148,8 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		}
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
-	} else {
-		if err := obj.WriteComment(retestBody); err != nil {
-			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
-			sq.SetMergeStatus(obj, unknown)
-			return true
-		}
-
-		// Wait for the retest to start
-		sq.SetMergeStatus(obj, ghE2EWaitingStart)
-		atomic.AddInt32(&sq.prsTested, 1)
-		err = obj.WaitForPending(sq.RequiredRetestContexts)
-		if err != nil {
-			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
-			return true
-		}
-
-		// Wait for the status to go back to something other than pending
-		sq.SetMergeStatus(obj, ghE2ERunning)
-		err = obj.WaitForNotPending(sq.RequiredRetestContexts)
-		if err != nil {
-			sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
-			return true
-		}
-
-		// Check if the thing we care about is success
-		if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
-			sq.SetMergeStatus(obj, ghE2EFailed)
-			return true
-		}
+	} else if sq.retestPR(obj) {
+		return true
 	}
 
 	if !sq.e2eStable(true) {
@@ -1189,6 +1162,45 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 	sq.mergePullRequest(obj)
 	return true
+}
+
+// Returns true if merge status changes, and false otherwise.
+func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
+	if len(sq.RequiredRetestContexts) == 0 {
+		return false
+	}
+
+	if err := obj.WriteComment(retestBody); err != nil {
+		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+		sq.SetMergeStatus(obj, unknown)
+		return true
+	}
+
+	// Wait for the retest to start
+	sq.SetMergeStatus(obj, ghE2EWaitingStart)
+	atomic.AddInt32(&sq.prsTested, 1)
+	err := obj.WaitForPending(sq.RequiredRetestContexts)
+	if err != nil {
+		sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
+		return true
+	}
+
+	// Wait for the status to go back to something other than pending
+	sq.SetMergeStatus(obj, ghE2ERunning)
+	err = obj.WaitForNotPending(sq.RequiredRetestContexts)
+	if err != nil {
+		sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
+		return true
+	}
+
+	// Check if the thing we care about is success
+	if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
+		sq.SetMergeStatus(obj, ghE2EFailed)
+		return true
+	}
+
+	// no action taken.
+	return false
 }
 
 func (sq *SubmitQueue) serve(data []byte, res http.ResponseWriter, req *http.Request) {
