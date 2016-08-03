@@ -42,7 +42,7 @@ func (LabelMunger) Initialize(config *github.Config, features *features.Features
 }
 
 // Name is the name usable in --pr-mungers
-func (LabelMunger) Name() string { return "LabelMunger" }
+func (LabelMunger) Name() string { return "issue-triager" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (LabelMunger) RequiredFeatures() []string { return []string{} }
