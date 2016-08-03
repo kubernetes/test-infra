@@ -74,30 +74,82 @@ class LabelsTest(unittest.TestCase):
         self.expect_labels([('pull_request', {'action': 'labeled'})], [])
 
 
-def make_comment_event(num, name, msg, timestamp, event='issue_comment',
-                       action='added'):
+def make_comment_event(num, name, msg='', event='issue_comment',
+                       action='created'):
     return event, {
         'action': action,
+        'sender': {'login': name},
         'comment': {
             'id': num,
             'user': {'login': name},
             'body': msg,
-            'created_at': timestamp,
         }
     }
 
 
-class CommentsTest(unittest.TestCase):
-    def test_basic(self):
-        self.assertEqual(classifier.get_comments([make_comment_event(1, 'aaa', 'msg', 2016)]),
-            [{'author': 'aaa', 'comment': 'msg', 'timestamp': 2016}])
+class CalculateTest(unittest.TestCase):
+    def test_distill(self):
+        self.assertEqual(classifier.distill_events([
+            make_comment_event(1, 'a'),
+            make_comment_event(2, 'b'),
+            make_comment_event(1, 'a', action='deleted'),
+            make_comment_event(3, 'c', event='pull_request_review_comment'),
+            make_comment_event(4, 'k8s-bot'),
+            ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}),
+            ('pull_request', {'action': 'labeled', 'sender': {'login': 'rev'},
+                'label': {'name': 'lgtm'}}),
+        ]),
+        [
+            ('comment', 'b'),
+            ('comment', 'c'),
+            ('push', 'auth'),
+            ('label lgtm', 'rev'),
+        ])
 
-    def test_deleted(self):
-        self.assertEqual(classifier.get_comments([
-            make_comment_event(1, 'aaa', 'msg', 2016),
-            make_comment_event(1, None, None, None, action='deleted'),
-            make_comment_event(2, '', '', '', action='deleted')]),
-            [])
+    def test_calculate_attention(self):
+        def expect(payload, events, expected_attn):
+            self.assertEqual(classifier.calculate_attention(events, payload),
+                             expected_attn)
+
+        def make_payload(author, assignees=None, labels=None, **kwargs):
+            ret = {'author': author, 'assignees': assignees or [], 'labels': labels or []}
+            ret.update(kwargs)
+            return ret
+
+        expect(make_payload('alpha', needs_rebase=True), [],
+            {'alpha': 'needs rebase'})
+        expect(make_payload('beta', labels={'release-note-label-needed'}), [],
+            {'beta': 'needs release-note label'})
+        expect(make_payload('gamma', status={'ci': ['failure', '', '']}), [],
+            {'gamma': 'fix tests'})
+        expect(make_payload('gamma', status={'ci': ['failure', '', '']}),
+            [('comment', 'other')],
+            {'gamma': 'address comments'})
+        expect(make_payload('delta', ['epsilon']), [],
+            {'epsilon': 'needs review'})
+
+        expect(make_payload('alpha', ['alpha']), [('comment', 'other')],
+            {'alpha': 'address comments'})
+
+    def test_author_state(self):
+        def expect(events, result):
+            self.assertEqual(classifier.get_author_state('author', events),
+                             result)
+        expect([], 'waiting')
+        expect([('comment', 'author')], 'waiting')
+        expect([('comment', 'other')], 'address comments')
+        expect([('comment', 'other'), ('push', 'author')], 'waiting')
+
+    def test_assignee_state(self):
+        def expect(events, result):
+            self.assertEqual(classifier.get_assignee_state('me', events),
+                             result)
+        expect([], 'needs review')
+        expect([('comment', 'other')], 'needs review')
+        expect([('comment', 'me')], 'waiting')
+        expect([('label lgtm', 'other')], 'needs review')
+        expect([('label lgtm', 'me')], 'waiting')
+        expect([('comment', 'me'), ('push', 'author')], 'needs review')
 
 
 if __name__ == '__main__':

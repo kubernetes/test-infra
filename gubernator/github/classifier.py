@@ -37,15 +37,18 @@ def classify_issue(repo, number):
     events.sort(key=lambda e: e.timestamp)
     logging.debug('classifying %s %s (%d events)', repo, number, len(events))
     event_pairs = [(event.event, json.loads(event.body)) for event in events]
-    is_pr, is_open, involved, payload = classify(event_pairs)
+
     last_event_timestamp = events[-1].timestamp
-    if 'head' in payload:
-        payload['status'] = {}
-        for status in models.GHStatus.query_for_sha(repo, payload['head']):
+    merged = get_merged(event_pairs)
+    statuses = None
+    if 'head' in merged:
+        statuses = {}
+        for status in models.GHStatus.query_for_sha(repo, merged['head']['sha']):
             last_event_timestamp = max(last_event_timestamp, status.updated_at)
-            payload['status'][status.context] = [
+            statuses[status.context] = [
                 status.state, status.target_url, status.description]
-    return is_pr, is_open, involved, payload, last_event_timestamp
+
+    return list(classify(event_pairs, statuses)) + [last_event_timestamp]
 
 
 def get_merged(events):
@@ -107,36 +110,31 @@ def get_labels(events):
     return {label['name']: label['color'] for label in labels}
 
 
-def get_comments(events):
+def get_skip_comments(events, skip_users=None):
     '''
-    Pick comments and pull-request review comments out of a list of events.
+    Determine comment ids that should be ignored, either because of
+        deletion or because the user should be skipped.
 
     Args:
         events: a list of (event_type str, event_body dict) pairs.
     Returns:
-        comments: a list of dict(author=..., comment=..., timestamp=...),
-                  ordered with the earliest comment first.
+        comment_ids: a set of comment ids that were deleted or made by
+            users that should be skiped.
     '''
-    comments = {}  # comment_id : comment
+    if skip_users is None:
+        skip_users = []
+
+    skip_comments = set()
     for event, body in events:
         action = body.get('action')
         if event in ('issue_comment', 'pull_request_review_comment'):
             comment_id = body['comment']['id']
-            if action == 'deleted':
-                comments.pop(comment_id, None)
-            else:
-                comments[comment_id] = body['comment']
-    return [
-            {
-                'author': c['user']['login'],
-                'comment': c['body'],
-                'timestamp': c['created_at']
-            }
-            for c in sorted(comments.values(), key=lambda c: c['created_at'])
-    ]
+            if action == 'deleted' or body['sender']['login'] in skip_users:
+                skip_comments.add(comment_id)
+    return skip_comments
 
 
-def classify(events):
+def classify(events, statuses=None):
     '''
     Given an event-stream for an issue and status-getter, process
     the events and determine what action should be taken, if any.
@@ -159,13 +157,6 @@ def classify(events):
     '''
     merged = get_merged(events)
     labels = get_labels(events)
-    comments = get_comments(events)
-
-    commit_change_time = None
-    for event, body in events:
-        if event == 'pull_request':
-            if body.get('action') in ('opened', 'reopened', 'synchronize'):
-                commit_change_time = body['pull_request']['updated_at']
 
     is_pr = 'head' in merged or 'pull_request' in merged
     is_open = merged['state'] != 'closed'
@@ -188,35 +179,98 @@ def classify(events):
         if 'head' in merged:
             payload['head'] = merged['head']['sha']
 
-    payload['attn'] = calculate_attention(payload, comments, commit_change_time)
+    if statuses:
+        payload['status'] = statuses
+
+    payload['attn'] = calculate_attention(distill_events(events), payload)
 
     return is_pr, is_open, involved, payload
 
 
-def calculate_attention(payload, comments, commit_change_time):
+def distill_events(events):
     '''
-    Given information about an issue, determine who should look at it
+    Given a sequence of events, return a series of user-action tuples
+    relevant to determining user state.
+    '''
+    skip_comments = get_skip_comments(events, ['k8s-bot'])
+
+    output = []
+    for event, body in events:
+        action = body.get('action')
+        user = body.get('sender', {}).get('login')
+        if event in ('issue_comment', 'pull_request_review_comment'):
+            if body['comment']['id'] in skip_comments:
+                continue
+            if action == 'created':
+                output.append(('comment', user))
+        if event == 'pull_request':
+            if action in ('opened', 'reopened', 'synchronize'):
+                output.append(('push', user))
+            if action == 'labeled' and 'label' in body:
+                output.append(('label ' + body['label']['name'].lower(), user))
+    return output
+
+
+def get_author_state(author, distilled_events):
+    '''
+    Determine the state of the author given a series of distilled events.
+    '''
+    state = 'waiting'
+    for action, user in distilled_events:
+        if state == 'waiting':
+            if action == 'comment' and user != author:
+                state = 'address comments'
+        elif state == 'address comments':
+            if action == 'push':
+                state = 'waiting'
+    return state
+
+
+def get_assignee_state(assignee, distilled_events):
+    '''
+    Determine the state of an assignee given a series of distilled events.
+    '''
+    state = 'needs review'
+    for action, user in distilled_events:
+        if state == 'needs review':
+            if user == assignee:
+                if action == 'comment':
+                    state = 'waiting'
+                if action == 'label lgtm':
+                    state = 'waiting'
+        elif state == 'waiting':
+            if action == 'push':
+                state = 'needs review'
+    return state
+
+
+def calculate_attention(distilled_events, payload):
+    '''
+    Given information about an issue, determine who should look at it.
     '''
     author = payload['author']
     assignees = payload['assignees']
 
     attn = {}
     def notify(to, reason):
-        attn.setdefault(to, set()).add(reason)
+        attn[to] = reason
+
+    if any(state == 'failure' for state, _url, _desc
+           in payload.get('status', {}).values()):
+        notify(author, 'fix tests')
+
+    for assignee in assignees:
+        assignee_state = get_assignee_state(assignee, distilled_events)
+        if assignee_state != 'waiting':
+            notify(assignee, assignee_state)
+
+    author_state = get_author_state(author, distilled_events)
+    if author_state != 'waiting':
+        notify(author, author_state)
 
     if payload.get('needs_rebase'):
         notify(author, 'needs rebase')
-
     if 'release-note-label-needed' in payload['labels']:
         notify(author, 'needs release-note label')
 
-    if commit_change_time is not None:
-        responded_to_changes = set()
-        for comment in comments:
-            if comment['timestamp'] > commit_change_time:
-                responded_to_changes.add(comment['author'])
-
-        for assignee in set(assignees) - responded_to_changes:
-            notify(assignee, 'needs review')
-
-    return {user: ', '.join(sorted(msgs)) for user, msgs in attn.iteritems()}
+    return attn
