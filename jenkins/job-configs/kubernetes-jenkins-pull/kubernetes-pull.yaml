@@ -7,6 +7,7 @@
     git-basedir: ''
     skip-if-no-test-files: false
     status-add-test-results: true
+    only-trigger-phrase: false
 
     concurrent: true
     properties:
@@ -51,6 +52,7 @@
         - github-pull-request:
             # This is the Jenkins GHPRB plugin ID, not the actual github token.
             auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
+            only-trigger-phrase: '{only-trigger-phrase}'
             trigger-phrase: '(?is).*@k8s-bot\s+{trigger-phrase}\s+this.*'
             cron: 'H/2 * * * *'
             status-context: Jenkins {status-context}
@@ -468,6 +470,76 @@
               echo "Exiting with code: ${{rc}}"
               exit ${{rc}}
             fi
+
+      - build-test-federation-e2e-gce: # kubernetes-pull-build-test-federation-e2e-gce
+          status-context: Federation GCE e2e
+          max-total: 12
+          only-trigger-phrase: true  # This test should run only if explicitly triggered.
+          trigger-phrase: 'federation\s+gce\s+e2e\s+test'
+          cmd: |
+            export KUBE_SKIP_PUSH_GCS=y
+            export KUBE_RUN_FROM_OUTPUT=y
+            export KUBE_FASTBUILD=true
+            ./hack/jenkins/build.sh
+            # Nothing should want Jenkins $HOME
+            export HOME=${{WORKSPACE}}
+
+            export KUBERNETES_PROVIDER="gce"
+            export E2E_MIN_STARTUP_PODS="1"
+            export FAIL_ON_GCP_RESOURCE_LEAK="true"
+
+            # Experimental flake detection-- harmlessly does nothing until
+            # ginkgo changes get made, but allows for testing them in a PR.
+            export GINKGO_TOLERATE_FLAKES="y"
+
+            export E2E_NAME="federation-e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+            export FAIL_ON_GCP_RESOURCE_LEAK="false"
+            export NUM_NODES="3"
+
+            # Assume we're upping, testing, and downing a cluster
+            export E2E_UP="true"
+            export E2E_TEST="true"
+            export E2E_DOWN="true"
+
+            # Skip gcloud update checking
+            export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+
+            # GCE variables
+            export INSTANCE_PREFIX=${{E2E_NAME}}
+            export KUBE_GCE_NETWORK=${{E2E_NAME}}
+            export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
+
+            # Get golang into our PATH so we can run e2e.go
+            export PATH=${{PATH}}:/usr/local/go/bin
+
+            # Federation specific params
+            export FEDERATION="true"
+            export PROJECT="k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+            export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+            export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+            export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+            export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+            export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+            export DNS_ZONE_NAME="k8s-federation.com."
+            export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
+            export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
+            export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
+
+            timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+              if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                echo "Dumping logs for any remaining nodes"
+                ./cluster/log-dump.sh _artifacts
+              fi
+            fi
+            if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+              echo "Build timed out" >&2
+            elif [[ ${{rc}} -ne 0 ]]; then
+              echo "Build failed" >&2
+            fi
+            echo "Exiting with code: ${{rc}}"
+            exit ${{rc}}
+
     jobs:
         - '{git-project}-pull-{suffix}'
 
