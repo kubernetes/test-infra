@@ -49,6 +49,7 @@ func (LabelMunger) RequiredFeatures() []string { return []string{} }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (LabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
+
 }
 
 func init() {
@@ -85,7 +86,7 @@ func (s *LabelMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	routingLabelsToApply, err := http.PostForm("http://localhost:5000",
+	routingLabelsToApply, err := http.PostForm("http://issue-triager-service:5000",
 		url.Values{"title": {*issue.Title}, "body": {*issue.Body}})
 
 	if err != nil {
