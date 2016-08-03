@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: kubernetes.github.io
-  config.pr-mungers: size
+  config.pr-mungers: blunderbuss
   config.state: open
   config.token-file: /etc/secret-volume/token
   gitrepo.repo-dir: /gitrepos
