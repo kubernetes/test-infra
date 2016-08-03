@@ -31,6 +31,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   gcePersistentDisk:
     pdName: machine-learning-volume
+    fsType: ext4
 EOF
 
 kubectl apply -f - <<EOF
@@ -44,23 +45,6 @@ spec:
   resources:
     requests:
       storage: 10Gi
-EOF
-
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: submit-queue
-  name: issue-triager 
-  namespace: default
-spec:
-  ports:
-  - name: ml-port
-    port: 5000
-    targetPort: ml-port
-  selector:
-    app: submit-queue
 EOF
 
 ! test -z "$(gcloud compute disks list --uri machine-learning-volume)" || \
