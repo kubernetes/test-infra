@@ -106,7 +106,7 @@ label:hover {
 table.pr-dash {
     border-spacing: 0;
 }
-table.pr-dash tr {
+table.pr-dash tbody tr {
     cursor: pointer;
 }
 table.pr-dash tbody tr:nth-child(odd) {
@@ -122,3 +122,6 @@ table.pr-dash tbody tr:hover {
 h3.pr-section {
     margin: 1em 0 0 1em;
 }
+.text-success { color: #55a532; }
+.text-pending { color: #cea61b; }
+.text-failure { color: #bd2c00; }
