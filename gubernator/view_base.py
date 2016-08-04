@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+import logging
 import os
 import re
 
+import cloudstorage as gcs
 import jinja2
 import webapp2
 import yaml
 
 import filters as jinja_filters
 
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, memcache
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -35,6 +38,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 JINJA_ENVIRONMENT.line_statement_prefix = '%'
 jinja_filters.register(JINJA_ENVIRONMENT.filters)
+
 
 class RenderingHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
@@ -54,3 +58,49 @@ class RenderingHandler(webapp2.RequestHandler):
             return
         if prefix[:prefix.find('/')] not in BUCKET_WHITELIST:
             self.abort(404)
+
+
+def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
+    """Decorate a function to memoize its results using memcache.
+
+    The function must take a single string as input, and return a pickleable
+    type.
+
+    Args:
+        prefix: A prefix for memcache keys to use for memoization.
+        expires: How long to memoized values, in seconds.
+        neg_expires: How long to memoize falsey values, in seconds
+    Returns:
+        A decorator closure to wrap the function.
+    """
+    # setting the namespace based on the current version prevents different
+    # versions from sharing cache values -- meaning there's no need to worry
+    # about incompatible old key/value pairs
+    namespace = os.environ['CURRENT_VERSION_ID']
+    def wrapper(func):
+        @functools.wraps(func)
+        def wrapped(arg):
+            key = '%s%s' % (prefix, arg)
+            data = memcache.get(key, namespace=namespace)
+            if data is not None:
+                return data
+            else:
+                data = func(arg)
+                try:
+                    if data:
+                        memcache.add(key, data, expires, namespace=namespace)
+                    else:
+                        memcache.add(key, data, neg_expires, namespace=namespace)
+                except ValueError:
+                    logging.exception('unable to write to memcache')
+                return data
+        return wrapped
+    return wrapper
+
+
+@memcache_memoize('gs-ls://', expires=60)
+def gcs_ls(path):
+    """Enumerate files in a GCS directory. Returns a list of FileStats."""
+    if path[-1] != '/':
+        path += '/'
+    return list(gcs.listbucket(path, delimiter='/'))
