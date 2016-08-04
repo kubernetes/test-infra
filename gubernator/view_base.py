@@ -31,6 +31,21 @@ BUCKET_WHITELIST = {
     for path in yaml.load(open("buckets.yaml"))
 }
 
+DEFAULT_JOBS = {
+    'kubernetes-jenkins/logs/': {
+        'kubelet-gce-e2e-ci',
+        'kubernetes-build',
+        'kubernetes-e2e-gce',
+        'kubernetes-e2e-gce-scalability',
+        'kubernetes-e2e-gce-slow',
+        'kubernetes-e2e-gke',
+        'kubernetes-e2e-gke-slow',
+        'kubernetes-kubemark-5-gce',
+        'kubernetes-kubemark-500-gce',
+        'kubernetes-test-go',
+    }
+}
+
 PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -60,6 +75,12 @@ class RenderingHandler(webapp2.RequestHandler):
             return
         if prefix[:prefix.find('/')] not in BUCKET_WHITELIST:
             self.abort(404)
+
+
+class IndexHandler(RenderingHandler):
+    """Render the index."""
+    def get(self):
+        self.render("index.html", {'jobs': DEFAULT_JOBS})
 
 
 def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):

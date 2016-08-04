@@ -16,35 +16,13 @@
 
 import webapp2
 
+import view_base
 import view_build
-from view_base import RenderingHandler
 import view_logs
 import view_pr
 
-DEFAULT_JOBS = {
-    'kubernetes-jenkins/logs/': {
-        'kubelet-gce-e2e-ci',
-        'kubernetes-build',
-        'kubernetes-e2e-gce',
-        'kubernetes-e2e-gce-scalability',
-        'kubernetes-e2e-gce-slow',
-        'kubernetes-e2e-gke',
-        'kubernetes-e2e-gke-slow',
-        'kubernetes-kubemark-5-gce',
-        'kubernetes-kubemark-500-gce',
-        'kubernetes-test-go',
-    }
-}
-
-
-class IndexHandler(RenderingHandler):
-    """Render the index."""
-    def get(self):
-        self.render("index.html", {'jobs': DEFAULT_JOBS})
-
-
 app = webapp2.WSGIApplication([
-    (r'/', IndexHandler),
+    (r'/', view_base.IndexHandler),
     (r'/jobs/(.*)$', view_build.JobListHandler),
     (r'/builds/(.*)/([^/]+)/?', view_build.BuildListHandler),
     (r'/build/(.*)/([^/]+)/(\d+)/?', view_build.BuildHandler),
