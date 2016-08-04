@@ -31,6 +31,8 @@ BUCKET_WHITELIST = {
     for path in yaml.load(open("buckets.yaml"))
 }
 
+PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
     extensions=['jinja2.ext.autoescape'],
@@ -104,3 +106,8 @@ def gcs_ls(path):
     if path[-1] != '/':
         path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
+
+
+def pad_numbers(s):
+    """Modify a string to make its numbers suitable for natural sorting."""
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)

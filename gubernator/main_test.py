@@ -60,40 +60,6 @@ def init_build(build_dir, started=True, finished=True):
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
 
 
-class HelperTest(unittest.TestCase):
-    def test_pad_numbers(self):
-        self.assertEqual(main.pad_numbers('a3b45'),
-                         'a' + '0' * 15 + '3b' + '0' * 14 + '45')
-
-
-class ParseJunitTest(unittest.TestCase):
-    @staticmethod
-    def parse(xml):
-        return list(main.parse_junit(xml, "fp"))
-
-    def test_normal(self):
-        failures = self.parse(JUNIT_SUITE)
-        stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack, "fp")])
-
-    def test_testsuites(self):
-        failures = self.parse('''
-            <testsuites>
-                <testsuite name="k8s.io/suite">
-                    <properties>
-                        <property name="go.version" value="go1.6"/>
-                    </properties>
-                    <testcase name="TestBad" time="0.1">
-                        <failure>something bad</failure>
-                    </testcase>
-                </testsuite>
-            </testsuites>''')
-        self.assertEqual(failures,
-                         [('k8s.io/suite TestBad', 0.1, 'something bad', "fp")])
-
-    def test_bad_xml(self):
-        self.assertEqual(self.parse('''<body />'''), [])
-
 
 class TestBase(unittest.TestCase):
     def init_stubs(self):
