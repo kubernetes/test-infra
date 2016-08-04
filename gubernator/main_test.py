@@ -31,6 +31,7 @@ import cloudstorage as gcs
 import main
 import gcs_async
 import gcs_async_test
+import view_pr
 
 write = gcs_async_test.write
 
@@ -59,40 +60,6 @@ def init_build(build_dir, started=True, finished=True):
               {'result': 'SUCCESS', 'timestamp': 1406536800})
     write(build_dir + 'artifacts/junit_01.xml', JUNIT_SUITE)
 
-
-class HelperTest(unittest.TestCase):
-    def test_pad_numbers(self):
-        self.assertEqual(main.pad_numbers('a3b45'),
-                         'a' + '0' * 15 + '3b' + '0' * 14 + '45')
-
-
-class ParseJunitTest(unittest.TestCase):
-    @staticmethod
-    def parse(xml):
-        return list(main.parse_junit(xml, "fp"))
-
-    def test_normal(self):
-        failures = self.parse(JUNIT_SUITE)
-        stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack, "fp")])
-
-    def test_testsuites(self):
-        failures = self.parse('''
-            <testsuites>
-                <testsuite name="k8s.io/suite">
-                    <properties>
-                        <property name="go.version" value="go1.6"/>
-                    </properties>
-                    <testcase name="TestBad" time="0.1">
-                        <failure>something bad</failure>
-                    </testcase>
-                </testsuite>
-            </testsuites>''')
-        self.assertEqual(failures,
-                         [('k8s.io/suite TestBad', 0.1, 'something bad', "fp")])
-
-    def test_bad_xml(self):
-        self.assertEqual(self.parse('''<body />'''), [])
 
 
 class TestBase(unittest.TestCase):
@@ -198,7 +165,7 @@ class AppTest(TestBase):
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % main.PR_PREFIX
+        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
@@ -313,7 +280,7 @@ class PRTest(TestBase):
 
         for job, builds in self.BUILDS.iteritems():
             for build, started, finished in builds:
-                path = '/%s/123/%s/%s/' % (main.PR_PREFIX, job, build)
+                path = '/%s/123/%s/%s/' % (view_pr.PR_PREFIX, job, build)
                 if started:
                     write(path + 'started.json', started)
                 if finished:
@@ -321,7 +288,7 @@ class PRTest(TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        builds = main.pr_builds('123')
+        builds = view_pr.pr_builds('123')
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):
