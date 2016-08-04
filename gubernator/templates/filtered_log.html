@@ -8,19 +8,27 @@
 </div>
 <div id="failures">
 	<form method="get" onchange="submit()">
-		<input type="hidden" name="pod" value="{{pod}}">
+		<h3> Failed pod: <input type="text" name="pod" value="{{pod}}" style="width: 300px;">
+		</h3>
 		<input type="hidden" name="junit" value="{{junit}}">
 		<hr>
 		<label><input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Line wrapping on</label>
+		% for folder, filenames in all_logs.items()|sort
+			<hr>
+			<h4> {{folder|basename or folder|dirname|basename}} </h4>
+			% for filename in filenames
+				% set log_name = filename|basename
+				<label><input type="checkbox" name="logfiles" value={{filename}} {% if filename in log_files %} checked {% endif %}> {{log_name}}</label>
+				<a href="https://storage.googleapis.com{{filename}}">(Full Log)</a> <br>
+			% endfor
+		% endfor
 		<hr>
-		<label><input type="checkbox" name="logfiles" value="kubelet.log" {% if "kubelet.log" in log_files %} checked {% endif %}> kubelet.log</label>
-		<label><input type="checkbox" name="logfiles" value="kube-apiserver.log" {% if "kube-apiserver.log" in log_files %} checked {% endif %}> kube-apiserver.log</label>
-		<hr>
-		<label><input type="checkbox" name="UID"{% if uid %} checked{% endif %}> Highlight Pod UID: <b>{{objref_dict["UID"]}}</b></label><br>
-		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <b>{{objref_dict["Namespace"]}}</b></label>
+		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <input type="text" name="poduid" value="{{objref_dict['UID']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <input type="text" name="ns" value="{{objref_dict['Namespace']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <input type="text" name="cID" value="{{objref_dict['ContainerID']}}" style="width: 300px;"></label>
 	</form>
-	% for file in log_files
-		<h3><a href="https://storage.googleapis.com{{full_paths[file]}}">{{file}}</a></h3>
+	% for file in log_files|sort
+		<h3>{{file}}</a></h3>
 		<pre {% if not wrap %} style="white-space:pre"{% endif %}>
 			{{logs[file] | safe}}
 		</pre>

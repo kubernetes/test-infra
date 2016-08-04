@@ -24,29 +24,26 @@ lines = ["line 0", "pod 2 3", "abcd podName", "line 3", "failed",
          "Event(api.ObjectReference{Namespace:\"podName\", Name:\"abc\", UID:\"uid\"}", "uid"]
 filters = {"UID": "", "pod": "", "Namespace": ""}
 
-
 class KubeletParserTest(unittest.TestCase):
     def test_parse_error_re(self):
         """Test for build-log.txt filtering by error_re"""
-        matched_lines, hilight_words = kubelet_parser.parse(
-            lines, ["error", "fatal", "failed", "build timed out"], filters, {})
+        matched_lines, hilight_words = kubelet_parser.parse(lines,
+            ["error", "fatal", "failed", "build timed out"], filters, {})
         self.assertEqual(matched_lines, [4])
-        self.assertEqual(
-            hilight_words, ["error", "fatal", "failed", "build timed out"])
+        self.assertEqual(hilight_words, ["error", "fatal", "failed", "build timed out"])
 
     def test_parse_empty_lines(self):
         """Test that it doesn't fail when files are empty"""
-        matched_lines, hilight_words = kubelet_parser.parse(
-            [], ["error", "fatal", "failed", "build timed out"], filters, {})
+        matched_lines, hilight_words = kubelet_parser.parse([],
+            ["error", "fatal", "failed", "build timed out"], filters, {})
         self.assertEqual(matched_lines, [])
-        self.assertEqual(
-            hilight_words, ["error", "fatal", "failed", "build timed out"])
+        self.assertEqual(hilight_words, ["error", "fatal", "failed", "build timed out"])
 
     def test_parse_pod_RE(self):
         """Test for initial pod filtering"""
         filters["pod"] = "pod"
-        matched_lines, hilight_words = kubelet_parser.parse(
-            lines, ["pod"], filters, {"UID": "", "Namespace": ""})
+        matched_lines, hilight_words = kubelet_parser.parse(lines,
+            ["pod"], filters, {})
         self.assertEqual(matched_lines, [1])
         self.assertEqual(hilight_words, ["pod"])
 
@@ -55,21 +52,20 @@ class KubeletParserTest(unittest.TestCase):
         filters["pod"] = "pod"
         filters["UID"] = "on"
         filters["Namespace"] = "on"
-        matched_lines, hilight_words = kubelet_parser.parse(
-            lines, ["pod"], filters, {"UID": "uid", "Namespace": "podName"})
+        matched_lines, hilight_words = kubelet_parser.parse(lines,
+            ["pod"], filters, {"UID":"uid", "Namespace":"podName", "ContainerID":""})
         self.assertEqual(matched_lines, [1, 2, 5, 6])
         self.assertEqual(hilight_words, ["pod", "podName", "uid"])
 
     def test_make_dict(self):
         """Test make_dict works"""
-        objref_dict = kubelet_parser.make_dict(lines, regex.wordRE("abc"))
-        self.assertEqual(
-            objref_dict, {"UID": "uid", "Namespace": "podName", "Name": "abc"})
+        objref_dict = kubelet_parser.make_dict(lines, regex.wordRE("abc"), {})
+        self.assertEqual(objref_dict, ({"UID":"uid", "Namespace":"podName", "Name":"abc"}, True))
 
     def test_make_dict_fail(self):
         """Test when objref line not in file"""
-        objref_dict = kubelet_parser.make_dict(["pod failed"], regex.wordRE("abc"))
-        self.assertEqual(objref_dict, None)
+        objref_dict = kubelet_parser.make_dict(["pod failed"], regex.wordRE("abc"), {})
+        self.assertEqual(objref_dict, ({}, False))
 
 if __name__ == '__main__':
     unittest.main()

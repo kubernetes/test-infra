@@ -36,9 +36,12 @@ def parse(lines, hilight_words, filters, objref_dict):
     """
     matched_lines = []
 
+    if not filters["pod"] and objref_dict:
+        hilight_words = []
+
     # If the filter is on, look for it in the objref_dict
     for k in filters:
-        if k != "pod" and filters[k] and objref_dict[k]:
+        if k != "pod" and filters[k] and k in objref_dict:
             hilight_words.append(objref_dict[k])
 
     words_re = regex.combine_wordsRE(hilight_words)
@@ -50,19 +53,29 @@ def parse(lines, hilight_words, filters, objref_dict):
     return matched_lines, hilight_words
 
 
-def make_dict(data, pod_re):
+def make_dict(data, pod_re, objref_dict):
     """
     Given the log file and the failed pod name, returns a dictionary
-    containing the namespace, UID, and other information associated with the pod.
+    containing the namespace, UID, and other information associated with the pod
+    and a bool indicating if the pod name string is in the log file.
 
     This dictionary is lifted from the line with the ObjectReference
     """
+    pod_in_file = False
     lines = unicode(jinja2.escape(data)).split('\n')
     for line in lines:
         if pod_re.search(line):
+            pod_in_file = True
             objref = regex.objref(line)
+            containerID = regex.containerID(line)
+            if containerID and not objref_dict["ContainerID"]:
+                objref_dict["ContainerID"] = containerID.group(1)
             if objref:
-                objref_dict = objref.group(1)
-                objref_dict = re.sub(r'(\w+):', r'"\1": ', objref_dict)
-                objref_dict = objref_dict.replace('&#34;', '"')
-                return json.loads(objref_dict)
+                objref_dict_re = objref.group(1)
+                objref_dict_re = re.sub(r'(\w+):', r'"\1": ', objref_dict_re)
+                objref_dict_re = objref_dict_re.replace('&#34;', '"')
+                objref_dict_re = json.loads(objref_dict_re)
+                objref_dict_re.update(objref_dict)
+                return objref_dict_re, pod_in_file
+
+    return objref_dict, pod_in_file

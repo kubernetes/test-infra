@@ -23,7 +23,7 @@ import regex
 def digest(data, strip=True, filters=None,
            error_re=regex.error_re):
     if filters is None:
-        filters = {"UID": "", "pod": "", "Namespace": ""}
+        filters = {"UID":"", "pod":"", "Namespace":"", "ContainerID":""}
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
     if strip:
@@ -65,13 +65,11 @@ class LogParserTest(unittest.TestCase):
 
     def test_pod(self):
         self.assertEqual(digest(
-            'pod-blah', error_re=regex.wordRE("pod"),
-            filters={"pod": "pod", "UID": "", "Namespace": ""}, strip=False),
-            '<span class="hilight"><span class="keyword">'
-            'pod</span>-blah</span>')
+            'pod-blah', error_re=regex.wordRE("pod"), strip=False),
+            '<span class="hilight">pod-blah</span>')
         self.assertEqual(digest('0 1 2 3 4 5 pod 6 7 8 9 10',
             error_re=regex.wordRE("pod"),
-            filters={"pod": "pod", "UID": "", "Namespace": ""}),
+            filters={"pod": "pod", "UID": "", "Namespace": "", "ContainerID":""}),
             's2 ( 0 1 ) 2 3 4 5 pod 6 7 8 9')
 
 

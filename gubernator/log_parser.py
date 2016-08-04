@@ -29,6 +29,17 @@ def hilight(line, hilight_words):
 
 
 def log_html(lines, matched_lines, hilight_words, skip_fmt):
+    """
+    Constructs the html for the filtered log
+    Given:
+        lines: list of all lines in the log
+        matched_lines: list of lines that have a filtered string in them
+        hilight_words: list of words to be bolded
+        skip_fmt: function producing string to replace the skipped lines
+    Returns:
+        output: list of a lines HTML code suitable for inclusion in a <pre>
+        tag, with "interesting" errors hilighted
+    """
     output = []
 
     matched_lines.append(len(lines))  # sentinel value
@@ -75,13 +86,13 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
     lines = unicode(jinja2.escape(data)).split('\n')
 
     if filters is None:
-        filters = {'Namespace': '', 'UID': '', 'pod': ''}
+        filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
     hilight_words = ["error", "fatal", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
-    if not (filters["UID"] or filters["Namespace"]):
+    if not (filters["UID"] or filters["Namespace"] or filters["ContainerID"]):
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
         matched_lines, hilight_words = kubelet_parser.parse(lines,
