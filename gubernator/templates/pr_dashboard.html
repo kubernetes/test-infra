@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/style.css" />
+<link rel="stylesheet" href="/static/octicons/octicons.css" />
+<title>PR Dashboard</title>
+<script src="/static/moment.min.js"></script>
+<script src="/static/build.js"></script>
+<script>window.onload = fix_timestamps;</script>
+<div id="header" class="container">
+	<img src="/static/logo.svg">
+	<h1>PR Dashboard</h1>
+</div>
+<form onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
+<input id="userBox" name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
+<button>Switch User</button>
+</form>
+% for title, pred, search in cats
+	% set sub_prs = prs | select(pred)
+	<h3 class="pr-section">
+	% if search
+	<a href="https://github.com/pulls?q={{search|quote_plus}}">{{title}}</a>
+	% else
+	{{title}}
+	% endif
+	({{sub_prs|length}})</h3>
+	% if sub_prs
+	<table class="pr pr-dash">
+	<thead>
+		<tr><th>Repo<th>Number<th>Author<th>Status<th>Updated<th>Assignees<th>Size<th>Title</tr>
+	</thead>
+		% for pr in sub_prs
+			% set pl = pr.payload
+			<tr onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
+			<td>{{pr.repo[trim:]}}
+			<td>{{pr.number}}
+			<td>{{pl['author']}}
+			<td>{{pl|render_status(user)}}
+			<td>{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}
+			<td>{{pl['assignees']|join(", ")}}
+			<td>{{pl|classify_size}}
+			<td>{{pl['title']}}
+		% endfor
+	</table>
+	% else
+		<p><h4 class="pr-section">No Results</h4>
+	% endif
+% endfor
