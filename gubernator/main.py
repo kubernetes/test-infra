@@ -21,26 +21,19 @@ import re
 import os
 
 import webapp2
-import jinja2
-import yaml
 
-from google.appengine.api import memcache, urlfetch
+from google.appengine.api import memcache
 
 import defusedxml.ElementTree as ET
 import cloudstorage as gcs
 
 import github.models as ghm
 import gcs_async
-import filters as jinja_filters
 import log_parser
 import kubelet_parser
 import pull_request
 import regex
-
-BUCKET_WHITELIST = {
-    re.match(r'gs://([^/]+)', path).group(1)
-    for path in yaml.load(open("buckets.yaml"))
-}
+from view_base import RenderingHandler
 
 DEFAULT_JOBS = {
     'kubernetes-jenkins/logs/': {
@@ -58,14 +51,6 @@ DEFAULT_JOBS = {
 }
 
 PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
-
-JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
-    extensions=['jinja2.ext.autoescape'],
-    trim_blocks=True,
-    autoescape=True)
-JINJA_ENVIRONMENT.line_statement_prefix = '%'
-jinja_filters.register(JINJA_ENVIRONMENT.filters)
 
 
 def pad_numbers(s):
@@ -373,26 +358,6 @@ def pr_builds(pr):
         jobs.setdefault(job, []).append((build, started, finished))
 
     return jobs
-
-
-class RenderingHandler(webapp2.RequestHandler):
-    """Base class for Handlers that render Jinja templates."""
-    def __init__(self, *args, **kwargs):
-        super(RenderingHandler, self).__init__(*args, **kwargs)
-        # The default deadline of 5 seconds is too aggressive of a target for GCS
-        # directory listing operations.
-        urlfetch.set_default_fetch_deadline(60)
-
-    def render(self, template, context):
-        """Render a context dictionary using a given template."""
-        template = JINJA_ENVIRONMENT.get_template(template)
-        self.response.write(template.render(context))
-
-    def check_bucket(self, prefix):
-        if prefix in BUCKET_WHITELIST:
-            return
-        if prefix[:prefix.find('/')] not in BUCKET_WHITELIST:
-            self.abort(404)
 
 
 class IndexHandler(RenderingHandler):
