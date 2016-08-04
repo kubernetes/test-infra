@@ -31,6 +31,7 @@ import cloudstorage as gcs
 import main
 import gcs_async
 import gcs_async_test
+import view_pr
 
 write = gcs_async_test.write
 
@@ -164,7 +165,7 @@ class AppTest(TestBase):
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % main.PR_PREFIX
+        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
@@ -279,7 +280,7 @@ class PRTest(TestBase):
 
         for job, builds in self.BUILDS.iteritems():
             for build, started, finished in builds:
-                path = '/%s/123/%s/%s/' % (main.PR_PREFIX, job, build)
+                path = '/%s/123/%s/%s/' % (view_pr.PR_PREFIX, job, build)
                 if started:
                     write(path + 'started.json', started)
                 if finished:
@@ -287,7 +288,7 @@ class PRTest(TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        builds = main.pr_builds('123')
+        builds = view_pr.pr_builds('123')
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):
