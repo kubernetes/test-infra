@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import unittest
 
 import filters
@@ -62,6 +63,41 @@ class HelperTest(unittest.TestCase):
         self.assertEqual(filters.do_testcmd('[k8s.io] Proxy [k8s.io] works'),
             "go run hack/e2e.go -v -test --test_args='--ginkgo.focus="
             "Proxy\\s\\[k8s\\.io\\]\\sworks$'")
+
+    def test_classify_size(self):
+        self.assertEqual(filters.do_classify_size(
+            {'labels': {'size/FOO': 1}}), 'FOO')
+        self.assertEqual(filters.do_classify_size(
+            {'labels': {}, 'additions': 70, 'deletions': 20}), 'M')
+
+    def test_render_status_basic(self):
+        payload = {'status': {'ci': ['pending', '', '']}}
+        self.assertEqual(str(filters.do_render_status(payload, '')),
+            '<span class="text-pending octicon octicon-primitive-dot">'
+            '</span>Pending')
+
+    def test_render_status_complex(self):
+        def expect(payload, expected, user=''):
+            # strip the excess html from the result down to the text class,
+            # the opticon class, and the rendered text
+            result = filters.do_render_status(payload, user)
+            result = re.sub(r'<span class="text-|octicon octicon-|</span>', '', result)
+            result = str(result).replace('">', ' ')
+            self.assertEqual(result, expected)
+
+        statuses = lambda *xs: {str(n): [x, '', ''] for n, x in enumerate(xs)}
+        expect({'status': {}}, 'Pending')
+        expect({'status': statuses('pending')}, 'pending primitive-dot Pending')
+        expect({'status': statuses('failure')}, 'failure x Pending')
+        expect({'status': statuses('success')}, 'success check Pending')
+        expect({'status': statuses('pending', 'success')}, 'pending primitive-dot Pending')
+        expect({'status': statuses('failure', 'pending', 'success')}, 'failure x Pending')
+
+        expect({'status': {'ci': ['success', '', ''],
+            'Submit Queue': ['pending', '', 'does not have LGTM']}}, 'success check Pending')
+        expect({'status': {'ci': ['success', '', '']}, 'labels': ['lgtm']}, 'success check LGTM')
+        expect({'attn': {'foo': 'Needs Rebase'}}, 'Needs Rebase', user='foo')
+        expect({'attn': {'foo': 'Needs Rebase'}, 'labels': {'lgtm'}}, 'LGTM', user='foo')
 
 
 if __name__ == '__main__':

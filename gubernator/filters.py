@@ -27,11 +27,11 @@ GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
 
 
 
-def do_timestamp(unix_time, css_class='timestamp'):
+def do_timestamp(unix_time, css_class='timestamp', tmpl='%F %H:%M'):
     """Convert an int Unix timestamp into a human-readable datetime."""
     t = datetime.datetime.utcfromtimestamp(unix_time)
     return jinja2.Markup('<span class="%s" data-epoch="%s">%s</span>' %
-                         (css_class, unix_time, t.strftime('%F %H:%M')))
+                         (css_class, unix_time, t.strftime(tmpl)))
 
 
 def do_dt_to_epoch(dt):
@@ -136,6 +136,39 @@ def do_classify_size(payload):
                 return label
         return 'XXL'
     return size
+
+
+def do_render_status(payload, user):
+    states = set()
+
+    text = 'Pending'
+    if 'lgtm' in payload.get('labels', []):
+        text = 'LGTM'
+    elif user in payload.get('attn', {}):
+        text = payload['attn'][user].title()
+
+    for ctx, (state, _url, desc) in payload.get('status', {}).items():
+        if ctx == 'Submit Queue' and state == 'pending':
+            if 'does not have LGTM' in desc:
+                # Don't show overall status as pending when Submit
+                # won't continue without LGTM.
+                continue
+        states.add(state)
+
+    icon = ''
+    if 'failure' in states:
+        icon = 'x'
+        state = 'failure'
+    elif 'pending' in states:
+        icon = 'primitive-dot'
+        state = 'pending'
+    elif 'success' in states:
+        icon = 'check'
+        state = 'success'
+    if icon:
+        icon = '<span class="text-%s octicon octicon-%s"></span>' % (
+            state, icon)
+    return jinja2.Markup('%s%s' % (icon, text))
 
 
 def do_select(seq, pred):

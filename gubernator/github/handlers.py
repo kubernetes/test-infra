@@ -92,7 +92,11 @@ class GithubHandler(webapp2.RequestHandler):
         webhook.put()
 
         if event == 'status':
-            models.save_if_newer(models.GHStatus.from_json(body_json))
+            status = models.GHStatus.from_json(body_json)
+            models.save_if_newer(status)
+            query = models.GHIssueDigest.find_head(repo, status.sha)
+            for issue in query.fetch():
+                update_issue_digest(issue.repo, issue.number)
 
         if number is not None:
             update_issue_digest(repo, number)
@@ -179,10 +183,14 @@ class Timeline(webapp2.RequestHandler):
     '''
     def emit_classified(self, repo, number):
         try:
+            self.response.write('<h3>Classifier Output</h3>')
             ret = classifier.classify_issue(repo, number)
-            self.response.write('<pre>%s</pre>' % cgi.escape(
-                repr(ret[:3]) + "\n" + json.dumps(ret[3], indent=2, sort_keys=True)))
-            self.__getattribute__esponse.write(len(json.dumps(ret[3])))
+            self.response.write('<ul><li>pr: %s<li>open: %s<li>involved: %s'
+                % tuple(ret[:3]))
+            self.response.write('<li>last_event_timestamp: %s' % ret[4])
+            self.response.write('<li>payload len: %d' %len(json.dumps(ret[3])))
+            self.response.write('<pre>%s</pre></ul>' % cgi.escape(
+                json.dumps(ret[3], indent=2, sort_keys=True)))
         except BaseException:
             self.response.write('<pre>%s</pre>' % traceback.format_exc())
 
@@ -190,7 +198,15 @@ class Timeline(webapp2.RequestHandler):
         ancestor = models.GithubResource.make_key(repo, number)
         events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
         events.sort(key=lambda e: e.timestamp)
-        self.response.write('<h3>%d Results</h3>' % (len(events)))
+
+        self.response.write('<h3>Distilled Events</h3>')
+        self.response.write('<pre>')
+        event_pairs = [(event.event, json.loads(event.body)) for event in events]
+        for ev in classifier.distill_events(event_pairs):
+            self.response.write(cgi.escape('%s, %s\n' % ev))
+        self.response.write('</pre>')
+
+        self.response.write('<h3>%d Raw Events</h3>' % (len(events)))
         self.response.write('<table border=2>')
         merged = {}
         for event in events:
