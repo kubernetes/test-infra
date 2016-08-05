@@ -129,6 +129,10 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		return err
 	}
 	path = filepath.Dir(path)
+	// Make the root explicitly / so its easy to distinguish. Nothing else is `/` anchored
+	if path == "." {
+		path = "/"
+	}
 	if len(c.Assignees) > 0 {
 		o.assignees[path] = sets.NewString(c.Assignees...)
 	}
@@ -266,6 +270,10 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 
 	out := sets.NewString()
 	for {
+		// special case the root
+		if d == "" {
+			d = "/"
+		}
 		s, ok := people[d]
 		if ok {
 			out = out.Union(s)
@@ -273,7 +281,7 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 				break
 			}
 		}
-		if d == "" {
+		if d == "/" {
 			break
 		}
 		d, _ = filepath.Split(d)
