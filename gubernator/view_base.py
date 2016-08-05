@@ -22,6 +22,8 @@ import jinja2
 import webapp2
 import yaml
 
+from webapp2_extras import sessions
+
 import filters as jinja_filters
 
 from google.appengine.api import urlfetch, memcache
@@ -64,6 +66,25 @@ class BaseHandler(webapp2.RequestHandler):
         # The default deadline of 5 seconds is too aggressive of a target for GCS
         # directory listing operations.
         urlfetch.set_default_fetch_deadline(60)
+
+    # This example code is from:
+    # http://webapp2.readthedocs.io/en/latest/api/webapp2_extras/sessions.html
+    def dispatch(self):
+        # pylint: disable=attribute-defined-outside-init
+        # Get a session store for this request.
+        self.session_store = sessions.get_store(request=self.request)
+
+        try:
+            # Dispatch the request.
+            webapp2.RequestHandler.dispatch(self)
+        finally:
+            # Save all sessions.
+            self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        # Returns a session using the default cookie key.
+        return self.session_store.get_session()
 
     def render(self, template, context):
         """Render a context dictionary using a given template."""

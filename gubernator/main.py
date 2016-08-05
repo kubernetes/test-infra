@@ -14,12 +14,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import webapp2
+import json
+import logging
 
+import webapp2
+from webapp2_extras import security
+
+from google.appengine.api import app_identity
+
+import github_auth
 import view_base
 import view_build
 import view_logs
 import view_pr
+
+
+hostname = app_identity.get_default_version_hostname()
+
+
+def get_secret(key):
+    data = json.load(open('secrets.json'))
+    return data[hostname][key]
+
+
+def get_session_secret():
+    try:
+        return str(get_secret('session'))
+    except (IOError, KeyError):
+        logging.error(
+            'unable to load secret key! sessions WILL NOT persist!')
+        # This fallback is enough for testing, but in production
+        # will end up invalidating sessions whenever a different instance
+        return security.generate_random_string(entropy=256)
+
+
+config = {
+    'webapp2_extras.sessions': {
+        'secret_key': get_session_secret(),
+        'cookie_args': {
+            # we don't have SSL For local development
+            'secure': hostname and 'appspot.com' in hostname,
+            'httponly': True,
+        },
+    },
+}
+
 
 app = webapp2.WSGIApplication([
     (r'/', view_base.IndexHandler),
@@ -31,4 +70,4 @@ app = webapp2.WSGIApplication([
     (r'/pr/?', view_pr.PRDashboard),
     (r'/pr/([-\w]+)', view_pr.PRDashboard),
     (r'/pr/(.*/build-log.txt)', view_pr.PRBuildLogHandler),
-], debug=True)
+], debug=True, config=config)
