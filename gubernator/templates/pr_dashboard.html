@@ -9,8 +9,11 @@
 	<img src="/static/logo.svg">
 	<h1>PR Dashboard</h1>
 </div>
-<form onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
-<input id="userBox" name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
+<form id="prdash-nav" onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
+View
+{% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
+ | {% if user != login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
+ | <input id="userBox" name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
 <button>Switch User</button>
 </form>
 % for title, pred, search in cats
@@ -30,7 +33,7 @@
 		% for pr in sub_prs
 			% set pl = pr.payload
 			<tr onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
-			<td>{{pr.repo[trim:]}}
+			<td>{{pr.repo|ltrim('kubernetes/')}}
 			<td>{{pr.number}}
 			<td>{{pl['author']}}
 			<td>{{pl|render_status(user)}}

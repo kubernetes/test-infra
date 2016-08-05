@@ -41,11 +41,21 @@ def get_session_secret():
     try:
         return str(get_secret('session'))
     except (IOError, KeyError):
-        logging.error(
-            'unable to load secret key! sessions WILL NOT persist!')
+        if hostname:  # no scary error messages when testing
+            logging.error(
+                'unable to load secret key! sessions WILL NOT persist!')
         # This fallback is enough for testing, but in production
         # will end up invalidating sessions whenever a different instance
         return security.generate_random_string(entropy=256)
+
+
+def get_github_client():
+    try:
+        return get_secret('github_client')
+    except (IOError, KeyError):
+        if hostname:
+            logging.warning('no github client id found')
+        return None
 
 
 config = {
@@ -57,6 +67,7 @@ config = {
             'httponly': True,
         },
     },
+    'github_client': get_github_client(),
 }
 
 
@@ -70,4 +81,5 @@ app = webapp2.WSGIApplication([
     (r'/pr/?', view_pr.PRDashboard),
     (r'/pr/([-\w]+)', view_pr.PRDashboard),
     (r'/pr/(.*/build-log.txt)', view_pr.PRBuildLogHandler),
+    (r'/github_auth(.*)', github_auth.Endpoint)
 ], debug=True, config=config)

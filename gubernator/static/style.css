@@ -115,8 +115,10 @@ table.pr-dash tbody tr:nth-child(odd) {
 table.pr-dash tbody tr:hover {
     background: #e3e9ff;
 }
-#userBox {
+#prdash-nav {
     margin: 10px 0 0 40px;
+}
+#userBox {
     width: 10em;
 }
 h3.pr-section {

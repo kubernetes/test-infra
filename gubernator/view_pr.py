@@ -76,16 +76,21 @@ class PRHandler(view_base.BaseHandler):
 class PRDashboard(view_base.BaseHandler):
     def get(self, user=None):
         # pylint: disable=singleton-comparison
+        login = self.session.get('user')
+        if not user:
+            user = login
+            if not user:
+                self.redirect('/github_auth/pr')
+                return
+        elif user == 'all':
+            user = None
         qs = [ghm.GHIssueDigest.is_pr == True]
         if not self.request.get('all', False):
             qs.append(ghm.GHIssueDigest.is_open == True)
-        if user is not None:
+        if user:
             qs.append(ghm.GHIssueDigest.involved == user)
         prs = list(ghm.GHIssueDigest.query(*qs))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
-        trim = 0
-        if all(pr.repo.startswith('kubernetes/') for pr in prs):
-            trim = len('kubernetes/')
         if user:
             cats = [
                 ('Needs Attention', lambda p: user in p.payload['attn'], ''),
@@ -99,7 +104,7 @@ class PRDashboard(view_base.BaseHandler):
                 'is:open is:pr user:kubernetes')]
 
         self.render('pr_dashboard.html', dict(prs=prs,
-            cats=cats, trim=trim, user=user))
+            cats=cats, user=user, login=login))
 
 
 class PRBuildLogHandler(webapp2.RequestHandler):

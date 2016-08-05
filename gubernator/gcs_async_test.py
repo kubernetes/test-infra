@@ -31,6 +31,23 @@ def write(path, data):
         f.write(data)
 
 
+def install_handler_dispatcher(stub, matches, dispatch):
+    def fetch_stub(url, payload, method, headers, request, response,
+                   follow_redirects=False, deadline=None,
+                   validate_certificate=None):
+        # pylint: disable=too-many-arguments,unused-argument
+        result, code = dispatch(method, url, payload, headers)
+        response.set_statuscode(code)
+        response.set_content(result)
+        header = response.add_header()
+        header.set_key('content-length')
+        header.set_value(str(len(result)))
+
+    # this is gross, but there doesn't appear to be a better way
+    # pylint: disable=protected-access
+    stub._urlmatchers_to_fetch_functions.append((matches, fetch_stub))
+
+
 def install_handler(stub, structure, base='pr-logs/pull/'):
     '''
     Add a stub to mock out GCS JSON API ListObject requests-- with
@@ -53,28 +70,15 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
     def matches(url):
         return url.startswith(gcs_async.STORAGE_API_URL)
 
-    def dispatch(method, url, _payload):
+    def dispatch(method, url, _payload, _headers):
         if method != 'GET':
             raise ValueError('unhandled method %s' % method)
         parsed = urlparse.urlparse(url)
         param_dict = urlparse.parse_qs(parsed.query, True)
         prefix = param_dict['prefix'][0]
-        return json.dumps({'prefixes': prefixes_for_paths[prefix]})
+        return json.dumps({'prefixes': prefixes_for_paths[prefix]}), 200
 
-    def fetch_stub(url, payload, method, headers, request, response,
-                   follow_redirects=False, deadline=None,
-                   validate_certificate=None):
-        # pylint: disable=too-many-arguments,unused-argument
-        result = dispatch(method, url, payload)
-        response.set_statuscode(200)
-        response.set_content(result)
-        header = response.add_header()
-        header.set_key('content-length')
-        header.set_value(str(len(result)))
-
-    # this is gross, but there doesn't appear to be a better way
-    # pylint: disable=protected-access
-    stub._urlmatchers_to_fetch_functions.append((matches, fetch_stub))
+    install_handler_dispatcher(stub, matches, dispatch)
 
 
 class GCSAsyncTest(unittest.TestCase):

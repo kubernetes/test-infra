@@ -172,6 +172,12 @@ def do_render_status(payload, user):
     return jinja2.Markup('%s%s' % (icon, text))
 
 
+def do_ltrim(s, needle):
+    if s.startswith(needle):
+        return s[len(needle):]
+    return s
+
+
 def do_select(seq, pred):
     return filter(pred, seq)
 

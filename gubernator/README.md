@@ -17,5 +17,18 @@ For deployment:
 
 - Get the "Gubernator Github Webhook Secret" (ask test-infra for help) and write
   it to `github/webhook_secret`.
+- Set up `secrets.json` to support Github [OAuth logins](https://github.com/settings/applications).
+  The skeleton might look like:
+
+    {
+        "k8s-gubernator.appspot.com": {
+            "session": (128+  bits of entropy for signing secure cookies),
+            "github_client": {
+                "id": (client_id for the oauth application),
+                "secret": (client_secret for the oauth application)
+            }
+        }
+    }
+
 - Run `./test.sh && appcfg.py update .`. If the `github/` service was modified,
   deploy that too.
