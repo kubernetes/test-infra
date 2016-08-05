@@ -68,3 +68,17 @@ A small amount of information about some of the individual mungers inside each o
 * cherrypick-clear-after-merge - This watches for PRs against release branches which merged and removes the `cherrypick-candidate` label from the PR on master.
 * cherrypick-must-have-milestone - This complains on any PR against a release branch which does not have a vX.Y milestone.
 * cherrypick-queue - This is the web display of all PRs with the `cherrypick-candidate` label which a branch owner is likely to want to pay attention to.
+
+### Instructions on running mungegithub locally with your own repository
+
+Sometimes we may want to run QA tests locally using the mungegithub binary. The steps to do this are as follows.
+
+* `cd` to the contrib/mungegithub directory.
+* Run `go build` to compile the mungegithub binary.
+* Running the binary is as simple as running `./mungegithub` and supplying the appropriate flags.
+* The flags that are essential are as follows:
+* --pr-mungers, --organization, --project are required flags. Based on the pr-mungers, other flags may be required.
+* The `--dry-run=true` flag must be specified to ensure you're not posting comments accidentally.
+* The `--repo-dir` should be pointed to /tmp if required.
+* The `--www=submit-queue/www/` will start up the http server if specified with the submit-queue munger, and serve on localhost:8080.
+
