@@ -27,7 +27,7 @@ def digest(data, strip=True, filters=None,
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
     if strip:
-        digested = re.sub(r'<span class="skipped">([^<]*)</span>', r'(\1)',
+        digested = re.sub(r'<span class="skipped"[^<]*>([^<]*)</span>', r'(\1)',
             digested, flags=re.MULTILINE)
         digested = re.sub(r'<[^>]*>', '', digested)
     return digested.replace('\n', ' ')
