@@ -96,7 +96,7 @@ def build_details(build_dir):
     return started, finished, failures, build_log
 
 
-class BuildHandler(view_base.RenderingHandler):
+class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
         self.check_bucket(prefix)
@@ -124,7 +124,7 @@ class BuildHandler(view_base.RenderingHandler):
             failures=failures, build_log=build_log, pr=pr))
 
 
-class BuildListHandler(view_base.RenderingHandler):
+class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         self.check_bucket(prefix)
@@ -136,7 +136,7 @@ class BuildListHandler(view_base.RenderingHandler):
                     dict(job=job, job_dir=job_dir, fstats=fstats))
 
 
-class JobListHandler(view_base.RenderingHandler):
+class JobListHandler(view_base.BaseHandler):
     """Show a list of Jobs in a directory."""
     def get(self, prefix):
         self.check_bucket(prefix)

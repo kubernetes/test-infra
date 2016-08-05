@@ -57,10 +57,10 @@ JINJA_ENVIRONMENT.line_statement_prefix = '%'
 jinja_filters.register(JINJA_ENVIRONMENT.filters)
 
 
-class RenderingHandler(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
     def __init__(self, *args, **kwargs):
-        super(RenderingHandler, self).__init__(*args, **kwargs)
+        super(BaseHandler, self).__init__(*args, **kwargs)
         # The default deadline of 5 seconds is too aggressive of a target for GCS
         # directory listing operations.
         urlfetch.set_default_fetch_deadline(60)
@@ -77,7 +77,7 @@ class RenderingHandler(webapp2.RequestHandler):
             self.abort(404)
 
 
-class IndexHandler(RenderingHandler):
+class IndexHandler(BaseHandler):
     """Render the index."""
     def get(self):
         self.render("index.html", {'jobs': DEFAULT_JOBS})

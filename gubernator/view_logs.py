@@ -18,7 +18,7 @@ import gcs_async
 import log_parser
 import kubelet_parser
 import regex
-from view_base import RenderingHandler, memcache_memoize, gcs_ls
+from view_base import BaseHandler, memcache_memoize, gcs_ls
 
 
 @memcache_memoize('log-file-junit://', expires=60*60*4)
@@ -167,7 +167,7 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
     return all_logs, results, objref_dict, log_files
 
 
-class NodeLogHandler(RenderingHandler):
+class NodeLogHandler(BaseHandler):
     def get(self, prefix, job, build):
         """
         Examples of variables

@@ -64,7 +64,7 @@ def pr_builds(pr):
     return jobs
 
 
-class PRHandler(view_base.RenderingHandler):
+class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, pr):
         builds = pr_builds(pr)
@@ -73,7 +73,7 @@ class PRHandler(view_base.RenderingHandler):
             max_builds=max_builds, header=headings, rows=rows))
 
 
-class PRDashboard(view_base.RenderingHandler):
+class PRDashboard(view_base.BaseHandler):
     def get(self, user=None):
         # pylint: disable=singleton-comparison
         qs = [ghm.GHIssueDigest.is_pr == True]
