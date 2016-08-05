@@ -56,14 +56,13 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
             output.append('<span class="skip">%s</span>' % skip_fmt(skip_amount))
         elif skip_amount > 1:
             skip_id = 'skip_%s' % match
-            output.append('<span class="skip"><a href="javascript:show_skipped(\'%s\')"'
-                % skip_id)
-            output.append('onclick="this.style.display=\'none\'">%s</a></span>'
-                % skip_fmt(skip_amount))
-            output.append('<div id="%s" style="display:none;"><p><span class="skipped">'
-                % skip_id)
+            skip_string = ("<span class=\"skip\"><a href=\"javascript:show_skipped(\'%s\')\""
+                "onclick=\"this.style.display=\'none\'\">%s</a></span><div id=\"%s\" "
+                "style=\"display:none; float: left;\"><span class=\"skipped\">") % (skip_id,
+                skip_fmt(skip_amount), skip_id)
+            lines[previous_end] = "%s%s" % (skip_string, lines[previous_end])
             output.extend(lines[previous_end:match-CONTEXT])
-            output.append('</span></p></div>')
+            output.append('</span></div>')
         elif skip_amount == 1:  # pointless say we skipped 1 line
             output.append(lines[previous_end])
         if match == len(lines):
@@ -73,7 +72,6 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
         last_match = match
 
     return output
-
 
 def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
       objref_dict=None, filters=None, error_re=regex.error_re):
