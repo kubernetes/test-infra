@@ -20,5 +20,5 @@ script:
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
     - cd gubernator
-    - nosetests --with-gae --gae-lib-root=${GAE_ROOT}
+    - ./test.sh
     - ./lint.sh
