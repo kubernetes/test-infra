@@ -168,6 +168,11 @@ function SQCntl(dataService, $interval, $location) {
   function refreshBotStats() {
     dataService.getData('stats').then(function successCallback(response) {
       self.botStats = response.data;
+      for (var key in self.botStats.Analytics) {
+        var analytic = self.botStats.Analytics[key];
+        analytic.UncachedCount = analytic.Count - analytic.CachedCount;
+      }
+      self.botStats.UncachedAPICount = self.botStats.APICount - self.botStats.CachedAPICount;
     });
   }
 

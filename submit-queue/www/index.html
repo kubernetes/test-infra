@@ -224,6 +224,7 @@
                             <th order-by="$key" name="Call"></th>
                             <th order-by="Count" name="Count ({{ cntl.botStats.APICount }})" numeric descend-first></th>
                             <th order-by="CachedCount" name="Cached Count ({{ cntl.botStats.CachedAPICount }})" numeric descend-first></th>
+                            <th order-by="UncachedCount" name="Uncached Count ({{ cntl.botStats.UncachedAPICount }})" numeric descend-first></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -231,6 +232,7 @@
                             <td>{{stat.$key}}</td>
                             <td>{{stat.Count}}</td>
                             <td>{{stat.CachedCount}}</td>
+                            <td>{{stat.UncachedCount}}</td>
                           </tr>
                         </tbody>
                       </table>
