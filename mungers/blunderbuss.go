@@ -40,7 +40,7 @@ type BlunderbussConfig struct {
 type BlunderbussMunger struct {
 	config              *BlunderbussConfig
 	features            *features.Features
-	blunderbussReassign bool
+	BlunderbussReassign bool
 }
 
 func init() {
@@ -56,8 +56,6 @@ func (b *BlunderbussMunger) RequiredFeatures() []string { return []string{featur
 
 // Initialize will initialize the munger
 func (b *BlunderbussMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("blunderbuss-reassign: %#v\n", b.blunderbussReassign)
-
 	b.features = features
 	return nil
 }
@@ -67,7 +65,7 @@ func (b *BlunderbussMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().BoolVar(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+	cmd.Flags().BoolVar(&b.BlunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 }
 
 func chance(val, total int64) float64 {
@@ -91,8 +89,8 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 	}
 
 	issue := obj.Issue
-	if !b.blunderbussReassign && issue.Assignee != nil {
-		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.blunderbussReassign, github.DescribeUser(issue.Assignee))
+	if !b.BlunderbussReassign && issue.Assignee != nil {
+		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.BlunderbussReassign, github.DescribeUser(issue.Assignee))
 		return
 	}
 

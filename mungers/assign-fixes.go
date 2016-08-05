@@ -29,7 +29,7 @@ import (
 type AssignFixesMunger struct {
 	config              *github.Config
 	features            *features.Features
-	assignfixesReassign bool
+	AssignfixesReassign bool
 }
 
 func init() {
@@ -45,8 +45,6 @@ func (a *AssignFixesMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (a *AssignFixesMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("fixes-issue-reassign: %#v\n", a.assignfixesReassign)
-
 	a.features = features
 	a.config = config
 	return nil
@@ -57,7 +55,7 @@ func (a *AssignFixesMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (a *AssignFixesMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().BoolVar(&a.assignfixesReassign, "fixes-issue-reassign", false, "Assign fixes Issues even if they're already assigned")
+	cmd.Flags().BoolVar(&a.AssignfixesReassign, "fixes-issue-reassign", false, "Assign fixes Issues even if they're already assigned")
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -85,8 +83,8 @@ func (a *AssignFixesMunger) Munge(obj *github.MungeObject) {
 			continue
 		}
 		issue := issueObj.Issue
-		if !a.assignfixesReassign && issue.Assignee != nil {
-			glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, a.assignfixesReassign, github.DescribeUser(issue.Assignee))
+		if !a.AssignfixesReassign && issue.Assignee != nil {
+			glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, a.AssignfixesReassign, github.DescribeUser(issue.Assignee))
 			continue
 		}
 		glog.Infof("Assigning %v to %v (previously assigned to %v)", *issue.Number, prOwner, github.DescribeUser(issue.Assignee))

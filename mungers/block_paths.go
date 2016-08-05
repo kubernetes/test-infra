@@ -47,7 +47,7 @@ type configBlockPath struct {
 
 // BlockPath will add a label to block auto merge if a PR touches certain paths
 type BlockPath struct {
-	path             string
+	Path             string
 	blockRegexp      []regexp.Regexp
 	doNotBlockRegexp []regexp.Regexp
 }
@@ -66,12 +66,10 @@ func (b *BlockPath) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (b *BlockPath) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("block-path-config: %#v\n", b.path)
-
-	if len(b.path) == 0 {
+	if len(b.Path) == 0 {
 		glog.Fatalf("--block-path-config is required with the block-path munger")
 	}
-	file, err := os.Open(b.path)
+	file, err := os.Open(b.Path)
 	if err != nil {
 		glog.Fatalf("Failed to load block-path config: %v", err)
 	}
@@ -107,7 +105,7 @@ func (b *BlockPath) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlockPath) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&b.path, "block-path-config", "", "file containing the pathnames to block or not block")
+	cmd.Flags().StringVar(&b.Path, "block-path-config", "", "file containing the pathnames to block or not block")
 }
 
 func matchesAny(path string, regs []regexp.Regexp) bool {

@@ -36,6 +36,7 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 	"k8s.io/contrib/mungegithub/mungers/shield"
 	"k8s.io/contrib/test-utils/utils"
 
@@ -161,10 +162,12 @@ type SubmitQueue struct {
 
 	Committers             string
 	RequiredStatusContexts []string
-	doNotMergeMilestones   []string
+	DoNotMergeMilestones   []string
 
 	RequiredRetestContexts []string
-	retestBody             string
+	RetestBody             string
+	Metadata               submitQueueMetadata
+	AdminPort              int
 
 	sync.Mutex
 	lastPRStatus  map[string]submitStatus
@@ -194,13 +197,11 @@ type SubmitQueue struct {
 	retestsAvoided int32 // Increments whenever we skip due to head not changing.
 
 	health        submitQueueHealth
-	metadata      submitQueueMetadata
 	healthHistory []healthRecord
 
 	emergencyMergeStopFlag int32
 
-	adminPort int
-	features  *features.Features
+	features *features.Features
 }
 
 func init() {
@@ -376,23 +377,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
 	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
-	sq.doNotMergeMilestones = cleanStringSlice(sq.doNotMergeMilestones)
-
-	glog.Infof("jenkins-jobs: %#v\n", sq.BlockingJobNames)
-	glog.Infof("nonblocking-jenkins-jobs: %#v\n", sq.NonBlockingJobNames)
-	glog.Infof("presubmit-jobs: %#v\n", sq.PresubmitJobNames)
-	glog.Infof("weak-stable-jobs: %#v\n", sq.WeakStableJobNames)
-	glog.Infof("required-contexts: %#v\n", sq.RequiredStatusContexts)
-	glog.Infof("required-retest-contexts: %#v\n", sq.RequiredRetestContexts)
-	glog.Infof("do-not-merge-milestones: %#v\n", sq.doNotMergeMilestones)
-	glog.Infof("admin-port: %#v\n", sq.adminPort)
-	glog.Infof("retest-body: %#v\n", sq.retestBody)
-	glog.Infof("fake-e2e: %#v\n", sq.FakeE2E)
-	glog.Infof("chart-url: %#v\n", sq.metadata.ChartUrl)
-	glog.Infof("history-url: %#v\n", sq.metadata.HistoryUrl)
-
-	sq.metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
-	sq.metadata.ProjectName = strings.Title(config.Project)
+	sq.DoNotMergeMilestones = cleanStringSlice(sq.DoNotMergeMilestones)
+	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
+	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
 
 	// TODO: This is not how injection for tests should work.
@@ -453,8 +440,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
 
-	if sq.adminPort != 0 {
-		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.adminPort), admin.Mux)
+	if sq.AdminPort != 0 {
+		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.AdminPort), admin.Mux)
 	}
 	return nil
 }
@@ -490,13 +477,13 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringVar(&sq.retestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
+	cmd.Flags().StringVar(&sq.RetestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
-	cmd.Flags().StringSliceVar(&sq.doNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
-	cmd.Flags().IntVar(&sq.adminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
+	cmd.Flags().StringSliceVar(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
+	cmd.Flags().IntVar(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
-	cmd.Flags().StringVar(&sq.metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
-	cmd.Flags().StringVar(&sq.metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
+	cmd.Flags().StringVar(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
+	cmd.Flags().StringVar(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 }
 
 // Hold the lock
@@ -737,15 +724,6 @@ func (sq *SubmitQueue) marshal(data interface{}) []byte {
 	return b
 }
 
-func (sq *SubmitQueue) prettyMarshal(data interface{}) []byte {
-	b, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		glog.Errorf("Unable to Marshal data: %#v: %v", data, err)
-		return nil
-	}
-	return b
-}
-
 func (sq *SubmitQueue) getQueueHistory() []byte {
 	sq.Lock()
 	defer sq.Unlock()
@@ -792,7 +770,7 @@ func (sq *SubmitQueue) getHealth() []byte {
 func (sq *SubmitQueue) getMetaData() []byte {
 	sq.Lock()
 	defer sq.Unlock()
-	return sq.marshal(sq.metadata)
+	return sq.marshal(sq.Metadata)
 }
 
 const (
@@ -843,7 +821,7 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 		if milestone != nil && milestone.Title != nil {
 			title = *milestone.Title
 		}
-		for _, blocked := range sq.doNotMergeMilestones {
+		for _, blocked := range sq.DoNotMergeMilestones {
 			if title == blocked {
 				sq.SetMergeStatus(obj, unmergeableMilestone)
 				return false
@@ -1258,7 +1236,7 @@ func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) 
 
 func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
 	data := sq.e2e.Flakes()
-	sq.serve(sq.prettyMarshal(data), res, req)
+	sq.serve(mungerutil.PrettyMarshal(data), res, req)
 }
 
 func (sq *SubmitQueue) serveMetadata(res http.ResponseWriter, req *http.Request) {
@@ -1285,7 +1263,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		}
 		out.WriteString("</ul>")
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.doNotMergeMilestones))
+	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.DoNotMergeMilestones))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))

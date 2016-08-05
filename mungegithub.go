@@ -30,6 +30,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 )
 
 var (
@@ -86,11 +87,7 @@ func main() {
 		Use:   filepath.Base(os.Args[0]),
 		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			glog.Infof("once: %#v\n", config.Once)
-			glog.Infof("pr-mungers: %#v\n", config.PRMungersList)
-			glog.Infof("issue-reports: %#v\n", config.IssueReportsList)
-			glog.Infof("period: %#v\n", config.Period)
-
+			glog.Info(mungerutil.PrettyString(config))
 			if err := config.PreExecute(); err != nil {
 				return err
 			}

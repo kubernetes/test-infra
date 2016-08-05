@@ -31,8 +31,8 @@ import (
 // OldTestGetter files issues for flaky tests.
 type OldTestGetter struct {
 	// Keep track of which jobs we've done this for.
+	NumberOfOldTestsToGet int
 	ran                   map[string]bool
-	numberOfOldTestsToGet int
 	pullJobToLastRun      map[string]int
 	sq                    *SubmitQueue
 }
@@ -49,8 +49,6 @@ func (p *OldTestGetter) RequiredFeatures() []string { return nil }
 
 // Initialize will initialize the munger
 func (p *OldTestGetter) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("number-of-old-test-results: %#v\n", p.numberOfOldTestsToGet)
-
 	// TODO: don't get the mungers from the global list, they should be passed in...
 	for _, m := range GetAllMungers() {
 		if m.Name() == "submit-queue" {
@@ -91,7 +89,7 @@ func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 		if lastRunNumber == 0 || err != nil {
 			continue
 		}
-		for i := 1; i <= p.numberOfOldTestsToGet && i < lastRunNumber; i++ {
+		for i := 1; i <= p.NumberOfOldTestsToGet && i < lastRunNumber; i++ {
 			n := lastRunNumber - i
 			glog.Infof("Getting results for past test result: %v %v", job, n)
 			if _, err := e2eTester.GetBuildResult(job, n); err != nil {
@@ -111,7 +109,7 @@ func (p *OldTestGetter) getPresubmitTests(jobs []string, e2eTester *e2e.RealE2ET
 		}
 		lastLoad, ok := p.pullJobToLastRun[job]
 		if !ok {
-			lastLoad = mostRecent - p.numberOfOldTestsToGet
+			lastLoad = mostRecent - p.NumberOfOldTestsToGet
 		}
 		for n := lastLoad + 1; n <= mostRecent; n++ {
 			glog.Infof("Getting results for past test result: %v %v", job, n)
@@ -127,7 +125,7 @@ func (p *OldTestGetter) getPresubmitTests(jobs []string, e2eTester *e2e.RealE2ET
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *OldTestGetter) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&p.numberOfOldTestsToGet, "number-of-old-test-results", 0, "The number of old test results to get (and therefore file issues for). In case submit queue has some downtime, set this to a higher number and it will file issues for older test runs.")
+	cmd.Flags().IntVar(&p.NumberOfOldTestsToGet, "number-of-old-test-results", 0, "The number of old test results to get (and therefore file issues for). In case submit queue has some downtime, set this to a higher number and it will file issues for older test runs.")
 }
 
 // Munge is unused by this munger.

@@ -53,14 +53,13 @@ type issueFinder interface {
 
 // FlakeManager files issues for flaky tests.
 type FlakeManager struct {
+	OwnerPath            string
 	finder               issueFinder
 	sq                   *SubmitQueue
 	config               *github.Config
 	googleGCSBucketUtils *utils.Utils
-
-	syncer    *sync.IssueSyncer
-	ownerPath string
-	features  *features.Features
+	syncer               *sync.IssueSyncer
+	features             *features.Features
 }
 
 func init() {
@@ -75,8 +74,6 @@ func (p *FlakeManager) RequiredFeatures() []string { return []string{features.GC
 
 // Initialize will initialize the munger
 func (p *FlakeManager) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("test-owners-csv: %#v\n", p.ownerPath)
-
 	// TODO: don't get the mungers from the global list, they should be passed in...
 	for _, m := range GetAllMungers() {
 		if m.Name() == "issue-cacher" {
@@ -100,8 +97,8 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 
 	var owner sync.OwnerMapper
 	var err error
-	if p.ownerPath != "" {
-		owner, err = testowner.NewReloadingOwnerList(p.ownerPath)
+	if p.OwnerPath != "" {
+		owner, err = testowner.NewReloadingOwnerList(p.OwnerPath)
 		if err != nil {
 			return err
 		}
@@ -128,7 +125,7 @@ func (p *FlakeManager) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *FlakeManager) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
+	cmd.Flags().StringVar(&p.OwnerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
 }
 
 // Munge is unused by this munger.

@@ -48,9 +48,9 @@ type labelMap struct {
 // PathLabelMunger will add labels to PRs based on what files it modified.
 // The mapping of files to labels if provided in a file in --path-label-config
 type PathLabelMunger struct {
+	PathLabelFile string
 	labelMap      []labelMap
 	allLabels     sets.String
-	pathLabelFile string
 }
 
 func init() {
@@ -65,11 +65,9 @@ func (p *PathLabelMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (p *PathLabelMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("path-label-config: %#v\n", p.pathLabelFile)
-
 	allLabels := sets.NewString()
 	out := []labelMap{}
-	file := p.pathLabelFile
+	file := p.PathLabelFile
 	if len(file) == 0 {
 		glog.Infof("No --path-label-config= supplied, applying no labels")
 		return nil
@@ -117,7 +115,7 @@ func (p *PathLabelMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.pathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
+	cmd.Flags().StringVar(&p.PathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
 }
 
 // Munge is the workhorse the will actually make updates to the PR
