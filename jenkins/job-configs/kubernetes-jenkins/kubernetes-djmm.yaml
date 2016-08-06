@@ -47,16 +47,17 @@
             timeout: 50
             job-env: |
               export RELEASE_INFRA_PUSH=true
+              export SET_NOMOCK_FLAG=false
         - 'federation-build':
             branch: 'master'
             timeout: 50
             job-env: |
               export RELEASE_INFRA_PUSH=true
+              export SET_NOMOCK_FLAG=false
               export PROJECT="k8s-jkns-e2e-gce-federation"
               export FEDERATION=true
               export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
               export KUBE_FASTBUILD=true
               export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
-              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
     jobs:
         - 'djmm-{build}'
