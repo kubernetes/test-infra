@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
@@ -83,7 +84,7 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 
 	if lastModified.After(*lgtmTime) {
 		glog.Infof("PR: %d lgtm:%s  lastModified:%s", *obj.Issue.Number, lgtmTime.String(), lastModified.String())
-		body := fmt.Sprintf(lgtmRemovedBody, mentionUsers(getInvolvedUsers(obj)))
+		body := fmt.Sprintf(lgtmRemovedBody, mungerutil.GetIssueUsers(obj.Issue).AllUsers().Mention().Join())
 		if err := obj.WriteComment(body); err != nil {
 			return
 		}

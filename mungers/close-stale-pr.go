@@ -19,11 +19,11 @@ package mungers
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
@@ -222,7 +222,7 @@ func durationToDays(duration time.Duration) string {
 }
 
 func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
-	mention := mentionUsers(getInvolvedUsers(obj))
+	mention := mungerutil.GetIssueUsers(obj.Issue).AllUsers().Mention().Join()
 	if mention != "" {
 		mention = "cc " + mention + "\n"
 	}
@@ -236,36 +236,8 @@ func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
 	obj.ClosePR()
 }
 
-func getInvolvedUsers(obj *github.MungeObject) []string {
-	var users []string
-
-	var user string
-	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
-		user = *obj.Issue.User.Login
-		users = append(users, user)
-	}
-
-	for _, assignee := range obj.Issue.Assignees {
-		if assignee.Login == nil || *assignee.Login == user {
-			continue
-		}
-		users = append(users, *assignee.Login)
-	}
-
-	return users
-}
-
-func mentionUsers(users []string) string {
-	var mentions []string
-	for _, user := range users {
-		mentions = append(mentions, "@"+user)
-	}
-
-	return strings.Join(mentions, " ")
-}
-
 func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, closeIn time.Duration) {
-	mention := mentionUsers(getInvolvedUsers(obj))
+	mention := mungerutil.GetIssueUsers(obj.Issue).AllUsers().Mention().Join()
 	if mention != "" {
 		mention = "cc " + mention + "\n"
 	}
