@@ -94,7 +94,7 @@
             basedir: 'go/src/{gitbasedir}'
     triggers:
         - pollscm:
-            cron: 'H/5 * * * *'
+            cron: '{scm-cron-string}'
         - timed: '{cron-string}'
     wrappers:
         - ansicolor:
@@ -111,6 +111,8 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+
+    scm-cron-string: 'H/5 * * * *'
 
 - project:
     name: node-docker-canary-build
@@ -157,7 +159,8 @@
             owner: 'pwittroc@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
         - 'kubelet-serial':
-            cron-string: '* H * * * *'
+            scm-cron-string: 'H/30 * * * *'
+            cron-string: 'H H/2 * * *'
             repoName: 'kubernetes/kubernetes'
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'lantaol@google.com'
