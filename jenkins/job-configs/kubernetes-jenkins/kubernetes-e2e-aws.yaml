@@ -5,12 +5,6 @@
     jenkins_node: 'e2e'
     disabled: '{obj:disable_job}'
     properties:
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-              - 'kubernetes-e2e-aws'
-              - 'kubernetes-e2e-aws-release-1.3'
-            queue-scanning: ALL
         - build-discarder:
             days-to-keep: 7
     triggers:
@@ -69,11 +63,6 @@
     test-owner: 'zmerlynn'
     emails: 'zml@google.com'
     timeout: 240
-
-    # !!! NOTE: If you add a job here, add it to the build-blocker
-    # !!! config above as well. All of these are sharing the same AWS
-    # !!! credentials.
-
     aws-suffix:
         - 'aws':  # kubernetes-e2e-aws
             description: 'Run e2e tests on AWS using the latest successful Kubernetes build.'
