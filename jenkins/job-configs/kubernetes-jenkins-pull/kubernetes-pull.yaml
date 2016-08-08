@@ -260,7 +260,8 @@
         - ansicolor:
             colormap: xterm
     builders:
-        - ensure-upload-to-gcs-script
+        - ensure-upload-to-gcs-script:
+            git-basedir: '{git-basedir}'
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: |
               if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
@@ -283,7 +284,8 @@
                     skip-if-no-test-files: '{skip-if-no-test-files}'
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
-        - gcs-uploader
+        - gcs-uploader:
+            git-basedir: '{git-basedir}'
 
 - project:
     name: kubernetes-pull
