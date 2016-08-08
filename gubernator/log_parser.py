@@ -87,7 +87,7 @@ def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    hilight_words = ["error", "fatal", "failed", "build timed out"]
+    hilight_words = ["error", "fatal", "fail", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
