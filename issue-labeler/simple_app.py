@@ -52,7 +52,7 @@ except:
 
 @app.errorhandler(500)
 def internal_error(exception):
-  return str(exception) 
+  return str(exception), 500
 
 @app.route("/", methods = ["POST"])
 def get_labels():
