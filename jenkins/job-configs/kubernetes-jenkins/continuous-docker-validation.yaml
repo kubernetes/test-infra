@@ -30,6 +30,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
@@ -57,6 +58,7 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
@@ -118,6 +120,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: 90
             fail: true
@@ -131,6 +134,7 @@
         export PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
     shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-docker-validation.properties'
     builders:
+        - activate-gce-service-account
         - shell: |
             #!/bin/bash
             set -e

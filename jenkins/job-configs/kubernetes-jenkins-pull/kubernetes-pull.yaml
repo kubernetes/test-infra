@@ -262,6 +262,7 @@
         - ansicolor:
             colormap: xterm
     builders:
+        - activate-gce-service-account
         - ensure-upload-to-gcs-script:
             git-basedir: '{git-basedir}'
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"

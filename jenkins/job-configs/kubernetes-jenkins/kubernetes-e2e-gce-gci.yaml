@@ -31,6 +31,7 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
@@ -204,6 +205,7 @@
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
         export JENKINS_USE_GCI_VERSION="y"  # Use GCI builtin k8s version.
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}

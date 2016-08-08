@@ -4,6 +4,7 @@
     node: 'master'
     disabled: '{obj:disable_job}'
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {soak-env}

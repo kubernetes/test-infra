@@ -34,6 +34,7 @@
         export AWS_SHARED_CREDENTIALS_FILE=/workspace/.aws/credentials
         export KUBE_SSH_USER=admin
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}

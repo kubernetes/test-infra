@@ -18,6 +18,7 @@
         export KUBERNETES_PROVIDER="gke"
         export ZONE="us-central1-f"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
