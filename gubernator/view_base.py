@@ -22,11 +22,11 @@ import jinja2
 import webapp2
 import yaml
 
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
 from webapp2_extras import sessions
 
 import filters as jinja_filters
-
-from google.appengine.api import urlfetch, memcache
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
