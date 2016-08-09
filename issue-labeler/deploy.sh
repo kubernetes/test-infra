@@ -74,7 +74,7 @@ spec:
         - name: ml-port
           containerPort: 5000
         volumeMounts:
-        - mountPath: /model/
+        - mountPath: /models/
           name: database-volume
       volumes:
       - name: database-volume
