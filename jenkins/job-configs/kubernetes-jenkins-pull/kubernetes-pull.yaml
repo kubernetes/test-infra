@@ -323,6 +323,7 @@
             export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
             export KUBE_RUN_FROM_OUTPUT=y
             export KUBE_FASTBUILD=true
+            export KUBE_GCS_UPDATE_LATEST=n
 
             ./hack/jenkins/build.sh
 
