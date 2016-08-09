@@ -12,7 +12,7 @@
 <form id="prdash-nav" onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
 View
 {% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
- | {% if user != login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
+ | {% if user != login or not login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
  | <input id="userBox" name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
 <button>Switch User</button>
 </form>

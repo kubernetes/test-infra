@@ -21,6 +21,7 @@ from webapp2_extras import securecookie
 import gcs_async_test
 from github import models
 import main_test
+import view_base
 import view_pr
 
 app = main_test.app
@@ -81,7 +82,7 @@ class PRTest(main_test.TestBase):
         self.assertIn(path, response.location)
 
 
-def make_pr(number, involved, payload, repo='acme/a'):
+def make_pr(number, involved, payload, repo='kubernetes/kubernetes'):
     payload.setdefault('attn', {})
     payload.setdefault('assignees', [])
     payload.setdefault('author', involved[0])
@@ -132,4 +133,20 @@ class TestDashboard(main_test.TestBase):
         app.cookies['session'] = cookie
         resp = app.get('/pr', headers={'Cookie': 'session=%s' % cookie})
         self.assertEqual(resp.status_code, 200)
+        self.assertIn('huge pr!', resp)
+
+    def test_pr_links_user(self):
+        "Individual PR pages grab digest information"
+        make_pr(12345, ['human'], {'title': 'huge pr!'})
+        resp = app.get('/pr/12345')
+        self.assertIn('href="/pr/human"', resp)
+        self.assertIn('huge pr!', resp)
+
+    def test_build_links_user(self):
+        "Build pages show PR information"
+        make_pr(12345, ['human'], {'title': 'huge pr!'})
+        build_dir = '/%s/12345/e2e/5/' % view_base.PR_PREFIX
+        write(build_dir + 'started.json', '{}')
+        resp = app.get('/build' + build_dir)
+        self.assertIn('href="/pr/human"', resp)
         self.assertIn('huge pr!', resp)

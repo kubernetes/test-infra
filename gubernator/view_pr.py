@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import logging
 import os
 
 import webapp2
@@ -69,7 +70,8 @@ class PRHandler(view_base.BaseHandler):
     def get(self, pr):
         builds = pr_builds(pr)
         max_builds, headings, rows = pull_request.builds_to_table(builds)
-        self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX,
+        digest = ghm.GHIssueDigest.get('kubernetes/kubernetes', pr)
+        self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX, digest=digest,
             max_builds=max_builds, header=headings, rows=rows))
 
 
@@ -82,6 +84,7 @@ class PRDashboard(view_base.BaseHandler):
             if not user:
                 self.redirect('/github_auth/pr')
                 return
+            logging.debug('user=%s', user)
         elif user == 'all':
             user = None
         qs = [ghm.GHIssueDigest.is_pr == True]

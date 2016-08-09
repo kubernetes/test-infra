@@ -20,6 +20,7 @@ import re
 import defusedxml.ElementTree as ET
 
 import gcs_async
+from github import models
 import log_parser
 import view_base
 
@@ -116,12 +117,14 @@ class BuildHandler(view_base.BaseHandler):
             commit = None
 
         pr = None
+        pr_digest = None
         if prefix.startswith(view_base.PR_PREFIX):
             pr = os.path.basename(prefix)
+            pr_digest = models.GHIssueDigest.get('kubernetes/kubernetes', pr)
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr))
+            failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest))
 
 
 class BuildListHandler(view_base.BaseHandler):

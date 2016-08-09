@@ -15,6 +15,10 @@
 	% endif
 </div>
 <div id="summary">
+	% if pr and pr_digest
+		% set pl = pr_digest.payload
+		<p><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
+	% endif
 	% if started
 		<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
 	% endif
