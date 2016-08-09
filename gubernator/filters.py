@@ -154,6 +154,10 @@ def do_render_status(payload, user):
                 # Don't show overall status as pending when Submit
                 # won't continue without LGTM.
                 continue
+        if ctx == 'code-review/reviewable' and state == 'pending':
+            # Reviewable isn't a CI, so we don't care if it's pending.
+            # Its dashboard might replace all of this eventually.
+            continue
         states.add(state)
 
     icon = ''
