@@ -20,6 +20,7 @@ import re
 import defusedxml.ElementTree as ET
 
 import gcs_async
+from github import models
 import log_parser
 import view_base
 
@@ -96,7 +97,7 @@ def build_details(build_dir):
     return started, finished, failures, build_log
 
 
-class BuildHandler(view_base.RenderingHandler):
+class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
         self.check_bucket(prefix)
@@ -116,15 +117,17 @@ class BuildHandler(view_base.RenderingHandler):
             commit = None
 
         pr = None
+        pr_digest = None
         if prefix.startswith(view_base.PR_PREFIX):
             pr = os.path.basename(prefix)
+            pr_digest = models.GHIssueDigest.get('kubernetes/kubernetes', pr)
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr))
+            failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest))
 
 
-class BuildListHandler(view_base.RenderingHandler):
+class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         self.check_bucket(prefix)
@@ -136,7 +139,7 @@ class BuildListHandler(view_base.RenderingHandler):
                     dict(job=job, job_dir=job_dir, fstats=fstats))
 
 
-class JobListHandler(view_base.RenderingHandler):
+class JobListHandler(view_base.BaseHandler):
     """Show a list of Jobs in a directory."""
     def get(self, prefix):
         self.check_bucket(prefix)

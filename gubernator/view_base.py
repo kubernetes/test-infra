@@ -22,9 +22,11 @@ import jinja2
 import webapp2
 import yaml
 
-import filters as jinja_filters
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
+from webapp2_extras import sessions
 
-from google.appengine.api import urlfetch, memcache
+import filters as jinja_filters
 
 BUCKET_WHITELIST = {
     re.match(r'gs://([^/]+)', path).group(1)
@@ -57,13 +59,32 @@ JINJA_ENVIRONMENT.line_statement_prefix = '%'
 jinja_filters.register(JINJA_ENVIRONMENT.filters)
 
 
-class RenderingHandler(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
     """Base class for Handlers that render Jinja templates."""
     def __init__(self, *args, **kwargs):
-        super(RenderingHandler, self).__init__(*args, **kwargs)
+        super(BaseHandler, self).__init__(*args, **kwargs)
         # The default deadline of 5 seconds is too aggressive of a target for GCS
         # directory listing operations.
         urlfetch.set_default_fetch_deadline(60)
+
+    # This example code is from:
+    # http://webapp2.readthedocs.io/en/latest/api/webapp2_extras/sessions.html
+    def dispatch(self):
+        # pylint: disable=attribute-defined-outside-init
+        # Get a session store for this request.
+        self.session_store = sessions.get_store(request=self.request)
+
+        try:
+            # Dispatch the request.
+            webapp2.RequestHandler.dispatch(self)
+        finally:
+            # Save all sessions.
+            self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        # Returns a session using the default cookie key.
+        return self.session_store.get_session()
 
     def render(self, template, context):
         """Render a context dictionary using a given template."""
@@ -77,7 +98,7 @@ class RenderingHandler(webapp2.RequestHandler):
             self.abort(404)
 
 
-class IndexHandler(RenderingHandler):
+class IndexHandler(BaseHandler):
     """Render the index."""
     def get(self):
         self.render("index.html", {'jobs': DEFAULT_JOBS})

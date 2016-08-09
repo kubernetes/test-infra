@@ -9,6 +9,12 @@
 	<h1>PR #{{pr}} Results</h1>
 	<p><a href="https://github.com/kubernetes/kubernetes/pull/{{pr}}">View on GitHub</a></p>
 </div>
+<div id="content">
+% if digest
+% set pl = digest.payload
+<center><h3><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}</h3></center>
+
+% endif
 % if not rows
 	<h2>No Results</h2>
 % else

@@ -21,8 +21,9 @@ import json
 import traceback
 
 import webapp2
+from webapp2_extras import security
 
-from google.appengine.datastore.datastore_query import Cursor
+from google.appengine.datastore import datastore_query
 
 import classifier
 import models
@@ -33,16 +34,6 @@ try:
 except IOError:
     logging.warning('unable to load webhook secret')
     WEBHOOK_SECRET = 'default'
-
-def secure_equal(a, b):
-    '''
-    Compare a and b without leaking timing information.
-
-    May reveal length of b.
-    '''
-    if len(a) != len(b):
-        return False
-    return sum(ord(a[i]) ^ ord(b[i]) for i in xrange(len(a))) == 0
 
 
 def make_signature(body):
@@ -64,7 +55,7 @@ class GithubHandler(webapp2.RequestHandler):
         body = self.request.body
 
         expected_signature = make_signature(body)
-        if not secure_equal(signature, expected_signature):
+        if not security.compare_hashes(signature, expected_signature):
             logging.error('webhook failed signature check')
             self.abort(400)
 
@@ -117,7 +108,7 @@ class Events(webapp2.RequestHandler):
     debugging purposes.
     '''
     def get(self):
-        cursor = Cursor(urlsafe=self.request.get('cursor'))
+        cursor = datastore_query.Cursor(urlsafe=self.request.get('cursor'))
         repo = self.request.get('repo')
         number = int(self.request.get('number', 0)) or None
         count = int(self.request.get('count', 500))

@@ -18,19 +18,19 @@ import gcs_async
 import log_parser
 import kubelet_parser
 import regex
-from view_base import RenderingHandler, memcache_memoize, gcs_ls
+import view_base
 
 
-@memcache_memoize('log-file-junit://', expires=60*60*4)
+@view_base.memcache_memoize('log-file-junit://', expires=60*60*4)
 def find_log_junit((build_dir, junit, log_file)):
     '''
     Looks in build_dir for log_file in a folder that
     also includes the junit file.
     '''
-    tmps = [f.filename for f in gcs_ls('%s/artifacts' % build_dir)
+    tmps = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
             if '/tmp-node' in f.filename]
     for folder in tmps:
-        filenames = [f.filename for f in gcs_ls(folder)]
+        filenames = [f.filename for f in view_base.gcs_ls(folder)]
         if folder + junit in filenames:
             path = folder + log_file
             if path in filenames:
@@ -50,7 +50,7 @@ def find_log_files(all_logs, log_file):
     return log_files
 
 
-@memcache_memoize('all-logs://', expires=60*60*4)
+@view_base.memcache_memoize('all-logs://', expires=60*60*4)
 def get_all_logs((directory, artifacts)):
     '''
     returns dictionary given the artifacts folder with the keys being the
@@ -58,13 +58,13 @@ def get_all_logs((directory, artifacts)):
     '''
     log_files = {}
     if artifacts:
-        dirs = [f.filename for f in gcs_ls('%s/artifacts' % directory)
+        dirs = [f.filename for f in view_base.gcs_ls('%s/artifacts' % directory)
                 if f.is_dir]
     else:
         dirs = [directory]
     for d in dirs:
         log_files[d] = []
-        for f in gcs_ls(d):
+        for f in view_base.gcs_ls(d):
             log_name = regex.log_re.search(f.filename)
             if log_name:
                 log_files[d].append(f.filename)
@@ -167,7 +167,7 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
     return all_logs, results, objref_dict, log_files
 
 
-class NodeLogHandler(RenderingHandler):
+class NodeLogHandler(view_base.BaseHandler):
     def get(self, prefix, job, build):
         """
         Examples of variables

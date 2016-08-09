@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import logging
 import os
 
 import webapp2
@@ -64,28 +65,35 @@ def pr_builds(pr):
     return jobs
 
 
-class PRHandler(view_base.RenderingHandler):
+class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, pr):
         builds = pr_builds(pr)
         max_builds, headings, rows = pull_request.builds_to_table(builds)
-        self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX,
+        digest = ghm.GHIssueDigest.get('kubernetes/kubernetes', pr)
+        self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX, digest=digest,
             max_builds=max_builds, header=headings, rows=rows))
 
 
-class PRDashboard(view_base.RenderingHandler):
+class PRDashboard(view_base.BaseHandler):
     def get(self, user=None):
         # pylint: disable=singleton-comparison
+        login = self.session.get('user')
+        if not user:
+            user = login
+            if not user:
+                self.redirect('/github_auth/pr')
+                return
+            logging.debug('user=%s', user)
+        elif user == 'all':
+            user = None
         qs = [ghm.GHIssueDigest.is_pr == True]
         if not self.request.get('all', False):
             qs.append(ghm.GHIssueDigest.is_open == True)
-        if user is not None:
+        if user:
             qs.append(ghm.GHIssueDigest.involved == user)
         prs = list(ghm.GHIssueDigest.query(*qs))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
-        trim = 0
-        if all(pr.repo.startswith('kubernetes/') for pr in prs):
-            trim = len('kubernetes/')
         if user:
             cats = [
                 ('Needs Attention', lambda p: user in p.payload['attn'], ''),
@@ -99,7 +107,7 @@ class PRDashboard(view_base.RenderingHandler):
                 'is:open is:pr user:kubernetes')]
 
         self.render('pr_dashboard.html', dict(prs=prs,
-            cats=cats, trim=trim, user=user))
+            cats=cats, user=user, login=login))
 
 
 class PRBuildLogHandler(webapp2.RequestHandler):
