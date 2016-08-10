@@ -18,6 +18,7 @@ package gcs
 
 import (
 	"io"
+	"io/ioutil"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
@@ -54,4 +55,18 @@ func (c *Client) Upload(r io.Reader, bucket, name string) error {
 	object := &storage.Object{Name: name}
 	_, err := c.service.Objects.Insert(bucket, object).Media(r, googleapi.ContentType("")).Do()
 	return err
+}
+
+// Download downloads the object.
+func (c *Client) Download(bucket, name string) ([]byte, error) {
+	resp, err := c.service.Objects.Get(bucket, name).Download()
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }

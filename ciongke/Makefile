@@ -31,8 +31,9 @@ DRY_RUN = true
 
 SOURCE_BUCKET = k8s-ci-on-gke-source
 
-HOOK_VERSION = 0.1
+HOOK_VERSION = 0.0
 TEST_PR_VERSION = 0.0
+RUN_TEST_VERSION = 0.0
 
 # Useful rules:
 # - create-cluster turns up a cluster then prints out the webhook address.
@@ -57,6 +58,7 @@ create-cluster:
 	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
 
 update-cluster:
+	make run-test-image --no-print-directory
 	make test-pr-image --no-print-directory
 	make hook-image --no-print-directory
 	make hook-deployment --no-print-directory
@@ -89,7 +91,12 @@ test-pr-image:
 	docker build -t "gcr.io/$(PROJECT)/test-pr:$(TEST_PR_VERSION)" cmd/test-pr
 	gcloud docker push "gcr.io/$(PROJECT)/test-pr:$(TEST_PR_VERSION)"
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image
+run-test-image:
+	CGO_ENABLED=0 go build -o cmd/run-test/run-test github.com/kubernetes/test-infra/ciongke/cmd/run-test
+	docker build -t "gcr.io/$(PROJECT)/run-test:$(RUN_TEST_VERSION)" cmd/run-test
+	gcloud docker push "gcr.io/$(PROJECT)/run-test:$(RUN_TEST_VERSION)"
+
+.PHONY: hook-image hook-deployment hook-service test-pr-image run-test-image
 
 # We need to replace project and version and so on in these YAML definitions,
 # and there's not really a great way to do that.
@@ -118,6 +125,7 @@ spec:
         image: "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)"
         imagePullPolicy: Always
         args: 
+        - -run-test-image=gcr.io/$(PROJECT)/run-test:$(RUN_TEST_VERSION)
         - -test-pr-image=gcr.io/$(PROJECT)/test-pr:$(TEST_PR_VERSION)
         - -source-bucket=$(SOURCE_BUCKET)
         - -org=$(ORG)

@@ -22,6 +22,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/kubernetes/test-infra/ciongke/gcs/fakegcs"
+	"github.com/kubernetes/test-infra/ciongke/kube/fakekube"
 )
 
 func runTestCommand(t *testing.T, dir, name string, arg ...string) {
@@ -64,18 +67,22 @@ func TestCheckoutPRMergeable(t *testing.T) {
 	runTestCommand(t, gitDir, "git", "update-ref", "refs/heads/pull/1/head", "pr-1")
 
 	tc := &testClient{
-		Workspace:   cloneDir,
-		RepoName:    "repo",
-		RepoURL:     gitDir,
-		Branch:      "master",
-		PRNumber:    1,
-		ExecCommand: exec.Command,
+		Workspace: cloneDir,
+		RepoName:  "repo",
+		RepoURL:   gitDir,
+		Branch:    "master",
+		PRNumber:  1,
 	}
-	merged, err := tc.checkoutPR()
+	merged, head, err := tc.checkoutPR()
 	if err != nil {
 		t.Errorf("Expected no error when merging: %s", err)
-	} else if !merged {
-		t.Error("Expected merge to be okay.")
+	} else {
+		if !merged {
+			t.Error("Expected merge to be okay.")
+		}
+		if len(head) == 0 {
+			t.Error("Expected non-empty head SHA.")
+		}
 	}
 }
 
@@ -115,17 +122,84 @@ func TestCheckoutPRUnmergable(t *testing.T) {
 	runTestCommand(t, gitDir, "git", "commit", "-m", "\"write world\"")
 
 	tc := &testClient{
-		Workspace:   cloneDir,
-		RepoName:    "repo",
-		RepoURL:     gitDir,
-		Branch:      "master",
-		PRNumber:    1,
-		ExecCommand: exec.Command,
+		Workspace: cloneDir,
+		RepoName:  "repo",
+		RepoURL:   gitDir,
+		Branch:    "master",
+		PRNumber:  1,
 	}
-	merged, err := tc.checkoutPR()
+	merged, head, err := tc.checkoutPR()
 	if err != nil {
 		t.Errorf("Expected no error when merging: %s", err)
-	} else if merged {
-		t.Error("Expected merge to not happen.")
+	} else {
+		if merged {
+			t.Error("Expected merge to not happen.")
+		}
+		if len(head) == 0 {
+			t.Error("Expected non-empty head SHA.")
+		}
 	}
+}
+
+func TestUploadSource(t *testing.T) {
+	dir, err := ioutil.TempDir("", "test-pr-upload")
+	if err != nil {
+		t.Fatalf("Error creating temp dir: %s", err)
+	}
+	defer os.RemoveAll(dir)
+	if err := os.Mkdir(filepath.Join(dir, "repo"), os.ModePerm); err != nil {
+		t.Fatalf("Error creating repo dir: %s", err)
+	}
+	gc := fakegcs.FakeClient{}
+	tc := &testClient{
+		Workspace:    dir,
+		RepoName:     "repo",
+		PRNumber:     5,
+		SourceBucket: "sb",
+		GCSClient:    &gc,
+	}
+	if err := tc.uploadSource(); err != nil {
+		t.Fatalf("Didn't expect error uploading source: %s", err)
+	}
+	if b, _ := gc.Download("sb", "5.tar.gz"); len(b) == 0 {
+		t.Fatalf("Expected non-empty tar in GCS")
+	}
+}
+
+func TestStartTests(t *testing.T) {
+	dir, err := ioutil.TempDir("", "test-pr-start-tests")
+	if err != nil {
+		t.Fatalf("Error creating temp dir: %s", err)
+	}
+	defer os.RemoveAll(dir)
+	if err := os.Mkdir(filepath.Join(dir, "repo"), os.ModePerm); err != nil {
+		t.Fatalf("Error creating repo dir: %s", err)
+	}
+	yml := `---
+- name: test1
+  description: this tests something
+  image: img:1
+- name: test2
+  image: img:2`
+	if err := ioutil.WriteFile(filepath.Join(dir, "repo", ".test.yml"), []byte(yml), os.ModePerm); err != nil {
+		t.Fatalf("Error writing .test.yml: %s", err)
+	}
+	kc := fakekube.FakeClient{}
+	tc := &testClient{
+		Workspace:    dir,
+		RunTestImage: "run-test:1",
+		RepoName:     "repo",
+		RepoOwner:    "kuber",
+		PRNumber:     5,
+		Namespace:    "default",
+		SourceBucket: "sb",
+		KubeClient:   &kc,
+	}
+	if err := tc.startTests("abcdef"); err != nil {
+		t.Fatalf("Did not expect error starting tests: %s", err)
+	}
+	if len(kc.Jobs) != 2 {
+		t.Fatalf("Expected two jobs to be created.")
+	}
+	// TODO: Validate the jobs.
 }

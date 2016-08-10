@@ -247,8 +247,8 @@ func TestBuildPR(t *testing.T) {
 		t.Fatal("No job was created.")
 	}
 	j := c.Jobs[0]
-	if j.Metadata.Name != "repo-name-pr-4-abcdefgh" {
-		t.Errorf("Job name %s isn't expected repo-name-pr-4-abcdefgh.")
+	if j.Metadata.Name != "repo-name-pr-4" {
+		t.Errorf("Job name %s isn't expected repo-name-pr-4.", j.Metadata.Name)
 	}
 	if j.Metadata.Labels["repo"] != "repo-name" {
 		t.Errorf("Label \"repo\" %s isn't expected repo-name.", j.Metadata.Labels["repo"])
