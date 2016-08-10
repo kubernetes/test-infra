@@ -18,6 +18,7 @@
 import argparse
 import collections
 import datetime
+import os
 import re
 import subprocess
 import sys
@@ -114,12 +115,29 @@ def RemoveVolumes():
     return err
 
 
+def KillLoopingBash():
+    err = 0
+    bash_procs = subprocess.check_output(['pgrep', 'bash']).split()
+
+    clock_hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+    for pid in bash_procs:
+        # man 5 proc
+        with open('/proc/%s/stat' % pid) as f:
+            stat = f.read().split()
+        utime = int(stat[13]) / clock_hz
+        utime_minutes = utime / 60
+        if utime_minutes > 30:
+            print "killing bash pid %s with %d minutes of CPU time" % (pid, utime_minutes)
+            err |= subprocess.call(['sudo', 'kill', '-9', pid])
+    return err
+
 def main(ancient):
     # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
     err = 0
     err |= RemoveContainers()
     err |= RemoveImages(set(ContainerImages()), ancient)
     err |= RemoveVolumes()
+    err |= KillLoopingBash()
     sys.exit(err)
 
 
