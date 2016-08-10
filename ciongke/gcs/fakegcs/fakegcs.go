@@ -44,13 +44,5 @@ func (c *FakeClient) Upload(r io.Reader, bucket, name string) error {
 }
 
 func (c *FakeClient) Download(bucket, name string) ([]byte, error) {
-	if c.Objects == nil {
-		return []byte{}, nil
-	}
-	if m, ok := c.Objects[bucket]; ok {
-		if b, ok := m[name]; ok {
-			return b, nil
-		}
-	}
-	return []byte{}, nil
+	return c.Objects[bucket][name], nil
 }
