@@ -719,6 +719,7 @@ func GetLabelsWithPrefix(labels []github.Label, prefix string) []string {
 
 // AddLabel adds a single `label` to the issue
 func (obj *MungeObject) AddLabel(label string) error {
+
 	return obj.AddLabels([]string{label})
 }
 

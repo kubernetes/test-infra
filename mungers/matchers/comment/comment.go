@@ -69,3 +69,14 @@ func (a AuthorLogin) Match(comment *github.IssueComment) bool {
 
 	return strings.ToLower(*comment.User.Login) == strings.ToLower(string(a))
 }
+
+// Author matches comment made by this github user.
+type Author github.User
+
+// Match if the Author is a match.
+func (a Author) Match(comment *github.IssueComment) bool {
+	if !(ValidAuthor{}).Match(comment) {
+		return false
+	}
+	return AuthorLogin(*a.Login).Match(comment)
+}
