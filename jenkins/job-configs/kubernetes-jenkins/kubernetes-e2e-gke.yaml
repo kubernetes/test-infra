@@ -77,6 +77,7 @@
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
             job-env: |
+                export ENABLE_GARBAGE_COLLECTOR="true"
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
