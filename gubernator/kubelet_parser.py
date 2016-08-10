@@ -69,7 +69,7 @@ def make_dict(data, pod_re, objref_dict):
             pod_in_file = True
             objref = regex.objref(line)
             containerID = regex.containerID(line)
-            if containerID and not objref_dict["ContainerID"]:
+            if containerID and not objref_dict.get("ContainerID"):
                 objref_dict["ContainerID"] = containerID.group(1)
             if objref:
                 objref_dict_re = objref.group(1)
