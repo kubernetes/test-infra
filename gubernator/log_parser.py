@@ -74,8 +74,10 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
 
     return output
 
-def digest(data, skip_fmt=lambda l: '... skipping %d lines ...' % l,
-      objref_dict=None, filters=None, error_re=regex.error_re):
+
+def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
+    skip_fmt=lambda l: '... skipping %d lines ...' % l):
+    # pylint: disable=too-many-arguments
     """
     Given a build log, return a chunk of HTML code suitable for
     inclusion in a <pre> tag, with "interesting" errors hilighted.

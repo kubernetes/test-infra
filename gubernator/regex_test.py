@@ -58,5 +58,57 @@ class RegexTest(unittest.TestCase):
                 'objref(%r) should be %r' % (text, matches))
 
 
+    def test_combine_wordsRE(self):
+        for text, matches in [
+            ('pod123 failed', True),
+            ('Volume mounted to pod', True),
+            ('UID: "a123"', True),
+        ]:
+            self.assertEqual(bool(regex.combine_wordsRE(["pod123", "volume", "a123"])), matches,
+                'combine_words(%r) should be %r' % (text, matches))
+
+
+    def test_log_re(self):
+        for text, matches in [
+            ('build-log.txt', False),
+            ('a/b/c/kublet.log', True),
+            ('kube-apiserver.log', True),
+            ('abc/kubelet.log/cde', False),
+            ('path/to/log', False),
+        ]:
+            self.assertEqual(bool(regex.log_re.search(text)), matches,
+                'log_re(%r) should be %r' % (text, matches))
+
+
+    def test_containerID(self):
+        for text, matches in [
+            ('the ContainerID:ab123cd', True),
+            ('ContainerID:}]}', False),
+            ('ContainerID:', False),
+        ]:
+            self.assertEqual(bool(regex.containerID(text).group(1)), matches,
+                'containerID(%r).group(1) should be %r' % (text, matches))
+
+
+    def test_timestamp(self):
+        for text, matches in [
+            ('I0629 17:33:09.813041', True),
+            ('2016-07-22T19:01:11.150204523Z', True),
+            ('629 17:33:09.813041:', False),
+            ('629 17:33:09', False),
+        ]:
+            self.assertEqual(bool(regex.timestamp(text)), matches,
+                'test_timestamp(%r) should be %r' % (text, matches))
+
+
+    def test_sub_timestamp(self):
+        for text, matches in [
+            ('0629 17:33:09.813041', '062917:33:09.813041'),
+            ('07-22T19:01:11.150204523', '072219:01:11.150204523'),
+        ]:
+            self.assertEqual(regex.sub_timestamp(text), matches,
+                'sub_timetamp(%r) should be %r' % (text, matches))
+
+
 if __name__ == '__main__':
     unittest.main()

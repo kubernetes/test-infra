@@ -39,3 +39,9 @@ log_re = re.compile(r'[^/]+\.log$')
 # Match the container id given a line containing the pod name
 def containerID(line):
     return re.search(r'ContainerID:([0-9A-Fa-f]*)', line)
+
+def timestamp(line):
+    return re.search(r'(\d\d-?\d\d[T\s]\d\d:\d\d:\d\d\.\d+)', line)
+
+def sub_timestamp(line):
+    return re.sub(r'(-|T|\s)', "", timestamp(line).group(0))

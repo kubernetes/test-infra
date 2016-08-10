@@ -106,6 +106,7 @@ def do_parse_pod_name(text):
     else:
         return ""
 
+
 def do_label_attr(labels, name):
     '''
     >> do_label_attr(['needs-rebase', 'size/XS'], 'size')
