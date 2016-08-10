@@ -22,8 +22,8 @@ import defusedxml.ElementTree as ET
 import gcs_async
 from github import models
 import log_parser
+import testgrid
 import view_base
-
 
 
 def parse_junit(xml, filename):
@@ -102,6 +102,7 @@ class BuildHandler(view_base.BaseHandler):
     def get(self, prefix, job, build):
         self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
+        testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
@@ -124,7 +125,8 @@ class BuildHandler(view_base.BaseHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest))
+            failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest,
+            testgrid_query=testgrid_query))
 
 
 class BuildListHandler(view_base.BaseHandler):

@@ -21,6 +21,7 @@ import view_build
 
 import main_test
 import gcs_async_test
+import testgrid_test
 import view_pr
 
 app = main_test.app
@@ -63,6 +64,7 @@ class BuildTest(main_test.TestBase):
     def setUp(self):
         self.init_stubs()
         init_build(self.BUILD_DIR)
+        testgrid_test.write_config()
 
     def get_build_page(self):
         return app.get('/build' + self.BUILD_DIR)
@@ -127,6 +129,13 @@ class BuildTest(main_test.TestBase):
         self.assertIn('No Test Failures', response)
         self.assertIn('ERROR</span>: test', response)
         self.assertNotIn('blah', response)
+
+    def test_build_testgrid_links(self):
+        response = self.get_build_page()
+        base = 'https://k8s-testgrid.appspot.com/k8s#ajob'
+        self.assertIn('a href="%s"' % base, response)
+        option = '&amp;include-filter-by-regex=%5EOverall%24%7CThird'
+        self.assertIn('a href="%s%s"' % (base, option), response)
 
     def test_build_failure_no_text(self):
         # Some failures don't have any associated text.
