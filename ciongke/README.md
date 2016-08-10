@@ -1,3 +1,13 @@
+## Overview
+
+CI on GKE is a work-in-progress replacement for Jenkins. It comprises three
+Kubernetes objects, with associated binaries under `cmd/`. The `hook` deployment
+listens for GitHub webhooks. When a PR is opened or updated, it creates a job
+to test it, called `test-pr`. The `test-pr` job downloads and merges the
+source, uploads it to GCS, and reads the `.test.yml` file in the repository.
+Based on that file, it starts `run-test` jobs that run the actual test
+images.
+
 ## Usage
 
 See the [Makefile](Makefile) for details. This is a work in progress. Once it

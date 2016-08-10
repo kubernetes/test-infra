@@ -39,6 +39,7 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
 
 	testPRImage  = flag.String("test-pr-image", "", "Image to use for testing PRs.")
+	runTestImage = flag.String("run-test-image", "", "Image to use for running tests.")
 	sourceBucket = flag.String("source-bucket", "", "Bucket to store source tars in.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/hmac/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -61,6 +62,7 @@ type Server struct {
 	DryRun       bool
 
 	TestPRImage  string
+	RunTestImage string
 	SourceBucket string
 
 	KubeClient kubeClient
@@ -131,6 +133,7 @@ func main() {
 		DryRun:       *dryRun,
 
 		TestPRImage:  *testPRImage,
+		RunTestImage: *runTestImage,
 		SourceBucket: *sourceBucket,
 
 		KubeClient: kubeClient,
@@ -229,7 +232,7 @@ func (s *Server) validAuthor(author string) (bool, error) {
 
 // buildPR deletes any jobs building the PR and then starts a new one.
 func (s *Server) buildPR(pr github.PullRequest) error {
-	name := fmt.Sprintf("%s-pr-%d-%s", pr.Base.Repo.Name, pr.Number, pr.Head.SHA[:8])
+	name := fmt.Sprintf("%s-pr-%d", pr.Base.Repo.Name, pr.Number)
 	job := kube.Job{
 		Metadata: kube.ObjectMeta{
 			Name:      name,
@@ -249,14 +252,15 @@ func (s *Server) buildPR(pr github.PullRequest) error {
 							Name:  "test-pr",
 							Image: s.TestPRImage,
 							Args: []string{
-								"-repo-url=" + pr.Base.Repo.HTMLURL,
-								"-repo-name=" + pr.Base.Repo.Name,
-								"-pr=" + strconv.Itoa(pr.Number),
-								"-branch=" + pr.Base.Ref,
-								"-namespace=" + s.Namespace,
-								"-dry-run=" + strconv.FormatBool(s.DryRun),
-								"-source-bucket=" + s.SourceBucket,
-								"-github-token-file=/etc/oauth/oauth",
+								"--repo-owner=" + pr.Base.Repo.Owner.Login,
+								"--repo-url=" + pr.Base.Repo.HTMLURL,
+								"--repo-name=" + pr.Base.Repo.Name,
+								"--pr=" + strconv.Itoa(pr.Number),
+								"--branch=" + pr.Base.Ref,
+								"--namespace=" + s.Namespace,
+								"--source-bucket=" + s.SourceBucket,
+								"--run-test-image=" + s.RunTestImage,
+								"--dry-run=" + strconv.FormatBool(s.DryRun),
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
