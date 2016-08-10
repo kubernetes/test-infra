@@ -44,6 +44,7 @@ spec:
         - --chart-url=$(CHART_URL)
         - --history-url=$(HISTORY_URL)
         - --enable-md-yaml=$(ENABLE_MD_YAML)
+        - --label-file=$(LABEL_FILE)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -191,6 +192,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: submit-queue.history-url
+          - name: LABEL_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: check-labels.label-file
         ports:
         - name: status
           containerPort: 8080

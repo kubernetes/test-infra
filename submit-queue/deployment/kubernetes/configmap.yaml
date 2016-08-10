@@ -41,5 +41,4 @@ data:
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: generated-files.txt
-
-
+  check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"

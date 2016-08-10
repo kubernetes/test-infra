@@ -41,3 +41,4 @@ data:
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: ""
+  check-labels.label-file: "/gitrepos/contrib/labels.yaml"
