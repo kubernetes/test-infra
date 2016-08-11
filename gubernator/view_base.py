@@ -20,18 +20,12 @@ import re
 import cloudstorage as gcs
 import jinja2
 import webapp2
-import yaml
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from webapp2_extras import sessions
 
 import filters as jinja_filters
-
-BUCKET_WHITELIST = {
-    re.match(r'gs://([^/]+)', path).group(1)
-    for path in yaml.load(open("buckets.yaml"))
-}
 
 DEFAULT_JOBS = {
     'kubernetes-jenkins/logs/': {
@@ -90,12 +84,6 @@ class BaseHandler(webapp2.RequestHandler):
         """Render a context dictionary using a given template."""
         template = JINJA_ENVIRONMENT.get_template(template)
         self.response.write(template.render(context))
-
-    def check_bucket(self, prefix):
-        if prefix in BUCKET_WHITELIST:
-            return
-        if prefix[:prefix.find('/')] not in BUCKET_WHITELIST:
-            self.abort(404)
 
 
 class IndexHandler(BaseHandler):

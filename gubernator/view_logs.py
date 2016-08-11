@@ -230,7 +230,6 @@ class NodeLogHandler(view_base.BaseHandler):
         all_logs: {"folder_name":["a.log", "b.log"]}
         """
         # pylint: disable=too-many-locals
-        self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
         log_files = self.request.get_all("logfiles")

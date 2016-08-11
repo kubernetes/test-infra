@@ -100,7 +100,6 @@ def build_details(build_dir):
 class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
-        self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
@@ -132,7 +131,6 @@ class BuildHandler(view_base.BaseHandler):
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
-        self.check_bucket(prefix)
         job_dir = '/%s/%s/' % (prefix, job)
         fstats = view_base.gcs_ls(job_dir)
         fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
@@ -144,7 +142,6 @@ class BuildListHandler(view_base.BaseHandler):
 class JobListHandler(view_base.BaseHandler):
     """Show a list of Jobs in a directory."""
     def get(self, prefix):
-        self.check_bucket(prefix)
         jobs_dir = '/%s' % prefix
         fstats = view_base.gcs_ls(jobs_dir)
         fstats.sort()
