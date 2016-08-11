@@ -17,7 +17,8 @@
         - build-discarder:
             num-to-keep: 200
     builders:
-         - docker-build-publish:
+        - activate-gce-service-account
+        - docker-build-publish:
              repoName: '{repoName}'
              dockerfilePath: 'go/src/{gitbasedir}/{dockerfilePath}'
              tag: 'canary'
@@ -44,6 +45,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: 30
             fail: true

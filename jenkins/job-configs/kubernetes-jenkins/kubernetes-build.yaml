@@ -6,6 +6,7 @@
         - build-discarder:
             num-to-keep: 200
     builders:
+        - activate-gce-service-account
         - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
         - shell: |
             {job-env}
@@ -37,6 +38,7 @@
         - pollscm:
             cron: 'H/2 * * * *'
     wrappers:
+        - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true

@@ -1,4 +1,9 @@
 - builder:
+    name: activate-gce-service-account
+    builders:
+      - shell: 'gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"'
+
+- builder:
     name: ensure-upload-to-gcs-script
     git-basedir: ''
     builders:

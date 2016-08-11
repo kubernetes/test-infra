@@ -22,6 +22,7 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
