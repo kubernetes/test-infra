@@ -496,7 +496,7 @@
             # ginkgo changes get made, but allows for testing them in a PR.
             export GINKGO_TOLERATE_FLAKES="y"
 
-            export E2E_NAME="federation-e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+            export E2E_NAME="fed-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
             export FAIL_ON_GCP_RESOURCE_LEAK="false"
             export NUM_NODES="3"
 
