@@ -99,10 +99,10 @@ func (LGTMAfterCommitMunger) isStaleComment(obj *github.MungeObject, comment *gi
 	if !lgtmRemovedRegex.MatchString(*comment.Body) {
 		return false
 	}
-	if !obj.HasLabel("lgtm") {
+	if !obj.HasLabel(lgtmLabel) {
 		return false
 	}
-	lgtmTime := obj.LabelTime("lgtm")
+	lgtmTime := obj.LabelTime(lgtmLabel)
 	if lgtmTime == nil {
 		return false
 	}
