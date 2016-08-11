@@ -413,6 +413,7 @@
             * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
 
             Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
+          only-trigger-phrase: false
           trigger-phrase: 'e2e\s+test'
           cmd: |
             export KUBE_SKIP_PUSH_GCS=y
