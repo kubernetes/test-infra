@@ -1,0 +1,69 @@
+- job-template:
+    name: 'fejta-e2e-{suffix}'
+    node: '{jenkins_node}'
+    triggers:
+        - reverse:
+            jobs: '{trigger-job}'
+            result: success
+        - timed: '{cron-string}'
+    description: '{description} Test owner: {test-owner}.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+    provider-env: |
+        export KUBERNETES_PROVIDER="gce"
+        export E2E_MIN_STARTUP_PODS="8"
+        export KUBE_GCE_ZONE="us-central1-f"
+        export FAIL_ON_GCP_RESOURCE_LEAK="true"
+        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    fejta-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/fejta/kubernetes/e2e2/hack/jenkins/dockerized-e2e-runner.sh")
+    builders:
+        - shell: |
+            {provider-env}
+            {job-env}
+            {post-env}
+            timeout -k {kill-timeout}m {timeout}m {fejta-runner} && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./kubernetes/cluster/log-dump.sh _artifacts
+                fi
+            fi
+            {report-rc}
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - e2e-credentials-binding
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+        - claim-build
+        - junit-publisher
+        - log-parser
+        - email-ext:
+            recipients: '{emails}'
+        - gcs-uploader
+
+- project:
+    name: fejta-e2e-gce-master
+    trigger-job: 'kubernetes-build'
+    test-owner: 'fejta'
+    suffix:
+        - 'gce':  # fejta-e2e-gce
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel.'
+            timeout: 50  # See #21138
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="fejta-prod"
