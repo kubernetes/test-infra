@@ -34,7 +34,7 @@
           <md-tab label="PRs" md-on-select="cntl.selectTab('prs')">
             <md-content class="md-whiteframe-z2">
               <md-toolbar>
-                <h2 class="md-toolbar-tools">Pull Requests</h2>
+                <h2 class="md-toolbar-tools">Pull Requests ({{cntl.prsCount}})</h2>
               </md-toolbar>
               <form ng-submit="$event.preventDefault()">
                 <md-autocomplete md-selected-item="cntl.prSelectedItem" md-search-text="cntl.prDisplayValue" md-items="item in cntl.prQuerySearch(cntl.prDisplayValue)" md-item-text="item.display" md-min-length="0" placeholder="Enter username or PR number">

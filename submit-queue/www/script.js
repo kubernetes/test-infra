@@ -10,6 +10,7 @@ app.controller('SQCntl', ['DataService', '$interval', '$location', SQCntl]);
 function SQCntl(dataService, $interval, $location) {
   var self = this;
   self.prs = {};
+  self.prsCount = 0;
   self.health = {};
   self.metadata = {};
   self.testResults = {};
@@ -122,6 +123,7 @@ function SQCntl(dataService, $interval, $location) {
       var prs = response.data.PRStatus;
       fixPRAvatars(prs);
       self.prs = prs;
+      self.prsCount = Object.keys(prs).length;
       self.prSearchTerms = getPRSearchTerms();
     }, function errorCallback(response) {
       console.log("Error: Getting SubmitQueue Status");
