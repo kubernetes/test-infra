@@ -82,6 +82,10 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
+		return
+	}
+
 	if mergeable, err := obj.IsMergeable(); !mergeable || err != nil {
 		return
 	}
