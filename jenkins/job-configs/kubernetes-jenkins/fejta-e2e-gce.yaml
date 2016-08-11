@@ -59,11 +59,13 @@
     trigger-job: 'kubernetes-build'
     test-owner: 'fejta'
     suffix:
-        - 'gce':  # fejta-e2e-gce
-            cron-string: '{sq-cron-string}'
-            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel.'
-            timeout: 50  # See #21138
-            job-env: |
-                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-                export GINKGO_PARALLEL="y"
-                export PROJECT="fejta-prod"
+    - 'gce':  # fejta-e2e-gce
+        cron-string: '{sq-cron-string}'
+        description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel.'
+        timeout: 50  # See #21138
+        job-env: |
+            export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+            export GINKGO_PARALLEL="y"
+            export PROJECT="fejta-prod"
+    jobs:
+    - 'fejta-e2e-{suffix}'
