@@ -109,11 +109,6 @@ func (r *RebuildMunger) Munge(obj *github.MungeObject) {
 				glog.Errorf("unexpected error adding comment: %v", err)
 				continue
 			}
-			if obj.HasLabel(lgtmLabel) {
-				if err := obj.RemoveLabel(lgtmLabel); err != nil {
-					glog.Errorf("unexpected error removing lgtm label: %v", err)
-				}
-			}
 		}
 	}
 }

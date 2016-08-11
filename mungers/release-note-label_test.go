@@ -74,14 +74,14 @@ func TestReleaseNoteLabel(t *testing.T) {
 		{
 			name:        "LGTM with release-note-label-needed",
 			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNoteLabelNeeded}, true),
-			mustHave:    []string{releaseNoteLabelNeeded},
-			mustNotHave: []string{lgtmLabel},
+			mustHave:    []string{lgtmLabel, doNotMergeLabel, releaseNoteLabelNeeded},
+			mustNotHave: []string{},
 		},
 		{
 			name:        "LGTM only",
 			issue:       github_test.Issue(botName, 1, []string{lgtmLabel}, true),
-			mustHave:    []string{releaseNoteLabelNeeded},
-			mustNotHave: []string{lgtmLabel},
+			mustHave:    []string{lgtmLabel, doNotMergeLabel, releaseNoteLabelNeeded},
+			mustNotHave: []string{},
 		},
 		{
 			name:     "No labels",
@@ -158,13 +158,13 @@ func TestReleaseNoteLabel(t *testing.T) {
 			mustHave:    []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:        "remove LGTM on non-master when parent PR has releaseNote label",
+			name:        "add doNotMergeLabel on non-master when parent PR has releaseNoteNone label",
 			branch:      "release-1.2",
 			issue:       github_test.Issue(botName, 1, []string{lgtmLabel}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
 			secondIssue: github_test.Issue(botName, 2, []string{releaseNoteNone}, true),
-			mustHave:    []string{releaseNoteLabelNeeded},
-			mustNotHave: []string{lgtmLabel},
+			mustHave:    []string{doNotMergeLabel, releaseNoteLabelNeeded},
+			mustNotHave: []string{},
 		},
 	}
 	for testNum, test := range tests {

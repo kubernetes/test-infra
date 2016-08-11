@@ -36,7 +36,7 @@ const (
 	releaseNoteActionRequired = "release-note-action-required"
 	releaseNoteExperimental   = "release-note-experimental"
 
-	releaseNoteFormat = `Removing LGTM because the release note process has not been followed.
+	releaseNoteFormat = `Adding ` + doNotMergeLabel + ` because the release note process has not been followed.
 One of the following labels is required %q, %q, %q or %q.
 Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes.`
 	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
@@ -47,8 +47,8 @@ var (
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 )
 
-// ReleaseNoteLabel will remove the LGTM label from an PR which has not
-// set one of the appropriete 'release-note-*' labels.
+// ReleaseNoteLabel will add the doNotMergeLabel to a PR which has not
+// set one of the appropriete 'release-note-*' labels but has LGTM
 type ReleaseNoteLabel struct {
 	config *github.Config
 }
@@ -133,8 +133,12 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	if obj.HasLabel(doNotMergeLabel) {
+		return
+	}
+
 	obj.WriteComment(releaseNoteBody)
-	obj.RemoveLabel(lgtmLabel)
+	obj.AddLabel(doNotMergeLabel)
 }
 
 func completedReleaseNoteProcess(obj *github.MungeObject) bool {
