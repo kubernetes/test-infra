@@ -48,12 +48,13 @@ type assignmentConfig struct {
 
 // RepoInfo provides information about users in OWNERS files in a git repo
 type RepoInfo struct {
-	enabled      bool
-	projectDir   string
-	baseDir      string
-	assignees    map[string]sets.String
-	config       *github.Config
-	enableMdYaml bool
+	BaseDir      string
+	EnableMdYaml bool
+
+	enabled    bool
+	projectDir string
+	assignees  map[string]sets.String
+	config     *github.Config
 	//owners   map[string]sets.String
 }
 
@@ -88,7 +89,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 
 	// '.md' files may contain assignees at the top of the file in a yaml header
 	// Flag guarded because this is only enabled in some repos
-	if o.enableMdYaml && filename != ownerFilename && strings.HasSuffix(filename, "md") {
+	if o.EnableMdYaml && filename != ownerFilename && strings.HasSuffix(filename, "md") {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		if err := decodeAssignmentConfig(path, c); err != nil {
 			glog.Errorf("%v", err)
@@ -187,17 +188,14 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 // Initialize will initialize the munger
 func (o *RepoInfo) Initialize(config *github.Config) error {
-	glog.Infof("repo-dir: %#v\n", o.baseDir)
-	glog.Infof("enable-md-yaml: %#v\n", o.enableMdYaml)
-
 	o.enabled = true
 	o.config = config
-	o.projectDir = path.Join(o.baseDir, o.config.Project)
+	o.projectDir = path.Join(o.BaseDir, o.config.Project)
 
-	if len(o.baseDir) == 0 {
+	if len(o.BaseDir) == 0 {
 		glog.Fatalf("--repo-dir is required with selected munger(s)")
 	}
-	finfo, err := os.Stat(o.baseDir)
+	finfo, err := os.Stat(o.BaseDir)
 	if err != nil {
 		return fmt.Errorf("Unable to stat --repo-dir: %v", err)
 	}
@@ -225,7 +223,7 @@ func (o *RepoInfo) cleanUp(path string) error {
 
 func (o *RepoInfo) cloneRepo() (string, error) {
 	cloneUrl := fmt.Sprintf("https://github.com/%s/%s.git", o.config.Org, o.config.Project)
-	output, err := o.gitCommandDir([]string{"clone", cloneUrl, o.projectDir}, o.baseDir)
+	output, err := o.gitCommandDir([]string{"clone", cloneUrl, o.projectDir}, o.BaseDir)
 	if err != nil {
 		glog.Errorf("Failed to clone github repo: %s", output)
 	}
@@ -246,8 +244,8 @@ func (o *RepoInfo) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (o *RepoInfo) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&o.baseDir, "repo-dir", "", "Path to perform checkout of repository")
-	cmd.Flags().BoolVar(&o.enableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
+	cmd.Flags().StringVar(&o.BaseDir, "repo-dir", "", "Path to perform checkout of repository")
+	cmd.Flags().BoolVar(&o.EnableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
 }
 
 // GitCommand will execute the git command with the `args` within the project directory.
@@ -294,14 +292,14 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) LeafAssignees(path string) sets.String {
-	return peopleForPath(path, o.assignees, true, o.enableMdYaml)
+	return peopleForPath(path, o.assignees, true, o.EnableMdYaml)
 }
 
 // Assignees returns a set of users who are the closest assginees to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Assignees(path string) sets.String {
-	return peopleForPath(path, o.assignees, false, o.enableMdYaml)
+	return peopleForPath(path, o.assignees, false, o.EnableMdYaml)
 }
 
 //func (o *RepoInfo) LeafOwners(path string) sets.String {

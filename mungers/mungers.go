@@ -25,6 +25,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 )
 
 // Munger is the interface which all mungers must implement to register
@@ -88,6 +89,7 @@ func InitializeMungers(config *github.Config, features *features.Features) error
 		if err := munger.Initialize(config, features); err != nil {
 			return err
 		}
+		glog.Infof(mungerutil.PrettyString(munger))
 		glog.Infof("Initialized munger: %s", munger.Name())
 	}
 	return nil

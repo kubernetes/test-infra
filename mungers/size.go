@@ -44,7 +44,7 @@ var (
 // It will exclude certain files in it's calculations based on the config
 // file provided in --generated-files-config
 type SizeMunger struct {
-	generatedFilesFile string
+	GeneratedFilesFile string
 	genFiles           *sets.String
 	genPrefixes        *[]string
 }
@@ -63,7 +63,7 @@ func (SizeMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *SizeMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("generated-files-config: %#v\n", s.generatedFilesFile)
+	glog.Infof("generated-files-config: %#v\n", s.GeneratedFilesFile)
 
 	return nil
 }
@@ -73,7 +73,7 @@ func (SizeMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&s.generatedFilesFile, "generated-files-config", "", "file containing the pathname to label mappings")
+	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file containing the pathname to label mappings")
 }
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
@@ -93,7 +93,7 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	s.genFiles = &files
 	s.genPrefixes = &prefixes
 
-	file := s.generatedFilesFile
+	file := s.GeneratedFilesFile
 	if len(file) == 0 {
 		glog.Infof("No --generated-files-config= supplied, applying no labels")
 		return

@@ -196,7 +196,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.startTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
 
-	sq.doNotMergeMilestones = []string{doNotMergeMilestone}
+	sq.DoNotMergeMilestones = []string{doNotMergeMilestone}
 
 	sq.e2e = &fake_e2e.FakeE2ETester{
 		JobNames:           sq.BlockingJobNames,
