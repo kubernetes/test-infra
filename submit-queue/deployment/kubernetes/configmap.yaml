@@ -18,7 +18,7 @@ data:
   submit-queue.required-contexts: "Jenkins GCE Node e2e"
   submit-queue.nonblocking-jenkins-jobs: kubernetes-e2e-gke-staging,kubernetes-e2e-gke-staging-parallel,kubernetes-e2e-gce-serial,kubernetes-e2e-gke-serial,kubernetes-e2e-gke-test,kubernetes-e2e-gce-examples,kubernetes-e2e-gce-federation,kubernetes-e2e-gce-scalability,kubernetes-soak-continuous-e2e-gce,kubernetes-soak-continuous-e2e-gke,kubernetes-kubemark-5-gce,kubernetes-kubemark-500-gce,kubelet-serial-gce-e2e-ci
   submit-queue.jenkins-jobs: kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gce,kubernetes-e2e-gce-slow,kubernetes-e2e-gke,kubernetes-e2e-gke-slow
-  submit-queue.presubmit-jobs: kubernetes-pull-build-test-e2e-gce
+  submit-queue.presubmit-jobs: kubernetes-pull-build-test-e2e-gce,kubernetes-pull-build-test-e2e-gke,kubernetes-pull-build-test-federation-e2e-gce,node-pull-build-e2e-test
   submit-queue.weak-stable-jobs: "\"\""
   submit-queue.do-not-merge-milestones: "\"\""
   submit-queue.admin-port: "9999"
