@@ -178,6 +178,19 @@
                 export KUBE_MASTER_OS_DISTRIBUTION="debian"
                 export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
                 export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
+        - 'gce-etcd3':  # kubernetes-e2e-gce-etcd3
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
+            test-owner: 'wojtek-t'
+            timeout: 50  # See #21138
+            job-env: |
+                # This list should match the list in kubernetes-pull-build-test-e2e-gce.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] \
+                                         --kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-etcd3"
+                # Use etcd3 as storage backend.
+                export STORAGE_BACKEND="etcd3"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
