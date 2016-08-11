@@ -187,6 +187,13 @@ def do_select(seq, pred):
     return filter(pred, seq)
 
 
+def do_tg_url(testgrid_query, test_name=''):
+    if test_name:
+        regex = '^Overall$|' + re.escape(test_name)
+        testgrid_query += '&include-filter-by-regex=%s' % urllib.quote(regex)
+    return 'https://k8s-testgrid.appspot.com/%s' % testgrid_query
+
+
 do_basename = os.path.basename
 do_dirname = os.path.dirname
 do_quote_plus = urllib.quote_plus
