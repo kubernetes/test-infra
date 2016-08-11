@@ -35,7 +35,7 @@
             {provider-env}
             {job-env}
             {post-env}
-            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            timeout -k {kill-timeout}m {timeout}m {gci-runner} && rc=$? || rc=$?
             {report-rc}
     wrappers:
         - ansicolor:
@@ -64,6 +64,7 @@
                 def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
                 if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
     # Template defaults.
+    gci-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/test-infra/master/jenkins/dockerized-e2e-runner.sh")  # TODO(fejta): migrate all dockerized-e2e-runner.sh references here
     jenkins_node: 'e2e'
     test-owner: 'wonderfly'
     emails: 'gci-alerts+kubekins@google.com'
