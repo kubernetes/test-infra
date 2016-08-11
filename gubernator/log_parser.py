@@ -89,7 +89,7 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    hilight_words = ["error", "fatal", "failed", "build timed out"]
+    hilight_words = ["error", "fatal", "fail", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 
