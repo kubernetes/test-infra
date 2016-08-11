@@ -28,7 +28,7 @@
                 - ensure-upload-to-gcs-script:
                     git-basedir: '{git-basedir}'
                 - shell: |
-                    if [[ ! -e "${{WORKSPACE}}/build-log.txt" ]]; then
+                    if [[ "${{NODE_NAME:-}}" != 'master' ]]; then
                       curl -fsS --retry 3 "http://pull-jenkins-master:8080/job/${{JOB_NAME}}/${{BUILD_NUMBER}}/consoleText" > "${{WORKSPACE}}/build-log.txt"
                     fi
                 - conditional-step:
