@@ -70,6 +70,7 @@
         - build-discarder:
             num-to-keep: 200
     builders:
+         - activate-gce-service-account
          - shell: |
               #!/bin/bash
               set -e
@@ -101,6 +102,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: 90
             fail: true
