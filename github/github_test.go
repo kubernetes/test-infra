@@ -535,3 +535,27 @@ this pr Fixes #23 and FIXES #45 but not fixxx #99`,
 		server.Close()
 	}
 }
+
+func TestCleanIssueBody(t *testing.T) {
+	tests := []struct {
+		body, expected string
+	}{
+		{"foo", "foo"},
+		{"    bar   ", "bar"},
+		{
+			`Some message
+
+<!-- Reviewable:start -->
+gratuitous href
+<!-- Reviewable:end -->`,
+			"Some message",
+		},
+	}
+	for testNum, test := range tests {
+		body := cleanIssueBody(test.body)
+		if body != test.expected {
+			t.Errorf("%d: cleanIssueBody(%#v) == %#v != %#v",
+				testNum, test.body, body, test.expected)
+		}
+	}
+}

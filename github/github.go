@@ -58,6 +58,7 @@ var (
 	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]$`)
 	priorityLabelRE    = regexp.MustCompile(`priority/[pP]([\d]+)`)
 	fixesIssueRE       = regexp.MustCompile(`(?i)(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[\s]+#([\d]+)`)
+	reviewableFooterRE = regexp.MustCompile(`(?s)<!-- Reviewable:start -->.*<!-- Reviewable:end -->`)
 	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 )
 
@@ -1406,6 +1407,13 @@ func (obj *MungeObject) MergeCommit() *string {
 	return nil
 }
 
+// cleanIssueBody removes irrelevant parts from the issue body,
+// including Reviewable footers and extra whitespace.
+func cleanIssueBody(issueBody string) string {
+	issueBody = reviewableFooterRE.ReplaceAllString(issueBody, "")
+	return strings.TrimSpace(issueBody)
+}
+
 // MergePR will merge the given PR, duh
 // "who" is who is doing the merging, like "submit-queue"
 func (obj *MungeObject) MergePR(who string) error {
@@ -1426,7 +1434,7 @@ func (obj *MungeObject) MergePR(who string) error {
 	// Get the text of the issue body
 	issueBody := ""
 	if obj.Issue.Body != nil {
-		issueBody = *obj.Issue.Body
+		issueBody = cleanIssueBody(*obj.Issue.Body)
 	}
 
 	// Get the text of the first commit
