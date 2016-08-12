@@ -373,7 +373,11 @@
             # Get golang into our PATH so we can run e2e.go
             export PATH=${{PATH}}:/usr/local/go/bin
 
-            timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+            if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
+              timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+            else
+              timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+            fi
             if [[ ${{rc}} -ne 0 ]]; then
               if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
                 echo "Dumping logs for any remaining nodes"
@@ -458,7 +462,11 @@
               # Get golang into our PATH so we can run e2e.go
               export PATH=${{PATH}}:/usr/local/go/bin
 
-              timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+              if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
+                timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+              else
+                timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+              fi
               if [[ ${{rc}} -ne 0 ]]; then
                 if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
                   echo "Dumping logs for any remaining nodes"
@@ -527,7 +535,11 @@
             export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
             export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
 
-            timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+            if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
+              timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+            else
+              timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
+            fi
             if [[ ${{rc}} -ne 0 ]]; then
               if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
                 echo "Dumping logs for any remaining nodes"
