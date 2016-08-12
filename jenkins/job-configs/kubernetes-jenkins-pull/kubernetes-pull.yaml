@@ -342,8 +342,7 @@
             export E2E_MIN_STARTUP_PODS="1"
             export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
-            # Experimental flake detection-- harmlessly does nothing until
-            # ginkgo changes get made, but allows for testing them in a PR.
+            # Flake detection. Individual tests get a second chance to pass.
             export GINKGO_TOLERATE_FLAKES="y"
 
             export E2E_NAME="e2e-gke-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -431,8 +430,7 @@
               export KUBE_GCE_ZONE="us-central1-f"
               export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
-              # Experimental flake detection-- harmlessly does nothing until
-              # ginkgo changes get made, but allows for testing them in a PR.
+              # Flake detection. Individual tests get a second chance to pass.
               export GINKGO_TOLERATE_FLAKES="y"
 
               export E2E_NAME="e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -493,8 +491,7 @@
             export E2E_MIN_STARTUP_PODS="1"
             export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
-            # Experimental flake detection-- harmlessly does nothing until
-            # ginkgo changes get made, but allows for testing them in a PR.
+            # Flake detection. Individual tests get a second chance to pass.
             export GINKGO_TOLERATE_FLAKES="y"
 
             export E2E_NAME="fed-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
