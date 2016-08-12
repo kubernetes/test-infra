@@ -1626,10 +1626,13 @@ func (obj *MungeObject) IsMergeable() (bool, error) {
 		return false, err
 	}
 	prNum := *pr.Number
-	if pr.Mergeable == nil {
+	// Github might not have computed mergeability yet. Try again a few times.
+	for try := 1; try <= 5 && pr.Mergeable == nil; try++ {
 		glog.V(4).Infof("Waiting for mergeability on %q %d", *pr.Title, *pr.Number)
-		// TODO: determine what a good empirical setting for this is.
-		time.Sleep(2 * time.Second)
+		// Sleep for 2-32 seconds on successive attempts.
+		// Worst case, we'll wait for up to a minute for GitHub
+		// to compute it before bailing out.
+		time.Sleep((1 << uint(try)) * time.Second)
 		err := obj.Refresh()
 		if err != nil {
 			glog.Errorf("Unable to refresh PR# %d: %v", prNum, err)
