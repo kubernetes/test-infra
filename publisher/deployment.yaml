@@ -1,0 +1,89 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: @@-publisher
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: publisher
+        target-repo: @@
+    spec:
+      containers:
+      - name: publisher
+        command:
+        - /mungegithub
+        - --period=$(PERIOD)
+        - --dry-run=true
+        - --organization=$(ORGANIZATION)
+        - --project=$(PROJECT)
+        - --pr-mungers=$(PR_MUNGERS)
+        - --token-file=$(TOKEN_FILE)
+        - --repo-dir=$(REPO_DIR)
+        - --netrc-dir=$(NETRC_DIR)
+        - --publish-command=$(PUBLISH_COMMAND)
+        image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
+        imagePullPolicy: Always
+        env:
+          - name: PUBLISH_COMMAND
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: publisher.publish-command
+          - name: PERIOD
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: config.period
+          - name: ORGANIZATION
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: config.organization
+          - name: PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: config.project
+          - name: PR_MUNGERS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: config.pr-mungers
+          - name: TOKEN_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: config.token-file
+          - name: REPO_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: gitrepo.repo-dir
+          - name: NETRC_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: publisher.netrc-dir
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: secret-volume
+        - mountPath: /netrc
+          name: netrc
+        - mountPath: /gitrepos
+          name: repo
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: @@-github-token
+      - name: repo
+        emptyDir: {}
+      - name: netrc
+        emptyDir:
+          medium: Memory

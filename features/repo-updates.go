@@ -217,8 +217,7 @@ func (o *RepoInfo) Initialize(config *github.Config) error {
 }
 
 func (o *RepoInfo) cleanUp(path string) error {
-	err := os.RemoveAll(path)
-	return err
+	return os.RemoveAll(path)
 }
 
 func (o *RepoInfo) cloneRepo() (string, error) {
