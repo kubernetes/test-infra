@@ -10,5 +10,6 @@ doNotBlockRegexp:
   - ^docs/admin/kubelet.md$
   - ^docs/admin/federation-apiserver.md$
   - ^docs/admin/federation-controller-manager.md$
+  - ^docs/admin/high-availability/.*\.(yaml)$
   - ^docs/man/man1/kubectl.*\.1$
   - ^docs/user-guide/kubectl/kubectl.*\.md$
