@@ -78,7 +78,6 @@
             description: 'Run [Serial], [Disruptive], tests on GCE.'
             timeout: 300
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="kubernetes-jkns-e2e-gce-serial"

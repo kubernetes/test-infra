@@ -48,13 +48,12 @@
             timeout: 60
             cron-string: '{sq-cron-string}'
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 export E2E_NAME="kubemark-5"
                 export PROJECT="k8s-jenkins-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 export NUM_NODES="1"
@@ -72,13 +71,12 @@
             timeout: 240
             cron-string: 'H H/6 * * *'
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 export E2E_NAME="kubemark-100"
                 export PROJECT="k8s-jenkins-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
                 export CREATE_SERVICES="true"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
@@ -95,13 +93,12 @@
             timeout: 160
             cron-string: 'H 20 * * 6'
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 export E2E_NAME="kubemark-100pods"
                 export PROJECT="k8s-jenkins-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:HighDensityPerformance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters
                 export NUM_NODES="3"
@@ -117,13 +114,12 @@
             timeout: 300
             cron-string: '{sq-cron-string}'
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 export E2E_NAME="kubemark-500"
                 export PROJECT="k8s-jenkins-blocking-kubemark"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
                 # Increase throughput in Kubemark master components.
                 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
                 # Increase throughput in Load test.
@@ -144,14 +140,13 @@
             timeout: 720
             cron-string: 'H H/12 * * *'
             job-env: |
-                export ENABLE_GARBAGE_COLLECTOR="true"
                 # XXX Not a unique project
                 export E2E_NAME="kubemark-2000"
                 export PROJECT="kubernetes-scale"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:Performance\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
                 # Increase throughput in Kubemark master components.
                 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
                 # Increase throughput in Load test.
