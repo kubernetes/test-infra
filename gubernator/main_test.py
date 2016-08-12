@@ -180,7 +180,7 @@ class AppTest(TestBase):
         self.assertIn(expected, response)
 
     def test_timestamp_no_apiserver(self):
-        """Test parse_by_timestamp and get_woven_logs
+        """Test parse_by_timestamp and get_woven_logs without an apiserver file
          - Weave separate logs together by timestamp
          - Check that lines without timestamp are combined
          - Test different timestamp formats

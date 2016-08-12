@@ -153,7 +153,7 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
             parsed_dict, pod_in_file = parse_log_file(kubelet_log, pod_name, make_dict=True,
                 objref_dict=objref_dict)
             objref_dict.update(parsed_dict)
-        if len(objref_dict) > old_dict_len or not pod_name or pod_in_file:
+        if len(objref_dict) > old_dict_len or not pod_name or pod_in_file or not objref_dict:
             if log_files == []:
                 log_files = [kubelet_log]
                 if apiserver_filename:
