@@ -22,11 +22,11 @@ import (
 
 	"k8s.io/contrib/mungegithub/features"
 	githubhelper "k8s.io/contrib/mungegithub/github"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"bytes"
-	"crypto/sha1"
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
@@ -80,13 +80,6 @@ func (c *CheckLabelsMunger) Initialize(config *githubhelper.Config, features *fe
 	return nil
 }
 
-func (c *CheckLabelsMunger) getHash(fileContents []byte) string {
-	h := sha1.New()
-	h.Write([]byte(fileContents))
-	bs := h.Sum(nil)
-	return string(bs)
-}
-
 // EachLoop is called at the start of every munge loop
 func (c *CheckLabelsMunger) EachLoop() error {
 	fileContents, err := c.readFunc()
@@ -94,7 +87,7 @@ func (c *CheckLabelsMunger) EachLoop() error {
 		glog.Errorf("Failed to read the check label config: %v", err)
 		return err
 	}
-	hash := c.getHash(fileContents)
+	hash := mungerutil.GetHash(fileContents)
 	if c.prevHash != hash {
 		// Get all labels from file.
 		fileLabels := map[string][]*github.Label{}
