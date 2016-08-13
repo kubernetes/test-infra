@@ -12,13 +12,12 @@ spec:
       containers:
       - name: grapher
         image: gcr.io/google-containers/queue-health-graph
-        env:
-        - name: GRAPH  # Test svg uri
-          value: "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
-        - name: HISTORY  # prod history uri
-          value: "gs://kubernetes-test-history/sq/history.txt"
-        - name: SERVICE
-          value: '/creds/service-account.json'
+        command:
+        - python
+        - /graph.py
+        - "gs://kubernetes-test-history/sq/history.txt"
+        - "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
+        - '/creds/service-account.json'
         volumeMounts:
         - name: service-account
           mountPath: /creds

@@ -12,18 +12,23 @@ spec:
       containers:
       - name: grapher
         image: gcr.io/google-containers/queue-health-graph
-        env:
-        - name: SERVICE
-          value: '/creds/service-account.json'
+        command:
+        - python
+        - /graph.py
+        - "gs://kubernetes-test-history/sq-test/history.txt"
+        - "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
+        - '/creds/service-account.json'
         volumeMounts:
         - name: service-account
           mountPath: /creds
           readOnly: true
       - name: poller
         image: gcr.io/google-containers/queue-health-poll
-        env:
-        - name: SERVICE
-          value: '/creds/service-account.json'
+        command:
+        - python
+        - /poller.py
+        - "gs://kubernetes-test-history/sq-test/history.txt"
+        - '/creds/service-account.json'
         volumeMounts:
         - name: service-account
           mountPath: /creds

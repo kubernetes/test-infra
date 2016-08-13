@@ -33,6 +33,8 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy
 
+from pprint import pprint
+
 def parse_line(
         date, time, online, pr, queue,
         run, blocked, merge_count=0):  # merge_count may be missing
@@ -350,4 +352,7 @@ def render_forever(history_uri, img_uri, service_account=None):
 
 
 if __name__ == '__main__':
+    # log all arguments.
+    pprint(sys.argv)
+
     render_forever(*sys.argv[1:])
