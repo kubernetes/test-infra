@@ -32,9 +32,10 @@ func GetUsers(users ...*github.User) UserSet {
 	allUsers := sets.String{}
 
 	for _, user := range users {
-		if user != nil && user.Login != nil {
-			allUsers.Insert(*user.Login)
+		if !IsValidUser(user) {
+			continue
 		}
+		allUsers.Insert(*user.Login)
 	}
 
 	return UserSet(allUsers)
@@ -95,4 +96,9 @@ func GetIssueUsers(issue *github.Issue) *IssueUsers {
 // AllUsers return a list of unique users (both assignees and author)
 func (u *IssueUsers) AllUsers() UserSet {
 	return u.Assignees.union(u.Author)
+}
+
+// IsValidUser returns true only if given user has valid github username (logic account).
+func IsValidUser(u *github.User) bool {
+	return u != nil && u.Login != nil
 }
