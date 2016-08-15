@@ -132,9 +132,8 @@ def KillLoopingBash():
             print "killing bash pid %s (%r) with %d minutes of CPU time" % (
                 pid, cmdline, utime_minutes)
             print 'Environment variables:'
-            with open('/proc/%s/environ' % pid) as f:
-                env = f.read().split('\x00')
-                print '\n'.join(sorted(env))
+            environ = subprocess.check_output(['sudo', 'cat', '/proc/%s/environ' % pid])
+            print '\n'.join(sorted(environ.split('\x00')))
             err |= subprocess.call(['sudo', 'kill', '-9', pid])
     return err
 
