@@ -488,6 +488,17 @@
           only-trigger-phrase: true  # This test should run only if explicitly triggered.
           trigger-phrase: 'federation\s+gce\s+e2e\s+test'
           cmd: |
+            # Federation specific params
+            export FEDERATION="true"
+            export PROJECT="k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+            export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+            export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+            export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+            export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+            export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+            export DNS_ZONE_NAME="k8s-federation.com."
+            export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
+
             export KUBE_SKIP_PUSH_GCS=y
             export KUBE_RUN_FROM_OUTPUT=y
             export KUBE_FASTBUILD=true
@@ -522,18 +533,6 @@
             # Get golang into our PATH so we can run e2e.go
             export PATH=${{PATH}}:/usr/local/go/bin
 
-            # Federation specific params
-            export FEDERATION="true"
-            export PROJECT="k8s-jkns-pr-bldr-e2e-gce-fdrtn"
-            export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
-            export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
-            export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
-            export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
-            export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
-            export DNS_ZONE_NAME="k8s-federation.com."
-            export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
-            export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
-            export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
 
             if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
               timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
