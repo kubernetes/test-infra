@@ -1,0 +1,7 @@
+- name: gotest
+  image: gcr.io/k8s-ci-on-gke/gotest:0.0
+  path: /go/src/github.com/kubernetes
+  timeout: 10m
+- name: verify
+  image: gcr.io/k8s-ci-on-gke/verify:0.0
+  timeout: 5m
