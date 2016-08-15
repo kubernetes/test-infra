@@ -150,5 +150,10 @@
 			"Comment": "v1.3.0-alpha.5-451-gd9f7885",
 			"Rev": "d9f788532fc33614aa53a39cbd9d2ea6c308cacf"
 		}
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/util/errors",
+			"Comment": "v1.3.0-alpha.5-451-gd9f7885",
+			"Rev": "d9f788532fc33614aa53a39cbd9d2ea6c308cacf"
+		}
 	]
 }
