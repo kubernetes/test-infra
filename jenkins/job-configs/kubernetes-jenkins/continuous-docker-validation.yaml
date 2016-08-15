@@ -132,6 +132,8 @@
         export GOROOT=/usr/local/go
         export GOPATH=$WORKSPACE/go
         export PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-docker-validation.properties:
+    # PROJECT="k8s-jkns-ci-node-e2e"
     shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-docker-validation.properties'
     builders:
         - activate-gce-service-account
