@@ -57,8 +57,8 @@ def DeleteInstances(project, zones, delete):
   return err
 
 
-def main(project, days, filt, delete):
-  age = datetime.datetime.now() - datetime.timedelta(days=int(days))
+def main(project, hours, filt, delete):
+  age = datetime.datetime.now() - datetime.timedelta(hours=int(hours))
   zones = Instances(project, age, filt)
   if zones:
     sys.exit(DeleteInstances(project, zones, delete))
@@ -69,10 +69,10 @@ if __name__ == '__main__':
       description='Delete old instances from a project')
   parser.add_argument('--project', help='Project to clean', required=True)
   parser.add_argument(
-      '--days', type=float, help='Clean items more than --days old', required=True)
+      '--hours', type=float, help='Clean items more than --hours old', required=True)
   parser.add_argument(
       '--delete', action='store_true', help='Really delete things when set')
   parser.add_argument(
       '--filter', default='name:tmp*', help='Filter down to these instances')
   args = parser.parse_args()
-  main(args.project, args.days, args.filter, args.delete)
+  main(args.project, args.hours, args.filter, args.delete)
