@@ -117,7 +117,7 @@ def RemoveVolumes():
 
 def KillLoopingBash():
     err = 0
-    bash_procs = subprocess.check_output(['pgrep', 'bash']).split()
+    bash_procs = subprocess.check_output(['pgrep', '-f', '^(/bin/)?bash']).split()
 
     clock_hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
     for pid in bash_procs:
@@ -127,7 +127,14 @@ def KillLoopingBash():
         utime = int(stat[13]) / clock_hz
         utime_minutes = utime / 60
         if utime_minutes > 30:
-            print "killing bash pid %s with %d minutes of CPU time" % (pid, utime_minutes)
+            with open('/proc/%s/cmdline' % pid) as f:
+                cmdline = f.read().replace('\x00', ' ').strip()
+            print "killing bash pid %s (%r) with %d minutes of CPU time" % (
+                pid, cmdline, utime_minutes)
+            print 'Environment variables:'
+            with open('/proc/%s/environ' % pid) as f:
+                env = f.read().split('\x00')
+                print '\n'.join(sorted(env))
             err |= subprocess.call(['sudo', 'kill', '-9', pid])
     return err
 
