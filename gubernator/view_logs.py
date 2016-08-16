@@ -77,14 +77,17 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
     log = gcs_async.read(log_filename).get_result()
     if log is None:
         return {}, False if make_dict else None
-    pod_re = regex.wordRE(pod)
+    if pod:
+        bold_re = regex.wordRE(pod)
+    else:
+        bold_re = regex.error_re
     if objref_dict is None:
         objref_dict = {}
-    if make_dict:
-        return kubelet_parser.make_dict(log.decode('utf8', 'replace'), pod_re, objref_dict)
+    if make_dict and pod:
+        return kubelet_parser.make_dict(log.decode('utf8', 'replace'), bold_re, objref_dict)
     else:
         return log_parser.digest(log.decode('utf8', 'replace'),
-        error_re=pod_re, filters=filters, objref_dict=objref_dict)
+        error_re=bold_re, filters=filters, objref_dict=objref_dict)
 
 
 def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filename)):
