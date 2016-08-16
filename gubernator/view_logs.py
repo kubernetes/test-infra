@@ -91,7 +91,6 @@ def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filenam
     # Get the logs in the case where the junit file with the failure is in a specific folder
     all_logs = {}
     results = {}
-
     # default to filtering kube-apiserver log if user unchecks both checkboxes
     if log_files == []:
         log_files = [apiserver_filename]
@@ -234,6 +233,7 @@ class NodeLogHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         build_dir = job_dir + build
         log_files = self.request.get_all("logfiles")
+        others = self.request.get_all("others")
         pod_name = self.request.get("pod")
         junit = self.request.get("junit")
         cID = self.request.get("cID")
@@ -251,6 +251,9 @@ class NodeLogHandler(view_base.BaseHandler):
 
         woven_logs = ""
 
+        for idx, filter_term in enumerate(others):
+            filters["other%d" % idx] = filter_term
+            objref_dict["other%d" % idx] = filter_term
         if cID:
             objref_dict["ContainerID"] = cID
         if poduid:
@@ -280,6 +283,6 @@ class NodeLogHandler(view_base.BaseHandler):
 
         self.render('filtered_log.html', dict(
             job_dir=job_dir, build_dir=build_dir, logs=results, job=job,
-            build=build, log_files=log_files, containerID=containerID,
+            build=build, log_files=log_files, containerID=containerID, others=others,
             pod=pod_name, junit=junit, uid=uid, namespace=namespace, weave=weave,
             wrap=wrap, objref_dict=objref_dict, all_logs=all_logs, woven_logs=woven_logs))

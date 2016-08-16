@@ -26,7 +26,13 @@
 		<hr>
 		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <input type="text" name="poduid" value="{{objref_dict['UID']}}" style="width: 300px;"></label><br>
 		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <input type="text" name="ns" value="{{objref_dict['Namespace']}}" style="width: 300px;"></label><br>
-		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <input type="text" name="cID" value="{{objref_dict['ContainerID']}}" style="width: 300px;"></label>
+		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <input type="text" name="cID" value="{{objref_dict['ContainerID']}}" style="width: 300px;"></label><br>
+		Add filter: <input type="text" name="others"><br>
+		% for other in others|sort
+			% if other
+				<label><input type="checkbox" name="others" value="{{other}}" {% if other in others %} checked {% endif %}> {{other}}</label><br>
+			% endif
+		% endfor
 	</form>
 	% if weave
 		<pre {% if not wrap %} style="white-space:pre"{% endif %}> 
