@@ -1,5 +1,5 @@
 - job-template:
-    name: 'djmm-{build}'
+    name: 'kubernetes-djmm-{build}'
     description: 'Grab the latest from GitHub, build. Test owner: djmm@google.com.'
     node: 'build'
     properties:
@@ -42,7 +42,7 @@
             external-deletion-command: 'sudo rm -rf %s'
 
 - project:
-    name: djmm-builds
+    name: kubernetes-djmm-builds
     build:
         - 'build':
             branch: 'master'
@@ -61,4 +61,4 @@
               export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
               export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
     jobs:
-        - 'djmm-{build}'
+        - 'kubernetes-djmm-{build}'
