@@ -16,7 +16,10 @@
             browser: githubweb
             browser-url: https://github.com/kubernetes/test-infra
             skip-tag: true
+    wrappers:
+        - e2e-credentials-binding
     builders:
+        - activate-gce-service-account
         - shell: |
             cd jenkins/test-history
             ./gen_history

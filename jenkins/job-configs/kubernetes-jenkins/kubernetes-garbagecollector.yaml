@@ -12,17 +12,12 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
-            fi
             {report-rc}
     publishers:
         - claim-build
@@ -48,19 +43,19 @@
 - project:
     name: kubernetes-garbage-collector
     suffix:
-        - '100-gce':  # kubernetes-garbagecollector-100-gce
-            description: 'Run the garbage collector with high workload'
+        - 'feature':  # kubernetes-garbagecollector-feature
+            description: 'Run the garbage collector specific tests'
             timeout: 600
             cron-string: 'H H/6 * * *'
             job-env: |
                 # Start the gc in controller plane
                 export ENABLE_GARBAGE_COLLECTOR="true"
-                export E2E_NAME="garbagecollector-100"
+                export E2E_NAME="garbagecollector-feature"
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
                 export KUBEMARK_TESTS="\[Feature:GarbageCollector\]"
-                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true"
+                export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
                 export CREATE_SERVICES="true"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override defaults to be independent from GCE defaults and set kubemark parameters

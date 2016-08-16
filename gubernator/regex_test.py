@@ -42,6 +42,7 @@ class RegexTest(unittest.TestCase):
             ('misc. fatality', False),
             ('there was a FaTaL error', True),
             ('we failed to read logs', True),
+            ('FAIL k8s.io/kubernetes/pkg/client/record', True),
         ]:
             self.assertEqual(bool(regex.error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))

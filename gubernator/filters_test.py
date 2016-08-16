@@ -16,6 +16,7 @@
 
 import re
 import unittest
+import urllib
 
 import filters
 
@@ -100,6 +101,15 @@ class HelperTest(unittest.TestCase):
         expect({'status': {'ci': ['success', '', '']}, 'labels': ['lgtm']}, 'success check LGTM')
         expect({'attn': {'foo': 'Needs Rebase'}}, 'Needs Rebase', user='foo')
         expect({'attn': {'foo': 'Needs Rebase'}, 'labels': {'lgtm'}}, 'LGTM', user='foo')
+
+    def test_tg_url(self):
+        self.assertEqual(
+            filters.do_tg_url('a#b'),
+            'https://k8s-testgrid.appspot.com/a#b')
+        self.assertEqual(
+            filters.do_tg_url('a#b', '[low] test'),
+            'https://k8s-testgrid.appspot.com/a#b&include-filter-by-regex=%s' %
+            urllib.quote('^Overall$|\\[low\\]\\ test'))
 
 
 if __name__ == '__main__':

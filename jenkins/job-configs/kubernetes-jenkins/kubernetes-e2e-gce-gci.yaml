@@ -31,17 +31,12 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
             {post-env}
-            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
-            fi
+            timeout -k {kill-timeout}m {timeout}m {gci-runner} && rc=$? || rc=$?
             {report-rc}
     wrappers:
         - ansicolor:
@@ -70,6 +65,7 @@
                 def k8sVersionMatcher = manager.getLogMatcher("Using\\spublished\\sversion\\s(.*)\\s\\(from.*")
                 if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
     # Template defaults.
+    gci-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/test-infra/master/jenkins/dockerized-e2e-runner.sh")  # TODO(fejta): migrate all dockerized-e2e-runner.sh references here
     jenkins_node: 'e2e'
     test-owner: 'wonderfly'
     emails: 'gci-alerts+kubekins@google.com'
@@ -209,17 +205,12 @@
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
         export JENKINS_USE_GCI_VERSION="y"  # Use GCI builtin k8s version.
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
             {post-env}
-            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
-            fi
+            timeout -k {kill-timeout}m {timeout}m {gci-runner} && rc=$? || rc=$?
             {report-rc}
     wrappers:
         - ansicolor:
@@ -248,6 +239,7 @@
                 def k8sVersionMatcher = manager.getLogMatcher("Using\\sGCI\\sbuiltin\\sversion:\\s(.*)")
                 if(k8sVersionMatcher?.matches()) manager.addShortText("<br><b>Kubernetes version: " + k8sVersionMatcher.group(1) + "</b>", "grey", "white", "0px", "white")
     # Template defaults.
+    gci-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/kubernetes/test-infra/master/jenkins/dockerized-e2e-runner.sh")  # TODO(fejta): migrate all dockerized-e2e-runner.sh references here
     jenkins_node: 'e2e'
     test-owner: 'wonderfly'
     emails: 'gci-alerts+kubekins@google.com'

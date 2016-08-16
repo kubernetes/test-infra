@@ -59,7 +59,7 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
             skip_string = ('<span class="skip">'
                 '<a href="javascript:show_skipped(\'%s\')" onclick="this.style.display=\'none\'">'
                 '%s</a></span>'
-                '<span class="skipped" id=%s style="display:none; float: left;">') % (skip_id,
+                '<span class="skipped" id=%s style="display:none;">') % (skip_id,
                 skip_fmt(skip_amount), skip_id)
             lines[previous_end] = "%s%s" % (skip_string, lines[previous_end])
             output.extend(lines[previous_end:match-CONTEXT])
@@ -89,7 +89,7 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    hilight_words = ["error", "fatal", "failed", "build timed out"]
+    hilight_words = ["error", "fatal", "fail", "failed", "build timed out"]
     if filters["pod"]:
         hilight_words = [filters["pod"]]
 

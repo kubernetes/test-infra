@@ -27,6 +27,7 @@
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     fejta-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/fejta/kubernetes/e2e2/hack/jenkins/dockerized-e2e-runner.sh")
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}

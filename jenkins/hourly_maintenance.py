@@ -96,7 +96,7 @@ def RemoveImages(skip, ancient):
     dangling = subprocess.check_output([
         'docker', 'images', '-q', '-f', 'dangling=true'])
     if dangling:
-        err |= subprocess.call(['docker', 'rmi'] + dangling.split('\n'))
+        err |= subprocess.call(['docker', 'rmi'] + dangling.split())
 
     if err:
         print >>sys.stderr, 'RemoveImages failed'
@@ -117,7 +117,7 @@ def RemoveVolumes():
 
 def KillLoopingBash():
     err = 0
-    bash_procs = subprocess.check_output(['pgrep', 'bash']).split()
+    bash_procs = subprocess.check_output(['pgrep', '-f', '^(/bin/)?bash']).split()
 
     clock_hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
     for pid in bash_procs:
@@ -127,7 +127,13 @@ def KillLoopingBash():
         utime = int(stat[13]) / clock_hz
         utime_minutes = utime / 60
         if utime_minutes > 30:
-            print "killing bash pid %s with %d minutes of CPU time" % (pid, utime_minutes)
+            with open('/proc/%s/cmdline' % pid) as f:
+                cmdline = f.read().replace('\x00', ' ').strip()
+            print "killing bash pid %s (%r) with %d minutes of CPU time" % (
+                pid, cmdline, utime_minutes)
+            print 'Environment variables:'
+            environ = subprocess.check_output(['sudo', 'cat', '/proc/%s/environ' % pid])
+            print '\n'.join(sorted(environ.split('\x00')))
             err |= subprocess.call(['sudo', 'kill', '-9', pid])
     return err
 

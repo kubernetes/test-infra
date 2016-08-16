@@ -30,6 +30,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
@@ -57,17 +58,12 @@
         export FAIL_ON_GCP_RESOURCE_LEAK="true"
         export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
     builders:
+        - activate-gce-service-account
         - shell: |
             {provider-env}
             {job-env}
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
-            if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
-                    echo "Dumping logs for any remaining nodes"
-                    ./kubernetes/cluster/log-dump.sh _artifacts
-                fi
-            fi
             {report-rc}
 
     # Template defaults. Can be overriden in job definitions.
@@ -124,6 +120,7 @@
     wrappers:
         - ansicolor:
             colormap: xterm
+        - e2e-credentials-binding
         - timeout:
             timeout: 90
             fail: true
@@ -137,6 +134,7 @@
         export PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
     shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-docker-validation.properties'
     builders:
+        - activate-gce-service-account
         - shell: |
             #!/bin/bash
             set -e
@@ -164,4 +162,3 @@
         - 'continuous-node-e2e-docker-validation-{os-distro}':
             os-distro: 'gci'
             description: 'Runs the node e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
-
