@@ -1530,8 +1530,11 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, erro
 	return allComments, nil
 }
 
+// WithListOpt configures the options to list comments of github issue.
+type WithListOpt func(*github.IssueListCommentsOptions) *github.IssueListCommentsOptions
+
 // ListComments returns all comments for the issue/PR in question
-func (obj *MungeObject) ListComments() ([]*github.IssueComment, error) {
+func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.IssueComment, error) {
 	config := obj.config
 	issueNum := *obj.Issue.Number
 	allComments := []*github.IssueComment{}
@@ -1541,6 +1544,9 @@ func (obj *MungeObject) ListComments() ([]*github.IssueComment, error) {
 	}
 
 	listOpts := &github.IssueListCommentsOptions{}
+	for _, withListOpt := range withListOpts {
+		listOpts = withListOpt(listOpts)
+	}
 
 	page := 1
 	for {
