@@ -12,6 +12,7 @@ CONTAINER := $(REPO)/$(APP):$(TAG)
 
 KUBECONFIG ?= $(HOME)/.kube/config
 
+# Change it to a /tmp directory when run locally, otherwise your workspace might get overwritten.
 KUBEDIR ?= $(GOPATH)/src/k8s.io/kubernetes
 CACHEDIR ?= /tmp/mungegithub-cache
 WWW ?= $(PWD)/$(APP)/www
@@ -21,6 +22,8 @@ ifeq ($(APP),submit-queue)
 MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,rebuild-request,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter"
 else ifeq ($(APP),cherrypick)
 MUNGERS ?= "cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue"
+else ifeq ($(APP),publisher)
+MUNGERS ?= "publisher"
 endif
 
 

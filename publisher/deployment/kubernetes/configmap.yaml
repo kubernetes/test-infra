@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-publisher-config
+data:
+  # basic config options.
+  config.organization: kubernetes
+  config.project: kubernetes
+  config.pr-mungers: publisher
+  config.token-file: /etc/secret-volume/token
+
+  # munger specific options.
+  gitrepo.repo-dir: /gitrepos
+  config.period: "24h"
+  publisher.publish-command: ./publisher.sh
+  publisher.netrc-dir: /netrc
