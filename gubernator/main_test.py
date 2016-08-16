@@ -150,7 +150,7 @@ class AppTest(TestBase):
         init_build(self.BUILD_DIR)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/junit_01.xml', JUNIT_SUITE)
         write(self.BUILD_DIR + 'artifacts/tmp-node-image/kubelet.log',
-            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"})\n')
+            'abc\nEvent(api.ObjectReference{Name:"abc", UID:"podabc"} failed)\n')
         response = app.get('/build' + nodelog_url)
         self.assertIn("Wrap line", response)
 
