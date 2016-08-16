@@ -1,0 +1,86 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: grafana-nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: grafana-nginx
+    spec:
+      containers:
+      - image: nginx:1.10.1
+        name: grafana-nginx
+        command: ['nginx', '-g', 'daemon off;']
+        ports:
+        - name: nginx-port
+          containerPort: 8080
+        volumeMounts:
+        - mountPath: /etc/nginx
+          name: nginx-config
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: grafana-stack
+  name: nginx-service
+  namespace: default
+spec:
+  ports:
+  - name: nginx
+    port: 80
+    targetPort: nginx-port
+  selector:
+    app: grafana-nginx
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx
+  labels:
+    app: grafana-stack
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        server {
+            listen 8080;
+            location / {
+                proxy_pass http://grafana-service:3000/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+            location /influxdb/ {
+                proxy_pass http://influxdb-service:8086/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+        }
+    }
