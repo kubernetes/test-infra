@@ -568,7 +568,9 @@
             export HOME=${{WORKSPACE}}
 
             export KUBERNETES_PROVIDER="gce"
-            export E2E_NAME="e2e-kubemark-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+            # Having full "kubemark" in name will result in exceeding allowed length
+            # of firewall-rule name.
+            export E2E_NAME="k6k-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
             export PROJECT="k8s-jkns-pr-kubemark"
             export E2E_UP="true"
             export E2E_TEST="false"
