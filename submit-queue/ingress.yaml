@@ -22,3 +22,9 @@ spec:
         - backend:
             serviceName: docs-sq-status
             servicePort: 80
+  - host: test-infra.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: test-infra-sq-status
+            servicePort: 80
