@@ -54,5 +54,6 @@
             timeout: 20
             job-env: |
               export BUILD_LINK="latest"
+              export BUILD_PUSH_TAG="yes"
     jobs:
         - 'kops-{build}'
