@@ -80,5 +80,15 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-aws"
+        - 'aws-release-1.4':  # kubernetes-e2e-aws-release-1.4
+            description: 'Run e2e tests on AWS using the latest successful 1.4 Kubernetes build.'
+            cron-string: '@daily'
+            trigger-job: 'kubernetes-build-1.4'
+            job-env: |
+                export E2E_NAME="e2e-aws-1-4"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-aws"
     jobs:
         - 'kubernetes-e2e-{aws-suffix}'
