@@ -16,13 +16,13 @@
 
 import cStringIO
 import datetime
+import pprint
 import subprocess
 import sys
 import time
 import traceback
 
 import requests
-from pprint import pprint
 
 def get_submit_queue_json(path):
     for n in range(3):
@@ -119,6 +119,7 @@ def poll_forever(uri, service_account=None):
 
 if __name__ == '__main__':
     # log all arguments.
-    pprint(sys.argv)
+    pp = pprint.PrettyPrinter(stream=sys.stderr)
+    pp.pprint(sys.argv)
 
     poll_forever(*sys.argv[1:])

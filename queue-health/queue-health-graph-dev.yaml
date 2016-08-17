@@ -15,9 +15,9 @@ spec:
         command:
         - python
         - /graph.py
-        - "gs://kubernetes-test-history/sq/history.txt"
-        - "gs://kubernetes-test-history/sq-test/k8s-queue-health.svg"
-        - '/creds/service-account.json'
+        - gs://kubernetes-test-history/sq/history.txt
+        - gs://kubernetes-test-history/sq-test/k8s-queue-health.svg
+        - /creds/service-account.json
         volumeMounts:
         - name: service-account
           mountPath: /creds
