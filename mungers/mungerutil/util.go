@@ -24,6 +24,11 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	// BotName is the name of merge-bot
+	BotName = "k8s-merge-robot"
+)
+
 // UserSet is a set a of users
 type UserSet sets.String
 
@@ -98,7 +103,12 @@ func (u *IssueUsers) AllUsers() UserSet {
 	return u.Assignees.union(u.Author)
 }
 
-// IsValidUser returns true only if given user has valid github username (logic account).
+// IsValidUser returns true only if given user has valid github username.
 func IsValidUser(u *github.User) bool {
 	return u != nil && u.Login != nil
+}
+
+// IsMungeBot returns true only if given user is this bot.
+func IsMungeBot(u *github.User) bool {
+	return IsValidUser(u) && *u.Login == BotName
 }
