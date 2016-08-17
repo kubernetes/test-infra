@@ -83,3 +83,26 @@ Sometimes we may want to run QA tests locally using the mungegithub binary. The 
     * The `--dry-run=true` flag must be specified to ensure you're not posting comments accidentally.		
     * The `--repo-dir` should be pointed to /tmp if required.		
     * The `--www=submit-queue/www/` will start up the http server if specified with the submit-queue munger, and serve on localhost:8080.
+    
+### Instructions on turning up a new submit-queue instance.
+
+The steps below make use of the utility cluster which runs the existing submit-queues.
+
+* Create a new directory for the repo on which you want to run the submit-queue instance. For example, if we want to call it `<TARGET>`, we create `contrib/submit-queue/deployments/<TARGET>`.
+* Add a service.yaml, pv.yaml, pvc.yaml, secret.yaml, configmap.yaml to the directory and configure them appropriately.
+     * The configmap’s name must be `<TARGET>-sq-flags`.
+     * The target-repo must be changed to `<TARGET>`.
+     * The PV and PVC must be named `<TARGET>-cache`.
+     * The secret must be named `<TARGET>-github-token`.
+     * The service must be named `<TARGET>-sq-status`.
+* Create a persistent disk named `<TARGET>-cache` on the utility cluster. It is typically 10G in size.
+* Switch context with kubectl to point to the utility cluster. 
+* Create the PV and PVC resources. After creation, the PV and PVC should be bound.
+* Create a new secret using the below command, which uses an API token stored in `./token`, and generates a `local.secret.yaml` file.
+```
+make secret APP=submit-queue TARGET=<TARGET>
+```
+* Load the secret created yaml using `kubectl create -f submit-queue/local.secret.yaml`.
+* Create the service which is of type NodePort.
+* Finally, update the ingress.yaml with the new URL and the new service to point to.
+* Apply changes to the running ingress instance.
