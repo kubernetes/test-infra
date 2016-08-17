@@ -148,6 +148,18 @@ func Commit(sha string, t int64) *github.Commit {
 	}
 }
 
+// IssueComment returns a filled out github.IssueComment which happened at time.Unix(t, 0).
+func IssueComment(id int, body string, user string, createAt int64) *github.IssueComment {
+	return &github.IssueComment{
+		ID:   intPtr(id),
+		Body: stringPtr(body),
+		User: &github.User{
+			Login: stringPtr(user),
+		},
+		CreatedAt: timePtr(time.Unix(createAt, 0)),
+	}
+}
+
 // Commits returns an array of github.RepositoryCommits. The first commit
 // will have happened at time `time`, the next commit `time + 1`, etc
 func Commits(num int, time int64) []*github.RepositoryCommit {

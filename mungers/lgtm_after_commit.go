@@ -30,11 +30,11 @@ import (
 )
 
 const (
-	lgtmRemovedBody = "PR changed after LGTM, removing LGTM. %s"
+	lgtmRemovedBody = "/lgtm cancel //PR changed after LGTM, removing LGTM. %s"
 )
 
 var (
-	lgtmRemovedRegex = regexp.MustCompile("PR changed after LGTM, removing LGTM.")
+	lgtmRemovedRegex = regexp.MustCompile("/lgtm cancel //PR changed after LGTM, removing LGTM.")
 )
 
 // LGTMAfterCommitMunger will remove the LGTM flag from an PR which has been

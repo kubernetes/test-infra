@@ -81,9 +81,17 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 	// Assumption: The comments should be sorted (by default from github api) from oldest to latest
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
-		fields := strings.Fields(*comment.Body)
+		if !mungerutil.IsValidUser(comment.User) {
+			continue
+		}
+
+		if !(mungerutil.IsMungeBot(comment.User) || isReviewer(comment.User, reviewers)) {
+			continue
+		}
+
+		fields := getFields(*comment.Body)
 		if isCancelComment(fields) {
-			// "/lgtm cancell" if commented more recently than "/lgtm"
+			// "/lgtm cancel" if commented more recently than "/lgtm"
 			return
 		}
 		if isLGTMComment(fields) {
@@ -91,11 +99,9 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 			// See https://github.com/kubernetes/contrib/issues/1389#issuecomment-235161164
 			// TODO: An approver should be acceptable.
 			// See https://github.com/kubernetes/contrib/pull/1428#discussion_r72563935
-			if mungerutil.IsValidUser(comment.User) && isReviewer(comment.User, reviewers) {
-				glog.Infof("Adding lgtm label. Reviewer (%s) LGTM", *comment.User.Login)
-				obj.AddLabel(lgtmLabel)
-				return
-			}
+			glog.Infof("Adding lgtm label. Reviewer (%s) LGTM", *comment.User.Login)
+			obj.AddLabel(lgtmLabel)
+			return
 		}
 	}
 }
@@ -103,17 +109,23 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []*githubapi.IssueComment, reviewers mungerutil.UserSet) {
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
-		fields := strings.Fields(*comment.Body)
+		if !mungerutil.IsValidUser(comment.User) {
+			continue
+		}
+
+		if !(mungerutil.IsMungeBot(comment.User) || isReviewer(comment.User, reviewers)) {
+			continue
+		}
+
+		fields := getFields(*comment.Body)
 		if isLGTMComment(fields) {
 			// "/lgtm" if commented more recently than "/lgtm cancel"
 			return
 		}
 		if isCancelComment(fields) {
-			if mungerutil.IsValidUser(comment.User) && isReviewer(comment.User, reviewers) {
-				glog.Infof("Removing lgtm label. Reviewer (%s) cancelled", *comment.User.Login)
-				obj.RemoveLabel(lgtmLabel)
-				return
-			}
+			glog.Infof("Removing lgtm label. Reviewer (%s) cancelled", *comment.User.Login)
+			obj.RemoveLabel(lgtmLabel)
+			return
 		}
 	}
 }
@@ -147,4 +159,13 @@ func getComments(obj *github.MungeObject) ([]*githubapi.IssueComment, error) {
 
 func isReviewer(user *githubapi.User, reviewers mungerutil.UserSet) bool {
 	return reviewers.Has(user)
+}
+
+// getFields will move to a different package where we do command
+// parsing in the near future.
+func getFields(commentBody string) []string {
+	// remove the comment portion if present and read the command.
+	cmd := strings.Split(commentBody, "//")[0]
+	strings.TrimSpace(cmd)
+	return strings.Fields(cmd)
 }
