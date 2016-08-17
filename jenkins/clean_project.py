@@ -57,8 +57,8 @@ def DeleteInstances(project, zones, delete):
   return err
 
 
-def main(project, days, filt, delete):
-  age = datetime.datetime.now() - datetime.timedelta(days=int(days))
+def main(project, days, hours, filt, delete):
+  age = datetime.datetime.now() - datetime.timedelta(days=days, hours=hours)
   zones = Instances(project, age, filt)
   if zones:
     sys.exit(DeleteInstances(project, zones, delete))
@@ -69,10 +69,21 @@ if __name__ == '__main__':
       description='Delete old instances from a project')
   parser.add_argument('--project', help='Project to clean', required=True)
   parser.add_argument(
-      '--days', type=float, help='Clean items more than --days old', required=True)
+      '--days', type=int,
+      help='Clean items more than --days old (added to --hours)')
+  parser.add_argument(
+      '--hours', type=float,
+      help='Clean items more than --hours old (added to --days)')
   parser.add_argument(
       '--delete', action='store_true', help='Really delete things when set')
   parser.add_argument(
-      '--filter', default='name:tmp*', help='Filter down to these instances')
+      '--filter', default="name~'tmp.*' AND NOT tags.items:do-not-delete",
+      help='Filter down to these instances')
   args = parser.parse_args()
-  main(args.project, args.days, args.filter, args.delete)
+
+  # We want to allow --days=0 and --hours=0, so check against Noneness instead.
+  if args.days is None and args.hours is None:
+    print >>sys.stderr, 'must specify --days and/or --hours'
+    sys.exit(1)
+
+  main(args.project, args.days or 0, args.hours or 0, args.filter, args.delete)

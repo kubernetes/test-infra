@@ -1,0 +1,25 @@
+- job-template:
+    name: 'google-cloud-resource-cleanup'
+    description: 'Clean up leaked cloud resources. Test owner: test-infra maintainers.'
+    properties:
+        - build-discarder:
+            days-to-keep: 14
+    scm:
+    - git:
+        url: https://github.com/kubernetes/test-infra
+        branches:
+        - master
+        browser: githubweb
+        browser-url: https://github.com/kubernetes/test-infra
+        skip-tag: true
+    triggers:
+        - timed: 'H H/3 * * *'
+    builders:
+        - activate-gce-service-account
+        - shell:
+            ./jenkins/clean_project.py --project="{node-e2e-project}" --hours=3 --delete
+    wrappers:
+        - e2e-credentials-binding
+        - timeout:
+            timeout: 15
+            fail: true
