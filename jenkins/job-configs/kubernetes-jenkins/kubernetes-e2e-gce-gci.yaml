@@ -1,4 +1,5 @@
 # This file defines e2e jobs that run on GCE with GCI images on both the master
+# This file defines e2e jobs that run on GCE with GCI images on both the master
 # and nodes. These include two types of jobs:
 #  -  CI jobs, that run against Kubernetes HEAD and GCI HEAD, from master
 #     and the latest three release branches, and the GCI milestones that they
@@ -107,6 +108,43 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
+                export KUBE_MASTER_OS_DISTRIBUTION="gci"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+        - 'release-1.4':  # kubernetes-e2e-gce-gci-ci-release-1.4
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.3 branch.'
+            timeout: 50
+            trigger-job: 'kubernetes-build-1.4'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-1-4"
+                export KUBE_MASTER_OS_DISTRIBUTION="gci"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+        - 'slow-release-1.4':  # kubernetes-e2e-gce-gci-ci-slow-release-1.4
+            description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.4 branch.'
+            timeout: 150
+            trigger-job: 'kubernetes-build-1.4'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="e2e-gce-gci-ci-slow-1-4"
+                export KUBE_MASTER_OS_DISTRIBUTION="gci"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+        - 'serial-release-1.4':  # kubernetes-e2e-gce-gci-ci-serial-release-1.4
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.4 branch.'
+            timeout: 300
+            trigger-job: 'kubernetes-build-1.4'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="e2e-gce-gci-ci-serial-1-4"
                 export KUBE_MASTER_OS_DISTRIBUTION="gci"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'release-1.3':  # kubernetes-e2e-gce-gci-ci-release-1.3
