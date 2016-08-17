@@ -85,7 +85,9 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 			continue
 		}
 
-		if !(mungerutil.IsMungeBot(comment.User) || isReviewer(comment.User, reviewers)) {
+		// TODO: An approver should be acceptable.
+		// See https://github.com/kubernetes/contrib/pull/1428#discussion_r72563935
+		if !mungerutil.IsMungeBot(comment.User) && !isReviewer(comment.User, reviewers) {
 			continue
 		}
 
@@ -94,15 +96,16 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 			// "/lgtm cancel" if commented more recently than "/lgtm"
 			return
 		}
-		if isLGTMComment(fields) {
-			// TODO: support more complex policies for multiple reviewers.
-			// See https://github.com/kubernetes/contrib/issues/1389#issuecomment-235161164
-			// TODO: An approver should be acceptable.
-			// See https://github.com/kubernetes/contrib/pull/1428#discussion_r72563935
-			glog.Infof("Adding lgtm label. Reviewer (%s) LGTM", *comment.User.Login)
-			obj.AddLabel(lgtmLabel)
-			return
+
+		if !isLGTMComment(fields) {
+			continue
 		}
+
+		// TODO: support more complex policies for multiple reviewers.
+		// See https://github.com/kubernetes/contrib/issues/1389#issuecomment-235161164
+		glog.Infof("Adding lgtm label. Reviewer (%s) LGTM", *comment.User.Login)
+		obj.AddLabel(lgtmLabel)
+		return
 	}
 }
 
@@ -113,7 +116,7 @@ func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []
 			continue
 		}
 
-		if !(mungerutil.IsMungeBot(comment.User) || isReviewer(comment.User, reviewers)) {
+		if !mungerutil.IsMungeBot(comment.User) && !isReviewer(comment.User, reviewers) {
 			continue
 		}
 
@@ -122,11 +125,14 @@ func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []
 			// "/lgtm" if commented more recently than "/lgtm cancel"
 			return
 		}
-		if isCancelComment(fields) {
-			glog.Infof("Removing lgtm label. Reviewer (%s) cancelled", *comment.User.Login)
-			obj.RemoveLabel(lgtmLabel)
-			return
+
+		if !isCancelComment(fields) {
+			continue
 		}
+
+		glog.Infof("Removing lgtm label. Reviewer (%s) cancelled", *comment.User.Login)
+		obj.RemoveLabel(lgtmLabel)
+		return
 	}
 }
 
