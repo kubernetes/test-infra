@@ -178,6 +178,7 @@
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
             test-owner: 'wojtek-t'
+            emails: 'wojtekt@google.com'
             timeout: 50  # See #21138
             job-env: |
                 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
