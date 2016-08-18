@@ -27,7 +27,7 @@ server_hostname=$1
 grafana_admin_password=$2
 influxdb_root_password=$3
 
-curl -s --fail "http://admin:${grafana_admin_password}@${server_hostname}/api/datasources/name/github" ||
+curl -s --fail "http://${server_hostname}/api/datasources/name/github" -u "admin:${grafana_admin_password}" ||
 env - server_hostname="${server_hostname}" influxdb_root_password="${influxdb_root_password}" envsubst <<EOF |
 {
   "name": "github",
@@ -44,5 +44,6 @@ curl \
   -X POST --fail \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
-  "http://admin:${grafana_admin_password}@${server_hostname}/api/datasources" \
+  "http://${server_hostname}/api/datasources" \
+  -u "admin:${grafana_admin_password}" \
   --data-binary @-
