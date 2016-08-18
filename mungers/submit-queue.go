@@ -52,6 +52,9 @@ const (
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
 	doNotMergeLabel                = "do-not-merge"
 	claYesLabel                    = "cla: yes"
+	claNoLabel                     = "cla: no"
+	cncfClaYesLabel                = "cncf-cla: yes"
+	cncfClaNoLabel                 = "cncf-cla: no"
 	claHumanLabel                  = "cla: human-approved"
 	sqContext                      = "Submit Queue"
 
