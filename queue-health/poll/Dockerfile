@@ -16,11 +16,8 @@ FROM gcr.io/google-containers/queue-health-base:v20160627
 MAINTAINER Erick Fejta <fejta@google.com>
 
 # Install poller and set default variables
-ENV HISTORY='gs://kubernetes-test-history/sq-test/history.txt' \
-    SERVICE=
 COPY poller.py /
 
 # When not running inside GCE ensure you copy over credentials:
 # cp ~/.boto /tmp/foo/ && chmod 644 /tmp/foo/.boto
 # docker run -v /tmp/foo:/boto -e BOTO_CONFIG=/boto/.boto derived-image
-CMD python /poller.py "${HISTORY}" "${SERVICE}"

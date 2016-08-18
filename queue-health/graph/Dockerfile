@@ -19,13 +19,10 @@ MAINTAINER Erick Fejta <fejta@google.com>
 RUN apt-get update \
     && apt-get install -y \
          python-matplotlib
-# Install grapher and set default variables
-ENV GRAPH='gs://kubernetes-test-history/sq-test/k8s-queue-health.svg' \
-    HISTORY='gs://kubernetes-test-history/sq-test/history.txt' \
-    SERVICE=
+
+# Install grapher
 COPY graph.py /
 
 # When not running inside GCE ensure you copy over credentials:
 # cp ~/.boto /tmp/foo/ && chmod 644 /tmp/foo/.boto
 # docker run -v /tmp/foo:/boto -e BOTO_CONFIG=/boto/.boto derived-image
-CMD python /graph.py "${HISTORY}" "${GRAPH}" "${SERVICE}"

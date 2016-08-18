@@ -21,6 +21,7 @@ import cStringIO
 import datetime
 import gzip
 import os
+import pprint
 import subprocess
 import sys
 import time
@@ -350,4 +351,8 @@ def render_forever(history_uri, img_uri, service_account=None):
 
 
 if __name__ == '__main__':
+    # log all arguments.
+    pp = pprint.PrettyPrinter(stream=sys.stderr)
+    pp.pprint(sys.argv)
+
     render_forever(*sys.argv[1:])
