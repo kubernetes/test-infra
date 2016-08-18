@@ -50,7 +50,7 @@
             job-env: |
                 # Start the gc in controller plane
                 export ENABLE_GARBAGE_COLLECTOR="true"
-                export E2E_NAME="garbagecollector-feature"
+                export E2E_NAME="gc-feature"
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export E2E_TEST="false"
                 export USE_KUBEMARK="true"
