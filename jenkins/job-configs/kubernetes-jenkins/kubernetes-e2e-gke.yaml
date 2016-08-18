@@ -135,7 +135,7 @@
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
-            emails: 'zml@google.com wojtekt@google.com'
+            emails: 'zml@google.com wojtekt@google.com usps-andromeda-dev@google.com'
             cron-string: '0 1 * * *'
             trigger-job: ''
             job-env: |
@@ -146,7 +146,7 @@
                 # TODO: should test kube-proxy test is not designed to run in large clusters.
                 #   We should change it start running it here too.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|should\stest\skube-proxy \
-                                         --system-pods-startup-timeout=240m"
+                                         --system-pods-startup-timeout=120m"
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-east1-a"
                 export NUM_NODES=2000
