@@ -44,6 +44,6 @@ function fix_timestamps() {
 }
 
 function show_skipped(ID) {
-	document.getElementById(ID).style.display = "block"; 
+	document.getElementById(ID).style.display = "inline-block"; 
 }
 
