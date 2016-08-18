@@ -36,7 +36,6 @@ metadata:
   labels:
     app: grafana
   name: grafana-service
-  namespace: default
 spec:
   ports:
   - name: grafana
