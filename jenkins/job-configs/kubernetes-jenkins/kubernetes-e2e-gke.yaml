@@ -135,7 +135,7 @@
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
-            emails: 'zml@google.com'
+            emails: 'zml@google.com wojtekt@google.com'
             cron-string: '0 1 * * *'
             trigger-job: ''
             job-env: |
