@@ -63,6 +63,16 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gke-ci"
+        - 'gke-gci':  # kubernetes-e2e-gke
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GKE in parallel (against GKE test endpoint)'
+            timeout: 50  # See #21138
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="k8s-jkns-e2e-gke-gci-ci"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'gke-slow':  # kubernetes-e2e-gke-slow
             cron-string: '{sq-cron-string}'
             description: 'Run slow E2E tests on GKE using the latest successful build.'
@@ -73,6 +83,17 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gke-slow"
+        - 'gke-gci-slow':  # kubernetes-e2e-gke-gci-slow
+            cron-string: '{sq-cron-string}'
+            description: 'Run slow E2E tests on GKE using the latest successful build.'
+            timeout: 150  #  See #24072
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-e2e-gke-gci-slow"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'gke-serial':  # kubernetes-e2e-gke-serial
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
@@ -82,6 +103,16 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-e2e-serial"
+        - 'gke-gci-serial':  # kubernetes-e2e-gke-gci-serial
+            description: 'Run [Serial], [Disruptive] tests on GKE.'
+            timeout: 300
+            job-env: |
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="jenkins-gke-gci-e2e-serial"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'gke-updown':  # kubernetes-e2e-gke-updown
             cron-string: '{sq-cron-string}'
             description: 'Brings a cluster up, checks networking, brings it down (against GKE test endpoint)'
