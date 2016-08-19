@@ -53,5 +53,6 @@
                 export E2E_NAME="gc-feature"
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:GarbageCollector\]"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-garbagecollector-{suffix}'

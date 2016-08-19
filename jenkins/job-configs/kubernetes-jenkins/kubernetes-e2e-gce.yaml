@@ -63,6 +63,7 @@
                 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-e2e-gce"
         - 'gce-slow':  # kubernetes-e2e-gce-slow
             cron-string: '{sq-cron-string}'
@@ -73,6 +74,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export KUBE_GCE_ZONE="europe-west1-c"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-e2e-gce-slow"
         - 'gce-serial':  # kubernetes-e2e-gce-serial
             description: 'Run [Serial], [Disruptive], tests on GCE.'
@@ -87,6 +89,7 @@
             timeout: 180
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-e2e-gce-ci-reboot"
         - 'gce-autoscaling':  # kubernetes-e2e-gce-autoscaling
             description: 'Run autoscaling E2E tests on GCE.'
@@ -102,6 +105,7 @@
                 export KUBE_AUTOSCALER_MIN_NODES=3
                 export KUBE_AUTOSCALER_MAX_NODES=5
                 export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export KUBE_ADMISSION_CONTROL="NamespaceLifecycle,InitialResources,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota"
         - 'gce-autoscaling-migs':  # kubernetes-e2e-gce-autoscaling-migs
             description: 'Run autoscaling E2E tests on GCE with multiple MIGs.'
@@ -116,6 +120,7 @@
                 export KUBE_AUTOSCALER_MIN_NODES=3
                 export KUBE_AUTOSCALER_MAX_NODES=5
                 export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export KUBE_ADMISSION_CONTROL="NamespaceLifecycle,InitialResources,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
@@ -124,6 +129,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
                                          --ginkgo.skip=\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-flaky"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-scalability':  # kubernetes-e2e-gce-scalability
             description: 'Run the performance/scalability tests on GCE. A larger cluster is used.'
             timeout: 120
@@ -151,6 +157,7 @@
                 export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
                 # Increase delete collection parallelism
                 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-container-vm':  # kubernetes-e2e-gce-container-vm
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel on a new ContainerVM image.'
@@ -161,6 +168,7 @@
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jenkins-cvm"
                 export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-master-on-cvm':  # kubernetes-e2e-gce-master-on-cvm
             cron-string: 'H * * * *' # run once an hour
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with the master on a ContainerVM image.'
@@ -174,6 +182,7 @@
                 export KUBE_MASTER_OS_DISTRIBUTION="debian"
                 export KUBE_GCE_MASTER_IMAGE="container-v1-3-v20160604"
                 export KUBE_GCE_NODE_IMAGE="container-v1-3-v20160604"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-etcd3':  # kubernetes-e2e-gce-etcd3
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
@@ -188,6 +197,7 @@
                 export PROJECT="k8s-jkns-e2e-etcd3"
                 # Use etcd3 as storage backend.
                 export STORAGE_BACKEND="etcd3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
@@ -202,12 +212,14 @@
                 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # Use protobufs to communicate with apiserver.
                 export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-examples':  # kubernetes-e2e-gce-examples
             description: 'Run E2E examples test on GCE.'
             timeout: 90
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Example\]"
                 export PROJECT="k8s-jkns-e2e-examples"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-multizone':  # kubernetes-e2e-gce-multizone
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE, in parallel, and in a multi-zone cluster.'
             timeout: 150
@@ -220,6 +232,7 @@
                 export MULTIZONE="true"
                 export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the nodes reside.  Master is in the first one.
                 export KUBE_GCE_ZONE="us-central1-a" # Where the master resides - hangover due to legacy scripts.
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-federation':  # kubernetes-e2e-gce-federation
             trigger-job: 'kubernetes-federation-build'
             description: 'Run all federation e2e tests.'
@@ -238,6 +251,7 @@
                 export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
                 export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
                 export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-kubenet':  # kubernetes-e2e-gce-kubenet
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE using kubenet as network provider'
             timeout: 120
@@ -248,6 +262,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export NETWORK_PROVIDER="kubenet"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -264,6 +279,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gce-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-reboot-release-1.2':  # kubernetes-e2e-gce-reboot-release-1.2
             description: 'Run [Feature:Reboot] tests on GCE on the release-1.2 branch.'
             timeout: 180
@@ -271,6 +287,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export PROJECT="k8s-jkns-e2e-gce-reboot-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-slow-release-1.2':  # kubernetes-e2e-gce-slow-release-1.2
             description: 'Runs slow tests on GCE, sequentially on the release-1.2 branch.'
             timeout: 150  #  See #24072
@@ -280,6 +297,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gce-slow-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-serial-release-1.2':  # kubernetes-e2e-gce-serial-release-1.2
             description: 'Run [Serial], [Disruptive], tests on GCE on the release-1.2 branch.'
             timeout: 300
@@ -288,6 +306,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-serial-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -304,6 +323,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-gce-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-reboot-release-1.3':  # kubernetes-e2e-gce-reboot-release-1.3
             description: 'Run [Feature:Reboot] tests on GCE on the release-1.3 branch.'
             timeout: 180
@@ -311,6 +331,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export PROJECT="k8s-jkns-gce-reboot-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-slow-release-1.3':  # kubernetes-e2e-gce-slow-release-1.3
             description: 'Runs slow tests on GCE, sequentially on the release-1.3 branch.'
             timeout: 150  #  See #24072
@@ -320,6 +341,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-gce-slow-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-serial-release-1.3':  # kubernetes-e2e-gce-serial-release-1.3
             description: 'Run [Serial], [Disruptive], tests on GCE on the release-1.3 branch.'
             timeout: 300
@@ -328,6 +350,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-gce-serial-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-ingress-release-1.2':  # kubernetes-e2e-gce-ingress-release-1.2
             description: 'Run [Feature:Ingress] tests on GCE on the release-1.2 branch.'
             timeout: 90
@@ -337,6 +360,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export PROJECT="kubernetes-ingress-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-ingress-release-1.3':  # kubernetes-e2e-gce-ingress-release-1.3
             description: 'Run [Feature:Ingress] tests on GCE on the release-1.3 branch.'
             timeout: 90
@@ -346,6 +370,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export PROJECT="kubernetes-ingress-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-scalability-release-1.3':  # kubernetes-e2e-gce-scalability-release-1.3
             timeout: 120
             description: 'Run scalability E2E tests on GCE from the release-1.3 branch.'
@@ -378,6 +403,7 @@
                 export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
                 # Increase delete collection parallelism
                 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -395,6 +421,7 @@
                 export PROJECT="kubernetes-ingress"
                 # TODO: Enable this when we've split 1.2 tests into another project.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-flannel':  # kubernetes-e2e-gce-flannel
             description: 'Run E2E tests on GCE using Flannel and the latest successful build. This suite is quarantined in a dedicated project because Flannel integration is experimental.'
             disable_job: true  # Issue #24520
@@ -410,6 +437,7 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 # Override GCE defaults.
                 export NETWORK_PROVIDER="flannel"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-es-logging':  # kubernetes-e2e-gce-es-logging
             description: 'Run [Feature:Elasticsearch] tests on GCE using the latest successful build.'
             timeout: 90
@@ -419,6 +447,7 @@
                 export PROJECT="kubernetes-es-logging"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Elasticsearch\]"
                 export KUBE_LOGGING_DESTINATION="elasticsearch"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-petset':  # kubernetes-e2e-gce-petset
             description: 'Run [Feature:PetSet] tests on GCE.'
             timeout: 90
@@ -428,6 +457,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:PetSet\]"
                 export PROJECT="kubernetes-petset"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -468,5 +498,6 @@
         export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+        export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'

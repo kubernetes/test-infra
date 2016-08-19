@@ -327,7 +327,6 @@
             export KUBE_RUN_FROM_OUTPUT=y
             export KUBE_FASTBUILD=true
             export KUBE_GCS_UPDATE_LATEST=n
-
             ./hack/jenkins/build.sh
 
             version=$(source build/util.sh && echo $(kube::release::semantic_version))
@@ -360,6 +359,8 @@
             export E2E_DOWN="true"
             export E2E_OPT="--check_version_skew=false"
 
+            # Force to use container-vm.
+            export KUBE_NODE_OS_DISTRIBUTION="debian"
             # Skip gcloud update checking
             export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
@@ -446,6 +447,8 @@
               # NUM_NODES should match kubernetes-e2e-gce.
               export NUM_NODES="3"
 
+              # Force to use container-vm.
+              export KUBE_NODE_OS_DISTRIBUTION="debian"
               # Assume we're upping, testing, and downing a cluster
               export E2E_UP="true"
               export E2E_TEST="true"
@@ -517,6 +520,8 @@
             export FAIL_ON_GCP_RESOURCE_LEAK="false"
             export NUM_NODES="3"
 
+            # Force to use container-vm.
+            export KUBE_NODE_OS_DISTRIBUTION="debian"
             # Assume we're upping, testing, and downing a cluster
             export E2E_UP="true"
             export E2E_TEST="true"
@@ -593,6 +598,8 @@
             export KUBE_GCE_NETWORK=${{E2E_NAME}}
             export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
 
+            # Force to use container-vm.
+            export KUBE_NODE_OS_DISTRIBUTION="debian"
             # Skip gcloud update checking
             export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
