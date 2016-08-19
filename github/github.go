@@ -641,18 +641,14 @@ func (obj *MungeObject) labelEvent(label string, pred timePred) *github.IssueEve
 	if err != nil {
 		return out
 	}
-	index := 0
-	for i, event := range events {
+	for _, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
 			if pred(event.CreatedAt, labelTime) {
 				labelTime = event.CreatedAt
 				out = event
-				index = i
 			}
 		}
 	}
-	// Want this information next time we hit the bug where it can't find the most recent LGTM label.
-	glog.Infof("%v labelEvent: searched %v events for label %v, found at index %v", *obj.Issue.Number, len(events), label, index)
 	return out
 }
 
