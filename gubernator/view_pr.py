@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import json
 import logging
 import os
@@ -94,20 +95,36 @@ class PRDashboard(view_base.BaseHandler):
             qs.append(ghm.GHIssueDigest.involved == user)
         prs = list(ghm.GHIssueDigest.query(*qs))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
-        if user:
-            cats = [
-                ('Needs Attention', lambda p: user in p.payload['attn'], ''),
-                ('Incoming', lambda p: user in p.payload['assignees'],
-                 'is:open is:pr user:kubernetes assignee:%s' % user),
-                ('Outgoing', lambda p: user == p.payload['author'],
-                 'is:open is:pr user:kubernetes author:%s' % user),
-            ]
-        else:
-            cats = [('Open Kubernetes PRs', lambda x: True,
-                'is:open is:pr user:kubernetes')]
 
-        self.render('pr_dashboard.html', dict(prs=prs,
-            cats=cats, user=user, login=login))
+        fmt = self.request.get('format', 'html')
+        if fmt == 'json':
+            self.response.headers['Content-Type'] = 'application/json'
+            def serial(obj):
+                if isinstance(obj, datetime.datetime):
+                    return obj.isoformat()
+                elif isinstance(obj, ghm.GHIssueDigest):
+                    # pylint: disable=protected-access
+                    keys = ['repo', 'number'] + list(obj._values)
+                    return {k: getattr(obj, k) for k in keys}
+                raise TypeError
+            self.response.write(json.dumps(prs, sort_keys=True, default=serial))
+        elif fmt == 'html':
+            if user:
+                cats = [
+                    ('Needs Attention', lambda p: user in p.payload['attn'], ''),
+                    ('Incoming', lambda p: user in p.payload['assignees'],
+                     'is:open is:pr user:kubernetes assignee:%s' % user),
+                    ('Outgoing', lambda p: user == p.payload['author'],
+                     'is:open is:pr user:kubernetes author:%s' % user),
+                ]
+            else:
+                cats = [('Open Kubernetes PRs', lambda x: True,
+                    'is:open is:pr user:kubernetes')]
+
+            self.render('pr_dashboard.html', dict(prs=prs,
+                cats=cats, user=user, login=login))
+        else:
+            self.abort(406)
 
 
 class PRBuildLogHandler(webapp2.RequestHandler):
