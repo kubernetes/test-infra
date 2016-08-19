@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-infra-sq-config
+data:
+  # basic config options.
+  config.http-cache-dir: /cache/httpcache
+  config.organization: kubernetes
+  config.project: test-infra
+  config.pr-mungers: lgtm-after-commit,submit-queue,needs-rebase
+  config.state: open
+  config.token-file: /etc/secret-volume/token
+  gitrepo.repo-dir: /gitrepos
+  gitrepo.enable-md-yaml: "false"
+
+  # test-options feature options.
+  test-options.required-retest-contexts: "\"\""
+
+  # submit-queue options.
+  submit-queue.required-contexts: "continuous-integration/travis-ci/pr"
+  submit-queue.nonblocking-jenkins-jobs: "\"\""
+  submit-queue.jenkins-jobs: "\"\""
+  submit-queue.presubmit-jobs: "\"\""
+  submit-queue.weak-stable-jobs: "\"\""
+  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.admin-port: "9999"
+  submit-queue.chart-url: ""
+  submit-queue.history-url: ""
+
+  # options used by the GCS feature.
+  gcs.gcs-bucket: ""
+  gcs.gcs-logs-dir: ""
+  gcs.pull-logs-dir: ""
+  gcs.pull-key: ""
+
+  # munger specific options.
+  path-label.path-label-config: ""
+  block-path.block-path-config: ""
+  flake-manager.test-owners-csv: ""
+  old-test-getter.number-of-old-test-results: "0"
+  assign-fixes.fixes-issue-reassign: "false"
+  blunderbuss.blunderbuss-reassign: "false"
+  size.generated-files-config: ""
+  check-labels.label-file: "/gitrepos/test-infra/labels.yaml"
