@@ -118,6 +118,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-2':
             deploy-description: Clone of kubernetes-soak-weekly-deploy-gce.
             e2e-description: Clone of kubernetes-soak-continuous-e2e-gce.
@@ -131,6 +132,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-1.3':
             deploy-description: |
                 Deploy Kubernetes to soak cluster using the latest successful
@@ -149,6 +151,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak-1-3"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
@@ -173,6 +176,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke':
             deploy-description: |
                 Deploy Kubernetes to a GKE soak cluster using the staging GKE
@@ -200,6 +204,7 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
                 export PROJECT="k8s-jkns-gke-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
