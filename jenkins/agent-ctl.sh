@@ -139,7 +139,7 @@ case "${KIND}" in
     # load 10-30, 10G ram
     DISK_SIZE='200GB'
     DISK_TYPE='pd-standard'
-    MACHINE_TYPE='n1-highcpu-16'
+    MACHINE_TYPE='n1-standard-8'
     ;;
   *)
     ;;
