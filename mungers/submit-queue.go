@@ -184,6 +184,7 @@ type SubmitQueue struct {
 	githubE2ERunning  *github.MungeObject         // protect by sync.Mutex!
 	githubE2EQueue    map[int]*github.MungeObject // protected by sync.Mutex!
 	githubE2EPollTime time.Duration
+	lgtmTimeCache     *mungerutil.LabelTimeCache
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
@@ -407,6 +408,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			GoogleGCSBucketUtils: gcs,
 		}).Init(admin.Mux)
 	}
+
+	sq.lgtmTimeCache = mungerutil.NewLabelTimeCache(lgtmLabel)
 
 	if len(config.Address) > 0 {
 		if len(config.WWWRoot) > 0 {
@@ -962,15 +965,18 @@ func priority(obj *github.MungeObject) int {
 	return prio
 }
 
-type queueSorter []*github.MungeObject
+type queueSorter struct {
+	queue          []*github.MungeObject
+	labelTimeCache *mungerutil.LabelTimeCache
+}
 
-func (s queueSorter) Len() int      { return len(s) }
-func (s queueSorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s queueSorter) Len() int      { return len(s.queue) }
+func (s queueSorter) Swap(i, j int) { s.queue[i], s.queue[j] = s.queue[j], s.queue[i] }
 
 // If you update the function PLEASE PLEASE PLEASE also update servePriorityInfo()
 func (s queueSorter) Less(i, j int) bool {
-	a := s[i]
-	b := s[j]
+	a := s.queue[i]
+	b := s.queue[j]
 
 	aPrio := priority(a)
 	bPrio := priority(b)
@@ -990,7 +996,20 @@ func (s queueSorter) Less(i, j int) bool {
 		return false
 	}
 
-	return *a.Issue.Number < *b.Issue.Number
+	aTime, aOK := s.labelTimeCache.FirstLabelTime(a)
+	bTime, bOK := s.labelTimeCache.FirstLabelTime(b)
+
+	// Shouldn't really happen since these have been LGTMed to be
+	// in the queue at all. But just in case, .
+	if !aOK && bOK {
+		return false
+	} else if aOK && !bOK {
+		return true
+	} else if !aOK && !bOK {
+		return false
+	}
+
+	return aTime.Before(bTime)
 }
 
 // onQueue just tells if a PR is already on the queue.
@@ -1011,7 +1030,7 @@ func (sq *SubmitQueue) orderedE2EQueue() []int {
 	for _, obj := range sq.githubE2EQueue {
 		prs = append(prs, obj)
 	}
-	sort.Sort(queueSorter(prs))
+	sort.Sort(queueSorter{prs, sq.lgtmTimeCache})
 
 	var ordered []int
 	for _, obj := range prs {
@@ -1305,7 +1324,11 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
       <li>PR with no release milestone will be considered after any PR with a milestone</li>
     </ul>
   </li>
-  <li>PR number</li>
+  <li>First time at which the LGTM label was applied.
+    <ul>
+      <li>This means all PRs start at the bottom of the queue (within their priority and milestone bands, of course) and progress towards the top.</li>
+    </ul>
+  </li>
 </ol> `))
 }
 

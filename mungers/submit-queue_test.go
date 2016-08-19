@@ -34,6 +34,7 @@ import (
 	github_test "k8s.io/contrib/mungegithub/github/testing"
 	"k8s.io/contrib/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/golang/glog"
@@ -192,6 +193,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.lastE2EStable = true
 	sq.prStatus = map[string]submitStatus{}
 	sq.lastPRStatus = map[string]submitStatus{}
+	sq.lgtmTimeCache = mungerutil.NewLabelTimeCache(lgtmLabel)
 
 	sq.startTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
@@ -211,10 +213,25 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 }
 
 func TestQueueOrder(t *testing.T) {
+	timeBase := time.Now()
+	time2 := timeBase.Add(6 * time.Minute).Unix()
+	time3 := timeBase.Add(5 * time.Minute).Unix()
+	time4 := timeBase.Add(4 * time.Minute).Unix()
+	time5 := timeBase.Add(3 * time.Minute).Unix()
+	time6 := timeBase.Add(2 * time.Minute).Unix()
+	labelEvents := map[int][]github_test.LabelTime{
+		2: {{"me", lgtmLabel, time2}},
+		3: {{"me", lgtmLabel, time3}},
+		4: {{"me", lgtmLabel, time4}},
+		5: {{"me", lgtmLabel, time5}},
+		6: {{"me", lgtmLabel, time6}},
+	}
+
 	tests := []struct {
-		name     string
-		issues   []*github.Issue
-		expected []int
+		name          string
+		issues        []*github.Issue
+		issueToEvents map[int][]github_test.LabelTime
+		expected      []int
 	}{
 		{
 			name: "Just prNum",
@@ -224,7 +241,8 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, nil, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
-			expected: []int{2, 3, 4, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{5, 4, 3, 2},
 		},
 		{
 			name: "With a priority label",
@@ -234,7 +252,8 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
-			expected: []int{4, 2, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{4, 3, 2, 5},
 		},
 		{
 			name: "With two priority labels",
@@ -244,7 +263,8 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
-			expected: []int{2, 4, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{4, 2, 3, 5},
 		},
 		{
 			name: "With unrelated labels",
@@ -254,7 +274,8 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
 				github_test.Issue(someUserName, 5, []string{lgtmLabel, "kind/new-api"}, true),
 			},
-			expected: []int{2, 4, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{4, 2, 3, 5},
 		},
 		{
 			name: "With invalid priority label",
@@ -264,7 +285,8 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, []string{"priority/P0", "priorty/bob"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
-			expected: []int{2, 4, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{4, 2, 3, 5},
 		},
 		{
 			name: "Unlabeled counts as P3",
@@ -274,23 +296,25 @@ func TestQueueOrder(t *testing.T) {
 				github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
-			expected: []int{4, 2, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{4, 5, 3, 2},
 		},
 		{
 			name: "retestNotRequiredLabel counts as P-negative 1",
 			issues: []*github.Issue{
 				github_test.Issue(someUserName, 2, nil, true),
 				github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 				github_test.Issue(someUserName, 6, []string{"priority/P3", retestNotRequiredLabel}, true),
 			},
-			expected: []int{6, 4, 2, 3, 5},
+			issueToEvents: labelEvents,
+			expected:      []int{6, 4, 5, 3, 2},
 		},
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, mux := github_test.InitServer(t, nil, nil, nil, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, nil, nil, github_test.MultiIssueEvents(test.issueToEvents), nil, nil, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)

@@ -104,6 +104,27 @@ func Issue(user string, number int, labels []string, isPR bool) *github.Issue {
 	return issue
 }
 
+// MultiIssueEvents packages up events for when you have multiple issues in the
+// test server.
+func MultiIssueEvents(issueToEvents map[int][]LabelTime) (out []*github.IssueEvent) {
+	for issueNum, events := range issueToEvents {
+		for _, l := range events {
+			out = append(out, &github.IssueEvent{
+				Issue: &github.Issue{Number: intPtr(issueNum)},
+				Event: stringPtr("labeled"),
+				Label: &github.Label{
+					Name: stringPtr(l.Label),
+				},
+				CreatedAt: timePtr(time.Unix(l.Time, 0)),
+				Actor: &github.User{
+					Login: stringPtr(l.User),
+				},
+			})
+		}
+	}
+	return out
+}
+
 // LabelTime is a struct which can be used to call Events()
 // It expresses what label the event should be about and what time
 // the event took place.
@@ -285,6 +306,19 @@ func setMux(t *testing.T, mux *http.ServeMux, path string, thing interface{}) {
 	})
 }
 
+func splitEventsByIssueNumber(defaultNumber int, events []*github.IssueEvent) map[int][]*github.IssueEvent {
+	// The defaultNumber nonsense is to support tests that were assuming only one issue.
+	out := map[int][]*github.IssueEvent{}
+	for _, e := range events {
+		n := defaultNumber
+		if e.Issue != nil && e.Issue.Number != nil {
+			n = *e.Issue.Number
+		}
+		out[n] = append(out[n], e)
+	}
+	return out
+}
+
 // InitServer will return a github.Client which will talk to httptest.Server,
 // to retrieve information from the http.ServeMux. If an issue, pr, events, or
 // commits are supplied it will repond with those on o/r/
@@ -320,8 +354,10 @@ func InitServer(t *testing.T, issue *github.Issue, pr *github.PullRequest, event
 		setMux(t, mux, path, pr)
 	}
 	if events != nil {
-		path := fmt.Sprintf("/repos/o/r/issues/%d/events", issueNum)
-		setMux(t, mux, path, events)
+		for issueNum, events := range splitEventsByIssueNumber(issueNum, events) {
+			path := fmt.Sprintf("/repos/o/r/issues/%d/events", issueNum)
+			setMux(t, mux, path, events)
+		}
 	}
 	if commits != nil {
 		path := fmt.Sprintf("/repos/o/r/pulls/%d/commits", issueNum)

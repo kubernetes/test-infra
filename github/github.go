@@ -274,6 +274,11 @@ type MungeObject struct {
 	Annotations map[string]string //annotations are things you can set yourself.
 }
 
+// Number is short for *obj.Issue.Number.
+func (obj *MungeObject) Number() int {
+	return *obj.Issue.Number
+}
+
 // DebugStats is a structure that tells information about how we have interacted
 // with github
 type DebugStats struct {
@@ -595,8 +600,41 @@ func (obj *MungeObject) LastModifiedTime() *time.Time {
 	return lastModified
 }
 
-// labelEvent returns the most recent event where the given label was added to an issue
-func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
+// FirstLabelTime returns the first time the request label was added to an issue.
+// If the label was never added you will get a nil time.
+func (obj *MungeObject) FirstLabelTime(label string) *time.Time {
+	event := obj.labelEvent(label, firstTime)
+	if event == nil {
+		return nil
+	}
+	return event.CreatedAt
+}
+
+// Return true if 'a' is preferable to 'b'. Handle nil times!
+type timePred func(a, b *time.Time) bool
+
+func firstTime(a, b *time.Time) bool {
+	if a == nil {
+		return false
+	}
+	if b == nil {
+		return true
+	}
+	return !a.After(*b)
+}
+func lastTime(a, b *time.Time) bool {
+	if a == nil {
+		return false
+	}
+	if b == nil {
+		return true
+	}
+	return a.After(*b)
+}
+
+// labelEvent returns the event where the given label was added to an issue.
+// 'pred' is used to select which label event is chosen if there are multiple.
+func (obj *MungeObject) labelEvent(label string, pred timePred) *github.IssueEvent {
 	var labelTime *time.Time
 	var out *github.IssueEvent
 	events, err := obj.GetEvents()
@@ -606,7 +644,7 @@ func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 	index := 0
 	for i, event := range events {
 		if *event.Event == "labeled" && *event.Label.Name == label {
-			if labelTime == nil || event.CreatedAt.After(*labelTime) {
+			if pred(event.CreatedAt, labelTime) {
 				labelTime = event.CreatedAt
 				out = event
 				index = i
@@ -619,9 +657,9 @@ func (obj *MungeObject) labelEvent(label string) *github.IssueEvent {
 }
 
 // LabelTime returns the last time the request label was added to an issue.
-// If the label was never added you will get the 0 time.
+// If the label was never added you will get a nil time.
 func (obj *MungeObject) LabelTime(label string) *time.Time {
-	event := obj.labelEvent(label)
+	event := obj.labelEvent(label, lastTime)
 	if event == nil {
 		return nil
 	}
@@ -630,7 +668,7 @@ func (obj *MungeObject) LabelTime(label string) *time.Time {
 
 // LabelCreator returns the login name of the user who (last) created the given label
 func (obj *MungeObject) LabelCreator(label string) string {
-	event := obj.labelEvent(label)
+	event := obj.labelEvent(label, lastTime)
 	if event == nil || event.Actor == nil || event.Actor.Login == nil {
 		return ""
 	}
