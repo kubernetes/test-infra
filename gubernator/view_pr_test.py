@@ -111,6 +111,16 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('first', resp)
         self.assertIn('second', resp)
 
+    def test_json(self):
+        make_pr(12, ['a'], {'title': 'b'}, 'c/d')
+        resp = app.get('/pr/all', headers={'Accept': 'application/json'})
+        self.assertEqual(resp.headers['Content-Type'], 'application/json')
+        self.assertEqual(len(resp.json), 1)
+        pr = resp.json[0]
+        self.assertEqual(pr['involved'], ['a'])
+        self.assertEqual(pr['number'], 12)
+        self.assertEqual(pr['repo'], 'c/d')
+
     def test_one_entry(self):
         make_pr(123, ['user'], {'attn': {'user': 'fix tests'}})
         resp = app.get('/pr/user')

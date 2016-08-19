@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import json
 import logging
 import os
@@ -94,6 +95,21 @@ class PRDashboard(view_base.BaseHandler):
             qs.append(ghm.GHIssueDigest.involved == user)
         prs = list(ghm.GHIssueDigest.query(*qs))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
+
+        if self.request.headers.get('Accept') == 'application/json':
+            logging.info('emitting json')
+            self.response.headers['Content-Type'] = 'application/json'
+            def serial(obj):
+                if isinstance(obj, datetime.datetime):
+                    return obj.isoformat()
+                elif isinstance(obj, ghm.GHIssueDigest):
+                    # pylint: disable=protected-access
+                    keys = ['repo', 'number'] + list(obj._values)
+                    return {k: getattr(obj, k) for k in keys}
+                raise TypeError
+            self.response.write(json.dumps(prs, sort_keys=True, default=serial))
+            return
+
         if user:
             cats = [
                 ('Needs Attention', lambda p: user in p.payload['attn'], ''),
