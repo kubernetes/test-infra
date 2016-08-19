@@ -29,10 +29,16 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 : ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine'}
 : ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine.pub'}
 
+KUBEKINS_E2E_IMAGE_TAG='v20160817'
+KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
+if [[ -r "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}" ]]; then
+  KUBEKINS_E2E_IMAGE_TAG=$(cat "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}")
+fi
+
 env \
+  -u GOOGLE_APPLICATION_CREDENTIALS \
   -u GOROOT \
   -u HOME \
-  -u KUBEKINS_SERVICE_ACCOUNT_FILE \
   -u PATH \
   -u PWD \
   -u WORKSPACE \
@@ -48,6 +54,12 @@ if [[ "${JENKINS_ENABLE_DOCKER_IN_DOCKER:-}" =~ ^[yY]$ ]]; then
     )
 fi
 
+if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ ]]; then
+    docker_extra_args+=(\
+      -v "${WORKSPACE}/_output":/workspace/_output:ro \
+    )
+fi
+
 echo "Starting..."
 docker run --rm=true -i \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
@@ -57,10 +69,11 @@ docker run --rm=true -i \
   ${JENKINS_AWS_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_AWS_SSH_PRIVATE_KEY_FILE}:/workspace/.ssh/kube_aws_rsa:ro"} \
   ${JENKINS_AWS_SSH_PUBLIC_KEY_FILE:+-v "${JENKINS_AWS_SSH_PUBLIC_KEY_FILE}:/workspace/.ssh/kube_aws_rsa.pub:ro"} \
   ${JENKINS_AWS_CREDENTIALS_FILE:+-v "${JENKINS_AWS_CREDENTIALS_FILE}:/workspace/.aws/credentials:ro"} \
-  ${KUBEKINS_SERVICE_ACCOUNT_FILE:+-v "${KUBEKINS_SERVICE_ACCOUNT_FILE}:/service-account.json:ro"} \
+  ${GOOGLE_APPLICATION_CREDENTIALS:+-v "${GOOGLE_APPLICATION_CREDENTIALS}:/service-account.json:ro"} \
   --env-file "${WORKSPACE}/env.list" \
   -e "HOME=/workspace" \
   -e "WORKSPACE=/workspace" \
-  ${KUBEKINS_SERVICE_ACCOUNT_FILE:+-e "KUBEKINS_SERVICE_ACCOUNT_FILE=/service-account.json"} \
+  ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \
+  ${GOOGLE_APPLICATION_CREDENTIALS:+-e "KUBEKINS_SERVICE_ACCOUNT_FILE=/service-account.json"} \
   "${docker_extra_args[@]:+${docker_extra_args[@]}}" \
-  gcr.io/google-containers/kubekins-e2e:v20160817
+  "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}"
