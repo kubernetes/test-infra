@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	ignoreFilesRegex = regexp.MustCompile(".*\\.md$")
+	ignoreFilesRegex = regexp.MustCompile(".*\\.(md|png)$")
 )
 
 // DocsNeedNoRetest automatically labels documentation only pull-requests as retest-not-required
