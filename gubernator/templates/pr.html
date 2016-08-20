@@ -1,15 +1,10 @@
-<!DOCTYPE html>
-<link rel="stylesheet" href="/static/style.css" />
-<title>PR #{{pr}}</title>
-<script src="/static/moment.min.js"></script>
-<script src="/static/build.js"></script>
-<script>window.onload = fix_timestamps;</script>
-<div id="header" class="container">
-	<img src="/static/logo.svg">
+% extends 'base.html'
+{% block title %}PR #{{pr}}{% endblock %}
+% block header
 	<h1>PR #{{pr}} Results</h1>
 	<p><a href="https://github.com/kubernetes/kubernetes/pull/{{pr}}">View on GitHub</a></p>
-</div>
-<div id="content">
+% endblock
+% block content
 % if digest
 % set pl = digest.payload
 <center><h3><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}</h3></center>
@@ -41,3 +36,4 @@
 		</tr>
 	% endfor
 % endif
+% endblock

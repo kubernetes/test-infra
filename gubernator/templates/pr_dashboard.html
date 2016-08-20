@@ -1,14 +1,13 @@
-<!DOCTYPE html>
-<link rel="stylesheet" href="/static/style.css" />
+% extends 'base.html'
+{% block title %}PR Dashboard{% endblock %}
+% block head
 <link rel="stylesheet" href="/static/octicons/octicons.css" />
-<title>PR Dashboard</title>
-<script src="/static/moment.min.js"></script>
-<script src="/static/build.js"></script>
-<script>window.onload = fix_timestamps;</script>
-<div id="header" class="container">
-	<img src="/static/logo.svg">
+{{ super() }}
+% endblock
+% block header
 	<h1>PR Dashboard</h1>
-</div>
+% endblock
+% block content
 <form id="prdash-nav" onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
 View
 {% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
@@ -47,3 +46,4 @@ View
 		<p><h4 class="pr-section">No Results</h4>
 	% endif
 % endfor
+% endblock

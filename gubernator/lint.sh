@@ -17,3 +17,12 @@ set -o errexit -o pipefail -o nounset
 export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.6"
 cd "$(dirname "$0")"
 pylint ../gubernator
+shopt -s extglob
+status=0
+for f in templates/!(base).html; do
+  if ! grep -q "% extends 'base.html'" "$f"; then
+    status=1
+    echo "ERROR: $f should begin with '% extends 'base.html'"
+  fi
+done
+exit $status

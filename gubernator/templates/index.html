@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<link rel="stylesheet" href="/static/style.css" />
-<title>Gubernator</title>
-<div id="header" class="container">
-<img src="/static/logo.svg">
+% extends 'base.html'
+{% block title %}Gubernator{% endblock %}
+% block header
 <h1>Gubernator</h1>
-</div>
+% endblock
+% block content
 <h1><a href="/pr">PR Dashboard</a></h1>
 <h1>Kubernetes Test Results</h1>
 <ul>
@@ -20,3 +19,4 @@
 	</li>
 % endfor
 <p>Bookmarklet to go from GCS to Gubernator (drag into bookmarks toolbar!): <a href="javascript:url=document.location.toString();if(url.match(/storage\/browser/))document.location='https://k8s-gubernator.appspot.com/build/'+url.match(/kubernetes-jenkins\/.*\/\d+/)[0]">→Gubernator</a>
+% endblock

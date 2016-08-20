@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+% block head
+<link rel="stylesheet" href="/static/style.css" />
+<title>{% block title %}Gubernator{% endblock %}</title>
+<script src="/static/moment.min.js"></script>
+<script src="/static/build.js"></script>
+<script>window.onload = fix_timestamps;</script>
+% endblock
+<div id="header" class="container">
+<a href="/"><img src="/static/logo.svg"></a>
+% block header
+% endblock
+</div>
+% block content
+% endblock

@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<link rel="stylesheet" href="/static/style.css" />
-<title>{{job}} #{{build}} {{log_file}}</title>
-<script src="/static/build.js"></script>
-<div id="header" class="container">
-	<img src="/static/logo.svg">
+% extends 'base.html'
+{% block title %}{{job}} #{{build}} {{log_file}}{% endblock %}
+% block header
 	<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
-</div>
+% endblock
+% block content
 <div id="failures">
 	<form method="get" onchange="submit()">
 		<h3> Failed pod: <input type="text" name="pod" value="{{pod}}" style="width: 300px;">
@@ -35,15 +33,16 @@
 		% endfor
 	</form>
 	% if weave
-		<pre {% if not wrap %} style="white-space:pre"{% endif %}> 
+		<pre {% if not wrap %} style="white-space:pre"{% endif %}>
 			{{woven_logs | safe}}
 		</pre>
 	% else
 		% for file in log_files|sort
 			<h3>{{file}}</h3>
-			<pre {% if not wrap %} style="white-space:pre"{% endif %}> 
+			<pre {% if not wrap %} style="white-space:pre"{% endif %}>
 				{{logs[file] | safe}}
 			</pre>
 		% endfor
 	% endif
 </div>
+% endblock
