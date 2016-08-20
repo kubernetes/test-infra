@@ -1,0 +1,105 @@
+- job-template:
+    name: 'fejta-e2e-{suffix}'
+    node: '{jenkins_node}'
+    triggers:
+        - reverse:
+            jobs: '{trigger-job}'
+            result: success
+        - timed: '{cron-string}'
+    description: '{description} Test owner: {test-owner}.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-blocker:
+            blocking-jobs:
+            - 'fejta.*'
+            queue-scanning: ALL
+        - build-discarder:
+            days-to-keep: 7
+    # Need the 8 essential kube-system pods ready before declaring cluster ready
+    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+    provider-env: gce-provider-env
+    fejta-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/fejta/test-infra/e2e/jenkins/dockerized-e2e-runner.sh")
+    builders:
+        - activate-gce-service-account
+        - shell: |
+            export KUBEKINS_PROVIDER_ENV="{provider-env}".bashrc
+            {job-env}
+            {post-env}
+            timeout -k {kill-timeout}m {timeout}m {fejta-runner} && rc=$? || rc=$?
+            if [[ ${{rc}} -ne 0 ]]; then
+                if [[ -x kubernetes/cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./kubernetes/cluster/log-dump.sh _artifacts
+                fi
+            fi
+            {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            git-basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
+    wrappers:
+        - ansicolor:
+            colormap: xterm
+        - e2e-credentials-binding
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - timestamps
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+        - claim-build
+        - junit-publisher
+        - log-parser
+        - email-ext:
+            recipients: '{emails}'
+        - gcs-uploader
+
+- project:
+    name: fejta-e2e-gce-master
+    test-owner: 'fejta'
+    suffix:
+    - 'gce':  # fejta-e2e-gce
+        cron-string: '{sq-cron-string}'
+        description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel.'
+        timeout: 50  # See #21138
+        trigger-job: 'kubernetes-build'
+        job-env: |
+            export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+            export GINKGO_PARALLEL="y"
+            export PROJECT="fejta-prod"
+    - 'gce-gci-master':  # fejta-e2e-gce-gci-ci-master
+        description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the master branch.'
+        timeout: 50
+        trigger-job: 'kubernetes-build-1.2'
+        job-env: |
+            # The master branch will always use GCI images built from its
+            # tip of tree, categorized in family `gci-canary`.
+            export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+            export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+            export GINKGO_PARALLEL="y"
+            export PROJECT="fejta-prod"
+            export KUBE_MASTER_OS_DISTRIBUTION="gci"
+            export KUBE_NODE_OS_DISTRIBUTION="gci"
+    - 'release-1.2':  # kubernetes-e2e-gce-gci-ci-release-1.2
+        description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.2 branch.'
+        timeout: 50  # See #21138
+        trigger-job: 'kubernetes-build-1.2'
+        job-env: |
+            export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
+            export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+            export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+            export GINKGO_PARALLEL="y"
+            export PROJECT="fejta-prod"
+            export KUBE_OS_DISTRIBUTION="gci"
+    jobs:
+    - 'fejta-e2e-{suffix}'
