@@ -14,12 +14,6 @@ kubectl create secret generic grafana --from-literal=rootpassword="${grafana_pas
 kubectl create secret generic influxdb --from-literal=rootpassword="${influxdb_passwoord}"
 ```
 
-Create the persistent disks (make sure `gcloud` points to your instance):
-```
-gcloud compute disks create grafana-database --size 10GiB
-gcloud compute disks create influxdb-database --size 100GiB --type pd-ssd
-```
-
 Deploying
 ---------
 Deploying is simple:
