@@ -16,7 +16,7 @@
         - activate-gce-service-account
         - shell: |
             export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
-            export KUBEKINS_JOB_ENV="{name}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {fejta-runner} && rc=$? || rc=$?
             if [[ ${{rc}} -ne 0 ]]; then
@@ -55,6 +55,7 @@
 
 - project:
     name: fejta-e2e-gce-master
+    job-name: 'fejta-e2e-{suffix}'
     test-owner: 'fejta'
     suffix:
     - 'gce':  # fejta-e2e-gce

@@ -6,12 +6,22 @@
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {soak-env}
-            {job-env}
             {post-env}
             timeout -k {kill-timeout}m {run-timeout}m {legacy-runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
 
 - job-template:
     name: 'kubernetes-soak-weekly-deploy-{suffix}'
@@ -109,16 +119,7 @@
             branch: 'master'
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak"
-            # Need the 8 essential kube-system pods ready before declaring cluster ready
-            # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-            # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-            provider-env: |
-                export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="8"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
+            provider-env: gce
         - 'gce-gci':
             deploy-description: |
                 Deploy GCI based Kubernetes to soak cluster using the latest successful
@@ -134,16 +135,7 @@
             branch: 'master'
             job-env: |
                 export PROJECT="k8s-jkns-gce-gci-soak"
-            # Need the 8 essential kube-system pods ready before declaring cluster ready
-            # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-            # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-            provider-env: |
-                export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="8"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-                export KUBE_OS_DISTRIBUTION="gci"
+            provider-env: gce
         - 'gce-2':
             deploy-description: Clone of kubernetes-soak-weekly-deploy-gce.
             e2e-description: Clone of kubernetes-soak-continuous-e2e-gce.
@@ -151,13 +143,8 @@
             job-env: |
                 export HAIRPIN_MODE="hairpin-veth"
                 export PROJECT="k8s-jkns-gce-soak-2"
-            provider-env: |
-                export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="8"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+            provider-env: gce
         - 'gce-1.3':
             deploy-description: |
                 Deploy Kubernetes to soak cluster using the latest successful
@@ -170,16 +157,11 @@
                 If a kubernetes-soak-weekly-deploy-gce-1.3 build is enqueued,
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
-            provider-env: |
-                export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="8"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-gce-soak-1-3"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
+            provider-env: gce
         - 'gce-1.2':
             deploy-description: |
                 Deploy Kubernetes to soak cluster using the latest successful
@@ -195,13 +177,8 @@
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak-1-2"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-            provider-env: |
-                export KUBERNETES_PROVIDER="gce"
-                export E2E_MIN_STARTUP_PODS="1"
-                export KUBE_GCE_ZONE="us-central1-f"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+            provider-env: gce
         - 'gke':
             deploy-description: |
                 Deploy Kubernetes to a GKE soak cluster using the staging GKE
@@ -222,18 +199,12 @@
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
             branch: 'master'
-            provider-env: |
-                export KUBERNETES_PROVIDER="gke"
-                export E2E_MIN_STARTUP_PODS="8"
-                export ZONE="us-central1-f"
-                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
+            provider-env: gke
             job-env: |
                 export PROJECT="k8s-jkns-gke-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export E2E_OPT="--check_version_skew=false"
         - 'gke-gci':
             deploy-description: |
@@ -255,19 +226,15 @@
                 builds will be blocked and remain in the queue until the
                 deployment is complete.<br>
             branch: 'master'
-            provider-env: |
-                export KUBERNETES_PROVIDER="gke"
-                export E2E_MIN_STARTUP_PODS="8"
-                export ZONE="us-central1-f"
-                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
-                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export KUBE_OS_DISTRIBUTION="gci"
+            provider-env: gke
             job-env: |
+                export KUBE_OS_DISTRIBUTION="gci"
                 export PROJECT="k8s-jkns-gke-gci-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
                 export E2E_OPT="--check_version_skew=false"
     jobs:
-        - 'kubernetes-soak-weekly-deploy-{suffix}'
-        - 'kubernetes-soak-continuous-e2e-{suffix}'
+        - 'kubernetes-soak-weekly-deploy-{suffix}':
+            job-name: 'kubernetes-soak-weekly-deploy-{suffix}'
+        - 'kubernetes-soak-continuous-e2e-{suffix}':
+            job-name: 'kubernetes-soak-continuous-e2e-{suffix}'

@@ -9,7 +9,7 @@
         - activate-gce-service-account
         - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
         - shell: |
-            {job-env}
+            {build-env}
             timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/build.sh && rc=$? || rc=$?
             {report-rc}
     publishers:
@@ -47,13 +47,13 @@
         - 'build':
             branch: 'master'
             timeout: 50
-            job-env: |
+            build-env: |
               export RELEASE_INFRA_PUSH=true
               export SET_NOMOCK_FLAG=false
         - 'federation-build':
             branch: 'master'
             timeout: 50
-            job-env: |
+            build-env: |
               export RELEASE_INFRA_PUSH=true
               export SET_NOMOCK_FLAG=false
               export PROJECT="k8s-jkns-e2e-gce-federation"

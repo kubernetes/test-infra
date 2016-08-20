@@ -7,24 +7,25 @@
     properties:
         - build-discarder:
             days-to-keep: 7
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
-        export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
-        export E2E_MIN_STARTUP_PODS="8"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export KUBERNETES_PROVIDER="gke"
-        export ZONE="us-central1-f"
+    provider-env: gke
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -201,6 +202,7 @@
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=True
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -266,6 +268,7 @@
                 export PROJECT="kubernetes-gke-ingress-1-3"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
 
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -302,6 +305,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-slow-1-2"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -398,6 +402,7 @@
                 export PROJECT="k8s-e2e-gke-prod-smoke"
                 export ZONE="asia-east1-b"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -416,6 +421,7 @@
                 # TODO: Enable this when we've split 1.2 tests into another project.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -513,6 +519,7 @@
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="e2e-gke-trusty-prod-p"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -520,6 +527,7 @@
     name: 'kubernetes-e2e-{provider}-{version-old}-{version-new}'
     trigger-job: 'kubernetes-build'
     test-owner: 'ihmccreery'
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
@@ -641,6 +649,7 @@
     name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
     trigger-job: 'kubernetes-build'
     test-owner: 'ihmccreery'
+    job-name: 'kubernetes-e2e-{gke-suffix}'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-cluster}-{version-client}-kubectl-skew'

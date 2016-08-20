@@ -5,17 +5,12 @@
     properties:
         - build-discarder:
             days-to-keep: 7
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="1"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    provider-env: gce
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
@@ -26,6 +21,16 @@
         - email-ext:
             recipients: "xuchao@google.com"
         - gcs-uploader
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     triggers:
         - timed: '{cron-string}'
     wrappers:
@@ -54,5 +59,6 @@
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:GarbageCollector\]"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-garbagecollector-{suffix}'
     jobs:
         - 'kubernetes-garbagecollector-{suffix}'

@@ -19,28 +19,25 @@
         - email-ext:
             recipients: '{emails}'
         - gcs-uploader
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export KUBERNETES_PROVIDER="aws"
-        export E2E_MIN_STARTUP_PODS="8"
-        export KUBE_AWS_ZONE="us-west-2a"
-        export MASTER_SIZE="m3.medium"
-        export NODE_SIZE="m3.medium"
-        export NUM_NODES="3"
-        export AWS_CONFIG_FILE=/workspace/.aws/credentials
-        # This is needed to be able to create PD from the e2e test
-        export AWS_SHARED_CREDENTIALS_FILE=/workspace/.aws/credentials
-        export KUBE_SSH_USER=admin
+    provider-env: aws
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -80,5 +77,6 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-aws"
+    job-name: 'kubernetes-e2e-{aws-suffix}'
     jobs:
         - 'kubernetes-e2e-{aws-suffix}'
