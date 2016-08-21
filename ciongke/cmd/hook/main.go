@@ -18,14 +18,15 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
-	"fmt"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os/signal"
+	"regexp"
 	"strconv"
+	"syscall"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/kube"
@@ -34,61 +35,52 @@ import (
 var (
 	port      = flag.Int("port", 8888, "Port to listen on.")
 	namespace = flag.String("namespace", "default", "Namespace for all CI objects.")
-	org       = flag.String("org", "", "GitHub org to trust.")
-	team      = flag.Int("team", 0, "GitHub team to trust.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
+	org       = flag.String("org", "kubernetes", "GitHub org to trust.")
 
-	testPRImage  = flag.String("test-pr-image", "", "Image to use for testing PRs.")
-	runTestImage = flag.String("run-test-image", "", "Image to use for running tests.")
-	sourceBucket = flag.String("source-bucket", "", "Bucket to store source tars in.")
+	testPRImage = flag.String("test-pr-image", "", "Image to use for testing PRs.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/hmac/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/oauth/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
-const (
-	jobDeadlineSeconds = 60 * 60 * 10
-)
-
-// Server implements http.Handler.
-type Server struct {
-	Events chan Event
-
-	Port         int
-	Org          string
-	Team         int
-	GitHubClient githubClient
-	HMACSecret   []byte
-	DryRun       bool
-
-	TestPRImage  string
-	RunTestImage string
-	SourceBucket string
-
-	KubeClient kubeClient
-	Namespace  string
-}
-
-// Event is simply the GitHub event type and the JSON payload.
-type Event struct {
-	Type    string
-	Payload []byte
-}
-
-// kubeClient is satisfied by kube.Client.
-type kubeClient interface {
-	ListPods(labels map[string]string) ([]kube.Pod, error)
-	DeletePod(name string) error
-
-	ListJobs(labels map[string]string) ([]kube.Job, error)
-	CreateJob(j kube.Job) (kube.Job, error)
-	DeleteJob(name string) error
-}
-
-// githubClient is satisfied by github.Client.
-type githubClient interface {
-	IsMember(org, user string) (bool, error)
-	IsTeamMember(team int, user string) (bool, error)
+var defaultJenkinsJobs = []JenkinsJob{
+	{
+		Name:      "kubernetes-pull-build-test-e2e-gce",
+		Trigger:   regexp.MustCompile(`@k8s-bot (gce )?(e2e )?test this`),
+		AlwaysRun: true,
+		Context:   "Jenkins GCE e2e",
+	},
+	{
+		Name:      "kubernetes-pull-build-test-e2e-gke",
+		Trigger:   regexp.MustCompile(`@k8s-bot (gke )?(smoke )?(e2e )?test this`),
+		AlwaysRun: true,
+		Context:   "Jenkins GKE smoke e2e",
+	},
+	{
+		Name:      "kubernetes-pull-build-test-unit-integration",
+		Trigger:   regexp.MustCompile(`@k8s-bot (unit )?test this`),
+		AlwaysRun: true,
+		Context:   "Jenkins unit/integration",
+	},
+	{
+		Name:      "kubernetes-pull-verify-all",
+		Trigger:   regexp.MustCompile(`@k8s-bot (verify )?test this`),
+		AlwaysRun: true,
+		Context:   "Jenkins verification",
+	},
+	{
+		Name:      "kubernetes-pull-build-test-federation-e2e-gce",
+		Trigger:   regexp.MustCompile(`@k8s-bot federation (gce )?(e2e )?test this`),
+		AlwaysRun: false,
+		Context:   "Jenkins Federation GCE e2e",
+	},
+	{
+		Name:      "kubernetes-pull-build-test-kubemark-e2e-gce",
+		Trigger:   regexp.MustCompile(`@k8s-bot kubemark test this`),
+		AlwaysRun: false,
+		Context:   "Jenkins Jenkins Kubemark GCE e2e",
+	},
 }
 
 func main() {
@@ -100,8 +92,6 @@ func main() {
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
-	// TODO: Watch this file so that we don't need to manually restart when
-	// we update the token.
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
 		log.Fatalf("Could not read oauth secret file: %s", err)
@@ -122,202 +112,40 @@ func main() {
 		log.Fatalf("Error getting client: %s", err)
 	}
 
-	s := &Server{
-		Events: make(chan Event),
+	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
+	// We'll get SIGTERM first and then SIGKILL after our graceful termination
+	// deadline.
+	signal.Ignore(syscall.SIGTERM)
 
-		Port:         *port,
-		Org:          *org,
-		Team:         *team,
-		GitHubClient: githubClient,
-		HMACSecret:   webhookSecret,
+	server := &Server{
+		HMACSecret:         webhookSecret,
+		PullRequestEvents:  make(chan github.PullRequestEvent),
+		IssueCommentEvents: make(chan github.IssueCommentEvent),
+	}
+
+	githubAgent := &GitHubAgent{
 		DryRun:       *dryRun,
+		Org:          *org,
+		GitHubClient: githubClient,
 
-		TestPRImage:  *testPRImage,
-		RunTestImage: *runTestImage,
-		SourceBucket: *sourceBucket,
+		JenkinsJobs: defaultJenkinsJobs,
 
-		KubeClient: kubeClient,
-		Namespace:  *namespace,
-	}
-	go func() {
-		for event := range s.Events {
-			go s.handleEvent(event)
-		}
-	}()
-	if err := http.ListenAndServe(":"+strconv.Itoa(s.Port), s); err != nil {
-		log.Fatalf("ListenAndServe returned error: %s", err)
-	}
-}
+		PullRequestEvents:  server.PullRequestEvents,
+		IssueCommentEvents: server.IssueCommentEvents,
 
-// ServeHTTP validates an incoming webhook and puts it into the event channel.
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+		BuildRequests: make(chan BuildRequest),
+	}
+	githubAgent.Start()
 
-	// Header checks: It must be a POST with an event type and a signature.
-	if r.Method != http.MethodPost {
-		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	eventType := r.Header.Get("X-GitHub-Event")
-	if eventType == "" {
-		http.Error(w, "400 Bad Request: Missing X-GitHub-Event Header", http.StatusBadRequest)
-		return
-	}
-	sig := r.Header.Get("X-Hub-Signature")
-	if sig == "" {
-		http.Error(w, "403 Forbidden: Missing X-Hub-Signature", http.StatusForbidden)
-		return
-	}
+	kubeAgent := &KubeAgent{
+		DryRun:      *dryRun,
+		TestPRImage: *testPRImage,
+		KubeClient:  kubeClient,
+		Namespace:   *namespace,
 
-	// Validate the payload with our HMAC secret.
-	payload, err := github.ValidatePayload(r, s.HMACSecret)
-	if err != nil {
-		http.Error(w, "403 Forbidden: Invalid X-Hub-Signature", http.StatusForbidden)
-		return
+		BuildRequests: githubAgent.BuildRequests,
 	}
-	fmt.Fprint(w, "Event received. Have a nice day.")
-	go func() {
-		s.Events <- Event{eventType, payload}
-	}()
-}
+	kubeAgent.Start()
 
-// handleEvent unmarshals the payload and dispatches to the correct handler.
-func (s *Server) handleEvent(e Event) {
-	switch e.Type {
-	case "pull_request":
-		var pr github.PullRequestEvent
-		if err := json.Unmarshal(e.Payload, &pr); err != nil {
-			log.Printf("Could not unmarshal pull request event payload: %s", err)
-			return
-		}
-		if err := s.handlePullRequestEvent(pr); err != nil {
-			log.Printf("Error handling pull request: %s", err)
-			return
-		}
-	}
-}
-
-// handlePullRequestEvent decides what to do with PullRequestEvents.
-func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) error {
-	switch pr.Action {
-	case "opened", "reopened", "synchronize":
-		valid, err := s.validAuthor(pr.PullRequest.User.Login)
-		if err != nil {
-			return fmt.Errorf("could not validate author: %s", err)
-		} else if valid {
-			if err := s.buildPR(pr.PullRequest); err != nil {
-				return fmt.Errorf("could not build PR: %s", err)
-			}
-		} else if pr.Action == "opened" {
-			// TODO: Comment asking them to join the org.
-		}
-	case "closed":
-		if err := s.deletePR(pr.PullRequest.Base.Repo.Name, pr.Number); err != nil {
-			return fmt.Errorf("could not delete old PR: %s", err)
-		}
-	}
-	return nil
-}
-
-// validAuthor checks if author is in the org or the team.
-func (s *Server) validAuthor(author string) (bool, error) {
-	orgMember, err := s.GitHubClient.IsMember(s.Org, author)
-	if err != nil {
-		return false, err
-	} else if orgMember {
-		return true, nil
-	}
-	return s.GitHubClient.IsTeamMember(s.Team, author)
-}
-
-// buildPR deletes any jobs building the PR and then starts a new one.
-func (s *Server) buildPR(pr github.PullRequest) error {
-	name := fmt.Sprintf("%s-pr-%d", pr.Base.Repo.Name, pr.Number)
-	job := kube.Job{
-		Metadata: kube.ObjectMeta{
-			Name:      name,
-			Namespace: s.Namespace,
-			Labels: map[string]string{
-				"repo": pr.Base.Repo.Name,
-				"pr":   strconv.Itoa(pr.Number),
-			},
-		},
-		Spec: kube.JobSpec{
-			ActiveDeadlineSeconds: jobDeadlineSeconds,
-			Template: kube.PodTemplateSpec{
-				Spec: kube.PodSpec{
-					RestartPolicy: "Never",
-					Containers: []kube.Container{
-						{
-							Name:  "test-pr",
-							Image: s.TestPRImage,
-							Args: []string{
-								"--repo-owner=" + pr.Base.Repo.Owner.Login,
-								"--repo-url=" + pr.Base.Repo.HTMLURL,
-								"--repo-name=" + pr.Base.Repo.Name,
-								"--pr=" + strconv.Itoa(pr.Number),
-								"--branch=" + pr.Base.Ref,
-								"--namespace=" + s.Namespace,
-								"--source-bucket=" + s.SourceBucket,
-								"--run-test-image=" + s.RunTestImage,
-								"--dry-run=" + strconv.FormatBool(s.DryRun),
-							},
-							VolumeMounts: []kube.VolumeMount{
-								{
-									Name:      "oauth",
-									ReadOnly:  true,
-									MountPath: "/etc/oauth",
-								},
-							},
-						},
-					},
-					Volumes: []kube.Volume{
-						{
-							Name: "oauth",
-							Secret: &kube.SecretSource{
-								Name: "oauth-token",
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	if err := s.deletePR(pr.Base.Repo.Name, pr.Number); err != nil {
-		return err
-	}
-	log.Printf("Starting build for PR #%d\n", pr.Number)
-	if _, err := s.KubeClient.CreateJob(job); err != nil {
-		return err
-	}
-	return nil
-}
-
-// deletePR attempts to delete the jobs for the given PR as well as their pods.
-func (s *Server) deletePR(repo string, pr int) error {
-	jobs, err := s.KubeClient.ListJobs(map[string]string{
-		"repo": repo,
-		"pr":   strconv.Itoa(pr),
-	})
-	if err != nil {
-		return err
-	}
-	for _, job := range jobs {
-		log.Printf("Deleting job %s", job.Metadata.Name)
-		if err := s.KubeClient.DeleteJob(job.Metadata.Name); err != nil {
-			return err
-		}
-		pods, err := s.KubeClient.ListPods(map[string]string{
-			"job-name": job.Metadata.Name,
-		})
-		if err != nil {
-			return err
-		}
-		for _, pod := range pods {
-			if err = s.KubeClient.DeletePod(pod.Metadata.Name); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), server))
 }
