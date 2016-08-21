@@ -18,6 +18,7 @@ limitations under the License.
 package github
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -54,10 +55,11 @@ type PullRequestEvent struct {
 
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
-	Number int               `json:"number"`
-	User   User              `json:"user"`
-	Base   PullRequestBranch `json:"base"`
-	Head   PullRequestBranch `json:"head"`
+	Number  int               `json:"number"`
+	HTMLURL string            `json:"html_url"`
+	User    User              `json:"user"`
+	Base    PullRequestBranch `json:"base"`
+	Head    PullRequestBranch `json:"head"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -71,6 +73,29 @@ type PullRequestBranch struct {
 type Repo struct {
 	Owner   User   `json:"owner"`
 	Name    string `json:"name"`
+	HTMLURL string `json:"html_url"`
+}
+
+type IssueCommentEvent struct {
+	Action  string       `json:"action"`
+	Issue   Issue        `json:"issue"`
+	Comment IssueComment `json:"comment"`
+	Repo    Repo         `json:"repository"`
+}
+
+type Issue struct {
+	User    User   `json:"user"`
+	Number  int    `json:"number"`
+	Title   string `json:"title"`
+	State   string `json:"state"`
+	HTMLURL string `json:"html_url"`
+	// This will be non-nil if it is a pull request.
+	PullRequest *struct{} `json:"pull_request,omitempty"`
+}
+
+type IssueComment struct {
+	Body    string `json:"body"`
+	User    User   `json:"user"`
 	HTMLURL string `json:"html_url"`
 }
 
@@ -112,14 +137,67 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	return member, nil
 }
 
-// IsTeamMember returns whether or not the user is a member of the team.
-func (c *Client) IsTeamMember(team int, user string) (bool, error) {
-	member, resp, err := c.cl.Organizations.IsTeamMember(team, user)
-	if err != nil {
-		return false, err
+// ListIssueComments returns all comments on an issue.
+func (c *Client) ListIssueComments(owner, repo string, number int) ([]IssueComment, error) {
+	opt := github.IssueListCommentsOptions{
+		ListOptions: github.ListOptions{
+			Page:    1,
+			PerPage: 100,
+		},
 	}
-	logRateLimit("IsTeamMember", resp)
-	return member, nil
+	comments, resp, err := c.cl.Issues.ListComments(owner, repo, number, &opt)
+	if err != nil {
+		return nil, err
+	}
+	logRateLimit("ListIssueComments", resp)
+	allComments := comments
+	for resp.NextPage != 0 {
+		opt.ListOptions.Page = resp.NextPage
+		comments, resp, err = c.cl.Issues.ListComments(owner, repo, number, &opt)
+		if err != nil {
+			return nil, err
+		}
+		logRateLimit("ListIssueComments", resp)
+		allComments = append(allComments, comments...)
+	}
+	// Marshal to JSON and back to turn it into our own struct.
+	b, err := json.Marshal(allComments)
+	if err != nil {
+		return nil, err
+	}
+	var ret []IssueComment
+	if err := json.Unmarshal(b, &ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (c *Client) CreateComment(owner, repo string, number int, comment string) error {
+	if c.dry {
+		return nil
+	}
+	_, resp, err := c.cl.Issues.CreateComment(owner, repo, number, &github.IssueComment{
+		Body: github.String(comment),
+	})
+	logRateLimit("Comment", resp)
+	return err
+}
+
+func (c *Client) GetPullRequest(owner, repo string, number int) (*PullRequest, error) {
+	pr, resp, err := c.cl.PullRequests.Get(owner, repo, number)
+	if err != nil {
+		return nil, err
+	}
+	logRateLimit("PullRequest", resp)
+	b, err := json.Marshal(pr)
+	if err != nil {
+		return nil, err
+	}
+	var ret PullRequest
+	if err := json.Unmarshal(b, &ret); err != nil {
+		return nil, err
+	}
+	return &ret, nil
 }
 
 // CreateStatus creates or updates the status of a commit.

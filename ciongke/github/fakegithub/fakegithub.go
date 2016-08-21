@@ -20,37 +20,31 @@ import (
 	"github.com/kubernetes/test-infra/ciongke/github"
 )
 
-type OrgMember struct {
-	Org  string
-	User string
-}
-
-type TeamMember struct {
-	Team int
-	User string
-}
-
 type FakeClient struct {
-	OrgMembers  []OrgMember
-	TeamMembers []TeamMember
+	OrgMembers    []string
+	IssueComments map[int][]github.IssueComment
+	PullRequests  map[int]*github.PullRequest
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	for _, m := range f.OrgMembers {
-		if m.Org == org && m.User == user {
+		if m == user {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
-func (f *FakeClient) IsTeamMember(team int, user string) (bool, error) {
-	for _, m := range f.TeamMembers {
-		if m.Team == team && m.User == user {
-			return true, nil
-		}
-	}
-	return false, nil
+func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
+	return f.IssueComments[number], nil
+}
+
+func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	return nil
+}
+
+func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
+	return f.PullRequests[number], nil
 }
 
 func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) error {
