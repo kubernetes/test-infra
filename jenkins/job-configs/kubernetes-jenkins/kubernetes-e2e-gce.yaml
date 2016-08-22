@@ -69,8 +69,6 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI in parallel.'
             timeout: 50  # See #21138
             job-env: |
-                # This is the *only* job that should publish the last green version.
-                export E2E_PUBLISH_GREEN_VERSION="true"
                 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
