@@ -1,0 +1,36 @@
+test_group_default: &DEFAULT_TEST_GROUP
+  days_of_results: 14
+  tests_name_policy: 2
+  column_header:
+  - configuration_value: Commit
+  use_kubernetes_client: true
+  is_external: true
+
+dashboard_tab_default: &DEFAULT_DASHBOARD_TAB
+  open_test_template:
+    url: https://k8s-gubernator.appspot.com/build/<query>/<changelist>
+  file_bug_template:
+    url: https://github.com/kubernetes/kubernetes/issues/new
+    options:
+    - key: title
+      value: 'E2E: <test-name>'
+    - key: body
+      value: <test-url>
+  attach_bug_template:
+  results_text: See these results in Gubernator
+  results_url_template:
+    url: https://k8s-gubernator.appspot.com/builds/<query>
+  code_search_url_template:
+    url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
+
+test_groups:
+- <<: *DEFAULT_TEST_GROUP
+  name: testgroup_1
+  query: testgroup_1_query
+  is_external: false
+dashboards:
+- dashboard_tab:
+  - <<: *DEFAULT_DASHBOARD_TAB
+    name: tab_1
+    test_group_name: testgroup_1
+  name:  dashboard_1
