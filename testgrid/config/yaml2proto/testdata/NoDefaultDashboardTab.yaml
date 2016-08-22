@@ -1,0 +1,15 @@
+default_test_group:
+  days_of_results: 14
+  tests_name_policy: 2
+  column_header:
+  - configuration_value: Commit
+  use_kubernetes_client: true
+  is_external: true
+test_groups:
+- name: testgroup_1
+  query: testgroup_1_query
+dashboards:
+- dashboard_tab:
+  - name: tab_1
+    test_group_name: testgroup_1
+  name:  dashboard_1
