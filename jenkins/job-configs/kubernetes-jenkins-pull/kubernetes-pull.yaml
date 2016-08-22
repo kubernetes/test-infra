@@ -375,7 +375,7 @@
             export PATH=${{PATH}}:/usr/local/go/bin
 
             if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
-              timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+              timeout -k 15m 55m {runner} && rc=$? || rc=$?
             else
               timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
             fi
@@ -466,7 +466,7 @@
               export PATH=${{PATH}}:/usr/local/go/bin
 
               if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
-                timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+                timeout -k 15m 55m {runner} && rc=$? || rc=$?
               else
                 timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
               fi
@@ -540,7 +540,7 @@
 
 
             if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
-              timeout -k 15m 55m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+              timeout -k 15m 55m {runner} && rc=$? || rc=$?
             else
               timeout -k 15m 55m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
             fi
@@ -607,7 +607,7 @@
             export PATH=${{PATH}}:/usr/local/go/bin
 
             if [[ -e "./hack/jenkins/.use_dockerized_e2e" ]]; then
-              timeout -k 15m 45m ./hack/jenkins/dockerized-e2e-runner.sh && rc=$? || rc=$?
+              timeout -k 15m 45m {runner} && rc=$? || rc=$?
             else
               timeout -k 15m 45m ./hack/jenkins/e2e-runner.sh && rc=$? || rc=$?
             fi

@@ -59,7 +59,7 @@ In order to configure a service please do the following:
       - credentials-binding:
         - file:
             credential-id: 'my-id'  # This is what you selected previously
-            value: 'MY_VARIABLE'  # We are using KUBEKINS_SERVICE_ACCOUNT_FILE
+            value: 'MY_VARIABLE'  # We are using GOOGLE_APPLICATION_CREDENTIALS
     ```
 2. Add the wrapper to a job
   - Find the `job`/`project`/`job-template` of interest ([example job])
