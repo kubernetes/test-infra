@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<link rel="stylesheet" href="/static/style.css" />
+% extends 'base.html'
+{% block title %}{{job}} #{{build}} Results{% endblock %}
+% block head
+{{super()}}
 % if finished and finished['result'] == 'SUCCESS' and not failures
 <link rel="icon" type="image/png" href="/static/favicon-green.png" />
 % endif
-<title>{{job}} #{{build}} Results</title>
-<script src="/static/moment.min.js"></script>
-<script src="/static/build.js"></script>
-<script>window.onload = fix_timestamps;</script>
-<div id="header" class="container">
-<img src="/static/logo.svg">
+% endblock
+% block header
 <h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
 	% if started
 	<p>Started on {{started['timestamp']|timestamp}}{% if finished %} and took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
 	% endif
-</div>
+% endblock
+% block content
 <div id="summary">
 	% if pr and pr_digest
 		% set pl = pr_digest.payload
@@ -59,3 +58,4 @@
 		% endif
 	% endif
 </div>
+% endblock

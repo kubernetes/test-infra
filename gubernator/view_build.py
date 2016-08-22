@@ -106,7 +106,9 @@ class BuildHandler(view_base.BaseHandler):
         details = build_details(build_dir)
         if not details:
             logging.warning('unable to load %s', build_dir)
-            self.render('build_404.html', {"build_dir": build_dir})
+            self.render(
+                'build_404.html',
+                dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
         started, finished, failures, build_log = details
