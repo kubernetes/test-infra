@@ -10,6 +10,8 @@ services:
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:5
 install:
+    - mkdir -p $HOME/gopath/src/k8s.io
+    - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/test-infra
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
     - unzip -q ${GAE_ZIP} -d ${HOME}
@@ -22,3 +24,5 @@ script:
     - cd gubernator
     - ./test.sh
     - ./lint.sh
+    - cd ../testgrid/config
+    - go test ./...
