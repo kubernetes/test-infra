@@ -166,12 +166,21 @@
         - 'kubelet-serial':
             # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-serial.properties:
             # PROJECT="k8s-jkns-ci-node-e2e"
-            scm-cron-string: 'H/30 * * * *'
+            scm-cron-string: 'H H/1 * * *'
             cron-string: 'H H/2 * * *'
             test-timeout: '{jenkins-timeout}'
             repoName: 'kubernetes/kubernetes'
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'lantaol@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-serial.properties'
+        - 'kubelet-benchmark':
+            # GCP project set in kubernetes/test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties:
+            # PROJECT="k8s-jkns-ci-node-e2e"
+            scm-cron-string: 'H H/2 * * *'
+            cron-string: 'H H/4 * * *'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            owner: 'zhoufang@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
