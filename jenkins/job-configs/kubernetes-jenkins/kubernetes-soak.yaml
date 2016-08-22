@@ -119,6 +119,31 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gce-gci':
+            deploy-description: |
+                Deploy GCI based Kubernetes to soak cluster using the latest successful
+                Kubernetes build every week.<br>
+                If a kubernetes-soak-continuous-e2e-gce-gci build is running,
+                this deployment build will be blocked and remain in the queue
+                until the test run is complete.<br>
+            e2e-description: |
+                Assumes Kubernetes soak cluster is already deployed.<br>
+                If a kubernetes-soak-weekly-deploy-gce-gci build is enqueued,
+                builds will be blocked and remain in the queue until the
+                deployment is complete.<br>
+            branch: 'master'
+            job-env: |
+                export PROJECT="k8s-jkns-gce-gci-soak"
+            # Need the 8 essential kube-system pods ready before declaring cluster ready
+            # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+            # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="8"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'gce-2':
             deploy-description: Clone of kubernetes-soak-weekly-deploy-gce.
             e2e-description: Clone of kubernetes-soak-continuous-e2e-gce.
@@ -207,6 +232,39 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
                 export PROJECT="k8s-jkns-gke-soak"
+                # Need at least n1-standard-2 nodes to run kubelet_perf tests
+                export MACHINE_TYPE="n1-standard-2"
+                export E2E_OPT="--check_version_skew=false"
+        - 'gke-gci':
+            deploy-description: |
+                Deploy GCI based Kubernetes to a GKE soak cluster using the staging GKE
+                Kubernetes build every week.<br>
+                If a kubernetes-soak-continuous-e2e-gke-gci build is running, this
+                deployment build will be blocked and remain in the queue until
+                the test run is complete.<br>
+                Current Settings:<br>
+                - provider: GKE<br>
+                - apiary: staging<br>
+                - borg job: staging<br>
+                - client (kubectl): release/stable.txt<br>
+                - cluster (k8s): release/stable.txt<br>
+                - tests: release/stable.txt<br>
+            e2e-description: |
+                Assumes GCI based Kubernetes GKE soak cluster is already deployed.<br>
+                If a kubernetes-soak-weekly-deploy-gke-gci build is enqueued,
+                builds will be blocked and remain in the queue until the
+                deployment is complete.<br>
+            branch: 'master'
+            provider-env: |
+                export KUBERNETES_PROVIDER="gke"
+                export E2E_MIN_STARTUP_PODS="8"
+                export ZONE="us-central1-f"
+                export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export KUBE_OS_DISTRIBUTION="gci"
+            job-env: |
+                export PROJECT="k8s-jkns-gke-gci-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
                 export E2E_OPT="--check_version_skew=false"
