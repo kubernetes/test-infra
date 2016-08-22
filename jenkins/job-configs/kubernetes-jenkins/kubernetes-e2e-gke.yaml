@@ -63,6 +63,7 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gke-ci"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-slow':  # kubernetes-e2e-gke-slow
             cron-string: '{sq-cron-string}'
             description: 'Run slow E2E tests on GKE using the latest successful build.'
@@ -73,6 +74,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gke-slow"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-serial':  # kubernetes-e2e-gke-serial
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
@@ -82,6 +84,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-e2e-serial"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-updown':  # kubernetes-e2e-gke-updown
             cron-string: '{sq-cron-string}'
             description: 'Brings a cluster up, checks networking, brings it down (against GKE test endpoint)'
@@ -91,6 +94,7 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
                 export PROJECT="kubernetes-e2e-gke-updown"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-reboot':  # kubernetes-e2e-gke-reboot
             description: 'Run [Feature:Reboot] tests on GKE using the latest successful build.'
             timeout: 180
@@ -98,6 +102,7 @@
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export PROJECT="k8s-jkns-e2e-gke-ci-reboot"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-flaky':  # kubernetes-e2e-gke-flaky
             description: |
                 Run flaky e2e tests using the following config:<br>
@@ -113,6 +118,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
                                          --ginkgo.skip=\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gke-ci-flaky"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-multizone':  # kubernetes-e2e-gke-multizone
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel, and in a multi-zone cluster.'
             timeout: 150
@@ -123,6 +129,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gke-multizone"
                 export ZONE="us-central1-f"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-autoscaling':  # kubernetes-e2e-gke-autoscaling
             description: 'Run all cluster autoscaler tests on GKE.'
             timeout: 300
@@ -132,6 +139,7 @@
                                          --ginkgo.skip=\[Flaky\]"
                 export NUM_NODES=3
                 export PROJECT="k8s-e2e-gke-autoscaling"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
@@ -159,6 +167,7 @@
                 export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000"
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=True
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -175,6 +184,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="k8s-jkns-gke-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-serial-release-1.3':  # kubernetes-e2e-gke-serial-release-1.3
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.3 branch.'
             timeout: 300
@@ -183,6 +193,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="k8s-jkns-gke-serial-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-slow-release-1.3':  # kubernetes-e2e-gke-slow-release-1.3
             description: 'Run slow E2E tests on GKE using the release-1.3 branch.'
             timeout: 150  #  See #24072
@@ -192,6 +203,7 @@
                 export GINKGO_PARALLEL="y"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="k8s-jkns-gke-slow-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-reboot-release-1.3':  # kubernetes-e2e-gke-reboot-release-1.3
             description: 'Run [Feature:Reboot] tests on GKE on the release-1.3 branch.'
             timeout: 180
@@ -199,6 +211,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="k8s-jkns-gke-reboot-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-ingress-release-1.2':  # kubernetes-e2e-gke-ingress-release-1.2
             description: 'Run [Feature:Ingress] tests on GKE on the release-1.2 branch.'
             timeout: 90
@@ -208,6 +221,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="kubernetes-gke-ingress-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-ingress-release-1.3':  # kubernetes-e2e-gke-ingress-release-1.3
             description: 'Run [Feature:Ingress] tests on GKE on the release-1.3 branch.'
             timeout: 90
@@ -217,6 +231,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
                 export PROJECT="kubernetes-gke-ingress-1-3"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
 
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
@@ -234,6 +249,7 @@
                 export GINKGO_PARALLEL="y"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-serial-release-1.2':  # kubernetes-e2e-gke-serial-release-1.2
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.2 branch.'
             timeout: 300
@@ -242,6 +258,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-serial-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-slow-release-1.2':  # kubernetes-e2e-gke-slow-release-1.2
             description: 'Run slow E2E tests on GKE using the release-1.2 branch.'
             timeout: 150  #  See #24072
@@ -251,6 +268,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
                 export PROJECT="k8s-jkns-e2e-gke-slow-1-2"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -266,6 +284,7 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
                 export JENKINS_PUBLISHED_VERSION="release/latest"
                 export PROJECT="k8s-jkns-e2e-gke-prerel"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-test':  # kubernetes-e2e-gke-test
             description: 'Run E2E tests on GKE test endpoint.'
             timeout: 480
@@ -274,6 +293,7 @@
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-jkns-e2e-gke-test"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-subnet':  # kubernetes-e2e-gke-subnet
             description: 'Run E2E tests on GKE test endpoint in a subnet.'
             timeout: 480
@@ -285,6 +305,7 @@
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-jkns-e2e-gke-subnet"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-staging':  # kubernetes-e2e-gke-staging
             description: 'Run E2E tests on GKE staging endpoint.'
             timeout: 480
@@ -294,6 +315,7 @@
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-jkns-e2e-gke-staging"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-staging-parallel':  # kubernetes-e2e-gke-staging-parallel
             description: 'Run E2E tests on GKE staging endpoint in parallel.'
             timeout: 80
@@ -305,6 +327,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-e2e-gke-staging-parallel"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-prod':  # kubernetes-e2e-gke-prod
             description: 'Run E2E tests on GKE prod endpoint.'
             timeout: 480
@@ -315,6 +338,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-jkns-e2e-gke-prod"
                 export ZONE="us-central1-b"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-prod-parallel':  # kubernetes-e2e-gke-prod-parallel
             description: 'Run E2E tests on GKE prod endpoint in parallel.'
             timeout: 80
@@ -327,6 +351,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-e2e-gke-prod-parallel"
                 export ZONE="us-central1-b"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-prod-smoke':  # kubernetes-e2e-gke-prod-smoke
             description: 'Run smoke tests on GKE prod day 1 zone (asia-east1-b).'
             timeout: 80
@@ -339,6 +364,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-e2e-gke-prod-smoke"
                 export ZONE="asia-east1-b"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -356,6 +382,7 @@
                 export PROJECT="kubernetes-gke-ingress"
                 # TODO: Enable this when we've split 1.2 tests into another project.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -380,6 +407,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="kubekins-e2e-gke-trusty-test"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-trusty-subnet':  # kubernetes-e2e-gke-trusty-subnet
             description: 'Run E2E tests on GKE test endpoint in a subnet.'
             timeout: 480
@@ -393,6 +421,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="k8s-e2e-gke-trusty-subnet"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-trusty-staging':  # kubernetes-e2e-gke-trusty-staging
             description: 'Run E2E tests on GKE staging endpoint.'
             timeout: 480
@@ -404,6 +433,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="e2e-gke-trusty-staging"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-trusty-staging-parallel':  # kubernetes-e2e-gke-trusty-staging-parallel
             description: 'Run E2E tests on GKE staging endpoint in parallel.'
             timeout: 80
@@ -417,6 +447,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="e2e-gke-trusty-staging-p"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-trusty-prod':  # kubernetes-e2e-gke-trusty-prod
             # Failing constantly due to a known issue (tracked internally).
             disable_job: true
@@ -431,6 +462,7 @@
                 export KUBE_GCE_ZONE="asia-east1-b"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="kubekins-e2e-gke-trusty-prod"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-trusty-prod-parallel':  # kubernetes-e2e-gke-trusty-prod-parallel
             # Failing constantly due to a known issue (tracked internally).
             disable_job: true
@@ -447,6 +479,7 @@
                 export KUBE_GCE_ZONE="asia-east1-b"
                 export KUBE_OS_DISTRIBUTION="trusty"
                 export PROJECT="e2e-gke-trusty-prod-p"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -466,6 +499,7 @@
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-mas"
                 # Set legacy skip list, only when testing old version
                 # TODO remove when we no longer care about v1.1
@@ -481,6 +515,7 @@
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu"
                 # Set legacy skip list, only when testing old version
                 # TODO remove when we no longer care about v1.1
@@ -497,6 +532,7 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export JENKINS_USE_SKEW_TESTS="true"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu-n"
                 {version-env}
 
@@ -584,6 +620,7 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
 
 - project:
     name: 'kubernetes-e2e-kubectl-skew-gke'
