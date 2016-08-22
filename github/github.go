@@ -1611,9 +1611,13 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 // WriteComment will send the `msg` as a comment to the specified PR
 func (obj *MungeObject) WriteComment(msg string) error {
 	config := obj.config
-	prNum := *obj.Issue.Number
+	prNum := obj.Number()
 	config.analytics.CreateComment.Call(config, nil)
-	glog.Infof("Commenting %q in %d", msg, prNum)
+	comment := msg
+	if len(comment) > 512 {
+		comment = comment[:512]
+	}
+	glog.Infof("Commenting in %d: %q", prNum, comment)
 	if config.DryRun {
 		return nil
 	}
