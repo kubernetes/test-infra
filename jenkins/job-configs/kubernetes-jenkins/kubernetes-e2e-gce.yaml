@@ -105,7 +105,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="kubernetes-jkns-e2e-gce-serial"
-                export KUBE_OS_DISTRIBUTION="gci"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export KUBE_ENABLE_RESCHEDULER=true
         - 'gce-gci-serial':  # kubernetes-e2e-gce-gci-serial
             description: 'Run [Serial], [Disruptive], tests on GCE.'
