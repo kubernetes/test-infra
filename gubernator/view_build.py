@@ -82,7 +82,7 @@ def build_details(build_dir):
 
     for future in junit_futures:
         junit = future.get_result()
-        if junit is None:
+        if not junit:
             continue
         failures.extend(parse_junit(junit, junit_futures[future]))
     failures.sort()
