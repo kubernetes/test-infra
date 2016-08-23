@@ -329,7 +329,7 @@
             emails: 'quinton@google.com, colin.hom@coreos.com, madhusudancs@google.com'
             test-owner: 'quinton'
             job-env: |
-                export PROJECT="k8s-jkns-e2e-gce-federation"
+                export PROJECT="k8s-jkns-e2e-gce-gci-federatio" # GCE project IDs are restricted to 30 characters, so this name is intentionally truncated.
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
                 export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
                 export FEDERATION="true"
