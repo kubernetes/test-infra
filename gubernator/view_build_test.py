@@ -151,6 +151,13 @@ class BuildTest(main_test.TestBase):
         self.assertIn('TestUnschedulableNodes', response)
         self.assertIn('junit_01.xml', response)
 
+    def test_build_empty_junit(self):
+        # Sometimes junit files are actually empty (???)
+        write(self.BUILD_DIR + 'artifacts/junit_01.xml', '')
+        response = self.get_build_page()
+        print response
+        self.assertIn('No Test Failures', response)
+
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
         build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX
