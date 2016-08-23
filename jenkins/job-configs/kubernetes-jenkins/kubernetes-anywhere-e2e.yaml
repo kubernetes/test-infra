@@ -1,0 +1,57 @@
+- job-template:
+    name: 'mikedanese-kubernetes-anywhere-e2e-{suffix}'
+    node: '{jenkins_node}'
+    description: '{description} Test owner: {test-owner}.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    kubernetes-anywhere-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/mikedanese/kubernetes-anywhere/e2e-runner/util/e2e-runner.sh")
+    builders:
+    - activate-gce-service-account
+    - shell: |
+        {job-env}
+        {post-env}
+        timeout -k {kill-timeout}m {timeout}m {kubernetes-anywhere-runner} && rc=$? || rc=$?
+        {report-rc}
+    scm:
+    - git:
+        branches:
+        - master
+        browser: githubweb
+        browser-url: https://github.com/kubernetes/kubernetes-anywhere
+        git-basedir: go/src/k8s.io/kubernetes-anywhere
+        skip-tag: true
+        url: https://github.com/kubernetes/kubernetes-anywhere
+        wipe-workspace: false
+    wrappers:
+    - ansicolor:
+        colormap: xterm
+    - e2e-credentials-binding
+    - timeout:
+        timeout: '{jenkins-timeout}'
+        fail: true
+    - timestamps
+    - workspace-cleanup:
+        dirmatch: true
+        external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+    - claim-build
+    - junit-publisher
+    - log-parser
+    - gcs-uploader
+
+- project:
+    name: mikedanese-kubernetes-anywhere-e2e-gce-master
+    test-owner: 'mikedanese'
+    suffix:
+    - 'gce':  # kubernetes-anywhere-e2e-gce
+        cron-string: '{sq-cron-string}'
+        description: 'Runs all conformance test on a kubernetes-anywhere cluster.'
+        timeout: 50  # See #21138
+        job-env: |
+            export PROJECT="k8s-jkns-kubernetes-anywhere"
+            export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
+    jobs:
+    - 'mikedanese-kubernetes-anywhere-e2e-{suffix}'
