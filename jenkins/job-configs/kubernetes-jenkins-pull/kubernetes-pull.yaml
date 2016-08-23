@@ -1,9 +1,31 @@
+- global-success-comment: |
+  {status-context} build/test **passed** for commit ${{ghprbActualCommit}}.
+  * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
+  * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+  * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
+  * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
+
+- global-failure-comment: |
+  {status-context} build/test **failed** for commit ${{ghprbActualCommit}}.
+  * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
+  * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+  * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
+  * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
+
+  Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
+
+- global-error-comment: |
+  {status-context} build/test **errored** for commit ${{ghprbActualCommit}}.
+  * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
+  * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+  * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
+  * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
+
+  Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
+
 - job-template:
     name: '{git-project}-pull-{suffix}'
     # defaults
-    success-comment: ''
-    failure-comment: ''
-    error-comment: ''
     git-basedir: ''
     skip-if-no-test-files: false
     status-add-test-results: true
@@ -30,6 +52,14 @@
             name: sha1
             description: 'sha1 or refname (e.g. origin/pr/N/head) to build'
     scm:
+        - git:
+            url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            skip-tag: true
         - git:
             remotes:
                 - remote:
@@ -243,9 +273,6 @@
             white-list-target-branches:
                 - master
                 - release-.*
-            success-comment: '{success-comment}'
-            failure-comment: '{failure-comment}'
-            error-comment: '{error-comment}'
     wrappers:
         - e2e-credentials-binding
         - inject:
@@ -321,91 +348,9 @@
       - build-test-e2e-gce: # kubernetes-pull-build-test-e2e-gce
           status-context: GCE e2e
           max-total: 12
-          success-comment: |
-            GCE e2e build/test **passed** for commit ${{ghprbActualCommit}}.
-            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
-            * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
-            * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
-          failure-comment: |
-            GCE e2e build/test **failed** for commit ${{ghprbActualCommit}}.
-            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
-            * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
-            * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
-
-            Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
-          error-comment: |
-            GCE e2e build/test **errored** for commit ${{ghprbActualCommit}}.
-            * [Test Results](https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}})
-            * [Build Log](http://pr-test.k8s.io/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            * [Test Artifacts](https://console.developers.google.com/storage/browser/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/artifacts/)
-            * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
-
-            Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
           trigger-phrase: '(gce )?(e2e )?test'
-          cmd: |
-            export KUBE_SKIP_PUSH_GCS=y
-            export KUBE_RUN_FROM_OUTPUT=y
-            export KUBE_FASTBUILD=true
-            ./hack/jenkins/build.sh
-            if [[ "${{ghprbTargetBranch:-}}" == "release-1.0" || "${{ghprbTargetBranch:-}}" == "release-1.1" ]]; then
-              ./hack/jenkins/e2e.sh
-            else
-              # Nothing should want Jenkins $HOME
-              export HOME=${{WORKSPACE}}
+          cmd: ./go/src/k8s.io/test-infra/jenkins/pr-e2e-gce.sh
 
-              export KUBERNETES_PROVIDER="gce"
-              export E2E_MIN_STARTUP_PODS="1"
-              export KUBE_GCE_ZONE="us-central1-f"
-              export FAIL_ON_GCP_RESOURCE_LEAK="true"
-
-              # Flake detection. Individual tests get a second chance to pass.
-              export GINKGO_TOLERATE_FLAKES="y"
-
-              export E2E_NAME="e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
-              export GINKGO_PARALLEL="y"
-              # This list should match the list in kubernetes-e2e-gce.
-              export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-              export FAIL_ON_GCP_RESOURCE_LEAK="false"
-              export PROJECT="k8s-jkns-pr-gce"
-              # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
-              export NUM_NODES="4"
-              export GINKGO_PARALLEL_NODES="30"
-
-              # Force to use container-vm.
-              export KUBE_NODE_OS_DISTRIBUTION="debian"
-              # Assume we're upping, testing, and downing a cluster
-              export E2E_UP="true"
-              export E2E_TEST="true"
-              export E2E_DOWN="true"
-
-              # Skip gcloud update checking
-              export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
-
-              # GCE variables
-              export INSTANCE_PREFIX=${{E2E_NAME}}
-              export KUBE_GCE_NETWORK=${{E2E_NAME}}
-              export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
-
-              # Get golang into our PATH so we can run e2e.go
-              export PATH=${{PATH}}:/usr/local/go/bin
-
-              timeout -k 15m 55m {runner} && rc=$? || rc=$?
-              if [[ ${{rc}} -ne 0 ]]; then
-                if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
-                  echo "Dumping logs for any remaining nodes"
-                  ./cluster/log-dump.sh _artifacts
-                fi
-              fi
-              if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
-                echo "Build timed out" >&2
-              elif [[ ${{rc}} -ne 0 ]]; then
-                echo "Build failed" >&2
-              fi
-              echo "Exiting with code: ${{rc}}"
-              exit ${{rc}}
-            fi
     jobs:
         - '{git-project}-pull-{suffix}'
 
@@ -421,22 +366,7 @@
             skip-if-no-test-files: true  # no JUnit produced
             status-add-test-results: false
             trigger-phrase: 'test'
-            status-context: 'GCE e2e'
-            success-comment: |
-                Jenkins GCE e2e
-
-                Build/test **passed** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            failure-comment: |
-                Jenkins GCE e2e
-
-                Build/test **failed** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            error-comment: |
-                Jenkins GCE e2e
-
-                Build/test **errored** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            status-context: 'cadvisor'
             cmd: 'BUILDER=true build/jenkins_e2e.sh'
         - 'heapster':
             repo-name: 'kubernetes/heapster'
@@ -447,22 +377,7 @@
             skip-if-no-test-files: true  # no JUnit produced
             status-add-test-results: false
             trigger-phrase: 'test'
-            status-context: 'GCE e2e'
-            success-comment: |
-                Jenkins GCE e2e
-
-                Build/test **passed** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            failure-comment: |
-                Jenkins GCE e2e
-
-                Build/test **failed** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
-            error-comment: |
-                Jenkins GCE e2e
-
-                Build/test **errored** for commit ${{ghprbActualCommit}}.
-                * [Build Log](https://storage.cloud.google.com/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/build-log.txt)
+            status-context: 'heapster'
             cmd: 'make test-unit test-integration'
         - 'node':  # kubelet on post-commit Jenkins
             # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-pull.properties:
@@ -474,7 +389,7 @@
             max-total: 10
             skip-if-no-test-files: true  # old branches may not produce JUnit
             trigger-phrase: '(node )?(e2e )?test'
-            status-context: 'GCE Node e2e'
+            status-context: 'node e2e'
             cmd: |
                 case "${{ghprbTargetBranch:-}}" in
                   release-1.0|release-1.1|release-1.2)
