@@ -1,0 +1,62 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: github-sqlproxy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: github-sqlproxy
+    spec:
+      containers:
+      - image: b.gcr.io/cloudsql-docker/gce-proxy
+        name: github-sqlproxy
+        command:
+        - /cloud_sql_proxy
+        - -dir=/cloudsql
+        - -instances=$(INSTANCES)
+        - -credential_file=/credentials/credential.json
+        env:
+          - name: INSTANCES
+            valueFrom:
+              configMapKeyRef:
+                name: sqlproxy-config
+                key: instances
+        ports:
+        - name: sqlproxy-port
+          containerPort: 3306
+        volumeMounts:
+        - mountPath: /cloudsql
+          name: cloudsql
+        - mountPath: /credentials
+          name: credential
+        - mountPath: /etc/ssl/certs
+          name: config
+      volumes:
+      - name: cloudsql
+        emptyDir:
+      - name: credential
+        secret:
+          secretName: sqlproxy-credential-secret
+      - name: config
+        configMap:
+          name: sqlproxy-config
+          items:
+          - key: ca-certificates.crt
+            path: ca-certificates.crt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: github-stack
+  name: sqlproxy-service
+  namespace: default
+spec:
+  ports:
+  - name: sqlport
+    port: 3306
+    targetPort: sqlproxy-port
+  selector:
+    app: github-sqlproxy
