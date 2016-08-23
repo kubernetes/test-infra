@@ -10,13 +10,13 @@
     # Need the 8 essential kube-system pods ready before declaring cluster ready
     # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
     # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: gce-provider-env
+    provider-env: gce
     fejta-runner: bash <(curl -fsS --retry 3  "https://raw.githubusercontent.com/fejta/test-infra/e2e/jenkins/dockerized-e2e-runner.sh")
     builders:
         - activate-gce-service-account
         - shell: |
-            export KUBEKINS_PROVIDER_ENV="{provider-env}".bashrc
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {fejta-runner} && rc=$? || rc=$?
             if [[ ${{rc}} -ne 0 ]]; then
@@ -29,12 +29,12 @@
     scm:
         - git:
             branches:
-                - master
+                - e2e
             browser: githubweb
-            browser-url: https://github.com/kubernetes/test-infra
-            git-basedir: go/src/k8s.io/test-infra
+            browser-url: https://github.com/fejta/test-infra
+            basedir: go/src/k8s.io/test-infra
             skip-tag: true
-            url: https://github.com/kubernetes/test-infra
+            url: https://github.com/fejta/test-infra
             wipe-workspace: false
     wrappers:
         - ansicolor:
