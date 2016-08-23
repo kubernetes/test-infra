@@ -726,6 +726,11 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 	prNum := *obj.Issue.Number
 	config.analytics.AddLabels.Call(config, nil)
 	glog.Infof("Adding labels %v to PR %d", labels, prNum)
+	if len(labels) == 0 {
+		glog.Info("No labels to add: quitting")
+		return nil
+	}
+
 	if config.DryRun {
 		return nil
 	}

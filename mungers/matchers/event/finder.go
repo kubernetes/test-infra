@@ -21,6 +21,16 @@ import "github.com/google/go-github/github"
 // FilteredEvents is a list of events
 type FilteredEvents []*github.IssueEvent
 
+// GetLast returns the last event in a series of events
+func (f FilteredEvents) GetLast() *github.IssueEvent {
+	return f[len(f)-1]
+}
+
+// Empty Checks to see if the list of events is empty
+func (f FilteredEvents) Empty() bool {
+	return len(f) == 0
+}
+
 // FilterEvents will return the list of matching events
 func FilterEvents(events []*github.IssueEvent, matcher Matcher) FilteredEvents {
 	matches := FilteredEvents{}
