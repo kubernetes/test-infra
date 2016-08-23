@@ -106,6 +106,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-e2e-serial"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_ENABLE_RESCHEDULER=true
         - 'gke-gci-serial':  # kubernetes-e2e-gke-gci-serial
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
@@ -116,6 +117,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-gci-e2e-serial"
                 export KUBE_OS_DISTRIBUTION="gci"
+                export KUBE_ENABLE_RESCHEDULER=true
         - 'gke-updown':  # kubernetes-e2e-gke-updown
             cron-string: '{sq-cron-string}'
             description: 'Brings a cluster up, checks networking, brings it down (against GKE test endpoint)'
