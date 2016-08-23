@@ -52,8 +52,15 @@
     build:
         - 'build':
             branch: 'master'
+            timeout: 30
+            job-env: |
+              export KUBE_FASTBUILD=true
+        - 'cross-build':
+            branch: 'master'
             timeout: 50
-            job-env: ''  # Empty expected
+            job-env: |
+              export KUBE_FASTBUILD=false
+              export KUBE_SKIP_PUSH_GCS=y  # since 'kubernetes-build' is pushing to the same path
         - 'build-1.2':
             branch: 'release-1.2'
             timeout: 30

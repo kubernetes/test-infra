@@ -50,6 +50,7 @@
             job-env: |
               export RELEASE_INFRA_PUSH=true
               export SET_NOMOCK_FLAG=false
+              export KUBE_FASTBUILD=true
         - 'federation-build':
             branch: 'master'
             timeout: 50
