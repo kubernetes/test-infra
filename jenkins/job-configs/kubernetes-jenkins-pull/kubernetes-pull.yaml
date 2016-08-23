@@ -298,7 +298,7 @@
       - test-unit-integration: # kubernetes-pull-test-unit-integration
           status-context: unit/integration
           max-total: 0 # Unlimited
-          trigger-phrase: 'unit\s+test'
+          trigger-phrase: 'unit test'
           cmd: |
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             ./hack/jenkins/gotest-dockerized.sh
@@ -315,7 +315,7 @@
       - build-test-e2e-gke: # kubernetes-pull-build-test-e2e-gke
           status-context: GKE smoke e2e
           max-total: 12
-          trigger-phrase: 'e2e\s+test'
+          trigger-phrase: 'gke e2e test'
           cmd: |
             if [[ "${{ghprbTargetBranch:-}}" == "release-1.0" || "${{ghprbTargetBranch:-}}" == "release-1.1" ]]; then
               echo "PR GKE job disabled for legacy branches."
@@ -414,7 +414,7 @@
             * [Internal Jenkins Results](${{JOB_URL}}/${{BUILD_NUMBER}})
 
             Please reference the [list of currently known flakes](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when examining this failure. If you request a re-test, you must reference the issue describing the flake.
-          trigger-phrase: 'e2e\s+test'
+          trigger-phrase: 'gce e2e test'
           cmd: |
             export KUBE_SKIP_PUSH_GCS=y
             export KUBE_RUN_FROM_OUTPUT=y
@@ -481,7 +481,7 @@
           status-context: Federation GCE e2e
           max-total: 12
           only-trigger-phrase: true  # This test should run only if explicitly triggered.
-          trigger-phrase: 'federation\s+gce\s+e2e\s+test'
+          trigger-phrase: 'federation gce e2e test'
           cmd: |
             # Federation specific params
             export FEDERATION="true"
@@ -550,7 +550,7 @@
           status-context: Kubemark GCE e2e
           max-total: 12
           only-trigger-phrase: true  # This test should run only if explicitly triggered.
-          trigger-phrase: 'kubemark\s+test'
+          trigger-phrase: 'kubemark e2e test'
           cmd: |
             export KUBE_SKIP_PUSH_GCS=y
             export KUBE_RUN_FROM_OUTPUT=y
