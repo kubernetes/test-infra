@@ -40,6 +40,7 @@ spec:
     targetPort: nginx-port
   selector:
     app: nginx
+  loadBalancerIP: 104.197.200.129
   type: LoadBalancer
 ---
 apiVersion: v1
