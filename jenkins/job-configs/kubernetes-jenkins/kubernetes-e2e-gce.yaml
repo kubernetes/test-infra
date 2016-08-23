@@ -106,6 +106,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="kubernetes-jkns-e2e-gce-serial"
                 export KUBE_OS_DISTRIBUTION="gci"
+                export KUBE_ENABLE_RESCHEDULER=true
         - 'gce-gci-serial':  # kubernetes-e2e-gce-gci-serial
             description: 'Run [Serial], [Disruptive], tests on GCE.'
             timeout: 300
@@ -115,6 +116,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-gci-serial"
                 export KUBE_OS_DISTRIBUTION="gci"
+                export KUBE_ENABLE_RESCHEDULER=true
         - 'gce-reboot':  # kubernetes-e2e-gce-reboot
             description: 'Run [Feature:Reboot] tests on GCE.'
             timeout: 180
