@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fetcher
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fetcher
+    spec:
+      containers:
+      - name: fetcher
+        args:
+        - --token-file=/etc/secret-volume/token
+        - --stderrthreshold=0
+        - --host=sqlproxy-service
+        image: gcr.io/google-containers/github-fetcher:v1472240677
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          readOnly: true
+          name: secret-volume
+        - mountPath: /etc/ssl/certs
+          name: certificates
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: github-token
+      - name: certificates
+        configMap:
+          name: certificates
+          items:
+          - key: ca-certificates.crt
+            path: ca-certificates.crt
