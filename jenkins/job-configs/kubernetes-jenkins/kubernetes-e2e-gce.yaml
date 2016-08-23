@@ -259,6 +259,8 @@
                 # Use etcd3 as storage backend.
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+                # Use new image for etcd.
+                export TEST_ETCD_VERSION="3.0.4-migration.2"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
