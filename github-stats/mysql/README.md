@@ -16,7 +16,8 @@ kubectl create secret generic sqlproxy-credential-secret --from-file=credential.
 
 Create configmap to install ca-certificate and instances to listen to:
 ```
-kubectl create configmap sqlproxy-config --from-literal=instances=${gcp_sql_project}:github-database=tcp:0.0.0.0:3306 --from-file=/etc/ssl/certs/ca-certificates.crt
+kubectl create configmap sqlproxy-config --from-literal=instances=${gcp_sql_project}:github-database=tcp:0.0.0.0:3306
+kubectl create configmap certificates --from-file=/etc/ssl/certs/ca-certificates.crt
 ```
 
 Deployment

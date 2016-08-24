@@ -32,16 +32,16 @@ spec:
         - mountPath: /credentials
           name: credential
         - mountPath: /etc/ssl/certs
-          name: config
+          name: certificates
       volumes:
       - name: cloudsql
         emptyDir:
       - name: credential
         secret:
           secretName: sqlproxy-credential-secret
-      - name: config
+      - name: certificates
         configMap:
-          name: sqlproxy-config
+          name: certificates
           items:
           - key: ca-certificates.crt
             path: ca-certificates.crt
