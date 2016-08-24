@@ -12,23 +12,25 @@
     properties:
         - build-discarder:
             days-to-keep: 7
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="8"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    provider-env: gce
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -352,6 +354,7 @@
                 export GINKGO_PARALLEL="y"
                 export NETWORK_PROVIDER="kubenet"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{suffix}'
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -396,6 +399,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-serial-1-2"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{suffix}'
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -493,6 +497,7 @@
                 # Increase delete collection parallelism
                 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{suffix}'
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -547,6 +552,7 @@
                 export PROJECT="kubernetes-petset"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{suffix}'
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
@@ -588,5 +594,6 @@
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
         export KUBE_NODE_OS_DISTRIBUTION="debian"
+    job-name: 'kubernetes-e2e-{suffix}'
     jobs:
         - 'kubernetes-e2e-{suffix}'

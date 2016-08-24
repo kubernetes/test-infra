@@ -71,6 +71,8 @@ docker run --rm=true -i \
   ${JENKINS_AWS_CREDENTIALS_FILE:+-v "${JENKINS_AWS_CREDENTIALS_FILE}:/workspace/.aws/credentials:ro"} \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-v "${GOOGLE_APPLICATION_CREDENTIALS}:/service-account.json:ro"} \
   --env-file "${WORKSPACE}/env.list" \
+  --env-file "go/src/k8s.io/test-infra/job-configs/${KUBEKINS_PROVIDER_ENV}" \
+  --env-file "go/src/k8s.io/test-infra/job-configs/${KUBEKINS_JOB_ENV}" \
   -e "HOME=/workspace" \
   -e "WORKSPACE=/workspace" \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \

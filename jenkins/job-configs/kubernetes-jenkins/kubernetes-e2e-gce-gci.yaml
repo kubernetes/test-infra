@@ -21,23 +21,25 @@
     properties:
         - build-discarder:
             days-to-keep: 7
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="8"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+    provider-env: gce
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -180,6 +182,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-2"
                 export KUBE_OS_DISTRIBUTION="gci"
+    job-name: 'kubernetes-e2e-gce-gci-ci-{suffix}'
     jobs:
         - 'kubernetes-e2e-gce-gci-ci-{suffix}'
 
@@ -194,24 +197,26 @@
     properties:
         - build-discarder:
             days-to-keep: 7
-    # Need the 8 essential kube-system pods ready before declaring cluster ready
-    # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
-    # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
-    provider-env: |
-        export KUBERNETES_PROVIDER="gce"
-        export E2E_MIN_STARTUP_PODS="8"
-        export KUBE_GCE_ZONE="us-central1-f"
-        export FAIL_ON_GCP_RESOURCE_LEAK="true"
-        export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-        export JENKINS_USE_GCI_VERSION="y"  # Use GCI builtin k8s version.
+    provider-env: gce
     builders:
         - activate-gce-service-account
         - shell: |
-            {provider-env}
-            {job-env}
+            export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
+            export KUBEKINS_JOB_ENV="{job-name}.env"
+            export JENKINS_USE_GCI_VERSION="y"  # Use GCI builtin k8s version.
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
+    scm:
+        - git:
+            branches:
+                - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
     wrappers:
         - ansicolor:
             colormap: xterm
@@ -339,5 +344,6 @@
                 export PROJECT="e2e-gce-gci-qa-serial-m52"
                 export KUBE_OS_DISTRIBUTION="gci"
                 export KUBE_ENABLE_RESCHEDULER=true
+    job-name: 'kubernetes-e2e-gce-gci-qa-{suffix}'
     jobs:
         - 'kubernetes-e2e-gce-gci-qa-{suffix}'
