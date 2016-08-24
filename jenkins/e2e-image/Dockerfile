@@ -43,6 +43,10 @@ ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
 # JENKINS_AWS_SSH_PUBLIC_KEY_FILE
 # JENKINS_AWS_CREDENTIALS_FILE
 
-ADD ["sh2ju.sh", "e2e-runner.sh", "e2e.go", "upload-to-gcs.sh", "${WORKSPACE}/"]
+ADD ["e2e-runner.sh", \
+    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/e2e.go", \
+    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
+    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
+    "${WORKSPACE}/"]
 
 ENTRYPOINT ["bash", "-c", "${WORKSPACE}/e2e-runner.sh"]

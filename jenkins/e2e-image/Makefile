@@ -17,22 +17,7 @@ TAG = $(shell date +v%Y%m%d)
 
 all: build
 
-e2e:
-	cp ../../e2e.go .
-
-e2e-runner:
-	cp ../e2e-runner.sh .
-
-sh2ju:
-	cp ../../../third_party/forked/shell2junit/sh2ju.sh .
-
-upload-to-gcs.sh:
-	cp ../upload-to-gcs.sh .
-
-clean:
-	rm -rf e2e.go e2e-runner.sh sh2ju.sh upload-to-gcs.sh
-
-build: e2e e2e-runner sh2ju upload-to-gcs
+build:
 	docker build -t $(IMG):$(TAG) .
 	docker tag -f $(IMG):$(TAG) $(IMG):latest
 	@echo Built $(IMG):$(TAG) and tagged with latest
