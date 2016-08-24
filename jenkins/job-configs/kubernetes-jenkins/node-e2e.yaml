@@ -100,7 +100,7 @@
         - ansicolor:
             colormap: xterm
         - timeout:
-            timeout: 90
+            timeout: '{test-timeout}'
             fail: true
         - timestamps
         - inject:
@@ -113,6 +113,7 @@
             external-deletion-command: 'sudo rm -rf %s'
 
     scm-cron-string: 'H/5 * * * *'
+    test-timeout: 90
 
 - project:
     name: node-docker-canary-build
@@ -159,6 +160,7 @@
         - 'kubelet-serial':
             scm-cron-string: 'H/30 * * * *'
             cron-string: 'H H/2 * * *'
+            test-timeout: '{jenkins-timeout}'
             repoName: 'kubernetes/kubernetes'
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'lantaol@google.com'
