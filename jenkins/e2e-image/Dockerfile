@@ -47,6 +47,7 @@ ADD ["e2e-runner.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/e2e.go", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
-    "${WORKSPACE}/"]
+    "/workspace/"]
+RUN ["chmod", "+x", "/workspace/upload-to-gcs.sh", "/workspace/sh2ju.sh"]
 
-ENTRYPOINT ["bash", "-c", "${WORKSPACE}/e2e-runner.sh"]
+ENTRYPOINT ["bash", "-c", "/workspace/e2e-runner.sh"]
