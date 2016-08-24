@@ -1,5 +1,6 @@
 - project:
     name: resource-cleanup
+    node: 'master'
     node-e2e-project: 'k8s-jkns-ci-node-e2e'
     jobs:
         - 'google-cloud-resource-cleanup'
