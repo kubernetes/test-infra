@@ -52,7 +52,9 @@ if git diff --cached --exit-code &>/dev/null; then
     echo "nothing has changed!"
     exit 0
 fi
-git commit -m "published by bot, copied from ${SRCURL}, last commit is ${commit_hash}"
+git commit -m "published by bot
+copied from ${SRCURL}
+last commit is ${commit_hash}"
 git push origin master
 popd > /dev/null
 rm -f ~/.netrc
