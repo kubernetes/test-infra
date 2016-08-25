@@ -1,6 +1,8 @@
 - job-template:
     name: 'google-cloud-resource-cleanup'
     description: 'Clean up leaked cloud resources. Test owner: test-infra maintainers.'
+    jenkins-node: ''
+    node: '{jenkins-node}'
     properties:
         - build-discarder:
             days-to-keep: 14
