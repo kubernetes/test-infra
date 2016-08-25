@@ -51,7 +51,7 @@
     <<: *soak_defaults
     description: '{e2e-description} Test Owner: {test-owner}'
     workspace: '/var/lib/jenkins/jobs/kubernetes-soak-weekly-deploy-{suffix}/workspace'
-    run-timeout: 360
+    run-timeout: 600
     soak-env: |
         export JENKINS_USE_EXISTING_BINARIES="y"
         export FAIL_ON_GCP_RESOURCE_LEAK="false"
