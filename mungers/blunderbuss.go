@@ -52,7 +52,9 @@ func init() {
 func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (b *BlunderbussMunger) RequiredFeatures() []string { return []string{features.RepoFeatureName} }
+func (b *BlunderbussMunger) RequiredFeatures() []string {
+	return []string{features.RepoFeatureName, features.AliasesFeature}
+}
 
 // Initialize will initialize the munger
 func (b *BlunderbussMunger) Initialize(config *github.Config, features *features.Features) error {
