@@ -4,7 +4,8 @@ metadata:
   name: kubernetes-publisher-config
 data:
   # basic config options.
-  config.organization: kubernetes
+  #config.organization: kubernetes
+  config.organization: caesarxuchao
   config.project: kubernetes
   config.pr-mungers: publisher
   config.token-file: /etc/secret-volume/token

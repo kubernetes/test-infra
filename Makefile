@@ -41,7 +41,7 @@ test: mungegithub
 	CGO_ENABLED=0 GOOS=linux go test ./...
 
 # build the container with the binary
-container: test
+container: mungegithub
 	docker build -t $(CONTAINER) -f Dockerfile-$(APP) .
 
 # push the container
