@@ -199,10 +199,10 @@ spec:
                 name: @@-sq-config
                 key: check-labels.label-file
           - name: TRIAGER_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: @@-sq-config
-                  key: issue-categorizer.triager-url
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: issue-categorizer.triager-url
         ports:
         - name: status
           containerPort: 8080
