@@ -17,6 +17,7 @@ limitations under the License.
 package comment
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -47,4 +48,24 @@ func (c CreatedBefore) Match(comment *github.IssueComment) bool {
 		return false
 	}
 	return comment.CreatedAt.Before(time.Time(c))
+}
+
+// ValidAuthor validates that a comment has the author set
+type ValidAuthor struct{}
+
+// Match if the comment has a valid author
+func (ValidAuthor) Match(comment *github.IssueComment) bool {
+	return comment != nil && comment.User != nil && comment.User.Login != nil
+}
+
+// AuthorLogin matches comment made by this Author
+type AuthorLogin string
+
+// Match if the Author is a match (ignoring case)
+func (a AuthorLogin) Match(comment *github.IssueComment) bool {
+	if !(ValidAuthor{}).Match(comment) {
+		return false
+	}
+
+	return strings.ToLower(*comment.User.Login) == strings.ToLower(string(a))
 }

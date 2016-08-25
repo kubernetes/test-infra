@@ -17,41 +17,80 @@ limitations under the License.
 package comment
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/google/go-github/github"
 )
 
-// Notification identifies comments with the following format:
-// [NEEDS-REBASE] Optional arguments
-type Notification string
+// NotificationName identifies notifications by name
+type NotificationName string
 
-// Match returns true if the comment is a notification
-func (b Notification) Match(comment *github.IssueComment) bool {
-	if comment.Body == nil {
+// Match returns true if the comment is a notification with the given name
+func (b NotificationName) Match(comment *github.IssueComment) bool {
+	notif := ParseNotification(comment)
+	if notif == nil {
 		return false
 	}
-	match, _ := regexp.MatchString(
-		fmt.Sprintf(`^\[%s\]`, strings.ToLower(string(b))),
-		strings.ToLower(*comment.Body),
-	)
-	return match
+
+	return strings.ToUpper(notif.Name) == strings.ToUpper(string(b))
 }
 
-// Command identifies messages sent to the bot, with the following format:
-// /COMMAND Optional arguments
-type Command string
+// CommandName identifies commands by name
+type CommandName string
 
-// Match will return true if the comment is indeed a command
-func (c Command) Match(comment *github.IssueComment) bool {
-	if comment.Body == nil {
+// Match will return true if the comment is a command with the given name
+func (c CommandName) Match(comment *github.IssueComment) bool {
+	command := ParseCommand(comment)
+	if command == nil {
 		return false
 	}
-	match, _ := regexp.MatchString(
-		fmt.Sprintf("^/%s", strings.ToLower(string(c))),
-		strings.ToLower(*comment.Body),
-	)
-	return match
+	return strings.ToUpper(command.Name) == strings.ToUpper(string(c))
+}
+
+// CommandArguments identifies commands by arguments (with regex)
+type CommandArguments regexp.Regexp
+
+// Match if the command arguments match the regexp
+func (c CommandArguments) Match(comment *github.IssueComment) bool {
+	command := ParseCommand(comment)
+	if command == nil {
+		return false
+	}
+	return (*regexp.Regexp)(&c).MatchString(command.Arguments)
+}
+
+// MungeBotAuthor creates a matcher to find mungebot comments
+func MungeBotAuthor() Matcher {
+	return AuthorLogin("k8s-merge-robot")
+}
+
+// JenkinsBotAuthor creates a matcher to find jenkins bot comments
+func JenkinsBotAuthor() Matcher {
+	return AuthorLogin("k8s-bot")
+}
+
+// BotAuthor creates a matcher to find any bot comments
+func BotAuthor() Matcher {
+	return Or([]Matcher{
+		MungeBotAuthor(),
+		JenkinsBotAuthor(),
+	})
+}
+
+// HumanActor creates a matcher to find non-bot comments.
+// ValidAuthor is used because a comment that doesn't have "Author" is NOT made by a human
+func HumanActor() Matcher {
+	return And([]Matcher{
+		ValidAuthor{},
+		Not{BotAuthor()},
+	})
+}
+
+// MungerNotificationName finds notification posted by the munger, based on name
+func MungerNotificationName(notif string) Matcher {
+	return And([]Matcher{
+		MungeBotAuthor(),
+		NotificationName(notif),
+	})
 }
