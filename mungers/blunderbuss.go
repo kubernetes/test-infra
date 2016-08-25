@@ -115,7 +115,7 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 			glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 		}
 
-		if b.features.Aliases.IsEnabled {
+		if b.features.Aliases != nil && b.features.Aliases.IsEnabled {
 			fileOwners = b.features.Aliases.Expand(fileOwners)
 		}
 
