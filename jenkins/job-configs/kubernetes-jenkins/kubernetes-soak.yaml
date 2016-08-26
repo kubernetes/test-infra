@@ -158,6 +158,27 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gce-1.4':
+            deploy-description: |
+                Deploy Kubernetes to soak cluster using the latest successful
+                release-1.4 Kubernetes build every week.<br>
+                If a kubernetes-soak-continuous-e2e-gce-1.4 build is running,
+                this deployment build will be blocked and remain in the queue
+                until the test run is complete.<br>
+            e2e-description: |
+                Assumes Kubernetes soak cluster is already deployed.<br>
+                If a kubernetes-soak-weekly-deploy-gce-1.4 build is enqueued,
+                builds will be blocked and remain in the queue until the
+                deployment is complete.<br>
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="8"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+            job-env: |
+                export PROJECT="k8s-jkns-gce-soak-1-4"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
         - 'gce-1.3':
             deploy-description: |
                 Deploy Kubernetes to soak cluster using the latest successful
