@@ -106,3 +106,12 @@ make secret APP=submit-queue TARGET=<TARGET>
 * Create the service which is of type NodePort.
 * Finally, update the ingress.yaml with the new URL and the new service to point to.
 * Apply changes to the running ingress instance.
+
+## Communicating with the Bot
+
+Github contributors and reviewers can communicate with the mungebot by commenting on a PR with the following commands entered alone in the text field. All commands require the following syntax: /<COMMAND> [OPTIONAL ARGS].  Note the forward slashing preceding the command name.
+
+### List of Commands
+
+1. **/lgtm** : applies the lgtm label
+2. **/lgtm cancel** : removes a previously applied lgtm label
