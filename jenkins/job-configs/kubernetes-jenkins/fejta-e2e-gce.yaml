@@ -15,6 +15,10 @@
     builders:
         - activate-gce-service-account
         - shell: |
+            echo k8s
+            ls "${{WORKSPACE}}/go/src/k8s.io/kubernetes"
+            echo test-infra
+            ls "${{WORKSPACE}}/go/src/k8s.io/test-infra"
             export KUBEKINS_PROVIDER_ENV="{provider-env}.env"
             export KUBEKINS_JOB_ENV="{name}.env"
             {post-env}
@@ -29,7 +33,16 @@
     scm:
         - git:
             branches:
-                - e2e
+            - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/kubernetes
+            basedir: go/src/k8s.io/kubernetes
+            skip-tag: true
+            url: https://github.com/kubernetes/kubernetes
+            wipe-workspace: false
+        - git:
+            branches:
+            - e2e
             browser: githubweb
             browser-url: https://github.com/fejta/test-infra
             basedir: go/src/k8s.io/test-infra
