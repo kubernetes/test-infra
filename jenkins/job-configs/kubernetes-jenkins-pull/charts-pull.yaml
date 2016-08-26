@@ -1,5 +1,5 @@
 - job-template:
-    name: '{git-project}-pull-{suffix}'
+    name: 'charts-pull-test-e2e'
     # defaults
     success-comment: ''
     failure-comment: ''
@@ -16,7 +16,7 @@
         - github:
             url: 'https://github.com/{repo-name}'
         - throttle:
-            max-total: '{max-total}'
+            max-total: 0
             max-per-node: 2
             option: project
         - raw:
@@ -53,9 +53,9 @@
             # This is the Jenkins GHPRB plugin ID, not the actual github token.
             auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
             only-trigger-phrase: '{only-trigger-phrase}'
-            trigger-phrase: '(?is).*@k8s-bot\s+{trigger-phrase}\s+this.*'
+            trigger-phrase: '(?is).*@k8s-bot\s+(e2e )?test\s+this.*'
             cron: 'H/2 * * * *'
-            status-context: Jenkins {status-context}
+            status-context: Jenkins Charts e2e
             status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
             status-add-test-results: '{status-add-test-results}'
             # This should roughly line up with charts-maintainers.
@@ -111,7 +111,7 @@
         - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: |
               if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
-              {cmd}
+              ./test/e2e.sh
     publishers:
         - xunit:
             thresholds:
@@ -135,12 +135,4 @@
 
 - project:
     name: charts-pull
-    git-project: 'charts'
     repo-name: 'kubernetes/charts'
-    suffix:
-      - test-e2e: # charts-pull-test-e2e
-          status-context: Charts e2e
-          max-total: 0 # Unlimited
-          trigger-phrase: '(e2e )?test'
-          cmd: |
-            ./test/e2e.sh
