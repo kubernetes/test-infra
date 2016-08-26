@@ -1,0 +1,144 @@
+- job-template:
+    name: '{git-project}-pull-{suffix}'
+    # defaults
+    success-comment: ''
+    failure-comment: ''
+    error-comment: ''
+    git-basedir: ''
+    skip-if-no-test-files: false
+    status-add-test-results: true
+    only-trigger-phrase: false
+
+    concurrent: true
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+        - github:
+            url: 'https://github.com/{repo-name}'
+        - throttle:
+            max-total: '{max-total}'
+            max-per-node: 2
+            option: project
+        - raw:
+            xml: |
+                <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                    <script>docker version; gcloud version</script>
+                    <interpreter>shell script</interpreter>
+                </com.cloudbees.plugins.JobPrerequisites>
+    parameters:
+        - string:
+            name: sha1
+            description: 'sha1 or refname (e.g. origin/pr/N/head) to build'
+    scm:
+        - git:
+            remotes:
+                - remote:
+                    url: 'https://github.com/{repo-name}'
+                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
+                - remote:
+                    url: 'https://github.com/{repo-name}'
+                    refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
+            branches:
+                - 'origin/pr/${{ghprbPullId}}/merge'
+            basedir: '{git-basedir}'
+            browser: githubweb
+            browser-url: 'http://github.com/{repo-name}'
+            timeout: 20
+            clean:
+                after: true
+            wipe-workspace: false
+            skip-tag: true
+    triggers:
+        - github-pull-request:
+            # This is the Jenkins GHPRB plugin ID, not the actual github token.
+            auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
+            only-trigger-phrase: '{only-trigger-phrase}'
+            trigger-phrase: '(?is).*@k8s-bot\s+{trigger-phrase}\s+this.*'
+            cron: 'H/2 * * * *'
+            status-context: Jenkins {status-context}
+            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
+            status-add-test-results: '{status-add-test-results}'
+            # This should roughly line up with kubernetes-maintainers.
+            # To update:
+            #   curl -s "https://api.github.com/teams/1674435/members?per_page=100&access_token=TOKEN" \
+            #     | jq -r .[].login | sort -f
+            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
+            #
+            # Note that k8s-merge-robot is not in this team, so is explicitly listed here.
+            admin-list:
+                - k8s-merge-robot
+                - viglesiasce
+                - etune
+                - prydonious
+                - runseb
+                - technosophos
+                - michelleN
+            # This should roughly line up with kubernetes-collaborators.
+            # To update:
+            #   curl -s "https://api.github.com/teams/1696393/members?per_page=100&access_token=TOKEN" \
+            #     | jq -r .[].login | sort -f
+            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
+            white-list:
+                - viglesiasce
+            org-list:
+                - kubernetes
+            white-list-target-branches:
+                - master
+            success-comment: '{success-comment}'
+            failure-comment: '{failure-comment}'
+            error-comment: '{error-comment}'
+    wrappers:
+        - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+        - timeout:
+            timeout: 90
+            fail: true
+        - ansicolor:
+            colormap: xterm
+    builders:
+        - activate-gce-service-account
+        - ensure-upload-to-gcs-script:
+            git-basedir: '{git-basedir}'
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
+        - shell: |
+              if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
+              {cmd}
+    publishers:
+        - xunit:
+            thresholds:
+                - failed:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+                - skipped:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+            types:
+                - junit:
+                    skip-if-no-test-files: '{skip-if-no-test-files}'
+                    pattern: '_artifacts/**.xml'
+                    deleteoutput: false
+        - gcs-uploader:
+            git-basedir: '{git-basedir}'
+
+- project:
+    name: charts-pull
+    git-project: 'charts'
+    repo-name: 'kubernetes/charts'
+    suffix:
+      - test-e2e: # charts-pull-test-e2e
+          status-context: Charts e2e
+          max-total: 0 # Unlimited
+          trigger-phrase: '(e2e )?test'
+          cmd: |
+            ./test/e2e.sh
