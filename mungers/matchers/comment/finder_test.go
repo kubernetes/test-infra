@@ -19,6 +19,7 @@ package comment
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/go-github/github"
 )
@@ -39,5 +40,32 @@ func TestFilterComments(t *testing.T) {
 	fullList := FilterComments(comments, True{})
 	if !reflect.DeepEqual([]*github.IssueComment(fullList), comments) {
 		t.Error("True filter should have kept every element")
+	}
+}
+
+func makeCommentWithCreatedAt(year int, month time.Month, day int) *github.IssueComment {
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	return &github.IssueComment{
+		CreatedAt: &date,
+	}
+}
+
+func TestLastCommentDefault(t *testing.T) {
+	if LastComment(nil, True{}, nil) != nil {
+		t.Error("Empty list should return nil default")
+	}
+	if !reflect.DeepEqual(LastComment(nil, True{}, &time.Time{}), &time.Time{}) {
+		t.Error("Empty list should return given default value")
+	}
+}
+
+func TestLastComment(t *testing.T) {
+	comments := []*github.IssueComment{
+		makeCommentWithCreatedAt(2000, 1, 1),
+		makeCommentWithCreatedAt(2000, 1, 2),
+		makeCommentWithCreatedAt(2000, 1, 3),
+	}
+	if !reflect.DeepEqual(*LastComment(comments, True{}, nil), time.Date(2000, 1, 3, 0, 0, 0, 0, time.UTC)) {
+		t.Error("Should match the last comment")
 	}
 }
