@@ -40,8 +40,8 @@ var (
 
 	testPRImage = flag.String("test-pr-image", "", "Image to use for testing PRs.")
 
-	webhookSecretFile = flag.String("hmac-secret-file", "/etc/hmac/hmac", "Path to the file containing the GitHub HMAC secret.")
-	githubTokenFile   = flag.String("github-token-file", "/etc/oauth/oauth", "Path to the file containing the GitHub OAuth secret.")
+	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
 var defaultJenkinsJobs = []JenkinsJob{
@@ -117,10 +117,13 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
+	prc := make(chan github.PullRequestEvent)
+	icc := make(chan github.IssueCommentEvent)
+	brc := make(chan BuildRequest)
 	server := &Server{
 		HMACSecret:         webhookSecret,
-		PullRequestEvents:  make(chan github.PullRequestEvent),
-		IssueCommentEvents: make(chan github.IssueCommentEvent),
+		PullRequestEvents:  prc,
+		IssueCommentEvents: icc,
 	}
 
 	githubAgent := &GitHubAgent{
@@ -130,10 +133,10 @@ func main() {
 
 		JenkinsJobs: defaultJenkinsJobs,
 
-		PullRequestEvents:  server.PullRequestEvents,
-		IssueCommentEvents: server.IssueCommentEvents,
+		PullRequestEvents:  prc,
+		IssueCommentEvents: icc,
 
-		BuildRequests: make(chan BuildRequest),
+		BuildRequests: brc,
 	}
 	githubAgent.Start()
 
@@ -143,7 +146,7 @@ func main() {
 		KubeClient:  kubeClient,
 		Namespace:   *namespace,
 
-		BuildRequests: githubAgent.BuildRequests,
+		BuildRequests: brc,
 	}
 	kubeAgent.Start()
 

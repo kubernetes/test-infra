@@ -28,8 +28,8 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then places them into the appropriate event channels.
 type Server struct {
-	PullRequestEvents  chan github.PullRequestEvent
-	IssueCommentEvents chan github.IssueCommentEvent
+	PullRequestEvents  chan<- github.PullRequestEvent
+	IssueCommentEvents chan<- github.IssueCommentEvent
 
 	HMACSecret []byte
 }

@@ -57,6 +57,19 @@ func TestTrusted(t *testing.T) {
 			},
 			Trusted: false,
 		},
+		// Non org member, "not ok to test" comment by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{"u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "not ok to test",
+					User: github.User{"t1"},
+				},
+			},
+			Trusted: false,
+		},
 		// Non org member, ok to test comment by org member.
 		{
 			PR: github.PullRequest{
@@ -173,10 +186,18 @@ func TestHandleIssueComment(t *testing.T) {
 		// Trusted member's ok to test.
 		{
 			Author:      "t",
-			Body:        "ok to test",
+			Body:        "looks great, thanks!\nok to test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+		},
+		// Trusted member's not ok to test.
+		{
+			Author:      "t",
+			Body:        "not ok to test",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
 		},
 		// Trusted member's test this.
 		{
@@ -188,6 +209,7 @@ func TestHandleIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		brc := make(chan BuildRequest, 1)
 		g := &fakegithub.FakeClient{
 			OrgMembers: []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
@@ -211,7 +233,7 @@ func TestHandleIssueComment(t *testing.T) {
 					Context:   "job job",
 				},
 			},
-			BuildRequests: make(chan BuildRequest, 1),
+			BuildRequests: brc,
 		}
 		var pr *struct{}
 		if tc.IsPR {
@@ -237,7 +259,7 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		var built bool
 		select {
-		case <-s.BuildRequests:
+		case <-brc:
 			built = true
 		default:
 			built = false
@@ -248,6 +270,78 @@ func TestHandleIssueComment(t *testing.T) {
 			} else {
 				t.Errorf("Not built but should have: %+v", tc)
 			}
+		}
+	}
+}
+
+func TestCommentBodyMatches(t *testing.T) {
+	var testcases = []struct {
+		body         string
+		expectedJobs []string
+	}{
+		{
+			"ok to test",
+			[]string{"gce", "unit"},
+		},
+		{
+			"@k8s-bot test this",
+			[]string{"gce", "unit", "gke"},
+		},
+		{
+			"@k8s-bot unit test this",
+			[]string{"unit"},
+		},
+		{
+			"@k8s-bot federation test this",
+			[]string{"federation"},
+		},
+	}
+	ga := &GitHubAgent{
+		JenkinsJobs: []JenkinsJob{
+			{
+				Name:      "gce",
+				Trigger:   regexp.MustCompile(`@k8s-bot (gce )?test this`),
+				AlwaysRun: true,
+			},
+			{
+				Name:      "unit",
+				Trigger:   regexp.MustCompile(`@k8s-bot (unit )?test this`),
+				AlwaysRun: true,
+			},
+			{
+				Name:      "gke",
+				Trigger:   regexp.MustCompile(`@k8s-bot (gke )?test this`),
+				AlwaysRun: false,
+			},
+			{
+				Name:      "federation",
+				Trigger:   regexp.MustCompile(`@k8s-bot federation test this`),
+				AlwaysRun: false,
+			},
+		},
+	}
+	for _, tc := range testcases {
+		actualJobs := ga.commentBodyMatches(tc.body)
+		match := true
+		if len(actualJobs) != len(tc.expectedJobs) {
+			match = false
+		} else {
+			for _, actualJob := range actualJobs {
+				found := false
+				for _, expectedJob := range tc.expectedJobs {
+					if expectedJob == actualJob.Name {
+						found = true
+						break
+					}
+				}
+				if !found {
+					match = false
+					break
+				}
+			}
+		}
+		if !match {
+			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
 		}
 	}
 }

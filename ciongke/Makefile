@@ -22,9 +22,9 @@ MACHINE_TYPE = n1-standard-2
 # The hook secret is your HMAC token, the OAuth secret is the OAuth
 # token of whatever account you want to comment and update statuses.
 # The Jenkins secret is the API token.
-HOOK_SECRET_FILE = $(shell echo $${HOME}/hook)
-OAUTH_SECRET_FILE = $(shell echo $${HOME}/k8s-oauth-token)
-JENKINS_SECRET_FILE = $(shell echo $${HOME}/jenkins)
+HOOK_SECRET_FILE = ${HOME}/hook
+OAUTH_SECRET_FILE = ${HOME}/k8s-oauth-token
+JENKINS_SECRET_FILE = ${HOME}/jenkins
 
 # Useful rules:
 # - create-cluster turns up a cluster then prints out the webhook address.
@@ -61,8 +61,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.1" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.1"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.2" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.2"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -72,7 +72,7 @@ hook-service:
 
 test-pr-image:
 	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.1" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.1"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.2" cmd/test-pr
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.2"
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image

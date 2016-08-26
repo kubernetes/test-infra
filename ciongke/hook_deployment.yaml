@@ -33,10 +33,10 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: "gcr.io/kubernetes-jenkins-pull/hook:0.1"
+        image: "gcr.io/kubernetes-jenkins-pull/hook:0.2"
         imagePullPolicy: Always
         args: 
-        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.1
+        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.2
         - -org=kubernetes
         - -dry-run=true
         ports:
@@ -48,10 +48,10 @@ spec:
             memory: 1Gi
         volumeMounts:
         - name: hmac
-          mountPath: /etc/hmac
+          mountPath: /etc/webhook
           readOnly: true
         - name: oauth
-          mountPath: /etc/oauth
+          mountPath: /etc/github
           readOnly: true
       volumes:
       - name: hmac

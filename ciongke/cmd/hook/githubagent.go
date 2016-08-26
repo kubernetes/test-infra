@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strings"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 )
@@ -34,10 +33,10 @@ type GitHubAgent struct {
 
 	JenkinsJobs []JenkinsJob
 
-	PullRequestEvents  chan github.PullRequestEvent
-	IssueCommentEvents chan github.IssueCommentEvent
+	PullRequestEvents  <-chan github.PullRequestEvent
+	IssueCommentEvents <-chan github.IssueCommentEvent
 
-	BuildRequests chan BuildRequest
+	BuildRequests chan<- BuildRequest
 }
 
 type JenkinsJob struct {
@@ -55,7 +54,9 @@ type BuildRequest struct {
 	// If true, create a new job after deleting the old.
 	Create bool
 
+	// The Jenkins job name, such as "kubernetes-pull-build-test-e2e-gce".
 	JobName string
+	// The context string for the GitHub status, such as "Jenkins GCE e2e".
 	Context string
 
 	RepoOwner string
@@ -71,6 +72,8 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 }
+
+var okToTest = regexp.MustCompile(`(?m)^ok to test$`)
 
 // Start starts listening for events. It does not block.
 func (ga *GitHubAgent) Start() {
@@ -118,9 +121,9 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 // build based on it.
 func (ga *GitHubAgent) commentBodyMatches(body string) []JenkinsJob {
 	var result []JenkinsJob
-	okToTest := strings.Contains(body, "ok to test")
+	ott := okToTest.MatchString(body)
 	for _, job := range ga.JenkinsJobs {
-		if job.Trigger.MatchString(body) || (okToTest && job.AlwaysRun) {
+		if job.Trigger.MatchString(body) || (ott && job.AlwaysRun) {
 			result = append(result, job)
 		}
 	}
@@ -204,7 +207,7 @@ func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 			continue
 		}
 		// Look for "ok to test"
-		if !strings.Contains(comment.Body, "ok to test") {
+		if !okToTest.MatchString(comment.Body) {
 			continue
 		}
 		// Ensure that the commenter is in the org.
