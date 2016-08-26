@@ -58,28 +58,30 @@
             status-context: Jenkins {status-context}
             status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
             status-add-test-results: '{status-add-test-results}'
-            # This should roughly line up with kubernetes-maintainers.
-            # To update:
-            #   curl -s "https://api.github.com/teams/1674435/members?per_page=100&access_token=TOKEN" \
-            #     | jq -r .[].login | sort -f
-            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
-            #
-            # Note that k8s-merge-robot is not in this team, so is explicitly listed here.
+            # This should roughly line up with charts-maintainers.
+            # To go to :
+            #   https://github.com/orgs/kubernetes/teams/charts-maintainers
             admin-list:
                 - k8s-merge-robot
+                - jackgr
+                - adamreese
+                - bmelville
+                - sgoings
+                - sparkprime
+                - vaikas-google
                 - viglesiasce
                 - etune
                 - prydonious
                 - runseb
                 - technosophos
                 - michelleN
-            # This should roughly line up with kubernetes-collaborators.
-            # To update:
-            #   curl -s "https://api.github.com/teams/1696393/members?per_page=100&access_token=TOKEN" \
-            #     | jq -r .[].login | sort -f
-            # If the team grows over 100 members, you may need to add &page=2 to get the rest.
+            # This should roughly line up with charts-collaborators.
+            # To go to :
+            #   https://github.com/orgs/kubernetes/teams/charts-collaborators
             white-list:
-                - viglesiasce
+                - runseb
+                - vaikas-google
+                - jackgr
             org-list:
                 - kubernetes
             white-list-target-branches:
