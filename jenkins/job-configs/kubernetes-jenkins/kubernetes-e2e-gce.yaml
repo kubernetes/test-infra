@@ -508,7 +508,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-                export PROJECT="k8s-jkns-gce-1-4-remake"
+                export PROJECT="k8s-jkns-gce-1-4"
         - 'gce-reboot-release-1.4':  # kubernetes-e2e-gce-reboot-release-1.4
             description: 'Run [Feature:Reboot] tests on GCE on the release-1.4 branch.'
             timeout: 180
