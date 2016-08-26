@@ -10,7 +10,7 @@ spec:
         app: github-sqlproxy
     spec:
       containers:
-      - image: b.gcr.io/cloudsql-docker/gce-proxy
+      - image: b.gcr.io/cloudsql-docker/gce-proxy:1.05
         name: github-sqlproxy
         command:
         - /cloud_sql_proxy
@@ -52,7 +52,6 @@ metadata:
   labels:
     app: github-stack
   name: sqlproxy-service
-  namespace: default
 spec:
   ports:
   - name: sqlport
