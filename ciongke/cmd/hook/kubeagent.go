@@ -32,7 +32,7 @@ type KubeAgent struct {
 	KubeClient  kubeClient
 	Namespace   string
 
-	BuildRequests chan BuildRequest
+	BuildRequests <-chan BuildRequest
 }
 
 type kubeClient interface {
@@ -63,12 +63,13 @@ func (ka *KubeAgent) Start() {
 }
 
 func (ka *KubeAgent) createJob(br BuildRequest) error {
-	name := fmt.Sprintf("%s-pr-%d-%s", br.RepoName, br.PR, br.JobName)
+	name := fmt.Sprintf("%s-%s-pr-%d-%s", br.RepoOwner, br.RepoName, br.PR, br.JobName)
 	job := kube.Job{
 		Metadata: kube.ObjectMeta{
 			Name:      name,
 			Namespace: ka.Namespace,
 			Labels: map[string]string{
+				"owner":            br.RepoOwner,
 				"repo":             br.RepoName,
 				"pr":               strconv.Itoa(br.PR),
 				"jenkins-job-name": br.JobName,
@@ -97,7 +98,7 @@ func (ka *KubeAgent) createJob(br BuildRequest) error {
 								{
 									Name:      "oauth",
 									ReadOnly:  true,
-									MountPath: "/etc/oauth",
+									MountPath: "/etc/github",
 								},
 								{
 									Name:      "jenkins",
@@ -133,6 +134,7 @@ func (ka *KubeAgent) createJob(br BuildRequest) error {
 
 func (ka *KubeAgent) deleteJob(br BuildRequest) error {
 	jobs, err := ka.KubeClient.ListJobs(map[string]string{
+		"owner":            br.RepoOwner,
 		"repo":             br.RepoName,
 		"pr":               strconv.Itoa(br.PR),
 		"jenkins-job-name": br.JobName,

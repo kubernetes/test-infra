@@ -74,8 +74,9 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Delete this one.
 				Metadata: kube.ObjectMeta{
-					Name: "r-pr-3-abcd-job",
+					Name: "o-r-pr-3-abcd-job",
 					Labels: map[string]string{
+						"owner":            "o",
 						"pr":               "3",
 						"repo":             "r",
 						"jenkins-job-name": "job",
@@ -85,8 +86,9 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Different PR.
 				Metadata: kube.ObjectMeta{
-					Name: "r-pr-4-qwer-job",
+					Name: "o-r-pr-4-qwer-job",
 					Labels: map[string]string{
+						"owner":            "o",
 						"pr":               "4",
 						"repo":             "r",
 						"jenkins-job-name": "job",
@@ -96,8 +98,9 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Different repo.
 				Metadata: kube.ObjectMeta{
-					Name: "q-pr-3-wxyz-job",
+					Name: "o-q-pr-3-wxyz-job",
 					Labels: map[string]string{
+						"owner":            "o",
 						"pr":               "3",
 						"repo":             "q",
 						"jenkins-job-name": "job",
@@ -107,8 +110,9 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Different job name.
 				Metadata: kube.ObjectMeta{
-					Name: "r-pr-3-abcd-otherjob",
+					Name: "o-r-pr-3-abcd-otherjob",
 					Labels: map[string]string{
+						"owner":            "o",
 						"pr":               "3",
 						"repo":             "r",
 						"jenkins-job-name": "otherjob",
@@ -120,9 +124,9 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Delete this one.
 				Metadata: kube.ObjectMeta{
-					Name: "r-pr-3-abcd-test",
+					Name: "o-r-pr-3-abcd-test",
 					Labels: map[string]string{
-						"job-name": "r-pr-3-abcd-job",
+						"job-name": "o-r-pr-3-abcd-job",
 					},
 				},
 			},
@@ -143,7 +147,7 @@ func TestDeletePR(t *testing.T) {
 	br := BuildRequest{
 		JobName:   "job",
 		PR:        3,
-		RepoOwner: "ro",
+		RepoOwner: "o",
 		RepoName:  "r",
 	}
 	s.deleteJob(br)
