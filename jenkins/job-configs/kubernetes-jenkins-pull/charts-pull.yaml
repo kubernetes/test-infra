@@ -1,5 +1,11 @@
+- project:
+    name: charts-pull
+    repo-name: 'kubernetes/charts'
+    jobs:
+        - '{name}-test-e2e'
+
 - job-template:
-    name: 'charts-pull-test-e2e'
+    name: '{name}-test-e2e'
     # defaults
     success-comment: ''
     failure-comment: ''
@@ -132,7 +138,3 @@
                     deleteoutput: false
         - gcs-uploader:
             git-basedir: '{git-basedir}'
-
-- project:
-    name: charts-pull
-    repo-name: 'kubernetes/charts'
