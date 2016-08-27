@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 The Kubernetes Authors All rights reserved.
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+set -ex
+checkout="${PWD}/test-infra/jenkins/checkout.py"
+runner="${PWD}/test-infra/jenkins/dockerized-e2e-runner.sh"
+mkdir -p go/src/k8s.io
+cd go/src/k8s.io
+"${checkout}" --repo=kubernetes --pr="${grprbPullId}"
+cd kubernetes
 
 export kube_skip_push_gcs=y
 export kube_run_from_output=y
@@ -69,4 +77,3 @@ elif [[ ${rc} -ne 0 ]]; then
 fi
 echo "exiting with code: ${rc}"
 exit ${rc}
-

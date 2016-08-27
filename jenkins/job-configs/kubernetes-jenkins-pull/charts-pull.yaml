@@ -20,25 +20,6 @@
         - string:
             name: sha1
             description: 'sha1 or refname (e.g. origin/pr/N/head) to build'
-    scm:
-        - git:
-            remotes:
-                - remote:
-                    url: 'https://github.com/kubernetes/charts'
-                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
-                - remote:
-                    url: 'https://github.com/kubernetes/charts'
-                    refspec: '+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge'
-            branches:
-                - 'origin/pr/${ghprbPullId}/merge'
-            basedir: ''
-            browser: githubweb
-            browser-url: 'http://github.com/kubernetes/charts'
-            timeout: 20
-            clean:
-                after: true
-            wipe-workspace: false
-            skip-tag: true
     triggers:
         - github-pull-request:
             # This is the Jenkins GHPRB plugin ID, not the actual github token.
@@ -93,10 +74,10 @@
             colormap: xterm
     builders:
         - activate-gce-service-account
-        - ensure-upload-to-gcs-script:
-            git-basedir: ''
-        - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
-        - shell: ./test/e2e.sh
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
+        - shell: |
+            git clone https://github.com/kubernetes/test-infra
+            ./test-infra/pr-charts.sh
     publishers:
         - gcs-uploader:
             git-basedir: ''

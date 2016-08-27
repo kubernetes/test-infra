@@ -26,7 +26,13 @@
 - job-template:
     name: '{git-project}-pull-{suffix}'
     # defaults
+<<<<<<< e23ef9d8c934108afcfb2a1c1ba6b82525fc4ab0
     git-basedir: ''
+=======
+    success-comment: ''
+    failure-comment: ''
+    error-comment: ''
+>>>>>>> Require a checked-in script for all PR jobs.
     skip-if-no-test-files: false
     status-add-test-results: true
     only-trigger-phrase: false
@@ -51,33 +57,6 @@
         - string:
             name: sha1
             description: 'sha1 or refname (e.g. origin/pr/N/head) to build'
-    scm:
-        - git:
-            url: https://github.com/kubernetes/test-infra
-            basedir: go/src/k8s.io/test-infra
-            branches:
-                - master
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/test-infra
-            skip-tag: true
-        - git:
-            remotes:
-                - remote:
-                    url: 'https://github.com/{repo-name}'
-                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
-                - remote:
-                    url: 'https://github.com/{repo-name}'
-                    refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
-            branches:
-                - 'origin/pr/${{ghprbPullId}}/merge'
-            basedir: '{git-basedir}'
-            browser: githubweb
-            browser-url: 'http://github.com/{repo-name}'
-            timeout: 20
-            clean:
-                after: true
-            wipe-workspace: false
-            skip-tag: true
     triggers:
         - github-pull-request:
             # This is the Jenkins GHPRB plugin ID, not the actual github token.
@@ -291,12 +270,10 @@
             colormap: xterm
     builders:
         - activate-gce-service-account
-        - ensure-upload-to-gcs-script:
-            git-basedir: '{git-basedir}'
-        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"
         - shell: |
-              if [[ -n '{git-basedir}' ]]; then cd '{git-basedir}'; fi
-              {cmd}
+            git clone https://github.com/kubernetes/test-infra
+            './test-infra/{cmd}'
     publishers:
         - xunit:
             thresholds:
@@ -315,8 +292,7 @@
                     skip-if-no-test-files: '{skip-if-no-test-files}'
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
-        - gcs-uploader:
-            git-basedir: '{git-basedir}'
+        - gcs-uploader
 
 - project:
     name: kubernetes-pull
@@ -327,30 +303,19 @@
           status-context: unit/integration
           max-total: 0 # Unlimited
           trigger-phrase: '(unit )?test'
-          cmd: |
-            export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
-            ./hack/jenkins/gotest-dockerized.sh
+          cmd: ./jenkins/pr-unit.sh
       - verify-all: # kubernetes-pull-verify-all
           status-context: verification
           max-total: 0 # Unlimited
           skip-if-no-test-files: true  # We do not expect JUnit output from this job.
           status-add-test-results: false
           trigger-phrase: 'verify|test'
-          cmd: |
-            # verify-godeps compares against upstream, but remote/master might be stale
-            # if .git was retained between runs. Update it explicitly here.
-            git fetch remote master:refs/remotes/remote/master
-            # similarly, verify-munge-docs compares against the latest release branch.
-            git fetch remote release-1.4:remote/release-1.4
-            export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
-            export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
-            ./hack/jenkins/gotest-dockerized.sh
+          cmd: ./jenkins/pr-verify.sh
       - build-test-e2e-gce: # kubernetes-pull-build-test-e2e-gce
           status-context: GCE e2e
           max-total: 12
           trigger-phrase: '(gce )?(e2e )?test'
-          cmd: ./go/src/k8s.io/test-infra/jenkins/pr-e2e-gce.sh
-
+          cmd: ./jenkins/pr-e2e-gce.sh
     jobs:
         - '{git-project}-pull-{suffix}'
 
@@ -359,7 +324,6 @@
     git-project:
         - 'cadvisor':
             repo-name: 'google/cadvisor'
-            git-basedir: 'go/src/github.com/google/cadvisor'
             suffix: 'build-test-e2e'
             owner: 'stclair@google.com'
             max-total: 1
@@ -370,7 +334,6 @@
             cmd: 'BUILDER=true build/jenkins_e2e.sh'
         - 'heapster':
             repo-name: 'kubernetes/heapster'
-            git-basedir: 'go/src/k8s.io/heapster'
             suffix: 'build-test-e2e'
             owner: 'pszczesniak@google.com'
             max-total: 1
@@ -378,25 +341,17 @@
             status-add-test-results: false
             trigger-phrase: 'test'
             status-context: 'heapster'
-            cmd: 'make test-unit test-integration'
-        - 'node':  # kubelet on post-commit Jenkins
+            cmd: ./jenkins/pr-heapster.sh
+j       - 'node':  # kubelet on post-commit Jenkins
             # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-pull.properties:
             # PROJECT="k8s-jkns-pr-node-e2e"
             repo-name: 'kubernetes/kubernetes'
-            git-basedir: 'go/src/k8s.io/kubernetes'
             suffix: 'build-e2e-test'
             owner: 'pwittroc@google.com'
             max-total: 10
             skip-if-no-test-files: true  # old branches may not produce JUnit
             trigger-phrase: '(node )?(e2e )?test'
-            status-context: 'node e2e'
-            cmd: |
-                case "${{ghprbTargetBranch:-}}" in
-                  release-1.0|release-1.1|release-1.2)
-                    echo "PR node e2e job disabled for legacy branches."
-                    exit
-                    ;;
-                esac
-                ./test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/jenkins-pull.properties
+            status-context: 'GCE Node e2e'
+            cmd: ./jenkins/pr-node.sh
     jobs:
         - '{git-project}-pull-{suffix}'

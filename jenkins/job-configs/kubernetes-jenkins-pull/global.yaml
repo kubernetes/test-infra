@@ -6,35 +6,11 @@
           export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
           gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 
-- builder:
-    name: ensure-upload-to-gcs-script
-    git-basedir: ''
-    builders:
-      - shell: |
-          _script_tmp_path="${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
-          _script_repo_path="hack/jenkins/upload-to-gcs.sh"
-          _script_local_repo_path="${{WORKSPACE}}/{git-basedir}/${{_script_repo_path}}"
-          mkdir -p "${{WORKSPACE}}/_tmp"
-          if [[ "${{ghprbTargetBranch:-}}" == 'master' && -x "${{_script_local_repo_path}}" ]]; then
-            # Force using the checked-out version if we're testing the master branch
-            ln -sf "${{_script_local_repo_path}}" "${{_script_tmp_path}}"
-          fi
-          # Download only if necessary; if this is called multiple times,
-          # we only want to download this script the first time.
-          if [[ ! -x "${{_script_tmp_path}}" ]]; then
-            rm -f "${{_script_tmp_path}}"
-            curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/${{_script_repo_path}}" > "${{_script_tmp_path}}"
-            chmod +x "${{_script_tmp_path}}"
-          fi
-
 - publisher:
     name: gcs-uploader
-    git-basedir: ''
     publishers:
         - postbuildscript:
             builders:
-                - ensure-upload-to-gcs-script:
-                    git-basedir: '{git-basedir}'
                 - shell: |
                     curl -fsS --retry 3 "http://pull-jenkins-master:8080/job/${{JOB_NAME}}/${{BUILD_NUMBER}}/consoleText" > "${{WORKSPACE}}/build-log.txt"
                 - conditional-step:
@@ -42,24 +18,24 @@
                     condition-worst: SUCCESS
                     condition-best: SUCCESS
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=SUCCESS "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=SUCCESS "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"'
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: UNSTABLE
                     condition-best: UNSTABLE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=UNSTABLE "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=UNSTABLE "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"'
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: FAILURE
                     condition-best: FAILURE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=FAILURE "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=FAILURE "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"'
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: ABORTED
                     condition-best: ABORTED
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=ABORTED "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"'
+                        - shell: 'JENKINS_BUILD_FINISHED=ABORTED "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"'
             script-only-if-succeeded: False
             script-only-if-failed: False

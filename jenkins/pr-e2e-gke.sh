@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 The Kubernetes Authors All rights reserved.
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+set -ex
+checkout="${PWD}/test-infra/jenkins/checkout.py"
+runner="${PWD}/test-infra/jenkins/dockerized-e2e-runner.sh"
+mkdir -p go/src/k8s.io
+cd go/src/k8s.io
+"${checkout}" --repo=kubernetes --pr="${grprbPullId}"
+cd kubernetes
 
 if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "release-1.1" ]]; then
   echo "PR GKE job disabled for legacy branches."
@@ -70,7 +78,7 @@ export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 # Get golang into our PATH so we can run e2e.go
 export PATH=${PATH}:/usr/local/go/bin
 
-timeout -k 15m 55m {runner} && rc=$? || rc=$?
+timeout -k 15m 55m ${runner} && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
     echo "Dumping logs for any remaining nodes"
