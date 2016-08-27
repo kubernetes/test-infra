@@ -134,3 +134,11 @@ func TestNotificationTimePeriodReached(t *testing.T) {
 		t.Error("PingNotification should have created a notif")
 	}
 }
+
+func TestNotificationStartDate(t *testing.T) {
+	comments := []*github.IssueComment{}
+	notif := NewPinger("NOTIF").SetTimePeriod(10*time.Hour).PingNotification(comments, "who", timeAgo(2*time.Hour))
+	if notif != nil {
+		t.Error("PingNotification shouldn't have created a notif")
+	}
+}
