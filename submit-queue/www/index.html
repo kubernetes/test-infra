@@ -248,6 +248,21 @@
                     <span><img ng-src="{{cntl.metadata.ChartUrl}}" style="max-width: 100%"/></span>
                   </md-content>
                 </md-tab>
+
+                <md-tab label="Bot Commands">
+                    <h1>Communicating with the Bot</h1>
+
+                Github contributors and reviewers can communicate with the mungebot by commenting on a PR with the
+                  following commands entered alone in the text field. All commands require the following syntax:
+                  <br><br> /Command [Optional Args]. <br><br> Note the forward slashing preceding the command name.
+                    <h2>List of Commands</h2>
+
+                    <ol>
+                      <li>lgtm: applies the lgtm label </li>
+                      <li> lgtm cancel: removes a previously applied lgtm label </li>
+                    </ol>
+
+                </md-tab>
               </md-tabs>
             </md-content>
           </md-tab>
