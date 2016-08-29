@@ -83,8 +83,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-master"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'slow-master': # kubernetes-e2e-gce-gci-ci-slow-master
             description: 'Runs slow tests on GCE with GCI images, sequentially on the master branch.'
             timeout: 150  #  See #24072
@@ -95,8 +94,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-master-slow"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export KUBE_OS_DISTRIBUTION="gci"
         - 'serial-master': # kubernetes-e2e-gce-gci-ci-serial-master
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images.'
             timeout: 300
@@ -106,46 +104,8 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export KUBE_OS_DISTRIBUTION="gci"
                 export KUBE_ENABLE_RESCHEDULER=true
-        - 'release-1.4':  # kubernetes-e2e-gce-gci-ci-release-1.4
-            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.3 branch.'
-            timeout: 50
-            trigger-job: 'kubernetes-build-1.4'
-            job-env: |
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
-                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-                export GINKGO_PARALLEL="y"
-                export PROJECT="e2e-gce-gci-ci-1-4"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
-        - 'slow-release-1.4':  # kubernetes-e2e-gce-gci-ci-slow-release-1.4
-            description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.4 branch.'
-            timeout: 150
-            trigger-job: 'kubernetes-build-1.4'
-            job-env: |
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
-                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-                export GINKGO_PARALLEL="y"
-                export PROJECT="e2e-gce-gci-ci-slow-1-4"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
-        - 'serial-release-1.4':  # kubernetes-e2e-gce-gci-ci-serial-release-1.4
-            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.4 branch.'
-            timeout: 300
-            trigger-job: 'kubernetes-build-1.4'
-            job-env: |
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
-                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-                export PROJECT="e2e-gce-gci-ci-serial-1-4"
-                export KUBE_MASTER_OS_DISTRIBUTION="gci"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'release-1.3':  # kubernetes-e2e-gce-gci-ci-release-1.3
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.3 branch.'
             timeout: 50
