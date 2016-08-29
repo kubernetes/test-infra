@@ -161,7 +161,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 			Success:  true,
 		}, nil
 	}
-	u := fmt.Sprintf("%s/job/%s/api/json?depth=1", c.baseURL, b.jobName)
+	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, b.jobName)
 	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
