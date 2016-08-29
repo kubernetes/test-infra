@@ -497,9 +497,13 @@
             export KUBE_SKIP_PUSH_GCS=y
             export KUBE_RUN_FROM_OUTPUT=y
             export KUBE_FASTBUILD=true
-            ./hack/jenkins/build.sh
             # Nothing should want Jenkins $HOME
             export HOME=${{WORKSPACE}}
+
+            # Build the images.
+            ./hack/jenkins/build.sh
+            # Push federation images to GCS.
+            ./build/push-federation-images.sh
 
             export KUBERNETES_PROVIDER="gce"
             export E2E_MIN_STARTUP_PODS="1"
