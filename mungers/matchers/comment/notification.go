@@ -33,7 +33,7 @@ type Notification struct {
 
 var (
 	// Matches a notification: [NOTIFNAME] Arguments
-	notificationRegex = regexp.MustCompile(`^\[([^\]\s]+)\]\s?(.*)$`)
+	notificationRegex = regexp.MustCompile(`^\[([^\]\s]+)\] *?([^\n]*)`)
 )
 
 // ParseNotification attempts to read a notification from a comment

@@ -37,12 +37,24 @@ func TestParseCommand(t *testing.T) {
 			comment:         " /COMMAND Line can't start with spaces",
 		},
 		{
+			expectedCommand: nil,
+			comment:         "Command not at the beginning:\n/COMMAND\nAnd something else...",
+		},
+		{
 			expectedCommand: &Command{Name: "COMMAND"},
 			comment:         "/COMMAND",
 		},
 		{
 			expectedCommand: &Command{Name: "COMMAND", Arguments: "Valid command"},
 			comment:         "/COMMAND Valid command",
+		},
+		{
+			expectedCommand: &Command{Name: "COMMAND", Arguments: "Multiple Lines"},
+			comment:         "/COMMAND Multiple Lines\nAnd something else...",
+		},
+		{
+			expectedCommand: &Command{Name: "COMMAND", Arguments: "Args"},
+			comment:         "/COMMAND Args\n/OTHERCOMMAND OtherArgs",
 		},
 		{
 			expectedCommand: &Command{Name: "COMMAND", Arguments: "Command name is upper-cased"},
