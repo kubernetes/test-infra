@@ -36,7 +36,8 @@ type GitHubAgent struct {
 	PullRequestEvents  <-chan github.PullRequestEvent
 	IssueCommentEvents <-chan github.IssueCommentEvent
 
-	BuildRequests chan<- BuildRequest
+	BuildRequests  chan<- KubeRequest
+	DeleteRequests chan<- KubeRequest
 }
 
 type JenkinsJob struct {
@@ -48,22 +49,6 @@ type JenkinsJob struct {
 	AlwaysRun bool
 	// Context line for status.
 	Context string
-}
-
-type BuildRequest struct {
-	// If true, create a new job after deleting the old.
-	Create bool
-
-	// The Jenkins job name, such as "kubernetes-pull-build-test-e2e-gce".
-	JobName string
-	// The context string for the GitHub status, such as "Jenkins GCE e2e".
-	Context string
-
-	RepoOwner string
-	RepoName  string
-	PR        int
-	Branch    string
-	SHA       string
 }
 
 type githubClient interface {
@@ -171,9 +156,8 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 		}
 
 		for _, job := range requestedJobs {
-			br := makeBuildRequest(job, *pr)
-			br.Create = true
-			ga.BuildRequests <- br
+			kr := makeKubeRequest(job, *pr)
+			ga.BuildRequests <- kr
 		}
 	}
 	return nil
@@ -235,8 +219,8 @@ Regular contributors should join the org to skip this step.
 	return ga.GitHubClient.CreateComment(owner, name, pr.Number, comment)
 }
 
-func makeBuildRequest(job JenkinsJob, pr github.PullRequest) BuildRequest {
-	return BuildRequest{
+func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
+	return KubeRequest{
 		JobName: job.Name,
 		Context: job.Context,
 
@@ -253,19 +237,14 @@ func (ga *GitHubAgent) buildAll(pr github.PullRequest) {
 		if !job.AlwaysRun {
 			continue
 		}
-		br := makeBuildRequest(job, pr)
-		br.Create = true
-		ga.BuildRequests <- br
+		kr := makeKubeRequest(job, pr)
+		ga.BuildRequests <- kr
 	}
 }
 
 func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
 	for _, job := range ga.JenkinsJobs {
-		if !job.AlwaysRun {
-			continue
-		}
-		br := makeBuildRequest(job, pr)
-		br.Create = false
-		ga.BuildRequests <- br
+		kr := makeKubeRequest(job, pr)
+		ga.DeleteRequests <- kr
 	}
 }

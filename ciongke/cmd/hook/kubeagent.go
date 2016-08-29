@@ -17,22 +17,37 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
+	"github.com/satori/go.uuid"
 	"log"
 	"strconv"
 
 	"github.com/kubernetes/test-infra/ciongke/kube"
 )
 
-// KubeAgent pulls BuildRequests off of the channel and turns them into
-// Kubernetes jobs.
+// KubeAgent pulls KubeRequests off of the channel and turns them into
+// Kubernetes jobs. The BuildRequests channel will create a new job, deleting
+// the old if necessary, and the DeleteRequests channel will only delete.
 type KubeAgent struct {
 	DryRun      bool
 	TestPRImage string
 	KubeClient  kubeClient
 	Namespace   string
 
-	BuildRequests <-chan BuildRequest
+	BuildRequests  <-chan KubeRequest
+	DeleteRequests <-chan KubeRequest
+}
+
+type KubeRequest struct {
+	// The Jenkins job name, such as "kubernetes-pull-build-test-e2e-gce".
+	JobName string
+	// The context string for the GitHub status, such as "Jenkins GCE e2e".
+	Context string
+
+	RepoOwner string
+	RepoName  string
+	PR        int
+	Branch    string
+	SHA       string
 }
 
 type kubeClient interface {
@@ -49,30 +64,35 @@ const jobDeadlineSeconds = 60 * 60 * 10
 
 func (ka *KubeAgent) Start() {
 	go func() {
-		for br := range ka.BuildRequests {
-			if err := ka.deleteJob(br); err != nil {
-				log.Printf("Error deleting job: %s", err)
-			}
-			if br.Create {
-				if err := ka.createJob(br); err != nil {
+		for {
+			select {
+			case kr := <-ka.BuildRequests:
+				if err := ka.deleteJob(kr); err != nil {
+					log.Printf("Error deleting job: %s", err)
+				}
+				if err := ka.createJob(kr); err != nil {
 					log.Printf("Error creating job: %s", err)
+				}
+			case kr := <-ka.DeleteRequests:
+				if err := ka.deleteJob(kr); err != nil {
+					log.Printf("Error deleting job: %s", err)
 				}
 			}
 		}
 	}()
 }
 
-func (ka *KubeAgent) createJob(br BuildRequest) error {
-	name := fmt.Sprintf("%s-%s-pr-%d-%s", br.RepoOwner, br.RepoName, br.PR, br.JobName)
+func (ka *KubeAgent) createJob(kr KubeRequest) error {
+	name := uuid.NewV1().String()
 	job := kube.Job{
 		Metadata: kube.ObjectMeta{
 			Name:      name,
 			Namespace: ka.Namespace,
 			Labels: map[string]string{
-				"owner":            br.RepoOwner,
-				"repo":             br.RepoName,
-				"pr":               strconv.Itoa(br.PR),
-				"jenkins-job-name": br.JobName,
+				"owner":            kr.RepoOwner,
+				"repo":             kr.RepoName,
+				"pr":               strconv.Itoa(kr.PR),
+				"jenkins-job-name": kr.JobName,
 			},
 		},
 		Spec: kube.JobSpec{
@@ -85,13 +105,13 @@ func (ka *KubeAgent) createJob(br BuildRequest) error {
 							Name:  "test-pr",
 							Image: ka.TestPRImage,
 							Args: []string{
-								"--job-name=" + br.JobName,
-								"--context=\"" + br.Context + "\"",
-								"--repo-owner=" + br.RepoOwner,
-								"--repo-name=" + br.RepoName,
-								"--pr=" + strconv.Itoa(br.PR),
-								"--branch=" + br.Branch,
-								"--sha=" + br.SHA,
+								"--job-name=" + kr.JobName,
+								"--context=\"" + kr.Context + "\"",
+								"--repo-owner=" + kr.RepoOwner,
+								"--repo-name=" + kr.RepoName,
+								"--pr=" + strconv.Itoa(kr.PR),
+								"--branch=" + kr.Branch,
+								"--sha=" + kr.SHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
 							},
 							VolumeMounts: []kube.VolumeMount{
@@ -132,12 +152,12 @@ func (ka *KubeAgent) createJob(br BuildRequest) error {
 	return nil
 }
 
-func (ka *KubeAgent) deleteJob(br BuildRequest) error {
+func (ka *KubeAgent) deleteJob(kr KubeRequest) error {
 	jobs, err := ka.KubeClient.ListJobs(map[string]string{
-		"owner":            br.RepoOwner,
-		"repo":             br.RepoName,
-		"pr":               strconv.Itoa(br.PR),
-		"jenkins-job-name": br.JobName,
+		"owner":            kr.RepoOwner,
+		"repo":             kr.RepoName,
+		"pr":               strconv.Itoa(kr.PR),
+		"jenkins-job-name": kr.JobName,
 	})
 	if err != nil {
 		return err

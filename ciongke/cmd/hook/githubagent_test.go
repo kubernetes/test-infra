@@ -209,7 +209,7 @@ func TestHandleIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		brc := make(chan BuildRequest, 1)
+		brc := make(chan KubeRequest, 1)
 		g := &fakegithub.FakeClient{
 			OrgMembers: []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
@@ -343,5 +343,44 @@ func TestCommentBodyMatches(t *testing.T) {
 		if !match {
 			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
 		}
+	}
+}
+
+// Make sure we delete all jobs when a PR is closed.
+func TestClosePR(t *testing.T) {
+	drc := make(chan KubeRequest, 2)
+	s := &GitHubAgent{
+		JenkinsJobs: []JenkinsJob{
+			{
+				Name:      "job1",
+				AlwaysRun: true,
+			},
+			{
+				Name:      "job2",
+				AlwaysRun: false,
+			},
+		},
+		DeleteRequests: drc,
+	}
+	err := s.handlePullRequestEvent(github.PullRequestEvent{
+		Action: "closed",
+		PullRequest: github.PullRequest{
+			Number: 3,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Didn't expect error: %s", err)
+	}
+	select {
+	case kr := <-drc:
+		t.Logf("Deleting job: %s", kr.JobName)
+	default:
+		t.Fatal("Didn't delete any jobs.")
+	}
+	select {
+	case kr := <-drc:
+		t.Logf("Deleting job: %s", kr.JobName)
+	default:
+		t.Fatal("Only deleted one job.")
 	}
 }

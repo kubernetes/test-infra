@@ -31,7 +31,7 @@ func TestCreateJob(t *testing.T) {
 		TestPRImage: "im:tag",
 		KubeClient:  c,
 	}
-	br := BuildRequest{
+	br := KubeRequest{
 		JobName: "kubernetes-e2e-gce",
 		Context: "GCE e2e",
 
@@ -144,7 +144,7 @@ func TestDeletePR(t *testing.T) {
 	s := &KubeAgent{
 		KubeClient: c,
 	}
-	br := BuildRequest{
+	br := KubeRequest{
 		JobName:   "job",
 		PR:        3,
 		RepoOwner: "o",

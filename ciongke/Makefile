@@ -45,6 +45,7 @@ create-cluster:
 	make hook-service --no-print-directory
 	@echo -n "Waiting for loadbalancer ingress "; while [[ "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)" == "null" ]]; do echo -n "."; sleep 5; done; echo " Done"
 	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
+	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
 
 update-cluster:
 	make test-pr-image --no-print-directory
@@ -61,8 +62,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.2" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.2"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.4" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.4"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -72,7 +73,7 @@ hook-service:
 
 test-pr-image:
 	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.2" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.2"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.4" cmd/test-pr
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.4"
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image

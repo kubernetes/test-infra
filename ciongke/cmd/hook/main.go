@@ -119,7 +119,8 @@ func main() {
 
 	prc := make(chan github.PullRequestEvent)
 	icc := make(chan github.IssueCommentEvent)
-	brc := make(chan BuildRequest)
+	brc := make(chan KubeRequest)
+	drc := make(chan KubeRequest)
 	server := &Server{
 		HMACSecret:         webhookSecret,
 		PullRequestEvents:  prc,
@@ -136,7 +137,8 @@ func main() {
 		PullRequestEvents:  prc,
 		IssueCommentEvents: icc,
 
-		BuildRequests: brc,
+		BuildRequests:  brc,
+		DeleteRequests: drc,
 	}
 	githubAgent.Start()
 
@@ -146,7 +148,8 @@ func main() {
 		KubeClient:  kubeClient,
 		Namespace:   *namespace,
 
-		BuildRequests: brc,
+		BuildRequests:  brc,
+		DeleteRequests: drc,
 	}
 	kubeAgent.Start()
 
