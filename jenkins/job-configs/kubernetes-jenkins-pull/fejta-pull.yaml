@@ -1,0 +1,96 @@
+- job-template:
+    name: 'fejta-pull-{suffix}'
+
+    concurrent: true
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+        - github:
+            url: 'https://github.com/{repo-name}'
+        - throttle:
+            max-total: '{max-total}'
+            max-per-node: 2
+            option: project
+        - raw:
+            xml: |
+                <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                    <script>docker version; gcloud version</script>
+                    <interpreter>shell script</interpreter>
+                </com.cloudbees.plugins.JobPrerequisites>
+    parameters:
+        - string:
+            name: sha1
+            description: 'sha1 or refname (e.g. origin/pr/N/head) to build'
+    triggers:
+        - github-pull-request:
+            # This is the Jenkins GHPRB plugin ID, not the actual github token.
+            auth-id: 'f8e31bc1-9abb-460a-a2ca-9c4aae3ca4e8'
+            only-trigger-phrase: true
+            trigger-phrase: '(?is).*@fejta do a little dance.*'
+            cron: 'H/2 * * * *'
+            status-context: Jenkins {status-context}
+            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
+            status-add-test-results: true
+            admin-list:
+                - fejta
+            white-list-target-branches:
+                - master
+                - release-.*
+            success-comment: 'PASS: rejoice'
+            failure-comment: 'FAIL: well could be worse'
+            error-comment: 'ERROR: refactoring is hard'
+    wrappers:
+        - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+        - timeout:
+            timeout: 90
+            fail: true
+        - ansicolor:
+            colormap: xterm
+    builders:
+        - activate-gce-service-account
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"
+        - shell: |
+            git clone https://github.com/kubernetes/test-infra
+            './test-infra/{cmd}'
+    publishers:
+        - xunit:
+            thresholds:
+                - failed:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+                - skipped:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+            types:
+                - junit:
+                    skip-if-no-test-files: false
+                    pattern: '_artifacts/**.xml'
+                    deleteoutput: false
+        - gcs-uploader
+
+- project:
+    name: fejta-kubernetes-pull
+    repo-name: 'kubernetes/kubernetes'
+    suffix:
+      - unit: # fejta-pull-unit
+          status-context: fejta unit
+          max-total: 0 # Unlimited
+          cmd: ./jenkins/pr-unit.sh
+      - gce: # fejta-pull-e2e
+          status-context: fejta gce
+          max-total: 12
+          cmd: ./jenkins/pr-e2e-gce.sh
+    jobs:
+        - 'fejta-pull-{suffix}'
