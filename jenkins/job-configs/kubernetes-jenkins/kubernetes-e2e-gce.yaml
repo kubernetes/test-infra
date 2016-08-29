@@ -155,6 +155,15 @@
                 export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export KUBE_ADMISSION_CONTROL="NamespaceLifecycle,InitialResources,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota"
+        - 'gce-alpha-features': # kubernetes-e2e-gce-alpha-features
+            description: 'Run alpha feature E2E tests on GCE.'
+            timeout: 180
+            job-env: |
+              export KUBE_FEATURE_GATES="AllAlpha=true"
+              export RUNTIME_CONFIG="api/all=true"
+              # TODO(jlowdermilk): add all 1.4 alpha Feature:... tests here
+              export GINKGO_TEST_ARGS="--ginkgo.focus\[Feature:externalTrafficLocalOnly\]"
+              export PROJECT="k8s-jkns-e2e-gce-alpha"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
             timeout: 180
