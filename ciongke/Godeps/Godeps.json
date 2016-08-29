@@ -15,6 +15,11 @@
 			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
 		},
 		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Comment": "v1.1.0-1-g0aa62d5",
+			"Rev": "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
 		},
