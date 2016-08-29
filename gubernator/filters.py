@@ -14,6 +14,7 @@
 
 import logging
 import datetime
+import hashlib
 import os
 import re
 import time
@@ -192,6 +193,16 @@ def do_tg_url(testgrid_query, test_name=''):
         regex = '^Overall$|' + re.escape(test_name)
         testgrid_query += '&include-filter-by-regex=%s' % urllib.quote(regex)
     return 'https://k8s-testgrid.appspot.com/%s' % testgrid_query
+
+
+static_hashes = {}
+
+def do_static(filename):
+    filename = 'static/%s' % filename
+    if filename not in static_hashes:
+        data = open(filename).read()
+        static_hashes[filename] = hashlib.sha1(data).hexdigest()[:10]
+    return '/%s?%s' % (filename, static_hashes[filename])
 
 
 do_basename = os.path.basename
