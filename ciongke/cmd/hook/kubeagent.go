@@ -20,6 +20,7 @@ import (
 	"github.com/satori/go.uuid"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/kubernetes/test-infra/ciongke/kube"
 )
@@ -37,6 +38,7 @@ type KubeAgent struct {
 	DeleteRequests <-chan KubeRequest
 }
 
+// KubeRequest is the information required to start a job for a PR.
 type KubeRequest struct {
 	// The Jenkins job name, such as "kubernetes-pull-build-test-e2e-gce".
 	JobName string
@@ -60,8 +62,9 @@ type kubeClient interface {
 }
 
 // Cut off test-pr jobs after 10 hours.
-const jobDeadlineSeconds = 60 * 60 * 10
+const jobDeadline = 10 * time.Hour
 
+// Start starts reading from the channels and does not block.
 func (ka *KubeAgent) Start() {
 	go func() {
 		for {
@@ -96,7 +99,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 			},
 		},
 		Spec: kube.JobSpec{
-			ActiveDeadlineSeconds: jobDeadlineSeconds,
+			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
 					RestartPolicy: "Never",

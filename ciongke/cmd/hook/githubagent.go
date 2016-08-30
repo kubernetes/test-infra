@@ -40,14 +40,15 @@ type GitHubAgent struct {
 	DeleteRequests chan<- KubeRequest
 }
 
+// JenkinsJob is the job-specific trigger info.
 type JenkinsJob struct {
 	// eg kubernetes-pull-build-test-e2e-gce
 	Name string
 	// eg @k8s-bot e2e test this
 	Trigger *regexp.Regexp
-	// Run for every PR.
+	// Run for every PR, or only when a comment triggers it.
 	AlwaysRun bool
-	// Context line for status.
+	// Context line for GitHub status.
 	Context string
 }
 
