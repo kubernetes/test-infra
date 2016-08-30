@@ -92,7 +92,8 @@
             colormap: xterm
     builders:
         - activate-gce-service-account
-        - ensure-upload-to-gcs-script
+        - ensure-upload-to-gcs-script:
+            git-basedir: ''
         - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
         - shell: ./test/e2e.sh
     publishers:
