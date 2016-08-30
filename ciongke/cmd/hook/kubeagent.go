@@ -67,19 +67,19 @@ const jobDeadline = 10 * time.Hour
 // Start starts reading from the channels and does not block.
 func (ka *KubeAgent) Start() {
 	go func() {
-		for {
-			select {
-			case kr := <-ka.BuildRequests:
-				if err := ka.deleteJob(kr); err != nil {
-					log.Printf("Error deleting job: %s", err)
-				}
-				if err := ka.createJob(kr); err != nil {
-					log.Printf("Error creating job: %s", err)
-				}
-			case kr := <-ka.DeleteRequests:
-				if err := ka.deleteJob(kr); err != nil {
-					log.Printf("Error deleting job: %s", err)
-				}
+		for kr := range ka.BuildRequests {
+			if err := ka.deleteJob(kr); err != nil {
+				log.Printf("Error deleting job: %s", err)
+			}
+			if err := ka.createJob(kr); err != nil {
+				log.Printf("Error creating job: %s", err)
+			}
+		}
+	}()
+	go func() {
+		for kr := range ka.DeleteRequests {
+			if err := ka.deleteJob(kr); err != nil {
+				log.Printf("Error deleting job: %s", err)
 			}
 		}
 	}()
