@@ -17,46 +17,15 @@ limitations under the License.
 package yaml2proto
 
 import (
-	"testing"
+    "testing"
+    "errors"
 
-	"github.com/golang/protobuf/proto"
-	pb "k8s.io/test-infra/testgrid/config/pb"
+    "github.com/golang/protobuf/proto"
+    pb "k8s.io/test-infra/testgrid/config/pb"
 )
 
-func TestYaml2ProtoEmpty(t *testing.T) {
-	_, err := Yaml2Proto([]byte(""))
-	
-	if err == nil || err.Error() != "Invalid Yaml : No Valid Testgroups" {
-		t.Errorf("Should Throw No Valid Testgroups Error\n")
-	}
-}
-
-func TestYaml2ProtoNoTestgroup(t *testing.T) {
-	yaml  :=
-`dashboards:
-- name: dashboard_1`
-
-	_, err := Yaml2Proto([]byte(yaml))
-	
-	if err == nil || err.Error() != "Invalid Yaml : No Valid Testgroups" {
-		t.Errorf("Should Throw No Valid Testgroups Error\n")
-	}
-}
-
-func TestYaml2ProtoNoDashboard(t *testing.T) {
-	yaml :=   
-`test_groups:
-- name: testgroup_1`
-
-	_, err := Yaml2Proto([]byte(yaml))
-	
-	if err == nil || err.Error() != "Invalid Yaml : No Valid Dashboards" {
-		t.Errorf("Should Throw No Valid Dashboards Error\n")
-	}
-}
-
-func TestYaml2ProtoIsExternalAndUseKuberClientFalse(t *testing.T) {
-	yaml :=
+func TestYaml2Proto_IsExternal_And_UseKuberClient_False(t *testing.T) {
+    yaml :=
 `default_test_group:
   name: default
 default_dashboard_tab:
@@ -66,39 +35,79 @@ test_groups:
 dashboards:
 - name: dashboard_1`
 
-	protobufData, err := Yaml2Proto([]byte(yaml))
-	
-	if err != nil {
-		t.Errorf("Convert Error: %v\n", err)
-	}
+    protobufData, err := Yaml2Proto([]byte(yaml))
+    
+    if err != nil {
+        t.Errorf("Convert Error: %v\n", err)
+    }
 
-	config := &pb.Configuration{}
-	if err := proto.Unmarshal(protobufData, config); err != nil {
-		t.Errorf("Failed to parse config: %v\n", err)
-	}
+    config := &pb.Configuration{}
+    if err := proto.Unmarshal(protobufData, config); err != nil {
+        t.Errorf("Failed to parse config: %v\n", err)
+    }
 
-	for _,testgroup := range config.TestGroups {
-		if !testgroup.IsExternal {
-			t.Errorf("IsExternal should always be true!")
-		}
-		
-		if !testgroup.UseKubernetesClient {
-			t.Errorf("UseKubernetesClient should always be true!")
-		}
-	}
+    for _,testgroup := range config.TestGroups {
+        if !testgroup.IsExternal {
+            t.Errorf("IsExternal should always be true!")
+        }
+        
+        if !testgroup.UseKubernetesClient {
+            t.Errorf("UseKubernetesClient should always be true!")
+        }
+    }
 }
 
-func TestYaml2ProtoNoDefaultTestgroup(t *testing.T) {
-	yaml :=
+func TestYaml2Proto_Invalid_Yaml(t *testing.T) {
+    tests := []struct{
+        yaml string
+        expectedError error
+    }{
+        {
+            yaml:``,
+            expectedError: errors.New("Invalid Yaml : No Valid Testgroups"),
+        },
+        {
+            yaml:
+`dashboards:
+- name: dashboard_1`,
+            expectedError: errors.New("Invalid Yaml : No Valid Testgroups"),
+        },
+        {
+            yaml:
+`test_groups:
+- name: testgroup_1`,
+            expectedError: errors.New("Invalid Yaml : No Valid Dashboards"),
+        },
+        {
+            yaml:
 `default_dashboard_tab:
 test_groups:
 - name: testgroup_1
 dashboards:
-- name: dashboard_1`
+- name: dashboard_1`,
+            expectedError: errors.New("Please Include The Default Testgroup & Dashboardtab"),
+        },
+        {
+            yaml:
+`default_test_group:
+  name: default
+default_dashboard_tab:
+  name: default
+test_groups:
+- name: testgroup_1
+dashboards:
+- name: dashboard_1`,
+            expectedError: nil,
+        },
+    }
 
-	_, err := Yaml2Proto([]byte(yaml))
-	
-	if err == nil || err.Error() != "Please Include The Default Testgroup & Dashboardtab" {
-		t.Errorf("Should Throw No Default Testgroup Error\n")
-	}
+    for index, test := range tests {
+        _, err := Yaml2Proto([]byte(test.yaml))
+        if (err == nil && test.expectedError == nil) ||
+            (err != nil && test.expectedError != nil && err.Error() == test.expectedError.Error()) {
+            continue
+        } else {
+            t.Errorf("Test %v fails. ExpectedError: %v, actual error: %v", index, test.expectedError, err)
+        }
+    }
 }
