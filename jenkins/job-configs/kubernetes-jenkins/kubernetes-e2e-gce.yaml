@@ -164,7 +164,7 @@
               export KUBE_FEATURE_GATES="AllAlpha=true"
               export RUNTIME_CONFIG="api/all=true"
               # TODO(jlowdermilk): add all 1.4 alpha Feature:... tests here
-              export GINKGO_TEST_ARGS="--ginkgo.focus\[Feature:externalTrafficLocalOnly\]"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ExternalTrafficLocalOnly\]"
               export PROJECT="k8s-jkns-e2e-gce-alpha"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
