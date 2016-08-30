@@ -43,7 +43,68 @@ function fix_timestamps() {
 	})
 }
 
-function show_skipped(ID) {
-	document.getElementById(ID).style.display = "inline-block"; 
+var gcs_cache = {};
+
+// Download a file from GCS, and run "callback" with its contents.
+function gcs_get(gcs_path, callback) {
+	if (gcs_cache[gcs_path]) {
+		callback(gcs_cache[gcs_path]);
+		return;
+	}
+	// Matches gs://bucket/file/path -> [..., "bucket", "file/path"]
+	//         /bucket/file/path -> [..., "bucket", "file/path"]
+	var groups = gcs_path.match(/([^/:]+)\/(.*)/);
+	var bucket = groups[1], path = groups[2];
+	var req = new XMLHttpRequest();
+	req.open('GET',
+		'https://www.googleapis.com/storage/v1/b/' + bucket + '/o/' +
+		encodeURIComponent(path) + '?alt=media');
+	req.onload = function(resp) {
+		gcs_cache[gcs_path] = req.response;
+		callback(req.response);
+	}
+	req.send();
 }
 
+function expand_skipped(els) {
+	var src = els[0].parentElement.dataset['src'];
+	gcs_get(src, function(data) {
+		var lines = data.split('\n');
+		var parent = els[0].parentElement;
+		for (var i = 0; i < els.length; i++) {
+			var el = els[i];
+			var range = el.dataset['range'].split('-');
+			var chunk = lines.slice(range[0], range[1]);
+			var chunk = chunk.join('\n');
+			if (el.previousSibling) {
+				el.previousSibling.appendData(chunk);
+				el.remove();
+			} else if (el.nextSibling) {
+				el.nextSibling.data = chunk + el.nextSibling.data;
+				el.remove();
+			}
+		}
+		parent.normalize();  // merge adjacent text nodes
+	});
+}
+
+function expand_all() {
+	var logs = document.querySelectorAll('pre[data-src]');
+	for (var i = 0; i < logs.length; i++) {
+		var skips = logs[i].querySelectorAll('span.skip');
+		if (skips.length > 0) {
+			expand_skipped(skips);
+		}
+	}
+}
+
+function init() {
+	fix_timestamps();
+	document.body.onclick = function(evt) {
+		var target = evt.target;
+		if (target.nodeName == 'SPAN' && target.className == 'skip') {
+			expand_skipped([target]);
+			evt.preventDefault();
+		}
+	}
+}

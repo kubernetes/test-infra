@@ -60,6 +60,10 @@ span.keyword {
 }
 span.skip {
     color: #999;
+    text-decoration: underline;
+}
+span.skip:hover {
+    cursor: pointer;
 }
 span.inset-filename {
     float: right;
@@ -68,9 +72,6 @@ span.inset-filename {
 span.time {
     font-weight: lighter;
     font-family: monospace;
-}
-span.skipped{
-    color: #666666;
 }
 a.anchor, pre.error>a {
     color: inherit;

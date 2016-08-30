@@ -12,6 +12,7 @@ handlers:
 
 - url: /static
   static_dir: static
+  application_readable: true
 
 - url: .*
   script: main.app

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 % block head
-<link rel="stylesheet" href="/static/style.css" />
+<link rel="stylesheet" href="{{'style.css'|static}}" />
 <title>{% block title %}Gubernator{% endblock %}</title>
-<script src="/static/moment.min.js"></script>
-<script src="/static/build.js"></script>
-<script>window.onload = fix_timestamps;</script>
+<script src="{{'moment.min.js'|static}}"></script>
+<script src="{{'build.js'|static}}"></script>
+<script>window.onload = init;</script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -16,7 +16,7 @@
 </script>
 % endblock
 <div id="header" class="container">
-<a href="/"><img src="/static/logo.svg"></a>
+<a href="/"><img src="{{'logo.svg'|static}}"></a>
 % block header
 % endblock
 </div>

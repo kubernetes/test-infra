@@ -3,7 +3,7 @@
 % block head
 {{super()}}
 % if finished and finished['result'] == 'SUCCESS' and not failures
-<link rel="icon" type="image/png" href="/static/favicon-green.png" />
+<link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
 % endif
 % endblock
 % block header
@@ -53,8 +53,9 @@
 	% else
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 		% if build_log
+			<button onclick="javascript:expand_all()">Expand Skipped Lines</button>
 			<h3>Error lines from build-log.txt</h3>
-			<pre>{{build_log | safe}}</pre>
+			<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
 		% endif
 	% endif
 </div>
