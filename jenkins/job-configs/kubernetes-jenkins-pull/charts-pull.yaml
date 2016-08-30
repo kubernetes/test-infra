@@ -28,9 +28,9 @@
                     refspec: '+refs/heads/*:refs/remotes/upstream/*'
                 - remote:
                     url: 'https://github.com/kubernetes/charts'
-                    refspec: '+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge'
+                    refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
             branches:
-                - 'origin/pr/${ghprbPullId}/merge'
+                - 'origin/pr/${{ghprbPullId}}/merge'
             basedir: ''
             browser: githubweb
             browser-url: 'http://github.com/kubernetes/charts'
@@ -46,7 +46,7 @@
             trigger-phrase: '(?is).*@k8s-bot\s+(e2e )?test\s+this.*'
             cron: 'H/2 * * * *'
             status-context: Jenkins Charts e2e
-            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${ghprbPullId}/${JOB_NAME}/${BUILD_NUMBER}/'
+            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${{ghprbPullId}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/'
             # This should roughly line up with charts-maintainers.
             # To go to :
             #   https://github.com/orgs/kubernetes/teams/charts-maintainers
@@ -93,7 +93,7 @@
     builders:
         - activate-gce-service-account
         - ensure-upload-to-gcs-script
-        - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
         - shell: ./test/e2e.sh
     publishers:
         - gcs-uploader:
