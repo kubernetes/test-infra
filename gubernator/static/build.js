@@ -70,6 +70,7 @@ function expand_skipped(els) {
 	var src = els[0].parentElement.dataset['src'];
 	gcs_get(src, function(data) {
 		var lines = data.split('\n');
+		var parent = els[0].parentElement;
 		for (var i = 0; i < els.length; i++) {
 			var el = els[i];
 			var range = el.dataset['range'].split('-');
@@ -83,7 +84,18 @@ function expand_skipped(els) {
 				el.remove();
 			}
 		}
+		parent.normalize();  // merge adjacent text nodes
 	});
+}
+
+function expand_all() {
+	var logs = document.querySelectorAll('pre[data-src]');
+	for (var i = 0; i < logs.length; i++) {
+		var skips = logs[i].querySelectorAll('span.skip');
+		if (skips.length > 0) {
+			expand_skipped(skips);
+		}
+	}
 }
 
 function init() {

@@ -53,6 +53,7 @@
 	% else
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 		% if build_log
+			<button onclick="javascript:expand_all()">Expand Skipped Lines</button>
 			<h3>Error lines from build-log.txt</h3>
 			<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
 		% endif

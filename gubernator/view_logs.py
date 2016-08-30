@@ -87,7 +87,7 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
         return kubelet_parser.make_dict(log.decode('utf8', 'replace'), bold_re, objref_dict)
     else:
         return log_parser.digest(log.decode('utf8', 'replace'),
-        error_re=bold_re, filters=filters, objref_dict=objref_dict)
+            error_re=bold_re, filters=filters, objref_dict=objref_dict)
 
 
 def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filename)):
