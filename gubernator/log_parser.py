@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import jinja2
 
 import kubelet_parser
 import regex
 
 CONTEXT_DEFAULT = 6
+MAX_BUFFER = 5000000  # GAE has RAM limits.
 
 
 def hilight(line, hilight_words):
@@ -46,7 +49,7 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
 
     # Escape hatch: if we're going to generate a LOT of output, try to trim it down.
     context_lines = CONTEXT_DEFAULT
-    if len(matched_lines) > 5000:
+    if len(matched_lines) > 2000:
         context_lines = 0
 
     last_match = None
@@ -73,6 +76,21 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
     return output
 
 
+def truncate(data, limit=MAX_BUFFER):
+    if len(data) <= limit:
+        return data
+
+    # If we try to process more than MAX_BUFFER, things will probably blow up.
+    half = limit / 2
+    # Erase the intermediate lines, but keep the line count consistent so
+    # skip line expansion works.
+    cut_newlines = data[half:-half].count('\n')
+
+    logging.warning('truncating buffer %.1f times too large (%d lines erased)',
+                    len(data) / float(limit), cut_newlines)
+
+    return ''.join([data[:half], '\n' * cut_newlines, data[-half:]])
+
 def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     skip_fmt=lambda l: '... skipping %d lines ...' % l):
     # pylint: disable=too-many-arguments
@@ -82,7 +100,8 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
 
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
-    lines = unicode(jinja2.escape(data)).split('\n')
+
+    lines = unicode(jinja2.escape(truncate(data).decode('utf8', 'replace'))).split('\n')
 
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}

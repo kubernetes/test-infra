@@ -91,7 +91,7 @@ def build_details(build_dir):
     if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
         build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
         if build_log:
-            build_log = log_parser.digest(build_log.decode('utf8', 'replace'))
+            build_log = log_parser.digest(build_log)
             logging.info('fallback log parser emitted %d lines',
                          build_log.count('\n'))
     return started, finished, failures, build_log

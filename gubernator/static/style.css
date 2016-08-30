@@ -60,9 +60,10 @@ span.keyword {
 }
 span.skip {
     color: #999;
+    text-decoration: underline;
 }
 span.skip:hover {
-    cursor: pointer !important;
+    cursor: pointer;
 }
 span.inset-filename {
     float: right;

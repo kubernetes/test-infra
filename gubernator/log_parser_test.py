@@ -82,6 +82,15 @@ class LogParserTest(unittest.TestCase):
             filters={"pod": "pod", "UID": "", "Namespace": "", "ContainerID":""}),
             's2 2 3 4 5 pod 6 7 8 9 10')
 
+    def test_truncate(self):
+        limit = 32
+        data = '\n'.join(str(x) for x in range(100))
+        truncated = log_parser.truncate(data, limit)
+        self.assertEqual(data.count('\n'), truncated.count('\n'))
+        self.assertEqual(truncated,
+                         '0\n1\n2\n3\n4\n5\n6\n7\n' +
+                         '\n' * 86 +
+                         '4\n95\n96\n97\n98\n99')
 
 if __name__ == '__main__':
     unittest.main()
