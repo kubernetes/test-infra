@@ -96,4 +96,5 @@
         - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
         - shell: ./test/e2e.sh
     publishers:
-        - gcs-uploader
+        - gcs-uploader:
+            git-basedir: ''
