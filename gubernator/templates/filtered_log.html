@@ -39,7 +39,7 @@
 	% else
 		% for file in log_files|sort
 			<h3>{{file}}</h3>
-			<pre {% if not wrap %} style="white-space:pre"{% endif %}>
+			<pre {% if not wrap %} style="white-space:pre"{% endif %} data-src="{{file}}">
 				{{logs[file] | safe}}
 			</pre>
 		% endfor

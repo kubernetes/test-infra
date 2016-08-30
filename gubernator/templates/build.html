@@ -54,7 +54,7 @@
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 		% if build_log
 			<h3>Error lines from build-log.txt</h3>
-			<pre>{{build_log | safe}}</pre>
+			<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
 		% endif
 	% endif
 </div>

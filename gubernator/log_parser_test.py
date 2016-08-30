@@ -27,6 +27,7 @@ def digest(data, strip=True, filters=None,
 
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
+    print digested
     if strip:
         digested = re.sub(r'<span class="skipped"[^<]*>([^<]*)</span>', r'(\1)',
             digested, flags=re.MULTILINE)
@@ -34,27 +35,30 @@ def digest(data, strip=True, filters=None,
     return digested.replace('\n', ' ')
 
 class LogParserTest(unittest.TestCase):
+    def setUp(self):
+        log_parser.CONTEXT_DEFAULT = 4
+
     def expect(self, data, expected):
         self.assertEqual(digest(data), expected)
 
     def test_empty(self):
         self.expect('', '')
-        self.expect('no problems here!', '')
+        self.expect('no problems here!', 's3')
 
     def test_escaping(self):
         self.expect('error &c',
             'error &amp;c')
 
     def test_context(self):
-        self.expect('0 1 2 3 4 5 error 6 7 8 9 10', 's2(0 1 ) 2 3 4 5 error 6 7 8 9')
+        self.expect('0 1 2 3 4 5 error 6 7 8 9 10', 's2 2 3 4 5 error 6 7 8 9 10')
 
     def test_multi_context(self):
-        self.expect('0 1 2 3 4 error-1 6 error-2 8 9 10 11 12',
-            '0 1 2 3 4 error-1 6 error-2 8 9 10 11')
+        self.expect('0 1 2 3 4 error-1 6 error-2 8 9 10 11 12 13',
+            '0 1 2 3 4 error-1 6 error-2 8 9 10 11 s2')
 
     def test_skip_count(self):
         self.expect('error 1 2 3 4 5 6 7 8 9 A error-2',
-            'error 1 2 3 4 s2(5 6 ) 7 8 9 A error-2')
+            'error 1 2 3 4 s2 7 8 9 A error-2')
 
     def test_skip_at_least_two(self):
         self.expect('error 1 2 3 4 5 6 7 8 error-2', 'error 1 2 3 4 5 6 7 8 error-2')
@@ -64,6 +68,11 @@ class LogParserTest(unittest.TestCase):
                          '<span class="hilight"><span class="keyword">'
                          'error</span>-blah</span>')
 
+    def test_html_range(self):
+        self.assertEqual(digest('error 1 2 3 4 5 6 7 8', strip=False),
+            '<span class="hilight"><span class="keyword">error</span></span>'
+            ' 1 2 3 4 <span class="skip" data-range="5-9">s4</span>')
+
     def test_pod(self):
         self.assertEqual(digest(
             'pod-blah', error_re=regex.wordRE("pod"), strip=False),
@@ -71,7 +80,7 @@ class LogParserTest(unittest.TestCase):
         self.assertEqual(digest('0 1 2 3 4 5 pod 6 7 8 9 10',
             error_re=regex.wordRE("pod"),
             filters={"pod": "pod", "UID": "", "Namespace": "", "ContainerID":""}),
-            's2(0 1 ) 2 3 4 5 pod 6 7 8 9')
+            's2 2 3 4 5 pod 6 7 8 9 10')
 
 
 if __name__ == '__main__':

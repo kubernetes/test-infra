@@ -18,7 +18,7 @@ import jinja2
 import kubelet_parser
 import regex
 
-CONTEXT = 4
+CONTEXT_DEFAULT = 6
 
 
 def hilight(line, hilight_words):
@@ -44,31 +44,29 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
 
     matched_lines.append(len(lines))  # sentinel value
 
+    # Escape hatch: if we're going to generate a LOT of output, try to trim it down.
+    context_lines = CONTEXT_DEFAULT
+    if len(matched_lines) > 5000:
+        context_lines = 0
+
     last_match = None
     for match in matched_lines:
         if last_match is not None:
-            previous_end = min(match, last_match + CONTEXT + 1)
+            previous_end = min(match, last_match + context_lines + 1)
             output.extend(lines[last_match + 1: previous_end])
         else:
             previous_end = 0
-        skip_amount = match - previous_end - CONTEXT
-        if skip_amount > 100:
-            output.append('<span class="skip">%s</span>' % skip_fmt(skip_amount))
-        elif skip_amount > 1:
-            skip_id = 'skip_%s' % match
-            skip_string = ('<span class="skip">'
-                '<a href="javascript:show_skipped(\'%s\')" onclick="this.style.display=\'none\'">'
-                '%s</a></span>'
-                '<span class="skipped" id="%s" style="display:none;">') % (skip_id,
-                skip_fmt(skip_amount), skip_id)
-            lines[previous_end] = "%s%s" % (skip_string, lines[previous_end])
-            output.extend(lines[previous_end:match-CONTEXT])
-            output.append('</span>')
+        if match == len(lines):
+            context_lines = 0
+        skip_amount = match - previous_end - context_lines
+        if skip_amount > 1:
+            output.append('<span class="skip" data-range="%d-%d">%s</span>' %
+                          (previous_end, match - context_lines, skip_fmt(skip_amount)))
         elif skip_amount == 1:  # pointless say we skipped 1 line
             output.append(lines[previous_end])
         if match == len(lines):
             break
-        output.extend(lines[max(previous_end, match - CONTEXT): match])
+        output.extend(lines[max(previous_end, match - context_lines): match])
         output.append(hilight(lines[match], hilight_words))
         last_match = match
 
