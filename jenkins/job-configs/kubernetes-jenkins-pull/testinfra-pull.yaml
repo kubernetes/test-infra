@@ -58,6 +58,5 @@
             colormap: xterm
     builders:
         - shell: |
-            cd ${WORKSPACE}/go/src/github.com/kubernetes/test-infra
+            cd ${WORKSPACE}/go/src/github.com/kubernetes/test-infra/ciongke
             go test $(go list ./... | grep -v vendor)
- 
