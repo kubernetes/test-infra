@@ -35,7 +35,7 @@ const (
 
 var (
 	pinger = c.NewPinger(flakeNagNotifName).
-		SetDescription("This flaky-test issue would love to have more attention...")
+		SetDescription("This flaky-test issue would love to have more attention.")
 	// Only include priorities that you care about. Others won't be pinged
 	timePeriods = map[string]time.Duration{
 		"priority/P0": 2 * 24 * time.Hour,
@@ -109,6 +109,9 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 
 	// Who are we pinging
 	who := mungerutil.GetIssueUsers(obj.Issue).Assignees.Mention().Join()
+	if who == "" {
+		return
+	}
 
 	// When does the pinger start
 	startDate := c.LastComment(comments, c.HumanActor(), obj.Issue.CreatedAt)
