@@ -44,9 +44,8 @@ var (
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
-// Repo FullName (eg "kubernetes/kubernetes") -> []JenkinsJob
 var defaultJenkinsJobs = map[string][]JenkinsJob{
-	"kubernetes/test-infra": []JenkinsJob{
+	"kubernetes/test-infra": {
 		{
 			Name:      "testinfra-pull-gotest",
 			Trigger:   regexp.MustCompile(`@k8s-bot (go )?test this`),

@@ -226,7 +226,7 @@ func TestHandleIssueComment(t *testing.T) {
 		s := &GitHubAgent{
 			GitHubClient: g,
 			JenkinsJobs: map[string][]JenkinsJob{
-				"org/repo": []JenkinsJob{
+				"org/repo": {
 					{
 						Name:      "job",
 						Trigger:   regexp.MustCompile(`@k8s-bot test this`),
@@ -313,10 +313,15 @@ func TestCommentBodyMatches(t *testing.T) {
 			"@k8s-bot test this",
 			[]string{"cadveapster"},
 		},
+		{
+			"org/repo3",
+			"@k8s-bot test this",
+			[]string{},
+		},
 	}
 	ga := &GitHubAgent{
 		JenkinsJobs: map[string][]JenkinsJob{
-			"org/repo": []JenkinsJob{
+			"org/repo": {
 				{
 					Name:      "gce",
 					Trigger:   regexp.MustCompile(`@k8s-bot (gce )?test this`),
@@ -338,7 +343,7 @@ func TestCommentBodyMatches(t *testing.T) {
 					AlwaysRun: false,
 				},
 			},
-			"org/repo2": []JenkinsJob{
+			"org/repo2": {
 				{
 					Name:      "cadveapster",
 					Trigger:   regexp.MustCompile(`@k8s-bot test this`),
@@ -378,7 +383,7 @@ func TestClosePR(t *testing.T) {
 	drc := make(chan KubeRequest, 2)
 	s := &GitHubAgent{
 		JenkinsJobs: map[string][]JenkinsJob{
-			"org/repo": []JenkinsJob{
+			"org/repo": {
 				{
 					Name:      "job1",
 					AlwaysRun: true,

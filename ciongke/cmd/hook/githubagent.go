@@ -31,6 +31,7 @@ type GitHubAgent struct {
 	Org          string
 	GitHubClient githubClient
 
+	// Repo FullName (eg "kubernetes/kubernetes") -> []JenkinsJob
 	JenkinsJobs map[string][]JenkinsJob
 
 	PullRequestEvents  <-chan github.PullRequestEvent
