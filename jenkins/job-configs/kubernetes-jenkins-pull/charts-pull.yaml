@@ -84,6 +84,7 @@
                 PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
         - workspace-cleanup:
             dirmatch: true
+            exclude: ['.git']
             external-deletion-command: 'sudo rm -rf %s'
         - timeout:
             timeout: 90
