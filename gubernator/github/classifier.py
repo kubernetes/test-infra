@@ -223,6 +223,8 @@ def get_author_state(author, distilled_events):
         elif state == 'address comments':
             if action == 'push':
                 state = 'waiting'
+            elif action == 'comment' and user == author:
+                state = 'waiting'
     return state
 
 
