@@ -60,8 +60,16 @@ if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ ]]; then
     )
 fi
 
+# Timeouts can leak the container, causing weird issues where the job keeps
+# running and *deletes resources* that the next job is using.
+# Give the container a unique name, and make bash kill it on EXIT,
+# which will happen during a timeout.
+CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
+trap "docker kill ${CONTAINER_NAME}" EXIT
+
 echo "Starting..."
-docker run --rm=true -i \
+docker run --rm -i \
+  --name="${CONTAINER_NAME}"
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
   ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}:/workspace/.ssh/google_compute_engine:ro"} \
@@ -76,3 +84,5 @@ docker run --rm=true -i \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \
   "${docker_extra_args[@]:+${docker_extra_args[@]}}" \
   "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}"
+
+trap '' EXIT  # container exited normally
