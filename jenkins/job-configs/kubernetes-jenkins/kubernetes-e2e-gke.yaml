@@ -217,6 +217,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-serial-release-1.4':  # kubernetes-e2e-gke-serial-release-1.4
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.4 branch.'
             timeout: 300
@@ -225,6 +226,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-serial-1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-slow-release-1.4':  # kubernetes-e2e-gke-slow-release-1.4
             description: 'Run slow E2E tests on GKE using the release-1.4 branch.'
             timeout: 150  #  See kubernetes/kubernetes#24072
@@ -234,6 +236,7 @@
                 export GINKGO_PARALLEL="y"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-slow-1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-reboot-release-1.4':  # kubernetes-e2e-gke-reboot-release-1.4
             description: 'Run [Feature:Reboot] tests on GKE on the release-1.4 branch.'
             timeout: 180
@@ -241,6 +244,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-reboot-1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gke-ingress-release-1.4':  # kubernetes-e2e-gke-ingress-release-1.4
             description: 'Run [Feature:Ingress] tests on GKE on the release-1.4 branch.'
             timeout: 90
@@ -250,6 +254,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-ingress-1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 

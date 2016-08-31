@@ -176,6 +176,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
                 export PROJECT="k8s-jkns-gce-soak-1-4"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
