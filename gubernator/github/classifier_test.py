@@ -139,6 +139,7 @@ class CalculateTest(unittest.TestCase):
         expect([('comment', 'author')], 'waiting')
         expect([('comment', 'other')], 'address comments')
         expect([('comment', 'other'), ('push', 'author')], 'waiting')
+        expect([('comment', 'other'), ('comment', 'author')], 'waiting')
 
     def test_assignee_state(self):
         def expect(events, result):
