@@ -1,7 +1,7 @@
 - job-template:
     name: 'kubernetes-kubemark-{suffix}'
     description: '{description} Test owner: gmarek'
-    node: 'e2e'
+    node: '{jenkins_node}'
     properties:
         - build-discarder:
             days-to-keep: 7
@@ -45,6 +45,7 @@
     suffix:
         - '5-gce':
             description: 'Run minimal Kubemark to make sure it is not broken.'
+            jenkins_node: 'e2e'
             timeout: 60
             cron-string: '{sq-cron-string}'
             job-env: |
@@ -70,6 +71,7 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - '5-gce-gci':
             description: 'Run minimal Kubemark with GCI to make sure it is not broken.'
+            jenkins_node: 'e2e'
             timeout: 60
             cron-string: '{sq-cron-string}'
             job-env: |
@@ -95,6 +97,7 @@
                 export KUBE_OS_DISTRIBUTION="gci"
         - '100-gce':
             description: 'Run small-ish kubemark cluster to continuously run performance experiments'
+            jenkins_node: 'e2e'
             timeout: 240
             cron-string: 'H H/6 * * *'
             job-env: |
@@ -119,6 +122,7 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'high-density-100-gce':
             description: 'Run Kubemark high-density (100 pods/node) test on a fake 100 node cluster.'
+            jenkins_node: 'e2e'
             timeout: 160
             cron-string: 'H 20 * * 6'
             job-env: |
@@ -142,6 +146,9 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - '500-gce':
             description: 'Run Kubemark test on a fake 500 node cluster to test for regressions on bigger clusters'
+            # TODO: We should replace it with 'scalability' instead of using
+            # reusing "build" tag here.
+            jenkins_node: 'build'
             timeout: 300
             cron-string: '{sq-cron-string}'
             job-env: |
@@ -169,6 +176,7 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - '500-gce-gci':
             description: 'Run Kubemark test on a fake 500 node cluster to test for regressions on bigger clusters'
+            jenkins_node: 'e2e'
             timeout: 300
             cron-string: '{sq-cron-string}'
             job-env: |
@@ -196,6 +204,9 @@
                 export KUBE_OS_DISTRIBUTION="gci"
         - 'gce-scale':
             description: 'Run Density test on Kubemark in very large cluster. Currently only scheduled to run every 12 hours so as not to waste too many resources.'
+            # TODO: We should replace it with 'scalability' instead of using
+            # reusing "build" tag here.
+            jenkins_node: 'build'
             # 12h - load tests take really, really, really long time.
             timeout: 720
             cron-string: 'H H/12 * * *'

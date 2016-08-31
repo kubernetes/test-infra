@@ -24,7 +24,7 @@ EXCLUSIVE = True
 SHARED = False
 
 INFO = {
-    'heavy': ('build unittest', 1, EXCLUSIVE),
+    'heavy': ('build unittest scalability', 1, EXCLUSIVE),
     'light': ('node e2e', 10, EXCLUSIVE),
     'pr': ('pull', 1, SHARED),
 }
