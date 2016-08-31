@@ -1,0 +1,35 @@
+- job:
+    name: 'senlu-test-config-upload'
+    description: 'Build testgrid config from github and upload to gcs'
+    node: 'master'
+    properties:
+        - build-discarder:
+            num-to-keep: 20
+    triggers:
+        - timed: 'H 8 * * 1-5'
+    scm:
+        - git:
+            branches:
+            - config_external
+            browser: githubweb
+            browser-url: https://github.com/krzyzacy/test-infra
+            basedir: go/src/k8s.io/test-infra
+            skip-tag: true
+            url: https://github.com/krzyzacy/test-infra
+            wipe-workspace: false
+    wrappers:
+        - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    builders:
+        - activate-gce-service-account
+        - shell: |
+            ls "${{WORKSPACE}}/go/src/k8s.io/test-infra"
+            cd ${{WORKSPACE}}/go/src/k8s.io/test-infra/testgrid/config
+            go build ./yaml2proto
+            go install
+            config config.yaml config
+            gsutil cp config gs://testgrid-sen/config
