@@ -69,7 +69,7 @@ trap "docker stop ${CONTAINER_NAME}" EXIT
 
 echo "Starting..."
 docker run --rm -i \
-  --name="${CONTAINER_NAME}"
+  --name="${CONTAINER_NAME}" \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
   ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}:/workspace/.ssh/google_compute_engine:ro"} \
