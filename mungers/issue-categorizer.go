@@ -76,12 +76,13 @@ func (lm *LabelMunger) Munge(obj *github.MungeObject) {
 
 	if len(tLabels) == 0 && len(cLabels) == 0 {
 		obj.AddLabels(getRoutingLabels(lm.TriagerUrl, obj.Issue.Title, obj.Issue.Body))
-	} else {
-		newLabels := needsUpdate(obj)
-		if len(newLabels) != 0 {
-			updateModel(lm.TriagerUrl, obj.Issue.Title, obj.Issue.Body, newLabels)
-		}
 	}
+	// else {
+	// 	newLabels := needsUpdate(obj)
+	// 	if len(newLabels) != 0 {
+	// 		updateModel(lm.TriagerUrl, obj.Issue.Title, obj.Issue.Body, newLabels)
+	// 	}
+	// }
 }
 
 func updateModel(triagerUrl string, title, body *string, newLabels []string) {
