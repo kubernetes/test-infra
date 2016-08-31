@@ -17,100 +17,92 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
-	"fmt"
-	"gopkg.in/yaml.v2"
-	"io"
+	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
-	"strings"
+	"time"
 
-	"github.com/kubernetes/test-infra/ciongke/gcs"
-	"github.com/kubernetes/test-infra/ciongke/kube"
+	"github.com/kubernetes/test-infra/ciongke/github"
+	"github.com/kubernetes/test-infra/ciongke/jenkins"
 )
 
 var (
+	job       = flag.String("job-name", "", "Which Jenkins job to build.")
+	context   = flag.String("context", "", "Build status context.")
 	repoOwner = flag.String("repo-owner", "", "Owner of the repo.")
-	repoURL   = flag.String("repo-url", "", "URL of the repo to test.")
 	repoName  = flag.String("repo-name", "", "Name of the repo to test.")
 	pr        = flag.Int("pr", 0, "Pull request to test.")
 	branch    = flag.String("branch", "", "Target branch.")
-	workspace = flag.String("workspace", "/workspace", "Where to checkout the repo.")
-	namespace = flag.String("namespace", "default", "Namespace for all CI objects.")
-	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutation GitHub calls.")
+	commit    = flag.String("sha", "", "Head SHA of the PR.")
+	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
-	sourceBucket = flag.String("source-bucket", "", "Bucket for source tars.")
-	runTestImage = flag.String("run-test-image", "", "Image that runs tests.")
+	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080/", "Jenkins URL")
+	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 )
 
-type testDescription struct {
-	Name    string `yaml:"name"`
-	Image   string `yaml:"image"`
-	Path    string `yaml:"path"`
-	Timeout string `yaml:"timeout"`
-}
-
 type testClient struct {
+	Job     string
+	Context string
+
 	RepoOwner string
-	RepoURL   string
 	RepoName  string
 	PRNumber  int
 	Branch    string
-	DryRun    bool
+	Commit    string
 
-	Workspace    string
-	SourceBucket string
-	Namespace    string
-	RunTestImage string
+	DryRun bool
 
-	GCSClient  gcsClient
-	KubeClient kubeClient
-}
-
-// kubeClient is satisfied by kube.Client.
-type kubeClient interface {
-	CreateJob(j kube.Job) (kube.Job, error)
-}
-
-// gcsClient is satisfied by gcs.Client.
-type gcsClient interface {
-	Upload(r io.Reader, bucket, name string) error
+	JenkinsClient *jenkins.Client
+	GitHubClient  *github.Client
 }
 
 func main() {
 	flag.Parse()
 
-	gc, err := gcs.NewClient()
+	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
-		log.Printf("Error getting GCS client: %s", err)
-		return
+		log.Fatalf("Could not read token file: %s", err)
+	}
+	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+
+	var jenkinsClient *jenkins.Client
+	if *dryRun {
+		jenkinsClient = jenkins.NewDryRunClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+	} else {
+		jenkinsClient = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
 	}
 
-	kc, err := kube.NewClientInCluster(*namespace)
+	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		log.Printf("Error getting Kubernetes client: %s", err)
-		return
+		log.Fatalf("Could not read oauth secret file: %s", err)
+	}
+	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
+	tc := oauth2.NewClient(oauth2.NoContext, ts)
+	var githubClient *github.Client
+	if *dryRun {
+		githubClient = github.NewDryRunClient(tc)
+	} else {
+		githubClient = github.NewClient(tc)
 	}
 
 	client := &testClient{
+		Job:       *job,
+		Context:   *context,
 		RepoOwner: *repoOwner,
-		RepoURL:   *repoURL,
 		RepoName:  *repoName,
 		PRNumber:  *pr,
 		Branch:    *branch,
+		Commit:    *commit,
 		DryRun:    *dryRun,
 
-		Workspace:    *workspace,
-		SourceBucket: *sourceBucket,
-		Namespace:    *namespace,
-		RunTestImage: *runTestImage,
-
-		GCSClient:  gc,
-		KubeClient: kc,
+		JenkinsClient: jenkinsClient,
+		GitHubClient:  githubClient,
 	}
 	if err := client.TestPR(); err != nil {
 		log.Printf("Error testing PR: %s", err)
@@ -118,170 +110,61 @@ func main() {
 	}
 }
 
+// TestPR starts a Jenkins build and watches it, updating the GitHub status as
+// necessary.
 func (c *testClient) TestPR() error {
-	mergeable, head, err := c.checkoutPR()
-	if err != nil {
-		return fmt.Errorf("error checking out git repo: %s", err)
-	}
-	if !mergeable {
-		return fmt.Errorf("needs rebase")
-	}
-
-	if err = c.uploadSource(); err != nil {
-		return fmt.Errorf("error uploading source: %s", err)
-	}
-
-	if err = c.startTests(head); err != nil {
-		return fmt.Errorf("error starting tests: %s", err)
-	}
-
-	return nil
-}
-
-// checkoutPR does the checkout and returns whether or not the PR can be merged
-// as well as its head SHA.
-func (c *testClient) checkoutPR() (bool, string, error) {
-	clonePath := filepath.Join(c.Workspace, c.RepoName)
-	cloneCommand := exec.Command("git", "clone", "--no-checkout", c.RepoURL, clonePath)
-	checkoutCommand := exec.Command("git", "checkout", c.Branch)
-	fetchCommand := exec.Command("git", "fetch", "origin", fmt.Sprintf("pull/%d/head:pr", c.PRNumber))
-	mergeCommand := exec.Command("git", "merge", "pr", "--no-edit")
-	headCommand := exec.Command("git", "rev-parse", "pr")
-	if err := runAndLogCommand(cloneCommand); err != nil {
-		return false, "", err
-	}
-	checkoutCommand.Dir = clonePath
-	if err := runAndLogCommand(checkoutCommand); err != nil {
-		return false, "", err
-	}
-	fetchCommand.Dir = clonePath
-	if err := runAndLogCommand(fetchCommand); err != nil {
-		return false, "", err
-	}
-	headCommand.Dir = clonePath
-	headBytes, err := headCommand.Output()
-	if err != nil {
-		return false, "", err
-	}
-	head := strings.TrimSpace(string(headBytes))
-	mergeCommand.Dir = clonePath
-	if err := runAndLogCommand(mergeCommand); err != nil {
-		return false, head, nil
-	}
-	return true, head, nil
-}
-
-// uploadSource tars and uploads the repo to GCS.
-func (c *testClient) uploadSource() error {
-	tarName := fmt.Sprintf("%d.tar.gz", c.PRNumber)
-	sourcePath := filepath.Join(c.Workspace, tarName)
-	tar := exec.Command("tar", "czf", sourcePath, c.RepoName)
-	tar.Dir = c.Workspace
-	if err := runAndLogCommand(tar); err != nil {
-		return fmt.Errorf("tar failed: %s", err)
-	}
-	tarFile, err := os.Open(sourcePath)
-	if err != nil {
-		return fmt.Errorf("could not open tar: %s", err)
-	}
-	defer tarFile.Close()
-	if err := c.GCSClient.Upload(tarFile, c.SourceBucket, tarName); err != nil {
-		return fmt.Errorf("source upload failed: %s", err)
-	}
-	return nil
-}
-
-// startTests starts the tests in the tests YAML file within the repo.
-func (c *testClient) startTests(head string) error {
-	testPath := filepath.Join(c.Workspace, c.RepoName, ".test.yml")
-	// If .test.yml doesn't exist, just quit here.
-	if _, err := os.Stat(testPath); os.IsNotExist(err) {
-		return nil
-	}
-	b, err := ioutil.ReadFile(testPath)
+	log.Printf("Starting %s build for #%d.", c.Job, c.PRNumber)
+	b, err := c.JenkinsClient.Build(c.Job, c.PRNumber, c.Branch)
 	if err != nil {
 		return err
 	}
-	var tests []testDescription
-	if err := yaml.Unmarshal(b, &tests); err != nil {
+	eq, err := c.JenkinsClient.Enqueued(b)
+	if err != nil {
+		c.tryCreateStatus(github.Error, "Error queueing build.", "")
 		return err
 	}
-	for _, test := range tests {
-		// TODO: Validate the test.
-		log.Printf("Test: %s", test.Name)
-		if err := c.startTest(test, head); err != nil {
+	if eq {
+		c.tryCreateStatus(github.Pending, "Build queued.", "")
+	}
+	for eq {
+		time.Sleep(10 * time.Second)
+		eq, err = c.JenkinsClient.Enqueued(b)
+		if err != nil {
+			c.tryCreateStatus(github.Error, "Error in queue.", "")
 			return err
+		}
+	}
+	c.tryCreateStatus(github.Pending, "Build started.", "")
+	for {
+		result, err := c.JenkinsClient.Status(b)
+		if err != nil {
+			c.tryCreateStatus(github.Error, "Error waiting for build.", "")
+			return err
+		}
+		if result.Building {
+			time.Sleep(30 * time.Second)
+		} else {
+			if result.Success {
+				c.tryCreateStatus(github.Success, "Build succeeded.", result.URL)
+				break
+			} else {
+				c.tryCreateStatus(github.Failure, "Build failed.", result.URL)
+				break
+			}
 		}
 	}
 	return nil
 }
 
-// startTest starts a single test job.
-func (c *testClient) startTest(test testDescription, head string) error {
-	name := fmt.Sprintf("%s-pr-%d-%s", c.RepoName, c.PRNumber, test.Name)
-	job := kube.Job{
-		Metadata: kube.ObjectMeta{
-			Name:      name,
-			Namespace: c.Namespace,
-			Labels: map[string]string{
-				"repo": c.RepoName,
-				"pr":   strconv.Itoa(c.PRNumber),
-			},
-		},
-		Spec: kube.JobSpec{
-			Template: kube.PodTemplateSpec{
-				Spec: kube.PodSpec{
-					RestartPolicy: "Never",
-					Volumes: []kube.Volume{
-						{
-							Name: "oauth",
-							Secret: &kube.SecretSource{
-								Name: "oauth-token",
-							},
-						},
-					},
-					Containers: []kube.Container{
-						{
-							Name:  "run-test",
-							Image: c.RunTestImage,
-							Args: []string{
-								"--repo-owner=" + c.RepoOwner,
-								"--repo-name=" + c.RepoName,
-								"--pr=" + strconv.Itoa(c.PRNumber),
-								"--head=" + head,
-								"--test-name=" + test.Name,
-								"--test-image=" + test.Image,
-								"--test-path=" + test.Path,
-								"--timeout=" + test.Timeout,
-								"--source-bucket=" + c.SourceBucket,
-								"--dry-run=" + strconv.FormatBool(c.DryRun),
-							},
-							SecurityContext: &kube.SecurityContext{
-								Privileged: true,
-							},
-							VolumeMounts: []kube.VolumeMount{
-								{
-									Name:      "oauth",
-									ReadOnly:  true,
-									MountPath: "/etc/oauth",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+func (c *testClient) tryCreateStatus(state, desc, url string) {
+	log.Printf("Setting status to %s: %s", state, desc)
+	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.Commit, github.Status{
+		State:       state,
+		Description: desc,
+		Context:     c.Context,
+		TargetURL:   url,
+	})
+	if err != nil {
+		log.Printf("Error creating GitHub status: %s", err)
 	}
-	j, err := c.KubeClient.CreateJob(job)
-	log.Printf("Created job: %s", j.Metadata.Name)
-	return err
-}
-
-func runAndLogCommand(cmd *exec.Cmd) error {
-	log.Printf("Running: %s", strings.Join(cmd.Args, " "))
-	b, err := cmd.CombinedOutput()
-	if len(b) > 0 {
-		log.Print(string(b))
-	}
-	return err
 }
