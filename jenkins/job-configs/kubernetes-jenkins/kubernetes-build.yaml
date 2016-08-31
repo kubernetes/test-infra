@@ -24,7 +24,7 @@
         - gcs-uploader
         - workspace-cleanup:
             dirmatch: true
-            exclude: ['.git']
+            exclude: ['.git/']
             external-deletion-command: 'sudo rm -rf %s'
     scm:
         - git:
@@ -46,7 +46,7 @@
         - timestamps
         - workspace-cleanup:
             dirmatch: true
-            exclude: ['.git']
+            exclude: ['.git/']
             external-deletion-command: 'sudo rm -rf %s'
 
 - project:
