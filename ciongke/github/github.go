@@ -71,9 +71,10 @@ type PullRequestBranch struct {
 
 // Repo contains general repository information.
 type Repo struct {
-	Owner   User   `json:"owner"`
-	Name    string `json:"name"`
-	HTMLURL string `json:"html_url"`
+	Owner    User   `json:"owner"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	HTMLURL  string `json:"html_url"`
 }
 
 type IssueCommentEvent struct {
