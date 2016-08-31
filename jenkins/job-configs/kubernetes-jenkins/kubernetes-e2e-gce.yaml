@@ -65,6 +65,8 @@
                 export GINKGO_PARALLEL="y"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-e2e-gce"
+                export NUM_NODES="4"
+                export GINKGO_PARALLEL_NODES="30"
         - 'gce-gci':  # kubernetes-e2e-gce-gci
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI in parallel.'
