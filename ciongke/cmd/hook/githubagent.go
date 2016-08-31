@@ -31,7 +31,8 @@ type GitHubAgent struct {
 	Org          string
 	GitHubClient githubClient
 
-	JenkinsJobs []JenkinsJob
+	// Repo FullName (eg "kubernetes/kubernetes") -> []JenkinsJob
+	JenkinsJobs map[string][]JenkinsJob
 
 	PullRequestEvents  <-chan github.PullRequestEvent
 	IssueCommentEvents <-chan github.IssueCommentEvent
@@ -105,12 +106,14 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 
 // commentBodyMatches looks at a comment body and decides which Jenkins jobs to
 // build based on it.
-func (ga *GitHubAgent) commentBodyMatches(body string) []JenkinsJob {
+func (ga *GitHubAgent) commentBodyMatches(fullRepoName, body string) []JenkinsJob {
 	var result []JenkinsJob
 	ott := okToTest.MatchString(body)
-	for _, job := range ga.JenkinsJobs {
-		if job.Trigger.MatchString(body) || (ott && job.AlwaysRun) {
-			result = append(result, job)
+	if jobs, ok := ga.JenkinsJobs[fullRepoName]; ok {
+		for _, job := range jobs {
+			if job.Trigger.MatchString(body) || (ott && job.AlwaysRun) {
+				result = append(result, job)
+			}
 		}
 	}
 	return result
@@ -138,7 +141,7 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 		}
 
 		// Which jobs does the comment want us to run?
-		requestedJobs := ga.commentBodyMatches(ic.Comment.Body)
+		requestedJobs := ga.commentBodyMatches(ic.Repo.FullName, ic.Comment.Body)
 		if len(requestedJobs) == 0 {
 			return nil
 		}
@@ -234,18 +237,22 @@ func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
 }
 
 func (ga *GitHubAgent) buildAll(pr github.PullRequest) {
-	for _, job := range ga.JenkinsJobs {
-		if !job.AlwaysRun {
-			continue
+	if jobs, ok := ga.JenkinsJobs[pr.Base.Repo.FullName]; ok {
+		for _, job := range jobs {
+			if !job.AlwaysRun {
+				continue
+			}
+			kr := makeKubeRequest(job, pr)
+			ga.BuildRequests <- kr
 		}
-		kr := makeKubeRequest(job, pr)
-		ga.BuildRequests <- kr
 	}
 }
 
 func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
-	for _, job := range ga.JenkinsJobs {
-		kr := makeKubeRequest(job, pr)
-		ga.DeleteRequests <- kr
+	if jobs, ok := ga.JenkinsJobs[pr.Base.Repo.FullName]; ok {
+		for _, job := range jobs {
+			kr := makeKubeRequest(job, pr)
+			ga.DeleteRequests <- kr
+		}
 	}
 }

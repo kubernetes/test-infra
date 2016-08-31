@@ -44,42 +44,14 @@ var (
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
-var defaultJenkinsJobs = []JenkinsJob{
-	{
-		Name:      "kubernetes-pull-build-test-e2e-gce",
-		Trigger:   regexp.MustCompile(`@k8s-bot (gce )?(e2e )?test this`),
-		AlwaysRun: true,
-		Context:   "Jenkins GCE e2e",
-	},
-	{
-		Name:      "kubernetes-pull-build-test-e2e-gke",
-		Trigger:   regexp.MustCompile(`@k8s-bot (gke )?(smoke )?(e2e )?test this`),
-		AlwaysRun: true,
-		Context:   "Jenkins GKE smoke e2e",
-	},
-	{
-		Name:      "kubernetes-pull-build-test-unit-integration",
-		Trigger:   regexp.MustCompile(`@k8s-bot (unit )?test this`),
-		AlwaysRun: true,
-		Context:   "Jenkins unit/integration",
-	},
-	{
-		Name:      "kubernetes-pull-verify-all",
-		Trigger:   regexp.MustCompile(`@k8s-bot (verify )?test this`),
-		AlwaysRun: true,
-		Context:   "Jenkins verification",
-	},
-	{
-		Name:      "kubernetes-pull-build-test-federation-e2e-gce",
-		Trigger:   regexp.MustCompile(`@k8s-bot federation (gce )?(e2e )?test this`),
-		AlwaysRun: false,
-		Context:   "Jenkins Federation GCE e2e",
-	},
-	{
-		Name:      "kubernetes-pull-build-test-kubemark-e2e-gce",
-		Trigger:   regexp.MustCompile(`@k8s-bot kubemark test this`),
-		AlwaysRun: false,
-		Context:   "Jenkins Jenkins Kubemark GCE e2e",
+var defaultJenkinsJobs = map[string][]JenkinsJob{
+	"kubernetes/test-infra": {
+		{
+			Name:      "testinfra-pull-gotest",
+			Trigger:   regexp.MustCompile(`@k8s-bot (go )?test this`),
+			AlwaysRun: true,
+			Context:   "Jenkins go test",
+		},
 	},
 }
 
