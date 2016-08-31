@@ -23,6 +23,7 @@ from jenkinsapi import jenkins  # sudo pip install jenkinsapi
 EXCLUSIVE = True
 SHARED = False
 
+# TODO: Add 'scalability' label to heavy to not abuse 'build' label.
 INFO = {
     'heavy': ('build unittest', 1, EXCLUSIVE),
     'light': ('node e2e', 10, EXCLUSIVE),
