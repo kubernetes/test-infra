@@ -32,7 +32,7 @@ def digest(data, strip=True, filters=None,
         digested = re.sub(r'<span class="skipped"[^<]*>([^<]*)</span>', r'(\1)',
             digested, flags=re.MULTILINE)
         digested = re.sub(r'<[^>]*>', '', digested)
-    return digested.replace('\n', ' ')
+    return digested.replace('\n', ' ').strip()
 
 class LogParserTest(unittest.TestCase):
     def setUp(self):
@@ -73,6 +73,11 @@ class LogParserTest(unittest.TestCase):
             '<span class="hilight"><span class="keyword">error</span></span>'
             ' 1 2 3 4 <span class="skip" data-range="5-9">s4</span>')
 
+    def test_unicode(self):
+        self.assertEqual(log_parser.digest(u'error \xb5s'),
+            u'<span class="hilight"><span class="keyword">'
+            u'error</span> \xb5s</span>\n')
+
     def test_pod(self):
         self.assertEqual(digest(
             'pod-blah', error_re=regex.wordRE("pod"), strip=False),
@@ -91,6 +96,7 @@ class LogParserTest(unittest.TestCase):
                          '0\n1\n2\n3\n4\n5\n6\n7\n' +
                          '\n' * 86 +
                          '4\n95\n96\n97\n98\n99')
+
 
 if __name__ == '__main__':
     unittest.main()

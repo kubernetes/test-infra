@@ -100,8 +100,9 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
 
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
-
-    lines = unicode(jinja2.escape(truncate(data).decode('utf8', 'replace'))).split('\n')
+    if isinstance(data, str):  # the test mocks return str instead of unicode
+        data = data.decode('utf8', 'replace')
+    lines = unicode(jinja2.escape(truncate(data))).split('\n')
 
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
@@ -117,6 +118,7 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
             hilight_words, filters, objref_dict)
 
     output = log_html(lines, matched_lines, hilight_words, skip_fmt)
+    output.append('')
 
     return '\n'.join(output)
 
