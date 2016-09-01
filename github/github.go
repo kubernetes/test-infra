@@ -1554,7 +1554,7 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, erro
 	prNum := *pr.Number
 	allComments := []*github.PullRequestComment{}
 
-	listOpts := &github.PullRequestListCommentsOptions{}
+	listOpts := &github.PullRequestListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
 
 	config := obj.config
 	page := 1
@@ -1589,7 +1589,7 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 		return obj.comments, nil
 	}
 
-	listOpts := &github.IssueListCommentsOptions{}
+	listOpts := &github.IssueListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
 	for _, withListOpt := range withListOpts {
 		listOpts = withListOpt(listOpts)
 	}
