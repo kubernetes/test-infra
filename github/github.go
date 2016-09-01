@@ -1554,21 +1554,38 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, erro
 	prNum := *pr.Number
 	allComments := []*github.PullRequestComment{}
 
-	listOpts := &github.PullRequestListCommentsOptions{}
+	listOpts := &github.PullRequestListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
 
 	config := obj.config
 	page := 1
+	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.
+	tryNextPageAnyway := false
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
 		comments, response, err := obj.config.client.PullRequests.ListComments(config.Org, config.Project, prNum, listOpts)
 		config.analytics.ListReviewComments.Call(config, response)
 		if err != nil {
+			if tryNextPageAnyway {
+				// Cached last page was actually truthful -- expected error.
+				break
+			}
 			return nil, err
+		}
+		if tryNextPageAnyway {
+			if len(comments) == 0 {
+				break
+			}
+			glog.Infof("For %v: supposedly there weren't more review comments, but we asked anyway and found %v more.", prNum, len(comments))
+			tryNextPageAnyway = false
 		}
 		allComments = append(allComments, comments...)
 		if response.LastPage == 0 || response.LastPage <= page {
-			break
+			if len(allComments)%100 == 0 {
+				tryNextPageAnyway = true
+			} else {
+				break
+			}
 		}
 		page++
 	}
@@ -1589,23 +1606,40 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 		return obj.comments, nil
 	}
 
-	listOpts := &github.IssueListCommentsOptions{}
+	listOpts := &github.IssueListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
 	for _, withListOpt := range withListOpts {
 		listOpts = withListOpt(listOpts)
 	}
 
 	page := 1
+	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.
+	tryNextPageAnyway := false
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, issueNum)
 		comments, response, err := obj.config.client.Issues.ListComments(config.Org, config.Project, issueNum, listOpts)
 		config.analytics.ListComments.Call(config, response)
 		if err != nil {
+			if tryNextPageAnyway {
+				// Cached last page was actually truthful -- expected error.
+				break
+			}
 			return nil, err
+		}
+		if tryNextPageAnyway {
+			if len(comments) == 0 {
+				break
+			}
+			glog.Infof("For %v: supposedly there weren't more comments, but we asked anyway and found %v more.", issueNum, len(comments))
+			tryNextPageAnyway = false
 		}
 		allComments = append(allComments, comments...)
 		if response.LastPage == 0 || response.LastPage <= page {
-			break
+			if len(comments)%100 == 0 {
+				tryNextPageAnyway = true
+			} else {
+				break
+			}
 		}
 		page++
 	}
