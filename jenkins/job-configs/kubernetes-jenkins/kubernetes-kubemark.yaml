@@ -190,6 +190,8 @@
                 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
                 # Increase throughput in Kubemark master components.
                 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
+                # Increase limit for inflight requests in apiserver.
+                export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=600"
                 # Increase throughput in Load test.
                 export LOAD_TEST_THROUGHPUT=50
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
@@ -222,6 +224,8 @@
                 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true --kube-api-content-type=application/vnd.kubernetes.protobuf"
                 # Increase throughput in Kubemark master components.
                 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
+                # Increase limit for inflight requests in apiserver.
+                export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=800"
                 # Increase throughput in Load test.
                 export LOAD_TEST_THROUGHPUT=50
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
