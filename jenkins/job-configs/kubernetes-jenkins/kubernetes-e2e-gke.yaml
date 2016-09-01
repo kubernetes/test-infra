@@ -444,59 +444,59 @@
 # Jobs that run e2e tests on GKE with GCI as the node image on the release-1.2
 # branch.
 - project:
-    name: kubernetes-e2e-gke-trusty
+    name: kubernetes-e2e-gke-gci-release-1.2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'wonderfly'
     emails: 'gci-alerts+kubekins@google.com'
     gke-suffix:
-        - 'gke-trusty-test':  # kubernetes-e2e-gke-trusty-test
+        - 'gke-gci-test':  # kubernetes-e2e-gke-gci-test
             description: 'Run E2E tests on GKE test endpoint.'
             timeout: 480
             job-env: |
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-test-trusty"
+                export E2E_NAME="gke-e2e-test-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="kubekins-e2e-gke-trusty-test"
-        - 'gke-trusty-subnet':  # kubernetes-e2e-gke-trusty-subnet
+        - 'gke-gci-subnet':  # kubernetes-e2e-gke-gci-subnet
             description: 'Run E2E tests on GKE test endpoint in a subnet.'
             timeout: 480
             job-env: |
-                # Subnetwork "jkns-gke-e2e-subnet-trusty" is manually created -
+                # Subnetwork "gke-e2e-subnet-gci" is manually created -
                 # if deleted, it will need to be recreated via
-                # `gcloud alpha compute networks create jkns-gke-e2e-subnet-trusty --mode auto`
+                # `gcloud alpha compute networks create gke-e2e-subnet-gci --mode auto`
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-subnet-trusty"
+                export E2E_NAME="gke-e2e-subnet-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="k8s-e2e-gke-trusty-subnet"
-        - 'gke-trusty-staging':  # kubernetes-e2e-gke-trusty-staging
+        - 'gke-gci-staging':  # kubernetes-e2e-gke-gci-staging
             description: 'Run E2E tests on GKE staging endpoint.'
             timeout: 480
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-staging-trusty"
+                export E2E_NAME="gke-e2e-staging-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export KUBE_OS_DISTRIBUTION="trusty"
+                export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="e2e-gke-trusty-staging"
-        - 'gke-trusty-staging-parallel':  # kubernetes-e2e-gke-trusty-staging-parallel
+        - 'gke-gci-staging-parallel':  # kubernetes-e2e-gke-gci-staging-parallel
             description: 'Run E2E tests on GKE staging endpoint in parallel.'
             timeout: 80
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-staging-pa-trusty"
+                export E2E_NAME="gke-e2e-staging-pa-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="e2e-gke-trusty-staging-p"
-        - 'gke-trusty-prod':  # kubernetes-e2e-gke-trusty-prod
+        - 'gke-gci-prod':  # kubernetes-e2e-gke-gci-prod
             # Failing constantly due to a known issue (tracked internally).
             disable_job: true
             description: 'Run E2E tests on GKE prod endpoint.'
@@ -504,13 +504,13 @@
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-prod-trusty"
+                export E2E_NAME="gke-e2e-prod-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export KUBE_GCE_ZONE="asia-east1-b"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="kubekins-e2e-gke-trusty-prod"
-        - 'gke-trusty-prod-parallel':  # kubernetes-e2e-gke-trusty-prod-parallel
+        - 'gke-gci-prod-parallel':  # kubernetes-e2e-gke-gci-prod-parallel
             # Failing constantly due to a known issue (tracked internally).
             disable_job: true
             description: 'Run E2E tests on GKE prod endpoint in parallel.'
@@ -518,7 +518,7 @@
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/rc"
-                export E2E_NAME="gke-e2e-prod-pa-trusty"
+                export E2E_NAME="gke-e2e-prod-pa-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
