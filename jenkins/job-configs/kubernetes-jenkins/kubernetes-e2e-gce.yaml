@@ -550,6 +550,7 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-gce-serial-1-4"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_ENABLE_RESCHEDULER=true
         - 'gce-ingress-release-1.4':  # kubernetes-e2e-gce-ingress-release-1.4
             description: 'Run [Feature:Ingress] tests on GCE on the release-1.4 branch.'
             timeout: 90
