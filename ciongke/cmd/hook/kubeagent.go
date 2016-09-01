@@ -109,7 +109,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 							Image: ka.TestPRImage,
 							Args: []string{
 								"--job-name=" + kr.JobName,
-								"--context=\"" + kr.Context + "\"",
+								"--context=" + kr.Context,
 								"--repo-owner=" + kr.RepoOwner,
 								"--repo-name=" + kr.RepoName,
 								"--pr=" + strconv.Itoa(kr.PR),
