@@ -683,6 +683,8 @@
         export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+        # Increase limit for inflight requests in apiserver.
+        export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=800"
         export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
