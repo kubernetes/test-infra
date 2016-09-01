@@ -1,0 +1,263 @@
+- job-template:
+    name: 'kubernetes-pull-build-test-{suffix}'
+    concurrent: true
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+        - github:
+            url: 'https://github.com/kubernetes/kubernetes'
+        - throttle:
+            max-total: 12
+            max-per-node: 1
+            option: project
+        - raw:
+            xml: |
+                <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                    <script>docker version; gcloud version</script>
+                    <interpreter>shell script</interpreter>
+                </com.cloudbees.plugins.JobPrerequisites>
+    parameters:
+        - string:
+            name: ghprbPullId
+        - string:
+            name: ghprbTargetBranch
+        # The test job tracks a run through the queue using the buildId parameter.
+        - string:
+            name: buildId
+    scm:
+        - git:
+            remotes:
+                - remote:
+                    url: 'https://github.com/kubernetes/kubernetes'
+                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
+                - remote:
+                    url: 'https://github.com/kubernetes/kubernetes'
+                    refspec: '+refs/pull/${{ghprbPullId}}/merge:refs/remotes/origin/pr/${{ghprbPullId}}/merge'
+            branches:
+                - 'origin/pr/${{ghprbPullId}}/merge'
+            browser: githubweb
+            browser-url: 'https://github.com/kubernetes/kubernetes'
+            timeout: 20
+            clean:
+                after: true
+            wipe-workspace: false
+            skip-tag: true
+    wrappers:
+        - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+        - workspace-cleanup:
+            dirmatch: true
+            exclude: ['.git/']
+            external-deletion-command: 'sudo rm -rf %s'
+        - timeout:
+            timeout: 80
+            fail: true
+        - ansicolor:
+            colormap: xterm
+    builders:
+        - activate-gce-service-account
+        - ensure-upload-to-gcs-script:
+            git-basedir: ''
+        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/_tmp/upload-to-gcs.sh"
+        - shell: '{cmd}'
+    publishers:
+        - xunit:
+            thresholds:
+                - failed:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+                - skipped:
+                    unstable:
+                    unstablenew:
+                    failure:
+                    failurenew:
+            types:
+                - junit:
+                    skip-if-no-test-files: false
+                    pattern: '_artifacts/**.xml'
+                    deleteoutput: false
+        - gcs-uploader:
+            git-basedir: ''
+
+- project:
+    name: kubernetes-pull-e2e
+    suffix:
+        - 'e2e-gke': # kubernetes-pull-build-test-e2e-gke
+            cmd: |
+                if [[ "${{ghprbTargetBranch:-}}" == "release-1.0" || "${{ghprbTargetBranch:-}}" == "release-1.1" ]]; then
+                  echo "PR GKE job disabled for legacy branches."
+                  exit
+                fi
+                export KUBE_SKIP_PUSH_GCS=n
+                export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+                export KUBE_RUN_FROM_OUTPUT=y
+                export KUBE_FASTBUILD=true
+                export KUBE_GCS_UPDATE_LATEST=n
+                ./hack/jenkins/build.sh
+                version=$(source build/util.sh && echo $(kube::release::semantic_version))
+                gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${{version}}" "gs://kubernetes-release-dev/ci/${{version}}-pull"
+                # Strip off the leading 'v' from the cluster version.
+                export CLUSTER_API_VERSION="${{version:1}}-pull"
+                # Nothing should want Jenkins $HOME
+                export HOME=${{WORKSPACE}}
+                export KUBERNETES_PROVIDER="gke"
+                export E2E_MIN_STARTUP_PODS="1"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                # Flake detection. Individual tests get a second chance to pass.
+                export GINKGO_TOLERATE_FLAKES="y"
+                export E2E_NAME="e2e-gke-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+                export GINKGO_PARALLEL="y"
+                # Just run a smoke test.
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Guestbook"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export PROJECT="k8s-jkns-pr-gke"
+                # Since we're only running one test, just use two nodes.
+                export NUM_NODES="2"
+                # Assume we're upping, testing, and downing a cluster
+                export E2E_UP="true"
+                export E2E_TEST="true"
+                export E2E_DOWN="true"
+                export E2E_OPT="--check_version_skew=false"
+                # Force to use container-vm.
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                # Skip gcloud update checking
+                export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+                # GKE variables
+                export CLUSTER_NAME=${{E2E_NAME}}
+                export KUBE_GKE_NETWORK=${{E2E_NAME}}
+                export ZONE="us-central1-f"
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                # Get golang into our PATH so we can run e2e.go
+                export PATH=${{PATH}}:/usr/local/go/bin
+                timeout -k 15m 55m {runner} && rc=$? || rc=$?
+                if [[ ${{rc}} -ne 0 ]]; then
+                  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./cluster/log-dump.sh _artifacts
+                  fi
+                fi
+                if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+                  echo "Build timed out" >&2
+                elif [[ ${{rc}} -ne 0 ]]; then
+                  echo "Build failed" >&2
+                fi
+                echo "Exiting with code: ${{rc}}"
+                exit ${{rc}}
+        - 'federation-e2e-gce': # kubernetes-pull-build-test-federation-e2e-gce
+            cmd: |
+                # Federation specific params
+                export FEDERATION="true"
+                export PROJECT="k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+                export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+                export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+                export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+                export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+                export DNS_ZONE_NAME="k8s-federation.com."
+                export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
+                export KUBE_SKIP_PUSH_GCS=y
+                export KUBE_RUN_FROM_OUTPUT=y
+                export KUBE_FASTBUILD=true
+                # Nothing should want Jenkins $HOME
+                export HOME=${{WORKSPACE}}
+                # Build the images.
+                ./hack/jenkins/build.sh
+                # Push federation images to GCS.
+                ./build/push-federation-images.sh
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="1"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                # Flake detection. Individual tests get a second chance to pass.
+                export GINKGO_TOLERATE_FLAKES="y"
+                export E2E_NAME="fed-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export NUM_NODES="3"
+                # Force to use container-vm.
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                # Assume we're upping, testing, and downing a cluster
+                export E2E_UP="true"
+                export E2E_TEST="true"
+                export E2E_DOWN="true"
+                # Skip gcloud update checking
+                export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+                # GCE variables
+                export INSTANCE_PREFIX=${{E2E_NAME}}
+                export KUBE_GCE_NETWORK=${{E2E_NAME}}
+                export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
+                # Get golang into our PATH so we can run e2e.go
+                export PATH=${{PATH}}:/usr/local/go/bin
+                timeout -k 15m 55m {runner} && rc=$? || rc=$?
+                if [[ ${{rc}} -ne 0 ]]; then
+                  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./cluster/log-dump.sh _artifacts
+                  fi
+                fi
+                if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+                  echo "Build timed out" >&2
+                elif [[ ${{rc}} -ne 0 ]]; then
+                  echo "Build failed" >&2
+                fi
+                echo "Exiting with code: ${{rc}}"
+                exit ${{rc}}
+        - 'kubemark-e2e-gce': # kubernetes-pull-build-test-kubemark-e2e-gce
+            cmd: |
+                export KUBE_SKIP_PUSH_GCS=y
+                export KUBE_RUN_FROM_OUTPUT=y
+                export KUBE_FASTBUILD=true
+                ./hack/jenkins/build.sh
+                # Nothing should want Jenkins $HOME
+                export HOME=${{WORKSPACE}}
+                export KUBERNETES_PROVIDER="gce"
+                # Having full "kubemark" in name will result in exceeding allowed length
+                # of firewall-rule name.
+                export E2E_NAME="k6k-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+                export PROJECT="k8s-jkns-pr-kubemark"
+                export E2E_UP="true"
+                export E2E_TEST="false"
+                export E2E_DOWN="true"
+                export USE_KUBEMARK="true"
+                export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                # Override defaults to be independent from GCE defaults and set kubemark parameters
+                export NUM_NODES="1"
+                export MASTER_SIZE="n1-standard-1"
+                export NODE_SIZE="n1-standard-2"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export KUBEMARK_MASTER_SIZE="n1-standard-1"
+                export KUBEMARK_NUM_NODES="5"
+                # The kubemark scripts build a Docker image
+                export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+                # GCE variables
+                export INSTANCE_PREFIX=${{E2E_NAME}}
+                export KUBE_GCE_NETWORK=${{E2E_NAME}}
+                export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
+                # Force to use container-vm.
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                # Skip gcloud update checking
+                export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+                # Get golang into our PATH so we can run e2e.go
+                export PATH=${{PATH}}:/usr/local/go/bin
+                timeout -k 15m 45m {runner} && rc=$? || rc=$?
+                if [[ ${{rc}} -ne 0 ]]; then
+                  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./cluster/log-dump.sh _artifacts
+                  fi
+                fi
+                if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+                  echo "Build timed out" >&2
+                elif [[ ${{rc}} -ne 0 ]]; then
+                  echo "Build failed" >&2
+                fi
+                echo "Exiting with code: ${{rc}}"
+                exit ${{rc}}
+    jobs:
+        - 'kubernetes-pull-build-test-{suffix}'
