@@ -310,6 +310,9 @@
           status-add-test-results: false
           trigger-phrase: 'verify|test'
           cmd: |
+            # verify-godeps compares against upstream, but remote/master might be stale
+            # if .git was retained between runs. Update it explicitly here.
+            git fetch remote master:refs/remotes/remote/master
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
             ./hack/jenkins/gotest-dockerized.sh
