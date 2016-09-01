@@ -25,7 +25,7 @@ app = webtest.TestApp(None)
 
 
 def write(path, data):
-    if not isinstance(data, str):
+    if not isinstance(data, basestring):
         data = json.dumps(data)
     with gcs.open(path, 'w') as f:
         f.write(data)
