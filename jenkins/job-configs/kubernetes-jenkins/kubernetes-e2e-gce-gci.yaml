@@ -79,7 +79,7 @@
             job-env: |
                 # The master branch will always use GCI images built from its
                 # tip of tree, categorized in family `gci-canary`.
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-master"
@@ -89,7 +89,7 @@
             timeout: 150  #  See #24072
             trigger-job: 'kubernetes-build'
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -100,7 +100,7 @@
             timeout: 300
             trigger-job: 'kubernetes-build'
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
@@ -112,7 +112,7 @@
             trigger-job: 'kubernetes-build-1.3'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-1-3"
@@ -124,7 +124,7 @@
             trigger-job: 'kubernetes-build-1.3'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -137,7 +137,7 @@
             trigger-job: 'kubernetes-build-1.3'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.3"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-3"
@@ -149,7 +149,7 @@
             trigger-job: 'kubernetes-build-1.2'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-ci-1-2"
@@ -160,7 +160,7 @@
             trigger-job: 'kubernetes-build-1.2'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -172,7 +172,7 @@
             trigger-job: 'kubernetes-build-1.2'
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.2"
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-2"
@@ -247,7 +247,7 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images from the master branch, in parallel.'
             timeout: 50
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-master"
@@ -257,7 +257,7 @@
             description: 'Runs slow tests on GCE with GCI images from the master branch, sequentially.'
             timeout: 150
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -268,7 +268,7 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images from the master branch.'
             timeout: 300
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-canary"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-master"
@@ -279,7 +279,7 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 53, in parallel.'
             timeout: 50
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-m53"
@@ -289,7 +289,7 @@
             description: 'Runs slow tests on GCE with GCI images on milestone 53, sequentially.'
             timeout: 150
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -300,7 +300,7 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images on milestone 53.'
             timeout: 300
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-53"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-53"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-m53"
@@ -311,7 +311,7 @@
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 52, in parallel.'
             timeout: 50  # See #21138
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-m52"
@@ -320,7 +320,7 @@
             description: 'Runs slow tests on GCE with GCI images on milestone 52, sequentially.'
             timeout: 60
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
@@ -330,7 +330,7 @@
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images on milestone 52.'
             timeout: 300
             job-env: |
-                export JENKINS_GCI_IMAGE_FAMILY="gci-52"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-52"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-m52"
