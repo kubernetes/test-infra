@@ -157,7 +157,7 @@ func (c *testClient) TestPR() error {
 }
 
 func (c *testClient) tryCreateStatus(state, desc, url string) {
-	log.Printf("Setting status to %s: %s", state, desc)
+	log.Printf("%s/%s#%d: Setting status to %s: %s", c.RepoOwner, c.RepoName, c.PRNumber, state, desc)
 	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.Commit, github.Status{
 		State:       state,
 		Description: desc,

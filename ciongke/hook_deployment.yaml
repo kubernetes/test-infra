@@ -36,7 +36,7 @@ spec:
         image: gcr.io/kubernetes-jenkins-pull/hook:0.8
         imagePullPolicy: Always
         args: 
-        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.4
+        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.5
         - -org=kubernetes
         - -dry-run=false
         ports:
