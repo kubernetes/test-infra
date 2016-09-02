@@ -68,7 +68,10 @@
     # How long to wait after sending TERM to send KILL (minutes)
     kill-timeout: 15
     # Just to be safe, use the Jenkins timeout after a long time.
-    jenkins-timeout: 600
+    # NOTE: this *must* be larger than recursive timeouts
+    #       (like the /usr/bin/timeout command), or else the child
+    #       timeouts will never fire.
+    jenkins-timeout: 700
     # report-rc assumes that $rc is set to the exit status of the runner.
     report-rc: |
         if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
