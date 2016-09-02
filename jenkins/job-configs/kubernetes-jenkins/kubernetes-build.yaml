@@ -72,7 +72,7 @@
             timeout: 50
             job-env: ''  # Empty expected
         - 'build-1.4':
-            branch: 'master' # TODO: Change this to release-1.4 when it is cut
+            branch: 'release-1.4'
             timeout: 50
             job-env: ''  # Empty expected
         - 'federation-build':
