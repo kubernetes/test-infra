@@ -19,9 +19,9 @@ package main
 import (
 	"bytes"
 	"flag"
+	"github.com/Sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os/signal"
 	"regexp"
@@ -89,16 +89,17 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 
 func main() {
 	flag.Parse()
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
 	if err != nil {
-		log.Fatalf("Could not read webhook secret file: %s", err)
+		logrus.Fatalf("Could not read webhook secret file: %s", err)
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		log.Fatalf("Could not read oauth secret file: %s", err)
+		logrus.Fatalf("Could not read oauth secret file: %s", err)
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
@@ -113,7 +114,7 @@ func main() {
 
 	kubeClient, err := kube.NewClientInCluster(*namespace)
 	if err != nil {
-		log.Fatalf("Error getting client: %s", err)
+		logrus.Fatalf("Error getting client: %s", err)
 	}
 
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
@@ -157,5 +158,5 @@ func main() {
 	}
 	kubeAgent.Start()
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), server))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), server))
 }

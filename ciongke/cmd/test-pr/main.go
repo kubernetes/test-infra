@@ -19,9 +19,9 @@ package main
 import (
 	"bytes"
 	"flag"
+	"github.com/Sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"io/ioutil"
-	"log"
 	"time"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
@@ -62,10 +62,11 @@ type testClient struct {
 
 func main() {
 	flag.Parse()
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
-		log.Fatalf("Could not read token file: %s", err)
+		logrus.Fatalf("Could not read token file: %s", err)
 	}
 	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
 
@@ -78,7 +79,7 @@ func main() {
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		log.Fatalf("Could not read oauth secret file: %s", err)
+		logrus.Fatalf("Could not read oauth secret file: %s", err)
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
@@ -105,15 +106,26 @@ func main() {
 		GitHubClient:  githubClient,
 	}
 	if err := client.TestPR(); err != nil {
-		log.Printf("Error testing PR: %s", err)
+		logrus.Errorf("Error testing PR: %s", err)
 		return
+	}
+}
+
+func fields(c *testClient) logrus.Fields {
+	return logrus.Fields{
+		"job":    c.Job,
+		"org":    c.RepoOwner,
+		"repo":   c.RepoName,
+		"pr":     c.PRNumber,
+		"branch": c.Branch,
+		"commit": c.Commit,
 	}
 }
 
 // TestPR starts a Jenkins build and watches it, updating the GitHub status as
 // necessary.
 func (c *testClient) TestPR() error {
-	log.Printf("Starting %s build for #%d.", c.Job, c.PRNumber)
+	logrus.WithFields(fields(c)).Info("Starting build.")
 	b, err := c.JenkinsClient.Build(c.Job, c.PRNumber, c.Branch)
 	if err != nil {
 		return err
@@ -157,7 +169,7 @@ func (c *testClient) TestPR() error {
 }
 
 func (c *testClient) tryCreateStatus(state, desc, url string) {
-	log.Printf("%s/%s#%d: Setting status to %s: %s", c.RepoOwner, c.RepoName, c.PRNumber, state, desc)
+	logrus.WithFields(fields(c)).Infof("Setting status to %s: %s", state, desc)
 	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.Commit, github.Status{
 		State:       state,
 		Description: desc,
@@ -165,6 +177,6 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		TargetURL:   url,
 	})
 	if err != nil {
-		log.Printf("Error creating GitHub status: %s", err)
+		logrus.WithFields(fields(c)).Errorf("Error creating GitHub status: %s", err)
 	}
 }

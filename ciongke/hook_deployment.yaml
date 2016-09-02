@@ -33,10 +33,10 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/kubernetes-jenkins-pull/hook:0.9
+        image: gcr.io/kubernetes-jenkins-pull/hook:0.10
         imagePullPolicy: Always
         args: 
-        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.5
+        - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.6
         - -org=kubernetes
         - -dry-run=false
         ports:
