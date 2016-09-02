@@ -86,17 +86,28 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 	log.Printf("%s/%s#%d %s: %s", owner, name, pr.Number, pr.Action, pr.PullRequest.HTMLURL)
 
 	switch pr.Action {
-	case "opened", "reopened", "synchronize":
+	case "opened":
+		// When a PR is opened, if the author is in the org then build it.
+		// Otherwise, ask for "ok to test".
+		member, err := ga.GitHubClient.IsMember(pr.PullRequest.User.Login, ga.Org)
+		if err != nil {
+			return fmt.Errorf("could not check membership: %s", err)
+		} else if member {
+			ga.buildAll(pr.PullRequest)
+		} else {
+			log.Printf("%s/%s#%d needs \"ok to test\".", owner, name, pr.Number)
+			if err := ga.askToJoin(pr.PullRequest); err != nil {
+				return fmt.Errorf("could not ask to join: %s", err)
+			}
+		}
+	case "reopened", "synchronize":
+		// When a PR is updated, check for "ok to test" comments by trusted users
+		// before building.
 		trusted, err := ga.trustedPullRequest(pr.PullRequest)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
 			ga.buildAll(pr.PullRequest)
-		} else if pr.Action == "opened" {
-			log.Printf("%s/%s#%d needs \"ok to test\".", owner, name, pr.Number)
-			if err := ga.askToJoin(pr.PullRequest); err != nil {
-				return fmt.Errorf("could not ask to join: %s", err)
-			}
 		}
 	case "closed":
 		ga.deleteAll(pr.PullRequest)
@@ -211,8 +222,7 @@ func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 
 func (ga *GitHubAgent) askToJoin(pr github.PullRequest) error {
 	commentTemplate := `
-Can a [%s](https://github.com/%s) member verify that this patch is reasonable
-to test? If so, please reply "ok to test".
+Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply "ok to test".
 
 Regular contributors should join the org to skip this step.
 `
