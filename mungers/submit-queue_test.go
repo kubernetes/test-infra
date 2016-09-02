@@ -896,9 +896,8 @@ func TestSubmitQueue(t *testing.T) {
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)
-		// Don't wait so long for it to go pending or back
-		d := 250 * time.Millisecond
-		config.PendingWaitTime = &d
+		// Don't wait so long for retries (pending, mergeability)
+		config.BaseWaitTime = time.Millisecond
 
 		stateSet := ""
 		wasMerged := false

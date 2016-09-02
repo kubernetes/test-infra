@@ -163,8 +163,8 @@ type Config struct {
 	// If true, don't make any mutating API calls
 	DryRun bool
 
-	// Defaults to 30 seconds.
-	PendingWaitTime *time.Duration
+	// Base sleep time for retry loops. Defaults to 1 second.
+	BaseWaitTime time.Duration
 
 	// When we clear analytics we store the last values here
 	lastAnalytics analytics
@@ -1183,8 +1183,8 @@ func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c 
 		}
 		sleepTime := 30 * time.Second
 		// If the time was explicitly set, use that instead
-		if config.PendingWaitTime != nil {
-			sleepTime = *config.PendingWaitTime
+		if config.BaseWaitTime != 0 {
+			sleepTime = 30 * config.BaseWaitTime
 		}
 		if pending {
 			glog.V(4).Infof("PR# %d is not pending, waiting for %f seconds", *obj.Issue.Number, sleepTime.Seconds())
@@ -1730,7 +1730,11 @@ func (obj *MungeObject) IsMergeable() (bool, error) {
 		// Sleep for 2-32 seconds on successive attempts.
 		// Worst case, we'll wait for up to a minute for GitHub
 		// to compute it before bailing out.
-		time.Sleep((1 << uint(try)) * time.Second)
+		baseDelay := time.Second
+		if obj.config.BaseWaitTime != 0 { // Allow shorter delays in tests.
+			baseDelay = obj.config.BaseWaitTime
+		}
+		time.Sleep((1 << uint(try)) * baseDelay)
 		err := obj.Refresh()
 		if err != nil {
 			glog.Errorf("Unable to refresh PR# %d: %v", prNum, err)
