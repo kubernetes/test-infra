@@ -1,9 +1,9 @@
 {
-	"ImportPath": "k8s.io/test-infra/github-stats",
+	"ImportPath": "k8s.io/test-infra/velodrome",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
 	"Packages": [
-		"./fetcher"
+		"./..."
 	],
 	"Deps": [
 		{
