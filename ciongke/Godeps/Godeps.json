@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.10.0-28-ga283a10",
+			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
+		},
+		{
 			"ImportPath": "github.com/google/go-github/github",
 			"Rev": "b5e5babef39c18002f177a134fc49dc5013374ba"
 		},
@@ -30,6 +35,10 @@
 		{
 			"ImportPath": "golang.org/x/oauth2/internal",
 			"Rev": "1364adb2c63445016c5ed4518fc71f6a3cda6169"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
 		}
 	]
 }
