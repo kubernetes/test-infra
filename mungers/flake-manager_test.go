@@ -92,56 +92,73 @@ func flakecomment(id int, createdAt time.Time) *github.IssueComment {
 }
 
 func TestAutoPrioritize(t *testing.T) {
+	var p0Comments []*github.IssueComment
+
+	//simulates 50 test flakes/comments in the last 50 hours
+	for i := 0; i < 50; i++ {
+		p0Comments = append(p0Comments, flakecomment(1, time.Now().Add(-time.Duration(i)*time.Hour)))
+	}
+
 	testcases := []struct {
 		comments       []*github.IssueComment
 		issueCreatedAt time.Time
 		expectPriority int
 	}{
-		// New flake issue
 		{
+			//0 flakes in the last 7 days
 			comments:       []*github.IssueComment{},
 			issueCreatedAt: time.Now(),
-			expectPriority: 2,
+			expectPriority: 3,
 		},
 		{
+			//1 flakes in the last 7 days
 			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 			},
 			issueCreatedAt: time.Now().Add(-1 * 29 * 24 * time.Hour),
-			expectPriority: 1,
+			expectPriority: 3,
 		},
 		{
+			//3 flakes in the last 7 days
 			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
 				flakecomment(1, time.Now().Add(-1*3*24*time.Hour)),
 				flakecomment(1, time.Now().Add(-1*6*24*time.Hour)),
 			},
 			issueCreatedAt: time.Now().Add(-1 * 30 * 24 * time.Hour),
-			expectPriority: 0,
+			expectPriority: 2,
 		},
 		{
+			//10 flakes in the last 10 hrs
 			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
-				flakecomment(1, time.Now().Add(-8*24*time.Hour)),
+				flakecomment(1, time.Now().Add(-1*time.Hour)),
+				flakecomment(1, time.Now().Add(-2*time.Hour)),
+				flakecomment(1, time.Now().Add(-3*time.Hour)),
+				flakecomment(1, time.Now().Add(-4*time.Hour)),
+				flakecomment(1, time.Now().Add(-5*time.Hour)),
+				flakecomment(1, time.Now().Add(-6*time.Hour)),
+				flakecomment(1, time.Now().Add(-7*time.Hour)),
+				flakecomment(1, time.Now().Add(-8*time.Hour)),
+				flakecomment(1, time.Now().Add(-9*time.Hour)),
 			},
 			issueCreatedAt: time.Now().Add(-1 * 29 * 24 * time.Hour),
 			expectPriority: 1,
 		},
 		{
+			//4 flakes, but only 2 in a week
 			comments: []*github.IssueComment{
 				flakecomment(1, time.Now()),
-				flakecomment(1, time.Now().Add(-8*24*time.Hour)),
+				flakecomment(1, time.Now().Add(-3*24*time.Hour)),
 				flakecomment(1, time.Now().Add(-15*24*time.Hour)),
 				flakecomment(1, time.Now().Add(-20*24*time.Hour)),
 			},
 			issueCreatedAt: time.Now().Add(-1 * 29 * 24 * time.Hour),
-			expectPriority: 1,
+			expectPriority: 3,
 		},
 		{
-			comments: []*github.IssueComment{
-				flakecomment(1, time.Now()),
-				flakecomment(1, time.Now().Add(-1*3*24*time.Hour)),
-			},
+			//50 flakes in a week
+			comments:       p0Comments,
 			issueCreatedAt: time.Now().Add(-1 * 6 * 24 * time.Hour),
 			expectPriority: 0,
 		},
@@ -149,7 +166,8 @@ func TestAutoPrioritize(t *testing.T) {
 	for _, tc := range testcases {
 		p := autoPrioritize(tc.comments, &tc.issueCreatedAt)
 		if p.Priority() != tc.expectPriority {
-			t.Errorf("Expected priority: %d, But got: %d", tc.expectPriority, p.Priority())
+			t.Errorf("Expected priority: %d, But got: %d",
+				len(tc.comments), tc.expectPriority, p.Priority())
 		}
 	}
 }

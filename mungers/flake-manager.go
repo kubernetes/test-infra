@@ -342,15 +342,18 @@ func autoPrioritize(comments []*libgithub.IssueComment, issueCreatedAt *time.Tim
 			weekCount += 1
 		}
 	}
-
-	// P2: By default
-	// P1: Flake happens more than once in last month.
-	// P0: Flake happens more than twice in last week.
-	p := sync.PriorityP2
-	if weekCount >= 3 {
+	// Priorities are defined if the flake happens:
+	// P0: 50 or more times a week.
+	// P1: 10 - 50 times in a week
+	// P2: 3 or more times in a week
+	// p3: happens once or twice in a week (default value)
+	p := sync.PriorityP3
+	if weekCount >= 50 {
 		p = sync.PriorityP0
-	} else if monthCount >= 2 {
+	} else if weekCount >= 10 {
 		p = sync.PriorityP1
+	} else if weekCount >= 3 {
+		p = sync.PriorityP2
 	}
 	return p
 }
