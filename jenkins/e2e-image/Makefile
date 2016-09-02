@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/google-containers/kubekins-e2e
-TAG = $(shell date +v%Y%m%d)
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 all: build
 
