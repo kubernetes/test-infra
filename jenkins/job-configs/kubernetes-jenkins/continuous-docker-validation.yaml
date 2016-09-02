@@ -19,7 +19,7 @@
 # Template for the continuous e2e Docker validation jobs.
 - job-template:
     name: 'continuous-e2e-docker-validation-{os-distro}'
-    node: '{jenkins_node}' 
+    node: '{jenkins_node}'
     description: '{description} Test owner: {test-owner}.'
     disabled: '{obj:disable_job}'
     properties:
@@ -85,7 +85,7 @@
 
 # Template for the continuous node e2e Docker validation jobs.
 - job-template:
-    name: 'continuous-node-e2e-docker-validation-{os-distro}'
+    name: 'continuous-node-e2e-docker-{test-name}'
     description: '{description} Test Owner: {test-owner}.'
     disabled: '{obj:disable_job}'
     node: 'node'
@@ -105,7 +105,7 @@
             basedir: 'go/src/{gitbasedir}'
     triggers:
         - pollscm:
-            cron: 'H H/6 * * *'
+            cron: '{scm-cron-string}'
         - timed: '@daily'
     publishers:
         - claim-build
@@ -132,9 +132,6 @@
         export GOROOT=/usr/local/go
         export GOPATH=$WORKSPACE/go
         export PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
-    # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-docker-validation.properties:
-    # PROJECT="k8s-jkns-ci-node-e2e"
-    shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-docker-validation.properties'
     builders:
         - activate-gce-service-account
         - shell: |
@@ -148,9 +145,20 @@
     # Template defaults. Can be overriden in job definitions.
     test-owner: 'random-liu'
     emails: 'lantaol@google.com'
+    scm-cron-string: 'H H/6 * * *'
 
 - project:
     name: continuous-docker-validation
+    test-name:
+      - validation:
+          description: 'Runs the node e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
+          # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-docker-validation.properties:
+          # PROJECT="k8s-jkns-ci-node-e2e"
+          shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/docker_validation/jenkins-validation.properties'
+      - benchmark:
+          description: 'Runs the node benchmark tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
+          shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/docker_validation/jenkins-perf.properties'
+          scm-cron-string: 'H H H * *'
     jobs:
         - 'continuous-e2e-docker-validation-{os-distro}':
             os-distro: 'gci'
@@ -161,6 +169,4 @@
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-docker-validation-gci"
                 export JENKINS_GCI_IMAGE_FAMILY="gci-canary-test"
-        - 'continuous-node-e2e-docker-validation-{os-distro}':
-            os-distro: 'gci'
-            description: 'Runs the node e2e tests with the latest Kubernetes green build, latest GCI build, and latest Docker (pre)release.'
+        - 'continuous-node-e2e-docker-{test-name}'
