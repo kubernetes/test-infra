@@ -18,7 +18,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"github.com/Sirupsen/logrus"
 	"regexp"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
@@ -67,14 +67,14 @@ func (ga *GitHubAgent) Start() {
 	go func() {
 		for pr := range ga.PullRequestEvents {
 			if err := ga.handlePullRequestEvent(pr); err != nil {
-				log.Printf("Error handling PR: %s", err)
+				logrus.Errorf("Error handling PR: %s", err)
 			}
 		}
 	}()
 	go func() {
 		for ic := range ga.IssueCommentEvents {
 			if err := ga.handleIssueCommentEvent(ic); err != nil {
-				log.Printf("Error handling issue: %s", err)
+				logrus.Errorf("Error handling issue: %s", err)
 			}
 		}
 	}()
@@ -83,7 +83,12 @@ func (ga *GitHubAgent) Start() {
 func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error {
 	owner := pr.PullRequest.Base.Repo.Owner.Login
 	name := pr.PullRequest.Base.Repo.Name
-	log.Printf("%s/%s#%d %s: %s", owner, name, pr.Number, pr.Action, pr.PullRequest.HTMLURL)
+	logrus.WithFields(logrus.Fields{
+		"org":  owner,
+		"repo": name,
+		"pr":   pr.Number,
+		"url":  pr.PullRequest.HTMLURL,
+	}).Infof("Pull request %s.", pr.Action)
 
 	switch pr.Action {
 	case "opened":
@@ -96,7 +101,11 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 		} else if member {
 			ga.buildAll(pr.PullRequest)
 		} else {
-			log.Printf("%s/%s#%d needs \"ok to test\".", owner, name, pr.Number)
+			logrus.WithFields(logrus.Fields{
+				"org":  owner,
+				"repo": name,
+				"pr":   pr.Number,
+			}).Infof("Commenting \"is this ok to test\".")
 			if err := ga.askToJoin(pr.PullRequest); err != nil {
 				return fmt.Errorf("could not ask to join: %s", err)
 			}
@@ -137,7 +146,13 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 	name := ic.Repo.Name
 	number := ic.Issue.Number
 	author := ic.Comment.User.Login
-	log.Printf("%s/%s#%d Comment by %s %s: %s", owner, name, number, author, ic.Action, ic.Comment.HTMLURL)
+	logrus.WithFields(logrus.Fields{
+		"org":    owner,
+		"repo":   name,
+		"pr":     number,
+		"author": author,
+		"url":    ic.Comment.HTMLURL,
+	}).Infof("Issue comment %s.", ic.Action)
 
 	switch ic.Action {
 	case "created", "edited":

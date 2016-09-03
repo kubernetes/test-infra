@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
-	"log"
 	"strconv"
 	"time"
 
@@ -64,22 +64,33 @@ type kubeClient interface {
 // Cut off test-pr jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
+func fields(kr KubeRequest) logrus.Fields {
+	return logrus.Fields{
+		"job":    kr.JobName,
+		"org":    kr.RepoOwner,
+		"repo":   kr.RepoName,
+		"pr":     kr.PR,
+		"commit": kr.SHA,
+		"branch": kr.Branch,
+	}
+}
+
 // Start starts reading from the channels and does not block.
 func (ka *KubeAgent) Start() {
 	go func() {
 		for kr := range ka.BuildRequests {
 			if err := ka.deleteJob(kr); err != nil {
-				log.Printf("Error deleting job: %s", err)
+				logrus.WithFields(fields(kr)).Errorf("Error deleting job: %s", err)
 			}
 			if err := ka.createJob(kr); err != nil {
-				log.Printf("Error creating job: %s", err)
+				logrus.WithFields(fields(kr)).Errorf("Error creating job: %s", err)
 			}
 		}
 	}()
 	go func() {
 		for kr := range ka.DeleteRequests {
 			if err := ka.deleteJob(kr); err != nil {
-				log.Printf("Error deleting job: %s", err)
+				logrus.WithFields(fields(kr)).Errorf("Error deleting job: %s", err)
 			}
 		}
 	}()

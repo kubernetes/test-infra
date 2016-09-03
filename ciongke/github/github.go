@@ -19,7 +19,7 @@ package github
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/Sirupsen/logrus"
 	"net/http"
 
 	"github.com/google/go-github/github"
@@ -101,7 +101,12 @@ type IssueComment struct {
 }
 
 func logRateLimit(desc string, resp *github.Response) {
-	log.Printf("GitHub API Tokens: %d/%d (resets at %v) (%s)", resp.Remaining, resp.Limit, resp.Reset, desc)
+	logrus.WithFields(logrus.Fields{
+		"remaining": resp.Remaining,
+		"limit":     resp.Limit,
+		"reset":     resp.Reset,
+		"call":      desc,
+	}).Infof("GitHub API Tokens: %d/%d", resp.Remaining, resp.Limit)
 }
 
 // TODO: Be aware of rate limits.

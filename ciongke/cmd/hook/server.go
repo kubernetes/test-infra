@@ -19,7 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/Sirupsen/logrus"
 	"net/http"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
@@ -63,7 +63,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Event received. Have a nice day.")
 
 	if err := s.demuxEvent(eventType, payload); err != nil {
-		log.Printf("Error parsing event: %s", err)
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Error parsing event.")
 	}
 }
 
