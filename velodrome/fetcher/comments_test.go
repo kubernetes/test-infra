@@ -21,25 +21,27 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/google/go-github/github"
 )
 
 func TestFindLatestCommentUpdate(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 	tests := []struct {
-		comments       []Comment
+		comments       []sql.Comment
 		issueID        int
 		expectedLatest time.Time
 	}{
 		// If we don't have any comment, return 1900/1/1 0:0:0 UTC
 		{
-			[]Comment{},
+			[]sql.Comment{},
 			1,
 			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
 		// There are no comment for this issue, return the min date
 		{
-			[]Comment{
+			[]sql.Comment{
 				{IssueID: 1, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
 			},
@@ -48,7 +50,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		},
 		// Only pick selected issue
 		{
-			[]Comment{
+			[]sql.Comment{
 				{IssueID: 1, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -59,7 +61,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		},
 		// Can pick pull-request comments
 		{
-			[]Comment{
+			[]sql.Comment{
 				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -69,7 +71,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		},
 		// Can pick issue comments
 		{
-			[]Comment{
+			[]sql.Comment{
 				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -101,23 +103,23 @@ func TestUpdateComments(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 
 	tests := []struct {
-		before           []Comment
+		before           []sql.Comment
 		newIssueComments map[int][]*github.IssueComment
 		newPullComments  map[int][]*github.PullRequestComment
-		after            []Comment
+		after            []sql.Comment
 		updateID         int
 		isPullRequest    bool
 	}{
 		// No new comments
 		{
-			before: []Comment{
+			before: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
 			newIssueComments: map[int][]*github.IssueComment{},
 			newPullComments:  map[int][]*github.PullRequestComment{},
-			after: []Comment{
+			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -127,7 +129,7 @@ func TestUpdateComments(t *testing.T) {
 		},
 		// New comments, include PR
 		{
-			before: []Comment{
+			before: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -154,7 +156,7 @@ func TestUpdateComments(t *testing.T) {
 						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
-			after: []Comment{
+			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -173,7 +175,7 @@ func TestUpdateComments(t *testing.T) {
 		},
 		// Only interesting new comment is in PR, and we don't take PR
 		{
-			before: []Comment{
+			before: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -200,7 +202,7 @@ func TestUpdateComments(t *testing.T) {
 						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
-			after: []Comment{
+			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -210,7 +212,7 @@ func TestUpdateComments(t *testing.T) {
 		},
 		// New modified comment
 		{
-			before: []Comment{
+			before: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -223,7 +225,7 @@ func TestUpdateComments(t *testing.T) {
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
-			after: []Comment{
+			after: []sql.Comment{
 				*makeComment(12, 1, "IssueBody", "SomeLogin",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
@@ -245,7 +247,7 @@ func TestUpdateComments(t *testing.T) {
 
 		client := FakeClient{PullComments: test.newPullComments, IssueComments: test.newIssueComments}
 		UpdateComments(test.updateID, test.isPullRequest, db, client)
-		var comments []Comment
+		var comments []sql.Comment
 		if err := db.Order("ID").Find(&comments).Error; err != nil {
 			t.Fatal(err)
 		}

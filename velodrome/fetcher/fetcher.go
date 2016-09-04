@@ -22,6 +22,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/golang/glog"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/spf13/cobra"
@@ -29,7 +31,7 @@ import (
 
 type fetcherConfig struct {
 	Client
-	MySQLConfig
+	sql.MySQLConfig
 
 	once      bool
 	frequency int

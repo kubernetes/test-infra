@@ -21,10 +21,11 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
+	"k8s.io/test-infra/velodrome/sql"
 )
 
 // NewIssue creates a new (orm) Issue from a github Issue
-func NewIssue(gIssue *github.Issue) (*Issue, error) {
+func NewIssue(gIssue *github.Issue) (*sql.Issue, error) {
 	if gIssue.Number == nil ||
 		gIssue.Title == nil ||
 		gIssue.User == nil ||
@@ -53,7 +54,7 @@ func NewIssue(gIssue *github.Issue) (*Issue, error) {
 		return nil, err
 	}
 
-	return &Issue{
+	return &sql.Issue{
 		ID:             *gIssue.Number,
 		Labels:         labels,
 		Title:          *gIssue.Title,
@@ -70,7 +71,7 @@ func NewIssue(gIssue *github.Issue) (*Issue, error) {
 }
 
 // NewIssueEvent creates a new (orm) Issue from a github Issue
-func NewIssueEvent(gIssueEvent *github.IssueEvent) (*IssueEvent, error) {
+func NewIssueEvent(gIssueEvent *github.IssueEvent) (*sql.IssueEvent, error) {
 	if gIssueEvent.ID == nil ||
 		gIssueEvent.Event == nil ||
 		gIssueEvent.CreatedAt == nil ||
@@ -92,7 +93,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent) (*IssueEvent, error) {
 		actor = gIssueEvent.Actor.Login
 	}
 
-	return &IssueEvent{
+	return &sql.IssueEvent{
 		ID:             *gIssueEvent.ID,
 		Label:          label,
 		Event:          *gIssueEvent.Event,
@@ -104,21 +105,21 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent) (*IssueEvent, error) {
 }
 
 // newLabels creates a new Label for each label in the issue
-func newLabels(issueId int, gLabels []github.Label) ([]Label, error) {
-	labels := []Label{}
+func newLabels(issueId int, gLabels []github.Label) ([]sql.Label, error) {
+	labels := []sql.Label{}
 
 	for _, label := range gLabels {
 		if label.Name == nil {
 			return nil, fmt.Errorf("Label is missing name field")
 		}
-		labels = append(labels, Label{IssueID: issueId, Name: *label.Name})
+		labels = append(labels, sql.Label{IssueID: issueId, Name: *label.Name})
 	}
 
 	return labels, nil
 }
 
 // NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueId int, gComment *github.IssueComment) (*Comment, error) {
+func NewIssueComment(issueId int, gComment *github.IssueComment) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
@@ -130,7 +131,7 @@ func NewIssueComment(issueId int, gComment *github.IssueComment) (*Comment, erro
 		login = *gComment.User.Login
 	}
 
-	return &Comment{
+	return &sql.Comment{
 		ID:               *gComment.ID,
 		IssueID:          issueId,
 		Body:             *gComment.Body,
@@ -142,7 +143,7 @@ func NewIssueComment(issueId int, gComment *github.IssueComment) (*Comment, erro
 }
 
 // NewPullComment creates a Comment from a github.PullRequestComment
-func NewPullComment(issueId int, gComment *github.PullRequestComment) (*Comment, error) {
+func NewPullComment(issueId int, gComment *github.PullRequestComment) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
@@ -153,7 +154,7 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment) (*Comment,
 	if gComment.User != nil && gComment.User.Login != nil {
 		login = *gComment.User.Login
 	}
-	return &Comment{
+	return &sql.Comment{
 		ID:               *gComment.ID,
 		IssueID:          issueId,
 		Body:             *gComment.Body,

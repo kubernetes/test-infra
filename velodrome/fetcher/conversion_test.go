@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/google/go-github/github"
 )
 
@@ -28,7 +30,7 @@ func makeIssue(number int,
 	title, body, state, user, assignee, prUrl string,
 	comments int,
 	isPullRequest bool,
-	createdAt, updatedAt, closedAt time.Time) *Issue {
+	createdAt, updatedAt, closedAt time.Time) *sql.Issue {
 
 	var pAssignee *string
 	if assignee != "" {
@@ -40,7 +42,7 @@ func makeIssue(number int,
 		pClosedAt = &closedAt
 	}
 
-	return &Issue{
+	return &sql.Issue{
 		ID:             number,
 		Title:          title,
 		Body:           body,
@@ -97,7 +99,7 @@ func makeGithubIssue(number int,
 func TestNewIssue(t *testing.T) {
 	tests := []struct {
 		gIssue *github.Issue
-		mIssue *Issue
+		mIssue *sql.Issue
 	}{
 		// Only mandatory
 		{
@@ -135,7 +137,7 @@ func TestNewIssue(t *testing.T) {
 	for _, test := range tests {
 		// Ignore the error, we will compare the nil issue to expected
 		actualIssue, _ := NewIssue(test.gIssue)
-		if actualIssue != nil && reflect.DeepEqual(actualIssue.Labels, []Label{}) {
+		if actualIssue != nil && reflect.DeepEqual(actualIssue.Labels, []sql.Label{}) {
 			actualIssue.Labels = nil
 		}
 		if !reflect.DeepEqual(actualIssue, test.mIssue) {
@@ -148,7 +150,7 @@ func TestNewIssue(t *testing.T) {
 func makeIssueEvent(
 	eventId, issueId int,
 	label, event, assignee, actor string,
-	createdAt time.Time) *IssueEvent {
+	createdAt time.Time) *sql.IssueEvent {
 
 	var pLabel, pAssignee, pActor *string
 	if label != "" {
@@ -161,7 +163,7 @@ func makeIssueEvent(
 		pAssignee = &assignee
 	}
 
-	return &IssueEvent{
+	return &sql.IssueEvent{
 		ID:             eventId,
 		Label:          pLabel,
 		Event:          event,
@@ -205,7 +207,7 @@ func makeGithubIssueEvent(
 func TestNewIssueEvent(t *testing.T) {
 	tests := []struct {
 		gIssueEvent *github.IssueEvent
-		mIssueEvent *IssueEvent
+		mIssueEvent *sql.IssueEvent
 	}{
 		// Only mandatory
 		{
@@ -245,13 +247,13 @@ func TestNewLabels(t *testing.T) {
 	tests := []struct {
 		gLabels        []github.Label
 		issueId        int
-		expectedLabels []Label
+		expectedLabels []sql.Label
 	}{
 		// Empty list gives empty list
 		{
 			[]github.Label{},
 			1,
-			[]Label{},
+			[]sql.Label{},
 		},
 		// Broken label
 		{
@@ -302,8 +304,8 @@ func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time
 	}
 }
 
-func makeComment(issueId, Id int, body, login string, createdAt, updatedAt time.Time, pullRequest bool) *Comment {
-	return &Comment{
+func makeComment(issueId, Id int, body, login string, createdAt, updatedAt time.Time, pullRequest bool) *sql.Comment {
+	return &sql.Comment{
 		ID:               Id,
 		IssueID:          issueId,
 		Body:             body,
@@ -318,7 +320,7 @@ func TestNewIssueComment(t *testing.T) {
 	tests := []struct {
 		gComment        *github.IssueComment
 		issueId         int
-		expectedComment *Comment
+		expectedComment *sql.Comment
 	}{
 		{
 			gComment: makeGithubIssueComment(1, "Body", "Login",
@@ -353,7 +355,7 @@ func TestNewPullComment(t *testing.T) {
 	tests := []struct {
 		gComment        *github.PullRequestComment
 		issueId         int
-		expectedComment *Comment
+		expectedComment *sql.Comment
 	}{
 		{
 			gComment: makeGithubPullComment(1, "Body", "Login",
