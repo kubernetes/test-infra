@@ -1,7 +1,10 @@
 - builder:
     name: activate-gce-service-account
     builders:
-      - shell: 'gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"'
+      - shell: |
+          export HOME="${WORKSPACE}"
+          export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+          gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 
 - publisher:
     name: gcs-uploader
