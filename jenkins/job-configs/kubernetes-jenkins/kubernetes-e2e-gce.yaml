@@ -25,6 +25,7 @@
         - activate-gce-service-account
         - shell: |
             {provider-env}
+            {project-env}
             {job-env}
             {post-env}
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
@@ -654,14 +655,9 @@
     # TODO: Currently run it only manually. Fix it once we have all permissions.
     cron-string: ''
     trigger-job: ''
-    description: 'Starts and deletes empty 2000 node cluster and runs scalability tests on it. Does allow few Nodes to fail during startup.'
-    timeout: 1440
     branch: 'master'
-    suffix: 'gce-enormous-cluster'  # kubernetes-e2e-gce-enormous-cluster
-    job-env: |
+    project-env: |
         # XXX Not a unique project
-        export E2E_NAME="e2e-enormous-cluster"
-        export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] --kube-api-content-type=application/vnd.kubernetes.protobuf"
         export PROJECT="kubernetes-scale"
         export FAIL_ON_GCP_RESOURCE_LEAK="false"
         # Override GCE defaults.
@@ -679,7 +675,6 @@
         # Reduce logs verbosity
         export TEST_CLUSTER_LOG_LEVEL="--v=1"
         export MAX_INSTANCES_PER_MIG="1000"
-        export CREATE_SERVICES="true"
         # Increase resync period to simulate production
         export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
         # Increase delete collection parallelism
@@ -689,8 +684,30 @@
         # Increase qps limits in scheduler and controller manager.
         export CONTROLLER_MANAGER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
         export SCHEDULER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
-        # Increase throughput in Load test.
-        export LOAD_TEST_THROUGHPUT=50
-        export KUBE_NODE_OS_DISTRIBUTION="debian"
+    suffix:
+        - 'gce-enormous-cluster'  # kubernetes-e2e-gce-enormous-cluster
+            description: 'Starts and deletes empty 2000 node cluster and runs scalability tests on it. Does allow few Nodes to fail during startup.'
+            timeout: 420
+            job-env: |
+                export E2E_NAME="e2e-enormous-cluster"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] --kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export CREATE_SERVICES="true"
+                # Increase throughput in Load test.
+                export LOAD_TEST_THROUGHPUT=50
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gce-enormous-deploy' # kuberentes-e2e-gce-enormous-deploy
+            description: 'Starts up empty 2000 node cluster and waits until it is running. Used for manual testing.'
+            timeout: 180
+            job-env: |
+                export E2E_NAME="e2e-enormous-deploy"
+                export E2E_TEST="false"
+                export E2E_DOWN="false"
+        - 'gce-enormous-teardown' #kubernetes-e2e-gce-enormous-deploy
+            description: 'Tears down a cluster created by gce-enormous-deploy.'
+            timeout: 180
+            job-env: |
+                export E2E_name="e2e-enormous-deploy"
+                export E2E_TEST="false"
+                export E2E_UP="false"
     jobs:
         - 'kubernetes-e2e-{suffix}'
