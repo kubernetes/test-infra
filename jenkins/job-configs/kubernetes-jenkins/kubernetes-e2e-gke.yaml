@@ -202,6 +202,56 @@
                 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=True
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gke-large-deploy':  # kubernetes-e2e-gke-large-deploy
+            description: 'Starts up a large GKE cluster for further manual testing.'
+            timeout: 180
+            emails: 'gmarek@google.com wojtekt@google.com'
+            cron-string: ''
+            trigger-job: ''
+            job-env: |
+                export E2E_NAME="gke-large-deploy"
+                export PROJECT="kubernetes-scale"
+                # TODO: Remove FAIL_ON_GCP_RESOURCE_LEAK when PROJECT changes back to gke-large-cluster-jenkins.
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export ZONE="us-east1-a"
+                export NUM_NODES=2000
+                export MACHINE_TYPE="n1-standard-1"
+                export HEAPSTER_MACHINE_TYPE="n1-standard-4"
+                export ALLOWED_NOTREADY_NODES="20"
+                # We were asked (by MIG team) to not create more than 5 MIGs per zone.
+                # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
+                # So setting max-nodes-per-pool=1000, to check if that helps.
+                export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=True
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export E2E_TEST="false"
+                export E2E_DOWN="false"
+        - 'gke-large-teardown':  # kubernetes-e2e-gke-large-deploy
+            description: 'Tears down cluster created by gke-large-deploy.'
+            timeout: 180
+            emails: 'gmarek@google.com wojtekt@google.com'
+            cron-string: ''
+            trigger-job: ''
+            job-env: |
+                export E2E_NAME="gke-large-deploy"
+                export PROJECT="kubernetes-scale"
+                # TODO: Remove FAIL_ON_GCP_RESOURCE_LEAK when PROJECT changes back to gke-large-cluster-jenkins.
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export ZONE="us-east1-a"
+                export NUM_NODES=2000
+                export MACHINE_TYPE="n1-standard-1"
+                export HEAPSTER_MACHINE_TYPE="n1-standard-4"
+                export ALLOWED_NOTREADY_NODES="20"
+                # We were asked (by MIG team) to not create more than 5 MIGs per zone.
+                # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
+                # So setting max-nodes-per-pool=1000, to check if that helps.
+                export GKE_CREATE_FLAGS="--max-nodes-per-pool=1000"
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=True
+                export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://staging-container.sandbox.googleapis.com/"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export E2E_TEST="false"
+                export E2E_UP="false"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
