@@ -679,6 +679,8 @@
         export ALLOWED_NOTREADY_NODES="20"
         # Reduce logs verbosity
         export TEST_CLUSTER_LOG_LEVEL="--v=1"
+        # Switch off image puller to workaround #32191.
+        export PREPULL_E2E_IMAGES="false"
         export MAX_INSTANCES_PER_MIG="1000"
         # TODO: re-enable service creation after we debug problems with this suite
         # export CREATE_SERVICES="true"
