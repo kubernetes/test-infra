@@ -182,6 +182,7 @@
                 export E2E_NAME="e2e-scalability"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
                                          --kube-api-content-type=application/vnd.kubernetes.protobuf \
+                                         --allowed-not-ready-nodes=1 \
                                          --gather-resource-usage=true \
                                          --gather-metrics-at-teardown=true \
                                          --gather-logs-sizes=true \
@@ -662,7 +663,9 @@
     job-env: |
         # XXX Not a unique project
         export E2E_NAME="e2e-enormous-cluster"
-        export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] --kube-api-content-type=application/vnd.kubernetes.protobuf"
+        export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
+                                 --kube-api-content-type=application/vnd.kubernetes.protobuf \
+                                 --allowed-not-ready-nodes=20"
         export PROJECT="kubernetes-scale"
         export FAIL_ON_GCP_RESOURCE_LEAK="false"
         # Override GCE defaults.
