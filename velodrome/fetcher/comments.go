@@ -19,16 +19,18 @@ package main
 import (
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
 )
 
 func findLatestCommentUpdate(issueID int, db *gorm.DB) time.Time {
-	var comment Comment
+	var comment sql.Comment
 	comment.CommentUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	db.Select("comment_updated_at").Where(&Comment{IssueID: issueID}).Order("comment_updated_at desc").First(&comment)
+	db.Select("comment_updated_at").Where(&sql.Comment{IssueID: issueID}).Order("comment_updated_at desc").First(&comment)
 
 	return comment.CommentUpdatedAt
 }

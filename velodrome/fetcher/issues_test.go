@@ -21,22 +21,24 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/google/go-github/github"
 )
 
 func TestFindLatestIssueUpdate(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 	tests := []struct {
-		issues         []Issue
+		issues         []sql.Issue
 		expectedLatest time.Time
 	}{
 		// If we don't have any issue, return 1900/1/1 0:0:0 UTC
 		{
-			[]Issue{},
+			[]sql.Issue{},
 			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			[]Issue{
+			[]sql.Issue{
 				{IssueUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{IssueUpdatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -72,20 +74,20 @@ func TestUpdateIssues(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 
 	tests := []struct {
-		before []Issue
+		before []sql.Issue
 		new    []*github.Issue
-		after  []Issue
+		after  []sql.Issue
 	}{
 		// No new issues
 		{
-			before: []Issue{
+			before: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{},
-			after: []Issue{
+			after: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -94,7 +96,7 @@ func TestUpdateIssues(t *testing.T) {
 		},
 		// New issues
 		{
-			before: []Issue{
+			before: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -106,7 +108,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			after: []Issue{
+			after: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -119,7 +121,7 @@ func TestUpdateIssues(t *testing.T) {
 		},
 		// New issues + already existing
 		{
-			before: []Issue{
+			before: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -139,7 +141,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			after: []Issue{
+			after: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -167,7 +169,7 @@ func TestUpdateIssues(t *testing.T) {
 		}
 
 		UpdateIssues(db, FakeClient{Issues: test.new})
-		var issues []Issue
+		var issues []sql.Issue
 		if err := db.Order("ID").Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}

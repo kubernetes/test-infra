@@ -21,22 +21,24 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/google/go-github/github"
 )
 
 func TestFindLatestUpdate(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 	tests := []struct {
-		events         []IssueEvent
+		events         []sql.IssueEvent
 		expectedLatest int
 	}{
 		// If we don't have any issue, return 1900/1/1 0:0:0 UTC
 		{
-			[]IssueEvent{},
+			[]sql.IssueEvent{},
 			0,
 		},
 		{
-			[]IssueEvent{
+			[]sql.IssueEvent{
 				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
 				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC)},
@@ -76,25 +78,25 @@ func TestUpdateEvents(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
 
 	tests := []struct {
-		before []IssueEvent
+		before []sql.IssueEvent
 		new    []*github.IssueEvent
-		after  []IssueEvent
+		after  []sql.IssueEvent
 	}{
 		// No new issues
 		{
-			before: []IssueEvent{
+			before: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			new: []*github.IssueEvent{},
-			after: []IssueEvent{
+			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 		},
 		// New issues
 		{
-			before: []IssueEvent{
+			before: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
@@ -102,7 +104,7 @@ func TestUpdateEvents(t *testing.T) {
 				makeGithubIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			after: []IssueEvent{
+			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
@@ -111,7 +113,7 @@ func TestUpdateEvents(t *testing.T) {
 		},
 		// New issues + already existing (doesn't update)
 		{
-			before: []IssueEvent{
+			before: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
@@ -123,7 +125,7 @@ func TestUpdateEvents(t *testing.T) {
 				makeGithubIssueEvent(3, 2, "Label", "Event", "Assignee", "",
 					time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			after: []IssueEvent{
+			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
@@ -145,7 +147,7 @@ func TestUpdateEvents(t *testing.T) {
 		}
 
 		UpdateIssueEvents(db, FakeClient{IssueEvents: test.new})
-		var issues []IssueEvent
+		var issues []sql.IssueEvent
 		if err := db.Order("ID").Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}

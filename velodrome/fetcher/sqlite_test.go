@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
@@ -35,7 +37,7 @@ func (config *SQLiteConfig) CreateDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&Issue{}, &IssueEvent{}, &Label{}, &Comment{}).Error
+	err = db.AutoMigrate(&sql.Issue{}, &sql.IssueEvent{}, &sql.Label{}, &sql.Comment{}).Error
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +52,7 @@ func TestSQLiteCreateDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	issue := Issue{
+	issue := sql.Issue{
 		ID:             1,
 		Labels:         nil,
 		Title:          "Title",
@@ -66,7 +68,7 @@ func TestSQLiteCreateDatabase(t *testing.T) {
 	if err := db.Create(&issue).Error; err != nil {
 		t.Fatal(err)
 	}
-	var foundIssue Issue
+	var foundIssue sql.Issue
 	if err := db.First(&foundIssue).Error; err != nil {
 		t.Fatal(err)
 	}

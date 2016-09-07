@@ -19,13 +19,15 @@ package main
 import (
 	"time"
 
+	"k8s.io/test-infra/velodrome/sql"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
 )
 
 func findLatestIssueUpdate(db *gorm.DB) (time.Time, error) {
-	var issue Issue
+	var issue sql.Issue
 	issue.IssueUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	query := db.Select("issue_updated_at").Order("issue_updated_at desc").First(&issue)
@@ -55,7 +57,7 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 		if db.Create(issueOrm).Error != nil {
 			// If we can't create, let's try update
 			// First we need to delete labels, as they are just concatenated
-			db.Delete(Label{}, "issue_id = ?", issueOrm.ID)
+			db.Delete(sql.Label{}, "issue_id = ?", issueOrm.ID)
 			db.Save(issueOrm)
 		}
 		// Issue is updated, find if we have new comments

@@ -20,10 +20,11 @@ import (
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
+	"k8s.io/test-infra/velodrome/sql"
 )
 
 func findLatestEvent(db *gorm.DB) (*int, error) {
-	var latestEvent IssueEvent
+	var latestEvent sql.IssueEvent
 
 	query := db.Select("id, event_created_at").Order("event_created_at desc").First(&latestEvent)
 	if query.RecordNotFound() {
