@@ -42,7 +42,6 @@ MATCHES = [
     (r'kubernetes-(build.*)', 'unit'),
     (r'kubernetes-(test.*)', 'unit'),
     (r'kubernetes-(verify.*)', 'unit'),
-    (r'(.*-e2e-docker-.*)', 'docker'),
 ]
 
 
@@ -81,10 +80,13 @@ def render_dashboard(category, tabs, prefix):
     """Renders a dashboard config string.
 
     Follows this format:
-- dashboard_tab:
-  - name: tab_1
-    test_group_name: testgroup_1
-  name:  dashboard_1
+      {
+        name = 'dashboard_name'
+        dashboard_tab = [
+          tab('tab-name', 'test-group-name'),
+          ...
+        ]
+      }
     """
     if '\'' in prefix:
       raise ValueError(prefix)
@@ -93,18 +95,21 @@ def render_dashboard(category, tabs, prefix):
     for tab in tabs:
       if '\'' in tab:
         raise ValueError(tab, tabs)
-    return """- dashboard_tab:
-  %(tabs)s
-  name: %(prefix)s-%(category)s""" % dict(
+    return """{
+  name = '%(prefix)s-%(category)s'
+  dashboard_tab = [
+    %(tabs)s
+  ]
+},""" % dict(
     prefix=prefix,
     category=category,
-    tabs='\n  '.join('- name: %s\n    test_group_name: %s'
-         % (tab, path) for (tab, path) in sorted(tabs)))
+    tabs='\n    '.join('tab(\'%s\', \'%s\'),' % (tab, path)
+                       for (tab, path) in sorted(tabs)))
 
 def render_dashboards(categories, prefix):
     """Renders multiple dashboards, prepending the specified prefix."""
     # Separate each list item with a comma
-    return 'dashboards:\n%s\n' % '\n'.join(render_dashboard(c, t, prefix)
+    return '\n'.join(render_dashboard(c, t, prefix)
                      for (c, t) in sorted(categories.items()))
 
 
@@ -112,16 +117,16 @@ def render_group(path, prefix):
     """Renders test_groups which represents a set of CI results.
 
     Follows this format:
-    - name: test_name
-      gcs_prefix: gcs_path
+      test_group('test-group-name', 'gcs-path')
     """
-    return '- name: %s\n  gcs_prefix: %s/%s' % (path, prefix, path)
+    return 'test_group(\n        \'%s\',\n        \'%s/%s\'),' % (
+        path, prefix, path)
 
 
 def render_groups(groups, prefix):
     """Renders multiple test_groups, prepending the specified gcs prefix."""
     # Items are comma separated
-    return 'test_groups:\n%s\n' % '\n'.join(
+    return 'test_groups = [\n    %s\n]' % '\n    '.join(
         render_group(g, prefix) for g in sorted(groups))
 
 
