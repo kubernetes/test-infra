@@ -16,7 +16,10 @@ limitations under the License.
 
 package sql
 
-import "time"
+import (
+	"regexp"
+	"time"
+)
 
 // Issue is a pull-request or issue. Its format fits into the ORM
 type Issue struct {
@@ -32,6 +35,19 @@ type Issue struct {
 	IssueClosedAt  *time.Time
 	IssueCreatedAt time.Time
 	IssueUpdatedAt time.Time
+}
+
+// FindLabels returns the list of labels matching the regex
+func (issue *Issue) FindLabels(regex *regexp.Regexp) []Label {
+	labels := []Label{}
+
+	for _, label := range issue.Labels {
+		if regex.MatchString(label.Name) {
+			labels = append(labels, label)
+		}
+	}
+
+	return labels
 }
 
 // IssueEvent is an event associated to a specific issued.
