@@ -187,6 +187,7 @@
                 # TODO: should test kube-proxy test is not designed to run in large clusters.
                 #   We should change it start running it here too.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|should\stest\skube-proxy \
+                                         --allowed-not-ready-nodes=20 \
                                          --system-pods-startup-timeout=120m"
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-east1-a"
