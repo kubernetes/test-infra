@@ -105,7 +105,6 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
                 export KUBE_OS_DISTRIBUTION="gci"
-                export KUBE_ENABLE_RESCHEDULER=true
         - 'release-1.3':  # kubernetes-e2e-gce-gci-ci-release-1.3
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.3 branch.'
             timeout: 50
@@ -274,7 +273,6 @@
                 export PROJECT="e2e-gce-gci-qa-serial-master"
                 export KUBE_MASTER_OS_DISTRIBUTION="gci"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
-                export KUBE_ENABLE_RESCHEDULER=true
         - 'm54':  # kubernetes-e2e-gce-gci-qa-m54
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 54, in parallel.'
             timeout: 50
@@ -306,7 +304,6 @@
                 export PROJECT="e2e-gce-gci-qa-serial-m54"
                 export KUBE_MASTER_OS_DISTRIBUTION="gci"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
-                export KUBE_ENABLE_RESCHEDULER=true
         - 'm53':  # kubernetes-e2e-gce-gci-qa-m53
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 53, in parallel.'
             timeout: 50
@@ -338,7 +335,6 @@
                 export PROJECT="e2e-gce-gci-qa-serial-m53"
                 export KUBE_MASTER_OS_DISTRIBUTION="gci"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
-                export KUBE_ENABLE_RESCHEDULER=true
         - 'm52':  # kubernetes-e2e-gce-gci-qa-m52
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 52, in parallel.'
             timeout: 50  # See #21138
@@ -367,6 +363,5 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-m52"
                 export KUBE_OS_DISTRIBUTION="gci"
-                export KUBE_ENABLE_RESCHEDULER=true
     jobs:
         - 'kubernetes-e2e-gce-gci-qa-{suffix}'
