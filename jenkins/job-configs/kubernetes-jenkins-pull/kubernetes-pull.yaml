@@ -313,6 +313,8 @@
             # verify-godeps compares against upstream, but remote/master might be stale
             # if .git was retained between runs. Update it explicitly here.
             git fetch remote master:refs/remotes/remote/master
+            # similarly, verify-munge-docs compares against the latest release branch.
+            git fetch remote release-1.4:remote/release-1.4
             export KUBE_VERIFY_GIT_BRANCH="${{ghprbTargetBranch}}"
             export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
             ./hack/jenkins/gotest-dockerized.sh
