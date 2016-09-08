@@ -624,10 +624,6 @@
     jobs:
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.2'
-            version-client: '1.1'
-            version-infix: '1-2-1-1'
-        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
-            version-cluster: '1.2'
             version-client: '1.3'
             version-infix: '1-2-1-3'
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
