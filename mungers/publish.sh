@@ -18,16 +18,14 @@ set -o nounset
 set -o pipefail
 
 echo $@
-if [ ! $# -eq 6 ]; then
-    echo "usage: publisher source_dir destination_dir source_url destination_url token temp_mem_dir. source_dir, destination_dir and temp_mem_dir are expected to be absolute paths."
+if [ ! $# -eq 4 ]; then
+    echo "usage: publish.sh destination_dir token temp_mem_dir commit_message. destination_dir and temp_mem_dir are expected to be absolute paths."
     exit 1
 fi
-SRC="${1}"
-DST="${2}"
-SRCURL="${3}"
-DSTURL="${4}"
-TOKEN="${5}"
-NETRCDIR="${6}"
+DST="${1}"
+TOKEN="${2}"
+NETRCDIR="${3}"
+MESSAGE="${4}"
 # set up github token
 echo "machine github.com login ${TOKEN}" > "${NETRCDIR}"/.netrc
 rm -f ~/.netrc
@@ -35,29 +33,15 @@ ln -s "${NETRCDIR}"/.netrc ~/.netrc
 # set up github user
 git config --global user.email "k8s-publish-robot@users.noreply.github.com"
 git config --global user.name "Kubernetes Publisher"
-# get the latest commit hash of source
-pushd "${SRC}" > /dev/null
-commit_hash=$(git rev-parse HEAD)
-popd > /dev/null
-# set up the destination directory
-rm -rf "${DST}"
-mkdir -p "${DST}"
-git clone "${DSTURL}" "${DST}"
-pushd "${DST}" > /dev/null
-rm -rf ./*
-cp -a "${SRC}/." "${DST}"
-# move _vendor/ to vendor/
-find "${DST}" -depth -name "_vendor" -type d -execdir mv {} "vendor" \;
 
+pushd "${DST}" > /dev/null
 git add --all
 # check if there are new contents 
 if git diff --cached --exit-code &>/dev/null; then
     echo "nothing has changed!"
     exit 0
 fi
-git commit -m "published by bot
-copied from ${SRCURL}
-last commit is ${commit_hash}"
+git commit -m "${MESSAGE}"
 git push origin master
 popd > /dev/null
 rm -f ~/.netrc

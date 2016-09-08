@@ -18,8 +18,10 @@ package mungers
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -28,9 +30,17 @@ import (
 	"k8s.io/kubernetes/pkg/util/errors"
 )
 
-type info struct {
-	repo string
-	dir  string
+type source struct {
+	repo   string
+	branch string
+	dir    string
+}
+
+// a publishing target
+type target struct {
+	dstRepo string
+	// multiple sources mapping to different directories in the dstRepo
+	srcToDstSubdir map[source]string
 }
 
 // PublisherMunger publishes content from one repository to another one.
@@ -41,7 +51,7 @@ type PublisherMunger struct {
 	baseDir string
 	// location to write the netrc file needed for github authentication
 	netrcDir     string
-	srcToDst     map[info]info
+	targets      []target
 	features     *features.Features
 	githubConfig *github.Config
 }
@@ -63,32 +73,121 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	if len(p.baseDir) == 0 {
 		glog.Fatalf("--repo-dir is required with selected munger(s)")
 	}
-	if len(p.PublishCommand) == 0 {
-		glog.Fatalf("--publish-command is required with selected munger(s)")
+	clientGo := target{
+		dstRepo: "client-go",
+		srcToDstSubdir: map[source]string{
+			source{repo: config.Project, branch: "release-1.4", dir: "staging/src/k8s.io/client-go/1.4"}: "1.4",
+			source{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go/1.5"}:      "1.5",
+		},
 	}
-	p.srcToDst = make(map[info]info)
-	p.srcToDst[info{repo: config.Project, dir: "staging/src/k8s.io/client-go"}] = info{repo: "client-go", dir: ""}
-	glog.Infof("pulisher munger map: %#v\n", p.srcToDst)
+	p.targets = []target{clientGo}
+	glog.Infof("pulisher munger map: %#v\n", p.targets)
 	p.features = features
 	p.githubConfig = config
 	return nil
 }
 
+// git clone dstURL to dst
+func clone(dst string, dstURL string) error {
+	err := exec.Command("rm", "-rf", dst).Run()
+	if err != nil {
+		return err
+	}
+	err = exec.Command("mkdir", "-p", dst).Run()
+	if err != nil {
+		return err
+	}
+	err = exec.Command("git", "clone", dstURL, dst).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// construct checks out the source repo, copy the contents to the destination,
+// returns a commit message snippet and error.
+func construct(srcRepo, srcDir, srcURL, srcBranch, dstRepo, dstSubdir string) (string, error) {
+	curDir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	if err = os.Chdir(srcRepo); err != nil {
+		return "", err
+	}
+	if err = exec.Command("git", "checkout", srcBranch).Run(); err != nil {
+		return "", err
+	}
+	out, err := exec.Command("git", "rev-parse", "HEAD").CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	commitHash := string(out)
+	if err = os.Chdir(dstRepo); err != nil {
+		return "", err
+	}
+	if err = exec.Command("rm", "-rf", dstSubdir).Run(); err != nil {
+		return "", err
+	}
+	if err = exec.Command("cp", "-a", srcDir, dstSubdir).Run(); err != nil {
+		return "", err
+	}
+	// rename _vendor to vendor
+	if err = exec.Command("find", dstSubdir, "-depth", "-name", "_vendor", "-type", "d", "-execdir", "mv", "{}", "vendor", ";").Run(); err != nil {
+		return "", err
+	}
+	if err = os.Chdir(curDir); err != nil {
+		return "", err
+	}
+	commitMessage := fmt.Sprintf("Directory %s is copied from\n", dstSubdir)
+	commitMessage += fmt.Sprintf("%s, branch %s,\n", srcURL, srcBranch)
+	commitMessage += fmt.Sprintf("last commit is %s\n", commitHash)
+	return commitMessage, nil
+}
+
 // EachLoop is called at the start of every munge loop
 func (p *PublisherMunger) EachLoop() error {
 	var errlist []error
-	for srcInfo, dstInfo := range p.srcToDst {
-		src := filepath.Join(p.baseDir, srcInfo.repo, srcInfo.dir)
-		srcURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, srcInfo.repo)
-		dst := filepath.Join(p.baseDir, dstInfo.repo, dstInfo.dir)
-		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, dstInfo.repo)
-		cmd := exec.Command(p.PublishCommand, src, dst, srcURL, dstURL, p.githubConfig.Token(), p.netrcDir)
+Target:
+	for _, target := range p.targets {
+		// clone the destination repo
+		dst := filepath.Join(p.baseDir, target.dstRepo, "")
+		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, target.dstRepo)
+		err := clone(dst, dstURL)
+		if err != nil {
+			glog.Errorf("Failed to clone %s.\nError: %s", dstURL, err)
+			errlist = append(errlist, err)
+			continue Target
+		} else {
+			glog.Infof("Successfully clone %s", dstURL)
+		}
+		// construct the destination directory
+		var commitMessage = "published by bot\n(https://github.com/kubernetes/contrib/tree/master/mungegithub)\n\n"
+		for srcInfo, dstSubdir := range target.srcToDstSubdir {
+			srcRepo := filepath.Join(p.baseDir, srcInfo.repo)
+			src := filepath.Join(p.baseDir, srcInfo.repo, srcInfo.dir)
+			dstRepo := filepath.Join(p.baseDir, target.dstRepo)
+			srcURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, srcInfo.repo)
+
+			snippet, err := construct(srcRepo, src, srcURL, srcInfo.branch, dstRepo, dstSubdir)
+			if err != nil {
+				glog.Errorf("Failed to construct %s.\nError: %s", dstRepo, err)
+				errlist = append(errlist, err)
+				continue Target
+			} else {
+				commitMessage += snippet
+				glog.Infof("Successfully construct %s", filepath.Join(dstRepo, dstSubdir))
+			}
+		}
+
+		// publish the destination directory
+		cmd := exec.Command("./publish.sh", dst, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage))
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			glog.Errorf("Failed to publish %s to %s.\nOutput: %s\nError: %s", src, dst, output, err)
+			glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)
 			errlist = append(errlist, err)
+			continue Target
 		} else {
-			glog.Infof("Successfully publish %s to %s: %s", src, dst, output)
+			glog.Infof("Successfully publish %s: %s", dst, output)
 		}
 	}
 	return errors.NewAggregate(errlist)
@@ -96,7 +195,6 @@ func (p *PublisherMunger) EachLoop() error {
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *PublisherMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.PublishCommand, "publish-command", "", "Command for the 'publisher' munger to periodically run.")
 	cmd.Flags().StringVar(&p.netrcDir, "netrc-dir", "", "Location to write the netrc file needed for github authentication.")
 }
 
