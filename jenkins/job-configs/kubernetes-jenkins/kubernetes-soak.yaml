@@ -65,7 +65,6 @@
         # [Disruptive] tests kill/restart components or nodes in the cluster,
         # defeating the purpose of a soak cluster. (#15722)
         export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-        export KUBE_ENABLE_RESCHEDULER=true
     properties:
         - build-blocker:
             use-build-blocker: true
