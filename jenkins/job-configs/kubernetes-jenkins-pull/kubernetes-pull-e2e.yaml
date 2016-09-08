@@ -160,8 +160,8 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
                 export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
                 export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
-                export DNS_ZONE_NAME="k8s-federation.com."
-                export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation.com"
+                export DNS_ZONE_NAME="k8s-federation-pr-bldr.com."
+                export FEDERATIONS_DOMAIN_MAP="federation=k8s-federation-pr-bldr.com"
                 export KUBE_SKIP_PUSH_GCS=y
                 export KUBE_RUN_FROM_OUTPUT=y
                 export KUBE_FASTBUILD=true
