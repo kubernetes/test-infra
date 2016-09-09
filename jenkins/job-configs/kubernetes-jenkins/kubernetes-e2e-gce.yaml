@@ -696,5 +696,9 @@
         # Increase throughput in Load test.
         export LOAD_TEST_THROUGHPUT=50
         export KUBE_NODE_OS_DISTRIBUTION="debian"
+        # TODO: Try etcd3 as an experiment - remove it soon after experiment is done.
+        # The purpose of the experiment is to check whether we won't observe dropping
+        # watcher (or at least, not because of etcd).
+        export STORAGE_BACKEND="etcd3"
     jobs:
         - 'kubernetes-e2e-{suffix}'
