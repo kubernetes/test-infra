@@ -22,12 +22,13 @@ import (
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
+	sqltest "k8s.io/test-infra/velodrome/sql/testing"
 
 	"github.com/google/go-github/github"
 )
 
 func TestFindLatestIssueUpdate(t *testing.T) {
-	config := SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{":memory:"}
 	tests := []struct {
 		issues         []sql.Issue
 		expectedLatest time.Time
@@ -71,7 +72,7 @@ func TestFindLatestIssueUpdate(t *testing.T) {
 }
 
 func TestUpdateIssues(t *testing.T) {
-	config := SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{":memory:"}
 
 	tests := []struct {
 		before []sql.Issue
