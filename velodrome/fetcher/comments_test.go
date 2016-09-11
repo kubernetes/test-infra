@@ -22,12 +22,13 @@ import (
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
+	sqltest "k8s.io/test-infra/velodrome/sql/testing"
 
 	"github.com/google/go-github/github"
 )
 
 func TestFindLatestCommentUpdate(t *testing.T) {
-	config := SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{":memory:"}
 	tests := []struct {
 		comments       []sql.Comment
 		issueID        int
@@ -100,7 +101,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 }
 
 func TestUpdateComments(t *testing.T) {
-	config := SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{":memory:"}
 
 	tests := []struct {
 		before           []sql.Comment

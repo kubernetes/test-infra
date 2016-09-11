@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package testing
 
 import (
 	"reflect"
@@ -22,28 +22,7 @@ import (
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
-
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
-
-type SQLiteConfig struct {
-	file string
-}
-
-func (config *SQLiteConfig) CreateDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open("sqlite3", config.file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.AutoMigrate(&sql.Issue{}, &sql.IssueEvent{}, &sql.Label{}, &sql.Comment{}).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
 
 func TestSQLiteCreateDatabase(t *testing.T) {
 	config := SQLiteConfig{":memory:"}
