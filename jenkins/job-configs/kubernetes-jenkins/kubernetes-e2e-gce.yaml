@@ -159,10 +159,10 @@
             description: 'Run alpha feature E2E tests on GCE.'
             timeout: 180
             job-env: |
-              export KUBE_FEATURE_GATES="AllAlpha=true"
-              export RUNTIME_CONFIG="api/all=true"
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(externalTrafficLocalOnly|PetSet)\]|ScheduledJob"
               export PROJECT="k8s-jkns-e2e-gce-alpha"
+              export KUBE_FEATURE_GATES="AllAlpha=true"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+              export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
             timeout: 180
@@ -556,13 +556,14 @@
                 export KUBE_OS_DISTRIBUTION="gci"
         - 'gce-alpha-features-release-1.4':
             description: 'Run alpha feature tests on GCE on the release-1.4 branch.'
-            timeout: 90
+            timeout: 180
             job-env: |
-                export KUBE_FEATURE_GATES="AllAlpha=true"
-                export RUNTIME_CONFIG="api/all=true"
-                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(externalTrafficLocalOnly|PetSet)\]|ScheduledJob"
                 export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
+                export KUBE_FEATURE_GATES="AllAlpha=true"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+                export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-scalability-release-1.4':  # kubernetes-e2e-gce-scalability-release-1.4
             description: 'Run scalability E2E tests on GCE from the release-1.4 branch.'
             timeout: 120
