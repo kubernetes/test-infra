@@ -11,7 +11,7 @@
     scm:
         - git:
             branches:
-            - config_external
+            - config_upload
             browser: githubweb
             browser-url: https://github.com/krzyzacy/test-infra
             basedir: go/src/k8s.io/test-infra
