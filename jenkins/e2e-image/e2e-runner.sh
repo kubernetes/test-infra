@@ -195,6 +195,11 @@ function setup_gci_vars() {
     export KUBE_GCE_MASTER_PROJECT="${gci_staging_project}"
     export KUBE_GCE_MASTER_IMAGE="${image_name}"
     export KUBE_MASTER_OS_DISTRIBUTION="gci"
+
+    export KUBE_GCE_NODE_PROJECT="${gci_staging_project}"
+    export KUBE_GCE_NODE_IMAGE="${image_name}"
+    export KUBE_NODE_OS_DISTRIBUTION="gci"
+
     if [[ "${JENKINS_GCI_HEAD_IMAGE_FAMILY}" == "gci-canary-test" ]]; then
         # The family "gci-canary-test" is reserved for a special type of GCI images
         # that are used to continuously validate Docker releases.
