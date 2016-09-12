@@ -161,8 +161,7 @@
             job-env: |
               export KUBE_FEATURE_GATES="AllAlpha=true"
               export RUNTIME_CONFIG="api/all=true"
-              # TODO(jlowdermilk): add all 1.4 alpha Feature:... tests here
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ExternalTrafficLocalOnly\]"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(externalTrafficLocalOnly|PetSet)\]|ScheduledJob"
               export PROJECT="k8s-jkns-e2e-gce-alpha"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
@@ -588,6 +587,15 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial-1-4"
                 export KUBE_OS_DISTRIBUTION="gci"
+        - 'gce-alpha-features-release-1.4':
+            description: 'Run alpha feature tests on GCE on the release-1.4 branch.'
+            timeout: 90
+            job-env: |
+                export KUBE_FEATURE_GATES="AllAlpha=true"
+                export RUNTIME_CONFIG="api/all=true"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(externalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+                export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
         # TODO: Move gce-scalability-release-1.3 here (gce-scalability-release-1.4) once we cut the release branch
     jobs:
         - 'kubernetes-e2e-{suffix}'
