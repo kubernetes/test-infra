@@ -545,9 +545,6 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-mas"
-                # Set legacy skip list, only when testing old version
-                # TODO remove when we no longer care about v1.1
-                {legacy-ginkgo-test-args-env}
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster'
@@ -560,9 +557,6 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu"
-                # Set legacy skip list, only when testing old version
-                # TODO remove when we no longer care about v1.1
-                {legacy-ginkgo-test-args-env}
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster-new'
@@ -586,20 +580,21 @@
             version-old: '1.2'
             version-new: '1.3'
             version-infix: '1-2-1-3'
-            version-env: ''
-            legacy-ginkgo-test-args-env: ''
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
         - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.2-1.4
             version-old: '1.2'
             version-new: '1.4'
             version-infix: '1-2-1-4'
-            version-env: ''
-            legacy-ginkgo-test-args-env: ''
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
         - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.3-1.4
             version-old: '1.3'
             version-new: '1.4'
             version-infix: '1-3-1-4'
             version-env: ''
-            legacy-ginkgo-test-args-env: ''
 
 - job-group:
     name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
@@ -617,6 +612,7 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
+                {version-env}
 
 - project:
     name: 'kubernetes-e2e-kubectl-skew-gke'
@@ -626,15 +622,21 @@
             version-cluster: '1.2'
             version-client: '1.3'
             version-infix: '1-2-1-3'
+            version-env: ''
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.3'
             version-client: '1.2'
             version-infix: '1-3-1-2'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.3'
             version-client: '1.4'
             version-infix: '1-3-1-4'
+            version-env: ''
         - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.4'
             version-client: '1.3'
             version-infix: '1-4-1-3'
+            version-env: ''
