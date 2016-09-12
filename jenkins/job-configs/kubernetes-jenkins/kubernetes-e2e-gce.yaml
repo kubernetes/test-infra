@@ -689,12 +689,16 @@
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
         # Increase limit for inflight requests in apiserver.
-        export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=800"
+        # TODO: Uncomment after validating 1.4 release.
+        # export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=800"
         # Increase qps limits in scheduler and controller manager.
-        export CONTROLLER_MANAGER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
-        export SCHEDULER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
+        # TODO: Uncomment after validating 1.4 release.
+        # export CONTROLLER_MANAGER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
+        # TODO: Uncomment after validating 1.4 release.
+        # export SCHEDULER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
         # Increase throughput in Load test.
-        export LOAD_TEST_THROUGHPUT=50
+        # TODO: Uncomment after validating 1.4 release.
+        # export LOAD_TEST_THROUGHPUT=50
         export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-e2e-{suffix}'
