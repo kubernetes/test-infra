@@ -75,8 +75,18 @@ type Container struct {
 }
 
 type EnvVar struct {
-	Name  string `json:"name,omitempty"`
-	Value string `json:"value,omitempty"`
+	Name      string       `json:"name,omitempty"`
+	Value     string       `json:"value,omitempty"`
+	ValueFrom EnvVarSource `json:"valueFrom,omitempty"`
+}
+
+type EnvVarSource struct {
+	ConfigMap ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+}
+
+type ConfigMapKeySelector struct {
+	Name string `json:"name,omitempty"`
+	Key  string `json:"key,omitempty"`
 }
 
 type SecurityContext struct {

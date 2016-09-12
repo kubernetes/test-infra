@@ -127,6 +127,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 								"--branch=" + kr.Branch,
 								"--sha=" + kr.SHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
+								"--jenkins-url=$(JENKINS_URL)",
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
@@ -138,6 +139,17 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 									Name:      "jenkins",
 									ReadOnly:  true,
 									MountPath: "/etc/jenkins",
+								},
+							},
+							Env: []kube.EnvVar{
+								{
+									Name: "JENKINS_URL",
+									ValueFrom: kube.EnvVarSource{
+										ConfigMap: kube.ConfigMapKeySelector{
+											Name: "jenkins-address",
+											Key:  "jenkins-address",
+										},
+									},
 								},
 							},
 						},

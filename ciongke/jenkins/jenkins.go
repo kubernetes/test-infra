@@ -90,7 +90,7 @@ func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 201 {
-		return nil, fmt.Errorf("Response not 201: %s", resp.Status)
+		return nil, fmt.Errorf("response not 201: %s", resp.Status)
 	}
 	loc, err := resp.Location()
 	if err != nil {
@@ -121,7 +121,7 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return false, fmt.Errorf("Response not 2XX: %s", resp.Status)
+		return false, fmt.Errorf("response not 2XX: %s", resp.Status)
 	}
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -173,7 +173,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("Response not 2XX: %s", resp.Status)
+		return nil, fmt.Errorf("response not 2XX: %s", resp.Status)
 	}
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
