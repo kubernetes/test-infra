@@ -643,7 +643,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export JENKINS_USE_SKEW_TESTS="true"
                 export KUBE_GKE_IMAGE_TYPE="{image-old}"
-                export PROJECT="kube-gke-up-{version-infix}-up-clu-n"
+                export PROJECT="gke-up-{version-infix}-up-clu-n"
                 {version-env}
 
 - project:
