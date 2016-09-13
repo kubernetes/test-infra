@@ -89,7 +89,7 @@
             browser: githubweb
             browser-url: 'https://github.com/{repoName}'
             branches:
-                - 'master'
+                - '{branch}'
             skip-tag: true
             basedir: 'go/src/{gitbasedir}'
     triggers:
@@ -140,19 +140,36 @@
         - 'cadvisor':
             repoName: 'google/cadvisor'
             gitbasedir: 'github.com/google/cadvisor'
+            branch: 'master'
             owner: 'stclair@google.com'
             shell: 'build/jenkins_e2e.sh'
         - 'heapster':
             repoName: 'kubernetes/heapster'
             gitbasedir: 'k8s.io/heapster'
+            branch: 'master'
             owner: 'pszczesniak@google.com'
             shell: 'make test-unit test-integration'
             disable_job: true  # Issue #23538
         - 'kubelet':
             cron-string: '{sq-cron-string}'
             repoName: 'kubernetes/kubernetes'
+            branch: 'master'
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'pwittroc@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
+    jobs:
+        - '{gitproject}-gce-e2e-ci'
+
+- project:
+    name: node-gce-e2e-1.4
+    repoName: 'google/cadvisor'
+    gitproject:
+        - 'kubelet':
+            cron-string: '{sq-cron-string}'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            branch: 'release-1.4'
+            owner: 'dawnchen@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
