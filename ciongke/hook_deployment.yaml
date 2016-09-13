@@ -33,9 +33,9 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/k8s-ci-on-gke/hook:0.13
+        image: gcr.io/k8s-ci-on-gke/hook:0.14
         imagePullPolicy: Always
-        args: 
+        args:
         - -test-pr-image=gcr.io/k8s-ci-on-gke/test-pr:0.7
         - -org=kubernetes
         - -dry-run=false
