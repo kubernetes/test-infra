@@ -18,6 +18,7 @@
 import argparse
 import collections
 import datetime
+import glob
 import os
 import re
 import subprocess
@@ -87,6 +88,8 @@ def RemoveImages(skip, ancient):
 
     err = 0
     for name, versions in tags.items():
+        if name == '<none>':
+            continue
         if len(versions) < 2:
             continue
         untag = ['%s:%s' % (name, v) for v in set(versions[1:])]
@@ -137,6 +140,33 @@ def KillLoopingBash():
             err |= subprocess.call(['sudo', 'kill', '-9', pid])
     return err
 
+
+def DeleteCorruptGitRepos():
+    '''
+    Find and delete corrupt .git directories. This can occur when the agent
+    reboots in the middle of a git operation. This is *still* less flaky than doing
+    full clones every time and occasionally timing out because GitHub is throttling us :(
+
+    Git complains with things like this:
+
+    error: object file ws/.git/objects/01/e6eeca... is empty
+    fatal: loose object 01e6eeca211171e9ae5117bbeed738218d2cdb09
+        (stored in ws/.git/objects/01/e6eeca..) is corrupt
+    '''
+    err = 0
+    for git_dir in glob.glob('/var/lib/jenkins/workspace/*/.git'):
+        if not subprocess.check_output(['find', git_dir, '-size', '0']):
+            # git fsck is kind of slow (~30s each), this fast heuristic speeds things up.
+            continue
+        print 'validating git dir:', git_dir
+        corrupt = subprocess.call(['git', '--git-dir', git_dir, 'fsck'])
+        err |= corrupt  # flag
+        if err:
+            print 'deleting corrupt git dir'
+            err |= subprocess.call(['rm', '-rf', git_dir])
+    return err
+
+
 def main(ancient):
     # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
     err = 0
@@ -144,6 +174,7 @@ def main(ancient):
     err |= RemoveImages(set(ContainerImages()), ancient)
     err |= RemoveVolumes()
     err |= KillLoopingBash()
+    err |= DeleteCorruptGitRepos()
     sys.exit(err)
 
 
