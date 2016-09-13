@@ -92,7 +92,7 @@
             browser: githubweb
             browser-url: 'https://github.com/{repoName}'
             branches:
-                - 'master'
+                - '{branch}'
             skip-tag: true
             basedir: 'go/src/{gitbasedir}'
     triggers:
@@ -115,6 +115,8 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+    # Template defaults. Can be override in job definition
+    branch: 'master'
 
     scm-cron-string: 'H/5 * * * *'
     test-timeout: 90
@@ -142,7 +144,6 @@
 
 - project:
     name: node-gce-e2e
-    repoName: 'google/cadvisor'
     gitproject:
         - 'cadvisor':
             repoName: 'google/cadvisor'
@@ -182,5 +183,18 @@
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'zhoufang@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties'
+    jobs:
+        - '{gitproject}-gce-e2e-ci'
+
+- project:
+    name: node-gce-e2e-1.4
+    gitproject:
+        - 'kubelet-1.4':
+            cron-string: '{sq-cron-string}'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            branch: 'release-1.4'
+            owner: 'dawnchen@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
