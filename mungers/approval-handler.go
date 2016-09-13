@@ -29,6 +29,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const maxDepth = 3
+
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
 type ApprovalHandler struct {
@@ -68,7 +70,8 @@ func (*ApprovalHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
 //   - An approver of a file is defined as:
 //     - It's known that each dir has a list of approvers. (This might not hold true. For usability, current situation is enough.)
 //     - Approver of a dir is also the approver of child dirs.
-//   - We look at only top 3 dir level's approvers .
+//   - We look at top N (default 3) level dir approvers. For example, for file "/a/b/c/d/e", we might search for approver from
+//     "/", "/a/", "/a/b/"
 // - Iff all files has been approved, the bot will add "approved" label.
 func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
@@ -109,23 +112,17 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	}
 
 	for _, file := range files {
-		if !h.hasApproval(*file.Filename, approverMap) {
+		if !h.hasApproval(*file.Filename, approverMap, maxDepth) {
 			return
 		}
 	}
 	obj.AddLabel(approvedLabel)
 }
 
-func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String) bool {
+func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String, depth int) bool {
 	paths := strings.Split(filename, "/")
-	var p string
-	for i := 0; i < len(paths) && i < 3; i++ {
-		if i == 0 {
-			p = paths[0]
-		} else {
-			p = path.Join(p, paths[i])
-		}
-
+	p := ""
+	for i := 0; i < len(paths) && i < depth; i++ {
 		fileOwners := h.features.Repos.LeafAssignees(p)
 		if fileOwners.Len() == 0 {
 			glog.Warningf("Couldn't find an owner for path (%s)", p)
@@ -141,6 +138,7 @@ func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String) 
 				return true
 			}
 		}
+		p = path.Join(p, paths[i])
 	}
 	return false
 }
