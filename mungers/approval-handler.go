@@ -20,11 +20,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/kubernetes/pkg/util/sets"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 )
 
 // ApprovalHandler will try to add "approved" label once
@@ -84,7 +86,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	approverMap := map[string]struct{}{}
+	approverMap := sets.String{}
 
 	// from oldest to latest
 	for i := len(comments) - 1; i >= 0; i-- {
@@ -97,12 +99,12 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		fields := strings.Fields(strings.TrimSpace(*c.Body))
 
 		if len(fields) == 1 && strings.ToLower(fields[0]) == "/approve" {
-			approverMap[*c.User.Login] = struct{}{}
+			approverMap.Insert(*c.User.Login)
 			continue
 		}
 
 		if len(fields) == 2 && strings.ToLower(fields[0]) == "/approve" && strings.ToLower(fields[1]) == "cancel" {
-			delete(approverMap, *c.User.Login)
+			approverMap.Delete(*c.User.Login)
 		}
 	}
 
@@ -114,7 +116,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	obj.AddLabel(approvedLabel)
 }
 
-func (h *ApprovalHandler) hasApproval(filename string, approverMap map[string]struct{}) bool {
+func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String) bool {
 	paths := strings.Split(filename, "/")
 	var p string
 	for i := 0; i < len(paths) && i < 3; i++ {
@@ -135,7 +137,7 @@ func (h *ApprovalHandler) hasApproval(filename string, approverMap map[string]st
 		}
 
 		for _, owner := range fileOwners.List() {
-			if _, exist := approverMap[owner]; exist {
+			if approverMap.Has(owner) {
 				return true
 			}
 		}
