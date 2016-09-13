@@ -89,10 +89,7 @@ function fetch_output_tars() {
 function fetch_server_version_tars() {
     local -r server_version="$(gcloud ${CMD_GROUP:-} container get-server-config --project=${PROJECT} --zone=${ZONE}  --format='value(defaultClusterVersion)')"
     # Use latest build of the server version's branch for test files.
-    fetch_published_version_tars "ci/latest-${server_version:0:3}"
-    # Unset cluster api version; we want to use server default for the cluster
-    # version.
-    unset CLUSTER_API_VERSION
+    fetch_published_version_tars "ci/latest-${server_version:0:3}" false
 }
 
 function fetch_gci_version_tars() {
@@ -107,9 +104,11 @@ function fetch_gci_version_tars() {
 }
 
 # Use a published version like "ci/latest" (default), "release/latest",
-# "release/latest-1", or "release/stable"
+# "release/latest-1", or "release/stable". The second argument indicates
+# if we want to export the CLUSTER_API_VERSION variable for GKE CI.
 function fetch_published_version_tars() {
     local -r published_version="${1}"
+    local -r set_cluster_version="${2:-false}"
     IFS='/' read -a varr <<< "${published_version}"
     path="${varr[0]}"
     if [[ "${path}" == "release" ]]; then
@@ -121,8 +120,10 @@ function fetch_published_version_tars() {
     echo "Using published version $bucket/$build_version (from ${published_version})"
     fetch_tars_from_gcs "gs://${bucket}/${path}" "${build_version}"
     unpack_binaries
-    # Set CLUSTER_API_VERSION for GKE CI
-    export CLUSTER_API_VERSION=$(echo ${build_version} | cut -c 2-)
+    if [[ "${set_cluster_version}" == "true" ]]; then
+      # Set CLUSTER_API_VERSION for GKE CI
+      export CLUSTER_API_VERSION=$(echo ${build_version} | cut -c 2-)
+    fi
 }
 
 # TODO(ihmccreery) I'm not sure if this is necesssary, with the workspace check
@@ -275,7 +276,7 @@ else
     # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
     # usually what we're testing.
     clean_binaries
-    fetch_published_version_tars "${JENKINS_PUBLISHED_VERSION:-ci/latest}"
+    fetch_published_version_tars "${JENKINS_PUBLISHED_VERSION:-ci/latest}" true
 fi
 
 # Copy GCE keys so we don't keep cycling them.
@@ -336,17 +337,16 @@ esac
 # than the original version.
 if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
   mv kubernetes kubernetes_orig
-  fetch_published_version_tars "${JENKINS_PUBLISHED_SKEW_VERSION}"
+  fetch_published_version_tars "${JENKINS_PUBLISHED_SKEW_VERSION}" false
   mv kubernetes kubernetes_skew
   mv kubernetes_orig kubernetes
   if [[ "${JENKINS_USE_SKEW_TESTS:-}" != "true" ]]; then
     # Append kubectl-path of skewed kubectl to test args, since we always
-    #   # want that to use the skewed kubectl version:
-    #     #
-    #       # - for upgrade jobs, we want kubectl to be at the same version as
-    #       master.
-    #         # - for client skew tests, we want to use the skewed kubectl
-    #         (that's what we're testing).
+    # want that to use the skewed kubectl version:
+    #  - for upgrade jobs, we want kubectl to be at the same version as
+    #    master.
+    #  - for client skew tests, we want to use the skewed kubectl
+    #    (that's what we're testing).
     GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
   fi
 fi
