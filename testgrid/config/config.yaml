@@ -5,7 +5,7 @@
 #   2. Append a new dashboardtab under the dashboard you would like to add the testgroup to,
 #      or create a new dashboard and assign the testgroup to the dashboard.
 #      * The testgroup name from a dashboardtab should match the name from a testgroup
-#      ** Note that a testgroup can be within multiple dashboards. 
+#      ** Note that a testgroup can be within multiple dashboards.
 #   3. Run config_test.go to make sure the config is valid.
 #
 
@@ -113,6 +113,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.2
 - name: kubernetes-e2e-gce-reboot-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.3
+- name: kubernetes-e2e-gci-gce-reboot-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot-release-1.3
 - name: kubernetes-e2e-gke-1.1-1.3-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.1-1.3-kubectl-skew
 - name: kopeio-kubernetes-e2e-upup-aws
@@ -131,6 +133,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-multizone
 - name: kubernetes-e2e-gce-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.3
+- name: kubernetes-e2e-gci-gce-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.3
 - name: kubernetes-e2e-gce-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.2
 - name: kubernetes-e2e-gce-release-1.1
@@ -215,6 +219,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-master
 - name: kubernetes-e2e-gce-serial-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.3
+- name: kubernetes-e2e-gci-gce-serial-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.3
 - name: kubernetes-e2e-gce-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.2
 - name: kopeio-kubernetes-e2e-aws
@@ -323,10 +329,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.2
 - name: kubernetes-e2e-gce-slow-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.3
+- name: kubernetes-e2e-gci-gce-slow-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.3
 - name: kubernetes-e2e-gce-ingress-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress-release-1.3
+- name: kubernetes-e2e-gci-gce-ingress-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.3
 - name: kubernetes-e2e-gce-ingress-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress-release-1.2
+- name: kubernetes-e2e-gci-gce-ingress-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.2
 - name: kubernetes-azure
   gcs_prefix: kube_azure_log/kubernetes.azure.nightly
 - name: kubernetes-kubemark-100-gce
@@ -715,8 +727,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-ingress
   - name: gce-ingress-release-1.2
     test_group_name: kubernetes-e2e-gce-ingress-release-1.2
+  - name: gci-gce-ingress-release-1.2
+    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.2
   - name: gce-ingress-release-1.3
     test_group_name: kubernetes-e2e-gce-ingress-release-1.3
+  - name: gci-gce-ingress-release-1.3
+    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.3
   - name: gce-kubenet
     test_group_name: kubernetes-e2e-gce-kubenet
   - name: gce-master-on-cvm
@@ -735,6 +751,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-reboot-release-1.2
   - name: gce-reboot-release-1.3
     test_group_name: kubernetes-e2e-gce-reboot-release-1.3
+  - name: gci-gce-reboot-release-1.3
+    test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.3
   - name: gce-release-1.0
     test_group_name: kubernetes-e2e-gce-release-1.0
   - name: gce-release-1.1
@@ -743,6 +761,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-release-1.2
   - name: gce-release-1.3
     test_group_name: kubernetes-e2e-gce-release-1.3
+  - name: gci-gce-release-1.3
+    test_group_name: kubernetes-e2e-gci-gce-release-1.3
   - name: gce-scalability
     test_group_name: kubernetes-e2e-gce-scalability
   - name: gce-scalability-release-1.2
@@ -755,12 +775,16 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-serial-release-1.2
   - name: gce-serial-release-1.3
     test_group_name: kubernetes-e2e-gce-serial-release-1.3
+  - name: gci-gce-serial-release-1.3
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.3
   - name: gce-slow
     test_group_name: kubernetes-e2e-gce-slow
   - name: gce-slow-release-1.2
     test_group_name: kubernetes-e2e-gce-slow-release-1.2
   - name: gce-slow-release-1.3
     test_group_name: kubernetes-e2e-gce-slow-release-1.3
+  - name: gci-gce-slow-release-1.3
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.3
   - name: gce-ubernetes-lite
     test_group_name: kubernetes-e2e-gce-ubernetes-lite
   name:  google-gce
