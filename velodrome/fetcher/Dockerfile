@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM busybox
+FROM busybox:1.24.2
 ADD fetcher /
 ENTRYPOINT ["/fetcher"]
