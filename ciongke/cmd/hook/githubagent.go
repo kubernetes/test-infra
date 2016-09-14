@@ -45,12 +45,17 @@ type GitHubAgent struct {
 type JenkinsJob struct {
 	// eg kubernetes-pull-build-test-e2e-gce
 	Name string
-	// eg @k8s-bot e2e test this
-	Trigger *regexp.Regexp
 	// Run for every PR, or only when a comment triggers it.
 	AlwaysRun bool
 	// Context line for GitHub status.
 	Context string
+	// eg @k8s-bot e2e test this
+	Trigger *regexp.Regexp
+	// Whether or not to comment on GitHub on failure.
+	CommentOnFailure bool
+	// What should users use to retest just this job? This needs to match
+	// Trigger if CommentOnFailure is true. It should not match any other jobs.
+	RerunCommand string
 }
 
 type githubClient interface {
@@ -256,6 +261,9 @@ func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
 	return KubeRequest{
 		JobName: job.Name,
 		Context: job.Context,
+
+		CommentOnFailure: job.CommentOnFailure,
+		RerunCommand:     job.RerunCommand,
 
 		RepoOwner: pr.Base.Repo.Owner.Login,
 		RepoName:  pr.Base.Repo.Name,

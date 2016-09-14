@@ -19,9 +19,11 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
@@ -38,10 +40,23 @@ var (
 	commit    = flag.String("sha", "", "Head SHA of the PR.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
+	commentOnFailure = flag.Bool("comment-on-failure", false, "Whether or not to make the bot comment on the PR when the test fails.")
+	rerunCommand     = flag.String("rerun-command", "", "What users should say to rerun the test.")
+
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+)
+
+const (
+	botName = "k8s-merge-robot"
+
+	// Inputs are context, URL, commit, retest command.
+	// The deletion logic requires that it start with context.
+	bodyFormat = `%s [**failed**](%s) for commit %s.
+
+The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
 )
 
 type testClient struct {
@@ -56,8 +71,18 @@ type testClient struct {
 
 	DryRun bool
 
+	CommentOnFailure bool
+	RerunCommand     string
+
 	JenkinsClient *jenkins.Client
-	GitHubClient  *github.Client
+	GitHubClient  githubClient
+}
+
+type githubClient interface {
+	CreateStatus(owner, repo, ref string, s github.Status) error
+	ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error)
+	CreateComment(owner, repo string, number int, comment string) error
+	DeleteComment(owner, repo string, ID int) error
 }
 
 func main() {
@@ -66,7 +91,7 @@ func main() {
 
 	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
-		logrus.Fatalf("Could not read token file: %s", err)
+		logrus.WithError(err).Fatalf("Could not read token file.")
 	}
 	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
 
@@ -79,17 +104,17 @@ func main() {
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logrus.Fatalf("Could not read oauth secret file: %s", err)
+		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
 	tc := oauth2.NewClient(oauth2.NoContext, ts)
-	var githubClient *github.Client
+	var ghc *github.Client
 	if *dryRun {
-		githubClient = github.NewDryRunClient(tc)
+		ghc = github.NewDryRunClient(tc)
 	} else {
-		githubClient = github.NewClient(tc)
+		ghc = github.NewClient(tc)
 	}
 
 	client := &testClient{
@@ -100,13 +125,17 @@ func main() {
 		PRNumber:  *pr,
 		Branch:    *branch,
 		Commit:    *commit,
-		DryRun:    *dryRun,
+
+		DryRun: *dryRun,
+
+		CommentOnFailure: *commentOnFailure,
+		RerunCommand:     *rerunCommand,
 
 		JenkinsClient: jenkinsClient,
-		GitHubClient:  githubClient,
+		GitHubClient:  ghc,
 	}
 	if err := client.TestPR(); err != nil {
-		logrus.Errorf("Error testing PR: %s", err)
+		logrus.WithError(err).Errorf("Error testing PR.")
 		return
 	}
 }
@@ -161,6 +190,9 @@ func (c *testClient) TestPR() error {
 				break
 			} else {
 				c.tryCreateStatus(github.Failure, "Build failed.", result.URL)
+				if c.CommentOnFailure {
+					c.tryCreateFailureComment(result.URL)
+				}
 				break
 			}
 		}
@@ -177,6 +209,28 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		TargetURL:   url,
 	})
 	if err != nil {
-		logrus.WithFields(fields(c)).Errorf("Error creating GitHub status: %s", err)
+		logrus.WithFields(fields(c)).WithError(err).Error("Error creating GitHub status.")
+	}
+}
+
+func (c *testClient) tryCreateFailureComment(url string) {
+	ics, err := c.GitHubClient.ListIssueComments(c.RepoOwner, c.RepoName, c.PRNumber)
+	if err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Error("Error listing issue comments.")
+		return
+	}
+	for _, ic := range ics {
+		if ic.User.Login != botName {
+			continue
+		}
+		if strings.HasPrefix(ic.Body, c.Context) {
+			if err := c.GitHubClient.DeleteComment(c.RepoOwner, c.RepoName, ic.ID); err != nil {
+				logrus.WithFields(fields(c)).WithError(err).Error("Error deleting comment.")
+			}
+		}
+	}
+	body := fmt.Sprintf(bodyFormat, c.Context, url, c.Commit, c.RerunCommand)
+	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
 }

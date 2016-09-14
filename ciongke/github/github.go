@@ -95,9 +95,10 @@ type Issue struct {
 }
 
 type IssueComment struct {
+	ID      int    `json:"id,omitempty"`
 	Body    string `json:"body"`
-	User    User   `json:"user"`
-	HTMLURL string `json:"html_url"`
+	User    User   `json:"user,omitempty"`
+	HTMLURL string `json:"html_url,omitempty"`
 }
 
 func logRateLimit(desc string, resp *github.Response) {
@@ -106,7 +107,7 @@ func logRateLimit(desc string, resp *github.Response) {
 		"limit":     resp.Limit,
 		"reset":     resp.Reset,
 		"call":      desc,
-	}).Infof("GitHub API Tokens: %d/%d", resp.Remaining, resp.Limit)
+	}).Info("GitHub API Tokens.")
 }
 
 // TODO: Be aware of rate limits.
@@ -186,6 +187,15 @@ func (c *Client) CreateComment(owner, repo string, number int, comment string) e
 		Body: github.String(comment),
 	})
 	logRateLimit("Comment", resp)
+	return err
+}
+
+func (c *Client) DeleteComment(owner, repo string, ID int) error {
+	if c.dry {
+		return nil
+	}
+	resp, err := c.cl.Issues.DeleteComment(owner, repo, ID)
+	logRateLimit("DeleteComment", resp)
 	return err
 }
 

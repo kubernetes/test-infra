@@ -17,13 +17,16 @@ limitations under the License.
 package fakegithub
 
 import (
+	"fmt"
+
 	"github.com/kubernetes/test-infra/ciongke/github"
 )
 
 type FakeClient struct {
-	OrgMembers    []string
-	IssueComments map[int][]github.IssueComment
-	PullRequests  map[int]*github.PullRequest
+	OrgMembers     []string
+	IssueComments  map[int][]github.IssueComment
+	IssueCommentID int
+	PullRequests   map[int]*github.PullRequest
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
@@ -36,11 +39,28 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 }
 
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
-	return f.IssueComments[number], nil
+	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
+		ID:   f.IssueCommentID,
+		Body: comment,
+	})
+	f.IssueCommentID++
 	return nil
+}
+
+func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
+	for num, ics := range f.IssueComments {
+		for i, ic := range ics {
+			if ic.ID == ID {
+				f.IssueComments[num] = append(ics[:i], ics[i+1:]...)
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("could not find issue comment %d", ID)
 }
 
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
