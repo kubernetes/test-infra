@@ -70,6 +70,22 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-aws"
+        - 'aws-federation': #kubernetes-e2e-aws-federation
+            description: 'Run federation e2e tests on AWS using latest successful kubernetes-federation build.'
+            cron-string: '{sq-cron-string}'
+            trigger-job: 'kubernetes-federation-build'
+            job-env: |
+              export E2E_NAME="e2e-aws-federation-master"
+              export PROJECT="k8s-jkns-e2e-aws"
+              export FEDERATION=true
+              export E2E_ZONES="us-west-1a us-west-2a us-east-1a"
+              export KUBERNETES_PROVIDER=aws
+              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-aws"
+              export KUBE_AWS_ZONE=us-west-1a
+              export NETWORK_PROVIDER="kubenet"
+              export KUBE_NODE_OS_DISTRIBUTION="debian"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+
         - 'aws-release-1.3':  # kubernetes-e2e-aws-release-1.3
             description: 'Run e2e tests on AWS using the latest successful 1.3 Kubernetes build.'
             cron-string: '@daily'
