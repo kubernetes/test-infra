@@ -541,7 +541,7 @@
             job-env: |
                 export E2E_OPT="--check_version_skew=false"
                 export E2E_UPGRADE_TEST="true"
-                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
@@ -554,7 +554,7 @@
             job-env: |
                 export E2E_OPT="--check_version_skew=false"
                 export E2E_UPGRADE_TEST="true"
-                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
@@ -567,7 +567,7 @@
             job-env: |
                 export E2E_OPT="--check_version_skew=false"
                 export E2E_UPGRADE_TEST="true"
-                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export JENKINS_USE_SKEW_TESTS="true"
