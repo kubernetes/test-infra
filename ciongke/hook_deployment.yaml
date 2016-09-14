@@ -36,7 +36,7 @@ spec:
         image: gcr.io/k8s-ci-on-gke/hook:0.16
         imagePullPolicy: Always
         args:
-        - -test-pr-image=gcr.io/k8s-ci-on-gke/test-pr:0.8
+        - -test-pr-image=gcr.io/k8s-ci-on-gke/test-pr:0.9
         - -org=kubernetes
         - -dry-run=false
         ports:

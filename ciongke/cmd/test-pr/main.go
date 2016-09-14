@@ -50,7 +50,7 @@ var (
 )
 
 const (
-	botName = "k8s-merge-robot"
+	botName = "k8s-ci-robot"
 
 	// Inputs are context, URL, commit, retest command.
 	// The deletion logic requires that it start with context.
