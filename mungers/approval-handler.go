@@ -64,9 +64,9 @@ func (*ApprovalHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 // The algorithm goes as:
-// - Initially, we set up approverMap
-//   - Go through all comments after latest commit. If any approver said "/approve", add him to approverMap.
-// - For each file, we see if any approver of this file is in approverMap.
+// - Initially, we set up approverSet
+//   - Go through all comments after latest commit. If any approver said "/approve", add him to approverSet.
+// - For each file, we see if any approver of this file is in approverSet.
 //   - An approver of a file is defined as:
 //     - It's known that each dir has a list of approvers. (This might not hold true. For usability, current situation is enough.)
 //     - Approver of a dir is also the approver of child dirs.
@@ -89,7 +89,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	approverMap := sets.String{}
+	approverSet := sets.String{}
 
 	// from oldest to latest
 	for i := len(comments) - 1; i >= 0; i-- {
@@ -102,24 +102,24 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		fields := strings.Fields(strings.TrimSpace(*c.Body))
 
 		if len(fields) == 1 && strings.ToLower(fields[0]) == "/approve" {
-			approverMap.Insert(*c.User.Login)
+			approverSet.Insert(*c.User.Login)
 			continue
 		}
 
 		if len(fields) == 2 && strings.ToLower(fields[0]) == "/approve" && strings.ToLower(fields[1]) == "cancel" {
-			approverMap.Delete(*c.User.Login)
+			approverSet.Delete(*c.User.Login)
 		}
 	}
 
 	for _, file := range files {
-		if !h.hasApproval(*file.Filename, approverMap, maxDepth) {
+		if !h.hasApproval(*file.Filename, approverSet, maxDepth) {
 			return
 		}
 	}
 	obj.AddLabel(approvedLabel)
 }
 
-func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String, depth int) bool {
+func (h *ApprovalHandler) hasApproval(filename string, approverSet sets.String, depth int) bool {
 	paths := strings.Split(filename, "/")
 	p := ""
 	for i := 0; i < len(paths) && i < depth; i++ {
@@ -134,7 +134,7 @@ func (h *ApprovalHandler) hasApproval(filename string, approverMap sets.String, 
 		}
 
 		for _, owner := range fileOwners.List() {
-			if approverMap.Has(owner) {
+			if approverSet.Has(owner) {
 				return true
 			}
 		}
