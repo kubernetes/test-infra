@@ -111,6 +111,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-1.3-kubectl-skew
 - name: kubernetes-e2e-gce-reboot-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.2
+- name: kubernetes-e2e-gci-gce-reboot-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot-release-1.2
 - name: kubernetes-e2e-gce-reboot-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.3
 - name: kubernetes-e2e-gci-gce-reboot-release-1.3
@@ -137,6 +139,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.3
 - name: kubernetes-e2e-gce-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.2
+- name: kubernetes-e2e-gci-gce-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.2
 - name: kubernetes-e2e-gce-release-1.1
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.1
 - name: kubernetes-e2e-gce-release-1.0
@@ -223,6 +227,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.3
 - name: kubernetes-e2e-gce-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.2
+- name: kubernetes-e2e-gci-gce-serial-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.2
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
 - name: kubernetes-e2e-gce
@@ -327,6 +333,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws-release-1.2
 - name: kubernetes-e2e-gce-slow-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.2
+- name: kubernetes-e2e-gci-gce-slow-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.2
 - name: kubernetes-e2e-gce-slow-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.3
 - name: kubernetes-e2e-gci-gce-slow-release-1.3
@@ -749,6 +757,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-reboot
   - name: gce-reboot-release-1.2
     test_group_name: kubernetes-e2e-gce-reboot-release-1.2
+  - name: gci-gce-reboot-release-1.2
+    test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.2
   - name: gce-reboot-release-1.3
     test_group_name: kubernetes-e2e-gce-reboot-release-1.3
   - name: gci-gce-reboot-release-1.3
@@ -759,6 +769,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-release-1.1
   - name: gce-release-1.2
     test_group_name: kubernetes-e2e-gce-release-1.2
+  - name: gci-gce-release-1.2
+    test_group_name: kubernetes-e2e-gci-gce-release-1.2
   - name: gce-release-1.3
     test_group_name: kubernetes-e2e-gce-release-1.3
   - name: gci-gce-release-1.3
@@ -773,6 +785,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-serial
   - name: gce-serial-release-1.2
     test_group_name: kubernetes-e2e-gce-serial-release-1.2
+  - name: gci-gce-serial-release-1.2
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.2
   - name: gce-serial-release-1.3
     test_group_name: kubernetes-e2e-gce-serial-release-1.3
   - name: gci-gce-serial-release-1.3
@@ -781,6 +795,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow
   - name: gce-slow-release-1.2
     test_group_name: kubernetes-e2e-gce-slow-release-1.2
+  - name: gci-gce-slow-release-1.2
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.2
   - name: gce-slow-release-1.3
     test_group_name: kubernetes-e2e-gce-slow-release-1.3
   - name: gci-gce-slow-release-1.3
