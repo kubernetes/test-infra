@@ -31,7 +31,7 @@ func TestFailureComment(t *testing.T) {
 			ID:   0,
 		},
 		{
-			User: github.User{"k8s-merge-robot"},
+			User: github.User{"k8s-ci-robot"},
 			Body: "Jenkins test failed for commit abcdef",
 			ID:   1,
 		},
@@ -41,7 +41,7 @@ func TestFailureComment(t *testing.T) {
 			ID:   3,
 		},
 		{
-			User: github.User{"k8s-merge-robot"},
+			User: github.User{"k8s-ci-robot"},
 			Body: "Jenkins test failed for commit qwerty",
 			ID:   8,
 		},
