@@ -173,6 +173,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-master
 - name: kubernetes-e2e-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-es-logging
+- name: kubernetes-e2e-gci-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-es-logging
 - name: kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-master
 - name: kubernetes-e2e-gce-container-vm
@@ -283,6 +285,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-subnet
 - name: kubernetes-e2e-gce-petset
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-petset
+- name: kubernetes-e2e-gci-gce-petset
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-petset
 - name: kubernetes-e2e-gke-1.2-1.3-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.2-1.3-upgrade-master
 - name: kubernetes-verify-release-1.3
@@ -295,6 +299,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.0-1.2-kubectl-skew
 - name: kubernetes-e2e-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress
+- name: kubernetes-e2e-gci-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress
 - name: kubernetes-e2e-gce-trusty-ci-slow-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-slow-release-1.2
 - name: kubernetes-e2e-gce-autoscaling-migs
@@ -723,6 +729,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-enormous-cluster
   - name: gce-es-logging
     test_group_name: kubernetes-e2e-gce-es-logging
+  - name: gci-gce-es-logging
+    test_group_name: kubernetes-e2e-gci-gce-es-logging
   - name: gce-etcd3
     test_group_name: kubernetes-e2e-gce-etcd3
   - name: gce-examples
@@ -733,6 +741,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-flaky
   - name: gce-ingress
     test_group_name: kubernetes-e2e-gce-ingress
+  - name: gci-gce-ingress
+    test_group_name: kubernetes-e2e-gci-gce-ingress
   - name: gce-ingress-release-1.2
     test_group_name: kubernetes-e2e-gce-ingress-release-1.2
   - name: gci-gce-ingress-release-1.2
@@ -751,6 +761,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-pd-test
   - name: gce-petset
     test_group_name: kubernetes-e2e-gce-petset
+  - name: gci-gce-petset
+    test_group_name: kubernetes-e2e-gci-gce-petset
   - name: gce-proto
     test_group_name: kubernetes-e2e-gce-proto
   - name: gce-reboot
