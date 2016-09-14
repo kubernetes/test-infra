@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: transform
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: transform
+    spec:
+      containers:
+      - name: transform
+        args:
+        - --stderrthreshold=0
+        - --host=sqlproxy-service
+        - --influx-host=http://influxdb-service:8086
+        - --influx-password=$(INFLUXDB_ROOT_PWD)
+        image: gcr.io/google-containers/github-transform:v20160912-205016
+        env:
+        - name: INFLUXDB_ROOT_PWD
+          valueFrom:
+            secretKeyRef:
+              name: influxdb
+              key: rootpassword
