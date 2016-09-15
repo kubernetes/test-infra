@@ -658,7 +658,7 @@
             image-new: 'gci'
             version-env: |
                 # 1.2 doesn't support IAM, so we should use cert auth.
-                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true" 
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
         - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.2-container_vm-1.3
             version-old: '1.2'
             version-new: '1.3'
@@ -703,7 +703,7 @@
             image-new: 'gci'
             version-env: |
                 # 1.2 doesn't support IAM, so we should use cert auth.
-                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true" 
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
         - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-container_vm-1.3-gci-1.4
             version-old: '1.3'
             version-new: '1.4'
@@ -742,6 +742,20 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
+                {version-env}
+        - 'kubernetes-e2e-{gke-suffix}':
+            gke-suffix: '{provider}-gci-{version-cluster}-{version-client}-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export PROJECT="gke-gci-upg-{version-infix}-ctl-skew"
+                export KUBE_GKE_IMAGE_TYPE="gci"
                 {version-env}
 
 - project:

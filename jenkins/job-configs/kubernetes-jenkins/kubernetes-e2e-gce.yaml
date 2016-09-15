@@ -950,3 +950,51 @@
             version-new: '1.4'
             version-infix: '1-3-1-4'
             version-env: ''
+
+- job-group:
+    name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
+    trigger-job: 'kubernetes-build'
+    test-owner: 'davidopp'
+    jobs:
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-cvm-{version-cluster}-{version-client}-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export PROJECT="gce-cvm-upg-{version-infix}-ctl-skew"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-gci-{version-cluster}-{version-client}-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export PROJECT="gce-gci-upg-{version-infix}-ctl-skew"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                {version-env}
+
+- project:
+    name: 'kubernetes-e2e-kubectl-skew-gce'
+    provider: 'gce'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.3'
+            version-client: '1.4'
+            version-infix: '1-3-1-4'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.4'
+            version-client: '1.3'
+            version-infix: '1-4-1-3'
+            version-env: |
+                export JENKINS_USE_SKEW_TESTS="true"
