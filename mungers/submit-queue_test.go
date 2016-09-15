@@ -27,7 +27,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/pkg/util"
+	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
 	"k8s.io/contrib/mungegithub/admin"
 	github_util "k8s.io/contrib/mungegithub/github"
@@ -188,7 +188,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = 50 * time.Millisecond
 
-	sq.clock = util.NewFakeClock(time.Time{})
+	sq.clock = utilclock.NewFakeClock(time.Time{})
 	sq.lastMergeTime = sq.clock.Now()
 	sq.lastE2EStable = true
 	sq.prStatus = map[string]submitStatus{}
@@ -1165,7 +1165,7 @@ func TestCalcMergeRate(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		sq := getTestSQ(false, nil, nil)
-		clock := sq.clock.(*util.FakeClock)
+		clock := sq.clock.(*utilclock.FakeClock)
 		sq.mergeRate = test.preRate
 		clock.Step(test.interval)
 		sq.updateMergeRate()
@@ -1268,7 +1268,7 @@ func TestCalcMergeRateWithTail(t *testing.T) {
 	for testNum, test := range tests {
 		sq := getTestSQ(false, nil, nil)
 		sq.mergeRate = test.preRate
-		clock := sq.clock.(*util.FakeClock)
+		clock := sq.clock.(*utilclock.FakeClock)
 		clock.Step(test.interval)
 		rate := sq.calcMergeRateWithTail()
 		if !test.expected(rate) {
