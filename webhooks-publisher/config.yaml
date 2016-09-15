@@ -1,0 +1,6 @@
+# Example config.yaml
+project: kubernetes-site
+paths:
+  /kubernetes:
+    secret: kubernetes-secret
+    topic: kubernetes-github-webhooks
