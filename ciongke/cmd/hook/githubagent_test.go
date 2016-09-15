@@ -77,7 +77,20 @@ func TestTrusted(t *testing.T) {
 			},
 			Comments: []github.IssueComment{
 				{
-					Body: "ok to test",
+					Body: "@k8s-bot ok to test",
+					User: github.User{"t1"},
+				},
+			},
+			Trusted: true,
+		},
+		// Non org member, multiline ok to test comment by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{"u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "ok to test\r\nthanks",
 					User: github.User{"t1"},
 				},
 			},

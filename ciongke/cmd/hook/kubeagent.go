@@ -82,19 +82,29 @@ func fields(kr KubeRequest) logrus.Fields {
 func (ka *KubeAgent) Start() {
 	go func() {
 		for kr := range ka.BuildRequests {
-			if err := ka.deleteJob(kr); err != nil {
-				logrus.WithFields(fields(kr)).Errorf("Error deleting job: %s", err)
-			}
-			if err := ka.createJob(kr); err != nil {
-				logrus.WithFields(fields(kr)).Errorf("Error creating job: %s", err)
-			}
+			go func() {
+				if err := ka.deleteJob(kr); err != nil {
+					logrus.WithFields(fields(kr)).WithError(err).Error("Error deleting job.")
+				} else {
+					logrus.WithFields(fields(kr)).Info("Deleted job.")
+				}
+				if err := ka.createJob(kr); err != nil {
+					logrus.WithFields(fields(kr)).WithError(err).Error("Error creating job.")
+				} else {
+					logrus.WithFields(fields(kr)).Info("Created job.")
+				}
+			}()
 		}
 	}()
 	go func() {
 		for kr := range ka.DeleteRequests {
-			if err := ka.deleteJob(kr); err != nil {
-				logrus.WithFields(fields(kr)).Errorf("Error deleting job: %s", err)
-			}
+			go func() {
+				if err := ka.deleteJob(kr); err != nil {
+					logrus.WithFields(fields(kr)).WithError(err).Error("Error deleting job.")
+				} else {
+					logrus.WithFields(fields(kr)).Info("Deleted job.")
+				}
+			}()
 		}
 	}()
 }

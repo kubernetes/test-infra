@@ -65,21 +65,21 @@ type githubClient interface {
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 }
 
-var okToTest = regexp.MustCompile(`(?m)^ok to test$`)
+var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
 
 // Start starts listening for events. It does not block.
 func (ga *GitHubAgent) Start() {
 	go func() {
 		for pr := range ga.PullRequestEvents {
 			if err := ga.handlePullRequestEvent(pr); err != nil {
-				logrus.Errorf("Error handling PR: %s", err)
+				logrus.WithError(err).Error("Error handling PR.")
 			}
 		}
 	}()
 	go func() {
 		for ic := range ga.IssueCommentEvents {
 			if err := ga.handleIssueCommentEvent(ic); err != nil {
-				logrus.Errorf("Error handling issue: %s", err)
+				logrus.WithError(err).Error("Error handling issue.")
 			}
 		}
 	}()
@@ -244,7 +244,7 @@ func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 
 func (ga *GitHubAgent) askToJoin(pr github.PullRequest) error {
 	commentTemplate := `
-Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "ok to test" on its own line.
+Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line.
 
 Regular contributors should join the org to skip this step.
 
