@@ -67,8 +67,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/k8s-ci-on-gke/hook:0.17" cmd/hook
-	gcloud docker push "gcr.io/k8s-ci-on-gke/hook:0.17"
+	docker build -t "gcr.io/k8s-ci-on-gke/hook:0.18" cmd/hook
+	gcloud docker push "gcr.io/k8s-ci-on-gke/hook:0.18"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml

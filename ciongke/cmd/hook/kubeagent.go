@@ -82,7 +82,7 @@ func fields(kr KubeRequest) logrus.Fields {
 func (ka *KubeAgent) Start() {
 	go func() {
 		for kr := range ka.BuildRequests {
-			go func() {
+			go func(kr KubeRequest) {
 				if err := ka.deleteJob(kr); err != nil {
 					logrus.WithFields(fields(kr)).WithError(err).Error("Error deleting job.")
 				} else {
@@ -93,18 +93,18 @@ func (ka *KubeAgent) Start() {
 				} else {
 					logrus.WithFields(fields(kr)).Info("Created job.")
 				}
-			}()
+			}(kr)
 		}
 	}()
 	go func() {
 		for kr := range ka.DeleteRequests {
-			go func() {
+			go func(kr KubeRequest) {
 				if err := ka.deleteJob(kr); err != nil {
 					logrus.WithFields(fields(kr)).WithError(err).Error("Error deleting job.")
 				} else {
 					logrus.WithFields(fields(kr)).Info("Deleted job.")
 				}
-			}()
+			}(kr)
 		}
 	}()
 }
