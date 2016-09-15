@@ -472,7 +472,7 @@
             suffix: 'build-e2e-test'
             owner: 'pwittroc@google.com'
             max-total: 10
-            skip-if-no-test-files:   # old branches may not produce JUnit
+            skip-if-no-test-files: true  # old branches may not produce JUnit
             trigger-phrase: '(node )?(e2e )?test'
             status-context: 'GCE Node e2e'
             cmd: |
