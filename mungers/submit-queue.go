@@ -47,6 +47,7 @@ import (
 )
 
 const (
+	approvedLabel                  = "approved"
 	lgtmLabel                      = "lgtm"
 	retestNotRequiredLabel         = "retest-not-required"
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
