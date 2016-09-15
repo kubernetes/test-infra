@@ -201,6 +201,11 @@ function setup_gci_vars() {
     export KUBE_GCE_NODE_IMAGE="${image_name}"
     export KUBE_NODE_OS_DISTRIBUTION="gci"
 
+    # These will be included in started.json in the metadata dict.
+    # See upload-to-gcs.sh for more details.
+    export BUILD_METADATA_GCE_MASTER_IMAGE="${KUBE_GCE_MASTER_IMAGE}"
+    export BUILD_METADATA_GCE_NODE_IMAGE="${KUBE_GCE_NODE_IMAGE}"
+
     # For backward compatibility (Older versions of Kubernetes don't understand
     # KUBE_MASTER_OS_DISTRIBUTION or KUBE_NODE_OS_DISTRIBUTION. Only KUBE_OS_DISTRIBUTION can be
     # used for them.)
