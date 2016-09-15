@@ -1,0 +1,296 @@
+# This is the old job definition for upgrade tests.
+- job-group:
+    name: 'kubernetes-e2e-{provider}-{version-old}-{version-new}'
+    trigger-job: 'kubernetes-build'
+    test-owner: 'ihmccreery'
+    jobs:
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
+            step: 'upgrade-master'
+            description: 'Deploys a cluster at v{version-old}, upgrades the master to v{version-new}, and runs the v{version-old} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
+                export PROJECT="kube-{provider}-upg-{version-infix}-upg-mas"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster'
+            description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-old} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
+                export PROJECT="kube-{provider}-upg-{version-infix}-upg-clu"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster-new'
+            description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-new} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export JENKINS_USE_SKEW_TESTS="true"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
+                export PROJECT="kube-{provider}-upg-{version-infix}-upg-clu-n"
+                {version-env}
+
+# This the job configuration for all OLD GKE upgrade tests.
+- project:
+    name: kubernetes-e2e-upgrades-gke
+    provider: 'gke'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.2-1.3
+            version-old: '1.2'
+            version-new: '1.3'
+            version-infix: '1-2-1-3'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.2-1.4
+            version-old: '1.2'
+            version-new: '1.4'
+            version-infix: '1-2-1-4'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gke-1.3-1.4
+            version-old: '1.3'
+            version-new: '1.4'
+            version-infix: '1-3-1-4'
+            version-env: ''
+
+# This the job configuration for all GCE upgrade tests. Please do not add anything here, rather create one using the new job group
+# kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}.
+- project:
+    name: kubernetes-e2e-upgrades-gce
+    provider: 'gce'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-old}-{version-new}':  # kubernetes-e2e-gce-1.3-1.4
+            version-old: '1.3'
+            version-new: '1.4'
+            version-infix: '1-3-1-4'
+            version-env: ''
+
+# This is the job definition for all kubectl skew tests
+- job-group:
+    name: 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew'
+    trigger-job: 'kubernetes-build'
+    test-owner: 'ihmccreery'
+    jobs:
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-cluster}-{version-client}-cvm-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} on container_vm and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export PROJECT="kube-{provider}-upg-{version-infix}-ctl-skew"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-cluster}-{version-client}-gci-kubectl-skew'
+            description: 'Deploys a cluster at v{version-cluster} on gci and runs the Kubectl tests with v{version-client} kubectl.'
+            timeout: 120
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
+                export PROJECT="{provider}-gci-upg-{version-infix}-ctl-skew"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export KUBE_GKE_IMAGE_TYPE="gci"
+                {version-env}
+
+# This is the job configuration for all kubectl skew tests on GKE.
+- project:
+    name: 'kubernetes-e2e-kubectl-skew-gke'
+    provider: 'gke'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.2'
+            version-client: '1.3'
+            version-infix: '1-2-1-3'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.3'
+            version-client: '1.2'
+            version-infix: '1-3-1-2'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+                export JENKINS_USE_SKEW_TESTS="true"
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.3'
+            version-client: '1.4'
+            version-infix: '1-3-1-4'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.4'
+            version-client: '1.3'
+            version-infix: '1-4-1-3'
+            version-env: |
+                export JENKINS_USE_SKEW_TESTS="true"
+
+# This is the job configuration for all kubectl skew tests on GCE.
+- project:
+    name: 'kubernetes-e2e-kubectl-skew-gce'
+    provider: 'gce'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.3'
+            version-client: '1.4'
+            version-infix: '1-3-1-4'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.4'
+            version-client: '1.3'
+            version-infix: '1-4-1-3'
+            version-env: |
+                export JENKINS_USE_SKEW_TESTS="true"
+
+# These is the job definition for all upgrade tests.
+- job-group:
+    name: 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}'
+    trigger-job: 'kubernetes-build'
+    test-owner: 'ihmccreery'
+    jobs:
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-master'
+            step: 'upgrade-master'
+            description: 'Deploys a cluster at v{version-old} at {image-old}, upgrades the master to v{version-new} at {image-new}, and runs the v{version-old} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new} --upgrade-image={image-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_GKE_IMAGE_TYPE="{image-old}"
+                export PROJECT="{provider}-up-{version-infix}-up-mas"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-cluster'
+            description: 'Deploys a cluster at v{version-old} at {image-old}, upgrades the cluster to v{version-new} at {image-new}, and runs the v{version-old} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new} --upgrade-image={image-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_GKE_IMAGE_TYPE="{image-old}"
+                export PROJECT="{provider}-up-{version-infix}-up-clu"
+                {version-env}
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-cluster-new'
+            description: 'Deploys a cluster at v{version-old} at {image-old}, upgrades the cluster to v{version-new} at {image-new}, and runs the v{version-new} tests.'
+            timeout: 600
+            job-env: |
+                export E2E_OPT="--check_version_skew=false"
+                export E2E_UPGRADE_TEST="true"
+                export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new} --upgrade-image={image-new}"
+                export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export JENKINS_USE_SKEW_TESTS="true"
+                export KUBE_GKE_IMAGE_TYPE="{image-old}"
+                export PROJECT="{provider}-up-{version-infix}-up-clu-n"
+                {version-env}
+
+# This is the job configuration for all new upgrade tests on GKE.
+- project:
+    name: kubernetes-e2e-upgrades-image-gke
+    provider: 'gke'
+    jobs:
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-container_vm-1.2-gci-1.3
+            version-old: '1.2'
+            version-new: '1.3'
+            version-infix: 'c1-2-g1-3'
+            image-old: 'container_vm'
+            image-new: 'gci'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.2-container_vm-1.3
+            version-old: '1.2'
+            version-new: '1.3'
+            version-infix: 'g1-2-c1-3'
+            image-old: 'gci'
+            image-new: 'container_vm'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.2-gci-1.3
+            version-old: '1.2'
+            version-new: '1.3'
+            version-infix: 'g1-2-g1-3'
+            image-old: 'gci'
+            image-new: 'gci'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-container_vm-1.2-gci-1.4
+            version-old: '1.2'
+            version-new: '1.4'
+            version-infix: 'c1-2-g1-4'
+            image-old: 'container_vm'
+            image-new: 'gci'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.2-container_vm-1.4
+            version-old: '1.2'
+            version-new: '1.4'
+            version-infix: 'g1-2-c1-4'
+            image-old: 'gci'
+            image-new: 'container_vm'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.2-gci-1.4
+            version-old: '1.2'
+            version-new: '1.4'
+            version-infix: 'g1-2-g1-4'
+            image-old: 'gci'
+            image-new: 'gci'
+            version-env: |
+                # 1.2 doesn't support IAM, so we should use cert auth.
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE="true"
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-container_vm-1.3-gci-1.4
+            version-old: '1.3'
+            version-new: '1.4'
+            version-infix: 'c1-3-g1-4'
+            image-old: 'container_vm'
+            image-new: 'gci'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.3-container_vm-1.4
+            version-old: '1.3'
+            version-new: '1.4'
+            version-infix: 'g1-3-c1-4'
+            image-old: 'gci'
+            image-new: 'container_vm'
+            version-env: ''
+        - 'kubernetes-e2e-{provider}-{image-old}-{version-old}-{image-new}-{version-new}':  # kubernetes-e2e-gke-gci-1.3-gci-1.4
+            version-old: '1.3'
+            version-new: '1.4'
+            version-infix: 'g1-3-g1-4'
+            image-old: 'gci'
+            image-new: 'gci'
+            version-env: ''
+
