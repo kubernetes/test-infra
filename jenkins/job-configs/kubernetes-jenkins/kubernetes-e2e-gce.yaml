@@ -896,8 +896,8 @@
     trigger-job: 'kubernetes-build'
     test-owner: 'davidopp'
     jobs:
-        - 'kubernetes-e2e-{gce-suffix}':
-            gce-suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-master'
             step: 'upgrade-master'
             description: 'Deploys a cluster at v{version-old}, upgrades the master to v{version-new}, and runs the v{version-old} tests.'
             timeout: 600
@@ -911,8 +911,8 @@
                 # export KUBE_GKE_IMAGE_TYPE="container_vm"
                 export PROJECT="kube-gce-upg-{version-infix}-upg-mas"
                 {version-env}
-        - 'kubernetes-e2e-{gce-suffix}':
-            gce-suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster'
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster'
             description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-old} tests.'
             timeout: 600
             job-env: |
@@ -925,8 +925,8 @@
                 # export KUBE_GKE_IMAGE_TYPE="container_vm"
                 export PROJECT="kube-gce-upg-{version-infix}-upg-clu"
                 {version-env}
-        - 'kubernetes-e2e-{gce-suffix}':
-            gce-suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster-new'
+        - 'kubernetes-e2e-{suffix}':
+            suffix: '{provider}-{version-old}-{version-new}-upgrade-cluster-new'
             description: 'Deploys a cluster at v{version-old}, upgrades the cluster to v{version-new}, and runs the v{version-new} tests.'
             timeout: 600
             job-env: |
