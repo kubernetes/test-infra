@@ -90,10 +90,12 @@
     suffix:
         - 'e2e-gke': # kubernetes-pull-build-test-e2e-gke
             cmd: |
-                if [[ "${{ghprbTargetBranch:-}}" == "release-1.0" || "${{ghprbTargetBranch:-}}" == "release-1.1" ]]; then
-                  echo "PR GKE job disabled for legacy branches."
-                  exit
-                fi
+                case "${{ghprbTargetBranch:-}}" in
+                  release-1.0|release-1.1|release-1.2)
+                    echo "PR GKE job disabled for legacy branches."
+                    exit
+                    ;;
+                esac
                 export KUBE_SKIP_PUSH_GCS=n
                 export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
                 export KUBE_RUN_FROM_OUTPUT=y
@@ -266,6 +268,12 @@
                 exit ${{rc}}
         - 'kubemark-e2e-gce': # kubernetes-pull-build-test-kubemark-e2e-gce
             cmd: |
+                case "${{ghprbTargetBranch:-}}" in
+                  release-1.0|release-1.1|release-1.2)
+                    echo "PR Kubemark job disabled for legacy branches."
+                    exit
+                    ;;
+                esac
                 export KUBE_SKIP_PUSH_GCS=y
                 export KUBE_RUN_FROM_OUTPUT=y
                 export KUBE_FASTBUILD=true
@@ -318,6 +326,12 @@
                 exit ${{rc}}
         - 'gci-kubemark-e2e-gce': # kubernetes-pull-build-test-gci-kubemark-e2e-gce
             cmd: |
+                case "${{ghprbTargetBranch:-}}" in
+                  release-1.0|release-1.1|release-1.2)
+                    echo "PR Kubemark job disabled for legacy branches."
+                    exit
+                    ;;
+                esac
                 export KUBE_SKIP_PUSH_GCS=y
                 export KUBE_RUN_FROM_OUTPUT=y
                 export KUBE_FASTBUILD=true

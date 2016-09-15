@@ -475,6 +475,13 @@
             skip-if-no-test-files:   # old branches may not produce JUnit
             trigger-phrase: '(node )?(e2e )?test'
             status-context: 'GCE Node e2e'
-            cmd: './test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/jenkins-pull.properties'
+            cmd: |
+                case "${{ghprbTargetBranch:-}}" in
+                  release-1.0|release-1.1|release-1.2)
+                    echo "PR node e2e job disabled for legacy branches."
+                    exit
+                    ;;
+                esac
+                ./test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/jenkins-pull.properties
     jobs:
         - '{git-project}-pull-{suffix}'
