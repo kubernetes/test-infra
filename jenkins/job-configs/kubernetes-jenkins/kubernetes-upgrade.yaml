@@ -147,8 +147,8 @@
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
                 {version-env}
-        - 'kubernetes-e2e-{suffix}':
-            suffix: 'gke-{version-cluster}-{version-client}-gci-kubectl-skew'
+        - 'kubernetes-e2e-{gke-suffix}':
+            gke-suffix: 'gke-{version-cluster}-{version-client}-gci-kubectl-skew'
             description: 'Deploys a cluster at v{version-cluster} on gci and runs the Kubectl tests with v{version-client} kubectl.'
             timeout: 120
             job-env: |
