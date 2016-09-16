@@ -206,7 +206,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=Kubectl"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-client}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
-                export PROJECT="kube-gce-upg-{version-infix}-ctl-skew"
+                export PROJECT="gce-cvm-upg-{version-infix}-ctl-skew"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 {version-env}
         - 'kubernetes-e2e-{suffix}':
