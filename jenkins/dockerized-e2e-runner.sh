@@ -83,6 +83,7 @@ docker run --rm -i \
   -e "WORKSPACE=/workspace" \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \
   "${docker_extra_args[@]:+${docker_extra_args[@]}}" \
-  "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}"
+  "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}" && rc=$? || rc=$?
 
-trap '' EXIT  # container exited normally
+trap '' EXIT  # container exited
+exit ${rc}
