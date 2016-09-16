@@ -152,7 +152,7 @@
                 fi
                 echo "Exiting with code: ${{rc}}"
                 exit ${{rc}}
-        - 'gci-build-test-e2e-gce': # kubernetes-pull-gci-build-test-e2e-gce
+        - 'gci-e2e-gce': # kubernetes-pull-build-test-gci-e2e-gce
             cmd: |
                 export KUBE_SKIP_PUSH_GCS=y
                 export KUBE_RUN_FROM_OUTPUT=y
