@@ -53,9 +53,14 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			Context:   "Jenkins GKE smoke e2e",
 		},
 		{
+			Name:    "kubernetes-pull-build-test-gci-e2e-gke",
+			Trigger: regexp.MustCompile(`@k8s-bot gci (gke )?(e2e )?test this`),
+			Context: "Jenkins GCI GKE smoke e2e",
+		},
+		{
 			Name:    "kubernetes-pull-build-test-gci-e2e-gce",
 			Trigger: regexp.MustCompile(`@k8s-bot gci (gce )?(e2e )?test this`),
-			Context: "GCI GCE e2e",
+			Context: "Jenkins GCI GCE e2e",
 		},
 		{
 			Name:    "kubernetes-pull-build-test-federation-e2e-gce",
