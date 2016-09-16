@@ -87,6 +87,7 @@
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gce-upg-{version-infix}-upg-mas"
                 {version-env}
         - 'kubernetes-e2e-{suffix}':
@@ -99,6 +100,7 @@
                 export GINKGO_UPGRADE_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gce-upg-{version-infix}-upg-clu"
                 {version-env}
         - 'kubernetes-e2e-{suffix}':
@@ -112,6 +114,7 @@
                 export JENKINS_PUBLISHED_SKEW_VERSION="ci/latest-{version-new}"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export JENKINS_USE_SKEW_TESTS="true"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="kube-gce-upg-{version-infix}-upg-clu-n"
                 {version-env}
 
