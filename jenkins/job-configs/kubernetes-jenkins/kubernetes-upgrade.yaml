@@ -17,6 +17,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-mas"
+                export ZONE="us-central1-c"
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: 'gke-{version-old}-{version-new}-upgrade-cluster'
@@ -30,6 +31,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu"
+                export ZONE="us-central1-c"
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: 'gke-{version-old}-{version-new}-upgrade-cluster-new'
@@ -44,6 +46,7 @@
                 export JENKINS_USE_SKEW_TESTS="true"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
                 export PROJECT="kube-gke-upg-{version-infix}-upg-clu-n"
+                export ZONE="us-central1-c"
                 {version-env}
 
 # This the job configuration for all OLD GKE upgrade tests.
@@ -146,6 +149,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
                 export PROJECT="kube-gke-upg-{version-infix}-ctl-skew"
                 export KUBE_GKE_IMAGE_TYPE="container_vm"
+                export ZONE="us-central1-c"
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: 'gke-{version-cluster}-{version-client}-gci-kubectl-skew'
@@ -159,6 +163,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-cluster}"
                 export PROJECT="gke-gci-upg-{version-infix}-ctl-skew"
                 export KUBE_GKE_IMAGE_TYPE="gci"
+                export ZONE="us-central1-c"
                 {version-env}
 
 # This is the job configuration for all GKE kubectl skew tests.
@@ -259,6 +264,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="{image-old}"
                 export PROJECT="gke-up-{version-infix}-up-mas"
+                export ZONE="us-central1-c"
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: 'gke-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-cluster'
@@ -272,6 +278,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-{version-old}"
                 export KUBE_GKE_IMAGE_TYPE="{image-old}"
                 export PROJECT="gke-up-{version-infix}-up-clu"
+                export ZONE="us-central1-c"
                 {version-env}
         - 'kubernetes-e2e-{gke-suffix}':
             gke-suffix: 'gke-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-cluster-new'
@@ -286,6 +293,7 @@
                 export JENKINS_USE_SKEW_TESTS="true"
                 export KUBE_GKE_IMAGE_TYPE="{image-old}"
                 export PROJECT="gke-up-{version-infix}-up-clu-n"
+                export ZONE="us-central1-c"
                 {version-env}
 
 # This is the job configuration for all new upgrade tests on GKE.
