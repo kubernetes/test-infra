@@ -19,23 +19,22 @@ set -o pipefail
 set -o errexit
 
 if [[ $# -ne 3 ]]; then
-  echo "usage: $0 server_hostname grafana_admin_password influxdb_root_password" >&2
+  echo "usage: $0 server_hostname grafana_admin_password" >&2
   exit 64
 fi
 
 server_hostname=$1
 grafana_admin_password=$2
-influxdb_root_password=$3
 
 curl -s --fail "http://${server_hostname}/api/datasources/name/github" -u "admin:${grafana_admin_password}" ||
-env - server_hostname="${server_hostname}" influxdb_root_password="${influxdb_root_password}" envsubst <<EOF |
+env - server_hostname="${server_hostname}" envsubst <<EOF |
 {
   "name": "github",
   "type": "influxdb",
   "access": "direct",
   "url": "http://${server_hostname}/influxdb/",
-  "user": "root",
-  "password": "${influxdb_root_password}",
+  "user": "grafana",
+  "password": "password",
   "database": "github",
   "isDefault": true
 }
