@@ -42,11 +42,10 @@
         - ansicolor:
             colormap: xterm
     builders:
-        - activate-gce-service-account
-        - shell: JENKINS_BUILD_STARTED=true "${{WORKSPACE}}/test-infra/jenkins/upload-to-gcs.sh"
         - shell: |
-            git clone https://github.com/kubernetes/test-infra
-            './test-infra/{cmd}'
+            # TODO(fejta): change this back to kubernetes/test-infra -b master
+            git clone https://github.com/fejta/test-infra -b fejta
+            './test-infra/jenkins/builder.sh' '{cmd}'
     publishers:
         - xunit:
             thresholds:
@@ -65,7 +64,6 @@
                     skip-if-no-test-files: false
                     pattern: '_artifacts/**.xml'
                     deleteoutput: false
-        - gcs-uploader
 
 - project:
     name: fejta-kubernetes-pull
@@ -73,9 +71,9 @@
     suffix:
       - unit: # fejta-pull-unit
           max-total: 0 # Unlimited
-          cmd: ./jenkins/pr-unit.sh
+          cmd: pr-unit.sh
       - gce: # fejta-pull-e2e
           max-total: 12
-          cmd: ./jenkins/pr-e2e-gce.sh
+          cmd: pr-e2e-gce.sh
     jobs:
         - 'fejta-pull-{suffix}'
