@@ -29,7 +29,7 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 : ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine'}
 : ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine.pub'}
 
-KUBEKINS_E2E_IMAGE_TAG='v20160913-be190e6'
+KUBEKINS_E2E_IMAGE_TAG='v20160916-b08fd17'
 KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
 if [[ -r "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}" ]]; then
   KUBEKINS_E2E_IMAGE_TAG=$(cat "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}")
