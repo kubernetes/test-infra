@@ -10,8 +10,8 @@ First time-only
 ---------------
 Create the passwords:
 ```
-kubectl create secret generic grafana --from-literal=rootpassword="${grafana_passwoord}"
-kubectl create secret generic influxdb --from-literal=rootpassword="${influxdb_passwoord}"
+kubectl create secret generic grafana --from-literal=rootpassword="${grafana_password}"
+kubectl create secret generic influxdb --from-literal=rootpassword="${influxdb_password}"
 ```
 
 Deploying
@@ -23,7 +23,12 @@ kubectl apply -f grafana.yaml -f influxdb.yaml -f nginx.yaml
 
 Adding data-source
 ------------------
+First, you need to create the grafana user in Influxdb:
+```
+kubectl exec -i -t influxdb-123456789-abcde influx -username=root -password="${influxdb_password}" -execute "create user grafana with password 'password'; grant read on github to grafana"
+```
+
 Probably a first time only:
 ```
-./datasource.sh ${nginx_ip} ${grafana_password} ${influxdb_password}
+./datasource.sh ${nginx_ip} ${grafana_password}
 ```
