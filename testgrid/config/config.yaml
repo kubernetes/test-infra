@@ -370,12 +370,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-autoscaling
 - name: kubernetes-e2e-gke-flaky
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-flaky
-- name: kubernetes-e2e-gke-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci
-- name: kubernetes-e2e-gke-gci-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-serial
-- name: kubernetes-e2e-gke-gci-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-slow
+- name: kubernetes-e2e-gci-gke
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke
+- name: kubernetes-e2e-gci-gke-serial
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-serial
+- name: kubernetes-e2e-gci-gke-slow
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow
 - name: kubernetes-e2e-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-ingress
 - name: kubernetes-e2e-gke-ingress-release-1.2
@@ -852,12 +852,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-autoscaling
   - name: gke-flaky
     test_group_name: kubernetes-e2e-gke-flaky
-  - name: gke-gci
-    test_group_name: kubernetes-e2e-gke-gci
-  - name: gke-gci-serial
-    test_group_name: kubernetes-e2e-gke-gci-serial
-  - name: gke-gci-slow
-    test_group_name: kubernetes-e2e-gke-gci-slow
+  - name: gci-gke
+    test_group_name: kubernetes-e2e-gci-gke
+  - name: gci-gke-serial
+    test_group_name: kubernetes-e2e-gci-gke-serial
+  - name: gci-gke-slow
+    test_group_name: kubernetes-e2e-gci-gke-slow
   - name: gke-ingress
     test_group_name: kubernetes-e2e-gke-ingress
   - name: gke-ingress-release-1.2

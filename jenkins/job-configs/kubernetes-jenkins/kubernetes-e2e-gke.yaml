@@ -168,7 +168,7 @@
     trigger-job: 'kubernetes-build'
     test-owner: 'Build Cop'
     gke-suffix:
-        - 'gke-gci':  # kubernetes-e2e-gke
+        - 'gci-gke':  # kubernetes-e2e-gci-gke
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GKE in parallel (against GKE test endpoint)'
             timeout: 50  # See kubernetes/kubernetes#21138
@@ -178,7 +178,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gke-gci-ci"
                 export KUBE_GKE_IMAGE_TYPE="gci"
-        - 'gke-gci-slow':  # kubernetes-e2e-gke-gci-slow
+        - 'gci-gke-slow':  # kubernetes-e2e-gci-gke-slow
             cron-string: '{sq-cron-string}'
             description: 'Run slow E2E tests on GKE using the latest successful build.'
             timeout: 150  #  See kubernetes/kubernetes#24072
@@ -189,7 +189,7 @@
                 export GINKGO_PARALLEL="y"
                 export PROJECT="k8s-jkns-e2e-gke-gci-slow"
                 export KUBE_GKE_IMAGE_TYPE="gci"
-        - 'gke-gci-serial':  # kubernetes-e2e-gke-gci-serial
+        - 'gci-gke-serial':  # kubernetes-e2e-gci-gke-serial
             description: 'Run [Serial], [Disruptive] tests on GKE.'
             timeout: 300
             job-env: |
