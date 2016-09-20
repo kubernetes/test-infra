@@ -1,0 +1,73 @@
+- job:
+    name: 'kubernetes-pull-verify-all'
+    concurrent: true
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+        - github:
+            url: 'https://github.com/kubernetes/kubernetes'
+        - raw:
+            xml: |
+                <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                    <script>docker version; gcloud version</script>
+                    <interpreter>shell script</interpreter>
+                </com.cloudbees.plugins.JobPrerequisites>
+    parameters:
+        - string:
+            name: ghprbPullId
+        - string:
+            name: ghprbTargetBranch
+        # The test job tracks a run through the queue using the buildId parameter.
+        - string:
+            name: buildId
+    scm:
+        - git:
+            remotes:
+                - remote:
+                    url: 'https://github.com/kubernetes/kubernetes'
+                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
+                - remote:
+                    url: 'https://github.com/kubernetes/kubernetes'
+                    refspec: '+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge'
+            branches:
+                - 'origin/pr/${ghprbPullId}/merge'
+            browser: githubweb
+            browser-url: 'https://github.com/kubernetes/kubernetes'
+            timeout: 20
+            clean:
+                after: true
+            wipe-workspace: false
+            skip-tag: true
+    wrappers:
+        - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                GOROOT=/usr/local/go
+                GOPATH=$WORKSPACE/go
+                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+        - workspace-cleanup:
+            dirmatch: true
+            exclude: ['.git/']
+            external-deletion-command: 'sudo rm -rf %s'
+        - timeout:
+            timeout: 80
+            fail: true
+        - ansicolor:
+            colormap: xterm
+    builders:
+        - activate-gce-service-account
+        - ensure-upload-to-gcs-script:
+            git-basedir: ''
+        - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
+        - shell: |
+            # verify-godeps compares against upstream, but remote/master might be stale
+            # if .git was retained between runs. Update it explicitly here.
+            git fetch remote master:refs/remotes/remote/master
+            # similarly, verify-munge-docs compares against the latest release branch.
+            git fetch remote release-1.4:remote/release-1.4
+            export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
+            export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
+            ./hack/jenkins/gotest-dockerized.sh
+    publishers:
+        - gcs-uploader:
+            git-basedir: ''
