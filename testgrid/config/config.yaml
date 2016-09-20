@@ -104,8 +104,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.4
 - name: kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-flaky
-- name: kubernetes-e2e-gce-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci
+- name: kubernetes-e2e-gci-gce
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
 - name: kubernetes-e2e-gce-gci-beta-release
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-beta-release
 - name: kubernetes-e2e-gce-gci-beta-serial
@@ -142,10 +142,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-dev-serial
 - name: kubernetes-e2e-gce-gci-dev-slow
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-dev-slow
-- name: kubernetes-e2e-gce-gci-examples
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-examples
-- name: kubernetes-e2e-gce-gci-federation
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-federation
+- name: kubernetes-e2e-gci-gce-examples
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-examples
+- name: kubernetes-e2e-gci-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-gci-qa-m52
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m52
 - name: kubernetes-e2e-gce-gci-qa-m53
@@ -176,18 +176,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-release-1.2
 - name: kubernetes-e2e-gce-gci-qa-slow-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-release-1.3
-- name: kubernetes-e2e-gce-gci-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-release-1.4
-- name: kubernetes-e2e-gce-gci-scalability
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-scalability
-- name: kubernetes-e2e-gce-gci-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-serial
-- name: kubernetes-e2e-gce-gci-serial-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-serial-release-1.4
-- name: kubernetes-e2e-gce-gci-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-slow
-- name: kubernetes-e2e-gce-gci-slow-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-slow-release-1.4
+- name: kubernetes-e2e-gci-gce-release-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.4
+- name: kubernetes-e2e-gci-gce-scalability
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability
+- name: kubernetes-e2e-gci-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial
+- name: kubernetes-e2e-gci-gce-serial-release-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.4
+- name: kubernetes-e2e-gci-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow
+- name: kubernetes-e2e-gci-gce-slow-release-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.4
 - name: kubernetes-e2e-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress
 - name: kubernetes-e2e-gci-gce-ingress
@@ -761,7 +761,7 @@ dashboards:
   name: google-gce
 - dashboard_tab:
   - name: gci
-    test_group_name: kubernetes-e2e-gce-gci
+    test_group_name: kubernetes-e2e-gci-gce
   - name: gci-beta-release
     test_group_name: kubernetes-e2e-gce-gci-beta-release
   - name: gci-beta-serial
@@ -799,7 +799,7 @@ dashboards:
   - name: gci-dev-slow
     test_group_name: kubernetes-e2e-gce-gci-dev-slow
   - name: gci-examples
-    test_group_name: kubernetes-e2e-gce-gci-examples
+    test_group_name: kubernetes-e2e-gci-gce-examples
   - name: gci-qa-m52
     test_group_name: kubernetes-e2e-gce-gci-qa-m52
   - name: gci-qa-m53
@@ -831,17 +831,17 @@ dashboards:
   - name: gci-qa-slow-release-1.3
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-release-1.3
   - name: gci-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-release-1.4
   - name: gci-scalability
-    test_group_name: kubernetes-e2e-gce-gci-scalability
+    test_group_name: kubernetes-e2e-gci-gce-scalability
   - name: gci-serial
-    test_group_name: kubernetes-e2e-gce-gci-serial
+    test_group_name: kubernetes-e2e-gci-gce-serial
   - name: gci-serial-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-serial-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.4
   - name: gci-slow
-    test_group_name: kubernetes-e2e-gce-gci-slow
+    test_group_name: kubernetes-e2e-gci-gce-slow
   - name: gci-slow-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-slow-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.4
   name: google-gci
 - dashboard_tab:
   - name: gke
@@ -1135,7 +1135,7 @@ dashboards:
   - name: gce-federation
     test_group_name: kubernetes-e2e-gce-federation
   - name: gci-federation
-    test_group_name: kubernetes-e2e-gce-gci-federation
+    test_group_name: kubernetes-e2e-gci-gce-federation
   - name: gce-federation-1.4
     test_group_name: kubernetes-e2e-gce-federation-release-1.4
   name: google-federation
@@ -1187,11 +1187,11 @@ dashboards:
   - name: gci-gke-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.4
   - name: gci-slow-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-slow-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.4
   - name: gci-serial-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-serial-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.4
   - name: gci-release-1.4
-    test_group_name: kubernetes-e2e-gce-gci-release-1.4
+    test_group_name: kubernetes-e2e-gci-gce-release-1.4
   - name: gci-ci-slow-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
   - name: gci-ci-serial-release-1.4
