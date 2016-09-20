@@ -9,7 +9,7 @@
         - activate-gce-service-account
         - shell: |
             {job-env}
-            timeout -k {kill-timeout}m {timeout}m ./docker/build-squash-push.sh && rc=$? || rc=$?
+            timeout -k {kill-timeout}m {timeout}m make gcs-upload && rc=$? || rc=$?
             {report-rc}
     publishers:
         - claim-build
@@ -53,7 +53,6 @@
             branch: 'master'
             timeout: 20
             job-env: |
-              export BUILD_LINK="latest"
-              export BUILD_PUSH_TAG="yes"
+              export GCS_LOCATION="gs://kops-ci/bin"
     jobs:
         - 'kops-{build}'
