@@ -18,10 +18,21 @@
 		% set pl = pr_digest.payload
 		<p><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
 	% endif
+	<p>Build Result: {{finished['result'] if finished else 'Not Finished'}}
 	% if started
 		<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
+		% if 'jenkins-node' in started
+			<p>Builder: {{started['jenkins-node']}}
+		% endif
+		% if 'metadata' in started
+			<table border=1 align="center">
+			<tr><th>Metadata Key<th>Value
+			% for k, v in started['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
+			</table>
+		% endif
 	% endif
-	<p>Build Result: {{finished['result'] if finished else 'Not Finished'}}
 	<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
 	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
 	% if testgrid_query
