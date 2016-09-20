@@ -173,6 +173,7 @@ function install_google_cloud_sdk_tarball() {
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1
     record_command "${STAGE_PRE}" "install_gcloud" "${install_dir}/google-cloud-sdk/install.sh" --disable-installation-options --bash-completion=false --path-update=false --usage-reporting=false
     export PATH=${install_dir}/google-cloud-sdk/bin:${PATH}
+    gcloud info
 }
 
 # Figures out the builtin k8s version of a GCI image.
