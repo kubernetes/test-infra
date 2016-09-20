@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/k8s-ci-on-gke/hook:0.21
+        image: gcr.io/k8s-ci-on-gke/hook:0.22
         imagePullPolicy: Always
         args:
         - -test-pr-image=gcr.io/k8s-ci-on-gke/test-pr:0.9

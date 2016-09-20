@@ -47,6 +47,26 @@ var (
 var defaultJenkinsJobs = map[string][]JenkinsJob{
 	"kubernetes/kubernetes": {
 		{
+			Name:      "kubernetes-pull-test-unit-integration",
+			Trigger:   regexp.MustCompile(`@k8s-bot (unit )?test this`),
+			AlwaysRun: true,
+			Context:   "Jenkins unit/integration",
+		},
+		{
+			Name:      "kubernetes-pull-verify-all",
+			Trigger:   regexp.MustCompile(`@k8s-bot (verify )?test this`),
+			AlwaysRun: true,
+			Context:   "Jenkins verification",
+		},
+		{
+			Name:             "kubernetes-pull-build-test-e2e-gce",
+			Trigger:          regexp.MustCompile(`@k8s-bot (gce )?(e2e )?test this`),
+			AlwaysRun:        true,
+			Context:          "Jenkins GCE e2e",
+			CommentOnFailure: true,
+			RerunCommand:     "@k8s-bot gce e2e test this",
+		},
+		{
 			Name:      "kubernetes-pull-build-test-e2e-gke",
 			Trigger:   regexp.MustCompile(`@k8s-bot (gke )?(e2e )?test this`),
 			AlwaysRun: true,
