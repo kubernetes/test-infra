@@ -183,6 +183,13 @@
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'zhoufang@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties'
+        - 'kubelet-cri':
+            scm-cron-string: 'H/30 * * * *'
+            cron-string: 'H H/1 * * *'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            owner: 'yjhong@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/cri_validation/jenkins-validation.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
 

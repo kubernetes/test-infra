@@ -48,6 +48,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/heapster-dockercanarybuild-ci
 - name: kubelet-benchmark-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-benchmark-gce-e2e-ci
+- name: kubelet-cri-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-gce-e2e-ci
 - name: kubelet-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-gce-e2e-ci
 - name: kubelet-serial-gce-e2e-ci
@@ -974,6 +976,8 @@ dashboards:
     test_group_name: kubelet-gce-e2e-ci
   - name: kubelet-serial-gce-e2e
     test_group_name: kubelet-serial-gce-e2e-ci
+  - name: kubelet-cri-gce-e2e
+    test_group_name: kubelet-cri-gce-e2e-ci
   name: google-node
 - dashboard_tab:
   - name: soak-continuous-e2e-gce
