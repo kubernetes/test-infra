@@ -199,6 +199,61 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="jenkins-gke-gci-e2e-serial"
                 export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-updown':  # kubernetes-e2e-gci-gke-updown
+            cron-string: '{sq-cron-string}'
+            description: 'Brings a cluster up, checks networking, brings it down (against GKE test endpoint)'
+            timeout: 30  # See kubernetes/kubernetes#21138
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+                export PROJECT="kubernetes-e2e-gci-gke-updown"
+                export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-reboot':  # kubernetes-e2e-gci-gke-reboot
+            description: 'Run [Feature:Reboot] tests on GKE using the latest successful build.'
+            timeout: 180
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+                export PROJECT="k8s-jkns-e2e-gci-gke-ci-reboot"
+                export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-flaky':  # kubernetes-e2e-gci-gke-flaky
+            description: |
+                Run flaky e2e tests using the following config:<br>
+                - provider: GKE<br>
+                - api proxy: staging<br>
+                - borg job: test<br>
+                - client (kubectl): ci/latest.txt<br>
+                - cluster (k8s): ci/latest.txt<br>
+                - tests: ci/latest.txt
+            timeout: 300
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
+                                         --ginkgo.skip=\[Feature:.+\]"
+                export PROJECT="k8s-jkns-e2e-gci-gke-ci-flaky"
+                export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-multizone':  # kubernetes-e2e-gci-gke-multizone
+            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel, and in a multi-zone cluster.'
+            timeout: 150
+            emails: 'quinton@google.com'
+            job-env: |
+                export ADDITIONAL_ZONES="us-central1-a,us-central1-b"
+                export GINKGO_PARALLEL="y"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="k8s-jkns-e2e-gci-gke-multizone"
+                export ZONE="us-central1-f"
+                export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-autoscaling':  # kubernetes-e2e-gci-gke-autoscaling
+            description: 'Run all cluster autoscaler tests on GKE.'
+            timeout: 300
+            job-env: |
+                export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] \
+                                         --ginkgo.skip=\[Flaky\]"
+                export NUM_NODES=3
+                export PROJECT="k8s-e2e-gci-gke-autoscaling"
+                export KUBE_GKE_IMAGE_TYPE="gci"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
