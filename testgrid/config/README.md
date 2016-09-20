@@ -1,4 +1,4 @@
-# opensource config for testgrid.k8s.io
+# Opensource config for testgrid.k8s.io
 
 build : 
   go build ./yaml2proto
@@ -16,7 +16,8 @@ To add a new test:
 1. Append a new testgroup under test_groups, specity the name and where to get the log.
 2. Append a new dashboardtab under the dashboard you would like to add the testgroup to,
   or create a new dashboard and assign the testgroup to the dashboard.
-  * The testgroup name from a dashboardtab should match the name from a testgroup   
+  * The testgroup name from a dashboardtab should match the name from a testgroup
   ** Note that a testgroup can be within multiple dashboards. 
 3. Run config_test.go to make sure the config is valid.
 
+Contact us before you make changes to config.proto
