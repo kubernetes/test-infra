@@ -25,6 +25,12 @@ spec:
               secretKeyRef:
                 name: grafana
                 key: rootpassword
+          - name: GF_AUTH_ANONYMOUS_ENABLED
+            value: "true"
+          - name: GF_USERS_ALLOW_SIGN_UP
+            value: "false"
+          - name: GF_USERS_ALLOW_ORG_CREATE
+            value: "false"
       volumes:
       - name: database-volume
         persistentVolumeClaim:
