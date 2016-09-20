@@ -350,6 +350,7 @@ if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
   fetch_published_version_tars "${JENKINS_PUBLISHED_SKEW_VERSION}" false
   mv kubernetes kubernetes_skew
   mv kubernetes_orig kubernetes
+  export BUILD_METADATA_KUBERNETES_SKEW_VERSION=$(cat kubernetes_skew/version || true)
   if [[ "${JENKINS_USE_SKEW_TESTS:-}" != "true" ]]; then
     # Append kubectl-path of skewed kubectl to test args, since we always
     # want that to use the skewed kubectl version:
