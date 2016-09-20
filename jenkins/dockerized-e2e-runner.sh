@@ -20,6 +20,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 export REPO_DIR=${REPO_DIR:-$(pwd)}
 export HOST_ARTIFACTS_DIR=${WORKSPACE}/_artifacts
