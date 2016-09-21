@@ -9,7 +9,7 @@
         - activate-gce-service-account
         - shell: |
             {job-env}
-            timeout -k {kill-timeout}m {timeout}m make gcs-upload && rc=$? || rc=$?
+            timeout -k {kill-timeout}m {timeout}m make gcs-publish-ci && rc=$? || rc=$?
             {report-rc}
     publishers:
         - claim-build
