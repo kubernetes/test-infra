@@ -36,6 +36,10 @@ type GzipResponseWriter struct {
 
 // Write appends data to the gzip writer.
 func (w GzipResponseWriter) Write(b []byte) (int, error) {
+	if _, ok := w.Header()["Content-Type"]; !ok {
+		// If content type is not set, infer it from the uncompressed body.
+		w.Header().Set("Content-Type", http.DetectContentType(b))
+	}
 	return w.gw.Write(b)
 }
 
