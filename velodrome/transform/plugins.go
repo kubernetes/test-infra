@@ -48,6 +48,7 @@ func NewPlugins(idb InfluxDatabase) Plugins {
 	plugins := Plugins{
 		NewMergedPlugin(idb),
 		NewLGTMToMergedPlugin(idb),
+		NewFirstCommentPlugin(idb),
 	}
 
 	return plugins
