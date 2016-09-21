@@ -125,14 +125,6 @@ func MultiIssueEvents(issueToEvents map[int][]LabelTime, eventName string) (out 
 	return out
 }
 
-// User returns a github user with the necessary details filled in.
-func User(name string) *github.User {
-	return &github.User{
-		Login:     stringPtr(name),
-		AvatarURL: stringPtr("MyAvatarURL"),
-	}
-}
-
 // LabelTime is a struct which can be used to call Events()
 // It expresses what label the event should be about and what time
 // the event took place.

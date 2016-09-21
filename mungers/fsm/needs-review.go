@@ -36,8 +36,6 @@ const (
 // Process does the necessary processing to compute whether to stay in
 // this state, or proceed to the next.
 func (nr *NeedsReview) Process(obj *github.MungeObject) (State, error) {
-	var reviewerActionNeeded bool
-	var err error
 	if nr.checkLGTM(obj) {
 		if obj.HasLabel(labelNeedsReview) {
 			obj.RemoveLabel(labelNeedsReview)
@@ -48,7 +46,7 @@ func (nr *NeedsReview) Process(obj *github.MungeObject) (State, error) {
 		return &End{}, nil
 	}
 
-	reviewerActionNeeded, err = isReviewerActionNeeded(obj)
+	reviewerActionNeeded, err := isReviewerActionNeeded(obj)
 	if err != nil {
 		return &End{}, err
 	}
