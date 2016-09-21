@@ -17,10 +17,11 @@ limitations under the License.
 package mungers
 
 import (
-	"fmt"
+	"time"
 
 	"k8s.io/contrib/mungegithub/features"
 	githubhelper "k8s.io/contrib/mungegithub/github"
+	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
 	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 
 	"github.com/golang/glog"
@@ -37,10 +38,9 @@ Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  T
 ---
 
 - If you've already signed a CLA, it's possible we don't have your GitHub username or you're using a different email address.  Check your existing CLA data and verify that your [email is set on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
-- If you signed the CLA as a corporation, please let us know the company's name.
+- If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
 
 <!-- need_sender_cla -->
-ATTN:
 	`
 
 	claSignedMessage = `CLAs look good, thanks!`
@@ -48,43 +48,55 @@ ATTN:
 	contextSuccess   = "success"
 	contextError     = "error"
 	contextFailure   = "failure"
+	claNagNotifyName = "CLA-PING"
+
+	// timePeriod is the time between successive posts of the CLA nag notification.
+	timePeriod = 10 * 24 * time.Hour
+	maxPings   = 3
 )
 
 // ClaMunger will check the CLA status of the PR and apply a label.
 type ClaMunger struct {
 	CLAStatusContext string
+	pinger           *c.Pinger
 }
+
+var _ Munger = &ClaMunger{}
 
 func init() {
 	RegisterMungerOrDie(&ClaMunger{})
 }
 
 // Name is the name usable in --pr-mungers
-func (c *ClaMunger) Name() string { return "cla" }
+func (cla *ClaMunger) Name() string { return "cla" }
 
 // RequiredFeatures is a slice of 'features' that must be provided.
-func (c *ClaMunger) RequiredFeatures() []string { return []string{} }
+func (cla *ClaMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger.
-func (c *ClaMunger) Initialize(config *githubhelper.Config, features *features.Features) error {
-	if len(c.CLAStatusContext) == 0 {
+func (cla *ClaMunger) Initialize(config *githubhelper.Config, features *features.Features) error {
+	if len(cla.CLAStatusContext) == 0 {
 		glog.Fatalf("No --cla-status-context flag set with cla munger.")
 	}
+
+	cla.pinger = c.NewPinger(claNagNotifyName).
+		SetDescription(cncfclaNotFoundMessage)
+
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
-func (c *ClaMunger) EachLoop() error {
+func (cla *ClaMunger) EachLoop() error {
 	return nil
 }
 
 // AddFlags will add any request flags to the cobra `cmd`.
-func (c *ClaMunger) AddFlags(cmd *cobra.Command, config *githubhelper.Config) {
-	cmd.Flags().StringVar(&c.CLAStatusContext, "cla-status-context", "", "Status context to check to find if CLA is signed.")
+func (cla *ClaMunger) AddFlags(cmd *cobra.Command, config *githubhelper.Config) {
+	cmd.Flags().StringVar(&cla.CLAStatusContext, "cla-status-context", "", "Status context to check to find if CLA is signed.")
 }
 
 // Munge is unused by this munger.
-func (c *ClaMunger) Munge(obj *githubhelper.MungeObject) {
+func (cla *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
@@ -93,7 +105,7 @@ func (c *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 		return
 	}
 
-	status := obj.GetStatusState([]string{c.CLAStatusContext})
+	status := obj.GetStatusState([]string{cla.CLAStatusContext})
 
 	// Check for pending status and exit.
 	if status == contextPending {
@@ -113,14 +125,27 @@ func (c *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 		return
 	}
 
-	if obj.HasLabel(cncfClaNoLabel) {
-		// status reported error/failure and we've already applied 'cncf-cla: no' label.
+	// If we are here, that means that the context is failure/error.
+	comments, err := obj.ListComments()
+	if err != nil {
+		glog.Error(err)
 		return
 	}
+	startDate := c.LastComment(comments, c.MungerNotificationName(claNagNotifyName), nil)
+	who := mungerutil.GetIssueUsers(obj.Issue).Author.Mention().Join()
 
-	// Write comment and then modify the labels.
-	err := obj.WriteComment(fmt.Sprint(cncfclaNotFoundMessage, mungerutil.GetIssueUsers(obj.Issue).Author.Mention().Join()))
-	if err != nil {
+	// Get a notification if it's time to ping.
+	notif := cla.pinger.SetTimePeriod(timePeriod).SetMaxCount(maxPings).PingNotification(
+		comments,
+		who,
+		startDate,
+	)
+	if notif != nil {
+		obj.WriteComment(notif.String())
+	}
+
+	if obj.HasLabel(cncfClaNoLabel) {
+		// status reported error/failure and we've already applied 'cncf-cla: no' label.
 		return
 	}
 

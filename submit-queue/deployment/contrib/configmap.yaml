@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: contrib
-  config.pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,check-labels,needs-rebase,lgtm-handler
+  config.pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,check-labels,needs-rebase,lgtm-handler,cla
   config.state: open
   config.token-file: /etc/secret-volume/token
   gitrepo.repo-dir: /gitrepos
@@ -42,3 +42,5 @@ data:
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: ""
   check-labels.label-file: "/gitrepos/contrib/labels.yaml"
+  issue-categorizer.triager-url: ""
+  cla.cla-status-context: "cla/linuxfoundation"

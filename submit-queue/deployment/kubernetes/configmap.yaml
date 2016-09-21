@@ -43,3 +43,4 @@ data:
   size.generated-files-config: generated-files.txt
   check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"
   issue-categorizer.triager-url: "http://issue-triager-service:5000"
+  cla.cla-status-context: ""

@@ -42,3 +42,5 @@ data:
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: ""
   check-labels.label-file: "/gitrepos/kubernetes.github.io/labels.yaml"
+  issue-categorizer.triager-url: ""
+  cla.cla-status-context: ""

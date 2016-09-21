@@ -15,6 +15,7 @@ spec:
         command:
         - /mungegithub
         - --dry-run=true
+        - --stderrthreshold=INFO
         - --http-cache-dir=$(HTTP_CACHE_DIR)
         - --organization=$(ORGANIZATION)
         - --project=$(PROJECT)
@@ -46,6 +47,7 @@ spec:
         - --enable-md-yaml=$(ENABLE_MD_YAML)
         - --label-file=$(LABEL_FILE)
         - --triager-url=$(TRIAGER_URL)
+        - --cla-status-context=$(CLA_STATUS_CONTEXT)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -203,6 +205,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: issue-categorizer.triager-url
+          - name: CLA_STATUS_CONTEXT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: cla.cla-status-context
         ports:
         - name: status
           containerPort: 8080

@@ -25,6 +25,7 @@ import (
 
 	github_util "k8s.io/contrib/mungegithub/github"
 	github_test "k8s.io/contrib/mungegithub/github/testing"
+	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
 
 	"github.com/google/go-github/github"
 )
@@ -124,14 +125,15 @@ func TestCLAMunger(t *testing.T) {
 		config.Project = "r"
 		config.SetClient(client)
 
-		c := ClaMunger{
+		cla := ClaMunger{
 			CLAStatusContext: claContext,
+			pinger:           c.NewPinger("[fake-ping]").SetDescription(""),
 		}
 		obj, err := config.GetObject(*test.issue.Number)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
-		c.Munge(obj)
+		cla.Munge(obj)
 
 		for _, lab := range test.mustHave {
 			if !obj.HasLabel(lab) {
