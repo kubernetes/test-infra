@@ -66,7 +66,17 @@ fi
 # Give the container a unique name, and stop it when bash EXITs,
 # which will happen during a timeout.
 CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
-trap "docker stop ${CONTAINER_NAME}" EXIT
+
+kill-leaked-container() {
+  local container="$1"
+  # docker runs containers with session id being the same as the pid
+  local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
+  echo "Processes running under container ${container}:"
+  ps wwuf --forest --sid "${pid}"
+  docker stop "${container}"
+}
+
+trap "kill-leaked-container ${CONTAINER_NAME}" EXIT
 
 echo "Starting..."
 docker run --rm -i \
