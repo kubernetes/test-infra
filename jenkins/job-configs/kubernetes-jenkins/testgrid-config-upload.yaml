@@ -1,5 +1,5 @@
 - job:
-    name: 'senlu-test-config-upload'
+    name: 'testgrid-config-upload'
     description: 'Build testgrid config from github and upload to gcs'
     node: 'master'
     properties:
@@ -11,12 +11,12 @@
     scm:
         - git:
             branches:
-            - config_external
+            - master
             browser: githubweb
-            browser-url: https://github.com/krzyzacy/test-infra
+            browser-url: https://github.com/kubernetes/test-infra
             basedir: go/src/k8s.io/test-infra
             skip-tag: true
-            url: https://github.com/krzyzacy/test-infra
+            url: https://github.com/kubernetes/test-infra
             wipe-workspace: false
     wrappers:
         - e2e-credentials-binding
@@ -33,4 +33,4 @@
         - shell: |
             export CONFIGDIR=$GOPATH/src/k8s.io/test-infra/testgrid/config
             go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
-            gsutil cp $CONFIGDIR/config gs://testgrid-sen/config
+            gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
