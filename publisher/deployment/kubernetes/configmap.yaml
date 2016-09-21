@@ -12,5 +12,4 @@ data:
   # munger specific options.
   gitrepo.repo-dir: /gitrepos
   config.period: "24h"
-  publisher.publish-command: ./publisher.sh
   publisher.netrc-dir: /netrc

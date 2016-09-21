@@ -22,15 +22,9 @@ spec:
         - --token-file=$(TOKEN_FILE)
         - --repo-dir=$(REPO_DIR)
         - --netrc-dir=$(NETRC_DIR)
-        - --publish-command=$(PUBLISH_COMMAND)
         image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         env:
-          - name: PUBLISH_COMMAND
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: publisher.publish-command
           - name: PERIOD
             valueFrom:
               configMapKeyRef:
