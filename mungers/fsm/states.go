@@ -36,7 +36,7 @@ func ComputeState(obj *github.MungeObject) error {
 	// Every PR starts in the pre-review state.
 	var currentState State = &PreReview{}
 	var err error
-	for currentState.Name() != EndState {
+	for currentState.Name() != endState {
 		currentState, err = currentState.Process(obj)
 		if err != nil {
 			return err

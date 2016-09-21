@@ -24,7 +24,7 @@ import (
 
 const (
 	// EndState is the name of the end state.
-	EndState = "EndState"
+	endState = "EndState"
 )
 
 // End is the end state when we can't proceed.
@@ -45,5 +45,5 @@ func (e *End) Process(obj *github.MungeObject) (State, error) {
 
 // Name is the name of the state machine's state.
 func (e *End) Name() string {
-	return EndState
+	return endState
 }
