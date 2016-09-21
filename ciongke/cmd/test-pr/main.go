@@ -135,7 +135,7 @@ func main() {
 		GitHubClient:  ghc,
 	}
 	if err := client.TestPR(); err != nil {
-		logrus.WithError(err).Errorf("Error testing PR.")
+		logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR.")
 		return
 	}
 }
