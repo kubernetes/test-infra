@@ -47,6 +47,7 @@ type Plugins []Plugin
 func NewPlugins(idb InfluxDatabase) Plugins {
 	plugins := Plugins{
 		NewMergedPlugin(idb),
+		NewLGTMToMergedPlugin(idb),
 	}
 
 	return plugins
