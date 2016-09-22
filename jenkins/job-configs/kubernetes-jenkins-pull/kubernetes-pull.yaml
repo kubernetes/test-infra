@@ -260,8 +260,6 @@
         - timeout:
             timeout: 90
             fail: true
-        - ansicolor:
-            colormap: xterm
     builders:
         - activate-gce-service-account
         - ensure-upload-to-gcs-script:

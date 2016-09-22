@@ -26,20 +26,15 @@
         url: https://github.com/kubernetes/kubernetes-anywhere
         wipe-workspace: false
     wrappers:
-    - ansicolor:
-        colormap: xterm
     - e2e-credentials-binding
     - timeout:
         timeout: '{jenkins-timeout}'
         fail: true
-    - timestamps
     - workspace-cleanup:
         dirmatch: true
         external-deletion-command: 'sudo rm -rf %s'
     publishers:
-    - claim-build
     - junit-publisher
-    - log-parser
     - gcs-uploader
 
 - project:

@@ -13,7 +13,6 @@
             export PATH=${PATH}:/usr/local/go/bin
             ./hack/verify-linkcheck.sh
     publishers:
-        - claim-build
         - email-ext:
             recipients: 'xuchao@google.com'
         - gcs-uploader
@@ -29,13 +28,10 @@
     triggers:
         - timed: '@daily'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: 60
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'

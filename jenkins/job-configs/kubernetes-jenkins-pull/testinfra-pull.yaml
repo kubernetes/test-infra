@@ -54,8 +54,6 @@
         - timeout:
             timeout: 600
             fail: true
-        - ansicolor:
-            colormap: xterm
     builders:
         - shell: |
             cd ${WORKSPACE}/go/src/github.com/kubernetes/test-infra/ciongke

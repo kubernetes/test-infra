@@ -39,8 +39,6 @@
         - timeout:
             timeout: 90
             fail: true
-        - ansicolor:
-            colormap: xterm
     builders:
         - shell: |
             # TODO(fejta): change this back to kubernetes/test-infra -b master

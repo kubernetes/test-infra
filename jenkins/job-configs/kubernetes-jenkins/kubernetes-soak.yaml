@@ -30,18 +30,14 @@
         - build-discarder:
             days-to-keep: 14
     publishers:
-        - email-ext
         - gcs-uploader
     triggers:
         - timed: 'H 0 * * 2'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
@@ -74,21 +70,15 @@
         - build-discarder:
             days-to-keep: 7
     publishers:
-        - claim-build
-        - email-ext
         - junit-publisher
-        - log-parser
         - gcs-uploader
     triggers:
         - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
 
 - project:
     name: soak
