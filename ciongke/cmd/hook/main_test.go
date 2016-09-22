@@ -22,22 +22,20 @@ import "testing"
 func TestJobTriggers(t *testing.T) {
 	for _, jobs := range defaultJenkinsJobs {
 		for i, job := range jobs {
-			if job.CommentOnFailure {
-				if len(job.RerunCommand) == 0 {
-					t.Fatalf("Job %s needs a rerun command because it comments on failure.", job.Name)
+			if len(job.RerunCommand) == 0 {
+				t.Fatalf("Job %s needs a rerun command because it comments on failure.", job.Name)
+			}
+			// Check that the rerun command actually runs the job.
+			if !job.Trigger.MatchString(job.RerunCommand) {
+				t.Errorf("For job %s: RerunCommand \"%s\" does not match regex \"%v\".", job.Name, job.RerunCommand, job.Trigger)
+			}
+			// Next check that the rerun command doesn't run any other jobs.
+			for j, job2 := range jobs {
+				if i == j {
+					continue
 				}
-				// Check that the rerun command actually runs the job.
-				if !job.Trigger.MatchString(job.RerunCommand) {
-					t.Errorf("For job %s: RerunCommand \"%s\" does not match regex \"%v\".", job.Name, job.RerunCommand, job.Trigger)
-				}
-				// Next check that the rerun command doesn't run any other jobs.
-				for j, job2 := range jobs {
-					if i == j {
-						continue
-					}
-					if job2.Trigger.MatchString(job.RerunCommand) {
-						t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
-					}
+				if job2.Trigger.MatchString(job.RerunCommand) {
+					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
 			}
 		}

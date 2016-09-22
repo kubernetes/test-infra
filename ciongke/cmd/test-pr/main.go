@@ -40,23 +40,13 @@ var (
 	commit    = flag.String("sha", "", "Head SHA of the PR.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
-	commentOnFailure = flag.Bool("comment-on-failure", false, "Whether or not to make the bot comment on the PR when the test fails.")
-	rerunCommand     = flag.String("rerun-command", "", "What users should say to rerun the test.")
+	deprecatedCommentOnFailure = flag.Bool("comment-on-failure", true, "Does nothing, delete after next push")
+	rerunCommand               = flag.String("rerun-command", "", "What users should say to rerun the test.")
 
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
-)
-
-const (
-	botName = "k8s-ci-robot"
-
-	// Inputs are context, URL, commit, retest command.
-	// The deletion logic requires that it start with context.
-	bodyFormat = `%s [**failed**](%s) for commit %s.
-
-The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
 )
 
 type testClient struct {
@@ -71,8 +61,7 @@ type testClient struct {
 
 	DryRun bool
 
-	CommentOnFailure bool
-	RerunCommand     string
+	RerunCommand string
 
 	JenkinsClient *jenkins.Client
 	GitHubClient  githubClient
@@ -128,8 +117,7 @@ func main() {
 
 		DryRun: *dryRun,
 
-		CommentOnFailure: *commentOnFailure,
-		RerunCommand:     *rerunCommand,
+		RerunCommand: *rerunCommand,
 
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
@@ -190,9 +178,7 @@ func (c *testClient) TestPR() error {
 				break
 			} else {
 				c.tryCreateStatus(github.Failure, "Build failed.", result.URL)
-				if c.CommentOnFailure {
-					c.tryCreateFailureComment(result.URL)
-				}
+				c.tryCreateFailureComment(result.URL)
 				break
 			}
 		}
@@ -220,7 +206,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 		return
 	}
 	for _, ic := range ics {
-		if ic.User.Login != botName {
+		if ic.User.Login != "k8s-ci-robot" {
 			continue
 		}
 		if strings.HasPrefix(ic.Body, c.Context) {
@@ -229,7 +215,11 @@ func (c *testClient) tryCreateFailureComment(url string) {
 			}
 		}
 	}
-	body := fmt.Sprintf(bodyFormat, c.Context, url, c.Commit, c.RerunCommand)
+	// The deletion logic requires that it start with context.
+	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://ci-test.k8s.io/%s).
+
+The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
+	body := fmt.Sprintf(bodyFormat, c.Context, c.PRNumber, url, c.Commit, c.RerunCommand)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
