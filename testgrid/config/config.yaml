@@ -1,7 +1,7 @@
 #  -- Yaml representation for configuring testgrid.k8s.io
 #
 #  To add a new test:
-#   1. Append a new testgroup under test_groups, specity the name and where to get the log.
+#   1. Append a new testgroup under test_groups, specify the name and where to get the log.
 #   2. Append a new dashboardtab under the dashboard you would like to add the testgroup to,
 #      or create a new dashboard and assign the testgroup to the dashboard.
 #      * The testgroup name from a dashboardtab should match the name from a testgroup
@@ -554,6 +554,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/continuous-node-e2e-docker-benchmark
 - name: continuous-e2e-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/continuous-e2e-docker-validation-gci
+# garbage collector tests
+- name: kubernetes-garbage-collector
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-feature
 # Add New Testgroups Here
 
 #
@@ -602,6 +605,8 @@ dashboards:
     test_group_name: kubernetes-rktnetes
   - name: azure
     test_group_name: kubernetes-azure
+  - name: garbage-collector
+    test_group_name: kubernetes-garbage-collector
   name: k8s
 - dashboard_tab:
   - name: azure
