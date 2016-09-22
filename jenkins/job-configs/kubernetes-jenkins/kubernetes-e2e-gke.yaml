@@ -163,6 +163,13 @@
                                          --ginkgo.skip=\[Flaky\]"
                 export NUM_NODES=3
                 export PROJECT="k8s-e2e-gke-autoscaling"
+        - 'gke-alpha-features': # kubernetes-e2e-gke-alpha-features
+            description: 'Run alpha feature E2E tests on GKE alpha cluster.'
+            timeout: 180
+            job-env: |
+              export PROJECT="k8s-jkns-e2e-gke-alpha"
+              export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
@@ -215,6 +222,16 @@
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gke-serial-1-4"
+          # TODO(jlowdermilk): uncomment this once kubernetes/kubernetes#3325
+          # is checked in (allows petset e2e to run on other providers).
+          # - 'gce-alpha-features-release-1.4':
+          # -   description: 'Run alpha feature tests on GCE on the release-1.4 branch.'
+          # -   timeout: 180
+          # -   job-env: |
+          # -       export PROJECT="k8s-jkns-e2e-gke-alpha1-4"
+          # -       export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
+          # -       export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+          # -       export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
         - 'gke-slow-release-1.4':  # kubernetes-e2e-gke-slow-release-1.4
             description: 'Run slow E2E tests on GKE using the release-1.4 branch.'
             timeout: 150  #  See kubernetes/kubernetes#24072
