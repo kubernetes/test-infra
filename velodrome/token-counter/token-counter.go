@@ -136,7 +136,8 @@ func (t TokenHandler) Process() {
 			glog.Error("Failed to get CoreRate: ", err)
 			continue
 		}
-		if !newRate.Reset.Time.Equal(lastRate.Reset.Time) {
+		// There is a bug in Github. They seem to reset the Remaining value before reseting the Reset value.
+		if !newRate.Reset.Time.Equal(lastRate.Reset.Time) || newRate.Remaining > lastRate.Remaining {
 			glog.Infof(
 				"%s: ### TOKEN USAGE: %d",
 				t.login,
@@ -148,6 +149,17 @@ func (t TokenHandler) Process() {
 				map[string]interface{}{"value": lastRate.Limit - lastRate.Remaining},
 				lastRate.Reset.Time,
 			)
+			// Make sure the timer is properly reset, and we have time anyway
+			time.Sleep(30 * time.Minute)
+			for {
+				newRate, err = t.getCoreRate()
+				if err == nil {
+					break
+				}
+				glog.Error("Failed to get CoreRate: ", err)
+				time.Sleep(time.Minute)
+			}
+
 		}
 		lastRate = newRate
 	}
