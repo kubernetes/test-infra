@@ -43,12 +43,3 @@
                         - shell: 'JENKINS_BUILD_FINISHED=ABORTED ./_tmp/upload-to-gcs.sh'
             script-only-if-succeeded: False
             script-only-if-failed: False
-
-# Default log parser rules.
-- publisher:
-    name: log-parser
-    publishers:
-        - logparser:
-            parse-rules: /jenkins-master-data/log_parser_rules.txt
-            unstable-on-warning: false
-            fail-on-error: false

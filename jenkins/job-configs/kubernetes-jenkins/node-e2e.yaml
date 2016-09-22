@@ -24,8 +24,6 @@
              tag: 'canary'
              credentialsId: '1f361efb-5b85-4f61-91a7-4ec7fb2a5c23'
     publishers:
-        - claim-build
-        - log-parser
         - email-ext:
             recipients: '{owner}'
         - gcs-uploader
@@ -43,13 +41,10 @@
             cron: 'H/5 * * * *'
         - timed: '@daily'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: 30
             fail: true
-        - timestamps
 
 # Job template to checkout source from github to $WORKSPACE/go/src/{gitbasedir}, setup go environment variables, and execute a
 # shell script.
@@ -78,11 +73,9 @@
               cd go/src/{gitbasedir}
               {shell}
     publishers:
-        - claim-build
         - junit-publisher-fully-specified:
                 allow-empty-results: true
         - gcs-uploader
-        - log-parser
         - email-ext:
             recipients: '{owner}'
         - gcs-uploader
@@ -100,13 +93,10 @@
             cron: '{scm-cron-string}'
         - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: '{test-timeout}'
             fail: true
-        - timestamps
         - inject:
             properties-content: |
                 GOROOT=/usr/local/go

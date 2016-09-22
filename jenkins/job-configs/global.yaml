@@ -10,7 +10,6 @@
                     <testDataPublishers>
                         <de.esailors.jenkins.teststability.StabilityTestDataPublisher plugin="test-stability@1.0"/>
                         <com.google.jenkins.flakyTestHandler.plugin.JUnitFlakyTestDataPublisher plugin="flaky-test-handler@1.0.1"/>
-                        <hudson.plugins.claim.ClaimTestDataPublisher plugin="claim@2.7"/>
                     </testDataPublishers>
                     <healthScaleFactor>100.0</healthScaleFactor>
                     <allowEmptyResults>{allow-empty-results}</allowEmptyResults>

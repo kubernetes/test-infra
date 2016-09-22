@@ -20,21 +20,16 @@
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
     publishers:
-        - claim-build
         - junit-publisher
-        - log-parser
         - email-ext:
             recipients: "gmarek@google.com"
         - gcs-uploader
     triggers:
         - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             exclude: ['.git/']

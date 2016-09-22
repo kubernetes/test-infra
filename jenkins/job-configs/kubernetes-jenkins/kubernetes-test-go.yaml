@@ -16,9 +16,6 @@
             timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/gotest-dockerized.sh && rc=$? || rc=$?
             {report-rc}
     publishers:
-        - claim-build
-        - log-parser
-        - email-ext
         - xunit:
             thresholds:
                 - failed:
@@ -50,13 +47,10 @@
             cron: 'H/2 * * * *'
         - timed: '{cron-string}'
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'

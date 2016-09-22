@@ -12,8 +12,6 @@
             timeout -k {kill-timeout}m {timeout}m make gcs-publish-ci && rc=$? || rc=$?
             {report-rc}
     publishers:
-        - claim-build
-        - log-parser
         - email-ext:
             presend-script: $DEFAULT_PRESEND_SCRIPT
             fail: true
@@ -41,7 +39,6 @@
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'

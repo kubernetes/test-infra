@@ -26,13 +26,10 @@
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
     wrappers:
-        - ansicolor:
-            colormap: xterm
         - e2e-credentials-binding
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
-        - timestamps
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
@@ -42,9 +39,7 @@
             result: success
         - timed: '{cron-string}'
     publishers:
-        - claim-build
         - junit-publisher
-        - log-parser
         - email-ext:
             recipients: '{emails}'
         - gcs-uploader
