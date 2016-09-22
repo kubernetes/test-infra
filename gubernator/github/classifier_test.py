@@ -143,7 +143,7 @@ class CalculateTest(unittest.TestCase):
 
     def test_assignee_state(self):
         def expect(events, result):
-            self.assertEqual(classifier.get_assignee_state('me', events),
+            self.assertEqual(classifier.get_assignee_state('me', 'author', events),
                              result)
         expect([], 'needs review')
         expect([('comment', 'other')], 'needs review')
@@ -151,6 +151,7 @@ class CalculateTest(unittest.TestCase):
         expect([('label lgtm', 'other')], 'needs review')
         expect([('label lgtm', 'me')], 'waiting')
         expect([('comment', 'me'), ('push', 'author')], 'needs review')
+        expect([('comment', 'me'), ('comment', 'author')], 'needs review')
 
 
 if __name__ == '__main__':
