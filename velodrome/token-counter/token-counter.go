@@ -1,0 +1,197 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package main
+
+import (
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/golang/glog"
+	"github.com/google/go-github/github"
+	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
+)
+
+type tokenCounterFlags struct {
+	influx InfluxConfig
+	tokens []string
+}
+
+func (flags *tokenCounterFlags) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().StringSliceVar(&flags.tokens, "token", []string{}, "List of tokens")
+	cmd.Flags().AddGoFlagSet(flag.CommandLine)
+}
+
+// TokenHandler is refreshing token usage
+type TokenHandler struct {
+	gClient  *github.Client
+	influxdb *InfluxDB
+	login    string
+}
+
+// GetGithubClient creates a client for each token
+func GetGithubClient(token string) *github.Client {
+	return github.NewClient(
+		oauth2.NewClient(
+			oauth2.NoContext,
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}),
+		),
+	)
+}
+
+// GetUsername finds the login for each token
+func GetUsername(client *github.Client) (string, error) {
+	user, _, err := client.Users.Get("")
+	if err != nil {
+		return "", err
+	}
+	if user.Login == nil {
+		return "", errors.New("Users.Get(\"\") returned empty login.")
+	}
+
+	return *user.Login, nil
+}
+
+// CreateTokenHandler parses the token and create a handler
+func CreateTokenHandler(tokenStream io.Reader, influxdb *InfluxDB) (*TokenHandler, error) {
+	token, err := ioutil.ReadAll(tokenStream)
+	if err != nil {
+		return nil, err
+	}
+	client := GetGithubClient(strings.TrimSpace(string(token)))
+	login, err := GetUsername(client) // Get user name for token
+	if err != nil {
+		return nil, err
+	}
+
+	return &TokenHandler{
+		gClient:  client,
+		login:    login,
+		influxdb: influxdb,
+	}, nil
+}
+
+// CreateTokenHandlers goes through the list of token files, and create handlers
+func CreateTokenHandlers(tokenFiles []string, influxdb *InfluxDB) ([]TokenHandler, error) {
+	tokens := []TokenHandler{}
+	for _, tokenFile := range tokenFiles {
+		f, err := os.Open(tokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("Can't open token-file (%s): %s", tokenFile, err)
+		}
+		token, err := CreateTokenHandler(f, influxdb)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create token (%s): %s", tokenFile, err)
+		}
+		tokens = append(tokens, *token)
+	}
+	return tokens, nil
+}
+
+func (t TokenHandler) getCoreRate() (*github.Rate, error) {
+	limits, _, err := t.gClient.RateLimits()
+	if err != nil {
+		return nil, err
+	}
+	return limits.Core, nil
+}
+
+// Process does the main job:
+// It tries to get the value of "Remaining" rate just before the token
+// gets reset. It does that more and more often (as the reset date gets
+// closer) to get the most accurate value.
+func (t TokenHandler) Process() {
+	lastRate, err := t.getCoreRate()
+	if err != nil {
+		glog.Fatalf("%s: Couldn't get rate limits:", t.login, err)
+	}
+
+	for {
+		halfPeriod := lastRate.Reset.Time.Sub(time.Now()) / 2
+		glog.Infof("%s: Current rate: %s. Sleeping for %s.", t.login, lastRate, halfPeriod)
+		time.Sleep(halfPeriod)
+		newRate, err := t.getCoreRate()
+		if err != nil {
+			glog.Error("Failed to get CoreRate: ", err)
+			continue
+		}
+		if !newRate.Reset.Time.Equal(lastRate.Reset.Time) {
+			glog.Infof(
+				"%s: ### TOKEN USAGE: %d",
+				t.login,
+				lastRate.Limit-lastRate.Remaining,
+			)
+			t.influxdb.Push(
+				"github_token_count",
+				map[string]string{"login": t.login},
+				map[string]interface{}{"value": lastRate.Limit - lastRate.Remaining},
+				lastRate.Reset.Time,
+			)
+		}
+		lastRate = newRate
+	}
+}
+
+func runProgram(flags *tokenCounterFlags) error {
+	influxdb, err := flags.influx.CreateDatabase()
+	if err != nil {
+		return err
+	}
+
+	tokens, err := CreateTokenHandlers(flags.tokens, influxdb)
+	if err != nil {
+		return err
+	}
+
+	if len(tokens) == 0 {
+		glog.Warning("No token given, nothing to do. Leaving...")
+		return nil
+	}
+
+	for _, token := range tokens {
+		glog.Infof("Processing token for '%s'", token.login)
+		go token.Process()
+	}
+
+	select {}
+
+	return nil
+}
+
+func main() {
+	flags := &tokenCounterFlags{}
+	cmd := &cobra.Command{
+		Use:   filepath.Base(os.Args[0]),
+		Short: "Count usage of github token",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runProgram(flags)
+		},
+	}
+	flags.AddFlags(cmd)
+	flags.influx.AddFlags(cmd)
+
+	if err := cmd.Execute(); err != nil {
+		glog.Error(err)
+	}
+}
