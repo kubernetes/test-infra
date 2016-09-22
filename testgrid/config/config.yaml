@@ -532,6 +532,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-linkchecker
 - name: kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-master
+- name: kubernetes-verify-release-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-release-1.4
 - name: kubernetes-verify-release-1.3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-release-1.3
 # Manual, federated groups
@@ -1083,6 +1085,8 @@ dashboards:
     test_group_name: kubernetes-test-linkchecker
   - name: verify-master
     test_group_name: kubernetes-verify-master
+  - name: verify-release-1.4
+    test_group_name: kubernetes-verify-release-1.4
   - name: verify-release-1.3
     test_group_name: kubernetes-verify-release-1.3
   name: google-unit
@@ -1233,6 +1237,8 @@ dashboards:
 - dashboard_tab:
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
+  - name: verify-release-1.4
+    test_group_name: kubernetes-verify-release-1.4
   - name: gce-release-1.4
     test_group_name: kubernetes-e2e-gce-release-1.4
   - name: gce-serial-release-1.4
