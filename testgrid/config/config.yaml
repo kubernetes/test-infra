@@ -380,6 +380,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-slow
 - name: kubernetes-e2e-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-ingress
+- name: kubernetes-e2e-gci-gke-ingress
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-ingress
 - name: kubernetes-e2e-gke-ingress-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-ingress-release-1.2
 - name: kubernetes-e2e-gci-gke-ingress-release-1.2
@@ -398,12 +400,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-multizone
 - name: kubernetes-e2e-gke-pre-release
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-pre-release
+- name: kubernetes-e2e-gci-gke-pre-release
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-pre-release
 - name: kubernetes-e2e-gke-prod
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod
+- name: kubernetes-e2e-gci-gke-prod
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod
 - name: kubernetes-e2e-gke-prod-parallel
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod-parallel
+- name: kubernetes-e2e-gci-gke-prod-parallel
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod-parallel
 - name: kubernetes-e2e-gke-prod-smoke
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod-smoke
+- name: kubernetes-e2e-gci-gke-prod-smoke
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod-smoke
 - name: kubernetes-e2e-gke-reboot
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-reboot
 - name: kubernetes-e2e-gke-reboot-release-1.3
@@ -456,12 +466,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow-release-1.4
 - name: kubernetes-e2e-gke-staging
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-staging
+- name: kubernetes-e2e-gci-gke-staging
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-staging
 - name: kubernetes-e2e-gke-staging-parallel
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-staging-parallel
+- name: kubernetes-e2e-gci-gke-staging-parallel
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-staging-parallel
 - name: kubernetes-e2e-gke-subnet
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-subnet
+- name: kubernetes-e2e-gci-gke-subnet
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-subnet
 - name: kubernetes-e2e-gke-test
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-test
+- name: kubernetes-e2e-gci-gke-test
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-test
 - name: kubernetes-e2e-gke-trusty-staging
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-trusty-staging
 - name: kubernetes-e2e-gke-trusty-staging-parallel
@@ -597,12 +615,20 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-examples
   - name: gke-staging
     test_group_name: kubernetes-e2e-gke-staging
+  - name: gci-gke-staging
+    test_group_name: kubernetes-e2e-gci-gke-staging
   - name: gke-staging-parallel
     test_group_name: kubernetes-e2e-gke-staging-parallel
+  - name: gci-gke-staging-parallel
+    test_group_name: kubernetes-e2e-gci-gke-staging-parallel
   - name: gke-subnet
     test_group_name: kubernetes-e2e-gke-subnet
+  - name: gci-gke-subnet
+    test_group_name: kubernetes-e2e-gci-gke-subnet
   - name: gke-test
     test_group_name: kubernetes-e2e-gke-test
+  - name: gci-gke-test
+    test_group_name: kubernetes-e2e-gci-gke-test
   - name: rktnetes
     test_group_name: kubernetes-rktnetes
   - name: azure
@@ -869,6 +895,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-slow
   - name: gke-ingress
     test_group_name: kubernetes-e2e-gke-ingress
+  - name: gci-gke-ingress
+    test_group_name: kubernetes-e2e-gci-gke-ingress
   - name: gke-ingress-release-1.2
     test_group_name: kubernetes-e2e-gke-ingress-release-1.2
   - name: gci-gke-ingress-release-1.2
@@ -887,12 +915,20 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-multizone
   - name: gke-pre-release
     test_group_name: kubernetes-e2e-gke-pre-release
+  - name: gci-gke-pre-release
+    test_group_name: kubernetes-e2e-gci-gke-pre-release
   - name: gke-prod
     test_group_name: kubernetes-e2e-gke-prod
+  - name: gci-gke-prod
+    test_group_name: kubernetes-e2e-gci-gke-prod
   - name: gke-prod-parallel
     test_group_name: kubernetes-e2e-gke-prod-parallel
+  - name: gci-gke-prod-parallel
+    test_group_name: kubernetes-e2e-gci-gke-prod-parallel
   - name: gke-prod-smoke
     test_group_name: kubernetes-e2e-gke-prod-smoke
+  - name: gci-gke-prod-smoke
+    test_group_name: kubernetes-e2e-gci-gke-prod-smoke
   - name: gke-reboot
     test_group_name: kubernetes-e2e-gke-reboot
   - name: gke-reboot-release-1.3
@@ -945,12 +981,18 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-slow-release-1.4
   - name: gke-staging
     test_group_name: kubernetes-e2e-gke-staging
+  - name: gci-gke-staging
+    test_group_name: kubernetes-e2e-gci-gke-staging
   - name: gke-staging-parallel
     test_group_name: kubernetes-e2e-gke-staging-parallel
+  - name: gci-gke-staging-parallel
+    test_group_name: kubernetes-e2e-gci-gke-staging-parallel
   - name: gke-subnet
     test_group_name: kubernetes-e2e-gke-subnet
-  - name: gke-test
-    test_group_name: kubernetes-e2e-gke-test
+  - name: gci-gke-subnet
+    test_group_name: kubernetes-e2e-gci-gke-subnet
+  - name: gci-gke-test
+    test_group_name: kubernetes-e2e-gci-gke-test
   - name: gke-updown
     test_group_name: kubernetes-e2e-gke-updown
   name: google-gke
