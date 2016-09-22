@@ -40,7 +40,7 @@ var (
 	commit    = flag.String("sha", "", "Head SHA of the PR.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
-	commentOnFailure = flag.Bool("comment-on-failure", false, "Whether or not to make the bot comment on the PR when the test fails.")
+	commentOnFailure = flag.Bool("comment-on-failure", true, "Whether or not to make the bot comment on the PR when the test fails.")
 	rerunCommand     = flag.String("rerun-command", "", "What users should say to rerun the test.")
 
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
@@ -54,7 +54,7 @@ const (
 
 	// Inputs are context, URL, commit, retest command.
 	// The deletion logic requires that it start with context.
-	bodyFormat = `%s [**failed**](%s) for commit %s.
+	bodyFormat = `%s [**failed**](%s) for commit %s (see full [pr test history](http://ci-test.k8s.io/%s)).
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
 )
@@ -229,7 +229,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 			}
 		}
 	}
-	body := fmt.Sprintf(bodyFormat, c.Context, url, c.Commit, c.RerunCommand)
+	body := fmt.Sprintf(bodyFormat, c.Context, c.PRNumber, url, c.Commit, c.RerunCommand)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}

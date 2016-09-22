@@ -63,7 +63,6 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			Trigger:          regexp.MustCompile(`@k8s-bot (gce )?(e2e )?test this`),
 			AlwaysRun:        true,
 			Context:          "Jenkins GCE e2e",
-			CommentOnFailure: true,
 			RerunCommand:     "@k8s-bot gce e2e test this",
 		},
 		{
@@ -120,7 +119,6 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			Trigger:          regexp.MustCompile(`@k8s-bot (go )?test this`),
 			AlwaysRun:        true,
 			Context:          "Jenkins go test",
-			CommentOnFailure: true,
 			RerunCommand:     "@k8s-bot go test this",
 		},
 	},
