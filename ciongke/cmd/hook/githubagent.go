@@ -52,9 +52,9 @@ type JenkinsJob struct {
 	// eg @k8s-bot e2e test this
 	Trigger *regexp.Regexp
 	// Whether or not to comment on GitHub on failure.
-	CommentOnFailure bool
+	SkipFailureComment bool
 	// What should users use to retest just this job? This needs to match
-	// Trigger if CommentOnFailure is true. It should not match any other jobs.
+	// Trigger if SkipFailureComment is false. It should not match any other jobs.
 	RerunCommand string
 }
 
@@ -262,7 +262,7 @@ func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
 		JobName: job.Name,
 		Context: job.Context,
 
-		CommentOnFailure: job.CommentOnFailure,
+		CommentOnFailure: !job.SkipFailureComment,
 		RerunCommand:     job.RerunCommand,
 
 		RepoOwner: pr.Base.Repo.Owner.Login,
