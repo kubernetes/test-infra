@@ -426,8 +426,8 @@ if [[ "${USE_KUBEMARK:-}" == "true" ]]; then
 fi
 
 e2e_go="$(dirname "${0}")/e2e.go"
-if [[ ! -f "${e2e_go}" ]]; then
-  echo "TODO(fejta): stop using head version of e2e.go"
+if [[ ! -f "${e2e_go}" || -e "./hack/jenkins/.use_head_e2e" ]]; then
+  echo "Using HEAD version of e2e.go."
   e2e_go="./hack/e2e.go"
 fi
 go run "${e2e_go}" ${E2E_OPT:-} "${e2e_go_args[@]}"
