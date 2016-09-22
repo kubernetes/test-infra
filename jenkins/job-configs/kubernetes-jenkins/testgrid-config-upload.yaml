@@ -33,4 +33,4 @@
         - shell: |
             export CONFIGDIR=$GOPATH/src/k8s.io/test-infra/testgrid/config
             go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
-            gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
+            gsutil cp $CONFIGDIR/config gs://testgrid-sen/config
