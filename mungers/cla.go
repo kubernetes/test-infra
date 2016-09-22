@@ -80,7 +80,7 @@ func (cla *ClaMunger) Initialize(config *githubhelper.Config, features *features
 	}
 
 	cla.pinger = c.NewPinger(claNagNotifyName).
-		SetDescription(cncfclaNotFoundMessage)
+		SetDescription(cncfclaNotFoundMessage).SetTimePeriod(timePeriod).SetMaxCount(maxPings)
 
 	return nil
 }
@@ -131,14 +131,13 @@ func (cla *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 		glog.Error(err)
 		return
 	}
-	startDate := c.LastComment(comments, c.MungerNotificationName(claNagNotifyName), nil)
 	who := mungerutil.GetIssueUsers(obj.Issue).Author.Mention().Join()
 
 	// Get a notification if it's time to ping.
-	notif := cla.pinger.SetTimePeriod(timePeriod).SetMaxCount(maxPings).PingNotification(
+	notif := cla.pinger.PingNotification(
 		comments,
 		who,
-		startDate,
+		nil,
 	)
 	if notif != nil {
 		obj.WriteComment(notif.String())
