@@ -48,6 +48,12 @@ var (
 var defaultJenkinsJobs = map[string][]JenkinsJob{
 	"kubernetes/kubernetes": {
 		{
+			Name:         "kubernetes-pull-build-cross",
+			Trigger:      regexp.MustCompile(`@k8s-bot build this`),
+			Context:      "Jenkins Cross Build",
+			RerunCommand: "@k8s-bot build this",
+		},
+		{
 			Name:         "kubernetes-pull-test-unit-integration",
 			Trigger:      regexp.MustCompile(`@k8s-bot (unit )?test this`),
 			AlwaysRun:    true,
