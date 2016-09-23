@@ -80,7 +80,7 @@ hook-service:
 
 test-pr-image:
 	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.13" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.13"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.14" cmd/test-pr
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.14"
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image
