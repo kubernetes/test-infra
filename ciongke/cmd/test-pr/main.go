@@ -216,7 +216,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 		}
 	}
 	// The deletion logic requires that it start with context.
-	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://ci-test.k8s.io/%d).
+	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d).
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
 	body := fmt.Sprintf(bodyFormat, c.Context, url, c.Commit, c.PRNumber, c.RerunCommand)
