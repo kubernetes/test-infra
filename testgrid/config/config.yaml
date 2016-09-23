@@ -78,14 +78,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce
 - name: kubernetes-e2e-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features
+- name: kubernetes-e2e-gci-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features
 - name: kubernetes-e2e-gce-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features-release-1.4
 - name: kubernetes-e2e-gci-gce-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features-release-1.4
 - name: kubernetes-e2e-gce-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-autoscaling
+- name: kubernetes-e2e-gci-gce-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-autoscaling
 - name: kubernetes-e2e-gce-autoscaling-migs
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-autoscaling-migs
+- name: kubernetes-e2e-gci-gce-autoscaling-migs
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-autoscaling-migs
 - name: kubernetes-e2e-gce-conformance
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-conformance
 - name: kubernetes-e2e-gce-container-vm
@@ -528,6 +534,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.3
 - name: kubernetes-soak-continuous-e2e-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.4
+- name: kubernetes-soak-continuous-e2e-gci-gce-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gci-gce-1.4
 - name: kubernetes-soak-continuous-e2e-gce-2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-2
 - name: kubernetes-soak-continuous-e2e-gce-gci
@@ -544,6 +552,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.3
 - name: kubernetes-soak-weekly-deploy-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.4
+- name: kubernetes-soak-weekly-deploy-gci-gce-1.4
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gci-gce-1.4
 - name: kubernetes-soak-weekly-deploy-gce-2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-2
 - name: kubernetes-soak-weekly-deploy-gce-gci
@@ -693,14 +703,20 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce
   - name: gce-alpha-features
     test_group_name: kubernetes-e2e-gce-alpha-features
+  - name: gci-gce-alpha-features
+    test_group_name: kubernetes-e2e-gci-gce-alpha-features
   - name: gce-alpha-features-release-1.4
     test_group_name: kubernetes-e2e-gce-alpha-features-release-1.4
   - name: gci-gce-alpha-features-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-alpha-features-release-1.4
   - name: gce-autoscaling
     test_group_name: kubernetes-e2e-gce-autoscaling
+  - name: gci-gce-autoscaling
+    test_group_name: kubernetes-e2e-gci-gce-autoscaling
   - name: gce-autoscaling-migs
     test_group_name: kubernetes-e2e-gce-autoscaling-migs
+  - name: gci-gce-autoscaling-migs
+    test_group_name: kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gce-conformance
     test_group_name: kubernetes-e2e-gce-conformance
   - name: gce-container-vm
@@ -1079,6 +1095,8 @@ dashboards:
     test_group_name: kubernetes-soak-continuous-e2e-gce-1.3
   - name: soak-continuous-e2e-gce-1.4
     test_group_name: kubernetes-soak-continuous-e2e-gce-1.4
+  - name: soak-continuous-e2e-gci-gce-1.4
+    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.4
   - name: soak-continuous-e2e-gce-2
     test_group_name: kubernetes-soak-continuous-e2e-gce-2
   - name: soak-continuous-e2e-gce-gci
@@ -1095,6 +1113,8 @@ dashboards:
     test_group_name: kubernetes-soak-weekly-deploy-gce-1.3
   - name: soak-weekly-deploy-gce-1.4
     test_group_name: kubernetes-soak-weekly-deploy-gce-1.4
+  - name: soak-weekly-deploy-gci-gce-1.4
+    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.4
   - name: soak-weekly-deploy-gce-2
     test_group_name: kubernetes-soak-weekly-deploy-gce-2
   - name: soak-weekly-deploy-gce-gci
@@ -1299,8 +1319,12 @@ dashboards:
     test_group_name: kubernetes-e2e-aws-release-1.4
   - name: soak-weekly-deploy-gce-1.4
     test_group_name: kubernetes-soak-weekly-deploy-gce-1.4
+  - name: soak-weekly-deploy-gci-gce-1.4
+    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.4
   - name: soak-continuous-e2e-gce-1.4
     test_group_name: kubernetes-soak-continuous-e2e-gce-1.4
+  - name: soak-continuous-e2e-gci-gce-1.4
+    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.4
   - name: gke-1.2-1.4-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-1.2-1.4-upgrade-cluster
   - name: gke-1.2-1.4-upgrade-cluster-new
