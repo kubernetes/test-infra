@@ -56,18 +56,21 @@ update-cluster:
 	make hook-image --no-print-directory
 	make hook-deployment --no-print-directory
 
+get-cluster-credentials:
+	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
+
 clean:
 	rm cmd/hook/hook cmd/test-pr/test-pr
 
 test:
 	go test -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster clean test
+.PHONY: create-cluster update-cluster clean test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.24" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.24"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.25" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.25"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -77,7 +80,7 @@ hook-service:
 
 test-pr-image:
 	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.12" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.12"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.13" cmd/test-pr
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.13"
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image
