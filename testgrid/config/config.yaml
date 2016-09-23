@@ -92,6 +92,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-container-vm
 - name: kubernetes-e2e-gce-enormous-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-cluster
+- name: kubernetes-e2e-gce-flannel
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-flannel
+- name: kubernetes-e2e-gci-gce-flannel
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-flannel
 - name: kubernetes-e2e-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-es-logging
 - name: kubernetes-e2e-gci-gce-es-logging
@@ -683,6 +687,8 @@ dashboards:
 - dashboard_tab:
   - name: gce
     test_group_name: kubernetes-e2e-gce
+  - name: gci-gce
+    test_group_name: kubernetes-e2e-gci-gce
   - name: gce-alpha-features
     test_group_name: kubernetes-e2e-gce-alpha-features
   - name: gce-alpha-features-release-1.4
@@ -707,6 +713,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-etcd3
   - name: gce-examples
     test_group_name: kubernetes-e2e-gce-examples
+  - name: gci-gce-examples
+    test_group_name: kubernetes-e2e-gci-gce-examples
   - name: gce-flaky
     test_group_name: kubernetes-e2e-gce-flaky
   - name: gce-ingress
@@ -769,6 +777,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-release-1.4
   - name: gce-scalability
     test_group_name: kubernetes-e2e-gce-scalability
+  - name: gci-gce-scalability
+    test_group_name: kubernetes-e2e-gci-gce-scalability
   - name: gce-scalability-release-1.2
     test_group_name: kubernetes-e2e-gce-scalability-release-1.2
   - name: gce-scalability-release-1.3
@@ -779,6 +789,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.4
   - name: gce-serial
     test_group_name: kubernetes-e2e-gce-serial
+  - name: gci-gce-serial
+    test_group_name: kubernetes-e2e-gci-gce-serial
   - name: gce-serial-release-1.2
     test_group_name: kubernetes-e2e-gce-serial-release-1.2
   - name: gci-gce-serial-release-1.2
@@ -791,6 +803,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-serial-release-1.4
   - name: gce-slow
     test_group_name: kubernetes-e2e-gce-slow
+  - name: gci-gce-slow
+    test_group_name: kubernetes-e2e-gci-gce-slow
   - name: gce-slow-release-1.2
     test_group_name: kubernetes-e2e-gce-slow-release-1.2
   - name: gci-gce-slow-release-1.2
@@ -803,6 +817,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
   - name: gce-ubernetes-lite
     test_group_name: kubernetes-e2e-gce-ubernetes-lite
+  - name: gce-flannel
+    test_group_name: kubernetes-e2e-gce-flannel
+  - name: gci-gce-flannel
+    test_group_name: kubernetes-e2e-gci-gce-flannel
   name: google-gce
 - dashboard_tab:
   - name: gci
