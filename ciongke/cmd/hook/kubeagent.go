@@ -45,8 +45,7 @@ type KubeRequest struct {
 	// The context string for the GitHub status, such as "Jenkins GCE e2e".
 	Context string
 
-	CommentOnFailure bool
-	RerunCommand     string
+	RerunCommand string
 
 	RepoOwner string
 	RepoName  string
@@ -141,7 +140,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 								"--sha=" + kr.SHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
 								"--jenkins-url=$(JENKINS_URL)",
-								"--comment-on-failure=" + strconv.FormatBool(kr.CommentOnFailure),
+								"--comment-on-failure=true", // TODO(fejta): remove this flag
 								"--rerun-command=" + kr.RerunCommand,
 							},
 							VolumeMounts: []kube.VolumeMount{
