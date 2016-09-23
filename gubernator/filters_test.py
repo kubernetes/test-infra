@@ -111,6 +111,10 @@ class HelperTest(unittest.TestCase):
             'https://k8s-testgrid.appspot.com/a#b&include-filter-by-regex=%s' %
             urllib.quote('^Overall$|\\[low\\]\\ test'))
 
+    def test_gcs_browse_url(self):
+        self.assertEqual(
+            filters.do_gcs_browse_url('/k8s/foo'),
+            'https://console.cloud.google.com/storage/browser/k8s/foo')
 
 if __name__ == '__main__':
     unittest.main()

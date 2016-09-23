@@ -33,7 +33,7 @@
 			</table>
 		% endif
 	% endif
-	<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
+	<p><a href="{{build_dir | gcs_browse_url}}">artifacts</a>
 	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
 	% if testgrid_query
 		<p><a href="{{testgrid_query|tg_url}}">Testgrid history for this job</a>

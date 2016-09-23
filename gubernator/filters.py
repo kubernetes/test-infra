@@ -195,6 +195,10 @@ def do_tg_url(testgrid_query, test_name=''):
     return 'https://k8s-testgrid.appspot.com/%s' % testgrid_query
 
 
+def do_gcs_browse_url(gcs_path):
+    return 'https://console.cloud.google.com/storage/browser' + gcs_path
+
+
 static_hashes = {}
 
 def do_static(filename):
