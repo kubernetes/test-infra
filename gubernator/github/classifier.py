@@ -228,7 +228,7 @@ def get_author_state(author, distilled_events):
     return state
 
 
-def get_assignee_state(assignee, distilled_events):
+def get_assignee_state(assignee, author, distilled_events):
     '''
     Determine the state of an assignee given a series of distilled events.
     '''
@@ -242,6 +242,8 @@ def get_assignee_state(assignee, distilled_events):
                     state = 'waiting'
         elif state == 'waiting':
             if action == 'push':
+                state = 'needs review'
+            elif action == 'comment' and user == author:
                 state = 'needs review'
     return state
 
@@ -262,7 +264,7 @@ def calculate_attention(distilled_events, payload):
         notify(author, 'fix tests')
 
     for assignee in assignees:
-        assignee_state = get_assignee_state(assignee, distilled_events)
+        assignee_state = get_assignee_state(assignee, author, distilled_events)
         if assignee_state != 'waiting':
             notify(assignee, assignee_state)
 
