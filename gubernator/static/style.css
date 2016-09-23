@@ -26,6 +26,9 @@ body {
 #failures {
     padding: 0 0 0 10px;
 }
+#content {
+    margin: 10px;
+}
 h3 {
     margin: 0.67em 0 0 0;
 }

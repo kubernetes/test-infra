@@ -189,10 +189,30 @@ class BuildTest(main_test.TestBase):
         response2 = self.get_build_page()
         self.assertEqual(str(response), str(response2))
 
-    def test_build_list(self):
+    def do_view_build_list_test(self):
+        result = {'timestamp': 12345, 'result': 'SUCCESS'}
+        for n in xrange(120):
+            write('/buck/some-job/%d/finished.json' % n, result)
+        builds = view_build.build_list(('/buck/some-job/', None))
+        self.assertEqual(builds,
+                         [(str(n), result) for n in range(119, 79, -1)])
+        # test that ?before works
+        builds = view_build.build_list(('/buck/some-job/', '80'))
+        self.assertEqual(builds,
+                         [(str(n), result) for n in range(79, 39, -1)])
+
+    def test_view_build_list_with_latest(self):
+        write('/buck/some-job/latest-build.txt', '119')
+        self.do_view_build_list_test()
+
+    def test_view_build_list_no_latest(self):
+        self.do_view_build_list_test()
+
+    def test_build_list_handler(self):
         """Test that the job page shows a list of builds."""
         response = app.get('/builds' + os.path.dirname(self.BUILD_DIR[:-1]))
-        self.assertIn('/1234/">1234</a>', response)
+        self.assertIn('/1234/">1234', response)
+        self.assertIn('console.cloud', response)
 
     def test_job_list(self):
         """Test that the job list shows our job."""

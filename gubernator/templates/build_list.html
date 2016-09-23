@@ -4,21 +4,27 @@
 <h1><a href="/jobs{{job_dir|dirname|dirname}}">{{job_dir|dirname|dirname}}</a>/{{job}}</h1>
 % endblock
 % block content
-<h3>Builds</h3>
-% macro build_link(fstat)
-{% if fstat.is_dir %}<a href="/build{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>{% endif %}
-% endmacro
-% if fstats|length > 150
-	% for fstat in fstats[:100]
-		{{ build_link(fstat) }}
-	% endfor
-	<h3>...</h3>
-	% for fstat in fstats[-50:]
-		{{ build_link(fstat) }}
-	% endfor
-% else
-	% for fstat in fstats
-		{{ build_link(fstat) }}
-	% endfor
+<div id="content">
+% if testgrid_query
+<a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a>
 % endif
+<a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a>
+<h3>Builds</h3>
+% for build, finished in builds
+<a href="/build{{job_dir}}{{build}}/">{{build}}
+% if finished
+  <span class="build-{{finished['result'] | slugify}}">
+  % if 'timestamp' in finished
+    {{finished['timestamp'] | timestamp}}
+  % else
+    {{finished['result']}}
+  % endif
+</span>
+% endif
+</a><br>
+% endfor
+% if builds and 'pr-logs' not in job_dir
+<a href="?before={{builds[-1][0]}}" rel="nofollow">View earlier builds...</a>
+% endif
+</div>
 % endblock
