@@ -66,8 +66,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.23" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.23"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.24" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.24"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -77,7 +77,7 @@ hook-service:
 
 test-pr-image:
 	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.11" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.11"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.12" cmd/test-pr
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.12"
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image
