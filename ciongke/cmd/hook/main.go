@@ -19,14 +19,15 @@ package main
 import (
 	"bytes"
 	"flag"
-	"github.com/Sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
 	"os/signal"
 	"regexp"
 	"strconv"
 	"syscall"
+
+	"github.com/Sirupsen/logrus"
+	"golang.org/x/oauth2"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/kube"
@@ -77,12 +78,14 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 		{
 			Name:         "kubernetes-pull-build-test-gci-e2e-gke",
 			Trigger:      regexp.MustCompile(`@k8s-bot gci (gke )?(e2e )?test this`),
+			AlwaysRun:    true,
 			Context:      "Jenkins GCI GKE smoke e2e",
 			RerunCommand: "@k8s-bot gci gke e2e test this",
 		},
 		{
 			Name:         "kubernetes-pull-build-test-gci-e2e-gce",
 			Trigger:      regexp.MustCompile(`@k8s-bot gci (gce )?(e2e )?test this`),
+			AlwaysRun:    true,
 			Context:      "Jenkins GCI GCE e2e",
 			RerunCommand: "@k8s-bot gci gce e2e test this",
 		},
@@ -108,6 +111,7 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 		{
 			Name:         "kubernetes-pull-build-test-gci-kubemark-e2e-gce",
 			Trigger:      regexp.MustCompile(`@k8s-bot kubemark gci (e2e )?test this`),
+			AlwaysRun:    true,
 			Context:      "Jenkins GCI Kubemark GCE e2e",
 			RerunCommand: "@k8s-bot kubemark gci e2e test this",
 		},
