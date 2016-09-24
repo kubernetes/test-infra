@@ -7,37 +7,41 @@
 % endif
 % endblock
 % block header
-<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
-	% if started
-	<p>Started on {{started['timestamp']|timestamp}}{% if finished %} and took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}
+	% if testgrid_query
+		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
+	% else
+		{{job}}
 	% endif
+	#{{build}}</h1>
+	<p><a href="/builds{{job_dir}}">Recent runs</a><br>
 % endblock
 % block content
 <div id="summary">
+	<table border=0 align="center" style="text-align: left;">
+	<style>tr:nth-child(even){background:#ddd}</style>
 	% if pr and pr_digest
 		% set pl = pr_digest.payload
-		<p><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
+		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
 	% endif
-	<p>Build Result: {{finished['result'] if finished else 'Not Finished'}}
+		% set result = finished['result'] if finished else 'Not Finished'
+		<tr><td>Result<td><span class="build-{{result | slugify}}">{{result}}</span>
 	% if started
-		<p><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
+		<tr><td>Started<td>{{started['timestamp']|timestamp}}
+		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+		<tr><td>Version<td><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version']}}</a>
 		% if 'jenkins-node' in started
-			<p>Builder: {{started['jenkins-node']}}
+			<tr><td>Builder<td>{{started['jenkins-node']}}
 		% endif
 		% if 'metadata' in started
-			<table border=1 align="center">
-			<tr><th>Metadata Key<th>Value
 			% for k, v in started['metadata']|dictsort
 			<tr><td>{{k}}<td>{{v}}
 			% endfor
-			</table>
 		% endif
 	% endif
-	<p><a href="https://console.cloud.google.com/storage/browser{{build_dir}}">artifacts</a>
+	</table>
+	<p><a href="{{build_dir | gcs_browse_url}}">artifacts</a>
 	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
-	% if testgrid_query
-		<p><a href="{{testgrid_query|tg_url}}">Testgrid history for this job</a>
-	% endif
 	</div>
 	<div id="failures">
 	% if failures

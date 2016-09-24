@@ -28,7 +28,7 @@
 				<td></td>
 			% else
 				% set build, status = result
-				<td class="pr-build-{{status | slugify}}">
+				<td class="build-{{status | slugify}}">
 					<a href="/build/{{prefix}}/{{pr}}/{{job}}/{{build}}/" title="Result: {{status}}">{{build}}</a>
 				</td>
 			% endif

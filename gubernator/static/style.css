@@ -26,6 +26,9 @@ body {
 #failures {
     padding: 0 0 0 10px;
 }
+#content {
+    margin: 10px;
+}
 h3 {
     margin: 0.67em 0 0 0;
 }
@@ -89,16 +92,16 @@ table.pr td {
     padding: 5px;
     white-space: nowrap;
 }
-td.pr-build-success {
+.build-success {
     background-color: lightgreen;
 }
-td.pr-build-failure {
+.build-failure {
     background-color: #F88;
 }
-td.pr-build-unset {
+.build-unset {
     background-color: lightgrey;
 }
-td.pr-build-unstable {
+.build-unstable {
     background-color: yellow;
 }
 label:hover {

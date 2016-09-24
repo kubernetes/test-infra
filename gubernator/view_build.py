@@ -129,16 +129,57 @@ class BuildHandler(view_base.BaseHandler):
             failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
+@view_base.memcache_memoize('build-list://', expires=60)
+def build_list((job_dir, before)):
+    '''
+    Given a job dir, give a (partial) list of recent build
+    finished.jsons.
+
+    Args:
+        job_dir: the GCS path holding the jobs
+    Returns:
+        a list of [(build, finished)]. build is a string like "123",
+        finished is either None or a dict of the finished.json.
+    '''
+    latest_fut = gcs_async.read(job_dir + 'latest-build.txt')
+    try:
+        if 'pr-logs' in job_dir:
+            raise ValueError('bad code path for PR build list')
+        # If we have latest-build.txt, we can skip an expensive GCS ls call!
+        latest_build = int(latest_fut.get_result())
+        if before:
+            latest_build = int(before) - 1
+        builds = range(latest_build, max(0, latest_build - 40), -1)
+    except (ValueError, TypeError):
+        fstats = view_base.gcs_ls(job_dir)
+        fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
+                    reverse=True)
+        builds = [os.path.basename(os.path.dirname(f.filename))
+                  for f in fstats if f.is_dir]
+        if before and before in builds:
+            builds = builds[builds.index(before) + 1:]
+        builds = builds[:40]
+    finished_futs = {build: gcs_async.read(
+        '%s%s/finished.json' % (job_dir, build))
+        for build in builds}
+
+    def resolve_future(build):
+        res = finished_futs[build].get_result()
+        if res:
+            return json.loads(res)
+    return [(str(build), resolve_future(build))
+            for build in builds]
 
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
-        fstats = view_base.gcs_ls(job_dir)
-        fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
-                    reverse=True)
+        testgrid_query = testgrid.path_to_query(job_dir)
+        builds = build_list((job_dir, self.request.get('before')))
         self.render('build_list.html',
-                    dict(job=job, job_dir=job_dir, fstats=fstats))
+                    dict(job=job, job_dir=job_dir,
+                         testgrid_query=testgrid_query,
+                         builds=builds))
 
 
 class JobListHandler(view_base.BaseHandler):
