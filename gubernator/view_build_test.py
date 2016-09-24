@@ -80,7 +80,7 @@ class BuildTest(main_test.TestBase):
         build_dir = '/kubernetes-jenkins/logs/job-with-no-started/1234/'
         init_build(build_dir, started=False)
         response = app.get('/build' + build_dir)
-        self.assertIn('Build Result: SUCCESS', response)
+        self.assertRegexpMatches(response.body, 'Result.*SUCCESS')
         self.assertIn('job-with-no-started', response)
         self.assertNotIn('Started', response)  # no start timestamp
         self.assertNotIn('github.com', response)  # no version => no src links
@@ -90,7 +90,7 @@ class BuildTest(main_test.TestBase):
         build_dir = '/kubernetes-jenkins/logs/job-still-running/1234/'
         init_build(build_dir, finished=False)
         response = app.get('/build' + build_dir)
-        self.assertIn('Build Result: Not Finished', response)
+        self.assertRegexpMatches(response.body, 'Result.*Not Finished')
         self.assertIn('job-still-running', response)
         self.assertIn('Started', response)
 
@@ -101,7 +101,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('16m40s', response)      # build duration
         self.assertIn('Third', response)       # test name
         self.assertIn('1m36s', response)       # test duration
-        self.assertIn('Build Result: SUCCESS', response)
+        self.assertRegexpMatches(response.body, 'Result.*SUCCESS')
         self.assertIn('Error Goes Here', response)
         self.assertIn('test.go#L123">', response)  # stacktrace link works
 
