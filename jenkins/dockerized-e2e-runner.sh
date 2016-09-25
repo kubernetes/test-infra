@@ -79,7 +79,7 @@ kill-leaked-container() {
 trap "kill-leaked-container ${CONTAINER_NAME}" EXIT
 
 echo "Starting..."
-docker run --rm -i \
+docker run --rm \
   --name="${CONTAINER_NAME}" \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
