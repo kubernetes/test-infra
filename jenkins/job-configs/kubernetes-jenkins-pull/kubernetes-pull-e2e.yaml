@@ -209,6 +209,7 @@
                 echo "Exiting with code: ${{rc}}"
                 exit ${{rc}}
         - 'gci-e2e-gke': # kubernetes-pull-build-test-gci-e2e-gke
+            skip-if-no-test-files: true  # old branches are skipped and do not produce JUnit
             cmd: |
                 case "${{ghprbTargetBranch:-}}" in
                   release-1.0|release-1.1|release-1.2)
