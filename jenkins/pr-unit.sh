@@ -16,13 +16,10 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
-readonly checkout="${PWD}/test-infra/jenkins/checkout.py"
-
-mkdir -p go/src/k8s.io
-cd go/src/k8s.io
-"${checkout}" --repo=kubernetes --pull="${grprbPullId}"
-cd kubernetes
+readonly testinfra="$(dirname "${0}")/.."
 
 export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
+echo "TODO(fejta): migrate gotest-dockerized.sh to test-infra"
 ./hack/jenkins/gotest-dockerized.sh
