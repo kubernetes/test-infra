@@ -43,25 +43,7 @@
         - shell: |
             # TODO(fejta): change this back to kubernetes/test-infra -b master
             git clone https://github.com/fejta/test-infra -b fejta
-            './test-infra/jenkins/builder.sh' '{cmd}'
-    publishers:
-        - xunit:
-            thresholds:
-                - failed:
-                    unstable:
-                    unstablenew:
-                    failure:
-                    failurenew:
-                - skipped:
-                    unstable:
-                    unstablenew:
-                    failure:
-                    failurenew:
-            types:
-                - junit:
-                    skip-if-no-test-files: false
-                    pattern: '_artifacts/**.xml'
-                    deleteoutput: false
+            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=kubernetes/kubernetes --pull="${{ghprbPullId}}"
 
 - project:
     name: fejta-kubernetes-pull
@@ -69,9 +51,9 @@
     suffix:
       - unit: # fejta-pull-unit
           max-total: 0 # Unlimited
-          cmd: pr-unit.sh
+          job-name: pr-unit
       - gce: # fejta-pull-e2e
           max-total: 12
-          cmd: pr-e2e-gce.sh
+          job-name: pr-e2e-gce
     jobs:
         - 'fejta-pull-{suffix}'
