@@ -108,6 +108,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-es-logging
 - name: kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-etcd3
+- name: kubernetes-e2e-gci-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-etcd3
 - name: kubernetes-e2e-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-examples
 - name: kubernetes-e2e-gce-federation
@@ -116,6 +118,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.4
 - name: kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-flaky
+- name: kubernetes-e2e-gci-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-flaky
 - name: kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
 - name: kubernetes-e2e-gce-gci-beta-release
@@ -218,6 +222,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.4
 - name: kubernetes-e2e-gce-kubenet
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-kubenet
+- name: kubernetes-e2e-gci-gce-kubenet
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-kubenet
 - name: kubernetes-e2e-gce-master-on-cvm
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-master-on-cvm
 - name: kubernetes-e2e-gce-multizone
@@ -230,8 +236,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-petset
 - name: kubernetes-e2e-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-proto
+- name: kubernetes-e2e-gci-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-proto
 - name: kubernetes-e2e-gce-reboot
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot
+- name: kubernetes-e2e-gci-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot
 - name: kubernetes-e2e-gce-reboot-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.2
 - name: kubernetes-e2e-gci-gce-reboot-release-1.2
@@ -605,6 +615,8 @@ test_groups:
 # garbage collector tests
 - name: kubernetes-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-feature
+- name: kubernetes-gci-garbage-collector
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-gci-feature
 # Add New Testgroups Here
 
 #
@@ -663,6 +675,8 @@ dashboards:
     test_group_name: kubernetes-azure
   - name: garbage-collector
     test_group_name: kubernetes-garbage-collector
+  - name: gci-garbage-collector
+    test_group_name: kubernetes-gci-garbage-collector
   name: k8s
 - dashboard_tab:
   - name: azure
@@ -731,12 +745,16 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-es-logging
   - name: gce-etcd3
     test_group_name: kubernetes-e2e-gce-etcd3
+  - name: gci-gce-etcd3
+    test_group_name: kubernetes-e2e-gci-gce-etcd3
   - name: gce-examples
     test_group_name: kubernetes-e2e-gce-examples
   - name: gci-gce-examples
     test_group_name: kubernetes-e2e-gci-gce-examples
   - name: gce-flaky
     test_group_name: kubernetes-e2e-gce-flaky
+  - name: gci-gce-flaky
+    test_group_name: kubernetes-e2e-gci-gce-flaky
   - name: gce-ingress
     test_group_name: kubernetes-e2e-gce-ingress
   - name: gci-gce-ingress
@@ -755,6 +773,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.4
   - name: gce-kubenet
     test_group_name: kubernetes-e2e-gce-kubenet
+  - name: gci-gce-kubenet
+    test_group_name: kubernetes-e2e-gci-gce-kubenet
   - name: gce-master-on-cvm
     test_group_name: kubernetes-e2e-gce-master-on-cvm
   - name: gce-multizone
@@ -767,8 +787,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-petset
   - name: gce-proto
     test_group_name: kubernetes-e2e-gce-proto
+  - name: gci-gce-proto
+    test_group_name: kubernetes-e2e-gci-gce-proto
   - name: gce-reboot
     test_group_name: kubernetes-e2e-gce-reboot
+  - name: gci-gce-reboot
+    test_group_name: kubernetes-e2e-gci-gce-reboot
   - name: gce-reboot-release-1.2
     test_group_name: kubernetes-e2e-gce-reboot-release-1.2
   - name: gci-gce-reboot-release-1.2

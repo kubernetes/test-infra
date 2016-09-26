@@ -49,5 +49,16 @@
                 export PROJECT="k8s-jenkins-garbagecollector"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:GarbageCollector\]"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gci-feature':  # kubernetes-garbagecollector-gci-feature
+            description: 'Run the garbage collector specific tests'
+            timeout: 600
+            cron-string: 'H H/6 * * *'
+            job-env: |
+                # Start the gc in controller plane
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export E2E_NAME="gc-feature"
+                export PROJECT="k8s-jkns-gci-garbage"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:GarbageCollector\]"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
     jobs:
         - 'kubernetes-garbagecollector-{suffix}'
