@@ -30,7 +30,7 @@ func fetchRecentIssues(db *gorm.DB, last time.Time, out chan sql.Issue) (time.Ti
 	glog.Infof("Fetching issues updated after %s", last)
 
 	var issues []sql.Issue
-	query := db.Where("issue_updated_at >= ?", last).Preload("Labels").Find(&issues)
+	query := db.Where("issue_updated_at >= ?", last).Order("issue_updated_at").Preload("Labels").Find(&issues)
 	if query.Error != nil {
 		return last, query.Error
 	}
@@ -49,7 +49,7 @@ func fetchRecentIssues(db *gorm.DB, last time.Time, out chan sql.Issue) (time.Ti
 func fetchRecentEvents(db *gorm.DB, last int, out chan sql.IssueEvent) (int, error) {
 	glog.Infof("Fetching issue-events with id bigger than %d", last)
 
-	rows, err := db.Model(sql.IssueEvent{}).Where("id > ?", last).Rows()
+	rows, err := db.Model(sql.IssueEvent{}).Where("id > ?", last).Order("event_created_at asc").Rows()
 	if err != nil {
 		return last, err
 	}
@@ -71,7 +71,7 @@ func fetchRecentEvents(db *gorm.DB, last int, out chan sql.IssueEvent) (int, err
 func fetchRecentComments(db *gorm.DB, last int, out chan sql.Comment) (int, error) {
 	glog.Infof("Fetching comments with id bigger than %d", last)
 
-	rows, err := db.Model(sql.Comment{}).Where("id > ?", last).Rows()
+	rows, err := db.Model(sql.Comment{}).Where("id > ?", last).Order("comment_created_at asc").Rows()
 	if err != nil {
 		return last, err
 	}
