@@ -27,6 +27,6 @@ script:
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
     - cd gubernator
-    - ./test.sh
+    - ./test.sh --nologcapture
     - ./lint.sh
     - go test k8s.io/test-infra/testgrid/config/...
