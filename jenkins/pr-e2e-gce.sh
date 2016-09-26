@@ -18,10 +18,9 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-
 readonly testinfra="$(dirname "${0}")/.."
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 
+# TODO(fejta): remove this
 if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "release-1.1" ]]; then
   echo "PR GCE job disabled for legacy branches."
   exit
@@ -43,8 +42,8 @@ export GINKGO_TOLERATE_FLAKES="y"
 export E2E_NAME="e2e-gce-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
-#export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-export GINKGO_TEST_ARGS="--ginkgo.focus=EmptyDir"
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+#export GINKGO_TEST_ARGS="--ginkgo.focus=EmptyDir"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gce"
 # NUM_NODES should match kubernetes-e2e-gce.
@@ -52,6 +51,7 @@ export NUM_NODES="3"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
 export E2E_TEST="true"
@@ -62,12 +62,14 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
 # GCE variables
 export INSTANCE_PREFIX=${E2E_NAME}
-export KUBE_GCE_NETWORK="e2e-gce-agent-pr-7-0"
+export KUBE_GCE_NETWORK=${E2E_NAME}
+#export KUBE_GCE_NETWORK="e2e-gce-agent-pr-7-0"
 export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 
 # Get golang into our PATH so we can run e2e.go
 export PATH=${PATH}:/usr/local/go/bin
 
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 timeout -k 15m 55m "${runner}" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
