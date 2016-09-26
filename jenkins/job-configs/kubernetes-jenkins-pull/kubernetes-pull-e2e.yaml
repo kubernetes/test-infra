@@ -181,8 +181,8 @@
                 export E2E_TEST="true"
                 export E2E_DOWN="true"
                 export E2E_OPT="--check_version_skew=false"
-                # Force to use container-vm.
-                export KUBE_GKE_IMAGE_TYPE="debian"
+                # ContainerVM is not supported any more. Use GCI.
+                export KUBE_GKE_IMAGE_TYPE="gci"
                 # Skip gcloud update checking
                 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
                 # GKE variables
@@ -245,7 +245,7 @@
                 export E2E_TEST="true"
                 export E2E_DOWN="true"
                 export E2E_OPT="--check_version_skew=false"
-                # Force to use container-vm.
+                # ContainerVM is not supported any more. Use GCI.
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 # Skip gcloud update checking
                 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
