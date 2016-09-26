@@ -128,7 +128,7 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			RerunCommand: "@fejta do a little dance",
 		},
 		{
-			Name:         "fejta-pull-e2e",
+			Name:         "fejta-pull-gce",
 			Trigger:      regexp.MustCompile(`@fejta get down tonight`),
 			Context:      "Jenkins fejta gce",
 			RerunCommand: "@fejta get down tonight",
