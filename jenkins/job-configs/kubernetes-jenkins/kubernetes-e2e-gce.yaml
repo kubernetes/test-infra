@@ -989,6 +989,6 @@
         # Increase throughput in Load test.
         # TODO: Uncomment after validating 1.4 release.
         # export LOAD_TEST_THROUGHPUT=50
-        export KUBE_NODE_OS_DISTRIBUTION="debian"
+        export KUBE_NODE_OS_DISTRIBUTION="gci"
     jobs:
         - 'kubernetes-e2e-{suffix}'
