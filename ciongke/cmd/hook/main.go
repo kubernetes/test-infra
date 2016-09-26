@@ -117,7 +117,6 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 		{
 			Name:         "kubernetes-pull-build-test-gci-kubemark-e2e-gce",
 			Trigger:      regexp.MustCompile(`@k8s-bot kubemark gci (e2e )?test this`),
-			AlwaysRun:    true,
 			Context:      "Jenkins GCI Kubemark GCE e2e",
 			RerunCommand: "@k8s-bot kubemark gci e2e test this",
 		},
