@@ -22,5 +22,4 @@ set -o xtrace
 # Find test scripts.
 script="$(dirname "${0}")/bootstrap.py"
 
-job="pr-e2e-gce"  # $1
-"${script}" --job="${job}" --repo=kubernetes/kubernetes --pull="${ghprbPullId:-}"
+"${script}" --job="${1%.sh}" --repo=kubernetes/kubernetes --pull="${ghprbPullId:-}"
