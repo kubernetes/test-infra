@@ -20,11 +20,11 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/jenkins"
@@ -97,13 +97,11 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
-	tc := oauth2.NewClient(oauth2.NoContext, ts)
 	var ghc *github.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(tc)
+		ghc = github.NewDryRunClient(oauthSecret)
 	} else {
-		ghc = github.NewClient(tc)
+		ghc = github.NewClient(oauthSecret)
 	}
 
 	client := &testClient{
