@@ -161,6 +161,16 @@ def Finish(gsutil, paths, success, artifacts, build, version):
         'result': 'SUCCESS' if success else 'FAILURE',
         'passed': bool(success),
     }
+    # TODO(rmmh): update tooling to expect metadata in finished.json
+    metadata = os.path.join(paths.artifacts, 'metadata.json')
+    if os.path.isfile(metadata):
+        try:
+            with open(metadata) as fp:
+                val = json.loads(fp.read())
+        except (IOError, ValueError):
+            val = None
+        if val and isinstance(val, dict):
+            data['metadata'] = val
     gsutil.UploadJson(paths.finished, data)
 
 
@@ -297,15 +307,6 @@ def SetupCredentials():
 
 
 def Bootstrap(job, repo, branch, pull):
-    # Note start time
-    # read test-infra/jenkins/$JOB.json
-    # check out repoes defined in $JOB.json
-    # note job started
-    # call runner defined in $JOB.json
-    # upload artifacts (this will change later)
-    # upload build-log.txt
-    # note job ended
-
     # TODO(fejta): track output
     start = time.time()
     build = Build(start)
