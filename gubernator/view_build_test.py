@@ -193,11 +193,11 @@ class BuildTest(main_test.TestBase):
         result = {'timestamp': 12345, 'result': 'SUCCESS'}
         for n in xrange(120):
             write('/buck/some-job/%d/finished.json' % n, result)
-        builds = view_build.build_list(('/buck/some-job/', None))
+        builds = view_build.build_list('/buck/some-job/', None)
         self.assertEqual(builds,
                          [(str(n), result) for n in range(119, 79, -1)])
         # test that ?before works
-        builds = view_build.build_list(('/buck/some-job/', '80'))
+        builds = view_build.build_list('/buck/some-job/', '80')
         self.assertEqual(builds,
                          [(str(n), result) for n in range(79, 39, -1)])
 

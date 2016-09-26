@@ -129,8 +129,9 @@ class BuildHandler(view_base.BaseHandler):
             failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
+
 @view_base.memcache_memoize('build-list://', expires=60)
-def build_list((job_dir, before)):
+def build_list(job_dir, before):
     '''
     Given a job dir, give a (partial) list of recent build
     finished.jsons.
@@ -175,7 +176,7 @@ class BuildListHandler(view_base.BaseHandler):
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
-        builds = build_list((job_dir, self.request.get('before')))
+        builds = build_list(job_dir, self.request.get('before'))
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir,
                          testgrid_query=testgrid_query,
