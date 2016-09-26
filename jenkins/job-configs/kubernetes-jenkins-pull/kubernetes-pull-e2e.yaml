@@ -181,8 +181,9 @@
                 export E2E_TEST="true"
                 export E2E_DOWN="true"
                 export E2E_OPT="--check_version_skew=false"
-                # ContainerVM is not supported any more. Use GCI.
-                export KUBE_GKE_IMAGE_TYPE="gci"
+                # TODO(mtaufen): Change this to "gci" once we are confident
+                #                that tests behave similarly enough on GCI.
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
                 # Skip gcloud update checking
                 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
                 # GKE variables
