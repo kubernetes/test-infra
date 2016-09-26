@@ -27,7 +27,6 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
-	"golang.org/x/oauth2"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/kube"
@@ -161,13 +160,11 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: oauthSecret})
-	tc := oauth2.NewClient(oauth2.NoContext, ts)
 	var githubClient *github.Client
 	if *dryRun {
-		githubClient = github.NewDryRunClient(tc)
+		githubClient = github.NewDryRunClient(oauthSecret)
 	} else {
-		githubClient = github.NewClient(tc)
+		githubClient = github.NewClient(oauthSecret)
 	}
 
 	kubeClient, err := kube.NewClientInCluster(*namespace)
