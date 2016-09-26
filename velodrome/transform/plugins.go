@@ -49,6 +49,7 @@ func NewPlugins(idb InfluxDatabase) Plugins {
 		NewMergedPlugin(idb),
 		NewLGTMToMergedPlugin(idb),
 		NewFirstCommentPlugin(idb),
+		NewRebasePlugin(idb),
 	}
 
 	return plugins
