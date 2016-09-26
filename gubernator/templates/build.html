@@ -49,7 +49,9 @@
 		% for name, time, text, filename in failures
 			<hr>
 			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
-			<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% if 'junit_runner' not in filename
+				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% endif
 			% if text
 				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% set pod_name = text|parse_pod_name
@@ -67,11 +69,14 @@
 		% endfor
 	% else
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
-		% if build_log
-			<button onclick="javascript:expand_all()">Expand Skipped Lines</button>
-			<h3>Error lines from build-log.txt</h3>
-			<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
-		% endif
+	% endif
+	<hr>
+	% if not build_log
+		<a href="?log"><button>Load build log</button></a>
+	% else
+		<button onclick="javascript:expand_all(this)">Expand Skipped Lines</button>
+		<h3>Error lines from build-log.txt</h3>
+		<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
 	% endif
 </div>
 % endblock

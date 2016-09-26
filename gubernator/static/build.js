@@ -88,7 +88,7 @@ function expand_skipped(els) {
 	});
 }
 
-function expand_all() {
+function expand_all(btn) {
 	var logs = document.querySelectorAll('pre[data-src]');
 	for (var i = 0; i < logs.length; i++) {
 		var skips = logs[i].querySelectorAll('span.skip');
@@ -96,6 +96,7 @@ function expand_all() {
 			expand_skipped(skips);
 		}
 	}
+	btn.remove();
 }
 
 function init() {
