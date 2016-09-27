@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
@@ -54,9 +55,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate the payload with our HMAC secret.
-	payload, err := github.ValidatePayload(r, s.HMACSecret)
+	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		http.Error(w, "500 Internal Server Error: Failed to read request body", http.StatusInternalServerError)
+		return
+	}
+
+	// Validate the payload with our HMAC secret.
+	if !github.ValidatePayload(payload, sig, s.HMACSecret) {
 		http.Error(w, "403 Forbidden: Invalid X-Hub-Signature", http.StatusForbidden)
 		return
 	}
