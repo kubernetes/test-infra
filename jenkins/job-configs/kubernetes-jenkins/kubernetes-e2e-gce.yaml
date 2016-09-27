@@ -1054,7 +1054,7 @@
                 export CLUSTER_IP_RANGE="10.224.0.0/13"
                 export NUM_NODES="2000"
                 export ALLOWED_NOTREADY_NODES="20"
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-enormous-deploy':  # kuberentes-e2e-gce-enormous-deploy
             description: 'Starts up empty 2000 node cluster and waits until it is running. Used for manual testing.'
             timeout: 300
