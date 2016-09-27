@@ -66,8 +66,8 @@ class BuildTest(main_test.TestBase):
         init_build(self.BUILD_DIR)
         testgrid_test.write_config()
 
-    def get_build_page(self):
-        return app.get('/build' + self.BUILD_DIR)
+    def get_build_page(self, trailing=''):
+        return app.get('/build' + self.BUILD_DIR + trailing)
 
     def test_missing(self):
         """Test that a missing build gives a 404."""
@@ -145,6 +145,14 @@ class BuildTest(main_test.TestBase):
         self.assertIn('ERROR</span>: test', response)
         self.assertNotIn('blah', response)
 
+    def test_build_optional_log(self):
+        write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
+        response = self.get_build_page()
+        self.assertIn('<a href="?log">', response)
+        self.assertNotIn('timeout', response)
+        response = self.get_build_page('?log')
+        self.assertIn('timeout', response)
+
     def test_build_testgrid_links(self):
         response = self.get_build_page()
         base = 'https://k8s-testgrid.appspot.com/k8s#ajob'
@@ -193,11 +201,11 @@ class BuildTest(main_test.TestBase):
         result = {'timestamp': 12345, 'result': 'SUCCESS'}
         for n in xrange(120):
             write('/buck/some-job/%d/finished.json' % n, result)
-        builds = view_build.build_list(('/buck/some-job/', None))
+        builds = view_build.build_list('/buck/some-job/', None)
         self.assertEqual(builds,
                          [(str(n), result) for n in range(119, 79, -1)])
         # test that ?before works
-        builds = view_build.build_list(('/buck/some-job/', '80'))
+        builds = view_build.build_list('/buck/some-job/', '80')
         self.assertEqual(builds,
                          [(str(n), result) for n in range(79, 39, -1)])
 

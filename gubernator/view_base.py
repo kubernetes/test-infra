@@ -111,13 +111,13 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
     namespace = os.environ['CURRENT_VERSION_ID']
     def wrapper(func):
         @functools.wraps(func)
-        def wrapped(arg):
-            key = '%s%s' % (prefix, arg)
+        def wrapped(*args):
+            key = '%s%s' % (prefix, args)
             data = memcache.get(key, namespace=namespace)
             if data is not None:
                 return data
             else:
-                data = func(arg)
+                data = func(*args)
                 try:
                     if data:
                         memcache.add(key, data, expires, namespace=namespace)

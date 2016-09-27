@@ -23,7 +23,7 @@ import view_base
 
 
 @view_base.memcache_memoize('log-file-junit://', expires=60*60*4)
-def find_log_junit((build_dir, junit, log_file)):
+def find_log_junit(build_dir, junit, log_file):
     '''
     Looks in build_dir for log_file in a folder that
     also includes the junit file.
@@ -52,7 +52,7 @@ def find_log_files(all_logs, log_file):
 
 
 @view_base.memcache_memoize('all-logs://', expires=60*60*4)
-def get_all_logs((directory, artifacts)):
+def get_all_logs(directory, artifacts):
     '''
     returns dictionary given the artifacts folder with the keys being the
     folders, and the values being the log files within the corresponding folder
@@ -99,7 +99,7 @@ def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filenam
         log_files = [apiserver_filename]
 
     artifact_filename = os.path.dirname(apiserver_filename)
-    all_logs = get_all_logs((artifact_filename, False))
+    all_logs = get_all_logs(artifact_filename, False)
     parsed_dict, _ = parse_log_file(os.path.join(artifact_filename, "kubelet.log"),
         pod_name, make_dict=True, objref_dict=objref_dict)
     objref_dict.update(parsed_dict)
@@ -144,7 +144,7 @@ def get_logs(build_dir, log_files, pod_name, filters, objref_dict):
     results = {}
     old_dict_len = len(objref_dict)
 
-    all_logs = get_all_logs((build_dir, True))
+    all_logs = get_all_logs(build_dir, True)
     apiserver_filename = find_log_files(all_logs, "kube-apiserver.log")
     kubelet_filenames = find_log_files(all_logs, "kubelet.log")
     if not pod_name and not objref_dict:
@@ -210,12 +210,12 @@ def parse_by_timestamp((build_dir, junit, log_files, pod, filters, objref_dict))
     """
     woven_logs = get_woven_logs(log_files, pod, filters, objref_dict)
 
-    apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
+    apiserver_filename = find_log_junit(build_dir, junit, "kube-apiserver.log")
     if apiserver_filename:
         artifact_filename = re.sub("/kube-apiserver.log", "", apiserver_filename)
-        all_logs = get_all_logs((artifact_filename, False))
+        all_logs = get_all_logs(artifact_filename, False)
     if not apiserver_filename:
-        all_logs = get_all_logs((build_dir, True))
+        all_logs = get_all_logs(build_dir, True)
     return woven_logs, all_logs
 
 
@@ -263,7 +263,7 @@ class NodeLogHandler(view_base.BaseHandler):
         if ns:
             objref_dict["Namespace"] = ns
 
-        apiserver_filename = find_log_junit((build_dir, junit, "kube-apiserver.log"))
+        apiserver_filename = find_log_junit(build_dir, junit, "kube-apiserver.log")
 
         if not weave or len(log_files) == 1:
             weave = False

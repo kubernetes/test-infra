@@ -47,6 +47,13 @@ def parse_junit(xml, filename):
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 
+@view_base.memcache_memoize('build-log-parsed://', expires=60*60*4)
+def get_build_log(build_dir):
+    build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
+    if build_log:
+        return log_parser.digest(build_log)
+
+
 @view_base.memcache_memoize('build-details://', expires=60 * 60 * 4)
 def build_details(build_dir):
     """
@@ -87,14 +94,7 @@ def build_details(build_dir):
         failures.extend(parse_junit(junit, junit_futures[future]))
     failures.sort()
 
-    build_log = None
-    if finished and finished.get('result') != 'SUCCESS' and len(failures) == 0:
-        build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
-        if build_log:
-            build_log = log_parser.digest(build_log)
-            logging.info('fallback log parser emitted %d lines',
-                         build_log.count('\n'))
-    return started, finished, failures, build_log
+    return started, finished, failures
 
 
 class BuildHandler(view_base.BaseHandler):
@@ -111,7 +111,12 @@ class BuildHandler(view_base.BaseHandler):
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, failures, build_log = details
+        started, finished, failures = details
+
+        build_log = ''
+        if 'log' in self.request.params or (finished and
+                finished.get('result') != 'SUCCESS' and len(failures) == 0):
+            build_log = get_build_log(build_dir)
 
         if started:
             commit = started['version'].split('+')[-1]
@@ -129,8 +134,9 @@ class BuildHandler(view_base.BaseHandler):
             failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
+
 @view_base.memcache_memoize('build-list://', expires=60)
-def build_list((job_dir, before)):
+def build_list(job_dir, before):
     '''
     Given a job dir, give a (partial) list of recent build
     finished.jsons.
@@ -175,7 +181,7 @@ class BuildListHandler(view_base.BaseHandler):
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
-        builds = build_list((job_dir, self.request.get('before')))
+        builds = build_list(job_dir, self.request.get('before'))
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir,
                          testgrid_query=testgrid_query,

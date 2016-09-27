@@ -71,6 +71,7 @@ span.skip:hover {
 span.inset-filename {
     float: right;
     color: #777;
+    margin-left: 3em;
 }
 span.time {
     font-weight: lighter;
