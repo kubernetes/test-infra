@@ -1,0 +1,54 @@
+- job-template:
+    name: 'kubernetes-e2e-kops-{suffix}'
+    node: '{jenkins_node}'
+    description: '{description} Test owner: zmerlynn.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    triggers:
+        - reverse:
+            jobs: 'kubernetes-build'
+            result: success
+        - timed: '{sq-cron-string}'
+    publishers:
+        - junit-publisher
+        - email-ext:
+            recipients: 'zml@google.com'
+        - gcs-uploader
+    builders:
+        - activate-gce-service-account
+        - shell: |
+            export AWS_CONFIG_FILE="${{WORKSPACE}}/.aws/credentials"
+            # This is needed to be able to create PD from the e2e test
+            export AWS_SHARED_CREDENTIALS_FILE="${{WORKSPACE}}/.aws/credentials"
+            export KUBE_SSH_USER=admin
+            {job-env}
+            {post-env}
+            export KOPS_LATEST="latest-ci.txt"
+            export E2E_RUNNER="/workspace/kops-e2e-runner.sh"
+            export E2E_OPT="--deployment kops --kops ${{WORKSPACE}}/kops -kops-cluster ${{E2E_NAME}}.test-aws.k8s.io -kops-state s3://k8s-kops-jenkins/"
+            export GINKGO_PARALLEL="y"
+            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            {report-rc}
+    wrappers:
+        - e2e-credentials-binding
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    name: kubernetes-kops-aws
+    suffix:
+        - 'aws-updown':  # kubernetes-e2e-kops-aws-updown
+            description: 'Bring a cluster up using kops, run a short sniff test, delete it.'
+            timeout: 20
+            job-env: |
+                export E2E_NAME="e2e-kops-aws-updown"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+    jobs:
+        - 'kubernetes-e2e-kops-{suffix}'
