@@ -121,6 +121,13 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 export PROJECT="k8s-jkns-e2e-gce-ci-reboot"
+        - 'gci-gce-reboot':  # kubernetes-e2e-gci-gce-reboot
+            description: 'Run [Feature:Reboot] tests on GCE.'
+            timeout: 180
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export PROJECT="k8s-jkns-gci-gce-reboot"
         - 'gce-autoscaling':  # kubernetes-e2e-gce-autoscaling
             description: 'Run autoscaling E2E tests on GCE.'
             timeout: 210
@@ -207,6 +214,14 @@
                                          --ginkgo.skip=\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-flaky"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gci-gce-flaky':  # kubernetes-e2e-gci-gce-flaky
+            description: 'Run the flaky tests on GCE, sequentially.'
+            timeout: 180
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
+                                         --ginkgo.skip=\[Feature:.+\]"
+                export PROJECT="k8s-jkns-gci-gce-flaky"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-scalability':  # kubernetes-e2e-gce-scalability
             description: 'Run the performance/scalability tests on GCE. A larger cluster is used.'
             timeout: 120
@@ -307,6 +322,23 @@
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 # Use new image for etcd.
                 export TEST_ETCD_VERSION="3.0.4-migration.2"
+        - 'gci-gce-etcd3':  # kubernetes-e2e-gci-gce-etcd3
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
+            test-owner: 'wojtek-t'
+            emails: 'wojtekt@google.com'
+            timeout: 50  # See #21138
+            job-env: |
+                # This list should match the list in kubernetes-pull-build-test-e2e-gce.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] \
+                                         --kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-gci-etcd3"
+                # Use etcd3 as storage backend.
+                export STORAGE_BACKEND="etcd3"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                # Use new image for etcd.
+                export TEST_ETCD_VERSION="3.0.4-migration.2"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
@@ -322,6 +354,21 @@
                 # Use protobufs to communicate with apiserver.
                 export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gci-gce-proto':  # kubernetes-e2e-gci-gce-proto
+            cron-string: '{sq-cron-string}'
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
+            timeout: 50  # See #21138
+            job-env: |
+                # This list should match the list in kubernetes-pull-build-test-e2e-gce.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] \
+                                         --kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="k8s-jkns-gci-gce-protobuf"
+                # Store protobufs in database.
+                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
+                # Use protobufs to communicate with apiserver.
+                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-examples':  # kubernetes-e2e-gce-examples
             description: 'Run E2E examples test on GCE.'
             timeout: 90
@@ -348,7 +395,7 @@
                 export MULTIZONE="true"
                 export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the nodes reside.  Master is in the first one.
                 export KUBE_GCE_ZONE="us-central1-a" # Where the master resides - hangover due to legacy scripts.
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-federation':  # kubernetes-e2e-gce-federation
             # This test depends on the artifacts generated by the trigger-job. Be careful while changing this test.
             trigger-job: 'kubernetes-federation-build'
@@ -400,6 +447,17 @@
                 export GINKGO_PARALLEL="y"
                 export NETWORK_PROVIDER="kubenet"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gci-gce-kubenet':  # kubernetes-e2e-gci-gce-kubenet
+            description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GCE using kubenet as network provider'
+            timeout: 120
+            emails: 'mixia@google.com'
+            test-owner: 'mixia'
+            job-env: |
+                export PROJECT="k8s-jkns-gci-gce-kubenet"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export NETWORK_PROVIDER="kubenet"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
