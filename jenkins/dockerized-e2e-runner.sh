@@ -61,6 +61,12 @@ if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ ]]; then
     )
 fi
 
+if [[ -n "${KUBE_E2E_RUNNER:-}" ]]; then
+    docker_extra_args+=(\
+      --entrypoint="${KUBE_E2E_RUNNER}" \
+    )
+fi
+
 # Timeouts can leak the container, causing weird issues where the job keeps
 # running and *deletes resources* that the next job is using.
 # Give the container a unique name, and stop it when bash EXITs,
