@@ -46,7 +46,7 @@
             trigger-phrase: '(?is).*@k8s-bot\s+(e2e )?test\s+this.*'
             cron: 'H/2 * * * *'
             status-context: Jenkins Charts e2e
-            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/${ghprbPullId}/${JOB_NAME}/${BUILD_NUMBER}/'
+            status-url: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/charts/${ghprbPullId}/${JOB_NAME}/${BUILD_NUMBER}/'
             # This should roughly line up with charts-maintainers.
             # To go to :
             #   https://github.com/orgs/kubernetes/teams/charts-maintainers
