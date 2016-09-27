@@ -38,7 +38,9 @@ The contract with the runner is as follows:
 
 import argparse
 import json
+import logging
 import os
+import select
 import socket
 import subprocess
 import sys
@@ -46,6 +48,45 @@ import time
 
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
+
+
+def Subprocess(cmd, stdin=None, check=True, output=None):
+    logging.info('Call subprocess:\n  %s', ' '.join(cmd))
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE if stdin is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if stdin:
+        proc.stdin.write(stdin)
+        proc.stdin.close()
+    out = []
+    code = None
+    reads = [proc.stdout.fileno(), proc.stderr.fileno()]
+    while reads:
+        ret = select.select(reads, [], [], 0.1)
+        for fd in ret[0]:
+            if fd == proc.stdout.fileno():
+                line = proc.stdout.readline()
+                if not line:
+                    reads.remove(fd)
+                    continue
+                logging.info(line[:-1])
+                if output:
+                    out.append(line)
+            if fd == proc.stderr.fileno():
+                line = proc.stderr.readline()
+                if not line:
+                    reads.remove(fd)
+                    continue
+                logging.warning(line[:-1])
+
+    code = proc.wait()
+    lines = output and '\n'.join(out)
+    if code:
+        raise subprocess.CalledProcessError(code, cmd, lines)
+    return lines
 
 
 def Checkout(repo, branch, pull):
@@ -57,13 +98,13 @@ def Checkout(repo, branch, pull):
         ref = branch
 
     git = 'git'
-    subprocess.check_call([git, 'init', repo])
+    Subprocess([git, 'init', repo])
     os.chdir(repo)
     # TODO(fejta): cache git calls
-    subprocess.check_call([
+    Subprocess([
         git, 'fetch', '--tags', 'https://github.com/%s' % repo, ref,
     ])
-    subprocess.check_call([git, 'checkout', 'FETCH_HEAD'])
+    Subprocess([git, 'checkout', 'FETCH_HEAD'])
 
 
 def Start(gsutil, paths, stamp, node, version):
@@ -85,15 +126,14 @@ class GSUtil(object):
             '-h', 'Content-Type:application/json',
             'cp', '-a', 'public-read',
             '-', path]
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-        proc.communicate(json.dumps(jdict, indent=2))
-        if proc.returncode:
-            raise subprocess.CalledProcessError(proc.returncode, cmd)
+        Subprocess(cmd, stdin=json.dumps(jdict, indent=2))
 
-    def UploadText(self, path, txt, cached=True, compressed=False):
+    def CopyFile(self, dest, orig):
+        cmd = [self.gsutil, '-q', 'cp', '-Z', '-a', 'public-read', orig, dest]
+        Subprocess(cmd)
+
+    def UploadText(self, path, txt, cached=True):
         cp_args = ['-a', 'public-read']
-        if compressed:
-            cp_args.append('-Z')
         headers = ['-h', 'Content-Type:text/plain']
         if not cached:
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
@@ -101,10 +141,7 @@ class GSUtil(object):
             'cp'] + cp_args + [
             '-', path,
         ]
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-        proc.communicate(txt)
-        if proc.returncode:
-            raise subprocess.CalledProcessError(proc.returncode, cmd)
+        Subprocess(cmd, stdin=txt)
 
 
 def UploadArtifacts(path, artifacts):
@@ -116,13 +153,13 @@ def UploadArtifacts(path, artifacts):
             'cp', '-a', 'public-read', '-r', '-c', '-z', 'log,txt,xml',
             artifacts, path,
         ]
-        subprocess.check_call(cmd)
+        Subprocess(cmd)
 
 
 def AppendBuild(gsutil, path, build, version, passed):
     cmd = ['gsutil', '-q', 'cat', path]
     try:
-        cache = json.loads(subprocess.check_output(cmd))
+        cache = json.loads(Subprocess(cmd, output=True))
     except (subprocess.CalledProcessError, ValueError):
         cache = []
     cache.append({
@@ -206,7 +243,7 @@ kube::version::get_version_vars
 echo $KUBE_GIT_VERSION
 """ % version_script)
         ]
-        return subprocess.check_output(cmd).strip()
+        return Subprocess(cmd, output=True).strip()
 
     return 'unknown'
 
@@ -220,6 +257,7 @@ class CIPath(object):
         self.artifacts = os.path.join(self.base, job, build, 'artifacts')
         self.started = os.path.join(self.base, job, build, 'started.json')
         self.finished = os.path.join(self.base, job, build, 'finished.json')
+        self.build_log = os.path.join(self.base, job, build, 'build-log.txt')
         self.latest = os.path.join(self.base, job, 'latest-build.txt')
         self.result_cache = os.path.join(
             self.base, job, 'jobResultsCache.json')
@@ -235,6 +273,8 @@ class PRPath(object):
         self.artifacts = os.path.join(self.build_path, 'artifacts')
         self.started = os.path.join(self.build_path, 'started.json')
         self.finished = os.path.join(self.build_path, 'finished.json')
+        self.build_log = os.path.join(self.build_path, 'build-log.txt')
+
         self.latest = os.path.join(
             self.base, 'directory', job, 'latest-build.txt')
         self.result_cache = os.path.join(
@@ -298,7 +338,7 @@ def SetupCredentials():
     os.environ['WORKSPACE'] = cwd
     os.environ['HOME'] = cwd
     os.environ['CLOUDSDK_CONFIG'] = '%s/.config/gcloud' % cwd
-    subprocess.check_call([
+    Subprocess([
         'gcloud',
         'auth',
         'activate-service-account',
@@ -306,12 +346,33 @@ def SetupCredentials():
     ])
 
 
+def SetupLogging(path):
+    # See https://docs.python.org/2/library/logging.html#logrecord-attributes
+    # [IWEF]yymm HH:MM:SS.uuuuuu file:line] msg
+    fmt = '%(levelname).1s%(asctime)s.%(msecs)d000 %(filename)s:%(lineno)d] %(message)s'
+    datefmt = '%m%d %H:%M:%S'
+    logging.basicConfig(
+        level=logging.INFO,
+        format=fmt,
+        datefmt=datefmt,
+    )
+    build_log = logging.FileHandler(filename=path, mode='w')
+    build_log.setLevel(logging.INFO)
+    formatter = logging.Formatter(fmt,datefmt=datefmt)
+    build_log.setFormatter(formatter)
+    logging.getLogger('').addHandler(build_log)
+    return build_log
+
 def Bootstrap(job, repo, branch, pull):
-    # TODO(fejta): track output
+    build_log_path = os.path.abspath('build-log.txt')
+    build_log = SetupLogging(build_log_path)
     start = time.time()
+    logging.info('Bootstrap %s...' % job)
     build = Build(start)
+    logging.info('Check out %s at %s...', repo, pull if pull else branch)
     Checkout(repo, branch, pull)
     version = Version()
+    logging.info('Activate service account...')
     SetupCredentials()
     if pull:
       paths = PRPath(job, build, str(pull))
@@ -320,14 +381,21 @@ def Bootstrap(job, repo, branch, pull):
     if 'JOB_NAME' not in os.environ:
         os.environ['JOB_NAME'] = job
     gsutil = GSUtil()
+    logging.info('Start %s at %s...' % (build, version))
     Start(gsutil, paths, start, Node(), version)
     try:
         cmd = [TestInfra('jenkins/%s.sh' % job)]
-        subprocess.check_call(cmd)
+        Subprocess(cmd)
         success = True
+        logging.info('PASS: %s' % job)
     except subprocess.CalledProcessError:
         success = False
+        logging.error('FAIL: %s' % job)
+    logging.info('Upload result and artifacts...')
     Finish(gsutil, paths, success, '_artifacts', build, version)
+    logging.getLogger('').removeHandler(build_log)
+    build_log.close()
+    gsutil.CopyFile(paths.build_log, build_log_path)
 
 
 if __name__ == '__main__':
