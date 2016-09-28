@@ -28,7 +28,7 @@ PR_PREFIX = view_base.PR_PREFIX
 
 
 @view_base.memcache_memoize('pr-details://', expires=60 * 3)
-def pr_builds(pr):
+def pr_builds(path, pr):
     """
     Get information for all builds run by a PR.
 
@@ -37,7 +37,8 @@ def pr_builds(pr):
     Returns:
         A dictionary of {job: [(build_number, started_json, finished.json)]}
     """
-    jobs_dirs_fut = gcs_async.listdirs('%s/%s' % (PR_PREFIX, pr))
+    jobs_dirs_fut = gcs_async.listdirs('%s/%s%s' % (PR_PREFIX, path, pr))
+    print '%s/%s%s' % (PR_PREFIX, path, pr)
 
     def base(path):
         return os.path.basename(os.path.dirname(path))
@@ -47,9 +48,11 @@ def pr_builds(pr):
 
     for job, builds_fut in jobs_futures:
         for build in builds_fut.get_result():
-            sta_fut = gcs_async.read('/%sstarted.json' % build)
-            fin_fut = gcs_async.read('/%sfinished.json' % build)
-            futures.append([base(job), base(build), sta_fut, fin_fut])
+            futures.append([
+                base(job),
+                base(build),
+                gcs_async.read('/%sstarted.json' % build),
+                gcs_async.read('/%sfinished.json' % build)])
 
     futures.sort(key=lambda (job, build, s, f): (job, view_base.pad_numbers(build)), reverse=True)
 
@@ -68,12 +71,17 @@ def pr_builds(pr):
 
 class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
-    def get(self, pr):
-        builds = pr_builds(pr)
+    def get(self, path, pr):
+        if path:
+            repo = 'kubernetes/%s' % path.strip('/')
+        else:
+            path = ''
+            repo = 'kubernetes/kubernetes'
+        builds = pr_builds(path, pr)
         max_builds, headings, rows = pull_request.builds_to_table(builds)
-        digest = ghm.GHIssueDigest.get('kubernetes/kubernetes', pr)
+        digest = ghm.GHIssueDigest.get(repo, pr)
         self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX, digest=digest,
-            max_builds=max_builds, header=headings, rows=rows))
+            max_builds=max_builds, header=headings, repo=repo, rows=rows, path=path))
 
 
 class PRDashboard(view_base.BaseHandler):

@@ -97,9 +97,20 @@ def build_details(build_dir):
     return started, finished, failures
 
 
+def parse_pr_path(prefix):
+    if not prefix.startswith(view_base.PR_PREFIX):
+        return None, None, None
+    pr = os.path.basename(prefix)
+    repo = os.path.basename(os.path.dirname(prefix))
+    if repo == 'pull':
+        return pr, '', 'kubernetes/kubernetes'
+    return pr, repo + '/', 'kubernetes/' + repo
+
+
 class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
+        # pylint: disable=too-many-locals
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
@@ -123,15 +134,15 @@ class BuildHandler(view_base.BaseHandler):
         else:
             commit = None
 
-        pr = None
+        pr, pr_path, repo = parse_pr_path(prefix)
         pr_digest = None
-        if prefix.startswith(view_base.PR_PREFIX):
-            pr = os.path.basename(prefix)
-            pr_digest = models.GHIssueDigest.get('kubernetes/kubernetes', pr)
+        if pr:
+            pr_digest = models.GHIssueDigest.get(repo, pr)
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, pr=pr, pr_digest=pr_digest,
+            failures=failures, build_log=build_log,
+            pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
 

@@ -1,8 +1,8 @@
 % extends 'base.html'
 {% block title %}PR #{{pr}}{% endblock %}
 % block header
-	<h1>PR #{{pr}} Results</h1>
-	<p><a href="https://github.com/kubernetes/kubernetes/pull/{{pr}}">View on GitHub</a></p>
+	<h1>{% if repo != "kubernetes/kubernetes" %}{{repo}} {% endif %}PR #{{pr}} Results</h1>
+	<p><a href="https://github.com/{{repo}}/pull/{{pr}}">View on GitHub</a></p>
 % endblock
 % block content
 % if digest
@@ -29,7 +29,7 @@
 			% else
 				% set build, status = result
 				<td class="build-{{status | slugify}}">
-					<a href="/build/{{prefix}}/{{pr}}/{{job}}/{{build}}/" title="Result: {{status}}">{{build}}</a>
+					<a href="/build/{{prefix}}/{{path}}{{pr}}/{{job}}/{{build}}/" title="Result: {{status}}">{{build}}</a>
 				</td>
 			% endif
 		% endfor

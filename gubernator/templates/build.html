@@ -7,7 +7,7 @@
 % endif
 % endblock
 % block header
-<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}
+<h1>{% if pr %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes" %}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
 	% if testgrid_query
 		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
 	% else

@@ -56,7 +56,7 @@ class PRTest(main_test.TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        builds = view_pr.pr_builds('123')
+        builds = view_pr.pr_builds('', '123')
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):
