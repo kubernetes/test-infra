@@ -643,7 +643,7 @@
                 export PROJECT="k8s-e2e-gke-prod-parallel"
                 export ZONE="us-central1-b"
         - 'gke-prod-smoke':  # kubernetes-e2e-gke-prod-smoke
-            description: 'Run smoke tests on GKE prod day 1 zone (asia-east1-b).'
+            description: 'Run smoke tests on GKE prod day 1 zone (us-east1-d).'
             timeout: 80
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
@@ -653,7 +653,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-e2e-gke-prod-smoke"
-                export ZONE="asia-east1-b"
+                export ZONE="us-east1-d"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -738,7 +738,7 @@
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export ZONE="us-central1-b"
         - 'gci-gke-prod-smoke':  # kubernetes-e2e-gci-gke-prod-smoke
-            description: 'Run smoke tests on GKE prod day 1 zone (asia-east1-b).'
+            description: 'Run smoke tests on GKE prod day 1 zone (us-east1-d).'
             timeout: 80
             job-env: |
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://container.googleapis.com/"
@@ -749,7 +749,7 @@
                 export JENKINS_USE_SERVER_VERSION="y"
                 export PROJECT="k8s-e2e-gci-gke-prod-smoke"
                 export KUBE_GKE_IMAGE_TYPE="gci"
-                export ZONE="asia-east1-b"
+                export ZONE="us-east1-d"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -854,7 +854,7 @@
                 export E2E_NAME="gke-e2e-prod-gci"
                 export E2E_OPT="--check_version_skew=false"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export KUBE_GCE_ZONE="asia-east1-b"
+                export KUBE_GCE_ZONE="us-east1-d"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="kubekins-e2e-gke-trusty-prod"
         - 'gke-gci-prod-parallel-release-1.2':  # kubernetes-e2e-gke-gci-prod-parallel-release-1.2
@@ -870,7 +870,7 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export KUBE_GCE_ZONE="asia-east1-b"
+                export KUBE_GCE_ZONE="us-east1-d"
                 export KUBE_GKE_IMAGE_TYPE="gci"
                 export PROJECT="e2e-gke-trusty-prod-p"
     jobs:
