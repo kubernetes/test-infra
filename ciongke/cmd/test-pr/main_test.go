@@ -70,3 +70,44 @@ func TestFailureComment(t *testing.T) {
 		}
 	}
 }
+
+func TestGuberURL(t *testing.T) {
+	var testcases = []struct {
+		RepoOwner   string
+		RepoName    string
+		ExpectedURL string
+	}{
+		{
+			"kubernetes",
+			"kubernetes",
+			"/5/j/1/",
+		},
+		{
+			"kubernetes",
+			"charts",
+			"/charts/5/j/1/",
+		},
+		{
+			"other",
+			"kubernetes",
+			"/other/kubernetes/5/j/1/",
+		},
+		{
+			"other",
+			"other",
+			"/other/other/5/j/1/",
+		},
+	}
+	for _, tc := range testcases {
+		c := &testClient{
+			Job:       "j",
+			PRNumber:  5,
+			RepoOwner: tc.RepoOwner,
+			RepoName:  tc.RepoName,
+		}
+		actual := c.guberURL(1)[len(guberBase):]
+		if actual != tc.ExpectedURL {
+			t.Errorf("Gubernator URL wrong. Got %s, expected %s", actual, tc.ExpectedURL)
+		}
+	}
+}

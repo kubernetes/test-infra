@@ -120,6 +120,13 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			RerunCommand: "@k8s-bot kubemark gci e2e test this",
 		},
 		{
+			Name:         "node-pull-build-e2e-test",
+			Trigger:      regexp.MustCompile(`@k8s-bot (node )?(e2e )?test this`),
+			AlwaysRun:    true,
+			Context:      "Jenkins GCE Node e2e",
+			RerunCommand: "@k8s-bot node e2e test this",
+		},
+		{
 			Name:         "fejta-pull-unit",
 			Trigger:      regexp.MustCompile(`@fejta do a little dance`),
 			Context:      "Jenkins fejta unit",
@@ -139,6 +146,24 @@ var defaultJenkinsJobs = map[string][]JenkinsJob{
 			AlwaysRun:    true,
 			Context:      "Jenkins go test",
 			RerunCommand: "@k8s-bot go test this",
+		},
+	},
+	"kubernetes/heapster": {
+		{
+			Name:         "heapster-pull-build-test-e2e",
+			Trigger:      regexp.MustCompile(`@k8s-bot test this`),
+			AlwaysRun:    true,
+			Context:      "Jenkins GCE e2e",
+			RerunCommand: "@k8s-bot test this",
+		},
+	},
+	"google/cadvisor": {
+		{
+			Name:         "cadvisor-pull-build-test-e2e",
+			Trigger:      regexp.MustCompile(`@k8s-bot test this`),
+			AlwaysRun:    true,
+			Context:      "Jenkins GCE e2e",
+			RerunCommand: "@k8s-bot test this",
 		},
 	},
 }

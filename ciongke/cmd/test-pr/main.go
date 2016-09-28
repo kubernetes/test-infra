@@ -40,14 +40,15 @@ var (
 	commit    = flag.String("sha", "", "Head SHA of the PR.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
-	deprecatedCommentOnFailure = flag.Bool("comment-on-failure", true, "Does nothing, delete after next push")
-	rerunCommand               = flag.String("rerun-command", "", "What users should say to rerun the test.")
+	rerunCommand = flag.String("rerun-command", "", "What users should say to rerun the test.")
 
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 )
+
+const guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
 
 type testClient struct {
 	Job     string
@@ -161,9 +162,16 @@ func (c *testClient) TestPR() error {
 			return err
 		}
 	}
-	c.tryCreateStatus(github.Pending, "Build started.", "")
+
+	result, err := c.JenkinsClient.Status(b)
+	if err != nil {
+		c.tryCreateStatus(github.Error, "Error waiting for build.", "")
+		return err
+	}
+
+	resultURL := c.guberURL(result.Number)
+	c.tryCreateStatus(github.Pending, "Build started.", resultURL)
 	for {
-		result, err := c.JenkinsClient.Status(b)
 		if err != nil {
 			c.tryCreateStatus(github.Error, "Error waiting for build.", "")
 			return err
@@ -172,16 +180,27 @@ func (c *testClient) TestPR() error {
 			time.Sleep(30 * time.Second)
 		} else {
 			if result.Success {
-				c.tryCreateStatus(github.Success, "Build succeeded.", result.URL)
+				c.tryCreateStatus(github.Success, "Build succeeded.", resultURL)
 				break
 			} else {
-				c.tryCreateStatus(github.Failure, "Build failed.", result.URL)
-				c.tryCreateFailureComment(result.URL)
+				c.tryCreateStatus(github.Failure, "Build failed.", resultURL)
+				c.tryCreateFailureComment(resultURL)
 				break
 			}
 		}
+		result, err = c.JenkinsClient.Status(b)
 	}
 	return nil
+}
+
+func (c *testClient) guberURL(number int) string {
+	url := guberBase
+	if c.RepoOwner != "kubernetes" {
+		url = fmt.Sprintf("%s/%s/%s", url, c.RepoOwner, c.RepoName)
+	} else if c.RepoName != "kubernetes" {
+		url = fmt.Sprintf("%s/%s", url, c.RepoName)
+	}
+	return fmt.Sprintf("%s/%d/%s/%d/", url, c.PRNumber, c.Job, number)
 }
 
 func (c *testClient) tryCreateStatus(state, desc, url string) {

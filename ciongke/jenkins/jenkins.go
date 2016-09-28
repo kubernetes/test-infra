@@ -26,11 +26,12 @@ import (
 )
 
 // Status is a build result from Jenkins. If it is still building then
-// Success and URL are meaningless.
+// Success is meaningless. If it is enqueued then both Success and
+// Number are meaningless.
 type Status struct {
 	Building bool
 	Success  bool
-	URL      string
+	Number   int
 }
 
 type Client struct {
@@ -47,8 +48,6 @@ type Build struct {
 	id       string
 	queueURL *url.URL
 }
-
-const guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
 
 func NewClient(url, user, token string) *Client {
 	return &Client{
@@ -200,12 +199,12 @@ func (c *Client) Status(b *Build) (*Status, error) {
 			for _, p := range action.Parameters {
 				if p.Name == "buildId" && p.Value == b.id {
 					if build.Result == nil {
-						return &Status{Building: true}, nil
+						return &Status{Building: true, Number: build.Number}, nil
 					} else {
 						return &Status{
 							Building: false,
 							Success:  *build.Result == "SUCCESS",
-							URL:      fmt.Sprintf("%s/%d/%s/%d/", guberBase, b.pr, b.jobName, build.Number),
+							Number:   build.Number,
 						}, nil
 					}
 				}
