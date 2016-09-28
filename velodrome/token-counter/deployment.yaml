@@ -17,7 +17,7 @@ spec:
         - --influx-password=$(INFLUXDB_ROOT_PWD)
         - --token=/github-tokens/k8s-merge-robot
         - --token=/github-tokens/k8s-ci-robot
-        image: gcr.io/google-containers/github-token-counter:v20160922-095333
+        image: gcr.io/google-containers/github-token-counter:v20160922-130312
         env:
         - name: INFLUXDB_ROOT_PWD
           valueFrom:
