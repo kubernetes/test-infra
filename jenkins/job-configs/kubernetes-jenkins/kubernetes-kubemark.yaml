@@ -206,8 +206,12 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 # Use protobufs
                 export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
-                # TODO: Uncomment when we make the final decision to store protobufs in etcd.
-                # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
+                # =========================================
+                # Configuration we are targetting in 1.5
+                export TEST_ETCD_VERSION="3.0.10-experimental.1"
+                # TODO: Uncomment when https://github.com/kubernetes/kubernetes/issues/33653 is fixed
+                # export STORAGE_BACKEND="etcd3"
+                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
