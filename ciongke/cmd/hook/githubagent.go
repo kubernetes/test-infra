@@ -243,10 +243,7 @@ func (ga *GitHubAgent) askToJoin(pr github.PullRequest) error {
 	commentTemplate := `
 Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line.
 
-Regular contributors should join the org to skip this step.
-
-While we transition away from the Jenkins GitHub PR Builder plugin, "ok to test" commenters will need to be on the admin list defined in [this file](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins-pull/kubernetes-pull.yaml).
-`
+Regular contributors should join the org to skip this step.`
 	comment := fmt.Sprintf(commentTemplate, ga.Org, ga.Org)
 
 	owner := pr.Base.Repo.Owner.Login
