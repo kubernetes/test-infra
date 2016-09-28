@@ -83,17 +83,22 @@ def Subprocess(cmd, stdin=None, check=True, output=None):
                 logging.warning(line[:-1])
 
     code = proc.wait()
+    logging.info('Subprocess %d exited with code %d' % (proc.pid, code))
     lines = output and '\n'.join(out)
-    if code:
+    if check and code:
         raise subprocess.CalledProcessError(code, cmd, lines)
     return lines
+
+
+def PullRef(pull):
+    return '+refs/pull/%d/merge' % pull
 
 
 def Checkout(repo, branch, pull):
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
     if pull:
-        ref = '+refs/pull/%d/merge' % pull
+        ref = PullRef(pull)
     else:
         ref = branch
 
@@ -160,6 +165,8 @@ def AppendBuild(gsutil, path, build, version, passed):
     cmd = ['gsutil', '-q', 'cat', path]
     try:
         cache = json.loads(Subprocess(cmd, output=True))
+        if not isinstance(cache, list):
+            raise ValueError(cache)
     except (subprocess.CalledProcessError, ValueError):
         cache = []
     cache.append({
@@ -227,6 +234,7 @@ def Node():
 def Version():
     version_file = 'version'
     if os.path.isfile(version_file):
+        # TODO(fejta): is this code path ever used?
         with open(version_file) as fp:
             return fp.read().strip()
 
@@ -287,17 +295,32 @@ class PRPath(object):
             self.base, 'directory', job, '%s.txt' % build)
 
 
+def Uniq():
+    """Return a probably unique suffix for the process."""
+    return '%x-%d' % (hash(Node()), os.getpid())
+
+
+BUILD_ENV = 'BUILD_NUMBER'  # TODO(fejta): retire this magic environment variable
+
 def Build(start):
-    if 'BUILD_NUMBER' not in os.environ:
-        uniq = '%x-%d' % (hash(Node()), os.getpid())
-        autogen = time.strftime('%Y%m%d-%H%M%S-' + uniq, time.gmtime())
-        os.environ['BUILD_NUMBER'] = autogen
-    return os.environ['BUILD_NUMBER']
+    if BUILD_ENV not in os.environ:
+        uniq = Uniq()
+        autogen = time.strftime('%Y%m%d-%H%M%S' + uniq, time.gmtime(start))
+        os.environ[BUILD_ENV] = autogen
+    return os.environ[BUILD_ENV]
+
+
+GCE_PRIVATE_KEY = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
+SERVICE_ACCOUNT_PATH = 'GOOGLE_APPLICATION_CREDENTIALS'
+
+
+def KeyFlag(path):
+    return '--key-file=%s' % path
 
 
 def SetupCredentials():
     os.environ.setdefault(
-        'JENKINS_GCE_SSH_PRIVATE_KEY_FILE',
+        GCE_PRIVATE_KEY,
         os.path.join(os.environ['HOME'], '.ssh/google_compute_engine'),
     )
     os.environ.setdefault(
@@ -313,23 +336,23 @@ def SetupCredentials():
         os.path.join(os.environ['HOME'], '.ssh/kube_aws_rsa.pub'),
     )
     os.environ.setdefault(
-        'GOOGLE_APPLICATION_CREDENTIALS',
+        SERVICE_ACCOUNT_PATH,
         os.path.join(os.environ['HOME'], 'service-account.json'),
     )
 
     # TODO(fejta): also check aws, and skip gce check when not necessary.
-    if not os.path.isfile(os.environ['JENKINS_GCE_SSH_PRIVATE_KEY_FILE']):
+    if not os.path.isfile(os.environ[GCE_PRIVATE_KEY]):
         raise IOError(
             'Cannot find gce ssh key',
-            os.environ['JENKINS_GCE_SSH_PRIVATE_KEY_FILE'],
+            os.environ[GCE_PRIVATE_KEY],
         )
 
     # TODO(fejta): stop activating inside the image
     # TODO(fejta): allow use of existing gcloud auth
-    if not os.path.isfile(os.environ['GOOGLE_APPLICATION_CREDENTIALS']):
+    if not os.path.isfile(os.environ[SERVICE_ACCOUNT_PATH]):
         raise IOError(
             'Cannot find service account credentials',
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
+            os.environ[SERVICE_ACCOUNT_PATH],
             'Create service account and then create key at '
             'https://console.developers.google.com/iam-admin/serviceaccounts/project',
         )
@@ -342,7 +365,7 @@ def SetupCredentials():
         'gcloud',
         'auth',
         'activate-service-account',
-        '--key-file=%s' % os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
+        KeyFlag(os.environ[SERVICE_ACCOUNT_PATH]),
     ])
 
 
@@ -363,6 +386,9 @@ def SetupLogging(path):
     logging.getLogger('').addHandler(build_log)
     return build_log
 
+
+JOB_ENV = 'JOB_NAME'  # TODO(fejta): retire this magic env variable.
+
 def Bootstrap(job, repo, branch, pull):
     build_log_path = os.path.abspath('build-log.txt')
     build_log = SetupLogging(build_log_path)
@@ -378,8 +404,8 @@ def Bootstrap(job, repo, branch, pull):
       paths = PRPath(job, build, str(pull))
     else:
       paths = CIPath(job, build)
-    if 'JOB_NAME' not in os.environ:
-        os.environ['JOB_NAME'] = job
+    if JOB_ENV not in os.environ:
+        os.environ[JOB_ENV] = job
     gsutil = GSUtil()
     logging.info('Start %s at %s...' % (build, version))
     Start(gsutil, paths, start, Node(), version)
