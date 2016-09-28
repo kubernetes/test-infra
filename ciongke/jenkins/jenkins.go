@@ -19,8 +19,8 @@ package jenkins
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 )
@@ -75,8 +75,7 @@ func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
 	if c.dry {
 		return &Build{}, nil
 	}
-	rn := rand.Int()
-	buildID := fmt.Sprintf("%s-%d-%d", job, pr, rn)
+	buildID := uuid.NewV1().String()
 	u := fmt.Sprintf("%s/job/%s/buildWithParameters?ghprbPullId=%d&ghprbTargetBranch=%s&buildId=%s", c.baseURL, job, pr, branch, buildID)
 	req, err := http.NewRequest(http.MethodPost, u, nil)
 	if err != nil {
