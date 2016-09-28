@@ -12,7 +12,7 @@ spec:
       containers:
       - name: fetcher
         args:
-        - --token-file=/etc/secret-volume/token
+        - --token-file=/etc/secret-volume/k8s-merge-robot
         - --stderrthreshold=0
         - --host=sqlproxy-service
         image: gcr.io/google-containers/github-fetcher:v1472240677
@@ -25,7 +25,7 @@ spec:
       volumes:
       - name: secret-volume
         secret:
-          secretName: github-token
+          secretName: github-tokens
       - name: certificates
         configMap:
           name: certificates
