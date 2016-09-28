@@ -44,22 +44,20 @@ func TestDispatch(t *testing.T) {
 	)
 
 	issues := make(chan sql.Issue)
-	events := make(chan sql.IssueEvent)
-	comments := make(chan sql.Comment)
+	events := make(chan interface{})
 
 	plugins := Plugins([]Plugin{mockPlugin})
-	go plugins.Dispatch(issues, events, comments)
+	go plugins.Dispatch(issues, events)
 
 	issues <- sql.Issue{ID: 1}
 	issues <- sql.Issue{ID: 2}
 	events <- sql.IssueEvent{ID: 1}
+	events <- sql.Comment{ID: 1}
 	events <- sql.IssueEvent{ID: 2}
-	comments <- sql.Comment{ID: 1}
-	comments <- sql.Comment{ID: 2}
+	events <- sql.Comment{ID: 2}
 
 	time.Sleep(time.Millisecond)
 
 	close(issues)
 	close(events)
-	close(comments)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -40,8 +41,8 @@ func TestFetchIssues(t *testing.T) {
 
 	out := make(chan sql.Issue, 10)
 
-	last, err := fetchRecentIssues(db, time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC), out)
-	if err != nil {
+	last := time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)
+	if err := fetchRecentIssues(db, &last, out); err != nil {
 		t.Fatal("Failed to fetch recent issues:", err)
 	}
 	if last != time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC) {
@@ -57,8 +58,9 @@ func TestFetchIssues(t *testing.T) {
 	}
 }
 
-func TestFetchEvents(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+func TestFetchEventsAndComments(t *testing.T) {
+	os.Remove("test.db")
+	config := sqltest.SQLiteConfig{"test.db"}
 	db, err := config.CreateDatabase()
 	if err != nil {
 		t.Fatal("Failed to create database:", err)
@@ -66,45 +68,48 @@ func TestFetchEvents(t *testing.T) {
 
 	db.Create(&sql.IssueEvent{ID: 1})
 	db.Create(&sql.IssueEvent{ID: 2})
-	db.Create(&sql.IssueEvent{ID: 3})
-	db.Create(&sql.IssueEvent{ID: 4})
-
-	out := make(chan sql.IssueEvent, 10)
-
-	last, err := fetchRecentEvents(db, 2, out)
-	if err != nil {
-		t.Fatal("Failed to fetch recent events:", err)
-	}
-	if last != 4 {
-		t.Error("Last event should be 4, not", last)
-	}
-	if len(out) != 2 {
-		t.Error("Only 2 events should have been fetched, not ", len(out))
-	}
-}
-
-func TestFetchComments(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
-	db, err := config.CreateDatabase()
-	if err != nil {
-		t.Fatal("Failed to create database:", err)
-	}
-
+	db.Create(&sql.IssueEvent{ID: 3, EventCreatedAt: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)})
+	db.Create(&sql.IssueEvent{ID: 4, EventCreatedAt: time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC)})
 	db.Create(&sql.Comment{ID: 1})
 	db.Create(&sql.Comment{ID: 2})
-	db.Create(&sql.Comment{ID: 3})
-	db.Create(&sql.Comment{ID: 4})
+	db.Create(&sql.Comment{ID: 3, CommentCreatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)})
+	db.Create(&sql.Comment{ID: 4, CommentCreatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC)})
+	db.Create(&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC)})
 
-	out := make(chan sql.Comment, 10)
+	out := make(chan interface{}, 10)
 
-	last, err := fetchRecentComments(db, 2, out)
-	if err != nil {
-		t.Fatal("Failed to fetch recent comments:", err)
+	lastEvent := 2
+	lastComment := 2
+	if err := fetchRecentEventsAndComments(db, &lastEvent, &lastComment, out); err != nil {
+		t.Fatal("Failed to fetch recent events:", err)
 	}
-	if last != 4 {
-		t.Error("Last comment should be 4, not", last)
+	if lastEvent != 4 {
+		t.Error("LastEvent event should be 4, not", lastEvent)
 	}
-	if len(out) != 2 {
-		t.Error("Only 2 comments should have been fetched, not ", len(out))
+	if lastComment != 5 {
+		t.Error("LastComment event should be 5, not", lastComment)
 	}
+	if len(out) != 5 {
+		t.Error("5 events should have been fetched, not ", len(out))
+	}
+
+	close(out)
+
+	lastDate := time.Time{}
+	for item := range out {
+		date := time.Time{}
+		switch item := item.(type) {
+		case sql.IssueEvent:
+			date = item.EventCreatedAt
+		case sql.Comment:
+			date = item.CommentCreatedAt
+		default:
+			t.Error("Received item of unknown type:", item)
+		}
+		if date.Before(lastDate) {
+			t.Error("Dates are not properly sorted: %v < %v", date, lastDate)
+		}
+	}
+
+	os.Remove("test.db")
 }
