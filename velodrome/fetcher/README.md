@@ -4,9 +4,9 @@ Deploying the fetcher
 First time only
 ---------------
 
-Create the github-token secret:
+Create the github-tokens secret:
 ```
-kubectl create secret generic github-token --from-literal=token=${your_token}
+kubectl create secret generic github-tokens --from-literal=token_login_1=${your_1st_token} --from-literal=token_login_2=${your_2nd_token}
 ```
 
 And install the certificate if you haven't done it yet:

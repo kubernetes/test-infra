@@ -15,7 +15,8 @@ spec:
         - --stderrthreshold=0
         - --influx-host=http://influxdb-service:8086
         - --influx-password=$(INFLUXDB_ROOT_PWD)
-        - --token=/github-token/token
+        - --token=/github-tokens/k8s-merge-robot
+        - --token=/github-tokens/k8s-ci-robot
         image: gcr.io/google-containers/github-token-counter:v20160922-095333
         env:
         - name: INFLUXDB_ROOT_PWD
@@ -24,7 +25,7 @@ spec:
               name: influxdb
               key: rootpassword
         volumeMounts:
-        - mountPath: /github-token
+        - mountPath: /github-tokens
           readOnly: true
           name: secret-volume
         - mountPath: /etc/ssl/certs
@@ -32,7 +33,7 @@ spec:
       volumes:
       - name: secret-volume
         secret:
-          secretName: github-token
+          secretName: github-tokens
       - name: certificates
         configMap:
           name: certificates
