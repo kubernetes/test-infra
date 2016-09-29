@@ -162,6 +162,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m52
 - name: kubernetes-e2e-gce-gci-qa-m53
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m53
+- name: kubernetes-e2e-gce-gci-qa-m54
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m54
 - name: kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-master
 - name: kubernetes-e2e-gce-gci-qa-release-1.2
@@ -172,6 +174,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m52
 - name: kubernetes-e2e-gce-gci-qa-serial-m53
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m53
+- name: kubernetes-e2e-gce-gci-qa-serial-m54
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m54
 - name: kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-master
 - name: kubernetes-e2e-gce-gci-qa-serial-release-1.2
@@ -182,6 +186,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m52
 - name: kubernetes-e2e-gce-gci-qa-slow-m53
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m53
+- name: kubernetes-e2e-gce-gci-qa-slow-m54
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m54
 - name: kubernetes-e2e-gce-gci-qa-slow-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-master
 - name: kubernetes-e2e-gce-gci-qa-slow-release-1.2
@@ -957,6 +963,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-m52
   - name: gci-qa-m53
     test_group_name: kubernetes-e2e-gce-gci-qa-m53
+  - name: gci-qa-m54
+    test_group_name: kubernetes-e2e-gce-gci-qa-m54
   - name: gci-qa-master
     test_group_name: kubernetes-e2e-gce-gci-qa-master
   - name: gci-qa-release-1.2
@@ -967,6 +975,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-m52
   - name: gci-qa-serial-m53
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-m53
+  - name: gci-qa-serial-m54
+    test_group_name: kubernetes-e2e-gce-gci-qa-serial-m54
   - name: gci-qa-serial-master
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-master
   - name: gci-qa-serial-release-1.2
@@ -977,6 +987,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m52
   - name: gci-qa-slow-m53
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m53
+  - name: gci-qa-slow-m54
+    test_group_name: kubernetes-e2e-gce-gci-qa-slow-m54
   - name: gci-qa-slow-master
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-master
   - name: gci-qa-slow-release-1.2
