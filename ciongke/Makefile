@@ -43,6 +43,7 @@ create-cluster:
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
+	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
 	@make test-pr-image --no-print-directory
 	@make hook-image --no-print-directory
 	@make hook-deployment --no-print-directory
@@ -55,6 +56,9 @@ update-cluster:
 	make test-pr-image --no-print-directory
 	make hook-image --no-print-directory
 	make hook-deployment --no-print-directory
+
+update-jobs:
+	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
 get-cluster-credentials:
 	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
@@ -69,8 +73,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.32" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.32"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.33" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.33"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml

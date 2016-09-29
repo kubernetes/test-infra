@@ -19,7 +19,6 @@ package main
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"regexp"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 )
@@ -31,8 +30,7 @@ type GitHubAgent struct {
 	Org          string
 	GitHubClient githubClient
 
-	// Repo FullName (eg "kubernetes/kubernetes") -> []JenkinsJob
-	JenkinsJobs map[string][]JenkinsJob
+	JenkinsJobs *JobAgent
 
 	PullRequestEvents  <-chan github.PullRequestEvent
 	IssueCommentEvents <-chan github.IssueCommentEvent
@@ -41,28 +39,12 @@ type GitHubAgent struct {
 	DeleteRequests chan<- KubeRequest
 }
 
-// JenkinsJob is the job-specific trigger info.
-type JenkinsJob struct {
-	// eg kubernetes-pull-build-test-e2e-gce
-	Name string
-	// Run for every PR, or only when a comment triggers it.
-	AlwaysRun bool
-	// Context line for GitHub status.
-	Context string
-	// eg @k8s-bot e2e test this
-	Trigger *regexp.Regexp
-	// Valid rerun command to give users. Must match Trigger.
-	RerunCommand string
-}
-
 type githubClient interface {
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 }
-
-var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
 
 // Start starts listening for events. It does not block.
 func (ga *GitHubAgent) Start() {
@@ -128,21 +110,6 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 	return nil
 }
 
-// commentBodyMatches looks at a comment body and decides which Jenkins jobs to
-// build based on it.
-func (ga *GitHubAgent) commentBodyMatches(fullRepoName, body string) []JenkinsJob {
-	var result []JenkinsJob
-	ott := okToTest.MatchString(body)
-	if jobs, ok := ga.JenkinsJobs[fullRepoName]; ok {
-		for _, job := range jobs {
-			if job.Trigger.MatchString(body) || (ott && job.AlwaysRun) {
-				result = append(result, job)
-			}
-		}
-	}
-	return result
-}
-
 func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) error {
 	owner := ic.Repo.Owner.Login
 	name := ic.Repo.Name
@@ -171,7 +138,7 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 		}
 
 		// Which jobs does the comment want us to run?
-		requestedJobs := ga.commentBodyMatches(ic.Repo.FullName, ic.Comment.Body)
+		requestedJobs := ga.JenkinsJobs.MatchingJobs(ic.Repo.FullName, ic.Comment.Body)
 		if len(requestedJobs) == 0 {
 			return nil
 		}
@@ -267,22 +234,18 @@ func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
 }
 
 func (ga *GitHubAgent) buildAll(pr github.PullRequest) {
-	if jobs, ok := ga.JenkinsJobs[pr.Base.Repo.FullName]; ok {
-		for _, job := range jobs {
-			if !job.AlwaysRun {
-				continue
-			}
-			kr := makeKubeRequest(job, pr)
-			ga.BuildRequests <- kr
+	for _, job := range ga.JenkinsJobs.AllJobs(pr.Base.Repo.FullName) {
+		if !job.AlwaysRun {
+			continue
 		}
+		kr := makeKubeRequest(job, pr)
+		ga.BuildRequests <- kr
 	}
 }
 
 func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
-	if jobs, ok := ga.JenkinsJobs[pr.Base.Repo.FullName]; ok {
-		for _, job := range jobs {
-			kr := makeKubeRequest(job, pr)
-			ga.DeleteRequests <- kr
-		}
+	for _, job := range ga.JenkinsJobs.AllJobs(pr.Base.Repo.FullName) {
+		kr := makeKubeRequest(job, pr)
+		ga.DeleteRequests <- kr
 	}
 }

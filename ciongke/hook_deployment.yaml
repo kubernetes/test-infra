@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/kubernetes-jenkins-pull/hook:0.32
+        image: gcr.io/kubernetes-jenkins-pull/hook:0.33
         imagePullPolicy: Always
         args:
         - -test-pr-image=gcr.io/kubernetes-jenkins-pull/test-pr:0.17
@@ -49,6 +49,9 @@ spec:
         - name: oauth
           mountPath: /etc/github
           readOnly: true
+        - name: job-configs
+          mountPath: /etc/jobs
+          readOnly: true
       volumes:
       - name: hmac
         secret:
@@ -56,3 +59,6 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: job-configs
+        configMap:
+          name: job-configs
