@@ -16,6 +16,11 @@ kubectl create secret generic influxdb --from-literal=rootpassword="${influxdb_p
 
 Deploying
 ---------
+Create/Update prometheus configuration configmap:
+```
+kubectl create configmap prometheus --from-file=prometheus-config.yaml
+```
+
 Deploying is simple:
 ```
 kubectl apply -f grafana.yaml -f influxdb.yaml -f nginx.yaml
