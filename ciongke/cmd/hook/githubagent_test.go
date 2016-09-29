@@ -238,13 +238,15 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		s := &GitHubAgent{
 			GitHubClient: g,
-			JenkinsJobs: map[string][]JenkinsJob{
-				"org/repo": {
-					{
-						Name:      "job",
-						Trigger:   regexp.MustCompile(`@k8s-bot test this`),
-						AlwaysRun: true,
-						Context:   "job job",
+			JenkinsJobs: &JobAgent{
+				jobs: map[string][]JenkinsJob{
+					"org/repo": {
+						{
+							Name:      "job",
+							AlwaysRun: true,
+							Context:   "job job",
+							re:        regexp.MustCompile(`@k8s-bot test this`),
+						},
 					},
 				},
 			},
@@ -290,120 +292,21 @@ func TestHandleIssueComment(t *testing.T) {
 	}
 }
 
-func TestCommentBodyMatches(t *testing.T) {
-	var testcases = []struct {
-		repo         string
-		body         string
-		expectedJobs []string
-	}{
-		{
-			"org/repo",
-			"this is a random comment",
-			[]string{},
-		},
-		{
-			"org/repo",
-			"ok to test",
-			[]string{"gce", "unit"},
-		},
-		{
-			"org/repo",
-			"@k8s-bot test this",
-			[]string{"gce", "unit", "gke"},
-		},
-		{
-			"org/repo",
-			"@k8s-bot unit test this",
-			[]string{"unit"},
-		},
-		{
-			"org/repo",
-			"@k8s-bot federation test this",
-			[]string{"federation"},
-		},
-		{
-			"org/repo2",
-			"@k8s-bot test this",
-			[]string{"cadveapster"},
-		},
-		{
-			"org/repo3",
-			"@k8s-bot test this",
-			[]string{},
-		},
-	}
-	ga := &GitHubAgent{
-		JenkinsJobs: map[string][]JenkinsJob{
-			"org/repo": {
-				{
-					Name:      "gce",
-					Trigger:   regexp.MustCompile(`@k8s-bot (gce )?test this`),
-					AlwaysRun: true,
-				},
-				{
-					Name:      "unit",
-					Trigger:   regexp.MustCompile(`@k8s-bot (unit )?test this`),
-					AlwaysRun: true,
-				},
-				{
-					Name:      "gke",
-					Trigger:   regexp.MustCompile(`@k8s-bot (gke )?test this`),
-					AlwaysRun: false,
-				},
-				{
-					Name:      "federation",
-					Trigger:   regexp.MustCompile(`@k8s-bot federation test this`),
-					AlwaysRun: false,
-				},
-			},
-			"org/repo2": {
-				{
-					Name:      "cadveapster",
-					Trigger:   regexp.MustCompile(`@k8s-bot test this`),
-					AlwaysRun: true,
-				},
-			},
-		},
-	}
-	for _, tc := range testcases {
-		actualJobs := ga.commentBodyMatches(tc.repo, tc.body)
-		match := true
-		if len(actualJobs) != len(tc.expectedJobs) {
-			match = false
-		} else {
-			for _, actualJob := range actualJobs {
-				found := false
-				for _, expectedJob := range tc.expectedJobs {
-					if expectedJob == actualJob.Name {
-						found = true
-						break
-					}
-				}
-				if !found {
-					match = false
-					break
-				}
-			}
-		}
-		if !match {
-			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
-		}
-	}
-}
-
 // Make sure we delete all jobs when a PR is closed.
 func TestClosePR(t *testing.T) {
 	drc := make(chan KubeRequest, 2)
 	s := &GitHubAgent{
-		JenkinsJobs: map[string][]JenkinsJob{
-			"org/repo": {
-				{
-					Name:      "job1",
-					AlwaysRun: true,
-				},
-				{
-					Name:      "job2",
-					AlwaysRun: false,
+		JenkinsJobs: &JobAgent{
+			jobs: map[string][]JenkinsJob{
+				"org/repo": {
+					{
+						Name:      "job1",
+						AlwaysRun: true,
+					},
+					{
+						Name:      "job2",
+						AlwaysRun: false,
+					},
 				},
 			},
 		},

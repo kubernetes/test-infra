@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/signal"
-	"regexp"
 	"strconv"
 	"syscall"
 
@@ -38,144 +37,13 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
 	org       = flag.String("org", "kubernetes", "GitHub org to trust.")
 
+	jobConfig = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
+
 	testPRImage = flag.String("test-pr-image", "", "Image to use for testing PRs.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
-
-var defaultJenkinsJobs = map[string][]JenkinsJob{
-	"google/cadvisor": {
-		{
-			Name:         "cadvisor-pull-build-test-e2e",
-			Trigger:      regexp.MustCompile(`@k8s-bot test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCE e2e",
-			RerunCommand: "@k8s-bot test this",
-		},
-	},
-	"kubernetes/charts": {
-		{
-			Name:         "charts-pull-test-e2e",
-			Trigger:      regexp.MustCompile(`@k8s-bot (e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins Charts e2e",
-			RerunCommand: "@k8s-bot e2e test this",
-		},
-	},
-	"kubernetes/heapster": {
-		{
-			Name:         "heapster-pull-build-test-e2e",
-			Trigger:      regexp.MustCompile(`@k8s-bot test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCE e2e",
-			RerunCommand: "@k8s-bot test this",
-		},
-	},
-	"kubernetes/kubernetes": {
-		{
-			Name:         "kubernetes-pull-build-cross",
-			Trigger:      regexp.MustCompile(`@k8s-bot build this`),
-			Context:      "Jenkins Cross Build",
-			RerunCommand: "@k8s-bot build this",
-		},
-		{
-			Name:         "kubernetes-pull-test-unit-integration",
-			Trigger:      regexp.MustCompile(`@k8s-bot (unit )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins unit/integration",
-			RerunCommand: "@k8s-bot unit test this",
-		},
-		{
-			Name:         "kubernetes-pull-verify-all",
-			Trigger:      regexp.MustCompile(`@k8s-bot (verify )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins verification",
-			RerunCommand: "@k8s-bot verify test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot (gce )?(e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCE e2e",
-			RerunCommand: "@k8s-bot gce e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-e2e-gke",
-			Trigger:      regexp.MustCompile(`@k8s-bot (gke )?(e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GKE smoke e2e",
-			RerunCommand: "@k8s-bot gke e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-gci-e2e-gke",
-			Trigger:      regexp.MustCompile(`@k8s-bot gci (gke )?(e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCI GKE smoke e2e",
-			RerunCommand: "@k8s-bot gci gke e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-gci-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot gci (gce )?(e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCI GCE e2e",
-			RerunCommand: "@k8s-bot gci gce e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-federation-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot federation (gce )?(e2e )?test this`),
-			Context:      "Jenkins Federation GCE e2e",
-			RerunCommand: "@k8s-bot federation gce e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-gci-federation-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot federation gci (gce )?(e2e )?test this`),
-			Context:      "Jenkins GCI Federation GCE e2e",
-			RerunCommand: "@k8s-bot federation gci gce e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-kubemark-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot kubemark (e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins Kubemark GCE e2e",
-			RerunCommand: "@k8s-bot kubemark e2e test this",
-		},
-		{
-			Name:         "kubernetes-pull-build-test-gci-kubemark-e2e-gce",
-			Trigger:      regexp.MustCompile(`@k8s-bot kubemark gci (e2e )?test this`),
-			Context:      "Jenkins GCI Kubemark GCE e2e",
-			RerunCommand: "@k8s-bot kubemark gci e2e test this",
-		},
-		{
-			Name:         "node-pull-build-e2e-test",
-			Trigger:      regexp.MustCompile(`@k8s-bot (node )?(e2e )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins GCE Node e2e",
-			RerunCommand: "@k8s-bot node e2e test this",
-		},
-		{
-			Name:         "fejta-pull-unit",
-			Trigger:      regexp.MustCompile(`@fejta do a little dance`),
-			Context:      "Jenkins fejta unit",
-			RerunCommand: "@fejta do a little dance",
-		},
-		{
-			Name:         "fejta-pull-gce",
-			Trigger:      regexp.MustCompile(`@fejta get down tonight`),
-			Context:      "Jenkins fejta gce",
-			RerunCommand: "@fejta get down tonight",
-		},
-	},
-	"kubernetes/test-infra": {
-		{
-			Name:         "testinfra-pull-gotest",
-			Trigger:      regexp.MustCompile(`@k8s-bot (go )?test this`),
-			AlwaysRun:    true,
-			Context:      "Jenkins go test",
-			RerunCommand: "@k8s-bot go test this",
-		},
-	},
-}
 
 func main() {
 	flag.Parse()
@@ -220,12 +88,15 @@ func main() {
 		IssueCommentEvents: icc,
 	}
 
+	jobAgent := &JobAgent{}
+	jobAgent.Start(*jobConfig)
+
 	githubAgent := &GitHubAgent{
 		DryRun:       *dryRun,
 		Org:          *org,
 		GitHubClient: githubClient,
 
-		JenkinsJobs: defaultJenkinsJobs,
+		JenkinsJobs: jobAgent,
 
 		PullRequestEvents:  prc,
 		IssueCommentEvents: icc,
