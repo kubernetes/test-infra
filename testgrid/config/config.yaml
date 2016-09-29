@@ -118,12 +118,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-flaky
 - name: kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
-- name: kubernetes-e2e-gce-gci-beta-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-beta-release
-- name: kubernetes-e2e-gce-gci-beta-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-beta-serial
-- name: kubernetes-e2e-gce-gci-beta-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-beta-slow
 - name: kubernetes-e2e-gce-gci-ci-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-master
 - name: kubernetes-e2e-gce-gci-ci-release-1.2
@@ -148,12 +142,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.3
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.4
-- name: kubernetes-e2e-gce-gci-dev-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-dev-release
-- name: kubernetes-e2e-gce-gci-dev-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-dev-serial
-- name: kubernetes-e2e-gce-gci-dev-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-dev-slow
 - name: kubernetes-e2e-gci-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-examples
 - name: kubernetes-e2e-gci-gce-federation
@@ -166,10 +154,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m54
 - name: kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-master
-- name: kubernetes-e2e-gce-gci-qa-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-release-1.2
-- name: kubernetes-e2e-gce-gci-qa-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-release-1.3
 - name: kubernetes-e2e-gce-gci-qa-serial-m52
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m52
 - name: kubernetes-e2e-gce-gci-qa-serial-m53
@@ -178,10 +162,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m54
 - name: kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-master
-- name: kubernetes-e2e-gce-gci-qa-serial-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-release-1.2
-- name: kubernetes-e2e-gce-gci-qa-serial-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-release-1.3
 - name: kubernetes-e2e-gce-gci-qa-slow-m52
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m52
 - name: kubernetes-e2e-gce-gci-qa-slow-m53
@@ -190,10 +170,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m54
 - name: kubernetes-e2e-gce-gci-qa-slow-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-master
-- name: kubernetes-e2e-gce-gci-qa-slow-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-release-1.2
-- name: kubernetes-e2e-gce-gci-qa-slow-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-release-1.3
 - name: kubernetes-e2e-gci-gce-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.4
 - name: kubernetes-e2e-gci-gce-scalability
@@ -304,34 +280,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.3
 - name: kubernetes-e2e-gce-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.4
-- name: kubernetes-e2e-gce-trusty-beta-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-beta-release
-- name: kubernetes-e2e-gce-trusty-beta-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-beta-serial
-- name: kubernetes-e2e-gce-trusty-beta-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-beta-slow
-- name: kubernetes-e2e-gce-trusty-ci-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-master
-- name: kubernetes-e2e-gce-trusty-ci-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-release-1.2
-- name: kubernetes-e2e-gce-trusty-ci-serial-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-serial-master
-- name: kubernetes-e2e-gce-trusty-ci-serial-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-serial-release-1.2
-- name: kubernetes-e2e-gce-trusty-ci-slow-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-slow-master
-- name: kubernetes-e2e-gce-trusty-ci-slow-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-ci-slow-release-1.2
-- name: kubernetes-e2e-gce-trusty-dev-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-dev-release
-- name: kubernetes-e2e-gce-trusty-dev-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-dev-serial
-- name: kubernetes-e2e-gce-trusty-dev-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-dev-slow
-- name: kubernetes-e2e-gce-trusty-stable-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-stable-release
-- name: kubernetes-e2e-gce-trusty-stable-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-trusty-stable-slow
 - name: kubernetes-e2e-gce-ubernetes-lite
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ubernetes-lite
 - name: kubernetes-e2e-gke
@@ -464,14 +412,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-test
 - name: kubernetes-e2e-gci-gke-test
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-test
-- name: kubernetes-e2e-gke-trusty-staging
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-trusty-staging
-- name: kubernetes-e2e-gke-trusty-staging-parallel
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-trusty-staging-parallel
-- name: kubernetes-e2e-gke-trusty-subnet
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-trusty-subnet
-- name: kubernetes-e2e-gke-trusty-test
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-trusty-test
 - name: kubernetes-e2e-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-updown
 - name: kubernetes-e2e-gci-gke-updown
@@ -921,12 +861,6 @@ dashboards:
 - dashboard_tab:
   - name: gci
     test_group_name: kubernetes-e2e-gci-gce
-  - name: gci-beta-release
-    test_group_name: kubernetes-e2e-gce-gci-beta-release
-  - name: gci-beta-serial
-    test_group_name: kubernetes-e2e-gce-gci-beta-serial
-  - name: gci-beta-slow
-    test_group_name: kubernetes-e2e-gce-gci-beta-slow
   - name: gci-ci-master
     test_group_name: kubernetes-e2e-gce-gci-ci-master
   - name: gci-ci-release-1.2
@@ -951,12 +885,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.3
   - name: gci-ci-slow-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
-  - name: gci-dev-release
-    test_group_name: kubernetes-e2e-gce-gci-dev-release
-  - name: gci-dev-serial
-    test_group_name: kubernetes-e2e-gce-gci-dev-serial
-  - name: gci-dev-slow
-    test_group_name: kubernetes-e2e-gce-gci-dev-slow
   - name: gci-examples
     test_group_name: kubernetes-e2e-gci-gce-examples
   - name: gci-qa-m52
@@ -967,10 +895,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-m54
   - name: gci-qa-master
     test_group_name: kubernetes-e2e-gce-gci-qa-master
-  - name: gci-qa-release-1.2
-    test_group_name: kubernetes-e2e-gce-gci-qa-release-1.2
-  - name: gci-qa-release-1.3
-    test_group_name: kubernetes-e2e-gce-gci-qa-release-1.3
   - name: gci-qa-serial-m52
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-m52
   - name: gci-qa-serial-m53
@@ -979,10 +903,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-m54
   - name: gci-qa-serial-master
     test_group_name: kubernetes-e2e-gce-gci-qa-serial-master
-  - name: gci-qa-serial-release-1.2
-    test_group_name: kubernetes-e2e-gce-gci-qa-serial-release-1.2
-  - name: gci-qa-serial-release-1.3
-    test_group_name: kubernetes-e2e-gce-gci-qa-serial-release-1.3
   - name: gci-qa-slow-m52
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m52
   - name: gci-qa-slow-m53
@@ -991,10 +911,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m54
   - name: gci-qa-slow-master
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-master
-  - name: gci-qa-slow-release-1.2
-    test_group_name: kubernetes-e2e-gce-gci-qa-slow-release-1.2
-  - name: gci-qa-slow-release-1.3
-    test_group_name: kubernetes-e2e-gce-gci-qa-slow-release-1.3
   - name: gci-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-release-1.4
   - name: gci-scalability
@@ -1210,44 +1126,6 @@ dashboards:
   - name: soak-weekly-deploy-gke-gci
     test_group_name: kubernetes-soak-weekly-deploy-gke-gci
   name: google-soak
-- dashboard_tab:
-  - name: gce-trusty-beta-release
-    test_group_name: kubernetes-e2e-gce-trusty-beta-release
-  - name: gce-trusty-beta-serial
-    test_group_name: kubernetes-e2e-gce-trusty-beta-serial
-  - name: gce-trusty-beta-slow
-    test_group_name: kubernetes-e2e-gce-trusty-beta-slow
-  - name: gce-trusty-ci-master
-    test_group_name: kubernetes-e2e-gce-trusty-ci-master
-  - name: gce-trusty-ci-release-1.2
-    test_group_name: kubernetes-e2e-gce-trusty-ci-release-1.2
-  - name: gce-trusty-ci-serial-master
-    test_group_name: kubernetes-e2e-gce-trusty-ci-serial-master
-  - name: gce-trusty-ci-serial-release-1.2
-    test_group_name: kubernetes-e2e-gce-trusty-ci-serial-release-1.2
-  - name: gce-trusty-ci-slow-master
-    test_group_name: kubernetes-e2e-gce-trusty-ci-slow-master
-  - name: gce-trusty-ci-slow-release-1.2
-    test_group_name: kubernetes-e2e-gce-trusty-ci-slow-release-1.2
-  - name: gce-trusty-dev-release
-    test_group_name: kubernetes-e2e-gce-trusty-dev-release
-  - name: gce-trusty-dev-serial
-    test_group_name: kubernetes-e2e-gce-trusty-dev-serial
-  - name: gce-trusty-dev-slow
-    test_group_name: kubernetes-e2e-gce-trusty-dev-slow
-  - name: gce-trusty-stable-release
-    test_group_name: kubernetes-e2e-gce-trusty-stable-release
-  - name: gce-trusty-stable-slow
-    test_group_name: kubernetes-e2e-gce-trusty-stable-slow
-  - name: gke-trusty-staging
-    test_group_name: kubernetes-e2e-gke-trusty-staging
-  - name: gke-trusty-staging-parallel
-    test_group_name: kubernetes-e2e-gke-trusty-staging-parallel
-  - name: gke-trusty-subnet
-    test_group_name: kubernetes-e2e-gke-trusty-subnet
-  - name: gke-trusty-test
-    test_group_name: kubernetes-e2e-gke-trusty-test
-  name: google-trusty
 - dashboard_tab:
   - name: build
     test_group_name: kubernetes-build
