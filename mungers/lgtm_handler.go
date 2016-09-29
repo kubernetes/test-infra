@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
+	e "k8s.io/contrib/mungegithub/mungers/matchers/event"
 	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 
 	"github.com/golang/glog"
@@ -70,14 +71,23 @@ func (h LGTMHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel(lgtmLabel) {
-		h.addLGTMIfCommented(obj, comments, reviewers)
+	events, err := obj.GetEvents()
+	if err != nil {
+		glog.Errorf("unexpected error getting events: %v", err)
 		return
 	}
-	h.removeLGTMIfCancelled(obj, comments, reviewers)
+
+	if !obj.HasLabel(lgtmLabel) {
+		h.addLGTMIfCommented(obj, comments, events, reviewers)
+		return
+	}
+	h.removeLGTMIfCancelled(obj, comments, events, reviewers)
 }
 
-func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*githubapi.IssueComment, reviewers mungerutil.UserSet) {
+func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*githubapi.IssueComment, events []*githubapi.IssueEvent, reviewers mungerutil.UserSet) {
+	// Get the last time when the someone applied lgtm manually.
+	removeLGTMTime := e.LastEvent(events, e.And{e.RemoveLabel{}, e.LabelName(lgtmLabel), e.HumanActor()}, nil)
+
 	// Assumption: The comments should be sorted (by default from github api) from oldest to latest
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
@@ -101,6 +111,12 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 			continue
 		}
 
+		// check if someone manually removed the lgtm label after the `/lgtm` comment
+		// and honor it.
+		if removeLGTMTime != nil && removeLGTMTime.After(*comment.CreatedAt) {
+			return
+		}
+
 		// TODO: support more complex policies for multiple reviewers.
 		// See https://github.com/kubernetes/contrib/issues/1389#issuecomment-235161164
 		glog.Infof("Adding lgtm label. Reviewer (%s) LGTM", *comment.User.Login)
@@ -109,7 +125,10 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 	}
 }
 
-func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []*githubapi.IssueComment, reviewers mungerutil.UserSet) {
+func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []*githubapi.IssueComment, events []*githubapi.IssueEvent, reviewers mungerutil.UserSet) {
+	// Get time when the last (unlabeled, lgtm) event occurred.
+	addLGTMTime := e.LastEvent(events, e.And{e.RemoveLabel{}, e.LabelName(lgtmLabel), e.HumanActor()}, nil)
+
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
 		if !mungerutil.IsValidUser(comment.User) {
@@ -128,6 +147,12 @@ func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []
 
 		if !isCancelComment(fields) {
 			continue
+		}
+
+		// check if someone manually added the lgtm label after the `/lgtm cancel` comment
+		// and honor it.
+		if addLGTMTime != nil && addLGTMTime.After(*comment.CreatedAt) {
+			return
 		}
 
 		glog.Infof("Removing lgtm label. Reviewer (%s) cancelled", *comment.User.Login)

@@ -16,7 +16,11 @@ limitations under the License.
 
 package event
 
-import "github.com/google/go-github/github"
+import (
+	"time"
+
+	"github.com/google/go-github/github"
+)
 
 // FilteredEvents is a list of events
 type FilteredEvents []*github.IssueEvent
@@ -42,4 +46,13 @@ func FilterEvents(events []*github.IssueEvent, matcher Matcher) FilteredEvents {
 	}
 
 	return matches
+}
+
+// LastEvent returns the creation date of the last event that matches. Or deflt if there is no such event.
+func LastEvent(events []*github.IssueEvent, matcher Matcher, deflt *time.Time) *time.Time {
+	matches := FilterEvents(events, matcher)
+	if matches.Empty() {
+		return deflt
+	}
+	return matches.GetLast().CreatedAt
 }

@@ -50,6 +50,17 @@ func (a AddLabel) Match(event *github.IssueEvent) bool {
 	return *event.Event == "labeled"
 }
 
+// RemoveLabel searches for "unlabeled" event.
+type RemoveLabel struct{}
+
+// Match if the event is of type "unlabeled"
+func (r RemoveLabel) Match(event *github.IssueEvent) bool {
+	if event == nil || event.Event == nil {
+		return false
+	}
+	return *event.Event == "unlabeled"
+}
+
 // LabelPrefix searches for event whose label starts with the string
 type LabelPrefix string
 
@@ -59,6 +70,17 @@ func (l LabelPrefix) Match(event *github.IssueEvent) bool {
 		return false
 	}
 	return strings.HasPrefix(*event.Label.Name, string(l))
+}
+
+// LabelName searches for event whose label starts with the string
+type LabelName string
+
+// Match if the label is exactly provided string
+func (l LabelName) Match(event *github.IssueEvent) bool {
+	if event == nil || event.Label == nil || event.Label.Name == nil {
+		return false
+	}
+	return *event.Label.Name == string(l)
 }
 
 // CreatedAfter looks for event created after time
