@@ -993,6 +993,17 @@
                 export PROJECT="kubernetes-gci-petset"
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
+        - 'gci-gce-cri': # kubernetes-e2e-gci-gce-cri
+            description: 'Runs all non-slow, non-serial, non-disruptive, non-flaky tests with CRI enabled on GCE with GCI in parallel.'
+            timeout: 90
+            emails: 'lantaol@google.com'
+            test-owner: 'Random-Liu'
+            job-env: |
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="kubernetes-e2e-cri-validation"
+                export GINKGO_PARALLEL="y"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
     jobs:
         - 'kubernetes-e2e-{suffix}'
 
