@@ -173,6 +173,13 @@
             gitbasedir: 'k8s.io/kubernetes'
             owner: 'zhoufang@google.com'
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties'
+        - 'kubelet-flaky':
+            scm-cron-string: 'H H/1 * * *'
+            cron-string: 'H H/2 * * *'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            owner: 'lantaol@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-flaky.properties'
         - 'kubelet-cri':
             scm-cron-string: 'H/30 * * * *'
             cron-string: 'H H/1 * * *'
