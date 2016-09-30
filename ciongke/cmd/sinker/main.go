@@ -47,6 +47,8 @@ func main() {
 		return
 	}
 
+	// Clean now and regularly from now on.
+	clean(kc)
 	t := time.Tick(period)
 	for range t {
 		clean(kc)
@@ -71,7 +73,7 @@ func clean(kc kubeClient) {
 				logrus.WithError(err).Error("Error deleting job.")
 			}
 		} else if job.Status.Succeeded == 0 &&
-			time.Since(job.Status.CompletionTime) > maxAge {
+			time.Since(job.Status.StartTime) > maxAge {
 			// Warn about old, unsuccessful jobs.
 			logrus.WithField("job", job.Metadata.Name).Warning("Old, unsuccessful job.")
 		}
