@@ -14,4 +14,3 @@ spec:
       containers:
       - name: sinker
         image: gcr.io/kubernetes-jenkins-pull/sinker:0.0
-      restartPolicy: Never
