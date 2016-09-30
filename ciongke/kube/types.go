@@ -16,6 +16,10 @@ limitations under the License.
 
 package kube
 
+import (
+	"time"
+)
+
 type ObjectMeta struct {
 	Name      string            `json:"name,omitempty"`
 	Namespace string            `json:"namespace,omitempty"`
@@ -27,6 +31,7 @@ type ObjectMeta struct {
 type Job struct {
 	Metadata ObjectMeta `json:"metadata,omitempty"`
 	Spec     JobSpec    `json:"spec,omitempty"`
+	Status   JobStatus  `json:"status,omitempty"`
 }
 
 type JobSpec struct {
@@ -37,6 +42,14 @@ type JobSpec struct {
 	Template PodTemplateSpec `json:"template,omitempty"`
 }
 
+type JobStatus struct {
+	StartTime      time.Time `json:"startTime,omitempty"`
+	CompletionTime time.Time `json:"completionTime,omitempty"`
+	Active         int       `json:"active,omitempty"`
+	Succeeded      int       `json:"succeeded,omitempty"`
+	Failed         int       `json:"failed,omitempty"`
+}
+
 type PodTemplateSpec struct {
 	Metadata ObjectMeta `json:"metadata,omitempty"`
 	Spec     PodSpec    `json:"spec,omitempty"`
@@ -45,12 +58,30 @@ type PodTemplateSpec struct {
 type Pod struct {
 	Metadata ObjectMeta `json:"metadata,omitempty"`
 	Spec     PodSpec    `json:"spec,omitempty"`
+	Status   PodStatus  `json:"status,omitempty"`
 }
 
 type PodSpec struct {
 	Volumes       []Volume    `json:"volumes,omitempty"`
 	Containers    []Container `json:"containers,omitempty"`
 	RestartPolicy string      `json:"restartPolicy,omitempty"`
+}
+
+type PodPhase string
+
+const (
+	PodPending   PodPhase = "Pending"
+	PodRunning   PodPhase = "Running"
+	PodSucceeded PodPhase = "Succeeded"
+	PodFailed    PodPhase = "Failed"
+	PodUnknown   PodPhase = "Unknown"
+)
+
+type PodStatus struct {
+	Phase     PodPhase  `json:"phase,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Reason    string    `json:"reason,omitempty"`
+	StartTime time.Time `json:"startTime,omitempty"`
 }
 
 type Volume struct {
