@@ -106,12 +106,12 @@ func Issue(user string, number int, labels []string, isPR bool) *github.Issue {
 
 // MultiIssueEvents packages up events for when you have multiple issues in the
 // test server.
-func MultiIssueEvents(issueToEvents map[int][]LabelTime) (out []*github.IssueEvent) {
+func MultiIssueEvents(issueToEvents map[int][]LabelTime, eventName string) (out []*github.IssueEvent) {
 	for issueNum, events := range issueToEvents {
 		for _, l := range events {
 			out = append(out, &github.IssueEvent{
 				Issue: &github.Issue{Number: intPtr(issueNum)},
-				Event: stringPtr("labeled"),
+				Event: stringPtr(eventName),
 				Label: &github.Label{
 					Name: stringPtr(l.Label),
 				},

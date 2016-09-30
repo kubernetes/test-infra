@@ -127,8 +127,7 @@ func (h *LGTMHandler) addLGTMIfCommented(obj *github.MungeObject, comments []*gi
 
 func (h *LGTMHandler) removeLGTMIfCancelled(obj *github.MungeObject, comments []*githubapi.IssueComment, events []*githubapi.IssueEvent, reviewers mungerutil.UserSet) {
 	// Get time when the last (unlabeled, lgtm) event occurred.
-	addLGTMTime := e.LastEvent(events, e.And{e.RemoveLabel{}, e.LabelName(lgtmLabel), e.HumanActor()}, nil)
-
+	addLGTMTime := e.LastEvent(events, e.And{e.AddLabel{}, e.LabelName(lgtmLabel), e.HumanActor()}, nil)
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
 		if !mungerutil.IsValidUser(comment.User) {

@@ -314,7 +314,7 @@ func TestQueueOrder(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		config := &github_util.Config{}
-		client, server, mux := github_test.InitServer(t, nil, nil, github_test.MultiIssueEvents(test.issueToEvents), nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, nil, nil, github_test.MultiIssueEvents(test.issueToEvents, "labeled"), nil, nil, nil, nil)
 		config.Org = "o"
 		config.Project = "r"
 		config.SetClient(client)

@@ -42,6 +42,7 @@ func TestAddLGTMIfCommented(t *testing.T) {
 	tests := []struct {
 		name        string
 		comments    []*github.IssueComment
+		events      []*github.IssueEvent
 		issue       *github.Issue
 		assignees   mungerutil.UserSet
 		mustHave    []string
@@ -123,11 +124,25 @@ func TestAddLGTMIfCommented(t *testing.T) {
 			mustHave:    []string{},
 			mustNotHave: []string{lgtmLabel},
 		},
+		{
+			name:  "manual label removal after /lgtm should be honored",
+			issue: prWithoutLGTM,
+			comments: []*github.IssueComment{
+				github_test.IssueComment(1, "/lgtm //this is a comment", "user 1", 0),
+			},
+			events: github_test.MultiIssueEvents(
+				map[int][]github_test.LabelTime{
+					1: {{"me", lgtmLabel, 1}},
+				}, "unlabeled"),
+			assignees:   mungerutil.UserSet(sets.NewString("user 1")),
+			mustHave:    []string{},
+			mustNotHave: []string{lgtmLabel},
+		},
 	}
 
 	for testNum, test := range tests {
 		pr := ValidPR()
-		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, test.issue, pr, test.events, nil, nil, nil, nil)
 		path := fmt.Sprintf("/repos/o/r/issue/%s/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -150,7 +165,7 @@ func TestAddLGTMIfCommented(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 
-		l.addLGTMIfCommented(obj, test.comments, test.assignees)
+		l.addLGTMIfCommented(obj, test.comments, test.events, test.assignees)
 		for _, lab := range test.mustHave {
 			if !obj.HasLabel(lab) {
 				t.Errorf("%s:%d: Did not find label %q, labels: %v", test.name, testNum, lab, obj.Issue.Labels)
@@ -171,6 +186,7 @@ func TestRemoveLGTMIfCommented(t *testing.T) {
 	tests := []struct {
 		name        string
 		comments    []*github.IssueComment
+		events      []*github.IssueEvent
 		issue       *github.Issue
 		assignees   mungerutil.UserSet
 		mustHave    []string
@@ -229,11 +245,26 @@ func TestRemoveLGTMIfCommented(t *testing.T) {
 			mustHave:    []string{},
 			mustNotHave: []string{lgtmLabel},
 		},
+		{
+			name:  "manual label application after /lgtm cancel should be honored",
+			issue: prWithLGTM,
+			comments: []*github.IssueComment{
+				github_test.IssueComment(1, "/lgtm //this is a comment", "user 1", 0),
+				github_test.IssueComment(2, "/lgtm cancel //this is a bot", botName, 0),
+			},
+			events: github_test.MultiIssueEvents(
+				map[int][]github_test.LabelTime{
+					1: {{"me", lgtmLabel, 1}},
+				}, "labeled"),
+			assignees:   mungerutil.UserSet(sets.NewString("user 1")),
+			mustHave:    []string{lgtmLabel},
+			mustNotHave: []string{},
+		},
 	}
 
 	for testNum, test := range tests {
 		pr := ValidPR()
-		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil, nil, nil)
+		client, server, mux := github_test.InitServer(t, test.issue, pr, test.events, nil, nil, nil, nil)
 		path := fmt.Sprintf("/repos/o/r/issue/%s/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -256,7 +287,7 @@ func TestRemoveLGTMIfCommented(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 
-		l.removeLGTMIfCancelled(obj, test.comments, test.assignees)
+		l.removeLGTMIfCancelled(obj, test.comments, test.events, test.assignees)
 		for _, lab := range test.mustHave {
 			if !obj.HasLabel(lab) {
 				t.Errorf("%s:%d: Did not find label %q, labels: %v", test.name, testNum, lab, obj.Issue.Labels)
