@@ -178,8 +178,6 @@
                 export KUBEMARK_MASTER_SIZE="n1-standard-32"
                 export KUBEMARK_NUM_NODES="2000"
                 export KUBE_GCE_ZONE="us-central1-f"
-                # Use protobufs
-                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
                 # =========================================
                 # Configuration we are targetting in 1.5
                 # TODO: Uncomment when https://github.com/kubernetes/kubernetes/issues/33712 is debugged
@@ -190,7 +188,6 @@
                 # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-                # TODO: Switch to gci when https://github.com/kubernetes/kubernetes/issues/33712 is debugged
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
     jobs:
         - 'kubernetes-kubemark-{suffix}'
