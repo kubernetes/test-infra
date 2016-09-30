@@ -48,6 +48,7 @@ create-cluster:
 	@make hook-image --no-print-directory
 	@make hook-deployment --no-print-directory
 	@make hook-service --no-print-directory
+	@make sinker-deployment --no-print-directory
 	@echo -n "Waiting for loadbalancer ingress "; while [[ "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)" == "null" ]]; do echo -n "."; sleep 5; done; echo " Done"
 	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
 	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
@@ -55,7 +56,9 @@ create-cluster:
 update-cluster:
 	make test-pr-image --no-print-directory
 	make hook-image --no-print-directory
+	make sinker-image --no-print-directory
 	make hook-deployment --no-print-directory
+	make sinker-deployment --no-print-directory
 
 update-jobs:
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
@@ -64,17 +67,17 @@ get-cluster-credentials:
 	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
 
 clean:
-	rm cmd/hook/hook cmd/test-pr/test-pr
+	rm cmd/hook/hook cmd/test-pr/test-pr cmd/sinker/sinker
 
 test:
 	go test -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster clean test get-cluster-credentials
+.PHONY: create-cluster update-cluster update-jobs clean test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.33" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.33"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.34" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.34"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -87,4 +90,12 @@ test-pr-image:
 	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.17" cmd/test-pr
 	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.17"
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image
+sinker-image:
+	CGO_ENABLED=0 go build -o cmd/sinker/sinker github.com/kubernetes/test-infra/ciongke/cmd/sinker
+	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.0" cmd/sinker
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.0"
+
+sinker-deployment:
+	kubectl apply -f sinker_deployment.yaml
+
+.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment

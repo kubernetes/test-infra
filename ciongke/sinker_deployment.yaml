@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sinker
+  labels:
+    app: sinker
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sinker
+    spec:
+      containers:
+      - name: sinker
+        image: gcr.io/kubernetes-jenkins-pull/sinker:0.0
+      restartPolicy: Never
