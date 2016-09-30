@@ -92,8 +92,8 @@ test-pr-image:
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker github.com/kubernetes/test-infra/ciongke/cmd/sinker
-	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.0" cmd/sinker
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.0"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.1" cmd/sinker
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.1"
 
 sinker-deployment:
 	kubectl apply -f sinker_deployment.yaml
