@@ -53,14 +53,14 @@ create-cluster:
 	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
 	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
 
-update-cluster:
+update-cluster: get-cluster-credentials
 	make test-pr-image --no-print-directory
 	make hook-image --no-print-directory
 	make sinker-image --no-print-directory
 	make hook-deployment --no-print-directory
 	make sinker-deployment --no-print-directory
 
-update-jobs:
+update-jobs: get-cluster-credentials
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
 get-cluster-credentials:
