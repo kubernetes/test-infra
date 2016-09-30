@@ -143,6 +143,8 @@
                 export KUBEMARK_NUM_NODES="500"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+                # TODO: remove after we verify that this is causing problems with kubemark-scale
+                export TEST_CLUSTER_API_CONTENT_TYPE="--kube-api-content-type=application/vnd.kubernetes.protobuf"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-scale':
             description: 'Run Density test on Kubemark in very large cluster. Currently only scheduled to run every 12 hours so as not to waste too many resources.'
