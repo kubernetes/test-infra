@@ -190,6 +190,7 @@
                 # export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                # TODO: Switch to gci when https://github.com/kubernetes/kubernetes/issues/33712 is debugged
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
     jobs:
         - 'kubernetes-kubemark-{suffix}'
