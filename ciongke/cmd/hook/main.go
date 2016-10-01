@@ -39,7 +39,7 @@ var (
 
 	jobConfig = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
 
-	testPRImage = flag.String("test-pr-image", "", "Image to use for testing PRs.")
+	testPRImage = flag.String("line-image", "", "Image to use for testing PRs.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")

@@ -63,7 +63,7 @@ type kubeClient interface {
 	DeleteJob(name string) error
 }
 
-// Cut off test-pr jobs after 10 hours.
+// Cut off line jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
 func fields(kr KubeRequest) logrus.Fields {
@@ -128,7 +128,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
 						{
-							Name:  "test-pr",
+							Name:  "line",
 							Image: ka.TestPRImage,
 							Args: []string{
 								"--job-name=" + kr.JobName,
