@@ -20,6 +20,8 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -251,69 +253,172 @@ type gcsDir struct {
 	CommonPrefixes []Prefix `xml:"CommonPrefixes"`
 }
 
-func header(name string) string {
-	return fmt.Sprintf(`
-	<!doctype html>
-	<html>
-	<head>
-	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>GCS browser: %s</title>
-	</head>
-	<body>
-	`, name)
+func htmlPageHeader(out io.Writer, name string) error {
+	const tmpl = ` 
+	    <!doctype html>
+    	<html>
+    	<head>
+    	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    	    <meta charset="utf-8">
+    	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	    <title>GCS browser: {{.Name}}</title>
+    	</head>
+    	<body>
+	`
+
+	args := struct {
+		Name string
+	}{
+		Name: name,
+	}
+
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, args)
 }
 
-const footer string = `</body></html>`
-
-func gridItem(icon, url, name, size, modified string) string {
-	return fmt.Sprintf(`<li class="pure-g">
-		<div class="pure-u-1-3"><a href="%s"><img src="%s"> %s</a></div>
-		<div class="pure-u-1-3">%s</div>
-		<div class="pure-u-1-3">%s</div>
-		</li>`,
-		url, icon, name, size, modified)
+func htmlPageFooter(out io.Writer) error {
+	const tmpl = `</body></html>`
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, struct{}{})
 }
 
-func nextButton(path, marker string) string {
-	return fmt.Sprintf(`<a href="%s?marker=%s" class="pure-button" style="margin: 10px 0;">Next page</a>`+"\n", path, marker)
+func htmlContentHeader(out io.Writer, dirname, path string) error {
+	const tmpl = `
+	    <header style="margin-left:10px;">
+	        <h1>{{.DirName}}</h1>
+	        <h3>{{.Path}}</h3>
+	    </header>
+	    <ul>
+	`
+
+	args := struct {
+		DirName string
+		Path    string
+	}{
+		DirName: dirname,
+		Path:    path,
+	}
+
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, args)
+}
+
+func htmlContentFooter(out io.Writer) error {
+	const tmpl = `</ul>`
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, struct{}{})
+}
+
+func htmlNextButton(out io.Writer, path, marker string) error {
+	const tmpl = `
+	    <a href="{{.Path}}?marker={{.Marker}}"
+		   class="pure-button"
+		   style="margin: 10px 0;">
+		   Next page
+		</a>
+	`
+
+	args := struct {
+		Path   string
+		Marker string
+	}{
+		Path:   path,
+		Marker: marker,
+	}
+
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, args)
+}
+
+func htmlGridHeader(out io.Writer) error {
+	const tmpl = `
+		<li class="pure-g">
+		    <div class="pure-u-1-3"><u>Name</u></div>
+    		<div class="pure-u-1-3"><u>Size</u></div>
+    		<div class="pure-u-1-3"><u>Modified</u></div>
+		</li>
+	`
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, struct{}{})
+}
+
+func htmlGridItem(out io.Writer, icon, url, name, size, modified string) error {
+	const tmpl = `
+	    <li class="pure-g">
+		    <div class="pure-u-1-3"><a href="{{.URL}}"><img src="{{.Icon}}"> {{.Name}}</a></div>
+		    <div class="pure-u-1-3">{{.Size}}</div>
+		    <div class="pure-u-1-3">{{.Modified}}</div>
+		</li>
+	`
+
+	args := struct {
+		URL      string
+		Icon     string
+		Name     string
+		Size     string
+		Modified string
+	}{
+		URL:      url,
+		Icon:     icon,
+		Name:     name,
+		Size:     size,
+		Modified: modified,
+	}
+
+	t, err := template.New("t").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+	return t.Execute(out, args)
 }
 
 // Render writes HTML representing this gcsDir to the provided output.
 func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
-	fmt.Fprintf(out, header(dir.Name))
+	htmlPageHeader(out, dir.Name)
 
-	fmt.Fprintf(out, `<header style="margin-left:10px;">`)
-	fmt.Fprintf(out, "<h1>%s</h1>\n", dir.Name)
-	fmt.Fprintf(out, "<h3>%s</h3>\n", inPath)
-	fmt.Fprintf(out, "</header>")
+	htmlContentHeader(out, dir.Name, inPath)
 
-	fmt.Fprintf(out, "<ul>\n")
-	var next string
 	if dir.NextMarker != "" {
-		next = nextButton(gcsPath+inPath, dir.NextMarker)
-		fmt.Fprintf(out, next)
+		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
 	}
-	fmt.Fprintf(out, `<li class="pure-g">`+
-		`<div class="pure-u-1-3"><u>Name</u></div>`+
-		`<div class="pure-u-1-3"><u>Size</u></div>`+
-		`<div class="pure-u-1-3"><u>Modified</u></div>`+
-		"</li>")
+
+	htmlGridHeader(out)
 	if parent := dirname(inPath); parent != "" {
 		url := gcsPath + parent
-		fmt.Fprintf(out, gridItem(iconBack, url, "..", "-", "-"))
+		htmlGridItem(out, iconBack, url, "..", "-", "-")
 	}
-
 	for i := range dir.CommonPrefixes {
 		dir.CommonPrefixes[i].Render(out, inPath)
 	}
 	for i := range dir.Contents {
 		dir.Contents[i].Render(out, inPath)
 	}
-	fmt.Fprintf(out, next)
-	fmt.Fprintf(out, "</ul>\n")
-	fmt.Fprintf(out, footer)
+
+	if dir.NextMarker != "" {
+		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
+	}
+
+	htmlContentFooter(out)
+
+	htmlPageFooter(out)
 }
 
 // Record represents a single "Contents" entry in a GCS bucket.
@@ -339,7 +444,7 @@ func (rec *Record) Render(out http.ResponseWriter, inPath string) {
 		url = gcsBaseURL + inPath + rec.Name
 		size = fmt.Sprintf("%v", rec.Size)
 	}
-	fmt.Fprintf(out, gridItem(iconFile, url, rec.Name, size, mtime))
+	htmlGridItem(out, iconFile, url, rec.Name, size, mtime)
 }
 
 // Prefix represents a single "CommonPrefixes" entry in a GCS bucket.
@@ -350,7 +455,7 @@ type Prefix struct {
 // Render writes HTML representing this Prefix to the provided output.
 func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	url := gcsPath + inPath + pfx.Prefix
-	fmt.Fprintf(out, gridItem(iconDir, url, pfx.Prefix, "-", "-"))
+	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 
 // A logger-wrapper that logs a transaction's metadata.
