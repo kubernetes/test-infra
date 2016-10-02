@@ -20,6 +20,8 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -251,69 +253,157 @@ type gcsDir struct {
 	CommonPrefixes []Prefix `xml:"CommonPrefixes"`
 }
 
-func header(name string) string {
-	return fmt.Sprintf(`
-	<!doctype html>
-	<html>
-	<head>
-	<link rel="stylesheet" href="https://yui-s.yahooapis.com/pure/0.6.0/pure-min.css">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>GCS browser: %s</title>
-	</head>
-	<body>
-	`, name)
+const tmplPageHeaderText = ` 
+    <!doctype html>
+   	<html>
+   	<head>
+   	    <link rel="stylesheet" href="https://yui-s.yahooapis.com/pure/0.6.0/pure-min.css">
+   	    <meta charset="utf-8">
+   	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   	    <title>GCS browser: {{.Name}}</title>
+   	</head>
+   	<body>
+`
+
+var tmplPageHeader = template.Must(template.New("page-header").Parse(tmplPageHeaderText))
+
+func htmlPageHeader(out io.Writer, name string) error {
+	args := struct {
+		Name string
+	}{
+		Name: name,
+	}
+	return tmplPageHeader.Execute(out, args)
 }
 
-const footer string = `</body></html>`
+const tmplPageFooterText = `</body></html>`
 
-func gridItem(icon, url, name, size, modified string) string {
-	return fmt.Sprintf(`<li class="pure-g">
-		<div class="pure-u-1-3"><a href="%s"><img src="%s"> %s</a></div>
-		<div class="pure-u-1-3">%s</div>
-		<div class="pure-u-1-3">%s</div>
-		</li>`,
-		url, icon, name, size, modified)
+var tmplPageFooter = template.Must(template.New("page-footer").Parse(tmplPageFooterText))
+
+func htmlPageFooter(out io.Writer) error {
+	return tmplPageFooter.Execute(out, struct{}{})
 }
 
-func nextButton(path, marker string) string {
-	return fmt.Sprintf(`<a href="%s?marker=%s" class="pure-button" style="margin: 10px 0;">Next page</a>`+"\n", path, marker)
+const tmplContentHeaderText = `
+    <header style="margin-left:10px;">
+        <h1>{{.DirName}}</h1>
+        <h3>{{.Path}}</h3>
+    </header>
+    <ul>
+`
+
+var tmplContentHeader = template.Must(template.New("content-header").Parse(tmplContentHeaderText))
+
+func htmlContentHeader(out io.Writer, dirname, path string) error {
+	args := struct {
+		DirName string
+		Path    string
+	}{
+		DirName: dirname,
+		Path:    path,
+	}
+	return tmplContentHeader.Execute(out, args)
+}
+
+const tmplContentFooterText = `</ul>`
+
+var tmplContentFooter = template.Must(template.New("content-footer").Parse(tmplContentFooterText))
+
+func htmlContentFooter(out io.Writer) error {
+	return tmplContentFooter.Execute(out, struct{}{})
+}
+
+const tmplNextButtonText = `
+    <a href="{{.Path}}?marker={{.Marker}}"
+	   class="pure-button"
+	   style="margin: 10px 0;">
+	   Next page
+	</a>
+`
+
+var tmplNextButton = template.Must(template.New("next-button").Parse(tmplNextButtonText))
+
+func htmlNextButton(out io.Writer, path, marker string) error {
+	args := struct {
+		Path   string
+		Marker string
+	}{
+		Path:   path,
+		Marker: marker,
+	}
+	return tmplNextButton.Execute(out, args)
+}
+
+const tmplGridHeaderText = `
+	<li class="pure-g">
+	    <div class="pure-u-1-3"><u>Name</u></div>
+   		<div class="pure-u-1-3"><u>Size</u></div>
+   		<div class="pure-u-1-3"><u>Modified</u></div>
+	</li>
+`
+
+var tmplGridHeader = template.Must(template.New("grid-header").Parse(tmplGridHeaderText))
+
+func htmlGridHeader(out io.Writer) error {
+	return tmplGridHeader.Execute(out, struct{}{})
+}
+
+const tmplGridItemText = `
+    <li class="pure-g">
+	    <div class="pure-u-1-3"><a href="{{.URL}}"><img src="{{.Icon}}"> {{.Name}}</a></div>
+	    <div class="pure-u-1-3">{{.Size}}</div>
+	    <div class="pure-u-1-3">{{.Modified}}</div>
+	</li>
+`
+
+var tmplGridItem = template.Must(template.New("grid-item").Parse(tmplGridItemText))
+
+func htmlGridItem(out io.Writer, icon, url, name, size, modified string) error {
+	args := struct {
+		URL      string
+		Icon     string
+		Name     string
+		Size     string
+		Modified string
+	}{
+		URL:      url,
+		Icon:     icon,
+		Name:     name,
+		Size:     size,
+		Modified: modified,
+	}
+	return tmplGridItem.Execute(out, args)
 }
 
 // Render writes HTML representing this gcsDir to the provided output.
 func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
-	fmt.Fprintf(out, header(dir.Name))
+	htmlPageHeader(out, dir.Name)
 
-	fmt.Fprintf(out, `<header style="margin-left:10px;">`)
-	fmt.Fprintf(out, "<h1>%s</h1>\n", dir.Name)
-	fmt.Fprintf(out, "<h3>%s</h3>\n", inPath)
-	fmt.Fprintf(out, "</header>")
+	htmlContentHeader(out, dir.Name, inPath)
 
-	fmt.Fprintf(out, "<ul>\n")
-	var next string
 	if dir.NextMarker != "" {
-		next = nextButton(gcsPath+inPath, dir.NextMarker)
-		fmt.Fprintf(out, next)
+		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
 	}
-	fmt.Fprintf(out, `<li class="pure-g">`+
-		`<div class="pure-u-1-3"><u>Name</u></div>`+
-		`<div class="pure-u-1-3"><u>Size</u></div>`+
-		`<div class="pure-u-1-3"><u>Modified</u></div>`+
-		"</li>")
+
+	htmlGridHeader(out)
 	if parent := dirname(inPath); parent != "" {
 		url := gcsPath + parent
-		fmt.Fprintf(out, gridItem(iconBack, url, "..", "-", "-"))
+		htmlGridItem(out, iconBack, url, "..", "-", "-")
 	}
-
 	for i := range dir.CommonPrefixes {
 		dir.CommonPrefixes[i].Render(out, inPath)
 	}
 	for i := range dir.Contents {
 		dir.Contents[i].Render(out, inPath)
 	}
-	fmt.Fprintf(out, next)
-	fmt.Fprintf(out, "</ul>\n")
-	fmt.Fprintf(out, footer)
+
+	if dir.NextMarker != "" {
+		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
+	}
+
+	htmlContentFooter(out)
+
+	htmlPageFooter(out)
 }
 
 // Record represents a single "Contents" entry in a GCS bucket.
@@ -339,7 +429,7 @@ func (rec *Record) Render(out http.ResponseWriter, inPath string) {
 		url = gcsBaseURL + inPath + rec.Name
 		size = fmt.Sprintf("%v", rec.Size)
 	}
-	fmt.Fprintf(out, gridItem(iconFile, url, rec.Name, size, mtime))
+	htmlGridItem(out, iconFile, url, rec.Name, size, mtime)
 }
 
 // Prefix represents a single "CommonPrefixes" entry in a GCS bucket.
@@ -350,7 +440,7 @@ type Prefix struct {
 // Render writes HTML representing this Prefix to the provided output.
 func (pfx *Prefix) Render(out http.ResponseWriter, inPath string) {
 	url := gcsPath + inPath + pfx.Prefix
-	fmt.Fprintf(out, gridItem(iconDir, url, pfx.Prefix, "-", "-"))
+	htmlGridItem(out, iconDir, url, pfx.Prefix, "-", "-")
 }
 
 // A logger-wrapper that logs a transaction's metadata.
