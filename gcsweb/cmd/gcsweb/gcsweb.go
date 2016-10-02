@@ -89,9 +89,17 @@ func main() {
 	http.Handle("/icons/", http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons))))
 
 	// Serve HTTP.
+	http.HandleFunc("/healthz", healthzRequest)
 	http.HandleFunc("/", otherRequest)
 	log.Printf("serving on port %d", *flPort)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
+}
+
+func healthzRequest(w http.ResponseWriter, r *http.Request) {
+	logger := newTxnLogger(r)
+	logger.Printf("GET /healthz")
+	fmt.Fprintf(w, "ok")
+	w.WriteHeader(http.StatusOK)
 }
 
 func otherRequest(w http.ResponseWriter, r *http.Request) {

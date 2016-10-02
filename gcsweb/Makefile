@@ -25,7 +25,7 @@ REGISTRY ?= gcr.io/google_containers
 ARCH ?= amd64
 
 # The version string.
-VERSION := v1.0.0
+VERSION := v1.0.0-rc1
 
 ###
 ### These variables should not need tweaking.
