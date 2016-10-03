@@ -20,6 +20,8 @@
     builders:
         - activate-gce-service-account
         - shell: |
+            # Fake provider to trick e2e-runner.sh
+            export KUBERNETES_PROVIDER="kops-aws"
             export AWS_CONFIG_FILE="${{WORKSPACE}}/.aws/credentials"
             # This is needed to be able to create PD from the e2e test
             export AWS_SHARED_CREDENTIALS_FILE="${{WORKSPACE}}/.aws/credentials"
