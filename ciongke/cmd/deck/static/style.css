@@ -1,0 +1,85 @@
+body {
+    font-family: "Roboto", "Arial", sans-serif;
+    line-height: 1.4;
+    background: #f4f4f4;
+    color: #444;
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    background-color: #3f51b5;
+    color: white;
+    text-align: center;
+    padding: 4px;
+    box-shadow: 0px 0px 10px #666;
+}
+
+#logo {
+    width: 80px;
+    height: 80px;
+    float: left;
+    padding-left: 16px;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 2em;
+}
+
+div {
+    background: #fff;
+    padding: 8px;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #e0e0e0;
+    margin-top: 8px;
+}
+
+aside {
+    float: left;
+    margin: 8px;
+}
+
+article {
+    overflow: hidden;
+    margin: 8px;
+}
+
+label {
+    font-size: 0.9em;
+}
+
+span {
+    color: #333;
+    line-height: 1.8;
+}
+
+table {
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #e0e0e0;
+    border-collapse: collapse;
+    margin: 8px;
+    width: 100%;
+}
+
+tr {
+    border-top: 1px solid #f4f4f4;
+}
+
+td:first-child, th:first-child {
+    padding-left: 16px;
+}
+
+td:last-child, th:last-child {
+    padding-right: 16px;
+}
+
+td, th {
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    color: #333;
+}
