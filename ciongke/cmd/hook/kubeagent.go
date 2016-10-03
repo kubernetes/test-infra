@@ -29,10 +29,10 @@ import (
 // Kubernetes jobs. The BuildRequests channel will create a new job, deleting
 // the old if necessary, and the DeleteRequests channel will only delete.
 type KubeAgent struct {
-	DryRun      bool
-	TestPRImage string
-	KubeClient  kubeClient
-	Namespace   string
+	DryRun     bool
+	LineImage  string
+	KubeClient kubeClient
+	Namespace  string
 
 	BuildRequests  <-chan KubeRequest
 	DeleteRequests <-chan KubeRequest
@@ -129,7 +129,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 					Containers: []kube.Container{
 						{
 							Name:  "line",
-							Image: ka.TestPRImage,
+							Image: ka.LineImage,
 							Args: []string{
 								"--job-name=" + kr.JobName,
 								"--context=" + kr.Context,
