@@ -584,6 +584,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.3-cvm-kubectl-skew
 - name: kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
+- name: kubelet-flaky-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-flaky-gce-e2e-ci
 
 # Manual, federated groups
 # rktnetes
@@ -1091,6 +1093,8 @@ dashboards:
     test_group_name: kubelet-serial-gce-e2e-ci
   - name: kubelet-cri-gce-e2e
     test_group_name: kubelet-cri-gce-e2e-ci
+  - name: kubelet-flaky-gce-e2e
+    test_group_name: kubelet-flaky-gce-e2e-ci
   name: google-node
 - dashboard_tab:
   - name: soak-continuous-e2e-gce
