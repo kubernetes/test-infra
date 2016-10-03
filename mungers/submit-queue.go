@@ -782,7 +782,7 @@ func (sq *SubmitQueue) getMetaData() []byte {
 
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR does not have " + claYesLabel + " or " + claHumanLabel
+	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have LGTM."
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
@@ -837,7 +837,7 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Must pass CLA checks
-	if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) {
+	if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
 		sq.SetMergeStatus(obj, noCLA)
 		return false
 	}
@@ -1273,7 +1273,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	var out bytes.Buffer
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q</li>", claYesLabel, claHumanLabel))
+	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	if len(sq.RequiredStatusContexts) > 0 || len(sq.RequiredRetestContexts) > 0 {
 		out.WriteString("<li>All of the following github statuses must be green")
