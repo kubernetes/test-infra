@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -26,103 +27,108 @@ import (
 )
 
 // fetchRecentIssues retrieves issues from DB, but only fetches issues modified since last call
-func fetchRecentIssues(db *gorm.DB, last time.Time, out chan sql.Issue) (time.Time, error) {
-	glog.Infof("Fetching issues updated after %s", last)
+func fetchRecentIssues(db *gorm.DB, last *time.Time, out chan sql.Issue) error {
+	glog.Infof("Fetching issues updated after %s", *last)
 
 	var issues []sql.Issue
-	query := db.Where("issue_updated_at >= ?", last).Preload("Labels").Find(&issues)
+	query := db.Where("issue_updated_at >= ?", last).Order("issue_updated_at").Preload("Labels").Find(&issues)
 	if query.Error != nil {
-		return last, query.Error
+		return query.Error
 	}
 
 	count := len(issues)
 	for _, issue := range issues {
 		out <- issue
-		last = issue.IssueUpdatedAt
+		*last = issue.IssueUpdatedAt
 	}
 	glog.Infof("Found and pushed %d updated/new issues", count)
 
-	return last, nil
+	return nil
 }
 
-// fetchRecentEvents retrieves events from DB, but only fetches events created since last call
-func fetchRecentEvents(db *gorm.DB, last int, out chan sql.IssueEvent) (int, error) {
-	glog.Infof("Fetching issue-events with id bigger than %d", last)
+// fetchRecentEventsAndComments retrieves events from DB, but only fetches events created since last call
+func fetchRecentEventsAndComments(db *gorm.DB, lastEvent *int, lastComment *int, out chan interface{}) error {
+	glog.Infof("Fetching issue-events with id bigger than %d", *lastEvent)
+	glog.Infof("Fetching comments with id bigger than %d", *lastComment)
 
-	rows, err := db.Model(sql.IssueEvent{}).Where("id > ?", last).Rows()
+	eventRows, err := db.Model(sql.IssueEvent{}).Where("id > ?", *lastEvent).Order("event_created_at asc").Rows()
 	if err != nil {
-		return last, err
+		return fmt.Errorf("Failed to query events from database: %s", err)
+	}
+
+	commentRows, err := db.Model(sql.Comment{}).Where("id > ?", *lastComment).Order("comment_created_at asc").Rows()
+	if err != nil {
+		return fmt.Errorf("Failed to query comments from database: %s", err)
 	}
 
 	count := 0
-	for rows.Next() {
-		var issueEvent sql.IssueEvent
-		db.ScanRows(rows, &issueEvent)
-		out <- issueEvent
-		last = issueEvent.ID
+	comment := &sql.Comment{}
+	if commentRows.Next() {
+		db.ScanRows(commentRows, comment)
+	} else {
+		comment = nil
+	}
+	event := &sql.IssueEvent{}
+	if eventRows.Next() {
+		db.ScanRows(eventRows, event)
+	} else {
+		event = nil
+	}
+
+	for event != nil || comment != nil {
+		if event == nil || (comment != nil && comment.CommentCreatedAt.Before(event.EventCreatedAt)) {
+			out <- *comment
+			*lastComment = comment.ID
+			if commentRows.Next() {
+				db.ScanRows(commentRows, comment)
+			} else {
+				comment = nil
+			}
+		} else {
+			out <- *event
+			*lastEvent = event.ID
+			if eventRows.Next() {
+				db.ScanRows(eventRows, event)
+			} else {
+				event = nil
+			}
+		}
 		count++
 	}
-	glog.Infof("Found and pushed %d new events", count)
 
-	return last, nil
-}
+	glog.Infof("Found and pushed %d new events/comments", count)
 
-// fetchRecentComments retrieves comments from DB, but only fetches comments created since last call
-func fetchRecentComments(db *gorm.DB, last int, out chan sql.Comment) (int, error) {
-	glog.Infof("Fetching comments with id bigger than %d", last)
-
-	rows, err := db.Model(sql.Comment{}).Where("id > ?", last).Rows()
-	if err != nil {
-		return last, err
-	}
-
-	count := 0
-	for rows.Next() {
-		var comment sql.Comment
-		db.ScanRows(rows, &comment)
-		out <- comment
-		last = comment.ID
-		count++
-	}
-	glog.Infof("Found and pushed %d new comments", count)
-
-	return last, nil
+	return nil
 }
 
 // Fetcher is a utility class used to Fetch all types of events
 type Fetcher struct {
-	lastIssue          time.Time
-	lastEvent          int
-	lastComment        int
-	issuesChannel      chan sql.Issue
-	issueEventsChannel chan sql.IssueEvent
-	commentsChannel    chan sql.Comment
+	lastIssue             time.Time
+	lastEvent             int
+	lastComment           int
+	issuesChannel         chan sql.Issue
+	eventsCommentsChannel chan interface{}
 }
 
 // NewFetcher creates a new Fetcher and initializes the output channels
 func NewFetcher() *Fetcher {
 	return &Fetcher{
-		issuesChannel:      make(chan sql.Issue, 100),
-		issueEventsChannel: make(chan sql.IssueEvent, 100),
-		commentsChannel:    make(chan sql.Comment, 100),
+		issuesChannel:         make(chan sql.Issue, 100),
+		eventsCommentsChannel: make(chan interface{}, 100),
 	}
 }
 
 // GetChannels returns the list of output channels used
-func (f *Fetcher) GetChannels() (chan sql.Issue, chan sql.IssueEvent, chan sql.Comment) {
-	return f.issuesChannel, f.issueEventsChannel, f.commentsChannel
+func (f *Fetcher) GetChannels() (chan sql.Issue, chan interface{}) {
+	return f.issuesChannel, f.eventsCommentsChannel
 }
 
 // Fetch retrieves all types of events, and push them to output channels
 func (f *Fetcher) Fetch(db *gorm.DB) error {
-	var err error
-	if f.lastIssue, err = fetchRecentIssues(db, f.lastIssue, f.issuesChannel); err != nil {
+	if err := fetchRecentIssues(db, &f.lastIssue, f.issuesChannel); err != nil {
 		return err
 	}
-	if f.lastEvent, err = fetchRecentEvents(db, f.lastEvent, f.issueEventsChannel); err != nil {
-		return err
-	}
-	if f.lastComment, err = fetchRecentComments(db, f.lastComment, f.commentsChannel); err != nil {
+	if err := fetchRecentEventsAndComments(db, &f.lastEvent, &f.lastComment, f.eventsCommentsChannel); err != nil {
 		return err
 	}
 	return nil

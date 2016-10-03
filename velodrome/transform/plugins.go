@@ -47,13 +47,16 @@ type Plugins []Plugin
 func NewPlugins(idb InfluxDatabase) Plugins {
 	plugins := Plugins{
 		NewMergedPlugin(idb),
+		NewLGTMToMergedPlugin(idb),
+		NewFirstCommentPlugin(idb),
+		NewRebasePlugin(idb),
 	}
 
 	return plugins
 }
 
 // Dispatch receives channels to each type of events, and dispatch them to each plugins.
-func (p Plugins) Dispatch(issues chan sql.Issue, issueEvents chan sql.IssueEvent, comments chan sql.Comment) {
+func (p Plugins) Dispatch(issues chan sql.Issue, eventsCommentsChannel chan interface{}) {
 	for {
 		select {
 		case issue, ok := <-issues:
@@ -65,22 +68,22 @@ func (p Plugins) Dispatch(issues chan sql.Issue, issueEvents chan sql.IssueEvent
 					glog.Fatal("Failed to handle issue: ", err)
 				}
 			}
-		case comment, ok := <-comments:
-			if !ok {
-				return
-			}
-			for c := range p {
-				if err := p[c].ReceiveComment(comment); err != nil {
-					glog.Fatal("Failed to handle comment: ", err)
-				}
-			}
-		case event, ok := <-issueEvents:
+		case event, ok := <-eventsCommentsChannel:
 			if !ok {
 				return
 			}
 			for i := range p {
-				if err := p[i].ReceiveIssueEvent(event); err != nil {
-					glog.Fatal("Failed to handle event: ", err)
+				switch event := event.(type) {
+				case sql.IssueEvent:
+					if err := p[i].ReceiveIssueEvent(event); err != nil {
+						glog.Fatal("Failed to handle event: ", err)
+					}
+				case sql.Comment:
+					if err := p[i].ReceiveComment(event); err != nil {
+						glog.Fatal("Failed to handle comment: ", err)
+					}
+				default:
+					glog.Fatal("Received invalid object: ", event)
 				}
 			}
 		}
