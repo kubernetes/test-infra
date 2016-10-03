@@ -29,7 +29,7 @@
             {job-env}
             {post-env}
             export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
-            export E2E_OPT="--deployment kops --kops ${{WORKSPACE}}/kops -kops-cluster ${{E2E_NAME}}.test-aws.k8s.io -kops-state s3://k8s-kops-jenkins/"
+            export E2E_OPT="--deployment kops --kops /workspace/kops -kops-cluster ${{E2E_NAME}}.test-aws.k8s.io -kops-state s3://k8s-kops-jenkins/"
             export GINKGO_PARALLEL="y"
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
