@@ -27,7 +27,7 @@ spec:
         - name: influxdb-port
           containerPort: 8086
         volumeMounts:
-        - mountPath: /opt/influxdb/shared/data/db
+        - mountPath: /data
           name: database-volume
         - mountPath: /config
           name: influx-config
@@ -83,16 +83,16 @@ data:
     join = ""
 
     [meta]
-      dir = "/root/.influxdb/meta"
+      dir = "/data/meta"
       retention-autocreate = true
       logging-enabled = true
       pprof-enabled = false
       lease-duration = "1m0s"
 
     [data]
-      dir = "/root/.influxdb/data"
+      dir = "/data/data"
       engine = "tsm1"
-      wal-dir = "/root/.influxdb/wal"
+      wal-dir = "/data/wal"
       wal-logging-enabled = true
       query-log-enabled = true
       cache-max-memory-size = 524288000
@@ -160,30 +160,6 @@ data:
       consistency-level = "one"
       separator = "."
       udp-read-buffer = 0
-
-    [collectd]
-      enabled = false
-      bind-address = ":25826"
-      database = "collectd"
-      retention-policy = ""
-      batch-size = 5000
-      batch-pending = 10
-      batch-timeout = "10s"
-      read-buffer = 0
-      typesdb = "/usr/share/collectd/types.db"
-
-    [opentsdb]
-      enabled = false
-      bind-address = ":4242"
-      database = "opentsdb"
-      retention-policy = ""
-      consistency-level = "one"
-      tls-enabled = false
-      certificate = "/etc/ssl/influxdb.pem"
-      batch-size = 1000
-      batch-pending = 5
-      batch-timeout = "1s"
-      log-point-errors = true
 
     [[udp]]
       enabled = false
