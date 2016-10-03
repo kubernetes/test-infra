@@ -20,10 +20,14 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-if [[ -z "${PROJECT:-}" ]]; then
-  echo "ERROR: unset PROJECT" >&2
-  exit 1
-fi
+case "${KUBERNETES_PROVIDER}" in
+    gce|gke|kubemark)
+        if [[ -z "${PROJECT:-}" ]]; then
+          echo "ERROR: unset PROJECT" >&2
+          exit 1
+        fi
+        ;;
+esac
 
 # include shell2junit library
 sh2ju="$(dirname "${0}")/sh2ju.sh"
