@@ -52,6 +52,8 @@ const (
 
 	headerRateRemaining = "X-RateLimit-Remaining"
 	headerRateReset     = "X-RateLimit-Reset"
+
+	maxCommentLen = 65535
 )
 
 var (
@@ -1659,6 +1661,10 @@ func (obj *MungeObject) WriteComment(msg string) error {
 	glog.Infof("Commenting in %d: %q", prNum, comment)
 	if config.DryRun {
 		return nil
+	}
+	if len(msg) > maxCommentLen {
+		glog.Info("Comment in %d was larger than %d and was truncated", prNum, maxCommentLen)
+		msg = msg[:maxCommentLen]
 	}
 	if _, _, err := config.client.Issues.CreateComment(config.Org, config.Project, prNum, &github.IssueComment{Body: &msg}); err != nil {
 		glog.Errorf("%v", err)
