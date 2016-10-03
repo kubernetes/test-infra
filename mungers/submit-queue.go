@@ -782,7 +782,7 @@ func (sq *SubmitQueue) getMetaData() []byte {
 
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR does not have " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
+	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have LGTM."
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
