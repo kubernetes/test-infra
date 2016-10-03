@@ -29,6 +29,7 @@ if [[ -z "${KOPS_URL}" ]]; then
 fi
 
 curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_URL}/linux/amd64/kops"
+chmod +x "${WORKSPACE}/kops"
 export NODEUP_URL="${KOPS_URL}/linux/amd64/nodeup"
 
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
