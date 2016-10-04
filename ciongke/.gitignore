@@ -1,4 +1,4 @@
 cmd/hook/hook
-cmd/test-pr/test-pr
+cmd/line/line
 cmd/sinker/sinker
 cmd/deck/deck

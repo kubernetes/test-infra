@@ -27,9 +27,9 @@ import (
 func TestCreateJob(t *testing.T) {
 	c := &fakekube.FakeClient{}
 	ka := &KubeAgent{
-		Namespace:   "ns",
-		TestPRImage: "im:tag",
-		KubeClient:  c,
+		Namespace:  "ns",
+		LineImage:  "im:tag",
+		KubeClient: c,
 	}
 	br := KubeRequest{
 		JobName: "kubernetes-e2e-gce",

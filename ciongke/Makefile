@@ -32,10 +32,13 @@ JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 # Useful rules:
 # - create-cluster turns up a cluster then prints out the webhook address.
 # - update-cluster pushes new image versions and updates the deployment.
+# - update-jobs updates the configmap defining the Jenkins jobs.
 # - hook-image builds and pushes the hook image.
 # - hook-deployment updates the deployment.
 # - hook-service create the hook service.
-# - test-pr-image builds and pushes the test-pr image.
+# - line-image builds and pushes the line image.
+# - sinker-image builds and pushes the sinker image.
+# - sinker-deployment updates the sinker deployment.
 
 create-cluster:
 	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type "$(MACHINE_TYPE)" --scope "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --num-nodes "$(NUM_NODES)" --network "default" --enable-cloud-logging --enable-cloud-monitoring
@@ -44,7 +47,7 @@ create-cluster:
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
-	@make test-pr-image --no-print-directory
+	@make line-image --no-print-directory
 	@make hook-image --no-print-directory
 	@make deck-image --no-print-directory
 	@make sinker-image --no-print-directory
@@ -58,7 +61,7 @@ create-cluster:
 	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
 
 update-cluster: get-cluster-credentials
-	make test-pr-image --no-print-directory
+	make line-image --no-print-directory
 	make hook-image --no-print-directory
 	make sinker-image --no-print-directory
 	make deck-image --no-print-directory
@@ -73,7 +76,7 @@ get-cluster-credentials:
 	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
 
 clean:
-	rm cmd/hook/hook cmd/test-pr/test-pr cmd/sinker/sinker
+	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker
 
 test:
 	go test -cover $$(go list ./... | grep -v "\/vendor\/")
@@ -82,8 +85,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.34" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.34"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.35" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.35"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -91,10 +94,10 @@ hook-deployment:
 hook-service:
 	kubectl create -f hook_service.yaml
 
-test-pr-image:
-	CGO_ENABLED=0 go build -o cmd/test-pr/test-pr github.com/kubernetes/test-infra/ciongke/cmd/test-pr
-	docker build -t "gcr.io/kubernetes-jenkins-pull/test-pr:0.17" cmd/test-pr
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/test-pr:0.17"
+line-image:
+	CGO_ENABLED=0 go build -o cmd/line/line github.com/kubernetes/test-infra/ciongke/cmd/line
+	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.17" cmd/line
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.17"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker github.com/kubernetes/test-infra/ciongke/cmd/sinker
