@@ -23,6 +23,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
+)
+
+const (
+	maxRetries = 8
+	retryDelay = 2 * time.Second
 )
 
 // Status is a build result from Jenkins. If it is still building then
@@ -69,6 +75,32 @@ func NewDryRunClient(url, user, token string) *Client {
 	}
 }
 
+// Retry on transport failures. Does not retry on 500s.
+func (c *Client) request(method, path string) (*http.Response, error) {
+	var resp *http.Response
+	var err error
+	backoff := retryDelay
+	for retries := 0; retries < maxRetries; retries++ {
+		resp, err = c.doRequest(method, path)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(backoff)
+		backoff *= 2
+	}
+	return resp, err
+}
+
+func (c *Client) doRequest(method, path string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.SetBasicAuth(c.user, c.token)
+	return c.client.Do(req)
+}
+
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
 func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
@@ -77,12 +109,7 @@ func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
 	}
 	buildID := uuid.NewV1().String()
 	u := fmt.Sprintf("%s/job/%s/buildWithParameters?ghprbPullId=%d&ghprbTargetBranch=%s&buildId=%s", c.baseURL, job, pr, branch, buildID)
-	req, err := http.NewRequest(http.MethodPost, u, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.SetBasicAuth(c.user, c.token)
-	resp, err := c.client.Do(req)
+	resp, err := c.request(http.MethodPost, u)
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +135,7 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 		return false, nil
 	}
 	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
-	req, err := http.NewRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return false, err
-	}
-	req.SetBasicAuth(c.user, c.token)
-	resp, err := c.client.Do(req)
+	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return false, err
 	}
@@ -160,12 +182,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 		}, nil
 	}
 	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, b.jobName)
-	req, err := http.NewRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.SetBasicAuth(c.user, c.token)
-	resp, err := c.client.Do(req)
+	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return nil, err
 	}

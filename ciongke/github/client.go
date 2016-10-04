@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -32,7 +33,11 @@ type Client struct {
 	dry    bool
 }
 
-const githubBase = "https://api.github.com"
+const (
+	githubBase = "https://api.github.com"
+	maxRetries = 8
+	retryDelay = 2 * time.Second
+)
 
 // NewClient creates a new fully operational GitHub client.
 func NewClient(token string) *Client {
@@ -56,7 +61,24 @@ func NewDryRunClient(token string) *Client {
 	}
 }
 
+// Retry on transport failures. Does not retry on 500s.
 func (c *Client) request(method, path string, body interface{}) (*http.Response, error) {
+	var resp *http.Response
+	var err error
+	backoff := retryDelay
+	for retries := 0; retries < maxRetries; retries++ {
+		resp, err = c.doRequest(method, path, body)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(backoff)
+		backoff *= 2
+	}
+	return resp, err
+}
+
+func (c *Client) doRequest(method, path string, body interface{}) (*http.Response, error) {
 	var buf io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)

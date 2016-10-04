@@ -26,10 +26,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
 	inClusterBaseURL = "https://kubernetes"
+	maxRetries       = 8
+	retryDelay       = 2 * time.Second
 )
 
 // Client interacts with the Kubernetes api-server.
@@ -40,7 +43,36 @@ type Client struct {
 	namespace string
 }
 
+// Retry on transport failures. Does not retry on 500s.
 func (c *Client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
+	var resp *http.Response
+	var err error
+	backoff := retryDelay
+	for retries := 0; retries < maxRetries; retries++ {
+		resp, err = c.doRequest(method, urlPath, query, body)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(backoff)
+		backoff *= 2
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	rb, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
+	}
+	return rb, nil
+}
+
+func (c *Client) doRequest(method, urlPath string, query map[string]string, body io.Reader) (*http.Response, error) {
 	url := c.baseURL + urlPath
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -54,19 +86,7 @@ func (c *Client) request(method, urlPath string, query map[string]string, body i
 	}
 	req.URL.RawQuery = q.Encode()
 
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	rb, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
-	}
-	return rb, nil
+	return c.client.Do(req)
 }
 
 // NewClientInCluster creates a Client that works from within a pod.
