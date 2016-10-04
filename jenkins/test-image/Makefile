@@ -12,18 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/google-containers/kubekins-test
+IMG = gcr.io/k8s-testimages/kubekins-test
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+FILES := $(wildcard ./Dockerfile-*)
+
+do_build = \
+	$(eval FILETAG := $(subst ./Dockerfile-,,$(f)))\
+	docker build -f $(f) -t $(IMG):$(FILETAG)-$(TAG) . ;\
+	docker tag -f $(IMG):$(FILETAG)-$(TAG) $(IMG):$(FILETAG)-latest ;\
+	echo Built $(IMG):$(FILETAG)-$(TAG) and tagged with $(IMG):$(FILETAG)-latest ;
+
+do_push = \
+	$(eval FILETAG := $(subst ./Dockerfile-,,$(f)))\
+	gcloud docker push $(IMG):$(FILETAG)-$(TAG);\
+	gcloud docker push $(IMG):$(FILETAG)-latest;\
+	echo Pushed $(IMG):$(FILETAG)-latest and $(IMG):$(FILETAG)-$(TAG);
 
 all: build
 
 build:
-	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
-	@echo Built $(IMG):$(TAG) and tagged with $(IMG):latest
+	@$(foreach f,$(FILES),$(do_build))
 
 push: build
-	gcloud docker push $(IMG):$(TAG)
-	gcloud docker push $(IMG):latest
-	@echo Pushed $(IMG):latest and $(IMG):$(TAG)
+	@$(foreach f,$(FILES),$(do_push))
 
