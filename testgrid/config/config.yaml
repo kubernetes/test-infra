@@ -70,6 +70,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws-release-1.4
+- name: kubernetes-e2e-kops-aws-updown
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce
 - name: kubernetes-e2e-gce-alpha-features
@@ -707,6 +709,8 @@ dashboards:
     test_group_name: kubernetes-e2e-aws
   - name: aws-release-1.4
     test_group_name: kubernetes-e2e-aws-release-1.4
+  - name: kops-aws-updown
+    test_group_name: kubernetes-e2e-kops-aws-updown
   name: google-aws
 - dashboard_tab:
   - name: gce
