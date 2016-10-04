@@ -32,4 +32,7 @@ curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_URL}/linux/amd64/kops"
 chmod +x "${WORKSPACE}/kops"
 export NODEUP_URL="${KOPS_URL}/linux/amd64/nodeup"
 
+# Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
+export PATH="${PATH}:/workspace/kubernetes/platforms/linux/amd64"
+
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
