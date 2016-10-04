@@ -15,12 +15,7 @@
 FROM alpine:3.4
 MAINTAINER spxtr@google.com
 
-RUN apk add --no-cache git python ca-certificates && update-ca-certificates
+RUN apk add --no-cache ca-certificates && update-ca-certificates
 
-RUN git config --global user.email "k8s.production.user@gmail.com"
-RUN git config --global user.name "k8s-merge-robot"
-
-RUN mkdir -p /workspace
-
-COPY test-pr /test-pr
-ENTRYPOINT ["/test-pr"]
+COPY line /line
+ENTRYPOINT ["/line"]

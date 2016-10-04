@@ -29,10 +29,10 @@ import (
 // Kubernetes jobs. The BuildRequests channel will create a new job, deleting
 // the old if necessary, and the DeleteRequests channel will only delete.
 type KubeAgent struct {
-	DryRun      bool
-	TestPRImage string
-	KubeClient  kubeClient
-	Namespace   string
+	DryRun     bool
+	LineImage  string
+	KubeClient kubeClient
+	Namespace  string
 
 	BuildRequests  <-chan KubeRequest
 	DeleteRequests <-chan KubeRequest
@@ -63,7 +63,7 @@ type kubeClient interface {
 	DeleteJob(name string) error
 }
 
-// Cut off test-pr jobs after 10 hours.
+// Cut off line jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
 func fields(kr KubeRequest) logrus.Fields {
@@ -128,8 +128,8 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
 						{
-							Name:  "test-pr",
-							Image: ka.TestPRImage,
+							Name:  "line",
+							Image: ka.LineImage,
 							Args: []string{
 								"--job-name=" + kr.JobName,
 								"--context=" + kr.Context,
