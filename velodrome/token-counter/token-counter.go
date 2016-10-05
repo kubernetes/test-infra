@@ -143,12 +143,14 @@ func (t TokenHandler) Process() {
 				t.login,
 				lastRate.Limit-lastRate.Remaining,
 			)
-			t.influxdb.Push(
+			if err := t.influxdb.Push(
 				"github_token_count",
 				map[string]string{"login": t.login},
 				map[string]interface{}{"value": lastRate.Limit - lastRate.Remaining},
 				lastRate.Reset.Time,
-			)
+			); err != nil {
+				glog.Error("Failed to push count:", err)
+			}
 			// Make sure the timer is properly reset, and we have time anyway
 			time.Sleep(30 * time.Minute)
 			for {
