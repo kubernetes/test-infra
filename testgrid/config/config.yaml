@@ -50,6 +50,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubelet-benchmark-gce-e2e-ci
 - name: kubelet-cri-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-gce-e2e-ci
+- name: kubelet-cri-serial-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-serial-gce-e2e-ci
+- name: kubelet-cri-benchmark-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-benchmark-gce-e2e-ci
 - name: kubelet-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-gce-e2e-ci
 - name: kubelet-serial-gce-e2e-ci
@@ -216,6 +220,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-petset
 - name: kubernetes-e2e-gci-gce-cri
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-cri
+- name: kubernetes-e2e-gci-gce-cri-serial
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-cri-serial
 - name: kubernetes-e2e-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-proto
 - name: kubernetes-e2e-gci-gce-proto
@@ -787,6 +793,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-petset
   - name: gci-gce-cri
     test_group_name: kubernetes-e2e-gci-gce-cri
+  - name: gci-gce-cri-serial
+    test_group_name: kubernetes-e2e-gci-gce-cri-serial
   - name: gce-proto
     test_group_name: kubernetes-e2e-gce-proto
   - name: gci-gce-proto
@@ -1097,6 +1105,10 @@ dashboards:
     test_group_name: kubelet-serial-gce-e2e-ci
   - name: kubelet-cri-gce-e2e
     test_group_name: kubelet-cri-gce-e2e-ci
+  - name: kubelet-cri-serial-gce-e2e
+    test_group_name: kubelet-cri-serial-gce-e2e-ci
+  - name: kubelet-cri-benchmark-gce-e2e
+    test_group_name: kubelet-cri-benchmark-gce-e2e-ci
   - name: kubelet-flaky-gce-e2e
     test_group_name: kubelet-flaky-gce-e2e-ci
   name: google-node
