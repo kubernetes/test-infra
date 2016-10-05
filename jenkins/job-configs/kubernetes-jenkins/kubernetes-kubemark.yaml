@@ -181,8 +181,7 @@
                 # =========================================
                 # Configuration we are targetting in 1.5
                 export TEST_ETCD_VERSION="3.0.10-experimental.1"
-                # TODO: Uncomment when https://github.com/kubernetes/kubernetes/issues/33653 is fixed
-                # export STORAGE_BACKEND="etcd3"
+                export STORAGE_BACKEND="etcd3"
                 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
                 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
