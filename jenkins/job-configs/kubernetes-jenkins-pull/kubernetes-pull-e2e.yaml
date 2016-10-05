@@ -101,7 +101,6 @@
                   export KUBERNETES_PROVIDER="gce"
                   export E2E_MIN_STARTUP_PODS="1"
                   export KUBE_GCE_ZONE="us-central1-f"
-                  export FAIL_ON_GCP_RESOURCE_LEAK="true"
                   # Flake detection. Individual tests get a second chance to pass.
                   export GINKGO_TOLERATE_FLAKES="y"
                   export E2E_NAME="e2e-gce-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -165,7 +164,6 @@
                 export HOME=${{WORKSPACE}}
                 export KUBERNETES_PROVIDER="gke"
                 export E2E_MIN_STARTUP_PODS="1"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 # Flake detection. Individual tests get a second chance to pass.
                 export GINKGO_TOLERATE_FLAKES="y"
                 export E2E_NAME="e2e-gke-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -231,7 +229,6 @@
                 export HOME=${{WORKSPACE}}
                 export KUBERNETES_PROVIDER="gke"
                 export E2E_MIN_STARTUP_PODS="1"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 # Flake detection. Individual tests get a second chance to pass.
                 export GINKGO_TOLERATE_FLAKES="y"
                 export E2E_NAME="e2e-gke-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -288,7 +285,6 @@
                   export KUBERNETES_PROVIDER="gce"
                   export E2E_MIN_STARTUP_PODS="1"
                   export KUBE_GCE_ZONE="us-central1-f"
-                  export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
                   # Flake detection. Individual tests get a second chance to pass.
                   export GINKGO_TOLERATE_FLAKES="y"
@@ -358,7 +354,6 @@
                 ./build/push-federation-images.sh
                 export KUBERNETES_PROVIDER="gce"
                 export E2E_MIN_STARTUP_PODS="1"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 # Flake detection. Individual tests get a second chance to pass.
                 export GINKGO_TOLERATE_FLAKES="y"
                 export E2E_NAME="fed-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -415,7 +410,6 @@
                 ./build/push-federation-images.sh
                 export KUBERNETES_PROVIDER="gce"
                 export E2E_MIN_STARTUP_PODS="1"
-                export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 # Flake detection. Individual tests get a second chance to pass.
                 export GINKGO_TOLERATE_FLAKES="y"
                 export E2E_NAME="fed-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
@@ -567,5 +561,56 @@
                 fi
                 echo "Exiting with code: ${{rc}}"
                 exit ${{rc}}
+        - 'gci-cri-e2e-gce': # kubernetes-pull-build-test-gci-cri-e2e-gce
+            cmd: |
+                export KUBE_SKIP_PUSH_GCS=y
+                export KUBE_RUN_FROM_OUTPUT=y
+                export KUBE_FASTBUILD=true
+                ./hack/jenkins/build.sh
+                # Nothing should want Jenkins $HOME
+                export HOME=${{WORKSPACE}}
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="1"
+                export KUBE_GCE_ZONE="us-central1-f"
+                # Flake detection. Individual tests get a second chance to pass.
+                export GINKGO_TOLERATE_FLAKES="y"
+                export E2E_NAME="cri-e2e-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+                export GINKGO_PARALLEL="y"
+                # This list should match the list in kubernetes-e2e-gce.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export FAIL_ON_GCP_RESOURCE_LEAK="false"
+                export PROJECT="kubernetes-pr-cri-validation"
+                export NUM_NODES="3"
+                # Use gci as node image.
+                export KUBE_NODE_OS_DISTRIBUTION="gci"
+                # Enable experimental CRI integration
+                export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
+                # Assume we're upping, testing, and downing a cluster
+                export E2E_UP="true"
+                export E2E_TEST="true"
+                export E2E_DOWN="true"
+                # Skip gcloud update checking
+                export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
+                # GCE variables
+                export INSTANCE_PREFIX=${{E2E_NAME}}
+                export KUBE_GCE_NETWORK=${{E2E_NAME}}
+                export KUBE_GCE_INSTANCE_PREFIX=${{E2E_NAME}}
+                # Get golang into our PATH so we can run e2e.go
+                export PATH=${{PATH}}:/usr/local/go/bin
+                timeout -k 15m 55m {runner} && rc=$? || rc=$?
+                if [[ ${{rc}} -ne 0 ]]; then
+                  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+                    echo "Dumping logs for any remaining nodes"
+                    ./cluster/log-dump.sh _artifacts
+                  fi
+                fi
+                if [[ ${{rc}} -eq 124 || ${{rc}} -eq 137 ]]; then
+                  echo "Build timed out" >&2
+                elif [[ ${{rc}} -ne 0 ]]; then
+                  echo "Build failed" >&2
+                fi
+                echo "Exiting with code: ${{rc}}"
+                exit ${{rc}}
+
     jobs:
         - 'kubernetes-pull-build-test-{suffix}'

@@ -87,6 +87,14 @@ kubernetes/kubernetes:
   always_run: true
   context: Jenkins GCE Node e2e
   rerun_command: "@k8s-bot node e2e test this"
+- name: kubernetes-pull-build-test-gci-cri-e2e-gce
+  trigger: "@k8s-bot cri (e2e )?test this"
+  context: Jenkins CRI GCE e2e
+  rerun_command: "@k8s-bot cri e2e test this"
+- name: node-cri-pull-build-e2e-test
+  trigger: "@k8s-bot cri (node e2e )?test this"
+  context: Jenkins CRI GCE Node e2e
+  rerun_command: "@k8s-bot cri node e2e test this"
 - name: fejta-pull-unit
   trigger: "@fejta do a little dance"
   context: Jenkins fejta unit
