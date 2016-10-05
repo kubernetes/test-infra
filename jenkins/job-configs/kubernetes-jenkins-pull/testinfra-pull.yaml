@@ -35,7 +35,7 @@
                     refspec: '+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge'
             branches:
                 - 'origin/pr/${ghprbPullId}/merge'
-            basedir: 'go/src/github.com/kubernetes/test-infra'
+            basedir: ''
             browser: githubweb
             browser-url: 'https://github.com/kubernetes/test-infra'
             timeout: 20
@@ -60,8 +60,10 @@
             git-basedir: ''
         - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
         - shell: |
-            cd ${WORKSPACE}/go/src/github.com/kubernetes/test-infra/ciongke
-            go test $(go list ./... | grep -v vendor)
+            docker run --rm -i \
+                -w "/go/src/github.com/kubernetes/test-infra/ciongke" \
+                -v "${WORKSPACE}:/go/src/github.com/kubernetes/test-infra" \
+                golang:1.7.1 make test
     publishers:
         - gcs-uploader:
             git-basedir: ''
