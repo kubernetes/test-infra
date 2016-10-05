@@ -19,6 +19,7 @@
 import json
 import os
 import subprocess
+import tempfile
 import unittest
 
 import bootstrap
@@ -210,15 +211,15 @@ class FakeGSUtil(object):
         self.jsons.append((args, kwargs))
 
 
-class AppendBuildTest(unittest.TestCase):
-    """Tests for AppendBuild()."""
+class AppendResultTest(unittest.TestCase):
+    """Tests for AppendResult()."""
     def testHandleJunk(self):
         gsutil = FakeGSUtil()
         build = 123
         version = 'v.interesting'
         success = True
         with Stub(bootstrap, 'Subprocess', lambda *a, **kw: '!@!$!@$@!$'):
-            bootstrap.AppendBuild(gsutil, 'fake_path', build, version, success)
+            bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertEquals(1, len(cache))
         self.assertIn(build, cache[0].values())
@@ -230,7 +231,7 @@ class AppendBuildTest(unittest.TestCase):
         def Try(success):
             gsutil = FakeGSUtil()
             with Stub(bootstrap, 'Subprocess', lambda *a, **kw: ''):
-                bootstrap.AppendBuild(gsutil, 'fake_path', build, version, success)
+                bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
             cache = gsutil.jsons[0][0][1]
             self.assertTrue(isinstance(cache[0]['passed'], bool))
 
@@ -248,7 +249,7 @@ class AppendBuildTest(unittest.TestCase):
         version = 'v.interesting'
         success = True
         with Stub(bootstrap, 'Subprocess', lambda *a, **kw: old):
-            bootstrap.AppendBuild(gsutil, 'fake_path', build, version, success)
+            bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertLess(len(cache), len(old))
 
@@ -259,7 +260,7 @@ class FinishTest(unittest.TestCase):
     def setUp(self):
       self.stubs = [
           Stub(bootstrap, 'UploadArtifacts', Pass),
-          Stub(bootstrap, 'AppendBuild', Pass),
+          Stub(bootstrap, 'AppendResult', Pass),
           Stub(os.path, 'isfile', Pass),
           Stub(os.path, 'isdir', Pass),
       ]
@@ -284,25 +285,39 @@ class FinishTest(unittest.TestCase):
 
 SECONDS = 10
 
+
+def FakeEnviron(
+    set_home=True, set_node=True, set_job=True,
+    **kwargs
+):
+    if set_home:
+        kwargs.setdefault(bootstrap.HOME_ENV, '/fake/home-dir')
+    if set_node:
+        kwargs.setdefault(bootstrap.NODE_ENV, 'fake-node')
+    if set_job:
+        kwargs.setdefault(bootstrap.JOB_ENV, JOB)
+    return kwargs
+
+
 class BuildTest(unittest.TestCase):
     """Tests for Build()."""
 
     def testAuto(self):
         """Automatically select a build if not done by user."""
-        with Stub(os, 'environ', {}) as fake:
+        with Stub(os, 'environ', FakeEnviron()) as fake:
             bootstrap.Build(SECONDS)
             self.assertTrue(fake[bootstrap.BUILD_ENV])
 
     def testManual(self):
         """Respect user-selected build."""
-        with Stub(os, 'environ', {}) as fake:
+        with Stub(os, 'environ', FakeEnviron()) as fake:
             truth = 'erick is awesome'
             fake[bootstrap.BUILD_ENV] = truth
             self.assertEquals(truth, fake[bootstrap.BUILD_ENV])
 
     def testUnique(self):
         """New build every minute."""
-        with Stub(os, 'environ', {}) as fake:
+        with Stub(os, 'environ', FakeEnviron()) as fake:
             bootstrap.Build(SECONDS)
             first = fake[bootstrap.BUILD_ENV]
             del fake[bootstrap.BUILD_ENV]
@@ -314,12 +329,21 @@ class BuildTest(unittest.TestCase):
 class SetupCredentialsTest(unittest.TestCase):
     """Tests for SetupCredentials()."""
 
+    def setUp(self):
+        keys = {
+            bootstrap.GCE_KEY_ENV: 'fake-key',
+            bootstrap.SERVICE_ACCOUNT_ENV: 'fake-service-account.json',
+        }
+        self.env = FakeEnviron(**keys)
+
+
     def testRequireGoogleApplicationCredentials(self):
         """Raise if GOOGLE_APPLICATION_CREDENTIALS does not exist."""
-        with Stub(os, 'environ', {}) as fake:
+        del self.env[bootstrap.SERVICE_ACCOUNT_ENV]
+        with Stub(os, 'environ', self.env) as fake:
             gac = 'FAKE_CREDS.json'
             fake['HOME'] = 'kansas'
-            fake[bootstrap.SERVICE_ACCOUNT_PATH] = gac
+            fake[bootstrap.SERVICE_ACCOUNT_ENV] = gac
             with Stub(os.path, 'isfile', lambda p: p != gac):
                 with self.assertRaises(IOError):
                     bootstrap.SetupCredentials()
@@ -330,10 +354,11 @@ class SetupCredentialsTest(unittest.TestCase):
 
     def testRequireGCEKey(self):
         """Raise if the private gce does not exist."""
-        with Stub(os, 'environ', {}) as fake:
+        del self.env[bootstrap.GCE_KEY_ENV]
+        with Stub(os, 'environ', self.env) as fake:
             pkf = 'FAKE_PRIVATE_KEY'
             fake['HOME'] = 'kansas'
-            fake[bootstrap.GCE_PRIVATE_KEY] = pkf
+            fake[bootstrap.GCE_KEY_ENV] = pkf
             with Stub(os.path, 'isfile', lambda p: p != pkf):
                 with self.assertRaises(IOError):
                     bootstrap.SetupCredentials()
@@ -342,29 +367,62 @@ class SetupCredentialsTest(unittest.TestCase):
                 with Stub(bootstrap, 'Subprocess', Pass):
                     bootstrap.SetupCredentials()
 
-    def testHappy(self):
-        with Stub(os, 'environ', {}) as env:
-            env['HOME'] = 'kansas'
-            with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as sp:
-                    bootstrap.SetupCredentials()
+class SetupMagicEnvironmentTest(unittest.TestCase):
+    def testWorkspace(self):
+        """WORKSPACE exists, equals HOME and is set to cwd."""
+        env = FakeEnviron()
+        cwd = '/fake/random-location'
+        with Stub(os, 'environ', env):
+            with Stub(os, 'getcwd', lambda: cwd):
+                bootstrap.SetupMagicEnvironment(JOB)
+
+        self.assertIn(bootstrap.WORKSPACE_ENV, env)
+        self.assertEquals(env[bootstrap.HOME_ENV], env[bootstrap.WORKSPACE_ENV])
+        self.assertEquals(cwd, env[bootstrap.WORKSPACE_ENV])
+
+    def testJobEnvMismatch(self):
+        env = FakeEnviron()
+        with Stub(os, 'environ', env):
+            with self.assertRaises(ValueError):
+                bootstrap.SetupMagicEnvironment('this-is-a-job')
+
+    def testExpected(self):
+        env = FakeEnviron()
+        del env[bootstrap.JOB_ENV]
+        del env[bootstrap.NODE_ENV]
+        with Stub(os, 'environ', env):
+            bootstrap.SetupMagicEnvironment(JOB)
+
+        def Check(name):
+            self.assertIn(name, env)
+
+        # Some of these are probably silly to check...
+        # TODO(fejta): remove as many of these from our infra as possible.
+        Check(bootstrap.NODE_ENV)
+        Check(bootstrap.JOB_ENV)
+        Check(bootstrap.CLOUDSDK_ENV)
+        Check(bootstrap.BOOTSTRAP_ENV)
+        Check(bootstrap.WORKSPACE_ENV)
+        Check(bootstrap.SERVICE_ACCOUNT_ENV)
+
+    def testCloudSdkConfig(self):
+        cwd = 'now-here'
+        env = FakeEnviron()
+        with Stub(os, 'environ', env):
+            with Stub(os, 'getcwd', lambda: cwd):
+                bootstrap.SetupMagicEnvironment(JOB)
 
 
-        self.assertEquals(env['WORKSPACE'], env['HOME'])
-        self.assertTrue(env['WORKSPACE'])
-        self.assertTrue(env['CLOUDSDK_CONFIG'])
-        self.assertTrue(any(
-            bootstrap.KeyFlag(env[bootstrap.SERVICE_ACCOUNT_PATH]) in cmd
-            for cmd, _, _ in sp.calls if 'activate-service-account' in cmd))
+        self.assertTrue(env[bootstrap.CLOUDSDK_ENV].startswith(cwd))
 
 
 class FakePath(object):
     artifacts = 'fake_artifacts'
-    build_latest = 'fake_build_latest'
-    build_link = 'fake_build_link'
-    build_log = 'fake_build_log_path'
-    build_path = 'fake_build_path'
-    build_result_cache = 'fake_build_result_cache'
+    pr_latest = 'fake_pr_latest'
+    pr_build_link = 'fake_pr_link'
+    build_log = 'fake_log_path'
+    pr_path = 'fake_pr_path'
+    pr_result_cache = 'fake_pr_result_cache'
     latest = 'fake_latest'
     result_cache = 'fake_result_cache'
     started = 'fake_started.json'
@@ -388,18 +446,19 @@ class FakeFinish(object):
         self.called = True
         self.result = success
 
-class SetupBootstrap(unittest.TestCase):
+class BootstrapTest(unittest.TestCase):
 
     def setUp(self):
         self.boiler = [
-            Stub(os, 'environ', {}),
             Stub(bootstrap, 'Checkout', Pass),
-            Stub(bootstrap, 'SetupLogging', FakeLogging()),
-            Stub(bootstrap, 'SetupCredentials', Pass),
-            Stub(bootstrap, 'Start', Pass),
-            Stub(bootstrap, 'Subprocess', Pass),
             Stub(bootstrap, 'Finish', Pass),
             Stub(bootstrap.GSUtil, 'CopyFile', Pass),
+            Stub(bootstrap, 'Node', lambda: 'fake-node'),
+            Stub(bootstrap, 'SetupCredentials', Pass),
+            Stub(bootstrap, 'SetupLogging', FakeLogging()),
+            Stub(bootstrap, 'Start', Pass),
+            Stub(bootstrap, 'Subprocess', Pass),
+            Stub(os, 'environ', FakeEnviron()),
         ]
 
     def tearDown(self):
@@ -407,20 +466,20 @@ class SetupBootstrap(unittest.TestCase):
             with stub:  # Leaving with restores things
                 pass
 
-    def testPRPath(self):
-        """Use a PRPath when pull is set."""
+    def testPRPaths(self):
+        """Use a PRPaths when pull is set."""
 
-        with Stub(bootstrap, 'CIPath', Bomb):
-            with Stub(bootstrap, 'PRPath', FakePath()) as path:
+        with Stub(bootstrap, 'CIPaths', Bomb):
+            with Stub(bootstrap, 'PRPaths', FakePath()) as path:
                 bootstrap.Bootstrap(JOB, REPO, None, PULL)
             self.assertTrue(any(
                 str(PULL) in o for o in (path.a, path.kw)))
 
-    def testCIPath(self):
-        """Use a CIPath when branch is set."""
+    def testCIPaths(self):
+        """Use a CIPaths when branch is set."""
 
-        with Stub(bootstrap, 'PRPath', Bomb):
-            with Stub(bootstrap, 'CIPath', FakePath()) as path:
+        with Stub(bootstrap, 'PRPaths', Bomb):
+            with Stub(bootstrap, 'CIPaths', FakePath()) as path:
                 bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
             self.assertFalse(any(
                 str(PULL) in o for o in (path.a, path.kw)))
@@ -450,9 +509,92 @@ class SetupBootstrap(unittest.TestCase):
 
     def testJobEnv(self):
         """Bootstrap sets JOB_NAME."""
-        with Stub(os, 'environ', {}) as env:
+        with Stub(os, 'environ', FakeEnviron()) as env:
             bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
         self.assertIn(bootstrap.JOB_ENV, env)
+
+
+class IntegrationTest(unittest.TestCase):
+    REPO = 'hello/world'
+    MASTER = 'fake-master-file'
+    BRANCH_FILE = 'fake-branch-file'
+    PR_FILE = 'fake-pr-file'
+    BRANCH = 'another-branch'
+    PR = 42
+    PR_TAG = bootstrap.PullRef(PR).strip('+')
+
+    def FakeRepo(self, repo):
+        return os.path.join(self.root_github, repo)
+
+    def setUp(self):
+        self.boiler = [
+            Stub(bootstrap, 'Finish', Pass),
+            Stub(bootstrap.GSUtil, 'CopyFile', Pass),
+            Stub(bootstrap, 'Repo', self.FakeRepo),
+            Stub(bootstrap, 'SetupCredentials', Pass),
+            Stub(bootstrap, 'SetupLogging', FakeLogging()),
+            Stub(bootstrap, 'Start', Pass),
+            Stub(os, 'environ', FakeEnviron(set_job=False)),
+        ]
+        self.root_github = tempfile.mkdtemp()
+        self.root_workspace = tempfile.mkdtemp()
+        self.ocwd = os.getcwd()
+        repo = self.FakeRepo(self.REPO)
+        subprocess.check_call(['git', 'init', repo])
+        os.chdir(repo)
+        subprocess.check_call(['touch', self.MASTER])
+        subprocess.check_call(['git', 'add', self.MASTER])
+        subprocess.check_call(['git', 'commit', '-m', 'Initial commit'])
+        subprocess.check_call(['git', 'checkout', 'master'])
+
+    def tearDown(self):
+        for stub in self.boiler:
+            with stub:  # Leaving with restores things
+                pass
+        os.chdir(self.ocwd)
+        subprocess.check_call(['rm', '-rf', self.root_github])
+        subprocess.check_call(['rm', '-rf', self.root_workspace])
+
+    def testPr(self):
+        subprocess.check_call(['git', 'checkout', 'master'])
+        subprocess.check_call(['git', 'checkout', '-b', 'unknown-pr-branch'])
+        subprocess.check_call(['git', 'rm', self.MASTER])
+        subprocess.check_call(['touch', self.PR_FILE])
+        subprocess.check_call(['git', 'add', self.PR_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
+        subprocess.check_call(['git', 'tag', self.PR_TAG])
+        os.chdir(self.root_workspace)
+        bootstrap.Bootstrap('fake-pr', self.REPO, None, self.PR)
+
+    def testBranch(self):
+        subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
+        subprocess.check_call(['git', 'rm', self.MASTER])
+        subprocess.check_call(['touch', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
+
+        os.chdir(self.root_workspace)
+        bootstrap.Bootstrap('fake-branch', self.REPO, self.BRANCH, None)
+
+    def testPr_Bad(self):
+        random_pr = 111
+        with Stub(bootstrap, 'Start', Bomb):
+            with self.assertRaises(subprocess.CalledProcessError):
+                bootstrap.Bootstrap('fake-pr', self.REPO, None, random_pr)
+
+    def testBranch_Bad(self):
+        random_branch = 'something'
+        with Stub(bootstrap, 'Start', Bomb):
+            with self.assertRaises(subprocess.CalledProcessError):
+                bootstrap.Bootstrap('fake-branch', self.REPO, random_branch, None)
+
+    def testJobMissing(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            bootstrap.Bootstrap('this-job-no-exists', self.REPO, None, self.PR)
+
+    def testJobFails(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            bootstrap.Bootstrap('fake-failure', self.REPO, None, self.PR)
 
 
 

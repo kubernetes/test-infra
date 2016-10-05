@@ -94,6 +94,10 @@ def PullRef(pull):
     return '+refs/pull/%d/merge' % pull
 
 
+def Repo(repo):
+    return 'https://github.com/%s' % repo
+
+
 def Checkout(repo, branch, pull):
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -107,7 +111,7 @@ def Checkout(repo, branch, pull):
     os.chdir(repo)
     # TODO(fejta): cache git calls
     Subprocess([
-        git, 'fetch', '--tags', 'https://github.com/%s' % repo, ref,
+        git, 'fetch', '--tags', Repo(repo), ref,
     ])
     Subprocess([git, 'checkout', 'FETCH_HEAD'])
 
@@ -161,7 +165,11 @@ def UploadArtifacts(path, artifacts):
         Subprocess(cmd)
 
 
-def AppendBuild(gsutil, path, build, version, passed):
+def AppendResult(gsutil, path, build, version, passed):
+    """Download a json list and append metadata about this build to it."""
+    # TODO(fejta): ensure the object has not changed since downloading.
+    # TODO(fejta): delete the clone of this logic in upload-to-gcs.sh
+    #                  (this is update_job_result_cache)
     cmd = ['gsutil', '-q', 'cat', path]
     try:
         cache = json.loads(Subprocess(cmd, output=True))
@@ -179,26 +187,33 @@ def AppendBuild(gsutil, path, build, version, passed):
     gsutil.UploadJson(path, cache)
 
 
-
 def Finish(gsutil, paths, success, artifacts, build, version):
+    """
+    Args:
+        paths: a Paths instance.
+        success: the build passed if true.
+        artifacts: a dir containing artifacts to upload.
+        build: identifier of this build.
+        version: identifies what version of the code the build tested.
+    """
+
     if os.path.isdir(artifacts):
         UploadArtifacts(paths.artifacts, artifacts)
 
-    # Upload build-log.txt
-
     # Upload the latest build for the job
-    for path in {paths.latest, paths.build_latest}:
-        gsutil.UploadText(path, str(build), cached=False)
+    for path in {paths.latest, paths.pr_latest}:
+        if path:
+            gsutil.UploadText(path, str(build), cached=False)
 
     # Upload a link to the build path in the directory
-    if paths.build_link:
-        gsutil.UploadText(paths.build_link, paths.build_path)
+    if paths.pr_build_link:
+        gsutil.UploadText(paths.pr_build_link, paths.pr_path)
 
-    AppendBuild(gsutil, paths.result_cache, build, version, success)
-    if paths.build_result_cache:
-        AppendBuild(gsutil, paths.build_result_cache, build, version, success)
-
-    # update_job_result_cache ${JENKINS_BUILD_FINISHED}
+    # github.com/kubernetes/release/find_green_build depends on AppendResult()
+    # TODO(fejta): reconsider whether this is how we want to solve this problem.
+    AppendResult(gsutil, paths.result_cache, build, version, success)
+    if paths.pr_result_cache:
+        AppendResult(gsutil, paths.pr_result_cache, build, version, success)
 
     data = {
         'timestamp': time.time(),
@@ -218,23 +233,19 @@ def Finish(gsutil, paths, success, artifacts, build, version):
     gsutil.UploadJson(paths.finished, data)
 
 
-
-
 def TestInfra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
 
 
 def Node():
-    if 'NODE_NAME' not in os.environ:
-        os.environ['NODE_NAME'] = ''.join(socket.gethostname().split('.')[:1])
-    return os.environ['NODE_NAME']
+    return os.environ[NODE_ENV]
 
 
 def Version():
     version_file = 'version'
     if os.path.isfile(version_file):
-        # TODO(fejta): is this code path ever used?
+        # e2e tests which download kubernetes use this path:
         with open(version_file) as fp:
             return fp.read().strip()
 
@@ -256,43 +267,73 @@ echo $KUBE_GIT_VERSION
     return 'unknown'
 
 
-class CIPath(object):
+class Paths(object):
+    """Links to remote gcs-paths for uploading results."""
+    def __init__(
+        self,
+        artifacts,  # artifacts folder (in build)
+        build_log,  # build-log.txt (in build)
+        pr_path,  # path to build
+        finished,  # finished.json (metadata from end of build)
+        latest,   # latest-build.txt (in job)
+        pr_build_link,  # file containng pr_path (in job directory)
+        pr_latest,  # latest-build.txt (in pr job)
+        pr_result_cache,  # jobResultsCache.json (in pr job)
+        result_cache,  # jobResultsCache.json (cache of latest results in job)
+        started,  # started.json  (metadata from start of build)
+    ):
+        self.artifacts = artifacts
+        self.build_log = build_log
+        self.pr_path = pr_path
+        self.finished = finished
+        self.latest = latest
+        self.pr_build_link = pr_build_link
+        self.pr_latest = pr_latest
+        self.pr_result_cache = pr_result_cache
+        self.result_cache = result_cache
+        self.started = started
+
+
+
+def CIPaths(job, build):
     base = 'gs://kubernetes-jenkins/logs'
-    build_link = None
-    build_result_cache = None
+    latest = os.path.join(base, job, 'latest-build.txt')
+    return Paths(
+        artifacts=os.path.join(base, job, build, 'artifacts'),
+        build_log=os.path.join(base, job, build, 'build-log.txt'),
+        pr_path=None,
+        finished=os.path.join(base, job, build, 'finished.json'),
+        latest=latest,
+        pr_build_link=None,
+        pr_latest=None,
+        pr_result_cache=None,
+        result_cache=os.path.join(base, job, 'jobResultsCache.json'),
+        started=os.path.join(base, job, build, 'started.json'),
+    )
 
-    def __init__(self, job, build):
-        self.artifacts = os.path.join(self.base, job, build, 'artifacts')
-        self.started = os.path.join(self.base, job, build, 'started.json')
-        self.finished = os.path.join(self.base, job, build, 'finished.json')
-        self.build_log = os.path.join(self.base, job, build, 'build-log.txt')
-        self.latest = os.path.join(self.base, job, 'latest-build.txt')
-        self.result_cache = os.path.join(
-            self.base, job, 'jobResultsCache.json')
-        self.build_latest = self.latest
 
 
-class PRPath(object):
+def PRPaths(job, build, pull):
+    # TODO(fejta): handle non-k8s repos correctly
     base = 'gs://kubernetes-jenkins/pr-logs'
+    pr_path = os.path.join(base, 'pull', pull, job, build)
+    result_cache = os.path.join(
+            base, 'directory', job, 'jobResultsCache.json')
+    pr_result_cache = os.path.join(
+            base, 'pull', pull, job, 'jobResultsCache.json')
+    return Paths(
+        artifacts=os.path.join(pr_path, 'artifacts'),
+        build_log=os.path.join(pr_path, 'build-log.txt'),
+        pr_path=pr_path,
+        finished=os.path.join(pr_path, 'finished.json'),
+        latest=os.path.join(base, 'directory', job, 'latest-build.txt'),
+        pr_build_link=os.path.join(base, 'directory', job, '%s.txt' % build),
+        pr_latest=os.path.join(base, 'pull', pull, job, 'latest-build.txt'),
+        pr_result_cache=pr_result_cache,
+        result_cache=result_cache,
+        started=os.path.join(pr_path, 'started.json'),
+    )
 
-    def __init__(self, job, build, pull):
-        self.build_path = os.path.join(
-            self.base, 'pull', pull, job, build)
-        self.artifacts = os.path.join(self.build_path, 'artifacts')
-        self.started = os.path.join(self.build_path, 'started.json')
-        self.finished = os.path.join(self.build_path, 'finished.json')
-        self.build_log = os.path.join(self.build_path, 'build-log.txt')
-
-        self.latest = os.path.join(
-            self.base, 'directory', job, 'latest-build.txt')
-        self.result_cache = os.path.join(
-            self.base, 'directory', job, 'jobResultsCache.json')
-        self.build_latest = os.path.join(
-            self.base, 'pull', pull, job, 'latest-build.txt')
-        self.build_result_cache = os.path.join(
-            self.base, 'pull', pull, job, 'jobResultsCache.json')
-        self.build_link = os.path.join(
-            self.base, 'directory', job, '%s.txt' % build)
 
 
 def Uniq():
@@ -300,18 +341,27 @@ def Uniq():
     return '%x-%d' % (hash(Node()), os.getpid())
 
 
-BUILD_ENV = 'BUILD_NUMBER'  # TODO(fejta): retire this magic environment variable
+BUILD_ENV = 'BUILD_NUMBER'
+BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
+CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
+GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
+HOME_ENV = 'HOME'
+JOB_ENV = 'JOB_NAME'
+NODE_ENV = 'NODE_NAME'
+SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
+WORKSPACE_ENV = 'WORKSPACE'
+
 
 def Build(start):
+    # TODO(fejta): right now jenkins sets the BUILD_NUMBER and does this
+    #              in an environment variable. Consider migrating this to a
+    #              bootstrap.py flag
     if BUILD_ENV not in os.environ:
+        # Automatically generate a build number if none is set
         uniq = Uniq()
         autogen = time.strftime('%Y%m%d-%H%M%S' + uniq, time.gmtime(start))
         os.environ[BUILD_ENV] = autogen
     return os.environ[BUILD_ENV]
-
-
-GCE_PRIVATE_KEY = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
-SERVICE_ACCOUNT_PATH = 'GOOGLE_APPLICATION_CREDENTIALS'
 
 
 def KeyFlag(path):
@@ -319,53 +369,29 @@ def KeyFlag(path):
 
 
 def SetupCredentials():
-    os.environ.setdefault(
-        GCE_PRIVATE_KEY,
-        os.path.join(os.environ['HOME'], '.ssh/google_compute_engine'),
-    )
-    os.environ.setdefault(
-        'JENKINS_GCE_SSH_PUBLIC_KEY_FILE',
-        os.path.join(os.environ['HOME'], '.ssh/google_compute_engine.pub'),
-    )
-    os.environ.setdefault(
-        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
-        os.path.join(os.environ['HOME'], '.ssh/kube_aws_rsa'),
-    )
-    os.environ.setdefault(
-        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
-        os.path.join(os.environ['HOME'], '.ssh/kube_aws_rsa.pub'),
-    )
-    os.environ.setdefault(
-        SERVICE_ACCOUNT_PATH,
-        os.path.join(os.environ['HOME'], 'service-account.json'),
-    )
 
     # TODO(fejta): also check aws, and skip gce check when not necessary.
-    if not os.path.isfile(os.environ[GCE_PRIVATE_KEY]):
+    if not os.path.isfile(os.environ[GCE_KEY_ENV]):
         raise IOError(
             'Cannot find gce ssh key',
-            os.environ[GCE_PRIVATE_KEY],
+            os.environ[GCE_KEY_ENV],
         )
 
     # TODO(fejta): stop activating inside the image
     # TODO(fejta): allow use of existing gcloud auth
-    if not os.path.isfile(os.environ[SERVICE_ACCOUNT_PATH]):
+    if not os.path.isfile(os.environ[SERVICE_ACCOUNT_ENV]):
         raise IOError(
             'Cannot find service account credentials',
-            os.environ[SERVICE_ACCOUNT_PATH],
+            os.environ[SERVICE_ACCOUNT_ENV],
             'Create service account and then create key at '
             'https://console.developers.google.com/iam-admin/serviceaccounts/project',
         )
 
-    cwd = os.getcwd()
-    os.environ['WORKSPACE'] = cwd
-    os.environ['HOME'] = cwd
-    os.environ['CLOUDSDK_CONFIG'] = '%s/.config/gcloud' % cwd
     Subprocess([
         'gcloud',
         'auth',
         'activate-service-account',
-        KeyFlag(os.environ[SERVICE_ACCOUNT_PATH]),
+        KeyFlag(os.environ[SERVICE_ACCOUNT_ENV]),
     ])
 
 
@@ -387,7 +413,63 @@ def SetupLogging(path):
     return build_log
 
 
-JOB_ENV = 'JOB_NAME'  # TODO(fejta): retire this magic env variable.
+def SetupMagicEnvironment(job):
+    """Set magic environment variables scripts currently expect."""
+    home = os.environ[HOME_ENV]
+    # TODO(fejta): jenkins sets these values. Consider migrating to using
+    #              a secret volume instead and passing the path to this volume
+    #              into bootstrap.py as a flag.
+    os.environ.setdefault(
+        GCE_KEY_ENV,
+        os.path.join(home, '.ssh/google_compute_engine'),
+    )
+    os.environ.setdefault(
+        'JENKINS_GCE_SSH_PUBLIC_KEY_FILE',
+        os.path.join(home, '.ssh/google_compute_engine.pub'),
+    )
+    os.environ.setdefault(
+        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
+        os.path.join(home, '.ssh/kube_aws_rsa'),
+    )
+    os.environ.setdefault(
+        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
+        os.path.join(home, '.ssh/kube_aws_rsa.pub'),
+    )
+    # SERVICE_ACCOUNT_ENV is a magic gcloud/gcp environment variable that
+    # controls the location of service credentials. The e2e go test code depends
+    # on this variable, and we also read this value when activating a serivce
+    # account
+    # TODO(fejta): consider allowing people to pass in their user credentials
+    #              when running from a workstation.
+    os.environ.setdefault(
+        SERVICE_ACCOUNT_ENV,
+        os.path.join(home, 'service-account.json'),
+    )
+    cwd = os.getcwd()
+    # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
+    #              value. Consider doing something else in the future.
+    os.environ[WORKSPACE_ENV] = cwd
+    # TODO(fejta): jenkins/dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
+    #              probably to minimize leakage between jobs.
+    #              Consider accomplishing this another way.
+    os.environ[HOME_ENV] = cwd
+    # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
+    #              value. Consider making everything below here agnostic to the
+    #              job name.
+    if JOB_ENV not in os.environ:
+        os.environ[JOB_ENV] = job
+    elif os.environ[JOB_ENV] != job:
+        raise ValueError(JOB_ENV, os.environ[JOB_ENV], job)
+    # TODO(fejta): Magic value to tell our test code not do upload started.json
+    # TODO(fejta): delete upload-to-gcs.sh and then this value.
+    os.environ[BOOTSTRAP_ENV] = 'yes'
+    # TODO(fejta): jenkins sets the node name and our infra expect this value.
+    # TODO(fejta): Consider doing something different here.
+    if NODE_ENV not in os.environ:
+        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
+    # This helps prevent reuse of cloudsdk configuration. It also reduces the
+    # risk that running a job on a workstation corrupts the user's config.
+    os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
 
 def Bootstrap(job, repo, branch, pull):
     build_log_path = os.path.abspath('build-log.txt')
@@ -397,15 +479,14 @@ def Bootstrap(job, repo, branch, pull):
     build = Build(start)
     logging.info('Check out %s at %s...', repo, pull if pull else branch)
     Checkout(repo, branch, pull)
+    logging.info('Configure environment...')
     version = Version()
-    logging.info('Activate service account...')
+    SetupMagicEnvironment(job)
     SetupCredentials()
     if pull:
-      paths = PRPath(job, build, str(pull))
+      paths = PRPaths(job, build, str(pull))
     else:
-      paths = CIPath(job, build)
-    if JOB_ENV not in os.environ:
-        os.environ[JOB_ENV] = job
+      paths = CIPaths(job, build)
     gsutil = GSUtil()
     logging.info('Start %s at %s...' % (build, version))
     Start(gsutil, paths, start, Node(), version)
