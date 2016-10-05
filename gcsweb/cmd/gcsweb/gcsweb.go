@@ -84,6 +84,8 @@ func main() {
 			http.Redirect(w, r, bucket+"/", http.StatusMovedPermanently)
 		})
 	}
+	// Handle unknown buckets.
+	http.HandleFunc("/gcs/", unknownBucketRequest)
 
 	// Serve icons.
 	http.Handle("/icons/", http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons))))
@@ -96,10 +98,28 @@ func main() {
 }
 
 func healthzRequest(w http.ResponseWriter, r *http.Request) {
-	logger := newTxnLogger(r)
-	logger.Printf("GET /healthz")
+	newTxnLogger(r)
+
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	fmt.Fprintf(w, "ok")
-	w.WriteHeader(http.StatusOK)
+}
+
+func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
+	newTxnLogger(r)
+
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// TODO: Could redirect to
+	//     "https://console.cloud.google.com/storage/browser/" + strings.TrimPrefix(r.URL.Path, "/gcs/")
+	//   but that only works for buckets and not "files".
+	http.NotFound(w, r)
 }
 
 func otherRequest(w http.ResponseWriter, r *http.Request) {
