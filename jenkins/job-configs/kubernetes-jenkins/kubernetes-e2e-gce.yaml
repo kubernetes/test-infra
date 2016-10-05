@@ -150,7 +150,7 @@
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] \
                                          --ginkgo.skip=\[Flaky\]"
-                export PROJECT="k8s-jkns-e2e-gci-autoscaling"
+                export PROJECT="k8s-jkns-gci-autoscaling"
                 # Override GCE default for cluster size autoscaling purposes.
                 export ENABLE_CUSTOM_METRICS="true"
                 export KUBE_ENABLE_CLUSTER_AUTOSCALER="true"
