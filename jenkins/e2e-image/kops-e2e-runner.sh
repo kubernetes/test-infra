@@ -35,7 +35,7 @@ export NODEUP_URL="${KOPS_URL}/linux/amd64/nodeup"
 # Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
 export PATH="${PATH}:/workspace/kubernetes/platforms/linux/amd64"
 
-export E2E_OPT="--deployment kops --kops /workspace/kops --kops-ssh-key /workspace/.aws/kube_aws_rsa ${E2E_OPT}"
+export E2E_OPT="--deployment kops --kops /workspace/kops --kops-ssh-key /workspace/.ssh/kube_aws_rsa ${E2E_OPT}"
 
 # TODO(zmerlynn): This is duplicating some logic in e2e-runner.sh, but
 # I'd rather keep it isolated for now.
