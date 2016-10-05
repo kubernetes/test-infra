@@ -18,9 +18,11 @@
 usage() {
   echo "Usage: $(basename "${0}") [--FLAGS] <INSTANCE> [ACTION ...]"
   echo 'Flags:'
-  echo '  --base-image: create instance with base image instead of family'
-  echo '  --pr: talk to the pull-request instead of e2e server'
+  echo '  --base-image: use base-image instead of derived for instances'
   echo '  --fake: use tiny instance'
+  echo '  --pr: talk to the pull-request instead of e2e server'
+  echo '  --previous: use last known good CI image'
+  echo '  --previous-pr: use last known good PR image'
   echo 'INSTANCE: the name of the instance to target'
   echo '  pr-: create a pr-builder-sized instance'
   echo '  light-: create an instance for light postcommit jobs (e2e)'
@@ -52,7 +54,7 @@ usage() {
 set -o nounset
 set -o errexit
 
-DOCKER_VERSION='1.9.1-0~wheezy'
+DOCKER_VERSION='1.9.1-0~jessie'
 GO_VERSION='go1.6.2.linux-amd64'
 TIMEZONE='America/Los_Angeles'
 
@@ -60,7 +62,7 @@ FAKE=
 PR=
 
 # Defaults
-BASE_IMAGE='debian-7-backports'  # TODO(fejta): debian8
+BASE_IMAGE='/debian-cloud/debian-8'
 IMAGE='jenkins-agent'
 IMAGE_FLAG="--image-family=${IMAGE}"
 SCOPES='cloud-platform,compute-rw,storage-full'  # TODO(fejta): verify
@@ -75,12 +77,21 @@ while true; do
       FAKE=yes
       shift
       ;;
+    --previous)
+      # Currently jenkins-agent-20160926-0059
+      IMAGE_FLAG='--image=jenkins-agent-20160613-2240'
+      ;;
+    --previous-pr)
+      # Currently jenkins-agent-20160926-0000
+      IMAGE_FLAG='--image=jenkins-agent-20160613-1431'
+      PR=yes
+      ;;
     --pr)
       PR=yes
       shift
       ;;
     --base-image)
-      IMAGE_FLAG="--image=${BASE_IMAGE}"
+      IMAGE_FLAG="--image-family=${BASE_IMAGE}"
       shift
       ;;
     *)
@@ -311,6 +322,9 @@ sudo usermod -aG docker jenkins
 # Downgrade to 1.9.1
 # https://github.com/kubernetes/kubernetes/issues/21451
 sudo apt-get -y --force-yes install docker-engine="${DOCKER_VERSION}"
+sudo /etc/init.d/docker stop
+sudo rm -rf /var/lib/docker/network  # https://github.com/docker/docker/issues/23630
+sudo /etc/init.d/docker start
 sudo docker run hello-world
 sudo apt-mark hold docker-engine
 
