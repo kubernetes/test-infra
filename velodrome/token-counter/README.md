@@ -1,17 +1,20 @@
-Token-counter is a small program that polls github to see how much of a token
+Overview
+========
+
+Token-counter is a program that polls github to see how much of a token's
 ratelimit has been used.
 
-Because github doesn't report how much you've used, but how much you have left
-before the next reset, we need to get the value just before the reset.  In order
-to do that, we poll more and more agressively as we get near to the reset
-time. Once the reset happen, we can compute the difference between `Limit` and
-`Remaining` and this tells us how much we used in the last hour.
+Github doesn't report how many requests you've used, and instead reports
+how many request you have left before the rate-limit resets.
+In order to do that, we poll more and more aggressively as we get near to the reset
+time. Once the reset happens, we compute the difference between `Limit` and
+`Remaining` giving us how much we've used in the last hour.
 
 Deploying
----------
+=========
 
 token-counter is fairly easy to deploy, and can keep track of multiple keys at
-the same time. The result will be pushed to an influx database.
+the same time. The result will be pushed to an InfluxDB.
 
 Make a `github-tokens` secret with each of your tokens in there:
 ```

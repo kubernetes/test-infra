@@ -1,3 +1,6 @@
+Overview
+========
+
 Fetcher retrives a github repository history and stores it in a MySQL local
 database.
 
@@ -19,20 +22,6 @@ and this can be configured with the `--frequency` flag.
 
 There is no set-up required as `fetcher` will create the github database if it
 doesn't exist, along with the various required tables.
-
-Design decision
-===============
-
-Because of the size of the kubernetes/kubernetes repository:
-
-- Accessing comments API doesn't work and returns `500 Internal Error` all the
-  time.
-- Accessing random pages of events fails quite often
-
-One of the drawback is the following: We could use the comments API to fetch all
-the comments through the same URL, but it doesn't work, so comments are
-downloaded for each individual issue that is modified. This significantly
-increases the number of requests.
 
 Testing locally
 ===============

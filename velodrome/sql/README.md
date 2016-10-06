@@ -1,3 +1,6 @@
+Overview
+========
+
 This defines the model that `Fetcher` uses to save the data in the database, and
 that `Transform` reads in order to generate the metrics.
 
@@ -6,7 +9,7 @@ The database and the tables are automatically created on the first connection by
 and the database rows is also done by Gorm.
 
 Schema
-------
+======
 
 Here is what the final schema looks like:
 

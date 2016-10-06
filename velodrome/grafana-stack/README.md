@@ -1,3 +1,6 @@
+Overview
+========
+
 The goal of this directory is to set-up the following monitoring stack:
 - InfluxDB as the Time-series Database
 - Grafana as the front-end/display
@@ -7,8 +10,9 @@ The goal of this directory is to set-up the following monitoring stack:
 Testing locally
 ===============
 
-You can set-up your own local grafana-stack easily. In order to do that, you
-probably don't need to set-up passwords or even the `nginx` proxy.
+You can set-up your own local grafana-stack easily, it doesn't have the same
+constraints as production: No need to set-up a specific password or to go
+through the `nginx` proxy.
 
 You can run:
 
@@ -18,7 +22,9 @@ docker run -i -p 3000:3000 grafana/grafana
 docker run -p 9090:9090 -v prom/prometheus
 ```
 
-This should be good enough.
+You then need to set-up the datasources/users into Grafana and InfluxDB as
+described [below](#adding-data-source), and then import dashboards from
+[dashboards/](dashboards/) directly through the web interface.
 
 Step-by-step
 ============
@@ -45,7 +51,7 @@ kubectl apply -f grafana.yaml -f influxdb.yaml -f nginx.yaml
 
 Adding data-source
 ------------------
-First, you need to create the grafana user in Influxdb:
+First, you need to create the grafana user in Influxdb if it's not already there:
 ```
 kubectl exec -i -t influxdb-123456789-abcde influx -username=root -password="${influxdb_password}" -execute "create user grafana with password 'password'; grant read on github to grafana; grant read on github to monitoring"
 ```
