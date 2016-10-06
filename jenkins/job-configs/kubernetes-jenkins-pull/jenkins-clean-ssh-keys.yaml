@@ -1,0 +1,30 @@
+- job:
+    name: 'jenkins-clean-ssh-keys'
+    description: 'Clean up agent SSH keys in GKE projects.'
+    node: 'master'
+    properties:
+        - build-discarder:
+            days-to-keep: 30
+    scm:
+        - git:
+            remotes:
+                - remote:
+                    url: 'https://github.com/kubernetes/test-infra'
+                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
+            branches:
+                - 'master'
+            browser: githubweb
+            browser-url: 'https://github.com/kubernetes/test-infra'
+            timeout: 20
+            wipe-workspace: false
+            skip-tag: true
+    builders:
+        - shell: |
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gke
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gci-gke
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timeout:
+            timeout: 600
+            fail: true
