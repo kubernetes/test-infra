@@ -2,7 +2,10 @@ branches:
   only:
     - master
 language: python
-cache: pip
+cache:
+    directories:
+        - node_modules
+        - .cache/pip
 python:
     - "2.7"
 env:
@@ -22,6 +25,7 @@ install:
     - unzip -q ${GAE_ZIP} -d ${HOME}
     - pip install -r gubernator/test_requirements.txt
     - pip install -r jenkins/test-history/requirements.txt
+    - npm install mocha
 script:
     - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
@@ -29,4 +33,5 @@ script:
     - cd gubernator
     - ./test.sh --nologcapture
     - ./lint.sh
+    - ../node_modules/.bin/mocha static/build_test.js
     - go test k8s.io/test-infra/testgrid/config/...
