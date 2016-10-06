@@ -7,17 +7,10 @@
             days-to-keep: 30
     scm:
         - git:
-            remotes:
-                - remote:
-                    url: 'https://github.com/kubernetes/test-infra'
-                    refspec: '+refs/heads/*:refs/remotes/upstream/*'
+            url: 'https://github.com/kubernetes/test-infra'
             branches:
                 - 'master'
-            browser: githubweb
-            browser-url: 'https://github.com/kubernetes/test-infra'
             timeout: 20
-            wipe-workspace: false
-            skip-tag: true
     builders:
         - shell: |
             ./jenkins/clean_metadata.py --project k8s-jkns-pr-gke

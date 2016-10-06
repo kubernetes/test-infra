@@ -32,7 +32,7 @@ SLEEP_DURATION = 10
 
 
 def try_update(project, token):
-    """Try to remove agent keys. Returns True if we should retry."""
+    """Try to remove agent keys. Returns True on success."""
     get_url = 'https://www.googleapis.com/compute/v1/projects/%s' % project
     headers = {
         'Authorization': 'Bearer %s' % token,
@@ -43,7 +43,7 @@ def try_update(project, token):
     if r.status_code != 200:
         print('Got status code %d on GET.' % r.status_code)
         print(r.text)
-        return True
+        return False
     json_data = r.json()
     fingerprint = json_data['commonInstanceMetadata']['fingerprint']
     old_keys = []
@@ -52,11 +52,11 @@ def try_update(project, token):
             old_keys = entry['value'].splitlines()
     # No ssh keys in the response. Nothing to do.
     if not old_keys:
-        return False
+        return True
     new_keys = [line for line in old_keys if AGENT_PR_SUBSTR not in line]
     if len(new_keys) == len(old_keys):
         # No keys removed. Nothing to do.
-        return False
+        return True
     else:
         print('Attempting to remove %d keys.' % (len(old_keys) - len(new_keys)))
     resp_data = {
@@ -73,14 +73,14 @@ def try_update(project, token):
     r = requests.post(post_url, headers=headers, data=json.dumps(resp_data))
     # Retry if the fingerprint is wrong.
     if r.status_code == 412:
-        return True
+        return False
     # Don't retry on 200.
     if r.status_code == 200:
-        return False
+        return True
     # Retry on other status codes.
     print('Got status code %d on POST.' % r.status_code)
     print(r.text)
-    return True
+    return False
 
 
 def main(project):
@@ -91,9 +91,9 @@ def main(project):
         'print-access-token']).strip()
     for retry in range(NUM_RETRIES):
         if try_update(project, token):
-            time.sleep(SLEEP_DURATION)
-        else:
             return 0
+        else:
+            time.sleep(SLEEP_DURATION)
     return 1
 
 
