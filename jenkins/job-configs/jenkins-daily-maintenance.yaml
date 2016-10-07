@@ -1,16 +1,14 @@
 - job:
     name: 'jenkins-daily-maintenance'
     concurrent: true
-    description: 'Run gcloud components update. Test owner: test-infra-maintainers.'
+    description: 'Update google-cloud-sdk. Test owner: test-infra-maintainers.'
     properties:
         - build-discarder:
             days-to-keep: 30
     builders:
         - shell: |
-            sudo chown -R jenkins:jenkins /usr/local/share/google
-            gcloud components update
-            gcloud components update alpha
-            gcloud components update beta
+            sudo apt-get update
+            sudo apt-get upgrade -y google-cloud-sdk
     wrappers:
         - timeout:
             timeout: 15
