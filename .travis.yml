@@ -13,6 +13,7 @@ env:
 cache: pip
 services:
     - docker
+sudo: required
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:5
 install:
@@ -30,6 +31,7 @@ script:
     - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/diff-job-config-patch.sh
+    - make -C gcsweb test
     - cd gubernator
     - ./test.sh --nologcapture
     - ./lint.sh
