@@ -15,15 +15,15 @@
 package pubsub
 
 import (
-	"errors"
 	"sync"
 	"time"
 
 	"golang.org/x/net/context"
+	"google.golang.org/api/iterator"
 )
 
 // Done is returned when an iteration is complete.
-var Done = errors.New("no more messages")
+var Done = iterator.Done
 
 type Iterator struct {
 	// kaTicker controls how often we send an ack deadline extension request.
@@ -157,6 +157,9 @@ func (it *Iterator) done(ackID string, ack bool) {
 		// There's no need to call it.ka.Remove here, as acker will
 		// call it via its Notify function.
 	} else {
+		// TODO: explicitly NACK the message by sending an
+		// ModifyAckDeadline request with 0s deadline, to make the
+		// message immediately available for redelivery.
 		it.ka.Remove(ackID)
 	}
 }

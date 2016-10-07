@@ -19,9 +19,9 @@ import (
 	"net/http"
 	"os"
 
+	"google.golang.org/api/option"
 	raw "google.golang.org/api/pubsub/v1"
-	"google.golang.org/cloud"
-	"google.golang.org/cloud/internal/transport"
+	"google.golang.org/api/transport"
 
 	"golang.org/x/net/context"
 )
@@ -47,20 +47,20 @@ type Client struct {
 }
 
 // NewClient creates a new PubSub client.
-func NewClient(ctx context.Context, projectID string, opts ...cloud.ClientOption) (*Client, error) {
-	var o []cloud.ClientOption
+func NewClient(ctx context.Context, projectID string, opts ...option.ClientOption) (*Client, error) {
+	var o []option.ClientOption
 	// Environment variables for gcloud emulator:
-	// https://cloud.google.com/sdk/gcloud/reference/beta/emulators/pubsub/
+	// https://option.google.com/sdk/gcloud/reference/beta/emulators/pubsub/
 	if addr := os.Getenv("PUBSUB_EMULATOR_HOST"); addr != "" {
-		o = []cloud.ClientOption{
-			cloud.WithEndpoint("http://" + addr + "/"),
-			cloud.WithBaseHTTP(http.DefaultClient),
+		o = []option.ClientOption{
+			option.WithEndpoint("http://" + addr + "/"),
+			option.WithHTTPClient(http.DefaultClient),
 		}
 	} else {
-		o = []cloud.ClientOption{
-			cloud.WithEndpoint(prodAddr),
-			cloud.WithScopes(raw.PubsubScope, raw.CloudPlatformScope),
-			cloud.WithUserAgent(userAgent),
+		o = []option.ClientOption{
+			option.WithEndpoint(prodAddr),
+			option.WithScopes(raw.PubsubScope, raw.CloudPlatformScope),
+			option.WithUserAgent(userAgent),
 		}
 	}
 	o = append(o, opts...)
