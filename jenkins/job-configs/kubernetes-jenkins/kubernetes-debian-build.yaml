@@ -48,7 +48,7 @@
     build:
     - 'unstable':
          branch: 'master'
-         timeout: 20
+         timeout: 300
          job-env: |
            export DEB_CHANNEL="unstable"
     jobs:
