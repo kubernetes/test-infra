@@ -59,7 +59,7 @@
             timeout: 50
             job-env: |
               export KUBE_FASTBUILD=false
-              export KUBE_SKIP_PUSH_GCS=y  # since 'kubernetes-build' is pushing to the same path
+              export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with 'kubernetes-build'
         - 'build-1.2':
             branch: 'release-1.2'
             timeout: 30
