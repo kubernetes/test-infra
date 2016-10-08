@@ -369,9 +369,21 @@ fi
 
 cd kubernetes
 
-# Upload build start time and k8s version to GCS, but not on PR Jenkins.
-# On PR Jenkins this is done before the build.
-if [[ ! "${JOB_NAME}" =~ -pull- ]]; then
+if [[ -n "${BOOTSTRAP_MIGRATION:-}" ]]; then
+  # TODO(fejta): migrate all jobs and stop using upload-to-gcs.sh to do this
+  # Right now started.json is created by e2e-runner.sh and
+  # finished.json is created by jenkins.
+  # Soon we will consolodate this responsibility inside bootstrap.py
+  # We want to switch to this logic as we start migrating jobs over to this
+  # pattern, but until then we also need jobs to continue uploading started.json
+  # until that time. This environment variable will do that.
+  source "$(dirname "${0}")/upload-to-gcs.sh"
+  print_started | jq '.metadata?' > "${ARTIFACTS}/metadata.json"
+elif [[ ! "${JOB_NAME}" =~ -pull- ]]; then
+  echo "The bootstrapper should handle Tracking the start/finish of a job and "
+  echo "uploading artifacts. TODO(fejta): migrate this job"
+  # Upload build start time and k8s version to GCS, but not on PR Jenkins.
+  # On PR Jenkins this is done before the build.
   upload_to_gcs="$(dirname "${0}")/upload-to-gcs.sh"
   if [[ -f "${upload_to_gcs}" ]]; then
     JENKINS_BUILD_STARTED=true "${upload_to_gcs}"

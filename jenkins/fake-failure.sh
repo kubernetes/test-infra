@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 set -o errexit
-set -o nounset
-set -o pipefail
 set -o xtrace
 
-readonly testinfra="$(dirname "${0}")/.."
+# This is a fake job that tests bootstrap.py behavior when a job fails
 
-export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
-echo "TODO(fejta): migrate gotest-dockerized.sh to test-infra"
-./hack/jenkins/gotest-dockerized.sh
+exit 1  # Simulate tests failing

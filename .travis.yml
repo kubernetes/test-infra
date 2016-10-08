@@ -30,6 +30,7 @@ install:
 script:
     - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
+    - ./jenkins/bootstrap_test.py
     - ./jenkins/diff-job-config-patch.sh
     - make -C gcsweb test
     - cd gubernator

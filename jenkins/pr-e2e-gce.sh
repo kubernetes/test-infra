@@ -16,15 +16,11 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
-readonly checkout="${PWD}/test-infra/jenkins/checkout.py"
-readonly runner="${PWD}/test-infra/jenkins/dockerized-e2e-runner.sh"
+readonly testinfra="$(dirname "${0}")/.."
 
-mkdir -p go/src/k8s.io
-cd go/src/k8s.io
-"${checkout}" --repo=kubernetes --pull="${grprbPullId}"
-cd kubernetes
-
+# TODO(fejta): remove this
 if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "release-1.1" ]]; then
   echo "PR GCE job disabled for legacy branches."
   exit
@@ -34,8 +30,6 @@ export KUBE_SKIP_PUSH_GCS=y
 export KUBE_RUN_FROM_OUTPUT=y
 export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
-# Nothing should want Jenkins $HOME
-export HOME=${WORKSPACE}
 
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
@@ -45,10 +39,11 @@ export FAIL_ON_GCP_RESOURCE_LEAK="true"
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
 
-export E2E_NAME="e2e-gce-${NODE_NAME}-${EXECUTOR_NUMBER}"
+export E2E_NAME="e2e-gce-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
-export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+#export GINKGO_TEST_ARGS="--ginkgo.focus=EmptyDir"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gce"
 # NUM_NODES should match kubernetes-e2e-gce.
@@ -56,6 +51,7 @@ export NUM_NODES="3"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
 export E2E_TEST="true"
@@ -67,12 +63,14 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # GCE variables
 export INSTANCE_PREFIX=${E2E_NAME}
 export KUBE_GCE_NETWORK=${E2E_NAME}
+#export KUBE_GCE_NETWORK="e2e-gce-agent-pr-7-0"
 export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 
 # Get golang into our PATH so we can run e2e.go
 export PATH=${PATH}:/usr/local/go/bin
 
-timeout -k 15m 55m ${runner} && rc=$? || rc=$?
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+timeout -k 15m 55m "${runner}" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
     echo "Dumping logs for any remaining nodes"

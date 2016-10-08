@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 set -o errexit
-set -o nounset
-set -o pipefail
 set -o xtrace
 
-readonly testinfra="$(dirname "${0}")/.."
+# This is a fake job that tests bootstrap.py behavior when checking out a merged PR
 
-export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
-echo "TODO(fejta): migrate gotest-dockerized.sh to test-infra"
-./hack/jenkins/gotest-dockerized.sh
+[[ -f fake-pr-file ]]  # The pr adds this file
+[[ ! -f fake-master-file ]]  # In master, removed by pr

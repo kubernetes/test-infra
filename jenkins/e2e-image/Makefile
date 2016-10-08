@@ -19,7 +19,7 @@ all: build
 
 build:
 	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
+	docker tag -f $(IMG):$(TAG) $(IMG):latest
 	@echo Built $(IMG):$(TAG) and tagged with latest
 
 push: build

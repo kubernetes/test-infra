@@ -17,24 +17,9 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
-activate-run-and-upload() {
-  # Activate service account
-  export HOME="${WORKSPACE}"
-  export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+# Find test scripts.
+script="$(dirname "${0}")/bootstrap.py"
 
-  # Find upload and test scripts.
-  local uploader="$(dirname "${0}")/upload-to-gcs.sh"
-  local script="$(dirname "${0}")/${1}"
-
-  # Run test script and upload result
-  JENKINS_BUILD_STARTED=true "${uploader}"
-  if "${script}" 2>&1 | tee "${WORKSPACE}/build-log.txt"; then
-    JENKINS_BUILD_FINISHED=SUCCESS "${uploader}"
-  else
-    JENKINS_BUILD_FINISHED=FAILURE "${uploader}"
-  fi
-}
-
-activate-run-and-upload "${1}"
+"${script}" --job="${1%.sh}" --repo=kubernetes/kubernetes --pull="${ghprbPullId:-}"
