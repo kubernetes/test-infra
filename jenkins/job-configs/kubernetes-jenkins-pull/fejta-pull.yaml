@@ -51,9 +51,9 @@
     suffix:
       - unit: # fejta-pull-unit
           max-total: 0 # Unlimited
-          job-name: pr-unit
-      - gce: # fejta-pull-e2e
+          job-name: fejta-pull-unit
+      - gce: # fejta-pull-gce
           max-total: 12
-          job-name: pr-e2e-gce
+          job-name: fejta-pull-gce
     jobs:
         - 'fejta-pull-{suffix}'
