@@ -26,6 +26,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	net_url "net/url"
 	"os"
 	"strings"
 	"time"
@@ -148,7 +149,7 @@ func gcsRequest(w http.ResponseWriter, r *http.Request) {
 		// whether the object is a file or a dir.  If it is a dir, the
 		// contents will include a record for itself.  If it is a file it
 		// will not.
-		url += "&prefix=" + object + "/"
+		url += "&prefix=" + net_url.QueryEscape(object+"/")
 	}
 
 	if markers, found := r.URL.Query()["marker"]; found {
@@ -406,6 +407,10 @@ func htmlGridItem(out io.Writer, icon, url, name, size, modified string) error {
 // Render writes HTML representing this gcsDir to the provided output.
 func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 	htmlPageHeader(out, dir.Name)
+
+	if !strings.HasSuffix(inPath, "/") {
+		inPath += "/"
+	}
 
 	htmlContentHeader(out, dir.Name, inPath)
 
