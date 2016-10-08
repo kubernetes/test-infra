@@ -27,11 +27,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"cloud.google.com/go/pubsub"
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
-	"google.golang.org/cloud/pubsub"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -97,7 +97,7 @@ func (m *Message) Queue(topic *pubsub.Topic) error {
 		return err
 	}
 
-	glog.Infof("Published to topic (%s): %s", topic.Name(), msgIds)
+	glog.Infof("Published to topic (%s): %s", topic.String(), msgIds)
 
 	return nil
 }
