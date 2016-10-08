@@ -18,6 +18,7 @@
 
 import json
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -26,6 +27,7 @@ import bootstrap
 
 
 BRANCH = 'random_branch'
+BUILD = 'random_build'
 FAIL = ['/bin/bash', '-c', 'exit 1']
 JOB = 'random_job'
 PASS = ['/bin/bash', '-c', 'exit 0']
@@ -270,7 +272,8 @@ class FinishTest(unittest.TestCase):
             with stub:
                 pass
 
-    def testUploadArtifacts(self):
+    def testSkipUploadArtifacts(self):
+        """Do not upload artifacts dir if it doesn't exist."""
         paths = FakePath()
         gsutil = FakeGSUtil()
         local_artifacts = None
@@ -280,7 +283,15 @@ class FinishTest(unittest.TestCase):
         with Stub(os.path, 'isdir', lambda _: False):
             with Stub(bootstrap, 'UploadArtifacts', Bomb):
                 bootstrap.Finish(
-                    gsutil, paths, success, local_artifacts, build, version)
+                    gsutil, paths, success, local_artifacts,
+                    build, version, REPO)
+
+
+class MetadataTest(unittest.TestCase):
+    def testAlwaysSetMetadata(self):
+        metadata = bootstrap.Metadata(REPO, 'missing-artifacts-dir')
+        self.assertIn('repo', metadata)
+        self.assertEquals(REPO, metadata['repo'])
 
 
 SECONDS = 10
@@ -446,6 +457,26 @@ class FakeFinish(object):
         self.called = True
         self.result = success
 
+class PRPathsTest(unittest.TestCase):
+    def testKubernetesKubernetes(self):
+        """Test the kubernetes/kubernetes prefix."""
+        path = bootstrap.PRPaths('kubernetes/kubernetes', JOB, BUILD, PULL)
+        self.assertTrue(any(
+            str(PULL) == p for p in path.build_log.split('/')))
+
+    def testKubernetes(self):
+        """Test the kubernetes/something prefix."""
+        path = bootstrap.PRPaths('kubernetes/prefix', JOB, BUILD, PULL)
+        self.assertTrue(any(
+            'prefix%s' % PULL == p for p in path.build_log.split('/')))
+
+    def testOther(self):
+        """Test the none kubernetes prefixes."""
+        path = bootstrap.PRPaths('random/repo', JOB, BUILD, PULL)
+        self.assertTrue(any(
+            'random_repo%s' % PULL == p for p in path.build_log.split('/')))
+
+
 class BootstrapTest(unittest.TestCase):
 
     def setUp(self):
@@ -472,8 +503,7 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'CIPaths', Bomb):
             with Stub(bootstrap, 'PRPaths', FakePath()) as path:
                 bootstrap.Bootstrap(JOB, REPO, None, PULL)
-            self.assertTrue(any(
-                str(PULL) in o for o in (path.a, path.kw)))
+            self.assertTrue(PULL in path.a or PULL in path.kw)
 
     def testCIPaths(self):
         """Use a CIPaths when branch is set."""
@@ -482,7 +512,7 @@ class BootstrapTest(unittest.TestCase):
             with Stub(bootstrap, 'CIPaths', FakePath()) as path:
                 bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
             self.assertFalse(any(
-                str(PULL) in o for o in (path.a, path.kw)))
+                PULL in o for o in (path.a, path.kw)))
 
     def testNoFinishWhenStartFails(self):
         with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
@@ -497,7 +527,8 @@ class BootstrapTest(unittest.TestCase):
             raise subprocess.CalledProcessError(1, [], '')
         with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'Subprocess', CallError):
-                bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+                with self.assertRaises(SystemExit):
+                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
@@ -596,6 +627,20 @@ class IntegrationTest(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             bootstrap.Bootstrap('fake-failure', self.REPO, None, self.PR)
 
+
+class JobTest(unittest.TestCase):
+    def testOnlyJobs(self):
+        """Ensure that everything in jobs/ is a valid job name and script."""
+        for path, _, filenames in os.walk(os.path.dirname(bootstrap.Job(JOB))):
+            for job in filenames:
+                # Jobs should have simple names
+                self.assertTrue(re.match(r'[0-9a-z-]+.sh', job), job)
+                job_path = os.path.join(path, job)
+                # Jobs should point to a real, executable file
+                # Note: it is easy to forget to chmod +x
+                self.assertTrue(os.path.isfile(job_path), job_path)
+                self.assertFalse(os.path.islink(job_path), job_path)
+                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
 
 if __name__ == '__main__':
