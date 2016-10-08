@@ -185,6 +185,10 @@ type Config struct {
 	lastAnalytics analytics
 	analytics     analytics
 
+	// Webhook configuration
+	HookHandler *WebHook
+	GithubKey   string
+
 	// Last fetch
 	since time.Time
 }
@@ -369,6 +373,7 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
 	cmd.PersistentFlags().Uint64Var(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
 	cmd.PersistentFlags().StringVar(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
+	cmd.PersistentFlags().StringVar(&config.GithubKey, "github-key", "", "Github secret key for webhooks")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
@@ -2100,6 +2105,17 @@ func (config *Config) runMungeFunction(obj *MungeObject, fn MungeFunction) error
 		return nil
 	}
 
+	// Update pull-requests references if we track them with webhooks
+	if config.HookHandler != nil {
+		if obj.IsPR() {
+			if pr, ok := obj.GetPR(); !ok {
+				return nil
+			} else if pr.Head != nil && pr.Head.Ref != nil && pr.Head.SHA != nil {
+				config.HookHandler.UpdatePullRequest(*obj.Issue.Number, *pr.Head.SHA)
+			}
+		}
+	}
+
 	glog.V(2).Infof("----==== %d ====----", *obj.Issue.Number)
 	glog.V(8).Infof("Issue %d labels: %v isPR: %v", *obj.Issue.Number, obj.Issue.Labels, obj.Issue.PullRequestLinks != nil)
 	if err := fn(obj); err != nil {
@@ -2113,8 +2129,18 @@ func (config *Config) runMungeFunction(obj *MungeObject, fn MungeFunction) error
 //   * pr.Number <= maxPRNumber
 func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	page := 1
-	since := time.Time{}
 
+	extraIssues := sets.NewInt()
+	// Add issues modified by a received event
+	if config.HookHandler != nil {
+		extraIssues.Insert(config.HookHandler.PopIssues()...)
+	} else {
+		// We're not using the webhooks, make sure we fetch all
+		// the issues
+		config.since = time.Time{}
+	}
+
+	since := time.Now()
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
 		listOpts := &github.IssueListByRepoOptions{
@@ -2143,6 +2169,9 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 			if obj.Issue.UpdatedAt != nil && obj.Issue.UpdatedAt.After(since) {
 				since = *obj.Issue.UpdatedAt
 			}
+			if obj.Issue.Number != nil {
+				delete(extraIssues, *obj.Issue.Number)
+			}
 		}
 		if response.LastPage == 0 || response.LastPage <= page {
 			break
@@ -2150,6 +2179,20 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		page++
 	}
 	config.since = since
+
+	// Handle additional issues
+	for id := range extraIssues {
+		obj, err := config.GetObject(id)
+		if err != nil {
+			return err
+		}
+		glog.V(2).Info("Munging extra-issue: ", id)
+		err = config.runMungeFunction(obj, fn)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

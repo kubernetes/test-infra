@@ -54,6 +54,7 @@ spec:
         - --batch-url=$(BATCH_URL)
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
+        - --github-key=$(GITHUB_KEY)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -241,6 +242,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: approval-activated
+          - name: GITHUB_KEY
+            valueFrom:
+              secretKeyRef:
+                name: @@-github-secret
+                key: secret
         ports:
         - name: status
           containerPort: 8080
