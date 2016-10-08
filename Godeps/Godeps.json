@@ -251,7 +251,7 @@
 		{
 			"ImportPath": "k8s.io/contrib/test-utils/utils",
 			"Comment": "cluster-autoscaler-0.3.0-142-g4aaa75a",
-			"Rev": "4aaa75aed09fd919b82ee1cac8c6d47f8fd0e81c"
+			"Rev": "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/util/clock",
