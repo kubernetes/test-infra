@@ -258,18 +258,22 @@ func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
 // Uses a cache for members, but ignores it for non-members.
 func (ga *GitHubAgent) isMember(name string) (bool, error) {
 	ga.mut.Lock()
-	defer ga.mut.Unlock()
 	if ga.orgMembers == nil {
 		ga.orgMembers = make(map[string]bool)
 	} else if ga.orgMembers[name] {
+		ga.mut.Unlock()
 		return true, nil
 	}
+	ga.mut.Unlock()
+	// Don't hold the lock for the potentially slow IsMember call.
 	member, err := ga.GitHubClient.IsMember(ga.Org, name)
 	if err != nil {
 		return false, err
 	}
 	if member {
+		ga.mut.Lock()
 		ga.orgMembers[name] = true
+		ga.mut.Unlock()
 	}
 	return member, nil
 }
