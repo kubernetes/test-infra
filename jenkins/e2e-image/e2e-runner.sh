@@ -378,6 +378,7 @@ if [[ -n "${BOOTSTRAP_MIGRATION:-}" ]]; then
   # pattern, but until then we also need jobs to continue uploading started.json
   # until that time. This environment variable will do that.
   source "$(dirname "${0}")/upload-to-gcs.sh"
+  version=$(find_version)  # required by print_started
   print_started | jq '.metadata?' > "${ARTIFACTS}/metadata.json"
 elif [[ ! "${JOB_NAME}" =~ -pull- ]]; then
   echo "The bootstrapper should handle Tracking the start/finish of a job and "

@@ -187,7 +187,24 @@ def AppendResult(gsutil, path, build, version, passed):
     gsutil.UploadJson(path, cache)
 
 
-def Finish(gsutil, paths, success, artifacts, build, version):
+def Metadata(repo, artifacts):
+    # TODO(rmmh): update tooling to expect metadata in finished.json
+    path = os.path.join(artifacts or '', 'metadata.json')
+    metadata = None
+    if os.path.isfile(path):
+        try:
+            with open(path) as fp:
+                metadata = json.loads(fp.read())
+        except (IOError, ValueError):
+            pass
+
+    if not metadata or not isinstance(metadata, dict):
+        metadata = {}
+    metadata['repo'] = repo
+    return metadata
+
+
+def Finish(gsutil, paths, success, artifacts, build, version, repo):
     """
     Args:
         paths: a Paths instance.
@@ -195,6 +212,7 @@ def Finish(gsutil, paths, success, artifacts, build, version):
         artifacts: a dir containing artifacts to upload.
         build: identifier of this build.
         version: identifies what version of the code the build tested.
+        repo: the target repo
     """
 
     if os.path.isdir(artifacts):
@@ -219,17 +237,8 @@ def Finish(gsutil, paths, success, artifacts, build, version):
         'timestamp': time.time(),
         'result': 'SUCCESS' if success else 'FAILURE',
         'passed': bool(success),
+        'metadata': Metadata(repo, artifacts),
     }
-    # TODO(rmmh): update tooling to expect metadata in finished.json
-    metadata = os.path.join(paths.artifacts, 'metadata.json')
-    if os.path.isfile(metadata):
-        try:
-            with open(metadata) as fp:
-                val = json.loads(fp.read())
-        except (IOError, ValueError):
-            val = None
-        if val and isinstance(val, dict):
-            data['metadata'] = val
     gsutil.UploadJson(paths.finished, data)
 
 
@@ -313,9 +322,17 @@ def CIPaths(job, build):
 
 
 
-def PRPaths(job, build, pull):
-    # TODO(fejta): handle non-k8s repos correctly
+def PRPaths(repo, job, build, pull):
+    pull = str(pull)
+    # TODO(rmmh): wouldn't this be better as a dir than prefix?
+    if repo == 'kubernetes/kubernetes':
+        prefix = ''
+    elif repo.startswith('kubernetes/'):
+        prefix = repo[len('kubernetes/'):]
+    else:
+        prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
+    pull = prefix + pull
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
             base, 'directory', job, 'jobResultsCache.json')
@@ -471,6 +488,11 @@ def SetupMagicEnvironment(job):
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
 
+
+def Job(job):
+    return TestInfra('jobs/%s.sh' % job)
+
+
 def Bootstrap(job, repo, branch, pull):
     build_log_path = os.path.abspath('build-log.txt')
     build_log = SetupLogging(build_log_path)
@@ -484,25 +506,29 @@ def Bootstrap(job, repo, branch, pull):
     SetupMagicEnvironment(job)
     SetupCredentials()
     if pull:
-      paths = PRPaths(job, build, str(pull))
+        paths = PRPaths(repo, job, build, pull)
     else:
-      paths = CIPaths(job, build)
+        paths = CIPaths(job, build)
     gsutil = GSUtil()
     logging.info('Start %s at %s...' % (build, version))
     Start(gsutil, paths, start, Node(), version)
+    success = False
     try:
-        cmd = [TestInfra('jenkins/%s.sh' % job)]
+        cmd = [Job(job)]
         Subprocess(cmd)
-        success = True
         logging.info('PASS: %s' % job)
+        success = True
     except subprocess.CalledProcessError:
-        success = False
         logging.error('FAIL: %s' % job)
     logging.info('Upload result and artifacts...')
-    Finish(gsutil, paths, success, '_artifacts', build, version)
+    Finish(gsutil, paths, success, '_artifacts', build, version, repo)
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
     gsutil.CopyFile(paths.build_log, build_log_path)
+    if not success:
+        # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
+        # by exit code and automatically retrigger after an infra-problem.
+        sys.exit(1)
 
 
 if __name__ == '__main__':
