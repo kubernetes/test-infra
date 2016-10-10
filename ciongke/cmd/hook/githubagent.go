@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"sync"
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 )
@@ -37,6 +38,10 @@ type GitHubAgent struct {
 
 	BuildRequests  chan<- KubeRequest
 	DeleteRequests chan<- KubeRequest
+
+	// Cache of org members, protected by the lock.
+	orgMembers map[string]bool
+	mut        sync.Mutex
 }
 
 type githubClient interface {
@@ -79,7 +84,7 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error 
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "ok to test". There's no need to look for previous
 		// "ok to test" comments since the PR was just opened!
-		member, err := ga.GitHubClient.IsMember(ga.Org, pr.PullRequest.User.Login)
+		member, err := ga.isMember(pr.PullRequest.User.Login)
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
@@ -144,7 +149,7 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 		}
 
 		// Skip untrusted users.
-		orgMember, err := ga.GitHubClient.IsMember(ga.Org, author)
+		orgMember, err := ga.isMember(author)
 		if err != nil {
 			return err
 		} else if !orgMember {
@@ -170,7 +175,7 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) erro
 func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
-	orgMember, err := ga.GitHubClient.IsMember(ga.Org, author)
+	orgMember, err := ga.isMember(author)
 	if err != nil {
 		return false, err
 	} else if orgMember {
@@ -196,7 +201,7 @@ func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 			continue
 		}
 		// Ensure that the commenter is in the org.
-		commentAuthorMember, err := ga.GitHubClient.IsMember(ga.Org, commentAuthor)
+		commentAuthorMember, err := ga.isMember(commentAuthor)
 		if err != nil {
 			return false, err
 		} else if commentAuthorMember {
@@ -248,4 +253,23 @@ func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
 		kr := makeKubeRequest(job, pr)
 		ga.DeleteRequests <- kr
 	}
+}
+
+// Uses a cache for members, but ignores it for non-members.
+func (ga *GitHubAgent) isMember(name string) (bool, error) {
+	ga.mut.Lock()
+	defer ga.mut.Unlock()
+	if ga.orgMembers == nil {
+		ga.orgMembers = make(map[string]bool)
+	} else if ga.orgMembers[name] {
+		return true, nil
+	}
+	member, err := ga.GitHubClient.IsMember(ga.Org, name)
+	if err != nil {
+		return false, err
+	}
+	if member {
+		ga.orgMembers[name] = true
+	}
+	return member, nil
 }

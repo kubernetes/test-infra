@@ -16,12 +16,19 @@ Job Builder](http://docs.openstack.org/infra/jenkins-job-builder/). Travis will
 run `jenkins/diff-job-config-patch.sh` to print out the XML diff between your
 change and master.
 
+## CI on GKE and PR Jenkins
+
+Due to the abundance of bugs and security vulnerabilities in Jenkins and its
+plugins, we are switching our entire CI system to Kubernetes. Currently, we
+trigger PR Jenkins jobs using the code under `ciongke/`, and we plan on moving
+more functionality out of Jenkins plugins and into there.
+
 ## Viewing Test Results
 
 * The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows the results
 of test jobs for the last few weeks. It is currently not open-sourced, but we
 we would like to move in that direction eventually.
-* The [Kubernetes test history
+* The [24-hour test history
 dashboard](http://storage.googleapis.com/kubernetes-test-history/static/index.html)
 collects test results from the last 24 hours. It is updated hourly by the
 scripts under `jenkins/test-history`.
