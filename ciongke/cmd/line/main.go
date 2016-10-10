@@ -151,9 +151,6 @@ func (c *testClient) TestPR() error {
 		c.tryCreateStatus(github.Error, "Error queueing build.", "")
 		return err
 	}
-	if eq {
-		c.tryCreateStatus(github.Pending, "Build queued.", "")
-	}
 	for eq {
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
@@ -204,7 +201,11 @@ func (c *testClient) guberURL(number int) string {
 }
 
 func (c *testClient) tryCreateStatus(state, desc, url string) {
-	logrus.WithFields(fields(c)).Infof("Setting status to %s: %s", state, desc)
+	logrus.WithFields(fields(c)).WithFields(logrus.Fields{
+		"state":       state,
+		"description": desc,
+		"url":         url,
+	}).Info("Setting GitHub status.")
 	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.Commit, github.Status{
 		State:       state,
 		Description: desc,
@@ -212,7 +213,7 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		TargetURL:   url,
 	})
 	if err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error creating GitHub status.")
+		logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
 	}
 }
 

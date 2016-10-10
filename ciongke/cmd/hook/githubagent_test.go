@@ -339,3 +339,40 @@ func TestClosePR(t *testing.T) {
 		t.Fatal("Only deleted one job.")
 	}
 }
+
+// Make sure that we use the cache for members but ignore it for non-members.
+func TestIsMemberCache(t *testing.T) {
+	gh := &fakegithub.FakeClient{
+		OrgMembers: []string{"t"},
+	}
+	ga := &GitHubAgent{
+		GitHubClient: gh,
+	}
+	if member, err := ga.isMember("t"); err != nil {
+		t.Errorf("Didn't expect error testing membership the first time: %v", err)
+	} else if !member {
+		t.Error("Expected user \"t\" to be a member.")
+	}
+	if !ga.orgMembers["t"] {
+		t.Error("Didn't cache org membership.")
+	}
+	gh.OrgMembers = []string{}
+	if member, err := ga.isMember("t"); err != nil {
+		t.Errorf("Didn't expect error testing membership the second time: %v", err)
+	} else if !member {
+		t.Error("Expected user \"t\" to be a member from cache.")
+	}
+
+	if member, err := ga.isMember("u"); err != nil {
+		t.Errorf("Didn't expect error testing membership the first time: %v", err)
+	} else if member {
+		t.Error("Expected user \"u\" to not be a member.")
+	}
+	gh.OrgMembers = []string{"u"}
+	if member, err := ga.isMember("u"); err != nil {
+		t.Errorf("Didn't expect error testing membership the second time: %v", err)
+	} else if !member {
+		t.Error("Expected user \"u\" to be a member.")
+	}
+
+}
