@@ -318,7 +318,7 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 # Use new image for etcd.
-                export TEST_ETCD_VERSION="3.0.4-migration.2"
+                export TEST_ETCD_VERSION="3.0.12-experimental.1"
         - 'gci-gce-etcd3':  # kubernetes-e2e-gci-gce-etcd3
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
@@ -332,7 +332,7 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
                 # Use new image for etcd.
-                export TEST_ETCD_VERSION="3.0.4-migration.2"
+                export TEST_ETCD_VERSION="3.0.12-experimental.1"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
@@ -1045,7 +1045,7 @@
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
         # Use etcd3 binary in etcd3 mode.
-        export TEST_ETCD_VERSION="3.0.10-experimental.1"
+        export TEST_ETCD_VERSION="3.0.12-experimental.1"
         export STORAGE_BACKEND="etcd3"
         # Increase limit for inflight requests in apiserver.
         # TODO: Uncomment after validating 1.4 release.
