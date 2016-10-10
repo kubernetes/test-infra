@@ -50,6 +50,11 @@ kubernetes/kubernetes:
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot gce e2e test this"
+- name: kubernetes-pull-build-test-e2e-gce-etcd3
+  trigger: "@k8s-bot (gce )?etcd3 (e2e )?test this"
+  always_run: false
+  context: Jenkins GCE etcd3 e2e
+  rerun_command: "@k8s-bot gce etcd3 e2e test this"
 - name: kubernetes-pull-build-test-e2e-gke
   trigger: "@k8s-bot (gke )?(e2e )?test this"
   always_run: true
