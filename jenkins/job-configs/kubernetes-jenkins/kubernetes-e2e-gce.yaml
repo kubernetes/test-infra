@@ -97,20 +97,38 @@
                 export KUBE_OS_DISTRIBUTION="gci"
                 export PROJECT="k8s-jkns-e2e-gce-gci-slow"
         - 'gce-serial':  # kubernetes-e2e-gce-serial
-            description: 'Run [Serial], [Disruptive], tests on GCE.'
+            description: 'Run [Serial] tests on GCE.'
             timeout: 300
             job-env: |
                 export ENABLE_GARBAGE_COLLECTOR="true"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
-                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\] \
+                                         --ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="kubernetes-jkns-e2e-gce-serial"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
-        - 'gci-gce-serial':  # kubernetes-e2e-gci-gce-serial
-            description: 'Run [Serial], [Disruptive], tests on GCE.'
+        - 'gce-disruptive':  # kubernetes-e2e-gce-disruptive
+            description: 'Run [Disruptive] tests on GCE.'
             timeout: 300
             job-env: |
                 export ENABLE_GARBAGE_COLLECTOR="true"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="kubernetes-jkns-e2e-gce-disruptive"
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gci-gce-serial':  # kubernetes-e2e-gci-gce-serial
+            description: 'Run [Serial] tests on GCE.'
+            timeout: 300
+            job-env: |
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\] \
+                                         --ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="k8s-jkns-e2e-gce-gci-serial"
+                export KUBE_OS_DISTRIBUTION="gci"
+        - 'gci-gce-disruptive':  # kubernetes-e2e-gci-gce-disruptive
+            description: 'Run [Disruptive] tests on GCE.'
+            timeout: 300
+            job-env: |
+                export ENABLE_GARBAGE_COLLECTOR="true"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-gci-serial"
                 export KUBE_OS_DISTRIBUTION="gci"

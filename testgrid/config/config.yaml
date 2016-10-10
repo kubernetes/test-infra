@@ -268,6 +268,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability-release-1.4
 - name: kubernetes-e2e-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial
+- name: kubernetes-e2e-gce-disruptive
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-disruptive
 - name: kubernetes-e2e-gce-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.2
 - name: kubernetes-e2e-gci-gce-serial-release-1.2
@@ -314,6 +316,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke
 - name: kubernetes-e2e-gci-gke-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-serial
+- name: kubernetes-e2e-gci-gke-disruptive
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-disruptive
 - name: kubernetes-e2e-gci-gke-slow
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow
 - name: kubernetes-e2e-gke-ingress
@@ -382,6 +386,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-release-1.4
 - name: kubernetes-e2e-gke-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-serial
+- name: kubernetes-e2e-gke-disruptive
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-disruptive
 - name: kubernetes-e2e-gke-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-serial-release-1.2
 - name: kubernetes-e2e-gci-gke-serial-release-1.2
@@ -642,12 +648,16 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-scalability
   - name: gce-serial
     test_group_name: kubernetes-e2e-gce-serial
+  - name: gce-disruptive
+    test_group_name: kubernetes-e2e-gce-disruptive
   - name: gce-slow
     test_group_name: kubernetes-e2e-gce-slow
   - name: gke
     test_group_name: kubernetes-e2e-gke
   - name: gke-serial
     test_group_name: kubernetes-e2e-gke-serial
+  - name: gke-disruptive
+    test_group_name: kubernetes-e2e-gke-disruptive
   - name: gke-slow
     test_group_name: kubernetes-e2e-gke-slow
   - name: kubemark-5-gce
@@ -845,8 +855,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.4
   - name: gce-serial
     test_group_name: kubernetes-e2e-gce-serial
+  - name: gce-disruptive
+    test_group_name: kubernetes-e2e-gce-disruptive
   - name: gci-gce-serial
     test_group_name: kubernetes-e2e-gci-gce-serial
+  - name: gci-gce-disruptive
+    test_group_name: kubernetes-e2e-gci-gce-disruptive
   - name: gce-serial-release-1.2
     test_group_name: kubernetes-e2e-gce-serial-release-1.2
   - name: gci-gce-serial-release-1.2
