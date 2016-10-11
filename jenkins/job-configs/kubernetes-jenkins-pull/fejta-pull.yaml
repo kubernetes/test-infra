@@ -41,9 +41,9 @@
             fail: true
     builders:
         - shell: |
-            # TODO(fejta): change this back to kubernetes/test-infra -b master
-            git clone https://github.com/fejta/test-infra -b fejta
-            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=kubernetes/kubernetes --pull="${{ghprbPullId}}"
+            # TODO(fejta): consider a stable tag instead of master
+            git clone https://github.com/kubernetes/test-infra -b master
+            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=kubernetes/kubernetes --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src/github.com"
 
 - project:
     name: fejta-kubernetes-pull
@@ -52,6 +52,9 @@
       - unit: # fejta-pull-unit
           max-total: 0 # Unlimited
           job-name: fejta-pull-unit
+      - node-e2e:
+          max-total: 5  # Half the real one
+          job-name: fejta-pull-node-e2e
       - gce: # fejta-pull-gce
           max-total: 12
           job-name: fejta-pull-gce
