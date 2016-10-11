@@ -107,6 +107,10 @@ kubernetes/kubernetes:
   context: Bootstrap GCE Node e2e
   rerun_command: "@k8s-bot bootstrap node e2e test this"
   trigger: "@k8s-bot bootstrap (node )?(e2e )?test this"
+- name: fejta-pull-e2e-gke
+  context: Bootstrap GKE e2e
+  rerun_command: "@k8s-bot bootstrap gke e2e test this"
+  trigger: "@k8s-bot bootstrap (gke )?(e2e )?test this"
 - name: fejta-pull-unit
   trigger: "@fejta do a little dance"
   context: Jenkins fejta unit
