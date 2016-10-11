@@ -21,6 +21,8 @@ import (
 	"testing"
 )
 
+const testThis = "@k8s-bot test this"
+
 // Make sure that our rerun commands match our triggers.
 func TestJobTriggers(t *testing.T) {
 	ja := &JobAgent{}
@@ -42,6 +44,11 @@ func TestJobTriggers(t *testing.T) {
 			if job.RerunCommand == "" || job.Trigger == "" {
 				t.Errorf("Job %s needs a trigger and a rerun command.", job.Name)
 				continue
+			}
+			// Check that the merge bot will run AlwaysRun jobs, otherwise it
+			// will attempt to rerun forever.
+			if job.AlwaysRun && !job.re.MatchString(testThis) {
+				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
 			}
 			// Check that the rerun command actually runs the job.
 			if !job.re.MatchString(job.RerunCommand) {
