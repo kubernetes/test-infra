@@ -58,5 +58,8 @@
       - gce: # fejta-pull-gce
           max-total: 12
           job-name: fejta-pull-gce
+      - e2e-gke:  # fejta-pull-e2e-gke
+          max-total: 6
+          job-name: fejta-pull-e2e-gke
     jobs:
         - 'fejta-pull-{suffix}'
