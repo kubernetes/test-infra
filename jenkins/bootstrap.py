@@ -493,13 +493,19 @@ def Job(job):
     return TestInfra('jobs/%s.sh' % job)
 
 
-def Bootstrap(job, repo, branch, pull):
+def Bootstrap(job, repo, branch, pull, root):
     build_log_path = os.path.abspath('build-log.txt')
     build_log = SetupLogging(build_log_path)
     start = time.time()
     logging.info('Bootstrap %s...' % job)
     build = Build(start)
-    logging.info('Check out %s at %s...', repo, pull if pull else branch)
+    logging.info(
+        'Check out %s at %s...',
+        os.path.join(root, repo),
+        pull if pull else branch)
+    if not os.path.exists(root):
+        os.makedirs(root)
+    os.chdir(root)
     Checkout(repo, branch, pull)
     logging.info('Configure environment...')
     version = Version()
@@ -532,10 +538,12 @@ def Bootstrap(job, repo, branch, pull):
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser('Checks out a github PR/branch to ./<repo>/')
+  parser = argparse.ArgumentParser(
+      'Checks out a github PR/branch to <basedir>/<repo>/')
+  praser.add_argument('--root', default='.', help='Root dir to work with')
   parser.add_argument('--pull', type=int, help='PR number')
   parser.add_argument('--branch', help='Checkout the following branch')
   parser.add_argument('--repo', required=True, help='The kubernetes repository to fetch from')
   parser.add_argument('--job', required=True, help='Name of the job to run')
   args = parser.parse_args()
-  Bootstrap(args.job, args.repo, args.branch, args.pull)
+  Bootstrap(args.job, args.repo, args.branch, args.pull, args.root)

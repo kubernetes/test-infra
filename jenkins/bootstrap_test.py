@@ -33,6 +33,7 @@ JOB = 'random_job'
 PASS = ['/bin/bash', '-c', 'exit 0']
 PULL = 12345
 REPO = 'random_org/random_repo'
+ROOT = '/random/root'
 
 
 class Stub(object):
@@ -49,6 +50,14 @@ class Stub(object):
 
     def __exit__(self, *a, **kw):
         setattr(self.thing, self.param, self.old)
+
+
+class FakeCall(object):
+    def __init__(self):
+        self.calls = []
+
+    def __call__(self, *a, **kw):
+        self.calls.append((a, kw))
 
 
 class FakeSubprocess(object):
@@ -490,6 +499,8 @@ class BootstrapTest(unittest.TestCase):
             Stub(bootstrap, 'Start', Pass),
             Stub(bootstrap, 'Subprocess', Pass),
             Stub(os, 'environ', FakeEnviron()),
+            Stub(os, 'chdir', Pass),
+            Stub(os, 'makedirs', Pass),
         ]
 
     def tearDown(self):
@@ -497,12 +508,25 @@ class BootstrapTest(unittest.TestCase):
             with stub:  # Leaving with restores things
                 pass
 
+    def testRoot_NotExists(self):
+        with Stub(os, 'chdir', FakeCall()) as fake_chdir:
+            with Stub(os.path, 'exists', lambda p: False):
+                with Stub(os, 'makedirs', FakeCall()) as fake_makedirs:
+                    bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
+        self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls), fake_chdir.calls)
+        self.assertTrue(any(ROOT in c[0] for c in fake_makedirs.calls), fake_makedirs.calls)
+
+    def testRoot_Exists(self):
+        with Stub(os, 'chdir', FakeCall()) as fake_chdir:
+            bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
+        self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls))
+
     def testPRPaths(self):
         """Use a PRPaths when pull is set."""
 
         with Stub(bootstrap, 'CIPaths', Bomb):
             with Stub(bootstrap, 'PRPaths', FakePath()) as path:
-                bootstrap.Bootstrap(JOB, REPO, None, PULL)
+                bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
             self.assertTrue(PULL in path.a or PULL in path.kw)
 
     def testCIPaths(self):
@@ -510,7 +534,7 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'PRPaths', Bomb):
             with Stub(bootstrap, 'CIPaths', FakePath()) as path:
-                bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+                bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
@@ -518,7 +542,7 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'Start', Bomb):
                 with self.assertRaises(AssertionError):
-                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertFalse(fake.called)
 
 
@@ -528,20 +552,20 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'Subprocess', CallError):
                 with self.assertRaises(SystemExit):
-                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testHappy(self):
         with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
-            bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+            bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result)  # Distinguish from None
 
     def testJobEnv(self):
         """Bootstrap sets JOB_NAME."""
         with Stub(os, 'environ', FakeEnviron()) as env:
-            bootstrap.Bootstrap(JOB, REPO, BRANCH, None)
+            bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertIn(bootstrap.JOB_ENV, env)
 
 
@@ -594,8 +618,8 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'add', self.PR_FILE])
         subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
-        os.chdir(self.root_workspace)
-        bootstrap.Bootstrap('fake-pr', self.REPO, None, self.PR)
+        os.chdir('/tmp')
+        bootstrap.Bootstrap('fake-pr', self.REPO, None, self.PR, self.root_workspace)
 
     def testBranch(self):
         subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
@@ -604,28 +628,28 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'add', self.BRANCH_FILE])
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
 
-        os.chdir(self.root_workspace)
-        bootstrap.Bootstrap('fake-branch', self.REPO, self.BRANCH, None)
+        os.chdir('/tmp')
+        bootstrap.Bootstrap('fake-branch', self.REPO, self.BRANCH, None, self.root_workspace)
 
     def testPr_Bad(self):
         random_pr = 111
         with Stub(bootstrap, 'Start', Bomb):
             with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.Bootstrap('fake-pr', self.REPO, None, random_pr)
+                bootstrap.Bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
 
     def testBranch_Bad(self):
         random_branch = 'something'
         with Stub(bootstrap, 'Start', Bomb):
             with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.Bootstrap('fake-branch', self.REPO, random_branch, None)
+                bootstrap.Bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
 
     def testJobMissing(self):
         with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.Bootstrap('this-job-no-exists', self.REPO, None, self.PR)
+            bootstrap.Bootstrap('this-job-no-exists', self.REPO, None, self.PR, self.root_workspace)
 
     def testJobFails(self):
         with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.Bootstrap('fake-failure', self.REPO, None, self.PR)
+            bootstrap.Bootstrap('fake-failure', self.REPO, None, self.PR, self.root_workspace)
 
 
 class JobTest(unittest.TestCase):
