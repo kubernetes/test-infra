@@ -49,10 +49,10 @@ kubernetes/kubernetes:
   context: Jenkins verification
   rerun_command: "@k8s-bot verify test this"
 - name: kubernetes-pull-build-test-e2e-gce
-  trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot cvm gce e2e test this"
+  trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
 - name: kubernetes-pull-build-test-e2e-gce-etcd3
   trigger: "@k8s-bot (gce )?etcd3 (e2e )?test this"
   always_run: false
@@ -115,10 +115,11 @@ kubernetes/kubernetes:
   trigger: "@fejta do a little dance"
   context: Jenkins fejta unit
   rerun_command: "@fejta do a little dance"
-- name: fejta-pull-gce
-  trigger: "@fejta get down tonight"
-  context: Jenkins fejta gce
-  rerun_command: "@fejta get down tonight"
+- name: fejta-pull-gce  # TODO(fejta): replace GCE e2e with this
+  always_run: true
+  context: Bootstrap GCE e2e
+  rerun_command: "@k8s-bot bootstrap gce e2e test this"
+  trigger: "@k8s-bot (bootstrap )?(gce )?(e2e )?test this"
 
 kubernetes/test-infra:
 - name: testinfra-pull-gotest

@@ -43,11 +43,11 @@ export E2E_NAME="e2e-gce-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
 export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
-#export GINKGO_TEST_ARGS="--ginkgo.focus=EmptyDir"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gce"
-# NUM_NODES should match kubernetes-e2e-gce.
-export NUM_NODES="3"
+# NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
+export NUM_NODES="4"
+export GINKGO_PARALLEL_NODES="30"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
@@ -63,7 +63,6 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # GCE variables
 export INSTANCE_PREFIX=${E2E_NAME}
 export KUBE_GCE_NETWORK=${E2E_NAME}
-#export KUBE_GCE_NETWORK="e2e-gce-agent-pr-7-0"
 export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 
 # Get golang into our PATH so we can run e2e.go
