@@ -54,7 +54,7 @@ def get_build_log(build_dir):
         return log_parser.digest(build_log)
 
 
-@view_base.memcache_memoize('build-details://', expires=60 * 60 * 4)
+@view_base.memcache_memoize('build-details://', expires=60)
 def build_details(build_dir):
     """
     Collect information from a build directory.
@@ -166,6 +166,11 @@ def build_list(job_dir, before):
         latest_build = int(latest_fut.get_result())
         if before:
             latest_build = int(before) - 1
+        else:
+            # latest-build.txt has the most recent finished build. There might
+            # be newer builds that have started but not finished. Probe for them.
+            while gcs_async.read('%s%s/started.json' % (job_dir, latest_build + 1)).get_result():
+                latest_build += 1
         builds = range(latest_build, max(0, latest_build - 40), -1)
     except (ValueError, TypeError):
         fstats = view_base.gcs_ls(job_dir)

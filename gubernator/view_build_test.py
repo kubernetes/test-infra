@@ -232,6 +232,11 @@ class BuildTest(main_test.TestBase):
         write('/buck/some-job/latest-build.txt', '119')
         self.do_view_build_list_test()
 
+    def test_view_build_list_with_old_latest(self):
+        # latest-build.txt is a hint -- it will probe newer by looking for started.json
+        write('/buck/some-job/latest-build.txt', '110')
+        self.do_view_build_list_test()
+
     def test_view_build_list_no_latest(self):
         self.do_view_build_list_test()
 
