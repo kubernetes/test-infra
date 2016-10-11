@@ -32,6 +32,7 @@ script:
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - ./jenkins/bootstrap_test.py
     - ./jenkins/diff-job-config-patch.sh
+    - ./jenkins/diff-e2e-runner.sh
     - make -C gcsweb test
     - cd gubernator
     - ./test.sh --nologcapture
