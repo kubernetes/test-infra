@@ -215,16 +215,18 @@ class BuildTest(main_test.TestBase):
         self.assertEqual(str(response), str(response2))
 
     def do_view_build_list_test(self):
-        result = {'timestamp': 12345, 'result': 'SUCCESS'}
+        sta_result = {'timestamp': 12345}
+        fin_result = {'result': 'SUCCESS'}
         for n in xrange(120):
-            write('/buck/some-job/%d/finished.json' % n, result)
+            write('/buck/some-job/%d/started.json' % n, sta_result)
+            write('/buck/some-job/%d/finished.json' % n, fin_result)
         builds = view_build.build_list('/buck/some-job/', None)
         self.assertEqual(builds,
-                         [(str(n), result) for n in range(119, 79, -1)])
+                         [(str(n), sta_result, fin_result) for n in range(119, 79, -1)])
         # test that ?before works
         builds = view_build.build_list('/buck/some-job/', '80')
         self.assertEqual(builds,
-                         [(str(n), result) for n in range(79, 39, -1)])
+                         [(str(n), sta_result, fin_result) for n in range(79, 39, -1)])
 
     def test_view_build_list_with_latest(self):
         write('/buck/some-job/latest-build.txt', '119')
