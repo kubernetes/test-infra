@@ -24,6 +24,7 @@ EXCLUSIVE = True
 SHARED = False
 
 # TODO: Add 'scalability' label to heavy to not abuse 'build' label.
+# TODO(fejta): add light/heavy/pr to tags and replace nodes
 INFO = {
     'heavy': ('build unittest', 1, EXCLUSIVE),
     'light': ('node e2e', 10, EXCLUSIVE),

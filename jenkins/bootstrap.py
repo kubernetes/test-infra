@@ -540,7 +540,7 @@ def Bootstrap(job, repo, branch, pull, root):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
       'Checks out a github PR/branch to <basedir>/<repo>/')
-  praser.add_argument('--root', default='.', help='Root dir to work with')
+  parser.add_argument('--root', default='.', help='Root dir to work with')
   parser.add_argument('--pull', type=int, help='PR number')
   parser.add_argument('--branch', help='Checkout the following branch')
   parser.add_argument('--repo', required=True, help='The kubernetes repository to fetch from')
