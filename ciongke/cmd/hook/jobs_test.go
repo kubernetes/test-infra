@@ -45,7 +45,8 @@ func TestJobTriggers(t *testing.T) {
 				t.Errorf("Job %s needs a trigger and a rerun command.", job.Name)
 				continue
 			}
-			// Check that the merge bot will run AlwaysRun jobs.
+			// Check that the merge bot will run AlwaysRun jobs, otherwise it
+			// will attempt to rerun forever.
 			if job.AlwaysRun && !job.re.MatchString(testThis) {
 				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
 			}
