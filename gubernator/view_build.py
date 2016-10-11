@@ -176,16 +176,21 @@ def build_list(job_dir, before):
         if before and before in builds:
             builds = builds[builds.index(before) + 1:]
         builds = builds[:40]
-    finished_futs = {build: gcs_async.read(
-        '%s%s/finished.json' % (job_dir, build))
-        for build in builds}
 
-    def resolve_future(build):
-        res = finished_futs[build].get_result()
+    build_futures = [
+        (build,
+         gcs_async.read('%s%s/started.json' % (job_dir, build)),
+         gcs_async.read('%s%s/finished.json' % (job_dir, build)))
+        for build in builds
+    ]
+
+    def resolve(future):
+        res = future.get_result()
         if res:
             return json.loads(res)
-    return [(str(build), resolve_future(build))
-            for build in builds]
+
+    return [(str(build), resolve(started), resolve(finished))
+            for build, started, finished in build_futures]
 
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""

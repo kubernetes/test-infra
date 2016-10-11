@@ -10,16 +10,21 @@
 % endif
 <a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a>
 <h3>Builds</h3>
-% for build, finished in builds
+% for build, started, finished in builds
 <a href="/build{{job_dir}}{{build}}/">{{build}}
 % if finished
-  <span class="build-{{finished['result'] | slugify}}">
-  % if 'timestamp' in finished
-    {{finished['timestamp'] | timestamp}}
+  <span class="build-{{finished['result'] | slugify}}" title="Result: {{finished['result']}}">
+  % if started and 'timestamp' in started
+    {{started['timestamp'] | timestamp}}
+    % if 'timestamp' in finished
+        took {{(finished['timestamp']-started['timestamp'])|duration}}
+    % endif
   % else
     {{finished['result']}}
   % endif
 </span>
+% elif started and 'timestamp' in started
+{{started['timestamp'] | timestamp}}
 % endif
 </a><br>
 % endfor
