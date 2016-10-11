@@ -116,7 +116,6 @@ kubernetes/kubernetes:
   context: Jenkins fejta unit
   rerun_command: "@fejta do a little dance"
 - name: fejta-pull-gce  # TODO(fejta): replace GCE e2e with this
-  always_run: true
   context: Bootstrap GCE e2e
   rerun_command: "@k8s-bot bootstrap gce e2e test this"
   trigger: "@k8s-bot (bootstrap )?(gce )?(e2e )?test this"
