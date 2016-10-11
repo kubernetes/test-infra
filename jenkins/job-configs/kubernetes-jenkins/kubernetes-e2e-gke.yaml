@@ -133,7 +133,7 @@
             job-env: |
               export PROJECT="k8s-jkns-e2e-gke-alpha"
               export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 450
@@ -315,7 +315,7 @@
             job-env: |
               export PROJECT="k8s-jkns-e2e-gci-gke-alpha"
               export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
               export KUBE_GKE_IMAGE_TYPE="gci"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'

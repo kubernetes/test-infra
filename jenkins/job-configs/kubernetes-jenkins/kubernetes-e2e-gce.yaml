@@ -196,7 +196,7 @@
             job-env: |
               export PROJECT="k8s-jkns-e2e-gce-alpha"
               export KUBE_FEATURE_GATES="AllAlpha=true"
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
               export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gci-gce-alpha-features': # kubernetes-e2e-gce-alpha-features
             description: 'Run alpha feature E2E tests on GCE.'
@@ -204,7 +204,7 @@
             job-env: |
               export PROJECT="k8s-jkns-e2e-gci-gce-alpha"
               export KUBE_FEATURE_GATES="AllAlpha=true"
-              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+              export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
               export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
             description: 'Run the flaky tests on GCE, sequentially.'
@@ -729,7 +729,7 @@
                 export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
                 export KUBE_FEATURE_GATES="AllAlpha=true"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
                 export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-scalability-release-1.4':  # kubernetes-e2e-gce-scalability-release-1.4
@@ -844,7 +844,7 @@
                 export PROJECT="k8s-jkns-e2e-gce-alpha1-4"
                 export KUBE_FEATURE_GATES="AllAlpha=true"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
                 export PROJECT="k8s-jkns-e2e-gci-gce-alpha1-4"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gci-gce-scalability-release-1.4':  # kubernetes-e2e-gci-gce-scalability-release-1.4
