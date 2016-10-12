@@ -17,6 +17,8 @@ limitations under the License.
 package fsm
 
 import (
+	"time"
+
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/matchers/comment"
 
@@ -76,34 +78,38 @@ func isReviewerActionNeeded(obj *github.MungeObject) (bool, error) {
 		return false, err
 	}
 
-	lastAuthorComment := comment.FilterComments(comments, comment.Author(*obj.Issue.User)).GetLast()
-	lastReviewerComment := getLastReviewerComment(obj, comments)
+	lastAuthorCommentTime := comment.LastComment(comments, comment.Author(*obj.Issue.User), nil)
+	lastReviewerCommentTime := getLastReviewerComment(obj, comments)
 
-	if lastReviewerComment == nil {
+	if lastReviewerCommentTime == nil {
 		// this implies that no reviewer has commented on the PR yet.
 		return true, nil
 	}
 
-	if lastAuthorComment == nil {
+	if obj.LastModifiedTime().After(*lastReviewerCommentTime) {
+		return true, nil
+	}
+
+	if lastAuthorCommentTime == nil {
 		return false, nil
 	}
 
-	return lastReviewerComment.CreatedAt.Before(*lastAuthorComment.CreatedAt), nil
+	return lastReviewerCommentTime.Before(*lastAuthorCommentTime), nil
 }
 
-func getLastReviewerComment(obj *github.MungeObject, comments []*githubapi.IssueComment) *githubapi.IssueComment {
-	var lastComment *githubapi.IssueComment
+func getLastReviewerComment(obj *github.MungeObject, comments []*githubapi.IssueComment) *time.Time {
+	var lastCommentTime *time.Time
 	for _, reviewer := range obj.Issue.Assignees {
-		lastReviewerComment := comment.FilterComments(comments, comment.Author(*reviewer)).GetLast()
-		if lastReviewerComment == nil {
+		lastReviewerCommentTime := comment.LastComment(comments, comment.Author(*reviewer), nil)
+		if lastReviewerCommentTime == nil {
 			continue
 		}
-		if lastComment != nil && lastComment != nil && lastReviewerComment.CreatedAt.Before(*lastComment.CreatedAt) {
+		if lastCommentTime != nil && lastReviewerCommentTime.Before(*lastCommentTime) {
 			continue
 		}
-		lastComment = lastReviewerComment
+		lastCommentTime = lastReviewerCommentTime
 	}
-	return lastComment
+	return lastCommentTime
 }
 
 // Name is the name of the state machine's state.
