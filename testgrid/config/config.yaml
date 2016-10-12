@@ -118,6 +118,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation
 - name: kubernetes-e2e-gce-federation-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.4
+- name: kubernetes-soak-weekly-deploy-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-federation
+- name: kubernetes-soak-continuous-e2e-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-federation
 - name: kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-flaky
 - name: kubernetes-e2e-gci-gce-flaky
@@ -1303,6 +1307,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-federation
   - name: gce-federation-1.4
     test_group_name: kubernetes-e2e-gce-federation-release-1.4
+  - name: soak-weekly-deploy-gce-federation
+    test_group_name: kubernetes-soak-weekly-deploy-gce-federation
+  - name: soak-continuous-e2e-gce-federation
+    test_group_name: kubernetes-soak-continuous-e2e-gce-federation
   name: google-federation
 - dashboard_tab:
   - name: build-1.4
