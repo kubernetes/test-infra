@@ -15,4 +15,4 @@
     builders:
         - shell: |
             git clone https://github.com/kubernetes/test-infra
-            './test-infra/jenkins/bootstrap.py' --job=clean-pr-node-e2e --repo=kubernetes/test-infra --branch=master
+            './test-infra/jenkins/bootstrap.py' --job=clean-pr-node-e2e --repo=k8s.io/test-infra --branch=master

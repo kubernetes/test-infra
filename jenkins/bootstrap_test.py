@@ -32,7 +32,7 @@ FAIL = ['/bin/bash', '-c', 'exit 1']
 JOB = 'random_job'
 PASS = ['/bin/bash', '-c', 'exit 0']
 PULL = 12345
-REPO = 'random_org/random_repo'
+REPO = 'github.com/random_org/random_repo'
 ROOT = '/random/root'
 
 
@@ -85,85 +85,85 @@ def Bomb(*a, **kw):
 
 
 class SubprocessTest(unittest.TestCase):
-    """Tests for Subprocess()."""
+    """Tests for call()."""
 
     def testStdin(self):
         """Will write to subprocess.stdin."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.Subprocess(['/bin/bash'], stdin='exit 92')
+            bootstrap.call(['/bin/bash'], stdin='exit 92')
         self.assertEquals(92, cpe.exception.returncode)
 
     def testCheckTrue(self):
         """Raise on non-zero exit codes if check is set."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.Subprocess(FAIL, check=True)
+            bootstrap.call(FAIL, check=True)
 
-        bootstrap.Subprocess(PASS, check=True)
+        bootstrap.call(PASS, check=True)
 
     def testCheckDefault(self):
         """Default to check=True."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.Subprocess(FAIL)
+            bootstrap.call(FAIL)
 
-        bootstrap.Subprocess(PASS)
+        bootstrap.call(PASS)
 
     def testCheckFalse(self):
         """Never raise when check is not set."""
-        bootstrap.Subprocess(FAIL, check=False)
-        bootstrap.Subprocess(PASS, check=False)
+        bootstrap.call(FAIL, check=False)
+        bootstrap.call(PASS, check=False)
 
     def testOutput(self):
         """Output is returned when requested."""
         cmd = ['/bin/bash', '-c', 'echo hello world']
         self.assertEquals(
-            'hello world\n', bootstrap.Subprocess(cmd, output=True))
+            'hello world\n', bootstrap.call(cmd, output=True))
 
 class CheckoutTest(unittest.TestCase):
-    """Tests for Checkout()."""
+    """Tests for checkout()."""
 
     def testPull(self):
-        """Checkout fetches the right ref for a pull."""
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
+        """checkout fetches the right ref for a pull."""
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
             with Stub(os, 'chdir', Pass):
-                bootstrap.Checkout(REPO, None, PULL)
+                bootstrap.checkout(REPO, None, PULL)
 
-        expected_ref = bootstrap.PullRef(PULL)
+        expected_ref = bootstrap.pull_ref(PULL)
         self.assertTrue(any(
             expected_ref in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
 
     def testBranch(self):
-        """Checkout fetches the right ref for a branch."""
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
+        """checkout fetches the right ref for a branch."""
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
             with Stub(os, 'chdir', Pass):
-                bootstrap.Checkout(REPO, BRANCH, None)
+                bootstrap.checkout(REPO, BRANCH, None)
 
         expected_ref = BRANCH
         self.assertTrue(any(
             expected_ref in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
 
     def testRepo(self):
-        """Checkout initializes and fetches the right repo."""
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
+        """checkout initializes and fetches the right repo."""
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
             with Stub(os, 'chdir', Pass):
-                bootstrap.Checkout(REPO, BRANCH, None)
+                bootstrap.checkout(REPO, BRANCH, None)
 
-        expected_uri = 'https://github.com/%s' % REPO
+        expected_uri = 'https://%s' % REPO
         self.assertTrue(any(
             expected_uri in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
 
     def testBranchXorPull(self):
         """Either branch or pull specified, not both."""
-        with Stub(bootstrap, 'Subprocess', Bomb), Stub(os, 'chdir', Bomb):
+        with Stub(bootstrap, 'call', Bomb), Stub(os, 'chdir', Bomb):
             with self.assertRaises(ValueError):
-              bootstrap.Checkout(REPO, None, None)
+              bootstrap.checkout(REPO, None, None)
             with self.assertRaises(ValueError):
-              bootstrap.Checkout(REPO, BRANCH, PULL)
+              bootstrap.checkout(REPO, BRANCH, PULL)
 
     def testHappy(self):
-        """Checkout sanity check."""
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
+        """checkout sanity check."""
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
             with Stub(os, 'chdir', Pass):
-                bootstrap.Checkout(REPO, BRANCH, None)
+                bootstrap.checkout(REPO, BRANCH, None)
 
         self.assertTrue(any(
             '--tags' in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
@@ -176,16 +176,16 @@ class GSUtilTest(unittest.TestCase):
     """Tests for GSUtil."""
     def testUploadJson(self):
         gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
-            gsutil.UploadJson('fake_path', {'wee': 'fun'})
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
+            gsutil.upload_json('fake_path', {'wee': 'fun'})
         self.assertTrue(any(
             'application/json' in a for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
     def testUploadText_Cached(self):
         gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
-            gsutil.UploadText('fake_path', 'hello world', cached=True)
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
+            gsutil.upload_text('fake_path', 'hello world', cached=True)
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
@@ -193,8 +193,8 @@ class GSUtilTest(unittest.TestCase):
 
     def testUploadText_Default(self):
         gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
-            gsutil.UploadText('fake_path', 'hello world')
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
+            gsutil.upload_text('fake_path', 'hello world')
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
@@ -202,8 +202,8 @@ class GSUtilTest(unittest.TestCase):
 
     def testUploadText_Uncached(self):
         gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'Subprocess', FakeSubprocess()) as fake:
-            gsutil.UploadText('fake_path', 'hello world', cached=False)
+        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
+            gsutil.upload_text('fake_path', 'hello world', cached=False)
         self.assertTrue(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
@@ -215,22 +215,22 @@ class FakeGSUtil(object):
         self.texts = []
         self.jsons = []
 
-    def UploadText(self, *args, **kwargs):
+    def upload_text(self, *args, **kwargs):
         self.texts.append((args, kwargs))
 
-    def UploadJson(self, *args, **kwargs):
+    def upload_json(self, *args, **kwargs):
         self.jsons.append((args, kwargs))
 
 
 class AppendResultTest(unittest.TestCase):
-    """Tests for AppendResult()."""
+    """Tests for append_result()."""
     def testHandleJunk(self):
         gsutil = FakeGSUtil()
         build = 123
         version = 'v.interesting'
         success = True
-        with Stub(bootstrap, 'Subprocess', lambda *a, **kw: '!@!$!@$@!$'):
-            bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
+        with Stub(bootstrap, 'call', lambda *a, **kw: '!@!$!@$@!$'):
+            bootstrap.append_result(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertEquals(1, len(cache))
         self.assertIn(build, cache[0].values())
@@ -241,8 +241,8 @@ class AppendResultTest(unittest.TestCase):
         version = 'v.interesting'
         def Try(success):
             gsutil = FakeGSUtil()
-            with Stub(bootstrap, 'Subprocess', lambda *a, **kw: ''):
-                bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
+            with Stub(bootstrap, 'call', lambda *a, **kw: ''):
+                bootstrap.append_result(gsutil, 'fake_path', build, version, success)
             cache = gsutil.jsons[0][0][1]
             self.assertTrue(isinstance(cache[0]['passed'], bool))
 
@@ -259,19 +259,19 @@ class AppendResultTest(unittest.TestCase):
         build = 123
         version = 'v.interesting'
         success = True
-        with Stub(bootstrap, 'Subprocess', lambda *a, **kw: old):
-            bootstrap.AppendResult(gsutil, 'fake_path', build, version, success)
+        with Stub(bootstrap, 'call', lambda *a, **kw: old):
+            bootstrap.append_result(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertLess(len(cache), len(old))
 
 
 
 class FinishTest(unittest.TestCase):
-    """Tests for Finish()."""
+    """Tests for finish()."""
     def setUp(self):
       self.stubs = [
-          Stub(bootstrap, 'UploadArtifacts', Pass),
-          Stub(bootstrap, 'AppendResult', Pass),
+          Stub(bootstrap.GSUtil, 'upload_artifacts', Pass),
+          Stub(bootstrap, 'append_result', Pass),
           Stub(os.path, 'isfile', Pass),
           Stub(os.path, 'isdir', Pass),
       ]
@@ -290,17 +290,17 @@ class FinishTest(unittest.TestCase):
         version = 'v1.terrible'
         success = True
         with Stub(os.path, 'isdir', lambda _: False):
-            with Stub(bootstrap, 'UploadArtifacts', Bomb):
-                bootstrap.Finish(
+            with Stub(bootstrap.GSUtil, 'upload_artifacts', Bomb):
+                bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
                     build, version, REPO)
 
 
 class MetadataTest(unittest.TestCase):
     def testAlwaysSetMetadata(self):
-        metadata = bootstrap.Metadata(REPO, 'missing-artifacts-dir')
-        self.assertIn('repo', metadata)
-        self.assertEquals(REPO, metadata['repo'])
+        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir')
+        self.assertIn('repo', meta)
+        self.assertEquals(REPO, meta['repo'])
 
 
 SECONDS = 10
@@ -319,13 +319,13 @@ def FakeEnviron(
     return kwargs
 
 
-class BuildTest(unittest.TestCase):
-    """Tests for Build()."""
+class BuildNameTest(unittest.TestCase):
+    """Tests for build_name()."""
 
     def testAuto(self):
         """Automatically select a build if not done by user."""
         with Stub(os, 'environ', FakeEnviron()) as fake:
-            bootstrap.Build(SECONDS)
+            bootstrap.build_name(SECONDS)
             self.assertTrue(fake[bootstrap.BUILD_ENV])
 
     def testManual(self):
@@ -338,16 +338,16 @@ class BuildTest(unittest.TestCase):
     def testUnique(self):
         """New build every minute."""
         with Stub(os, 'environ', FakeEnviron()) as fake:
-            bootstrap.Build(SECONDS)
+            bootstrap.build_name(SECONDS)
             first = fake[bootstrap.BUILD_ENV]
             del fake[bootstrap.BUILD_ENV]
-            bootstrap.Build(SECONDS + 60)
+            bootstrap.build_name(SECONDS + 60)
             self.assertNotEqual(first, fake[bootstrap.BUILD_ENV])
 
 
 
 class SetupCredentialsTest(unittest.TestCase):
-    """Tests for SetupCredentials()."""
+    """Tests for setup_credentials()."""
 
     def setUp(self):
         keys = {
@@ -366,11 +366,11 @@ class SetupCredentialsTest(unittest.TestCase):
             fake[bootstrap.SERVICE_ACCOUNT_ENV] = gac
             with Stub(os.path, 'isfile', lambda p: p != gac):
                 with self.assertRaises(IOError):
-                    bootstrap.SetupCredentials()
+                    bootstrap.setup_credentials()
 
             with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'Subprocess', Pass):
-                    bootstrap.SetupCredentials()
+                with Stub(bootstrap, 'call', Pass):
+                    bootstrap.setup_credentials()
 
     def testRequireGCEKey(self):
         """Raise if the private gce does not exist."""
@@ -381,11 +381,11 @@ class SetupCredentialsTest(unittest.TestCase):
             fake[bootstrap.GCE_KEY_ENV] = pkf
             with Stub(os.path, 'isfile', lambda p: p != pkf):
                 with self.assertRaises(IOError):
-                    bootstrap.SetupCredentials()
+                    bootstrap.setup_credentials()
 
             with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'Subprocess', Pass):
-                    bootstrap.SetupCredentials()
+                with Stub(bootstrap, 'call', Pass):
+                    bootstrap.setup_credentials()
 
 class SetupMagicEnvironmentTest(unittest.TestCase):
     def testWorkspace(self):
@@ -394,7 +394,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         cwd = '/fake/random-location'
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.SetupMagicEnvironment(JOB)
+                bootstrap.setup_magic_environment(JOB)
 
         self.assertIn(bootstrap.WORKSPACE_ENV, env)
         self.assertEquals(env[bootstrap.HOME_ENV], env[bootstrap.WORKSPACE_ENV])
@@ -404,33 +404,48 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         env = FakeEnviron()
         with Stub(os, 'environ', env):
             with self.assertRaises(ValueError):
-                bootstrap.SetupMagicEnvironment('this-is-a-job')
+                bootstrap.setup_magic_environment('this-is-a-job')
 
     def testExpected(self):
         env = FakeEnviron()
         del env[bootstrap.JOB_ENV]
         del env[bootstrap.NODE_ENV]
         with Stub(os, 'environ', env):
-            bootstrap.SetupMagicEnvironment(JOB)
+            bootstrap.setup_magic_environment(JOB)
 
         def Check(name):
             self.assertIn(name, env)
 
         # Some of these are probably silly to check...
         # TODO(fejta): remove as many of these from our infra as possible.
-        Check(bootstrap.NODE_ENV)
         Check(bootstrap.JOB_ENV)
         Check(bootstrap.CLOUDSDK_ENV)
         Check(bootstrap.BOOTSTRAP_ENV)
         Check(bootstrap.WORKSPACE_ENV)
         Check(bootstrap.SERVICE_ACCOUNT_ENV)
 
+    def testNode_Present(self):
+        expected = 'whatever'
+        env = {bootstrap.NODE_ENV: expected}
+        with Stub(os, 'environ', env):
+            self.assertEquals(expected, bootstrap.node())
+        self.assertEquals(expected, env[bootstrap.NODE_ENV])
+
+    def testNode_Missing(self):
+        env = {}
+        with Stub(os, 'environ', env):
+            expected = bootstrap.node()
+            self.assertTrue(expected)
+        self.assertEquals(expected, env[bootstrap.NODE_ENV])
+
+
+
     def testCloudSdkConfig(self):
         cwd = 'now-here'
         env = FakeEnviron()
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.SetupMagicEnvironment(JOB)
+                bootstrap.setup_magic_environment(JOB)
 
 
         self.assertTrue(env[bootstrap.CLOUDSDK_ENV].startswith(cwd))
@@ -469,19 +484,19 @@ class FakeFinish(object):
 class PRPathsTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         """Test the kubernetes/kubernetes prefix."""
-        path = bootstrap.PRPaths('kubernetes/kubernetes', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths('kubernetes/kubernetes', JOB, BUILD, PULL)
         self.assertTrue(any(
             str(PULL) == p for p in path.build_log.split('/')))
 
     def testKubernetes(self):
         """Test the kubernetes/something prefix."""
-        path = bootstrap.PRPaths('kubernetes/prefix', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths('kubernetes/prefix', JOB, BUILD, PULL)
         self.assertTrue(any(
             'prefix%s' % PULL == p for p in path.build_log.split('/')))
 
     def testOther(self):
         """Test the none kubernetes prefixes."""
-        path = bootstrap.PRPaths('random/repo', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths('random/repo', JOB, BUILD, PULL)
         self.assertTrue(any(
             'random_repo%s' % PULL == p for p in path.build_log.split('/')))
 
@@ -490,14 +505,14 @@ class BootstrapTest(unittest.TestCase):
 
     def setUp(self):
         self.boiler = [
-            Stub(bootstrap, 'Checkout', Pass),
-            Stub(bootstrap, 'Finish', Pass),
-            Stub(bootstrap.GSUtil, 'CopyFile', Pass),
-            Stub(bootstrap, 'Node', lambda: 'fake-node'),
-            Stub(bootstrap, 'SetupCredentials', Pass),
-            Stub(bootstrap, 'SetupLogging', FakeLogging()),
-            Stub(bootstrap, 'Start', Pass),
-            Stub(bootstrap, 'Subprocess', Pass),
+            Stub(bootstrap, 'checkout', Pass),
+            Stub(bootstrap, 'finish', Pass),
+            Stub(bootstrap.GSUtil, 'copy_file', Pass),
+            Stub(bootstrap, 'node', lambda: 'fake-node'),
+            Stub(bootstrap, 'setup_credentials', Pass),
+            Stub(bootstrap, 'setup_logging', FakeLogging()),
+            Stub(bootstrap, 'start', Pass),
+            Stub(bootstrap, 'call', Pass),
             Stub(os, 'environ', FakeEnviron()),
             Stub(os, 'chdir', Pass),
             Stub(os, 'makedirs', Pass),
@@ -512,61 +527,79 @@ class BootstrapTest(unittest.TestCase):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
             with Stub(os.path, 'exists', lambda p: False):
                 with Stub(os, 'makedirs', FakeCall()) as fake_makedirs:
-                    bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
+                    bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls), fake_chdir.calls)
         self.assertTrue(any(ROOT in c[0] for c in fake_makedirs.calls), fake_makedirs.calls)
 
     def testRoot_Exists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
-            bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
+            bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls))
 
     def testPRPaths(self):
-        """Use a PRPaths when pull is set."""
+        """Use a pr_paths when pull is set."""
 
-        with Stub(bootstrap, 'CIPaths', Bomb):
-            with Stub(bootstrap, 'PRPaths', FakePath()) as path:
-                bootstrap.Bootstrap(JOB, REPO, None, PULL, ROOT)
+        with Stub(bootstrap, 'ci_paths', Bomb):
+            with Stub(bootstrap, 'pr_paths', FakePath()) as path:
+                bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
             self.assertTrue(PULL in path.a or PULL in path.kw)
 
     def testCIPaths(self):
-        """Use a CIPaths when branch is set."""
+        """Use a ci_paths when branch is set."""
 
-        with Stub(bootstrap, 'PRPaths', Bomb):
-            with Stub(bootstrap, 'CIPaths', FakePath()) as path:
-                bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
+        with Stub(bootstrap, 'pr_paths', Bomb):
+            with Stub(bootstrap, 'ci_paths', FakePath()) as path:
+                bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
     def testNoFinishWhenStartFails(self):
-        with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
-            with Stub(bootstrap, 'Start', Bomb):
+        with Stub(bootstrap, 'finish', FakeFinish()) as fake:
+            with Stub(bootstrap, 'start', Bomb):
                 with self.assertRaises(AssertionError):
-                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
+                    bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertFalse(fake.called)
 
 
     def testFinishWhenBuildFails(self):
         def CallError(*a, **kw):
             raise subprocess.CalledProcessError(1, [], '')
-        with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
-            with Stub(bootstrap, 'Subprocess', CallError):
+        with Stub(bootstrap, 'finish', FakeFinish()) as fake:
+            with Stub(bootstrap, 'call', CallError):
                 with self.assertRaises(SystemExit):
-                    bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
+                    bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testHappy(self):
-        with Stub(bootstrap, 'Finish', FakeFinish()) as fake:
-            bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
+        with Stub(bootstrap, 'finish', FakeFinish()) as fake:
+            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result)  # Distinguish from None
 
     def testJobEnv(self):
-        """Bootstrap sets JOB_NAME."""
+        """bootstrap sets JOB_NAME."""
         with Stub(os, 'environ', FakeEnviron()) as env:
-            bootstrap.Bootstrap(JOB, REPO, BRANCH, None, ROOT)
+            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertIn(bootstrap.JOB_ENV, env)
+
+
+class RepositoryTest(unittest.TestCase):
+    def testKubernetesKubernetes(self):
+        expected = 'https://github.com/kubernetes/kubernetes'
+        actual = bootstrap.repository('k8s.io/kubernetes')
+        self.assertEquals(expected, actual)
+
+    def testKubernetesTestInfra(self):
+        expected = 'https://github.com/kubernetes/test-infra'
+        actual = bootstrap.repository('k8s.io/test-infra')
+        self.assertEquals(expected, actual)
+
+    def testWhatever(self):
+        expected = 'https://foo.com/bar'
+        actual = bootstrap.repository('foo.com/bar')
+        self.assertEquals(expected, actual)
+
 
 
 class IntegrationTest(unittest.TestCase):
@@ -576,19 +609,19 @@ class IntegrationTest(unittest.TestCase):
     PR_FILE = 'fake-pr-file'
     BRANCH = 'another-branch'
     PR = 42
-    PR_TAG = bootstrap.PullRef(PR).strip('+')
+    PR_TAG = bootstrap.pull_ref(PR).strip('+')
 
     def FakeRepo(self, repo):
         return os.path.join(self.root_github, repo)
 
     def setUp(self):
         self.boiler = [
-            Stub(bootstrap, 'Finish', Pass),
-            Stub(bootstrap.GSUtil, 'CopyFile', Pass),
-            Stub(bootstrap, 'Repo', self.FakeRepo),
-            Stub(bootstrap, 'SetupCredentials', Pass),
-            Stub(bootstrap, 'SetupLogging', FakeLogging()),
-            Stub(bootstrap, 'Start', Pass),
+            Stub(bootstrap, 'finish', Pass),
+            Stub(bootstrap.GSUtil, 'copy_file', Pass),
+            Stub(bootstrap, 'repository', self.FakeRepo),
+            Stub(bootstrap, 'setup_credentials', Pass),
+            Stub(bootstrap, 'setup_logging', FakeLogging()),
+            Stub(bootstrap, 'start', Pass),
             Stub(os, 'environ', FakeEnviron(set_job=False)),
         ]
         self.root_github = tempfile.mkdtemp()
@@ -619,7 +652,7 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
         os.chdir('/tmp')
-        bootstrap.Bootstrap('fake-pr', self.REPO, None, self.PR, self.root_workspace)
+        bootstrap.bootstrap('fake-pr', self.REPO, None, self.PR, self.root_workspace)
 
     def testBranch(self):
         subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
@@ -629,33 +662,35 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
 
         os.chdir('/tmp')
-        bootstrap.Bootstrap('fake-branch', self.REPO, self.BRANCH, None, self.root_workspace)
+        bootstrap.bootstrap('fake-branch', self.REPO, self.BRANCH, None, self.root_workspace)
 
     def testPr_Bad(self):
         random_pr = 111
-        with Stub(bootstrap, 'Start', Bomb):
+        with Stub(bootstrap, 'start', Bomb):
             with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.Bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
+                bootstrap.bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
 
     def testBranch_Bad(self):
         random_branch = 'something'
-        with Stub(bootstrap, 'Start', Bomb):
+        with Stub(bootstrap, 'start', Bomb):
             with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.Bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
+                bootstrap.bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
 
     def testJobMissing(self):
         with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.Bootstrap('this-job-no-exists', self.REPO, None, self.PR, self.root_workspace)
+            bootstrap.bootstrap('this-job-no-exists', self.REPO, None, self.PR, self.root_workspace)
 
     def testJobFails(self):
         with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.Bootstrap('fake-failure', self.REPO, None, self.PR, self.root_workspace)
+            bootstrap.bootstrap('fake-failure', self.REPO, None, self.PR, self.root_workspace)
 
 
 class JobTest(unittest.TestCase):
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
-        for path, _, filenames in os.walk(os.path.dirname(bootstrap.Job(JOB))):
+        for path, _, filenames in os.walk(
+            os.path.dirname(bootstrap.job_script(JOB))):
+
             for job in filenames:
                 # Jobs should have simple names
                 self.assertTrue(re.match(r'[0-9a-z-]+.sh', job), job)

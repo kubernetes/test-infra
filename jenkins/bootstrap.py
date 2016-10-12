@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Need to figure out why this only fails on travis
+# pylint: disable=bad-continuation
+
 """Bootstraps starting a test job.
 
 The following should already be done:
@@ -50,7 +53,8 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 
-def Subprocess(cmd, stdin=None, check=True, output=None):
+def call(cmd, stdin=None, check=True, output=None):
+    """Start a subprocess."""
     logging.info('Call subprocess:\n  %s', ' '.join(cmd))
     proc = subprocess.Popen(
         cmd,
@@ -66,82 +70,92 @@ def Subprocess(cmd, stdin=None, check=True, output=None):
     reads = [proc.stdout.fileno(), proc.stderr.fileno()]
     while reads:
         ret = select.select(reads, [], [], 0.1)
-        for fd in ret[0]:
-            if fd == proc.stdout.fileno():
+        for fdesc in ret[0]:
+            if fdesc == proc.stdout.fileno():
                 line = proc.stdout.readline()
                 if not line:
-                    reads.remove(fd)
+                    reads.remove(fdesc)
                     continue
                 logging.info(line[:-1])
                 if output:
                     out.append(line)
-            if fd == proc.stderr.fileno():
+            if fdesc == proc.stderr.fileno():
                 line = proc.stderr.readline()
                 if not line:
-                    reads.remove(fd)
+                    reads.remove(fdesc)
                     continue
                 logging.warning(line[:-1])
 
     code = proc.wait()
-    logging.info('Subprocess %d exited with code %d' % (proc.pid, code))
+    logging.info('process %d exited with code %d', proc.pid, code)
     lines = output and '\n'.join(out)
     if check and code:
         raise subprocess.CalledProcessError(code, cmd, lines)
     return lines
 
 
-def PullRef(pull):
+def pull_ref(pull):
+    """Return the tag associated with the PR."""
     return '+refs/pull/%d/merge' % pull
 
 
-def Repo(repo):
-    return 'https://github.com/%s' % repo
+def repository(repo):
+    """Return the url associated with the repo."""
+    if repo.startswith('k8s.io/'):
+        return 'https://github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
+    return 'https://%s' % repo
 
 
-def Checkout(repo, branch, pull):
+def checkout(repo, branch, pull):
+    """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
     if pull:
-        ref = PullRef(pull)
+        ref = pull_ref(pull)
     else:
         ref = branch
 
     git = 'git'
-    Subprocess([git, 'init', repo])
+    call([git, 'init', repo])
     os.chdir(repo)
     # TODO(fejta): cache git calls
-    Subprocess([
-        git, 'fetch', '--tags', Repo(repo), ref,
+    call([
+        git, 'fetch', '--tags', repository(repo), ref,
     ])
-    Subprocess([git, 'checkout', 'FETCH_HEAD'])
+    call([git, 'checkout', 'FETCH_HEAD'])
 
 
-def Start(gsutil, paths, stamp, node, version):
+def start(gsutil, paths, stamp, node_name, version):
+    """Construct and upload started.json."""
     data = {
         'timestamp': stamp,
-        'jenkins-node': node,
-        'node': node,
+        'jenkins-node': node_name,
+        'node': node_name,
         'version': version,
     }
-    gsutil.UploadJson(paths.started, data)
+    gsutil.upload_json(paths.started, data)
 
 
 class GSUtil(object):
+    """A helper class for making gsutil commands."""
     gsutil = 'gsutil'
 
-    def UploadJson(self, path, jdict):
+    def upload_json(self, path, jdict):
+        """Upload the dictionary object to path."""
         cmd = [
             self.gsutil, '-q',
             '-h', 'Content-Type:application/json',
             'cp', '-a', 'public-read',
             '-', path]
-        Subprocess(cmd, stdin=json.dumps(jdict, indent=2))
+        call(cmd, stdin=json.dumps(jdict, indent=2))
 
-    def CopyFile(self, dest, orig):
+    def copy_file(self, dest, orig):
+        """Copy the file to the specified path using compressed encoding."""
         cmd = [self.gsutil, '-q', 'cp', '-Z', '-a', 'public-read', orig, dest]
-        Subprocess(cmd)
+        call(cmd)
 
-    def UploadText(self, path, txt, cached=True):
+    def upload_text(self, path, txt, cached=True):
+        """Copy the text to path, optionally disabling caching."""
         cp_args = ['-a', 'public-read']
         headers = ['-h', 'Content-Type:text/plain']
         if not cached:
@@ -150,29 +164,30 @@ class GSUtil(object):
             'cp'] + cp_args + [
             '-', path,
         ]
-        Subprocess(cmd, stdin=txt)
+        call(cmd, stdin=txt)
 
 
-def UploadArtifacts(path, artifacts):
-    # Upload artifacts
-    if os.path.isdir(artifacts):
-        cmd = [
-            'gsutil', '-m', '-q',
-            '-o', 'GSUtil:use_magicfile=True',
-            'cp', '-a', 'public-read', '-r', '-c', '-z', 'log,txt,xml',
-            artifacts, path,
-        ]
-        Subprocess(cmd)
+    def upload_artifacts(self, path, artifacts):
+        """Upload artifacts to the specified path."""
+        # Upload artifacts
+        if os.path.isdir(artifacts):
+            cmd = [
+                self.gsutil, '-m', '-q',
+                '-o', 'GSUtil:use_magicfile=True',
+                'cp', '-a', 'public-read', '-r', '-c', '-z', 'log,txt,xml',
+                artifacts, path,
+            ]
+            call(cmd)
 
 
-def AppendResult(gsutil, path, build, version, passed):
+def append_result(gsutil, path, build, version, passed):
     """Download a json list and append metadata about this build to it."""
     # TODO(fejta): ensure the object has not changed since downloading.
     # TODO(fejta): delete the clone of this logic in upload-to-gcs.sh
     #                  (this is update_job_result_cache)
     cmd = ['gsutil', '-q', 'cat', path]
     try:
-        cache = json.loads(Subprocess(cmd, output=True))
+        cache = json.loads(call(cmd, output=True))
         if not isinstance(cache, list):
             raise ValueError(cache)
     except (subprocess.CalledProcessError, ValueError):
@@ -184,27 +199,28 @@ def AppendResult(gsutil, path, build, version, passed):
         'result': 'SUCCESS' if passed else 'FAILURE',
     })
     cache = cache[-200:]
-    gsutil.UploadJson(path, cache)
+    gsutil.upload_json(path, cache)
 
 
-def Metadata(repo, artifacts):
+def metadata(repo, artifacts):
+    """Return metadata associated for the build, including inside artifacts."""
     # TODO(rmmh): update tooling to expect metadata in finished.json
     path = os.path.join(artifacts or '', 'metadata.json')
-    metadata = None
+    meta = None
     if os.path.isfile(path):
         try:
             with open(path) as fp:
-                metadata = json.loads(fp.read())
+                meta = json.loads(fp.read())
         except (IOError, ValueError):
             pass
 
-    if not metadata or not isinstance(metadata, dict):
-        metadata = {}
-    metadata['repo'] = repo
-    return metadata
+    if not meta or not isinstance(meta, dict):
+        meta = {}
+    meta['repo'] = repo
+    return meta
 
 
-def Finish(gsutil, paths, success, artifacts, build, version, repo):
+def finish(gsutil, paths, success, artifacts, build, version, repo):
     """
     Args:
         paths: a Paths instance.
@@ -215,43 +231,49 @@ def Finish(gsutil, paths, success, artifacts, build, version, repo):
         repo: the target repo
     """
 
-    if os.path.isdir(artifacts):
-        UploadArtifacts(paths.artifacts, artifacts)
+    if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
+        gsutil.upload_artifacts(paths.artifacts, artifacts)
 
     # Upload the latest build for the job
     for path in {paths.latest, paths.pr_latest}:
         if path:
-            gsutil.UploadText(path, str(build), cached=False)
+            gsutil.upload_text(path, str(build), cached=False)
 
     # Upload a link to the build path in the directory
     if paths.pr_build_link:
-        gsutil.UploadText(paths.pr_build_link, paths.pr_path)
+        gsutil.upload_text(paths.pr_build_link, paths.pr_path)
 
-    # github.com/kubernetes/release/find_green_build depends on AppendResult()
+    # github.com/kubernetes/release/find_green_build depends on append_result()
     # TODO(fejta): reconsider whether this is how we want to solve this problem.
-    AppendResult(gsutil, paths.result_cache, build, version, success)
+    append_result(gsutil, paths.result_cache, build, version, success)
     if paths.pr_result_cache:
-        AppendResult(gsutil, paths.pr_result_cache, build, version, success)
+        append_result(gsutil, paths.pr_result_cache, build, version, success)
 
     data = {
         'timestamp': time.time(),
         'result': 'SUCCESS' if success else 'FAILURE',
         'passed': bool(success),
-        'metadata': Metadata(repo, artifacts),
+        'metadata': metadata(repo, artifacts),
     }
-    gsutil.UploadJson(paths.finished, data)
+    gsutil.upload_json(paths.finished, data)
 
 
-def TestInfra(*paths):
+def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
 
 
-def Node():
+def node():
+    """Return the name of the node running the build."""
+    # TODO(fejta): jenkins sets the node name and our infra expect this value.
+    # TODO(fejta): Consider doing something different here.
+    if NODE_ENV not in os.environ:
+        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
     return os.environ[NODE_ENV]
 
 
-def Version():
+def find_version():
+    """Determine and return the version of the build."""
     version_file = 'version'
     if os.path.isfile(version_file):
         # e2e tests which download kubernetes use this path:
@@ -271,14 +293,14 @@ kube::version::get_version_vars
 echo $KUBE_GIT_VERSION
 """ % version_script)
         ]
-        return Subprocess(cmd, output=True).strip()
+        return call(cmd, output=True).strip()
 
     return 'unknown'
 
 
-class Paths(object):
+class Paths(object):  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """Links to remote gcs-paths for uploading results."""
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         artifacts,  # artifacts folder (in build)
         build_log,  # build-log.txt (in build)
@@ -304,7 +326,8 @@ class Paths(object):
 
 
 
-def CIPaths(job, build):
+def ci_paths(job, build):
+    """Return a Paths() instance for a continuous build."""
     base = 'gs://kubernetes-jenkins/logs'
     latest = os.path.join(base, job, 'latest-build.txt')
     return Paths(
@@ -322,11 +345,14 @@ def CIPaths(job, build):
 
 
 
-def PRPaths(repo, job, build, pull):
+def pr_paths(repo, job, build, pull):
+    """Return a Paths() instance for a PR."""
     pull = str(pull)
-    # TODO(rmmh): wouldn't this be better as a dir than prefix?
-    if repo == 'kubernetes/kubernetes':
+    # Wouldn't this be better as a dir than prefix?
+    if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
         prefix = ''
+    elif repo.startswith('k8s.io/'):
+        prefix = repo[len('k8s.io/'):]
     elif repo.startswith('kubernetes/'):
         prefix = repo[len('kubernetes/'):]
     else:
@@ -353,11 +379,6 @@ def PRPaths(repo, job, build, pull):
 
 
 
-def Uniq():
-    """Return a probably unique suffix for the process."""
-    return '%x-%d' % (hash(Node()), os.getpid())
-
-
 BUILD_ENV = 'BUILD_NUMBER'
 BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
 CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
@@ -369,24 +390,21 @@ SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 
 
-def Build(start):
+def build_name(started):
+    """Return the unique(ish) string representing this build."""
     # TODO(fejta): right now jenkins sets the BUILD_NUMBER and does this
     #              in an environment variable. Consider migrating this to a
     #              bootstrap.py flag
     if BUILD_ENV not in os.environ:
         # Automatically generate a build number if none is set
-        uniq = Uniq()
-        autogen = time.strftime('%Y%m%d-%H%M%S' + uniq, time.gmtime(start))
+        uniq = '%x-%d' % (hash(node()), os.getpid())
+        autogen = time.strftime('%Y%m%d-%H%M%S' + uniq, time.gmtime(started))
         os.environ[BUILD_ENV] = autogen
     return os.environ[BUILD_ENV]
 
 
-def KeyFlag(path):
-    return '--key-file=%s' % path
-
-
-def SetupCredentials():
-
+def setup_credentials():
+    """Run some sanity checks and activate gcloud."""
     # TODO(fejta): also check aws, and skip gce check when not necessary.
     if not os.path.isfile(os.environ[GCE_KEY_ENV]):
         raise IOError(
@@ -401,21 +419,22 @@ def SetupCredentials():
             'Cannot find service account credentials',
             os.environ[SERVICE_ACCOUNT_ENV],
             'Create service account and then create key at '
-            'https://console.developers.google.com/iam-admin/serviceaccounts/project',
+            'https://console.developers.google.com/iam-admin/serviceaccounts/project',  # pylint: disable=line-too-long
         )
 
-    Subprocess([
+    call([
         'gcloud',
         'auth',
         'activate-service-account',
-        KeyFlag(os.environ[SERVICE_ACCOUNT_ENV]),
+        '--key-file=%s' % os.environ[SERVICE_ACCOUNT_ENV],
     ])
 
 
-def SetupLogging(path):
+def setup_logging(path):
+    """Initialize logging to screen and path."""
     # See https://docs.python.org/2/library/logging.html#logrecord-attributes
     # [IWEF]yymm HH:MM:SS.uuuuuu file:line] msg
-    fmt = '%(levelname).1s%(asctime)s.%(msecs)d000 %(filename)s:%(lineno)d] %(message)s'
+    fmt = '%(levelname).1s%(asctime)s.%(msecs)d000 %(filename)s:%(lineno)d] %(message)s'  # pylint: disable=line-too-long
     datefmt = '%m%d %H:%M:%S'
     logging.basicConfig(
         level=logging.INFO,
@@ -424,13 +443,13 @@ def SetupLogging(path):
     )
     build_log = logging.FileHandler(filename=path, mode='w')
     build_log.setLevel(logging.INFO)
-    formatter = logging.Formatter(fmt,datefmt=datefmt)
+    formatter = logging.Formatter(fmt, datefmt=datefmt)
     build_log.setFormatter(formatter)
     logging.getLogger('').addHandler(build_log)
     return build_log
 
 
-def SetupMagicEnvironment(job):
+def setup_magic_environment(job):
     """Set magic environment variables scripts currently expect."""
     home = os.environ[HOME_ENV]
     # TODO(fejta): jenkins sets these values. Consider migrating to using
@@ -480,25 +499,23 @@ def SetupMagicEnvironment(job):
     # TODO(fejta): Magic value to tell our test code not do upload started.json
     # TODO(fejta): delete upload-to-gcs.sh and then this value.
     os.environ[BOOTSTRAP_ENV] = 'yes'
-    # TODO(fejta): jenkins sets the node name and our infra expect this value.
-    # TODO(fejta): Consider doing something different here.
-    if NODE_ENV not in os.environ:
-        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
     # This helps prevent reuse of cloudsdk configuration. It also reduces the
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
 
 
-def Job(job):
-    return TestInfra('jobs/%s.sh' % job)
+def job_script(job):
+    """Return path to script for job."""
+    return test_infra('jobs/%s.sh' % job)
 
 
-def Bootstrap(job, repo, branch, pull, root):
+def bootstrap(job, repo, branch, pull, root):
+    """Clone repo at pull/branch into root and run job script."""
     build_log_path = os.path.abspath('build-log.txt')
-    build_log = SetupLogging(build_log_path)
-    start = time.time()
-    logging.info('Bootstrap %s...' % job)
-    build = Build(start)
+    build_log = setup_logging(build_log_path)
+    started = time.time()
+    logging.info('Bootstrap %s...', job)
+    build = build_name(started)
     logging.info(
         'Check out %s at %s...',
         os.path.join(root, repo),
@@ -506,31 +523,31 @@ def Bootstrap(job, repo, branch, pull, root):
     if not os.path.exists(root):
         os.makedirs(root)
     os.chdir(root)
-    Checkout(repo, branch, pull)
+    checkout(repo, branch, pull)
     logging.info('Configure environment...')
-    version = Version()
-    SetupMagicEnvironment(job)
-    SetupCredentials()
+    version = find_version()
+    setup_magic_environment(job)
+    setup_credentials()
     if pull:
-        paths = PRPaths(repo, job, build, pull)
+        paths = pr_paths(repo, job, build, pull)
     else:
-        paths = CIPaths(job, build)
+        paths = ci_paths(job, build)
     gsutil = GSUtil()
-    logging.info('Start %s at %s...' % (build, version))
-    Start(gsutil, paths, start, Node(), version)
+    logging.info('Start %s at %s...', build, version)
+    start(gsutil, paths, started, node(), version)
     success = False
     try:
-        cmd = [Job(job)]
-        Subprocess(cmd)
-        logging.info('PASS: %s' % job)
+        cmd = [job_script(job)]
+        call(cmd)
+        logging.info('PASS: %s', job)
         success = True
     except subprocess.CalledProcessError:
-        logging.error('FAIL: %s' % job)
+        logging.error('FAIL: %s', job)
     logging.info('Upload result and artifacts...')
-    Finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    finish(gsutil, paths, success, '_artifacts', build, version, repo)
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
-    gsutil.CopyFile(paths.build_log, build_log_path)
+    gsutil.copy_file(paths.build_log, build_log_path)
     if not success:
         # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
         # by exit code and automatically retrigger after an infra-problem.
@@ -538,12 +555,13 @@ def Bootstrap(job, repo, branch, pull, root):
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(
-      'Checks out a github PR/branch to <basedir>/<repo>/')
-  parser.add_argument('--root', default='.', help='Root dir to work with')
-  parser.add_argument('--pull', type=int, help='PR number')
-  parser.add_argument('--branch', help='Checkout the following branch')
-  parser.add_argument('--repo', required=True, help='The kubernetes repository to fetch from')
-  parser.add_argument('--job', required=True, help='Name of the job to run')
-  args = parser.parse_args()
-  Bootstrap(args.job, args.repo, args.branch, args.pull, args.root)
+    PARSER = argparse.ArgumentParser(
+        'Checks out a github PR/branch to <basedir>/<repo>/')
+    PARSER.add_argument('--root', default='.', help='Root dir to work with')
+    PARSER.add_argument('--pull', type=int, help='PR number')
+    PARSER.add_argument('--branch', help='Checkout the following branch')
+    PARSER.add_argument(
+        '--repo', required=True, help='The repository to fetch from')
+    PARSER.add_argument('--job', required=True, help='Name of the job to run')
+    ARGS = PARSER.parse_args()
+    bootstrap(ARGS.job, ARGS.repo, ARGS.branch, ARGS.pull, ARGS.root)
