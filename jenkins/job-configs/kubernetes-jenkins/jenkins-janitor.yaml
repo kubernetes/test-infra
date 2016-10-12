@@ -1,0 +1,28 @@
+- job:
+    name: 'jenkins-janitor'
+    description: 'Clean up old gcloud resources from jenkins projects'
+    node: 'master'
+    properties:
+        - build-discarder:
+            num-to-keep: 20
+    triggers:
+        - timed: '0 */3 * * *'
+    scm:
+        - git:
+            branches:
+            - master
+            browser: githubweb
+            browser-url: https://github.com/kubernetes/test-infra
+            skip-tag: true
+            url: https://github.com/kubernetes/test-infra
+            wipe-workspace: false
+    wrappers:
+        - e2e-credentials-binding
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+    builders:
+        - activate-gce-service-account
+        - shell: |
+            python $WORKSPACE/jenkins/janitor.py --project=sen-lu-test --hours=1
+
