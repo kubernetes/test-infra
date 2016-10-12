@@ -1,0 +1,11 @@
+[MESSAGES CONTROL]
+disable=locally-disabled,fixme
+
+[REPORTS]
+reports=no
+
+[BASIC]
+good-names=fp
+
+[DESIGN]
+max-args=12
