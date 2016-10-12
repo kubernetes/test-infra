@@ -73,6 +73,7 @@
             timeout: 50
             job-env: ''  # Empty expected
         - 'federation-build':
+            disable_job: true
             branch: 'master'
             timeout: 50
             job-env: |
