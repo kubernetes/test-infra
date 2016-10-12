@@ -22,7 +22,9 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -49,10 +51,30 @@ type OwnerList struct {
 // or else the empty string if none is found.
 func (o *OwnerList) TestOwner(testName string) string {
 	name := normalize(testName)
+
+	// exact mapping
 	owner, _ := o.mapping[name]
+
+	// glob matching
+	if owner == "" {
+		keys := []string{}
+		for k := range o.mapping {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			if match, _ := filepath.Match(k, name); match {
+				owner = o.mapping[k]
+				break
+			}
+		}
+	}
+
+	// falls into default
 	if owner == "" {
 		owner, _ = o.mapping["default"]
 	}
+
 	if strings.Contains(owner, "/") {
 		ownerSet := strings.Split(owner, "/")
 		owner = ownerSet[o.rng.Intn(len(ownerSet))]
