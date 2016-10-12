@@ -154,7 +154,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 # Flake detection. Individual tests get a second chance to pass.
                 export GINKGO_TOLERATE_FLAKES="y"
-                export E2E_NAME="e2e-etcd3-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
+                export E2E_NAME="etcd3-${{NODE_NAME}}-${{EXECUTOR_NUMBER}}"
                 export GINKGO_PARALLEL="y"
                 # This list should match the list in kubernetes-e2e-gce.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
