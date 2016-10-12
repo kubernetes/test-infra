@@ -1047,17 +1047,6 @@
         # Use etcd3 binary in etcd3 mode.
         export TEST_ETCD_VERSION="3.0.12-experimental.1"
         export STORAGE_BACKEND="etcd3"
-        # Increase limit for inflight requests in apiserver.
-        # TODO: Uncomment after validating 1.4 release.
-        # export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=800"
-        # Increase qps limits in scheduler and controller manager.
-        # TODO: Uncomment after validating 1.4 release.
-        # export CONTROLLER_MANAGER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
-        # TODO: Uncomment after validating 1.4 release.
-        # export SCHEDULER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
-        # Increase throughput in Load test.
-        # TODO: Uncomment after validating 1.4 release.
-        # export LOAD_TEST_THROUGHPUT=50
         export KUBE_NODE_OS_DISTRIBUTION="gci"
     suffix:
         - 'gce-enormous-cluster':  # kubernetes-e2e-gce-enormous-cluster
@@ -1070,8 +1059,6 @@
                     --allowed-not-ready-nodes=20"
                 # TODO: re-enable service creation after we debug problems with this suite
                 # export CREATE_SERVICES="true"
-                # Increase throughput in Load test.
-                export LOAD_TEST_THROUGHPUT=50
                 export CLUSTER_IP_RANGE="10.224.0.0/13"
                 export NUM_NODES="2000"
                 export ALLOWED_NOTREADY_NODES="20"
