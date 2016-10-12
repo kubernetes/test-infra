@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Need to figure out why this only fails on travis
+# pylint: disable=bad-continuation
+
 """Bootstraps starting a test job.
 
 The following should already be done:
@@ -98,7 +101,9 @@ def pull_ref(pull):
 
 def repository(repo):
     """Return the url associated with the repo."""
-    return 'https://github.com/%s' % repo
+    if repo.startswith('k8s.io/'):
+        return 'https://github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
+    return 'https://%s' % repo
 
 
 def checkout(repo, branch, pull):
@@ -226,7 +231,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         repo: the target repo
     """
 
-    if os.path.isdir(artifacts):
+    if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
         gsutil.upload_artifacts(paths.artifacts, artifacts)
 
     # Upload the latest build for the job
@@ -260,6 +265,10 @@ def test_infra(*paths):
 
 def node():
     """Return the name of the node running the build."""
+    # TODO(fejta): jenkins sets the node name and our infra expect this value.
+    # TODO(fejta): Consider doing something different here.
+    if NODE_ENV not in os.environ:
+        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
     return os.environ[NODE_ENV]
 
 
@@ -339,9 +348,11 @@ def ci_paths(job, build):
 def pr_paths(repo, job, build, pull):
     """Return a Paths() instance for a PR."""
     pull = str(pull)
-    # TODO(rmmh): wouldn't this be better as a dir than prefix?
-    if repo == 'kubernetes/kubernetes':
+    # Wouldn't this be better as a dir than prefix?
+    if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
         prefix = ''
+    elif repo.startswith('k8s.io/'):
+        prefix = repo[len('k8s.io/'):]
     elif repo.startswith('kubernetes/'):
         prefix = repo[len('kubernetes/'):]
     else:
@@ -488,10 +499,6 @@ def setup_magic_environment(job):
     # TODO(fejta): Magic value to tell our test code not do upload started.json
     # TODO(fejta): delete upload-to-gcs.sh and then this value.
     os.environ[BOOTSTRAP_ENV] = 'yes'
-    # TODO(fejta): jenkins sets the node name and our infra expect this value.
-    # TODO(fejta): Consider doing something different here.
-    if NODE_ENV not in os.environ:
-        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
     # This helps prevent reuse of cloudsdk configuration. It also reduces the
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
@@ -527,7 +534,7 @@ def bootstrap(job, repo, branch, pull, root):
         paths = ci_paths(job, build)
     gsutil = GSUtil()
     logging.info('Start %s at %s...', build, version)
-    start(gsutil, paths, start, node(), version)
+    start(gsutil, paths, started, node(), version)
     success = False
     try:
         cmd = [job_script(job)]
@@ -554,7 +561,7 @@ if __name__ == '__main__':
     PARSER.add_argument('--pull', type=int, help='PR number')
     PARSER.add_argument('--branch', help='Checkout the following branch')
     PARSER.add_argument(
-        '--repo', required=True, help='The kubernetes repository to fetch from')
+        '--repo', required=True, help='The repository to fetch from')
     PARSER.add_argument('--job', required=True, help='Name of the job to run')
     ARGS = PARSER.parse_args()
     bootstrap(ARGS.job, ARGS.repo, ARGS.branch, ARGS.pull, ARGS.root)

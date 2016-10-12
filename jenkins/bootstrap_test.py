@@ -32,7 +32,7 @@ FAIL = ['/bin/bash', '-c', 'exit 1']
 JOB = 'random_job'
 PASS = ['/bin/bash', '-c', 'exit 0']
 PULL = 12345
-REPO = 'random_org/random_repo'
+REPO = 'github.com/random_org/random_repo'
 ROOT = '/random/root'
 
 
@@ -147,7 +147,7 @@ class CheckoutTest(unittest.TestCase):
             with Stub(os, 'chdir', Pass):
                 bootstrap.checkout(REPO, BRANCH, None)
 
-        expected_uri = 'https://github.com/%s' % REPO
+        expected_uri = 'https://%s' % REPO
         self.assertTrue(any(
             expected_uri in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
 
@@ -418,12 +418,27 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
 
         # Some of these are probably silly to check...
         # TODO(fejta): remove as many of these from our infra as possible.
-        Check(bootstrap.NODE_ENV)
         Check(bootstrap.JOB_ENV)
         Check(bootstrap.CLOUDSDK_ENV)
         Check(bootstrap.BOOTSTRAP_ENV)
         Check(bootstrap.WORKSPACE_ENV)
         Check(bootstrap.SERVICE_ACCOUNT_ENV)
+
+    def testNode_Present(self):
+        expected = 'whatever'
+        env = {bootstrap.NODE_ENV: expected}
+        with Stub(os, 'environ', env):
+            self.assertEquals(expected, bootstrap.node())
+        self.assertEquals(expected, env[bootstrap.NODE_ENV])
+
+    def testNode_Missing(self):
+        env = {}
+        with Stub(os, 'environ', env):
+            expected = bootstrap.node()
+            self.assertTrue(expected)
+        self.assertEquals(expected, env[bootstrap.NODE_ENV])
+
+
 
     def testCloudSdkConfig(self):
         cwd = 'now-here'
@@ -567,6 +582,24 @@ class BootstrapTest(unittest.TestCase):
         with Stub(os, 'environ', FakeEnviron()) as env:
             bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
         self.assertIn(bootstrap.JOB_ENV, env)
+
+
+class RepositoryTest(unittest.TestCase):
+    def testKubernetesKubernetes(self):
+        expected = 'https://github.com/kubernetes/kubernetes'
+        actual = bootstrap.repository('k8s.io/kubernetes')
+        self.assertEquals(expected, actual)
+
+    def testKubernetesTestInfra(self):
+        expected = 'https://github.com/kubernetes/test-infra'
+        actual = bootstrap.repository('k8s.io/test-infra')
+        self.assertEquals(expected, actual)
+
+    def testWhatever(self):
+        expected = 'https://foo.com/bar'
+        actual = bootstrap.repository('foo.com/bar')
+        self.assertEquals(expected, actual)
+
 
 
 class IntegrationTest(unittest.TestCase):

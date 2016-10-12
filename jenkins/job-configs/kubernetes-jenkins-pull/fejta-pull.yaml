@@ -43,7 +43,7 @@
         - shell: |
             # TODO(fejta): consider a stable tag instead of master
             git clone https://github.com/kubernetes/test-infra -b master
-            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=kubernetes/kubernetes --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src/github.com"
+            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=k8s.io/kubernetes --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src"
 
 - project:
     name: fejta-kubernetes-pull

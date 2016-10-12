@@ -18,15 +18,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-if [[ ! -d "${GOPATH}/src/k8s.io" ]]; then
-  # Ensure vanity domain exists
-  if [[ ! -d "${GOPATH}/src/github.com/kubernetes" ]]; then
-    echo "Cannot find k8s.io nor github.com/kubernetes in GOPATH/src" >&2
-    exit 1
-  fi
-  ln -s "${GOPATH}/src/github.com/kubernetes" "${GOPATH}/src/k8s.io"
-fi
-
 case "${ghprbTargetBranch:-}" in
 release-1.0|release-1.1|release-1.2)
   echo "PR node e2e job disabled for legacy branches."
