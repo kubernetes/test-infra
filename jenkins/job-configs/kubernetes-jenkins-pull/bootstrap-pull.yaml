@@ -1,6 +1,5 @@
 - job-template:
-    name: 'fejta-pull-{suffix}'
-
+    name: 'pull-{suffix}'
     concurrent: true
     properties:
         - build-discarder:
@@ -46,20 +45,11 @@
             './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo=k8s.io/kubernetes --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src"
 
 - project:
-    name: fejta-kubernetes-pull
-    repo-name: 'kubernetes/kubernetes'
+    name: bootstrap-pull-jobs
     suffix:
-      - unit: # fejta-pull-unit
-          max-total: 0 # Unlimited
-          job-name: fejta-pull-unit
-      - node-e2e:
-          max-total: 5  # Half the real one
-          job-name: fejta-pull-node-e2e
-      - gce: # TODO(fejta): delete this job in favor of boostrap-pull-e2e-gce
-          max-total: 3
-          job-name: fejta-pull-gce
-      - e2e-gke:  # fejta-pull-e2e-gke
-          max-total: 6
-          job-name: fejta-pull-e2e-gke
+      - k8s-e2e-gce:
+          max-total: 12
+          job-name: pull-k8s-e2e-gce
+          repo-name: 'kubernetes/kubernetes'
     jobs:
-        - 'fejta-pull-{suffix}'
+        - 'pull-{suffix}'
