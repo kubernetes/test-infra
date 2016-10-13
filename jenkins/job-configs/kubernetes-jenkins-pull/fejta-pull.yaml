@@ -56,7 +56,7 @@
           max-total: 5  # Half the real one
           job-name: fejta-pull-node-e2e
       - e2e-gke:  # fejta-pull-e2e-gke
-          max-total: 6
+          max-total: 3
           job-name: fejta-pull-e2e-gke
     jobs:
         - 'fejta-pull-{suffix}'

@@ -112,13 +112,14 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot bootstrap node e2e test this"
   trigger: "@k8s-bot bootstrap (node )?(e2e )?test this"
 - name: fejta-pull-e2e-gke
+  always_run: true
   context: Bootstrap GKE e2e
   rerun_command: "@k8s-bot bootstrap gke e2e test this"
-  trigger: "@k8s-bot bootstrap (gke )?(e2e )?test this"
+  trigger: "@k8s-bot (bootstrap )?(gke )?(e2e )?test this"
 - name: fejta-pull-unit
-  trigger: "@fejta do a little dance"
-  context: Jenkins fejta unit
-  rerun_command: "@fejta do a little dance"
+  context: Bootstrap unit/integration
+  rerun_command: "@k8s-bot bootstrap unit test this"
+  trigger: "@k8s-bot bootstrap (unit )?test this"
 
 kubernetes/test-infra:
 - name: testinfra-pull-gotest
