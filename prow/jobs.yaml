@@ -91,10 +91,10 @@ kubernetes/kubernetes:
   context: Jenkins GCI Kubemark GCE e2e
   rerun_command: "@k8s-bot kubemark gci e2e test this"
 - name: node-pull-build-e2e-test
-  trigger: "@k8s-bot (node )?(e2e )?test this"
   always_run: true
   context: Jenkins GCE Node e2e
   rerun_command: "@k8s-bot node e2e test this"
+  trigger: "@k8s-bot (node )?(e2e )?test this"
 - name: kubernetes-pull-build-test-gci-cri-e2e-gce
   trigger: "@k8s-bot cri (e2e )?test this"
   context: Jenkins CRI GCE e2e
@@ -108,9 +108,10 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot bootstrap kubemark e2e test this"
   trigger: "@k8s-bot bootstrap (kubemark )?(e2e )?test this"
 - name: fejta-pull-node-e2e
+  always_run: true
   context: Bootstrap GCE Node e2e
   rerun_command: "@k8s-bot bootstrap node e2e test this"
-  trigger: "@k8s-bot bootstrap (node )?(e2e )?test this"
+  trigger: "@k8s-bot (bootstrap |bootstrap node )?(e2e )?test this"
 
 kubernetes/test-infra:
 - name: testinfra-pull-gotest
