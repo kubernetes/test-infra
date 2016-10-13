@@ -109,6 +109,40 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
+        - 'gce-federation':
+            deploy-description: |
+                Deploy Kubernetes and federation to soak cluster using the latest successful
+                Kubernetes build every week.<br>
+                If a kubernetes-soak-continuous-e2e-gce-federation build is running,
+                this deployment build will be blocked and remain in the queue
+                until the test run is complete.<br>
+            e2e-description: |
+                Assumes Kubernetes and federation soak cluster is already deployed.<br>
+                If a kubernetes-soak-weekly-deploy-gce-federation build is enqueued,
+                builds will be blocked and remain in the queue until the
+                deployment is complete.<br>
+            branch: 'master'
+            job-env: |
+                export PROJECT="k8s-jkns-gce-federation-soak"
+            # Need the 8 essential kube-system pods ready before declaring cluster ready
+            # etcd-server, kube-apiserver, kube-controller-manager, kube-dns
+            # kube-scheduler, l7-default-backend, l7-lb-controller, kube-addon-manager
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="8"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+                export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+                export FEDERATION="true"
+                export DNS_ZONE_NAME="soak.test-f8n.k8s.io."
+                export FEDERATIONS_DOMAIN_MAP="federation=soak.test-f8n.k8s.io"
+                export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+                export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-gce-federation-soak"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
+                export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
+                export KUBE_NODE_OS_DISTRIBUTION="debian"true
         - 'gce-gci':
             deploy-description: |
                 Deploy GCI based Kubernetes to soak cluster using the latest successful
