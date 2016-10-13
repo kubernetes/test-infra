@@ -63,19 +63,26 @@ func clean(kc kubeClient) {
 		return
 	}
 	for _, job := range jobs {
-		if job.Status.Active == 0 &&
-			job.Status.Succeeded > 0 &&
-			time.Since(job.Status.StartTime) > maxAge {
+		if jobComplete(job) && time.Since(job.Status.StartTime) > maxAge {
 			// Delete successful jobs. Don't quit if we fail to delete one.
 			if err := kc.DeleteJob(job.Metadata.Name); err == nil {
 				logrus.WithField("job", job.Metadata.Name).Info("Deleted old completed job.")
 			} else {
-				logrus.WithError(err).Error("Error deleting job.")
+				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error deleting job.")
+				continue
 			}
-		} else if job.Status.Succeeded == 0 &&
-			time.Since(job.Status.StartTime) > maxAge {
-			// Warn about old, unsuccessful jobs.
-			logrus.WithField("job", job.Metadata.Name).Warning("Old, unsuccessful job.")
+			pods, err := kc.ListPods(map[string]string{"job-name": job.Metadata.Name})
+			if err != nil {
+				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error listing pods for job.")
+				continue
+			}
+			for _, pod := range pods {
+				if err := kc.DeletePod(pod.Metadata.Name); err == nil {
+					logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old pod for old job.")
+				} else {
+					logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting old pod for old job.")
+				}
+			}
 		}
 	}
 
@@ -96,4 +103,15 @@ func clean(kc kubeClient) {
 			}
 		}
 	}
+}
+
+func jobComplete(j kube.Job) bool {
+	if j.Status.Active > 0 {
+		return false
+	} else if j.Status.Succeeded > 0 {
+		return true
+	} else if j.Spec.Parallelism != nil && *j.Spec.Parallelism == 0 {
+		return true
+	}
+	return false
 }

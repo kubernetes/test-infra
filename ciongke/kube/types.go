@@ -21,11 +21,13 @@ import (
 )
 
 type ObjectMeta struct {
-	Name      string            `json:"name,omitempty"`
-	Namespace string            `json:"namespace,omitempty"`
-	Labels    map[string]string `json:"labels,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Namespace   string            `json:"namespace,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	ResourceVersion string `json:"resourceVersion,omitempty"`
+	UID             string `json:"uid,omitempty"`
 }
 
 type Job struct {
@@ -35,9 +37,9 @@ type Job struct {
 }
 
 type JobSpec struct {
-	Parallelism           int `json:"parallelism,omitempty"`
-	Completions           int `json:"completions,omitempty"`
-	ActiveDeadlineSeconds int `json:"activeDeadlineSeconds,omitempty"`
+	Completions           *int `json:"completions,omitempty"`
+	Parallelism           *int `json:"parallelism,omitempty"`
+	ActiveDeadlineSeconds int  `json:"activeDeadlineSeconds,omitempty"`
 
 	Template PodTemplateSpec `json:"template,omitempty"`
 }
@@ -85,12 +87,26 @@ type PodStatus struct {
 }
 
 type Volume struct {
-	Name   string        `json:"name,omitempty"`
-	Secret *SecretSource `json:"secret,omitempty"`
+	Name        string             `json:"name,omitempty"`
+	Secret      *SecretSource      `json:"secret,omitempty"`
+	DownwardAPI *DownwardAPISource `json:"downwardAPI,omitempty"`
 }
 
 type SecretSource struct {
 	Name string `json:"secretName,omitempty"`
+}
+
+type DownwardAPISource struct {
+	Items []DownwardAPIFile `json:"items,omitempty"`
+}
+
+type DownwardAPIFile struct {
+	Path  string              `json:"path"`
+	Field ObjectFieldSelector `json:"fieldRef,omitempty"`
+}
+
+type ObjectFieldSelector struct {
+	FieldPath string `json:"fieldPath"`
 }
 
 type Container struct {

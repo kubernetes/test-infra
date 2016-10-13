@@ -29,16 +29,19 @@ import (
 )
 
 const (
-	period = time.Minute
+	period = 10 * time.Second
 )
 
 type Job struct {
-	Repo     string `json:"repo"`
-	Number   int    `json:"number"`
-	Job      string `json:"job"`
-	Started  string `json:"started"`
-	Finished string `json:"finished"`
-	Duration string `json:"duration"`
+	Repo        string `json:"repo"`
+	Number      int    `json:"number"`
+	Job         string `json:"job"`
+	Started     string `json:"started"`
+	Finished    string `json:"finished"`
+	Duration    string `json:"duration"`
+	State       string `json:"state"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
 
 	st time.Time `json:"-"`
 	ft time.Time `json:"-"`
@@ -88,9 +91,12 @@ func (ja *JobAgent) update() error {
 	var njs []Job
 	for _, j := range js {
 		nj := Job{
-			Repo:    fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
-			Job:     j.Metadata.Labels["jenkins-job-name"],
-			Started: j.Status.StartTime.Format(time.Stamp),
+			Repo:        fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
+			Job:         j.Metadata.Labels["jenkins-job-name"],
+			Started:     j.Status.StartTime.Format(time.Stamp),
+			State:       j.Metadata.Annotations["state"],
+			Description: j.Metadata.Annotations["description"],
+			URL:         j.Metadata.Annotations["url"],
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,

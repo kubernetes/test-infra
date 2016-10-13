@@ -87,6 +87,25 @@ func (c *FakeClient) DeleteJob(name string) error {
 	return fmt.Errorf("job %s not found", name)
 }
 
+func (c *FakeClient) PatchJob(name string, job kube.Job) (kube.Job, error) {
+	for i, j := range c.Jobs {
+		if j.Metadata.Name == name {
+			c.Jobs[i].Metadata.Annotations = job.Metadata.Annotations
+			c.Jobs[i].Spec = job.Spec
+		}
+	}
+	return job, nil
+}
+
+func (c *FakeClient) PatchJobStatus(name string, job kube.Job) (kube.Job, error) {
+	for i, j := range c.Jobs {
+		if j.Metadata.Name == name {
+			c.Jobs[i].Status = job.Status
+		}
+	}
+	return job, nil
+}
+
 func labelsMatch(l1 map[string]string, l2 map[string]string) bool {
 	for k1, v1 := range l1 {
 		matched := false

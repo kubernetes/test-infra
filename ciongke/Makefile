@@ -85,8 +85,8 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
-	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.36" cmd/hook
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.36"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.37" cmd/hook
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.37"
 
 hook-deployment:
 	kubectl apply -f hook_deployment.yaml
@@ -96,21 +96,21 @@ hook-service:
 
 line-image:
 	CGO_ENABLED=0 go build -o cmd/line/line github.com/kubernetes/test-infra/ciongke/cmd/line
-	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.18" cmd/line
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.18"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.19" cmd/line
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.19"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker github.com/kubernetes/test-infra/ciongke/cmd/sinker
-	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.1" cmd/sinker
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.1"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.2" cmd/sinker
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.2"
 
 sinker-deployment:
 	kubectl apply -f sinker_deployment.yaml
 
 deck-image:
 	CGO_ENABLED=0 go build -o cmd/deck/deck github.com/kubernetes/test-infra/ciongke/cmd/deck
-	docker build -t "gcr.io/kubernetes-jenkins-pull/deck:0.0" cmd/deck
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/deck:0.0"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/deck:0.1" cmd/deck
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/deck:0.1"
 
 deck-deployment:
 	kubectl apply -f deck_deployment.yaml

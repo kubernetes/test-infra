@@ -60,7 +60,8 @@ type kubeClient interface {
 
 	ListJobs(labels map[string]string) ([]kube.Job, error)
 	CreateJob(j kube.Job) (kube.Job, error)
-	DeleteJob(name string) error
+	PatchJob(name string, job kube.Job) (kube.Job, error)
+	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
 }
 
 // Cut off line jobs after 10 hours.
@@ -114,6 +115,11 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 				"pr":               strconv.Itoa(kr.PR),
 				"jenkins-job-name": kr.JobName,
 			},
+			Annotations: map[string]string{
+				"state":       "triggered",
+				"description": "Build triggered.",
+				"url":         "",
+			},
 		},
 		Spec: kube.JobSpec{
 			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
@@ -147,6 +153,11 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 									ReadOnly:  true,
 									MountPath: "/etc/jenkins",
 								},
+								{
+									Name:      "labels",
+									ReadOnly:  true,
+									MountPath: "/etc/labels",
+								},
 							},
 							Env: []kube.EnvVar{
 								{
@@ -162,6 +173,19 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 						},
 					},
 					Volumes: []kube.Volume{
+						{
+							Name: "labels",
+							DownwardAPI: &kube.DownwardAPISource{
+								Items: []kube.DownwardAPIFile{
+									{
+										Path: "labels",
+										Field: kube.ObjectFieldSelector{
+											FieldPath: "metadata.labels",
+										},
+									},
+								},
+							},
+						},
 						{
 							Name: "oauth",
 							Secret: &kube.SecretSource{
@@ -196,19 +220,39 @@ func (ka *KubeAgent) deleteJob(kr KubeRequest) error {
 		return err
 	}
 	for _, job := range jobs {
-		if err := ka.KubeClient.DeleteJob(job.Metadata.Name); err != nil {
+		if job.Spec.Parallelism != nil && *job.Spec.Parallelism == 0 {
+			// Already aborted this one.
+			continue
+		} else if job.Status.Succeeded > 0 {
+			// Already finished.
+			continue
+		}
+		// Delete the old job's pods by setting its parallelism to 0.
+		parallelism := 0
+		newStatus := job.Status
+		newStatus.CompletionTime = time.Now()
+		newAnnotations := job.Metadata.Annotations
+		if newAnnotations == nil {
+			newAnnotations = make(map[string]string)
+		}
+		newAnnotations["state"] = "aborted"
+		newAnnotations["description"] = "Build aborted."
+		newAnnotations["url"] = ""
+		newJob := kube.Job{
+			Metadata: kube.ObjectMeta{
+				Annotations: newAnnotations,
+			},
+			Spec: kube.JobSpec{
+				Parallelism: &parallelism,
+			},
+			Status: newStatus,
+		}
+		// For some reason kubernetes makes you do this in two steps.
+		if _, err := ka.KubeClient.PatchJob(job.Metadata.Name, newJob); err != nil {
 			return err
 		}
-		pods, err := ka.KubeClient.ListPods(map[string]string{
-			"job-name": job.Metadata.Name,
-		})
-		if err != nil {
+		if _, err := ka.KubeClient.PatchJobStatus(job.Metadata.Name, newJob); err != nil {
 			return err
-		}
-		for _, pod := range pods {
-			if err = ka.KubeClient.DeletePod(pod.Metadata.Name); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

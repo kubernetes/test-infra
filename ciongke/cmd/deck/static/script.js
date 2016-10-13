@@ -58,9 +58,11 @@ function redraw() {
             continue;
 
         var r = document.createElement("tr");
+        r.appendChild(stateCell(allBuilds[i].state));
         r.appendChild(createCell(allBuilds[i].repo));
         r.appendChild(createCell(allBuilds[i].number));
         r.appendChild(createCell(allBuilds[i].job));
+        r.appendChild(createCell(allBuilds[i].description));
         r.appendChild(createCell(allBuilds[i].started));
         r.appendChild(createCell(allBuilds[i].finished));
         r.appendChild(createCell(allBuilds[i].duration));
@@ -71,5 +73,18 @@ function redraw() {
 function createCell(text) {
     var c = document.createElement("td");
     c.appendChild(document.createTextNode(text));
+    return c;
+}
+
+function stateCell(state) {
+    var c = document.createElement("td");
+    c.className = state;
+    if (state === "triggered" || state === "pending") {
+        c.appendChild(document.createTextNode("\u2022"));
+    } else if (state === "success") {
+        c.appendChild(document.createTextNode("\u2713"));
+    } else if (state === "failure" || state === "error" || state === "aborted") {
+        c.appendChild(document.createTextNode("\u2717"));
+    }
     return c;
 }
