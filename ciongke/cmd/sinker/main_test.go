@@ -62,10 +62,23 @@ func TestClean(t *testing.T) {
 				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
 			},
 		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old, running with job",
+				Labels: map[string]string{
+					"job-name": "old, aborted with pod",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodRunning,
+				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+			},
+		},
 	}
 	deletedPods := []string{
 		"old, failed",
 		"old, succeeded",
+		"old, running with job",
 	}
 	zero := 0
 	jobs := []kube.Job{
@@ -135,10 +148,24 @@ func TestClean(t *testing.T) {
 				StartTime: time.Now(),
 			},
 		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old, aborted with pod",
+			},
+			Spec: kube.JobSpec{
+				Parallelism: &zero,
+			},
+			Status: kube.JobStatus{
+				Active:    0,
+				Succeeded: 0,
+				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+			},
+		},
 	}
 	deletedJobs := []string{
 		"old, complete",
 		"old, deleted",
+		"old, aborted with pod",
 	}
 	kc := &fakekube.FakeClient{
 		Pods: pods,

@@ -107,6 +107,18 @@ func TestDeletePR(t *testing.T) {
 					},
 				},
 			},
+			{
+				// Different job name.
+				Metadata: kube.ObjectMeta{
+					Name: "o-r-pr-3-abcd-otherjob",
+					Labels: map[string]string{
+						"owner":            "o",
+						"pr":               "3",
+						"repo":             "r",
+						"jenkins-job-name": "otherjob",
+					},
+				},
+			},
 		},
 	}
 	s := &KubeAgent{

@@ -193,7 +193,6 @@ func (c *testClient) TestPR() error {
 
 	resultURL := c.guberURL(result.Number)
 	c.tryCreateStatus(github.Pending, "Build started.", resultURL)
-	time.Sleep(2 * time.Minute)
 	for {
 		if err != nil {
 			c.tryCreateStatus(github.Error, "Error waiting for build.", "")
@@ -286,7 +285,7 @@ func getKubeJob(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	re := regexp.MustCompile(`^job-name="([A-Za-z0-9\-]+)"$`)
+	re := regexp.MustCompile(`^job-name="([^"]+)"$`)
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		m := re.FindStringSubmatch(scanner.Text())

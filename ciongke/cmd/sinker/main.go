@@ -69,6 +69,19 @@ func clean(kc kubeClient) {
 				logrus.WithField("job", job.Metadata.Name).Info("Deleted old completed job.")
 			} else {
 				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error deleting job.")
+				continue
+			}
+			pods, err := kc.ListPods(map[string]string{"job-name": job.Metadata.Name})
+			if err != nil {
+				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error listing pods for job.")
+				continue
+			}
+			for _, pod := range pods {
+				if err := kc.DeletePod(pod.Metadata.Name); err == nil {
+					logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old pod for old job.")
+				} else {
+					logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting old pod for old job.")
+				}
 			}
 		}
 	}
