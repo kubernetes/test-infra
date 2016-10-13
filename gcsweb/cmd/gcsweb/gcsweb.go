@@ -299,6 +299,38 @@ const tmplPageHeaderText = `
    	    <meta charset="utf-8">
    	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    	    <title>GCS browser: {{.Name}}</title>
+		<style>
+		header {
+			margin-left: 10px;
+		}
+
+		.next-button {
+			margin: 10px 0;
+		}
+
+		.grid-head {
+			border-bottom: 1px solid black;
+		}
+
+		.resource-grid {
+			margin-right: 20px;
+		}
+
+		li.grid-row:nth-child(even) {
+			background-color: #ddd;
+		}
+
+		li div {
+			box-sizing: border-box;
+			border-left: 1px solid black;
+			padding-left: 5px;
+			overflow-wrap: break-word;
+		}
+		li div:first-child {
+			border-left: none;
+		}
+
+		</style>
    	</head>
    	<body>
 `
@@ -323,11 +355,11 @@ func htmlPageFooter(out io.Writer) error {
 }
 
 const tmplContentHeaderText = `
-    <header style="margin-left:10px;">
+    <header>
         <h1>{{.DirName}}</h1>
         <h3>{{.Path}}</h3>
     </header>
-    <ul>
+    <ul class="resource-grid">
 `
 
 var tmplContentHeader = template.Must(template.New("content-header").Parse(tmplContentHeaderText))
@@ -353,8 +385,7 @@ func htmlContentFooter(out io.Writer) error {
 
 const tmplNextButtonText = `
     <a href="{{.Path}}?marker={{.Marker}}"
-	   class="pure-button"
-	   style="margin: 10px 0;">
+	   class="pure-button next-button">
 	   Next page
 	</a>
 `
@@ -374,9 +405,9 @@ func htmlNextButton(out io.Writer, path, marker string) error {
 
 const tmplGridHeaderText = `
 	<li class="pure-g">
-	    <div class="pure-u-1-3"><u>Name</u></div>
-   		<div class="pure-u-1-3"><u>Size</u></div>
-   		<div class="pure-u-1-3"><u>Modified</u></div>
+		<div class="pure-u-2-5 grid-head">Name</div>
+		<div class="pure-u-1-5 grid-head">Size</div>
+		<div class="pure-u-2-5 grid-head">Modified</div>
 	</li>
 `
 
@@ -387,10 +418,10 @@ func htmlGridHeader(out io.Writer) error {
 }
 
 const tmplGridItemText = `
-    <li class="pure-g">
-	    <div class="pure-u-1-3"><a href="{{.URL}}"><img src="{{.Icon}}"> {{.Name}}</a></div>
-	    <div class="pure-u-1-3">{{.Size}}</div>
-	    <div class="pure-u-1-3">{{.Modified}}</div>
+    <li class="pure-g grid-row">
+	    <div class="pure-u-2-5"><a href="{{.URL}}"><img src="{{.Icon}}"> {{.Name}}</a></div>
+	    <div class="pure-u-1-5">{{.Size}}</div>
+	    <div class="pure-u-2-5">{{.Modified}}</div>
 	</li>
 `
 
