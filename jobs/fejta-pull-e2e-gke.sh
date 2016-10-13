@@ -26,7 +26,7 @@ if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "
   exit
 fi
 
-export KUBE_SKIP_PUSH_GCS=y
+export KUBE_SKIP_PUSH_GCS=n
 export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
 export KUBE_RUN_FROM_OUTPUT=y
 export KUBE_FASTBUILD=true
