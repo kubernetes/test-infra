@@ -17,10 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -28,6 +31,7 @@ import (
 
 	"github.com/kubernetes/test-infra/ciongke/github"
 	"github.com/kubernetes/test-infra/ciongke/jenkins"
+	"github.com/kubernetes/test-infra/ciongke/kube"
 )
 
 var (
@@ -38,10 +42,12 @@ var (
 	pr        = flag.Int("pr", 0, "Pull request to test.")
 	branch    = flag.String("branch", "", "Target branch.")
 	commit    = flag.String("sha", "", "Head SHA of the PR.")
+	namespace = flag.String("namespace", "default", "Namespace that we live in.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
 	rerunCommand = flag.String("rerun-command", "", "What users should say to rerun the test.")
 
+	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -64,6 +70,8 @@ type testClient struct {
 
 	RerunCommand string
 
+	KubeJob       string
+	KubeClient    kubeClient
 	JenkinsClient *jenkins.Client
 	GitHubClient  githubClient
 }
@@ -73,6 +81,11 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	DeleteComment(owner, repo string, ID int) error
+}
+
+type kubeClient interface {
+	GetJob(name string) (kube.Job, error)
+	PatchJob(name string, job kube.Job) (kube.Job, error)
 }
 
 func main() {
@@ -105,6 +118,16 @@ func main() {
 		ghc = github.NewClient(oauthSecret)
 	}
 
+	kc, err := kube.NewClientInCluster(*namespace)
+	if err != nil {
+		logrus.Fatalf("Error getting client: %v", err)
+	}
+
+	kubeJob, err := getKubeJob(*labelsPath)
+	if err != nil {
+		logrus.Fatalf("Error getting kube job name: %v", err)
+	}
+
 	client := &testClient{
 		Job:       *job,
 		Context:   *context,
@@ -118,6 +141,8 @@ func main() {
 
 		RerunCommand: *rerunCommand,
 
+		KubeJob:       kubeJob,
+		KubeClient:    kc,
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
 	}
@@ -168,6 +193,7 @@ func (c *testClient) TestPR() error {
 
 	resultURL := c.guberURL(result.Number)
 	c.tryCreateStatus(github.Pending, "Build started.", resultURL)
+	time.Sleep(2 * time.Minute)
 	for {
 		if err != nil {
 			c.tryCreateStatus(github.Error, "Error waiting for build.", "")
@@ -205,7 +231,7 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		"state":       state,
 		"description": desc,
 		"url":         url,
-	}).Info("Setting GitHub status.")
+	}).Info("Setting GitHub and Kubernetes status.")
 	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.Commit, github.Status{
 		State:       state,
 		Description: desc,
@@ -214,6 +240,18 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 	})
 	if err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
+	}
+	_, err = c.KubeClient.PatchJob(c.KubeJob, kube.Job{
+		Metadata: kube.ObjectMeta{
+			Annotations: map[string]string{
+				"state":       state,
+				"description": desc,
+				"url":         url,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Error("Error setting job status.")
 	}
 }
 
@@ -241,4 +279,23 @@ The magic incantation to run this job again is ` + "`%s`" + `. Please help us cu
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
+}
+
+func getKubeJob(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	re := regexp.MustCompile(`^job-name="([A-Za-z0-9\-]+)"$`)
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		m := re.FindStringSubmatch(scanner.Text())
+		if len(m) == 2 {
+			return m[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", fmt.Errorf("could not find job-name in %s", path)
 }

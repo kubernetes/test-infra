@@ -83,3 +83,23 @@ td, th {
 th {
     color: #333;
 }
+
+.triggered, .pending, .success, .failure, .error, .aborted {
+    font-weight: bold;
+}
+
+.triggered, .pending {
+    color: #ffa500;
+}
+
+.success {
+    color: #22dd22;
+}
+
+.failure {
+    color: #dd2222;
+}
+
+.error, .aborted {
+    color: #888888;
+}

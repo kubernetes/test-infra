@@ -79,6 +79,11 @@ func (c *Client) doRequest(method, urlPath string, query map[string]string, body
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.token)
+	if method == http.MethodPatch {
+		req.Header.Set("Content-Type", "application/strategic-merge-patch+json")
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	q := req.URL.Query()
 	for k, v := range query {
@@ -208,4 +213,40 @@ func (c *Client) DeleteJob(name string) error {
 	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
 	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
 	return err
+}
+
+func (c *Client) PatchJob(name string, job Job) (Job, error) {
+	b, err := json.Marshal(job)
+	if err != nil {
+		return Job{}, err
+	}
+	buf := bytes.NewBuffer(b)
+	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
+	body, err := c.request(http.MethodPatch, path, map[string]string{}, buf)
+	if err != nil {
+		return Job{}, err
+	}
+	var retJob Job
+	if err = json.Unmarshal(body, &retJob); err != nil {
+		return Job{}, err
+	}
+	return retJob, nil
+}
+
+func (c *Client) PatchJobStatus(name string, job Job) (Job, error) {
+	b, err := json.Marshal(job)
+	if err != nil {
+		return Job{}, err
+	}
+	buf := bytes.NewBuffer(b)
+	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s/status", c.namespace, name)
+	body, err := c.request(http.MethodPatch, path, map[string]string{}, buf)
+	if err != nil {
+		return Job{}, err
+	}
+	var retJob Job
+	if err = json.Unmarshal(body, &retJob); err != nil {
+		return Job{}, err
+	}
+	return retJob, nil
 }

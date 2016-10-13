@@ -74,7 +74,7 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Delete this one.
 				Metadata: kube.ObjectMeta{
-					Name: "o-r-pr-3-abcd-job",
+					Name: "12345",
 					Labels: map[string]string{
 						"owner":            "o",
 						"pr":               "3",
@@ -86,7 +86,7 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Different PR.
 				Metadata: kube.ObjectMeta{
-					Name: "o-r-pr-4-qwer-job",
+					Name: "abcde",
 					Labels: map[string]string{
 						"owner":            "o",
 						"pr":               "4",
@@ -98,44 +98,12 @@ func TestDeletePR(t *testing.T) {
 			{
 				// Different repo.
 				Metadata: kube.ObjectMeta{
-					Name: "o-q-pr-3-wxyz-job",
+					Name: "qwerty",
 					Labels: map[string]string{
 						"owner":            "o",
 						"pr":               "3",
 						"repo":             "q",
 						"jenkins-job-name": "job",
-					},
-				},
-			},
-			{
-				// Different job name.
-				Metadata: kube.ObjectMeta{
-					Name: "o-r-pr-3-abcd-otherjob",
-					Labels: map[string]string{
-						"owner":            "o",
-						"pr":               "3",
-						"repo":             "r",
-						"jenkins-job-name": "otherjob",
-					},
-				},
-			},
-		},
-		Pods: []kube.Pod{
-			{
-				// Delete this one.
-				Metadata: kube.ObjectMeta{
-					Name: "o-r-pr-3-abcd-test",
-					Labels: map[string]string{
-						"job-name": "o-r-pr-3-abcd-job",
-					},
-				},
-			},
-			{
-				// Different job.
-				Metadata: kube.ObjectMeta{
-					Name: "r-pr-4-qwer-test",
-					Labels: map[string]string{
-						"job-name": "r-pr-4-qwer-job",
 					},
 				},
 			},
@@ -151,14 +119,11 @@ func TestDeletePR(t *testing.T) {
 		RepoName:  "r",
 	}
 	s.deleteJob(br)
-	if len(c.DeletedJobs) == 0 {
-		t.Error("Job for PR 3 not deleted.")
-	} else if len(c.DeletedJobs) > 1 {
-		t.Error("Too many jobs deleted.")
-	}
-	if len(c.DeletedPods) == 0 {
-		t.Error("Pod for PR 3 not deleted.")
-	} else if len(c.DeletedPods) > 1 {
-		t.Error("Too many pods deleted.")
+	for _, j := range c.Jobs {
+		if j.Metadata.Name == "12345" && j.Spec.Parallelism == nil {
+			t.Error("Job not deleted.")
+		} else if j.Metadata.Name != "12345" && j.Spec.Parallelism != nil {
+			t.Errorf("Deleted wrong job: %s", j.Metadata.Name)
+		}
 	}
 }
