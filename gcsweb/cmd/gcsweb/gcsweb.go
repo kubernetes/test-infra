@@ -38,6 +38,9 @@ import (
 const gcsBaseURL = "https://storage.googleapis.com"
 const gcsPath = "/gcs" // path for GCS browsing on this server
 
+// The base URL for GCP's GCS browser.
+const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
+
 var flPort = flag.Int("p", 8080, "port number on which to listen")
 var flIcons = flag.String("i", "/icons", "path to the icons directory")
 var flVersion = flag.Bool("version", false, "print version and exit")
@@ -117,9 +120,15 @@ func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Could redirect to
-	//     "https://console.cloud.google.com/storage/browser/" + strings.TrimPrefix(r.URL.Path, "/gcs/")
-	//   but that only works for buckets and not "files".
+	// Assume that a / suffix means a directory, and redirect to
+	// the official bucket browser for it.
+	if strings.HasSuffix(r.URL.Path, "/") {
+		// e.g. "/gcs/bucket/path/to/object" -> "/bucket/path/to/object"
+		path := strings.TrimPrefix(r.URL.Path, gcsPath)
+		http.Redirect(w, r, gcsBrowserURL+path, http.StatusSeeOther)
+		return
+	}
+
 	http.NotFound(w, r)
 }
 
