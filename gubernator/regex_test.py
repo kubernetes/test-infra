@@ -43,6 +43,7 @@ class RegexTest(unittest.TestCase):
             ('there was a FaTaL error', True),
             ('we failed to read logs', True),
             ('FAIL k8s.io/kubernetes/pkg/client/record', True),
+            ('\x1b[0;31mFAILED\x1b[0m', True),  # color codes
         ]:
             self.assertEqual(bool(regex.error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))
