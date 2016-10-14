@@ -74,7 +74,7 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 export PATH=${PATH}:/usr/local/go/bin
 
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 45m {runner} && rc=$? || rc=$?
+timeout -k 15m 45m "${runner}" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
     echo "Dumping logs for any remaining nodes"
