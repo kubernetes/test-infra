@@ -606,6 +606,42 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
 - name: kubelet-flaky-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-flaky-gce-e2e-ci
+- name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
+- name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
+- name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
+- name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+- name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+- name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+- name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
+- name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
+- name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
+- name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+- name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+- name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 
 # Manual, federated groups
 # rktnetes
@@ -1452,3 +1488,41 @@ dashboards:
   - name: gke-1.3-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-master
   name: release-1.4-blocking
+- dashboard_tab:
+  - name: gce-debian-latest-1.3-gci-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
+  - name: gce-gci-latest-1.3-debian-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
+  - name: gce-gci-latest-1.3-gci-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
+  - name: gce-debian-latest-1.3-gci-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
+  - name: gce-gci-latest-1.3-debian-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
+  - name: gce-gci-latest-1.3-gci-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
+  - name: gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+  - name: gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+  - name: gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+  - name: gce-debian-latest-1.4-gci-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
+  - name: gce-gci-latest-1.4-debian-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
+  - name: gce-gci-latest-1.4-gci-latest-upgrade-master
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
+  - name: gce-debian-latest-1.4-gci-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
+  - name: gce-gci-latest-1.4-debian-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
+  - name: gce-gci-latest-1.4-gci-latest-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
+  - name: gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+  - name: gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+  - name: gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
+  name: upgrades-gce-cvm-and-gci
