@@ -19,8 +19,8 @@ package main
 import (
 	"testing"
 
-	"github.com/kubernetes/test-infra/ciongke/github"
-	"github.com/kubernetes/test-infra/ciongke/github/fakegithub"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
 func TestFailureComment(t *testing.T) {

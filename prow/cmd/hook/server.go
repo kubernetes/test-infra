@@ -23,7 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/kubernetes/test-infra/ciongke/github"
+	"k8s.io/test-infra/prow/github"
 )
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and

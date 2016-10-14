@@ -84,7 +84,7 @@ test:
 .PHONY: create-cluster update-cluster update-jobs clean test get-cluster-credentials
 
 hook-image:
-	CGO_ENABLED=0 go build -o cmd/hook/hook github.com/kubernetes/test-infra/ciongke/cmd/hook
+	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "gcr.io/kubernetes-jenkins-pull/hook:0.37" cmd/hook
 	gcloud docker push "gcr.io/kubernetes-jenkins-pull/hook:0.37"
 
@@ -95,12 +95,12 @@ hook-service:
 	kubectl create -f hook_service.yaml
 
 line-image:
-	CGO_ENABLED=0 go build -o cmd/line/line github.com/kubernetes/test-infra/ciongke/cmd/line
+	CGO_ENABLED=0 go build -o cmd/line/line k8s.io/test-infra/prow/cmd/line
 	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.19" cmd/line
 	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.19"
 
 sinker-image:
-	CGO_ENABLED=0 go build -o cmd/sinker/sinker github.com/kubernetes/test-infra/ciongke/cmd/sinker
+	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "gcr.io/kubernetes-jenkins-pull/sinker:0.2" cmd/sinker
 	gcloud docker push "gcr.io/kubernetes-jenkins-pull/sinker:0.2"
 
@@ -108,7 +108,7 @@ sinker-deployment:
 	kubectl apply -f sinker_deployment.yaml
 
 deck-image:
-	CGO_ENABLED=0 go build -o cmd/deck/deck github.com/kubernetes/test-infra/ciongke/cmd/deck
+	CGO_ENABLED=0 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
 	docker build -t "gcr.io/kubernetes-jenkins-pull/deck:0.1" cmd/deck
 	gcloud docker push "gcr.io/kubernetes-jenkins-pull/deck:0.1"
 

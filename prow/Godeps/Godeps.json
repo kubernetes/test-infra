@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/kubernetes/test-infra/ciongke",
+	"ImportPath": "k8s.io/test-infra/prow",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [
