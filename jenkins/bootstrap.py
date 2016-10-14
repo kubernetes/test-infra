@@ -48,6 +48,7 @@ import socket
 import subprocess
 import sys
 import time
+import traceback
 
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
@@ -119,9 +120,20 @@ def checkout(repo, branch, pull):
     call([git, 'init', repo])
     os.chdir(repo)
     # TODO(fejta): cache git calls
-    call([
-        git, 'fetch', '--tags', repository(repo), ref,
-    ])
+    retries = 3
+    while retries > 0:
+        retries -= 1
+        try:
+            call([
+                git, 'fetch', '--tags', repository(repo), ref,
+            ])
+        except subprocess.CalledProcessError as cpe:
+            if not retries:
+                raise
+            if cpe.returncode != 128:
+                raise
+            logging.warning('git fetch failed: %s', traceback.format_exc())
+            time.sleep(2)
     call([git, 'checkout', 'FETCH_HEAD'])
 
 
