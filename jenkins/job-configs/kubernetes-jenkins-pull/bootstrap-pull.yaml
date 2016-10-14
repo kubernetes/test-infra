@@ -47,13 +47,64 @@
 - project:
     name: bootstrap-pull-jobs
     suffix:  # pull-<repo>-<suffix> is the expected format
+      - kubernetes-cross:
+          max-total: 12
+          job-name: pull-kubernetes-cross
+          repo-name: 'kubernetes/kubernetes'
       - kubernetes-e2e-gce:
           max-total: 12
           job-name: pull-kubernetes-e2e-gce
           repo-name: 'kubernetes/kubernetes'
+      - kubernetes-e2e-gce-cri:
+          max-total: 12
+          job-name: pull-kubernetes-e2e-gce-cri
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-e2e-gce-gci:
+          max-total: 12
+          job-name: pull-kubernetes-e2e-gce-gci
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-e2e-gce-etcd3:
+          max-total: 12
+          job-name: pull-kubernetes-e2e-gce-etcd3
+          repo-name: 'kubernetes/kubernetes'
+      #- kubernetes-e2e-gke:
+      #    max-total: 12
+      #    job-name: pull-kubernetes-e2e-gke
+      #    repo-name: 'kubernetes/kubernetes'
+      - kubernetes-e2e-gke-gci:
+          max-total: 12
+          job-name: pull-kubernetes-e2e-gke-gci
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-federation-e2e-gce:
+          max-total: 12
+          job-name: pull-kubernetes-federation-e2e-gce
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-federation-e2e-gce-gci:
+          max-total: 12
+          job-name: pull-kubernetes-federation-e2e-gce-gci
+          repo-name: 'kubernetes/kubernetes'
       - kubernetes-kubemark-e2e-gce:
-          max-total: 3
+          max-total: 12
           job-name: pull-kubernetes-kubemark-e2e-gce
           repo-name: 'kubernetes/kubernetes'
+      - kubernetes-kubemark-e2e-gce-gci:
+          max-total: 12
+          job-name: pull-kubernetes-kubemark-e2e-gce-gci
+          repo-name: 'kubernetes/kubernetes'
+      #- kubernetes-node-e2e:
+      #   max-total: 12
+      #   job-name: pull-kubernetes-node-e2e
+      #   repo-name: 'kubernetes/kubernetes'
+      - kubernetes-node-e2e-cri:
+          max-total: 12
+          job-name: pull-kubernetes-node-e2e-cri
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-verify:
+          max-total: 12
+          job-name: pull-kubernetes-verify
+          repo-name: 'kubernetes/kubernetes'
+      # - kubernetes-unit:
+      # -   job-name: pull-kubernetes-unit
+      # -   repo-name: 'kubernetes/kubernetes'
     jobs:
         - 'pull-{suffix}'
