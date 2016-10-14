@@ -23,7 +23,7 @@ def wordRE(word):
 
 # Match lines with error messages
 error_re = re.compile(
-    r'\b(error|fatal|fail|failed|build timed out)\b', re.IGNORECASE)
+    r'(?:\b|(?<=m))(error|fatal|fail|failed|build timed out)\b', re.IGNORECASE)
 
 # Match the dictionary string in the given line
 def objref(line):
