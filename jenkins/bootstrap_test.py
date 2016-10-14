@@ -710,7 +710,7 @@ class JobTest(unittest.TestCase):
 
         jobs = project.get('suffix')
         if not jobs or not isinstance(jobs, list):
-            self.fail('Could not find suffix list in project', project)
+            self.fail('Could not find suffix list in %s' % project)
 
         for job in jobs:
             if not isinstance(job, dict):
@@ -722,6 +722,15 @@ class JobTest(unittest.TestCase):
             self.assertEquals(job_name, job[name].get('job-name'))
             path = bootstrap.job_script(job_name)
             self.assertTrue(os.path.isfile(path), path)
+            self.assertIn('max-total', job[name])
+            self.assertIn('repo-name', job[name])
+            for key, value in job[name].items():
+                if not isinstance(value, (basestring, int)):
+                    self.fail('Jobs may not contain child objects %s: %s' % (
+                        key, value))
+                if '{' in str(value):
+                    self.fail('Jobs may not contain {expansions}' % (
+                        key, value))  # Use simple strings
 
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
