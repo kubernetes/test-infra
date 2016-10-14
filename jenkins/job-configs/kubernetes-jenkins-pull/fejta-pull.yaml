@@ -55,9 +55,6 @@
       - node-e2e:
           max-total: 5  # Half the real one
           job-name: fejta-pull-node-e2e
-      - gce: # TODO(fejta): delete this job in favor of boostrap-pull-e2e-gce
-          max-total: 3
-          job-name: fejta-pull-gce
       - e2e-gke:  # fejta-pull-e2e-gke
           max-total: 6
           job-name: fejta-pull-e2e-gke
