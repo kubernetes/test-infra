@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 import unittest
 
 import bootstrap
@@ -667,22 +668,24 @@ class IntegrationTest(unittest.TestCase):
     def testPr_Bad(self):
         random_pr = 111
         with Stub(bootstrap, 'start', Bomb):
-            with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
+            with Stub(time, 'sleep', Pass):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    bootstrap.bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
 
     def testBranch_Bad(self):
         random_branch = 'something'
         with Stub(bootstrap, 'start', Bomb):
-            with self.assertRaises(subprocess.CalledProcessError):
-                bootstrap.bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
+            with Stub(time, 'sleep', Pass):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    bootstrap.bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
 
     def testJobMissing(self):
-        with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.bootstrap('this-job-no-exists', self.REPO, None, self.PR, self.root_workspace)
+        with self.assertRaises(OSError):
+            bootstrap.bootstrap('this-job-no-exists', self.REPO, 'master', None, self.root_workspace)
 
     def testJobFails(self):
-        with self.assertRaises(subprocess.CalledProcessError):
-            bootstrap.bootstrap('fake-failure', self.REPO, None, self.PR, self.root_workspace)
+        with self.assertRaises(SystemExit):
+            bootstrap.bootstrap('fake-failure', self.REPO, 'master', None, self.root_workspace)
 
 
 class JobTest(unittest.TestCase):
