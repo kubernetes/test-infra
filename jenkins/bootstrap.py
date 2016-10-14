@@ -444,8 +444,8 @@ def setup_credentials():
 def setup_logging(path):
     """Initialize logging to screen and path."""
     # See https://docs.python.org/2/library/logging.html#logrecord-attributes
-    # [IWEF]yymm HH:MM:SS.uuuuuu file:line] msg
-    fmt = '%(levelname).1s%(asctime)s.%(msecs)d000 %(filename)s:%(lineno)d] %(message)s'  # pylint: disable=line-too-long
+    # [IWEF]mmdd HH:MM:SS.mmm] msg
+    fmt = '%(levelname).1s%(asctime)s.%(msecs)03d] %(message)s'  # pylint: disable=line-too-long
     datefmt = '%m%d %H:%M:%S'
     logging.basicConfig(
         level=logging.INFO,
