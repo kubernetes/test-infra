@@ -42,7 +42,7 @@ const gcsPath = "/gcs" // path for GCS browsing on this server
 const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
 
 var flPort = flag.Int("p", 8080, "port number on which to listen")
-var flIcons = flag.String("i", "/icons", "path to the icons directory")
+var flIcons = flag.String("i", "icons", "path to the icons directory")
 var flVersion = flag.Bool("version", false, "print version and exit")
 
 const (
