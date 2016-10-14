@@ -62,7 +62,7 @@
         - shell: |
             docker run --rm -i \
                 -w "/go/src/k8s.io/test-infra/prow" \
-                -v "${WORKSPACE}:/go/src/github.com/kubernetes/test-infra" \
+                -v "${WORKSPACE}:/go/src/k8s.io/test-infra" \
                 golang:1.7.1 make test
     publishers:
         - gcs-uploader:
