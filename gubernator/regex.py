@@ -22,8 +22,10 @@ def wordRE(word):
     return re.compile(r'\b(%s)\b' % word, re.IGNORECASE)
 
 # Match lines with error messages
+# HACK: match ANSI colored lines by allowing preceding "m",
+# as in"\x1b[0;31mFAILED\x1b[0m"
 error_re = re.compile(
-    r'\b(error|fatal|fail|failed|build timed out)\b', re.IGNORECASE)
+    r'(?:\b|(?<=m))(error|fatal|fail|failed|build timed out)\b', re.IGNORECASE)
 
 # Match the dictionary string in the given line
 def objref(line):
