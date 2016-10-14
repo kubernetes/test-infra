@@ -21,7 +21,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/kubernetes/test-infra/ciongke/kube"
+	"k8s.io/test-infra/prow/kube"
 )
 
 const (

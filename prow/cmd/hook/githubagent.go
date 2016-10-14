@@ -21,7 +21,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"sync"
 
-	"github.com/kubernetes/test-infra/ciongke/github"
+	"k8s.io/test-infra/prow/github"
 )
 
 // GitHubAgent consumes events off of the event channels and decides what

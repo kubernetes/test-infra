@@ -19,7 +19,7 @@ package fakegithub
 import (
 	"fmt"
 
-	"github.com/kubernetes/test-infra/ciongke/github"
+	"k8s.io/test-infra/prow/github"
 )
 
 type FakeClient struct {

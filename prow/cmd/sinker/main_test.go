@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kubernetes/test-infra/ciongke/kube"
-	"github.com/kubernetes/test-infra/ciongke/kube/fakekube"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/kube/fakekube"
 )
 
 func TestClean(t *testing.T) {

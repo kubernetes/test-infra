@@ -27,8 +27,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/kubernetes/test-infra/ciongke/github"
-	"github.com/kubernetes/test-infra/ciongke/kube"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 )
 
 var (

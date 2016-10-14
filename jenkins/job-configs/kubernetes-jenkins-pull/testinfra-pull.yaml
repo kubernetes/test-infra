@@ -61,7 +61,7 @@
         - shell: JENKINS_BUILD_STARTED=true "${WORKSPACE}/_tmp/upload-to-gcs.sh"
         - shell: |
             docker run --rm -i \
-                -w "/go/src/github.com/kubernetes/test-infra/ciongke" \
+                -w "/go/src/k8s.io/test-infra/prow" \
                 -v "${WORKSPACE}:/go/src/github.com/kubernetes/test-infra" \
                 golang:1.7.1 make test
     publishers:

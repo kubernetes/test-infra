@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kubernetes/test-infra/ciongke/kube"
+	"k8s.io/test-infra/prow/kube"
 )
 
 // KubeAgent pulls KubeRequests off of the channel and turns them into
