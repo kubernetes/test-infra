@@ -52,9 +52,6 @@
       - unit: # fejta-pull-unit
           max-total: 0 # Unlimited
           job-name: fejta-pull-unit
-      - kubemark-e2e-gce:  # fejta-pull-kubemark-e2e-gce
-          max-total: 3
-          job-name: fejta-pull-kubemark-e2e-gce
       - node-e2e:
           max-total: 5  # Half the real one
           job-name: fejta-pull-node-e2e

@@ -46,10 +46,14 @@
 
 - project:
     name: bootstrap-pull-jobs
-    suffix:
+    suffix:  # pull-<repo>-<suffix> is the expected format
       - kubernetes-e2e-gce:
           max-total: 12
           job-name: pull-kubernetes-e2e-gce
+          repo-name: 'kubernetes/kubernetes'
+      - kubernetes-kubemark-e2e-gce:
+          max-total: 3
+          job-name: fejta-pull-kubemark-e2e-gce
           repo-name: 'kubernetes/kubernetes'
     jobs:
         - 'pull-{suffix}'
