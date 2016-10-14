@@ -33,7 +33,7 @@
                 PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
         - workspace-cleanup:
             dirmatch: true
-            exclude: ['.git/']
+            exclude: ['go/src/k8s.io/kubernetes/.git/']
             external-deletion-command: 'sudo rm -rf %s'
         - timeout:
             timeout: 90
@@ -67,10 +67,10 @@
           max-total: 12
           job-name: pull-kubernetes-e2e-gce-etcd3
           repo-name: 'kubernetes/kubernetes'
-      #- kubernetes-e2e-gke:
-      #    max-total: 12
-      #    job-name: pull-kubernetes-e2e-gke
-      #    repo-name: 'kubernetes/kubernetes'
+      - kubernetes-e2e-gke:
+          max-total: 12
+          job-name: pull-kubernetes-e2e-gke
+          repo-name: 'kubernetes/kubernetes'
       - kubernetes-e2e-gke-gci:
           max-total: 12
           job-name: pull-kubernetes-e2e-gke-gci
@@ -103,8 +103,9 @@
           max-total: 12
           job-name: pull-kubernetes-verify
           repo-name: 'kubernetes/kubernetes'
-      # - kubernetes-unit:
-      # -   job-name: pull-kubernetes-unit
-      # -   repo-name: 'kubernetes/kubernetes'
+      - kubernetes-unit:
+          max-total: 12
+          job-name: pull-kubernetes-unit
+          repo-name: 'kubernetes/kubernetes'
     jobs:
         - 'pull-{suffix}'

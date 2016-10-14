@@ -38,7 +38,7 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot build this"
   context: Jenkins Cross Build
   rerun_command: "@k8s-bot build this"
-- name: kubernetes-pull-test-unit-integration
+- name: pull-kubernetes-unit
   trigger: "@k8s-bot (unit )?test this"
   always_run: true
   context: Jenkins unit/integration
@@ -58,7 +58,7 @@ kubernetes/kubernetes:
   always_run: false
   context: Jenkins GCE etcd3 e2e
   rerun_command: "@k8s-bot gce etcd3 e2e test this"
-- name: kubernetes-pull-build-test-e2e-gke
+- name: pull-kubernetes-e2e-gke
   trigger: "@k8s-bot (cvm )?(gke )?(e2e )?test this"
   always_run: true
   context: Jenkins GKE smoke e2e
@@ -111,15 +111,6 @@ kubernetes/kubernetes:
   context: Bootstrap GCE Node e2e
   rerun_command: "@k8s-bot bootstrap node e2e test this"
   trigger: "@k8s-bot bootstrap (node )?(e2e )?test this"
-- name: fejta-pull-e2e-gke
-  always_run: true
-  context: Bootstrap GKE e2e
-  rerun_command: "@k8s-bot bootstrap gke e2e test this"
-  trigger: "@k8s-bot (bootstrap )?(gke )?(e2e )?test this"
-- name: fejta-pull-unit
-  context: Bootstrap unit/integration
-  rerun_command: "@k8s-bot bootstrap unit test this"
-  trigger: "@k8s-bot bootstrap (unit )?test this"
 
 kubernetes/test-infra:
 - name: testinfra-pull-gotest
