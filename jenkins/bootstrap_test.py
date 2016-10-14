@@ -25,6 +25,8 @@ import unittest
 
 import bootstrap
 
+import yaml
+
 
 BRANCH = 'random_branch'
 BUILD = 'random_build'
@@ -686,6 +688,41 @@ class IntegrationTest(unittest.TestCase):
 
 
 class JobTest(unittest.TestCase):
+
+    suffix = 'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml'
+
+    def testBootstrapPullYaml(self):
+        with open(os.path.join(os.path.dirname(__file__), self.suffix)) as fp:
+            doc = yaml.safe_load(fp)
+
+        project = None
+        for item in doc:
+            if not isinstance(item, dict):
+                continue
+            if not isinstance(item.get('project'), dict):
+                continue
+            project = item['project']
+            if not project.get('name') == 'bootstrap-pull-jobs':
+                continue
+            break
+        else:
+            self.fail('Could not find bootstrap-pull-jobs project')
+
+        jobs = project.get('suffix')
+        if not jobs or not isinstance(jobs, list):
+            self.fail('Could not find suffix list in project', project)
+
+        for job in jobs:
+            if not isinstance(job, dict):
+                self.fail('suffix items should be dicts', jobs)
+
+            self.assertEquals(1, len(job), job)
+            name = job.keys()[0]
+            job_name = 'pull-%s' % name
+            self.assertEquals(job_name, job[name].get('job-name'))
+            path = bootstrap.job_script(job_name)
+            self.assertTrue(os.path.isfile(path), path)
+
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for path, _, filenames in os.walk(
