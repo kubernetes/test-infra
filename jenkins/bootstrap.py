@@ -43,6 +43,7 @@ import argparse
 import json
 import logging
 import os
+import random
 import select
 import socket
 import subprocess
@@ -118,10 +119,20 @@ def checkout(repo, branch, pull):
     git = 'git'
     call([git, 'init', repo])
     os.chdir(repo)
-    # TODO(fejta): cache git calls
-    call([
-        git, 'fetch', '--tags', repository(repo), ref,
-    ])
+    retries = 3
+    for attempt in range(retries):
+        try:
+            call([
+                git, 'fetch', '--tags', repository(repo), ref,
+            ])
+            break
+        except subprocess.CalledProcessError as cpe:
+            if attempt >= retries - 1:
+                raise
+            if cpe.returncode != 128:
+                raise
+            logging.warning('git fetch failed')
+            time.sleep(random.random() + attempt ** 2)
     call([git, 'checkout', 'FETCH_HEAD'])
 
 
