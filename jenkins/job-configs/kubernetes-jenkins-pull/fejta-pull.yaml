@@ -49,14 +49,8 @@
     name: fejta-kubernetes-pull
     repo-name: 'kubernetes/kubernetes'
     suffix:
-      - unit: # fejta-pull-unit
-          max-total: 0 # Unlimited
-          job-name: fejta-pull-unit
       - node-e2e:
           max-total: 5  # Half the real one
           job-name: fejta-pull-node-e2e
-      - e2e-gke:  # fejta-pull-e2e-gke
-          max-total: 6
-          job-name: fejta-pull-e2e-gke
     jobs:
         - 'fejta-pull-{suffix}'
