@@ -53,7 +53,7 @@
           repo-name: 'kubernetes/kubernetes'
       - kubernetes-kubemark-e2e-gce:
           max-total: 3
-          job-name: pull-kubemark-e2e-gce
+          job-name: pull-kubernetes-kubemark-e2e-gce
           repo-name: 'kubernetes/kubernetes'
     jobs:
         - 'pull-{suffix}'
