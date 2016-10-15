@@ -91,10 +91,10 @@
           max-total: 12
           job-name: pull-kubernetes-kubemark-e2e-gce-gci
           repo-name: 'kubernetes/kubernetes'
-      #- kubernetes-node-e2e:
-      #   max-total: 12
-      #   job-name: pull-kubernetes-node-e2e
-      #   repo-name: 'kubernetes/kubernetes'
+      - kubernetes-node-e2e:
+          max-total: 12
+          job-name: pull-kubernetes-node-e2e
+          repo-name: 'kubernetes/kubernetes'
       - kubernetes-node-e2e-cri:
           max-total: 12
           job-name: pull-kubernetes-node-e2e-cri
