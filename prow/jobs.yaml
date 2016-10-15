@@ -14,82 +14,123 @@
 ---
 google/cadvisor:
 - name: cadvisor-pull-build-test-e2e
-  trigger: "@k8s-bot test this"
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot test this"
+  trigger: "@k8s-bot test this"
 
 kubernetes/charts:
 - name: charts-pull-test-e2e
-  trigger: "@k8s-bot (e2e )?test this"
   always_run: true
   context: Jenkins Charts e2e
   rerun_command: "@k8s-bot e2e test this"
+  trigger: "@k8s-bot (e2e )?test this"
 
 kubernetes/heapster:
 - name: heapster-pull-build-test-e2e
-  trigger: "@k8s-bot test this"
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot test this"
+  trigger: "@k8s-bot test this"
 
 kubernetes/kubernetes:
-- name: kubernetes-pull-build-cross
-  trigger: "@k8s-bot build this"
+- name: pull-kubernetes-cross
   context: Jenkins Cross Build
   rerun_command: "@k8s-bot build this"
+  trigger: "@k8s-bot build this"
 - name: pull-kubernetes-unit
-  trigger: "@k8s-bot (unit )?test this"
   always_run: true
   context: Jenkins unit/integration
   rerun_command: "@k8s-bot unit test this"
+  trigger: "@k8s-bot (unit )?test this"
+
 - name: kubernetes-pull-verify-all
-  trigger: "@k8s-bot (verify )?test this"
   always_run: true
   context: Jenkins verification
   rerun_command: "@k8s-bot verify test this"
+  trigger: "@k8s-bot (verify )?test this"
+- name: pull-kubernetes-verify
+  context: Bootstrap verification
+  rerun_command: "@k8s-bot bootstrap verify test this"
+  trigger: "@k8s-bot bootstrap (verify )?test this"
+
 - name: pull-kubernetes-e2e-gce
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot cvm gce e2e test this"
   trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
+
 - name: kubernetes-pull-build-test-e2e-gce-etcd3
-  trigger: "@k8s-bot (gce )?etcd3 (e2e )?test this"
   always_run: false
   context: Jenkins GCE etcd3 e2e
   rerun_command: "@k8s-bot gce etcd3 e2e test this"
+  trigger: "@k8s-bot (gce )?etcd3 (e2e )?test this"
+- name: pull-kubernetes-e2e-gce-etcd3
+  always_run: false
+  context: Bootstrap GCE etcd3 e2e
+  rerun_command: "@k8s-bot bootstrap gce etcd3 e2e test this"
+  trigger: "@k8s-bot bootstrap (gce )?etcd3 (e2e )?test this"
+
 - name: pull-kubernetes-e2e-gke
-  trigger: "@k8s-bot (cvm )?(gke )?(e2e )?test this"
   always_run: true
   context: Jenkins GKE smoke e2e
   rerun_command: "@k8s-bot cvm gke e2e test this"
+  trigger: "@k8s-bot (cvm )?(gke )?(e2e )?test this"
+
 - name: kubernetes-pull-build-test-gci-e2e-gke # TODO(spxtr): turn this back on once we can survive it.
-  trigger: "@k8s-bot (gci )?(gke )?(e2e )?test this"
   always_run: false
   context: Jenkins GCI GKE smoke e2e
   rerun_command: "@k8s-bot gci gke e2e test this"
+  trigger: "@k8s-bot (gci )?(gke )?(e2e )?test this"
+- name: pull-kubernetes-e2e-gke-gci
+  always_run: false
+  context: Bootstrap GCI GKE smoke e2e
+  rerun_command: "@k8s-bot bootstrap gci gke e2e test this"
+  trigger: "@k8s-bot bootstrap (gci )?(gke )?(e2e )?test this"
+
 - name: kubernetes-pull-build-test-gci-e2e-gce
-  trigger: "@k8s-bot (gci )?(gce )?(e2e )?test this"
   always_run: true
   context: Jenkins GCI GCE e2e
   rerun_command: "@k8s-bot gci gce e2e test this"
+  trigger: "@k8s-bot (gci )?(gce )?(e2e )?test this"
+- name: pull-kubernetes-e2e-gce-gci
+  context: Bootstrap GCI GCE e2e
+  rerun_command: "@k8s-bot bootstrap gci gce e2e test this"
+  trigger: "@k8s-bot bootstrap (gci )?(gce )?(e2e )?test this"
+
 - name: kubernetes-pull-build-test-federation-e2e-gce
-  trigger: "@k8s-bot federation (gce )?(e2e )?test this"
   context: Jenkins Federation GCE e2e
   rerun_command: "@k8s-bot federation gce e2e test this"
+  trigger: "@k8s-bot federation (gce )?(e2e )?test this"
+- name: pull-kubernetes-federation-e2e-gce
+  context: Bootstrap Federation GCE e2e
+  rerun_command: "@k8s-bot bootstrap federation gce e2e test this"
+  trigger: "@k8s-bot bootstrap federation (gce )?(e2e )?test this"
+
 - name: kubernetes-pull-build-test-gci-federation-e2e-gce
-  trigger: "@k8s-bot federation gci (gce )?(e2e )?test this"
   context: Jenkins GCI Federation GCE e2e
   rerun_command: "@k8s-bot federation gci gce e2e test this"
+  trigger: "@k8s-bot federation gci (gce )?(e2e )?test this"
+- name: pull-kubernetes-federation-e2e-gce-gci
+  context: Bootstrap GCI Federation GCE e2e
+  rerun_command: "@k8s-bot bootstrap federation gci gce e2e test this"
+  trigger: "@k8s-bot bootstrap federation gci (gce )?(e2e )?test this"
+
 - name: pull-kubernetes-kubemark-e2e-gce
   trigger: "@k8s-bot (kubemark )?(e2e )?test this"
   always_run: true
   context: Jenkins Kubemark GCE e2e
   rerun_command: "@k8s-bot kubemark e2e test this"
+
 - name: kubernetes-pull-build-test-gci-kubemark-e2e-gce
-  trigger: "@k8s-bot kubemark gci (e2e )?test this"
   context: Jenkins GCI Kubemark GCE e2e
   rerun_command: "@k8s-bot kubemark gci e2e test this"
+  trigger: "@k8s-bot kubemark gci (e2e )?test this"
+- name: pull-kubernetes-kubemark-e2e-gce-gci
+  context: Bootstrap GCI Kubemark GCE e2e
+  rerun_command: "@k8s-bot bootstrap kubemark gci e2e test this"
+  trigger: "@k8s-bot bootstrap kubemark gci (e2e )?test this"
+
 - name: pull-kubernetes-node-e2e
   always_run: true
   context: Jenkins GCE Node e2e
@@ -99,10 +140,16 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot cri (e2e )?test this"
   context: Jenkins CRI GCE e2e
   rerun_command: "@k8s-bot cri e2e test this"
+
 - name: node-cri-pull-build-e2e-test
-  trigger: "@k8s-bot cri (node e2e )?test this"
   context: Jenkins CRI GCE Node e2e
   rerun_command: "@k8s-bot cri node e2e test this"
+  trigger: "@k8s-bot cri (node e2e )?test this"
+- name: pull-kubernetes-node-e2e-cri
+  context: Bootstrap CRI GCE Node e2e
+  rerun_command: "@k8s-bot bootstrap cri node e2e test this"
+  trigger: "@k8s-bot bootstrap cri (node e2e )?test this"
+
 - name: pull-kubernetes-kubemark-e2e-gce
   context: Bootstrap Kubemark GCE e2e
   rerun_command: "@k8s-bot bootstrap kubemark e2e test this"
@@ -110,7 +157,7 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - name: testinfra-pull-gotest
-  trigger: "@k8s-bot (go )?test this"
   always_run: true
   context: Jenkins go test
   rerun_command: "@k8s-bot go test this"
+  trigger: "@k8s-bot (go )?test this"
