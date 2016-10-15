@@ -38,7 +38,7 @@ gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${version}" "gs://kubernetes
 # Strip off the leading 'v' from the cluster version.
 export CLUSTER_API_VERSION="${version:1}-pull"
 
-export KUBERNETES_PROVIDER="gce"
+export KUBERNETES_PROVIDER="gke"
 export E2E_MIN_STARTUP_PODS="1"
 
 # Flake detection. Individual tests get a second chance to pass.
