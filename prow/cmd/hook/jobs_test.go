@@ -17,7 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"os"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -63,6 +66,13 @@ func TestJobTriggers(t *testing.T) {
 					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
 			}
+			// Ensure that bootstrap jobs have a shell script of the same name.
+			if strings.HasPrefix(job.Name, "pull-") {
+				if _, err := os.Stat(fmt.Sprintf("../../../jobs/%s.sh", job.Name)); err != nil {
+					t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
+				}
+			}
+
 		}
 	}
 }
