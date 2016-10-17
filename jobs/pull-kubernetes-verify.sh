@@ -19,13 +19,14 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
+readonly remote="bootstrap-upstream"
 
-# TODO(fejta): how to handle this situation??
-# verify-godeps compares against upstream, but remote/master might be stale
-# if .git was retained between runs. Update it explicitly here.
-git fetch remote master:refs/remotes/remote/master
-# similarly, verify-munge-docs compares against the latest release branch.
-git fetch remote release-1.4:remote/release-1.4
+rm -rf .gsutil  # This causes verify flags to fail...
+git remote remove "${remote}" || true
+git remote add "${remote}" 'https://github.com/kubernetes/kubernetes.git'
+git remote set-url --push "${remote}" no_push
+# If .git is cached between runs this data may be stale
+git fetch "${remote}"  # fetch branches
 export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 ./hack/jenkins/gotest-dockerized.sh
