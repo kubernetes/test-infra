@@ -45,15 +45,11 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot unit test this"
   trigger: "@k8s-bot (unit )?test this"
 
-- name: kubernetes-pull-verify-all
+- name: pull-kubernetes-verify
   always_run: true
   context: Jenkins verification
   rerun_command: "@k8s-bot verify test this"
   trigger: "@k8s-bot (verify )?test this"
-- name: pull-kubernetes-verify  # TODO(fejta): validate the pull-kubernetes-verify.sh changes work
-  context: Bootstrap verification
-  rerun_command: "@k8s-bot bootstrap verify test this"
-  trigger: "@k8s-bot bootstrap (verify )?test this"
 
 - name: pull-kubernetes-e2e-gce
   always_run: true
