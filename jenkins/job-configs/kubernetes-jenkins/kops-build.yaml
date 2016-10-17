@@ -8,6 +8,7 @@
     builders:
         - activate-gce-service-account
         - shell: |
+            export CLOUDSDK_CONFIG="${{CLOUDSDK_CONFIG:-${{WORKSPACE}}/.config/gcloud}}"
             {job-env}
             timeout -k {kill-timeout}m {timeout}m make gcs-publish-ci && rc=$? || rc=$?
             {report-rc}
