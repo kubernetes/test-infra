@@ -43,6 +43,7 @@ import argparse
 import json
 import logging
 import os
+import pipes
 import random
 import select
 import socket
@@ -56,7 +57,7 @@ ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 def call(cmd, stdin=None, check=True, output=None):
     """Start a subprocess."""
-    logging.info('Call subprocess:\n  %s', ' '.join(cmd))
+    logging.info('Call:  %s', ' '.join(pipes.quote(c) for c in cmd))
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE if stdin is not None else None,
