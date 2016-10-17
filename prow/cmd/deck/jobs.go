@@ -35,6 +35,7 @@ const (
 type Job struct {
 	Repo        string `json:"repo"`
 	Number      int    `json:"number"`
+	Author      string `json:"author"`
 	Job         string `json:"job"`
 	Started     string `json:"started"`
 	Finished    string `json:"finished"`
@@ -92,6 +93,7 @@ func (ja *JobAgent) update() error {
 	for _, j := range js {
 		nj := Job{
 			Repo:        fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
+			Author:      j.Metadata.Annotations["author"],
 			Job:         j.Metadata.Labels["jenkins-job-name"],
 			Started:     j.Status.StartTime.Format(time.Stamp),
 			State:       j.Metadata.Annotations["state"],

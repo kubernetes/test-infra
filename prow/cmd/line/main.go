@@ -240,17 +240,25 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 	if err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
 	}
+	j, err := c.KubeClient.GetJob(c.KubeJob)
+	if err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Error("Error getting job.")
+		return
+	}
+	newAnnotations := j.Metadata.Annotations
+	if newAnnotations == nil {
+		newAnnotations = make(map[string]string)
+	}
+	newAnnotations["state"] = state
+	newAnnotations["description"] = desc
+	newAnnotations["url"] = url
 	_, err = c.KubeClient.PatchJob(c.KubeJob, kube.Job{
 		Metadata: kube.ObjectMeta{
-			Annotations: map[string]string{
-				"state":       state,
-				"description": desc,
-				"url":         url,
-			},
+			Annotations: newAnnotations,
 		},
 	})
 	if err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error setting job status.")
+		logrus.WithFields(fields(c)).WithError(err).Error("Error setting kubernetes job status.")
 	}
 }
 

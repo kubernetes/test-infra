@@ -50,6 +50,7 @@ type KubeRequest struct {
 	RepoOwner string
 	RepoName  string
 	PR        int
+	Author    string
 	Branch    string
 	SHA       string
 }
@@ -117,6 +118,7 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 			},
 			Annotations: map[string]string{
 				"state":       "triggered",
+				"author":      kr.Author,
 				"description": "Build triggered.",
 				"url":         "",
 			},
