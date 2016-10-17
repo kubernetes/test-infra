@@ -40,7 +40,9 @@ export E2E_TEST="false"
 export E2E_DOWN="true"
 export USE_KUBEMARK="true"
 export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
+
 # Override defaults to be independent from GCE defaults and set kubemark parameters
 export NUM_NODES="1"
 export MASTER_SIZE="n1-standard-1"
@@ -48,14 +50,18 @@ export NODE_SIZE="n1-standard-2"
 export KUBE_GCE_ZONE="us-central1-f"
 export KUBEMARK_MASTER_SIZE="n1-standard-1"
 export KUBEMARK_NUM_NODES="5"
+
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
+
 # GCE variables
 export INSTANCE_PREFIX=${E2E_NAME}
 export KUBE_GCE_NETWORK=${E2E_NAME}
 export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
-# Force to use container-vm.
+
+# Force to use GCI.
 export KUBE_NODE_OS_DISTRIBUTION="gci"
+
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
