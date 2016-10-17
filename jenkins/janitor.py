@@ -17,28 +17,23 @@
 import argparse
 import collections
 import datetime
+import json
 import re
 import subprocess
 import sys
 
 # A resource that need to be cleared.
-class resource:
-    def __init__(self, n, c, s):
-        self.name = n
-        self.condition = c
-        self.status = s
-
-
+Resource = namedtuple('Resource', 'name condition status')
 demolish_order = [
-resource("instances", "zone", None),
-resource("addresses", "region", None),
-resource("disks", "zone", None),
-resource("firewall-rules", None, None),
-resource("routes", None, None),
-resource("forwarding-rules", "region", None),
-resource("target-pools", "region", None),
-resource("instance-groups", "zone", "managed"),
-resource("instance-templates", None, None),
+Resource("instances", "zone", None),
+Resource("addresses", "region", None),
+Resource("disks", "zone", None),
+Resource("firewall-rules", None, None),
+Resource("routes", None, None),
+Resource("forwarding-rules", "region", None),
+Resource("target-pools", "region", None),
+Resource("instance-groups", "zone", "managed"),
+Resource("instance-templates", None, None),
 # Beaware of insertion order
 ]
 
@@ -46,36 +41,31 @@ def Collect(project, age, resource, filt):
     col = collections.defaultdict(list)
 
     if not resource.condition:
-        condclause = '--format=value(name,creationTimestamp)'
+        condclause = '--format=value(name,creationTimestamp),json'
     else:
-        condclause = '--format=value(name,creationTimestamp,%s)'\
+        condclause = '--format=value(name,creationTimestamp,%s),json'\
                      % resource.condition
 
-    for item in subprocess.check_output([
+    for item in json.loads(subprocess.check_output([
      'gcloud', 'compute', '-q',
      resource.name, 'list',
      condclause,
      '--filter=%s' % filt,
-     '--project=%s' % project]).split('\n'):
-        item = item.strip()
-        if not item:
+     '--project=%s' % project]).split('\n')):
+        
+        if not item['name'] or not item['creationTimestamp']:
+            continue
+        if resource.condition and not item[resource.condition]:
             continue
 
-        colname = ""
-        split = re.split(r'\s+', item)
-        print split
-        name = split[0]
-        created_str = split[1]
-        if len(split) == 3:
-            colname = split[2]
-
+        colname = item[resource.condition] or ""
         tfmt = 'YYYY-mm-ddTHH:MM:SS'
-        created = datetime.datetime.strptime(created_str[:len(tfmt)],
+        created = datetime.datetime.strptime(item['creationTimestamp'][:len(tfmt)],
                                              '%Y-%m-%dT%H:%M:%S')
-        print "Found %s, %s in %s" % (resource.name, name, colname)
+        print "Found %s, %s in %s" % (resource.name, item['name'], colname)
         if created < age:
-            print "Include %s, %s" % (resource.name, name)
-            col[colname].append(name)
+            print "Include %s, %s" % (resource.name, item['name'])
+            col[colname].append(item['name'])
     return col
 
 
