@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 	"testing"
 )
 
@@ -35,7 +34,7 @@ func TestJobTriggers(t *testing.T) {
 	if len(ja.jobs) == 0 {
 		t.Fatalf("No jobs found in jobs.yaml.")
 	}
-	for _, jobs := range ja.jobs {
+	for repo, jobs := range ja.jobs {
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -67,7 +66,7 @@ func TestJobTriggers(t *testing.T) {
 				}
 			}
 			// Ensure that bootstrap jobs have a shell script of the same name.
-			if strings.HasPrefix(job.Name, "pull-") {
+			if repo == "kubernetes/kubernetes" {
 				if _, err := os.Stat(fmt.Sprintf("../../../jobs/%s.sh", job.Name)); err != nil {
 					t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
 				}
