@@ -52,6 +52,7 @@ label {
 span {
     color: #333;
     line-height: 1.8;
+    font-weight: bold;
 }
 
 table {
@@ -102,4 +103,13 @@ th {
 
 .error, .aborted {
     color: #888888;
+}
+
+a:link {
+    text-decoration: none;
+    color: blue;
+}
+
+input[type="text"], input[type="number"] {
+    width: 80px;
 }

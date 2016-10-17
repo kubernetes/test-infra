@@ -14,10 +14,15 @@
         </header>
         <aside>
         <div id="repos">
-            <span>Repository</span><br>
+            <label><input type="checkbox" id="allRepos" onclick="toggleRepos(this);" checked><span>Repositories</span></label><br>
         </div>
         <div id="jobs">
-            <span>Jenkins Job</span><br>
+            <label><input type="checkbox" id="allJobs" onclick="toggleJobs(this);" checked><span>Jenkins Jobs</span></label><br>
+        </div>
+        <div>
+            <span>Pull Requests</span><br>
+            <label><input type="number" id="pr" oninput="redraw();"> Number</label><br>
+            <label><input type="text" id="author" oninput="redraw();"> Author</label><br>
         </div>
         </aside>
         <article>
@@ -27,6 +32,7 @@
                     <th></th>
                     <th>Repository</th>
                     <th>#</th>
+                    <th>Author</th>
                     <th>Jenkins Job</th>
                     <th>State</th>
                     <th>Started</th>
