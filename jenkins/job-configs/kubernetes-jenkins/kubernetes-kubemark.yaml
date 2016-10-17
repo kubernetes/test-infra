@@ -176,6 +176,9 @@
                 # cores_per_node should be set accordingly.
                 export NODE_SIZE="n1-standard-8"
                 export KUBEMARK_MASTER_SIZE="n1-standard-32"
+                # Increase master disk size for kubemark to avoid lack of space.
+                # TODO: Remove until "no space left on device" issue is fixed.
+                export MASTER_DISK_SIZE="100GB"
                 export KUBEMARK_NUM_NODES="4000"
                 export KUBE_GCE_ZONE="us-central1-f"
                 # =========================================
