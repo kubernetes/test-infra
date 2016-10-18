@@ -517,7 +517,7 @@ class PRPathsTest(unittest.TestCase):
 
     def testOther(self):
         """Test the none kubernetes prefixes."""
-        path = bootstrap.pr_paths('random/repo', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths('github.com/random/repo', JOB, BUILD, PULL)
         self.assertTrue(any(
             'random_repo' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
