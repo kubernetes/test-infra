@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 set -o errexit
+set -o nounset
+set -o pipefail
 set -o xtrace
 
 # This is a fake job that tests bootstrap.py behavior when a job fails
-
 exit 1  # Simulate tests failing

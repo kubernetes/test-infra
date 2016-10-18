@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
 docker run --rm \
     -w "/go/src/k8s.io/test-infra/prow" \
     -v "${GOPATH}/src/k8s.io/test-infra:/go/src/k8s.io/test-infra" \
