@@ -140,12 +140,6 @@
             gitbasedir: 'github.com/google/cadvisor'
             owner: 'stclair@google.com'
             shell: 'build/jenkins_e2e.sh'
-        - 'heapster':
-            repoName: 'kubernetes/heapster'
-            gitbasedir: 'k8s.io/heapster'
-            owner: 'pszczesniak@google.com'
-            shell: 'make test-unit test-integration'
-            disable_job: true  # Issue #23538
         - 'kubelet':
             # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-ci.properties:
             # PROJECT="k8s-jkns-ci-node-e2e"

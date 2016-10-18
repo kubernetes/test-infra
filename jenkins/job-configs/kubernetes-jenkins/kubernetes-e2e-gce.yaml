@@ -897,22 +897,6 @@
                 # TODO: Enable this when we've split 1.2 tests into another project.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
-        - 'gce-flannel':  # kubernetes-e2e-gce-flannel
-            description: 'Run E2E tests on GCE using Flannel and the latest successful build. This suite is quarantined in a dedicated project because Flannel integration is experimental.'
-            disable_job: true  # Issue #24520
-            # We don't really care to enforce a timeout for flannel tests. Any performance issues will show up in the other GCE builders.
-            # This suite is to continuously check that flannel + Kubernetes works.
-            timeout: 120
-            emails: 'beeps@google.com'
-            test-owner: 'beeps'
-            job-env: |
-                # XXX Not a unique project
-                export E2E_NAME="e2e-flannel"
-                export PROJECT="kubernetes-flannel"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override GCE defaults.
-                export NETWORK_PROVIDER="flannel"
-                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-es-logging':  # kubernetes-e2e-gce-es-logging
             description: 'Run [Feature:Elasticsearch] tests on GCE using the latest successful build.'
             timeout: 90
@@ -950,22 +934,6 @@
                 export PROJECT="kubernetes-gci-ingress"
                 # TODO: Enable this when we've split 1.2 tests into another project.
                 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
-        - 'gci-gce-flannel':  # kubernetes-e2e-gci-gce-flannel
-            description: 'Run E2E tests on GCE using Flannel and the latest successful build. This suite is quarantined in a dedicated project because Flannel integration is experimental, using GCI image.'
-            disable_job: true  # Issue #24520
-            # We don't really care to enforce a timeout for flannel tests. Any performance issues will show up in the other GCE builders.
-            # This suite is to continuously check that flannel + Kubernetes works.
-            timeout: 120
-            emails: 'beeps@google.com'
-            test-owner: 'beeps'
-            job-env: |
-                # XXX Not a unique project
-                export E2E_NAME="e2e-flannel"
-                export PROJECT="kubernetes-gci-flannel"
-                export FAIL_ON_GCP_RESOURCE_LEAK="false"
-                # Override GCE defaults.
-                export NETWORK_PROVIDER="flannel"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gci-gce-es-logging':  # kubernetes-e2e-gci-gce-es-logging
             description: 'Run [Feature:Elasticsearch] tests on GCE using the latest successful build, using GCI image.'
