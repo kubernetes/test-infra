@@ -360,7 +360,6 @@ def ci_paths(job, build):
 def pr_paths(repo, job, build, pull):
     """Return a Paths() instance for a PR."""
     pull = str(pull)
-    # Wouldn't this be better as a dir than prefix?
     if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
         prefix = ''
     elif repo.startswith('k8s.io/'):
@@ -370,7 +369,7 @@ def pr_paths(repo, job, build, pull):
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
-    pull = prefix + pull
+    pull = os.path.join(prefix, pull)
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
             base, 'directory', job, 'jobResultsCache.json')
