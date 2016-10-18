@@ -58,10 +58,10 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
 
 - name: pull-kubernetes-e2e-gce-etcd3
-  always_run: false
+  always_run: true
   context: Jenkins GCE etcd3 e2e
   rerun_command: "@k8s-bot gce etcd3 e2e test this"
-  trigger: "@k8s-bot (gce )?etcd3 (e2e )?test this"
+  trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
 - name: pull-kubernetes-e2e-gke
   always_run: true
@@ -69,8 +69,8 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot cvm gke e2e test this"
   trigger: "@k8s-bot (cvm )?(gke )?(e2e )?test this"
 
-- name: pull-kubernetes-e2e-gke-gci # TODO(spxtr): turn this back on once we can survive it.
-  always_run: false
+- name: pull-kubernetes-e2e-gke-gci
+  always_run: true
   context: Jenkins GCI GKE smoke e2e
   rerun_command: "@k8s-bot gci gke e2e test this"
   trigger: "@k8s-bot (gci )?(gke )?(e2e )?test this"
