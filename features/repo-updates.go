@@ -138,7 +138,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	if len(c.Assignees) > 0 {
 		o.assignees[path] = sets.NewString(c.Assignees...)
-	}else if len(c.Approvers) > 0 {
+	} else if len(c.Approvers) > 0 {
 		o.assignees[path] = sets.NewString(c.Approvers...)
 	}
 	//if len(c.Owners) > 0 {
