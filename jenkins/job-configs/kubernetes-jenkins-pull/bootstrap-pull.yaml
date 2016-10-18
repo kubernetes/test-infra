@@ -50,7 +50,7 @@
       - cadvisor-e2e:  # owner: stclair@google.com
           job-name: pull-cadvisor-e2e
           max-total: 5
-          repo-name: 'google/cadvisor'
+          repo-name: 'github.com/google/cadvisor'
       - charts-e2e:
           job-name: pull-charts-e2e
           max-total: 5
