@@ -43,6 +43,8 @@ const (
 
 type assignmentConfig struct {
 	Assignees []string `json:assignees yaml:assignees`
+	Approvers []string `json:approvers yaml:approvers`
+	//Reviewers []string `json:reviewers yaml:reviewers`
 	//Owners []string `json:owners`
 }
 
@@ -136,6 +138,8 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	if len(c.Assignees) > 0 {
 		o.assignees[path] = sets.NewString(c.Assignees...)
+	}else if len(c.Approvers) > 0 {
+		o.assignees[path] = sets.NewString(c.Approvers...)
 	}
 	//if len(c.Owners) > 0 {
 	//o.owners[path] = sets.NewString(c.Owners...)
@@ -287,14 +291,14 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 	return out
 }
 
-// LeafAssignees returns a set of users who are the closest assginees to the
+// LeafAssignees returns a set of users who are the closest assignees to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) LeafAssignees(path string) sets.String {
 	return peopleForPath(path, o.assignees, true, o.EnableMdYaml)
 }
 
-// Assignees returns a set of users who are the closest assginees to the
+// Assignees returns a set of users who are the closest assignees to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Assignees(path string) sets.String {
