@@ -102,7 +102,16 @@ def update_issue_digest(repo, number, always_put=False):
         models.save_if_newer(digest)
 
 
-class Events(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
+    def dispatch(self):
+        # Eh, this is less work than making all the debug pages escape properly.
+        # No resources allowed except for inline CSS, no iframing of content.
+        self.response.headers['Content-Security-Policy'] = \
+            "default-src none; style-src 'unsafe-inline'; frame-ancestors none"
+        super(BaseHandler, self).dispatch()
+
+
+class Events(BaseHandler):
     '''
     Perform input/output on a series of webhook events from the datastore, for
     debugging purposes.
@@ -130,7 +139,7 @@ class Events(webapp2.RequestHandler):
         self.response.write(json.dumps(resp, indent=4, sort_keys=True))
 
 
-class Status(webapp2.RequestHandler):
+class Status(BaseHandler):
     def get(self):
         repo = self.request.get('repo')
         sha = self.request.get('sha')
@@ -166,7 +175,7 @@ def shrink(body):
         body.pop(key)
 
 
-class Timeline(webapp2.RequestHandler):
+class Timeline(BaseHandler):
     '''
     Render all the information in the datastore about a particular issue.
 
