@@ -9,6 +9,12 @@
             days-to-keep: 14
     wrappers:
         - e2e-credentials-binding
+        - workspace-cleanup:
+            dirmatch: true
+            exclude:
+            - 'k8s.io/test-infra/.git/'
+            - 'test-infra/.git/'
+            external-deletion-command: 'sudo rm -rf %s'
         - timeout:
             timeout: 15
             fail: true
