@@ -783,7 +783,7 @@ func (sq *SubmitQueue) getMetaData() []byte {
 const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
-	noLGTM                  = "PR does not have LGTM."
+	noLGTM                  = "PR does not have " + lgtmLabel + " label or " + approvedLabel + " label (needs at least one)."
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
@@ -799,6 +799,20 @@ const (
 	ghE2EFailed             = "Second github e2e run failed."
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 )
+
+func getEarliestApprovedTime(obj *github.MungeObject) *time.Time {
+	lgtmTime := obj.LabelTime(lgtmLabel)
+	approvedTime := obj.LabelTime(approvedLabel)
+	// if both lgtmTime and approvedTime are nil, this func will return nil pointer
+	if lgtmTime == nil {
+		return approvedTime
+	} else if approvedTime == nil {
+		return lgtmTime
+	} else if lgtmTime.Before(*approvedTime) {
+		return lgtmTime
+	}
+	return approvedTime
+}
 
 // validForMerge is the base logic about what PR can be automatically merged.
 // PRs must pass this logic to be placed on the queue and they must pass this
@@ -866,22 +880,24 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Clearly
-	if !obj.HasLabel(lgtmLabel) {
+	if !(obj.HasLabel(lgtmLabel) || obj.HasLabel(approvedLabel)) {
 		sq.SetMergeStatus(obj, noLGTM)
 		return false
 	}
 
 	// PR cannot change since LGTM was added
 	lastModifiedTime := obj.LastModifiedTime()
-	lgtmTime := obj.LabelTime(lgtmLabel)
 
-	if lastModifiedTime == nil || lgtmTime == nil {
+	// lgtmTime and approvedTime cannot both be nil at this point (see check above)
+	earliestApproved := getEarliestApprovedTime(obj)
+
+	if lastModifiedTime == nil || earliestApproved == nil {
 		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unknown)
 		return false
 	}
 
-	if lastModifiedTime.After(*lgtmTime) {
+	if lastModifiedTime.After(*earliestApproved) {
 		sq.SetMergeStatus(obj, lgtmEarly)
 		return false
 	}
