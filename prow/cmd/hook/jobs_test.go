@@ -34,7 +34,7 @@ func TestJobTriggers(t *testing.T) {
 	if len(ja.jobs) == 0 {
 		t.Fatalf("No jobs found in jobs.yaml.")
 	}
-	for repo, jobs := range ja.jobs {
+	for _, jobs := range ja.jobs {
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -65,13 +65,17 @@ func TestJobTriggers(t *testing.T) {
 					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
 			}
-			// Ensure that bootstrap jobs have a shell script of the same name.
-			if repo == "kubernetes/kubernetes" {
-				if _, err := os.Stat(fmt.Sprintf("../../../jobs/%s.sh", job.Name)); err != nil {
-					t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
+			// Ensure that jobs have a shell script of the same name.
+			if s, err := os.Stat(fmt.Sprintf("../../../jobs/%s.sh", job.Name)); err != nil {
+				t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
+			} else {
+				if s.Mode() & 0111 == 0 {
+					t.Errorf("Not executable: %s.sh (%o)", job.Name, s.Mode() & 0777)
+				}
+				if s.Mode() & 0444 == 0 {
+					t.Errorf("Not readable: %s.sh (%o)", job.Name, s.Mode() & 0777)
 				}
 			}
-
 		}
 	}
 }

@@ -11,23 +11,24 @@
 #                  then a rerun command might be "e2e test".
 # The unit tests in cmd/hook/jobs_test.go ensure that the job definitions are
 # valid.
+# TODO(fejta): ensure all jobs define an owner
 ---
 google/cadvisor:
-- name: cadvisor-pull-build-test-e2e
+- name: pull-cadvisor-e2e
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot test this"
   trigger: "@k8s-bot test this"
 
 kubernetes/charts:
-- name: charts-pull-test-e2e
+- name: pull-charts-e2e
   always_run: true
   context: Jenkins Charts e2e
   rerun_command: "@k8s-bot e2e test this"
   trigger: "@k8s-bot (e2e )?test this"
 
 kubernetes/heapster:
-- name: heapster-pull-build-test-e2e
+- name: pull-heapster-e2e
   always_run: true
   context: Jenkins GCE e2e
   rerun_command: "@k8s-bot test this"
@@ -124,7 +125,7 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot bootstrap (kubemark )?(e2e )?test this"
 
 kubernetes/test-infra:
-- name: testinfra-pull-gotest
+- name: pull-test-infra-go-test
   always_run: true
   context: Jenkins go test
   rerun_command: "@k8s-bot go test this"
