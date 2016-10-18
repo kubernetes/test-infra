@@ -770,6 +770,26 @@ class JobTest(unittest.TestCase):
                 self.assertFalse(os.path.islink(job_path), job_path)
                 self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
+    def testAllJobsHaveErrExit(self):
+        options = {
+            'errexit',
+            'nounset',
+            'pipefail',
+            'xtrace',
+        }
+        for path, _, filenames in os.walk(
+            os.path.dirname(bootstrap.job_script(JOB))):
+            for job in filenames:
+                job_path = os.path.join(path, job)
+                with open(job_path) as fp:
+                    lines = list(fp)
+                for option in options:
+                    expected = 'set -o %s\n' % option
+                    self.assertIn(
+                         expected, lines,
+                         '%s not found in %s' % (expected, job_path))
+
+
 
 if __name__ == '__main__':
     unittest.main()
