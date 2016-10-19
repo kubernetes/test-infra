@@ -22,6 +22,7 @@ spec:
         - --token-file=$(TOKEN_FILE)
         - --repo-dir=$(REPO_DIR)
         - --netrc-dir=$(NETRC_DIR)
+        - --alsologtostderr
         image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         env:
