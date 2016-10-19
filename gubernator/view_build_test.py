@@ -21,6 +21,7 @@ import view_build
 
 import main_test
 import gcs_async_test
+import github.models
 import testgrid_test
 import view_pr
 
@@ -205,6 +206,16 @@ class BuildTest(main_test.TestBase):
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
         self.assertIn('href="/pr/charts/123"', response)
+
+    def test_build_xref(self):
+        '''Test that builds show issues that reference them.'''
+        github.models.GHIssueDigest.make(
+            'org/repo', 123, True, True, [],
+            {'xrefs': [self.BUILD_DIR[:-1]], 'title': 'an update on testing'}, None).put()
+        response = app.get('/build' + self.BUILD_DIR)
+        self.assertIn('PR #123', response)
+        self.assertIn('an update on testing', response)
+        self.assertIn('org/repo/issues/123', response)
 
     def test_cache(self):
         """Test that caching works at some level."""

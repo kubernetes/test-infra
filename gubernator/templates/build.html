@@ -44,6 +44,15 @@
 	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
 	</div>
 	<div id="failures">
+	% if issues
+		<h4>References</h4>
+		% for issue in issues
+		<a href="https://github.com/{{issue.repo}}/issues/{{issue.number}}">
+		{% if issue.is_pr %}PR{% else %}Issue{% endif %} #{{issue.number}} {{issue.payload['title']}}</a>
+		<br>
+		% endfor
+		<hr>
+	% endif
 	% if failures
 		<h2>Test Failures</h2>
 		% for name, time, text, filename in failures
