@@ -43,7 +43,7 @@ export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
 export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-export PROJECT="k8s-jkns-pr-gce"
+export PROJECT="k8s-jkns-pr-gci-gce"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
 export NUM_NODES="3"
 

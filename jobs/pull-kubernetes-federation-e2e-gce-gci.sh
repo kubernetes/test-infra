@@ -28,7 +28,7 @@ fi
 
 # Federation specific params
 export FEDERATION="true"
-export PROJECT="k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+export PROJECT="k8s-jkns-pr-gci-bld-e2e-gce-fd"
 export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
 export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"

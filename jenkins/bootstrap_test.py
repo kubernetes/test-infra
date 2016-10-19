@@ -16,6 +16,7 @@
 
 """Tests for bootstrap."""
 
+import collections
 import json
 import os
 import re
@@ -714,6 +715,16 @@ class JobTest(unittest.TestCase):
 
     suffix = 'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml'
 
+    @property
+    def jobs(self):
+        """[(job, job_path)] sequence"""
+        for path, _, filenames in os.walk(
+            os.path.dirname(bootstrap.job_script(JOB))):
+            for job in filenames:
+                job_path = os.path.join(path, job)
+                yield job, job_path
+
+
     def testBootstrapPullYaml(self):
         with open(os.path.join(os.path.dirname(__file__), self.suffix)) as fp:
             doc = yaml.safe_load(fp)
@@ -747,6 +758,7 @@ class JobTest(unittest.TestCase):
             self.assertTrue(os.path.isfile(path), path)
             self.assertIn('max-total', job[name])
             self.assertIn('repo-name', job[name])
+            self.assertIn('.', job[name]['repo-name'])  # Has domain
             for key, value in job[name].items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (
@@ -757,18 +769,30 @@ class JobTest(unittest.TestCase):
 
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
-        for path, _, filenames in os.walk(
-            os.path.dirname(bootstrap.job_script(JOB))):
+        for job, job_path in self.jobs:
+            # Jobs should have simple names
+            self.assertTrue(re.match(r'[0-9a-z-]+.sh', job), job)
+            # Jobs should point to a real, executable file
+            # Note: it is easy to forget to chmod +x
+            self.assertTrue(os.path.isfile(job_path), job_path)
+            self.assertFalse(os.path.islink(job_path), job_path)
+            self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
-            for job in filenames:
-                # Jobs should have simple names
-                self.assertTrue(re.match(r'[0-9a-z-]+.sh', job), job)
-                job_path = os.path.join(path, job)
-                # Jobs should point to a real, executable file
-                # Note: it is easy to forget to chmod +x
-                self.assertTrue(os.path.isfile(job_path), job_path)
-                self.assertFalse(os.path.islink(job_path), job_path)
-                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
+    def testAllProjectAreUnique(self):
+        projects = collections.defaultdict(list)
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                lines = list(fp)
+            for line in lines:
+                if 'PROJECT' not in line:
+                    continue
+                self.assertIn('export', line, line)
+                project = re.search(r'PROJECT="([^"]+)"', line).group(1)
+                projects[project].append(job)
+        duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
+        if duplicates:
+            self.fail('Jobs duplicate projects:\n  %s' % (
+                '\n  '.join('%s: %s' % t for t in duplicates)))
 
     def testAllJobsHaveErrExit(self):
         options = {
@@ -777,17 +801,14 @@ class JobTest(unittest.TestCase):
             'pipefail',
             'xtrace',
         }
-        for path, _, filenames in os.walk(
-            os.path.dirname(bootstrap.job_script(JOB))):
-            for job in filenames:
-                job_path = os.path.join(path, job)
-                with open(job_path) as fp:
-                    lines = list(fp)
-                for option in options:
-                    expected = 'set -o %s\n' % option
-                    self.assertIn(
-                         expected, lines,
-                         '%s not found in %s' % (expected, job_path))
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                lines = list(fp)
+            for option in options:
+                expected = 'set -o %s\n' % option
+                self.assertIn(
+                     expected, lines,
+                     '%s not found in %s' % (expected, job_path))
 
 
 
