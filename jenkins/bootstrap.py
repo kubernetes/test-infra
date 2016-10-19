@@ -366,6 +366,8 @@ def pr_paths(repo, job, build, pull):
         prefix = repo[len('k8s.io/'):]
     elif repo.startswith('kubernetes/'):
         prefix = repo[len('kubernetes/'):]
+    elif repo.startswith('github.com/'):
+        prefix = repo[len('github.com/'):].replace('/', '_')
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
