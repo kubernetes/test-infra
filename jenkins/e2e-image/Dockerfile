@@ -45,10 +45,11 @@ ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
+    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/e2e.go", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/upload-to-gcs.sh", "/workspace/sh2ju.sh"]
+RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/upload-to-gcs.sh", "/workspace/sh2ju.sh"]
 
 ENTRYPOINT "/workspace/e2e-runner.sh"
