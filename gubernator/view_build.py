@@ -134,14 +134,18 @@ class BuildHandler(view_base.BaseHandler):
         else:
             commit = None
 
+        issues = list(models.GHIssueDigest.find_xrefs(build_dir))
+
         pr, pr_path, repo = parse_pr_path(prefix)
         pr_digest = None
         if pr:
             pr_digest = models.GHIssueDigest.get(repo, pr)
+
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
             failures=failures, build_log=build_log,
+            issues=issues,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
