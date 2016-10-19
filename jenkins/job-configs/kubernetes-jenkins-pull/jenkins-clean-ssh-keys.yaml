@@ -13,8 +13,16 @@
             timeout: 20
     builders:
         - shell: |
+            ./jenkins/clean_metadata.py --project kubernetes-pr-cri-validation
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-kubemark
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gce
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gci-gce
             ./jenkins/clean_metadata.py --project k8s-jkns-pr-gke
             ./jenkins/clean_metadata.py --project k8s-jkns-pr-gci-gke
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gci-kubemark
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-bldr-e2e-gce-fdrtn
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gce-etcd3
+            ./jenkins/clean_metadata.py --project k8s-jkns-pr-gci-bld-e2e-gce-fd
     triggers:
         - timed: '@daily'
     wrappers:
