@@ -34,7 +34,6 @@ export KUBE_FASTBUILD=true
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
 export KUBE_GCE_ZONE="us-central1-f"
-export FAIL_ON_GCP_RESOURCE_LEAK="true"
 
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"

@@ -45,7 +45,8 @@ export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flak
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gci-gce"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
-export NUM_NODES="3"
+export NUM_NODES="4"
+export GINKGO_PARALLEL_NODES="30"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="gci"
