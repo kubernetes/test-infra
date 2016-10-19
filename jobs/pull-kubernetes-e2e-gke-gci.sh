@@ -38,19 +38,20 @@ gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${version}" "gs://kubernetes
 # Strip off the leading 'v' from the cluster version.
 export CLUSTER_API_VERSION="${version:1}-pull"
 
-export KUBERNETES_PROVIDER="gce"
+export KUBERNETES_PROVIDER="gke"
 export E2E_MIN_STARTUP_PODS="1"
 
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
-
 export E2E_NAME="e2e-gke-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
-# This list should match the list in kubernetes-e2e-gce.
-export GINKGO_TEST_ARGS='--ginkgo.focus=--ginkgo.focus=Guestbook'
+
+# Just run a smoke test.
+export GINKGO_TEST_ARGS="--ginkgo.focus=Guestbook"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gci-gke"
-# NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
+
+# Since we're only running one test, just use two nodes.
 export NUM_NODES="2"
 
 # Assume we're upping, testing, and downing a cluster

@@ -43,7 +43,7 @@ export E2E_MIN_STARTUP_PODS="1"
 
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
-export E2E_NAME="e2e-gce-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
+export E2E_NAME="e2e-gke-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
 
 # Just run a smoke test.
