@@ -75,7 +75,7 @@ class LabelsTest(unittest.TestCase):
 
 
 def make_comment_event(num, name, msg='', event='issue_comment',
-                       action='created'):
+                       action='created', ts=None):
     return event, {
         'action': action,
         'sender': {'login': name},
@@ -83,11 +83,50 @@ def make_comment_event(num, name, msg='', event='issue_comment',
             'id': num,
             'user': {'login': name},
             'body': msg,
+            'created_at': ts,
         }
     }
 
 
 class CalculateTest(unittest.TestCase):
+    def test_classify(self):
+        # A quick integration test to ensure that all the sub-parts are included.
+        # If this test fails, a smaller unit test SHOULD fail as well.
+        self.assertEqual(classifier.classify([
+                ('pull_request', {
+                    'pull_request': {
+                        'state': 'open',
+                        'user': {'login': 'a'},
+                        'assignees': [{'login': 'b'}],
+                        'title': 'some fix',
+                        'head': {'sha': 'abcdef'},
+                        'additions': 1,
+                        'deletions': 1,
+                    }
+                }),
+                make_comment_event(1, 'k8s-bot',
+                    'failure in https://k8s-gubernator.appspot.com/build/bucket/job/123/'),
+                ('pull_request', {
+                    'action': 'labeled',
+                    'label': {'name': 'release-note-none', 'color': 'orange'},
+                })
+            ], {'e2e': ['failure', None, 'stuff is broken']}
+        ),
+        (True, True, ['a', 'b'],
+         {
+            'author': 'a',
+            'assignees': ['b'],
+            'additions': 1,
+            'deletions': 1,
+            'attn': {'a': 'fix tests', 'b': 'needs review'},
+            'title': 'some fix',
+            'labels': {'release-note-none': 'orange'},
+            'head': 'abcdef',
+            'needs_rebase': False,
+            'status': {'e2e': ['failure', None, 'stuff is broken']},
+            'xrefs': ['/bucket/job/123'],
+        }))
+
     def test_distill(self):
         self.assertEqual(classifier.distill_events([
             make_comment_event(1, 'a'),
@@ -152,6 +191,38 @@ class CalculateTest(unittest.TestCase):
         expect([('label lgtm', 'me')], 'waiting')
         expect([('comment', 'me'), ('push', 'author')], 'needs review')
         expect([('comment', 'me'), ('comment', 'author')], 'needs review')
+
+    def test_xrefs(self):
+        def expect(body, comments, result):
+            self.assertEqual(result, classifier.get_xrefs(
+                [{'comment': c} for c in comments], {'body': body}))
+        def fail(path):
+            return 'foobar https://k8s-gubernator.appspot.com/build%s asdf' % path
+        expect(None, [], [])
+        expect('something', [], [])
+        expect(fail('/a/b/34/'), [], ['/a/b/34'])
+        expect(None, [fail('/a/b/34/')], ['/a/b/34'])
+        expect(fail('/a/b/34/'), [fail('/a/b/34]')], ['/a/b/34'])
+        expect(fail('/a/b/34/)'), [fail('/a/b/35]')], ['/a/b/34', '/a/b/35'])
+
+
+class CommentsTest(unittest.TestCase):
+    def test_basic(self):
+        self.assertEqual(classifier.get_comments([make_comment_event(1, 'aaa', 'msg', ts=2016)]),
+            [{'author': 'aaa', 'comment': 'msg', 'timestamp': 2016}])
+
+    def test_deleted(self):
+        self.assertEqual(classifier.get_comments([
+            make_comment_event(1, 'aaa', 'msg', 2016),
+            make_comment_event(1, None, None, None, action='deleted'),
+            make_comment_event(2, '', '', '', action='deleted')]),
+            [])
+
+    def test_edited(self):
+        self.assertEqual(classifier.get_comments([
+            make_comment_event(1, 'aaa', 'msg', ts=2016),
+            make_comment_event(1, 'aaa', 'redacted', ts=2016.1, action='edited')]),
+            [{'author': 'aaa', 'comment': 'redacted', 'timestamp': 2016.1}])
 
 
 if __name__ == '__main__':

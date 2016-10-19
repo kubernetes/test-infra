@@ -97,6 +97,7 @@ class GHIssueDigest(ndb.Model):
     is_pr = ndb.BooleanProperty()
     is_open = ndb.BooleanProperty()
     involved = ndb.StringProperty(repeated=True)
+    xref = ndb.StringProperty(repeated=True)
     payload = ndb.JsonProperty()
     updated_at = ndb.DateTimeProperty()
     head = ndb.StringProperty()
@@ -109,7 +110,8 @@ class GHIssueDigest(ndb.Model):
     def make(repo, number, is_pr, is_open, involved, payload, updated_at):
         return GHIssueDigest(key=GHIssueDigest.make_key(repo, number),
             is_pr=is_pr, is_open=is_open, involved=involved, payload=payload,
-            updated_at=updated_at, head=payload.get('head'))
+            updated_at=updated_at, head=payload.get('head'),
+            xref=payload.get('xrefs', []))
 
     @staticmethod
     def get(repo, number):
@@ -128,6 +130,10 @@ class GHIssueDigest(ndb.Model):
         return GHIssueDigest.query(GHIssueDigest.key > GHIssueDigest.make_key(repo, ''),
                                    GHIssueDigest.key < GHIssueDigest.make_key(repo, '~'),
                                    GHIssueDigest.head == head)
+
+    @staticmethod
+    def find_xrefs(xref):
+        return GHIssueDigest.query(GHIssueDigest.xref == xref)
 
 
 @ndb.transactional

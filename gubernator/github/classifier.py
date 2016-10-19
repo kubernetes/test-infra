@@ -13,9 +13,13 @@
 # limitations under the License.
 
 import logging
+import re
 import json
 
 import models
+
+
+XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
 
 
 def classify_issue(repo, number):
@@ -152,11 +156,13 @@ def classify(events, statuses=None):
                 'labels': {label_name: label_color},
                 'attn': {user_name: reason},
                 'mergeable': bool,
-                'comments': [{'user': str name, 'comment': comment, 'timestamp': str iso8601}]
+                'comments': [{'user': str name, 'comment': comment, 'timestamp': str iso8601}],
+                'xrefs': list of builds referenced (by GCS path),
             }
     '''
     merged = get_merged(events)
     labels = get_labels(events)
+    xrefs = get_xrefs(get_comments(events), merged)
 
     is_pr = 'head' in merged or 'pull_request' in merged
     is_open = merged['state'] != 'closed'
@@ -169,6 +175,7 @@ def classify(events, statuses=None):
         'assignees': assignees,
         'title': merged['title'],
         'labels': labels,
+        'xrefs': xrefs,
     }
 
     if is_pr:
@@ -185,6 +192,41 @@ def classify(events, statuses=None):
     payload['attn'] = calculate_attention(distill_events(events), payload)
 
     return is_pr, is_open, involved, payload
+
+
+def get_xrefs(comments, merged):
+    xrefs = set(XREF_RE.findall(merged.get('body') or ''))
+    for c in comments:
+        xrefs.update(XREF_RE.findall(c['comment']))
+    return sorted(xrefs)
+
+
+def get_comments(events):
+    '''
+    Pick comments and pull-request review comments out of a list of events.
+    Args:
+        events: a list of (event_type str, event_body dict) pairs.
+    Returns:
+        comments: a list of dict(author=..., comment=..., timestamp=...),
+                  ordered with the earliest comment first.
+    '''
+    comments = {}  # comment_id : comment
+    for event, body in events:
+        action = body.get('action')
+        if event in ('issue_comment', 'pull_request_review_comment'):
+            comment_id = body['comment']['id']
+            if action == 'deleted':
+                comments.pop(comment_id, None)
+            else:
+                comments[comment_id] = body['comment']
+    return [
+            {
+                'author': c['user']['login'],
+                'comment': c['body'],
+                'timestamp': c['created_at']
+            }
+            for c in sorted(comments.values(), key=lambda c: c['created_at'])
+    ]
 
 
 def distill_events(events):
