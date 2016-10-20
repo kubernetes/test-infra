@@ -7,12 +7,12 @@
             days-to-keep: 30
     builders:
         - shell: |
-            sudo apt-get update
             if [[ "${HOSTNAME}" == "jenkins-master" || "${HOSTNAME}" == "pull-jenkins-master" ]]; then
               sudo gcloud components update
               sudo gcloud components update beta
               sudo gcloud components update alpha
             else
+              sudo apt-get update || (sudo rm /var/lib/apt/lists/partial/* && sudo apt-get update)
               sudo apt-get install -y google-cloud-sdk
             fi
     wrappers:
