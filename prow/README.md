@@ -45,6 +45,6 @@ make "is this PR ok to test" comments.
 
 ## Bots home
 
-[@k8s-bot](https://github.com/k8s-bot) and
-[@k8s-ci-robot](https://github.com/k8s-ci-robot) both live here as triggers to
-GitHub messages defined in [jobs.yaml](jobs.yaml).
+[@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
+[@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
+messages defined in [jobs.yaml](jobs.yaml).
