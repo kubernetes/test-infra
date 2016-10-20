@@ -255,7 +255,7 @@ class BuildTest(main_test.TestBase):
         """Test that the job page shows a list of builds."""
         response = app.get('/builds' + os.path.dirname(self.BUILD_DIR[:-1]))
         self.assertIn('/1234/">1234', response)
-        self.assertIn('console.cloud', response)
+        self.assertIn('gcsweb', response)
 
     def test_job_list(self):
         """Test that the job list shows our job."""
