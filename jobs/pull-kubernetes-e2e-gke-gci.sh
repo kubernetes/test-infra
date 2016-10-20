@@ -26,17 +26,18 @@ if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "
   exit
 fi
 
-export KUBE_SKIP_PUSH_GCS=n
 export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
-export KUBE_RUN_FROM_OUTPUT=y
-export KUBE_FASTBUILD=true
+export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n
+export KUBE_RUN_FROM_OUTPUT=y  # TODO(ixdy): remove
+export JENKINS_USE_LOCAL_BINARIES=y
+export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
 
 version=$(source build/util.sh && echo $(kube::release::semantic_version))
-gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${version}" "gs://kubernetes-release-dev/ci/${version}-pull"
+gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${JOB_NAME}/${version}" "gs://kubernetes-release-dev/ci/${version}-pull-gke-gci"
 # Strip off the leading 'v' from the cluster version.
-export CLUSTER_API_VERSION="${version:1}-pull"
+export CLUSTER_API_VERSION="${version:1}-pull-gke-gci"
 
 export KUBERNETES_PROVIDER="gke"
 export E2E_MIN_STARTUP_PODS="1"
