@@ -8,7 +8,13 @@
     builders:
         - shell: |
             sudo apt-get update
-            sudo apt-get install -y google-cloud-sdk
+            if [[ "${HOSTNAME}" == "jenkins-master" || "${HOSTNAME}" == "pull-jenkins-master" ]]; then
+              sudo gcloud components update
+              sudo gcloud components update beta
+              sudo gcloud components update alpha
+            else
+              sudo apt-get install -y google-cloud-sdk
+            fi
     wrappers:
         - timeout:
             timeout: 15
