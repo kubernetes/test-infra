@@ -76,8 +76,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	clientGo := target{
 		dstRepo: "client-go",
 		srcToDstSubdir: map[source]string{
-			source{repo: config.Project, branch: "release-1.4", dir: "staging/src/k8s.io/client-go/1.4"}: "1.4",
-			source{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go/1.5"}:      "1.5",
+			source{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go"}: "./",
 		},
 	}
 	p.targets = []target{clientGo}
@@ -125,10 +124,28 @@ func construct(srcRepo, srcDir, srcURL, srcBranch, dstRepo, dstSubdir string) (s
 	if err = os.Chdir(dstRepo); err != nil {
 		return "", err
 	}
-	if err = exec.Command("rm", "-rf", dstSubdir).Run(); err != nil {
+	// TODO: this makes construct() specific for client-go. This keeps
+	// README.md, CHANGELOG.md, examples folder, .github folder in the
+	// client-go, rather than copying them from src.
+	if out, err := exec.Command("sh", "-c", fmt.Sprintf(`\
+find %s -depth -maxdepth 1 \( \
+-name example -o \
+-name .github -o \
+-name .git -o \
+-name README.md -o \
+-name CHANGELOG.md -o \
+-path %s \) -prune \
+-o -exec rm -rf {} +`, dstSubdir, dstSubdir)).CombinedOutput(); err != nil {
+		glog.Infof("command \"find\" failed: %s", out)
 		return "", err
 	}
-	if err = exec.Command("cp", "-a", srcDir, dstSubdir).Run(); err != nil {
+	if dstSubdir == "./" {
+		// don't copy the srcDir folder, just copy its contents
+		err = exec.Command("cp", "-a", srcDir+"/.", dstSubdir).Run()
+	} else {
+		err = exec.Command("cp", "-a", srcDir, dstSubdir).Run()
+	}
+	if err != nil {
 		return "", err
 	}
 	// rename _vendor to vendor
@@ -138,8 +155,7 @@ func construct(srcRepo, srcDir, srcURL, srcBranch, dstRepo, dstSubdir string) (s
 	if err = os.Chdir(curDir); err != nil {
 		return "", err
 	}
-	commitMessage := fmt.Sprintf("Directory %s is copied from\n", dstSubdir)
-	commitMessage += fmt.Sprintf("%s, branch %s,\n", srcURL, srcBranch)
+	commitMessage := fmt.Sprintf("copied from %s, branch %s,\n", srcURL, srcBranch)
 	commitMessage += fmt.Sprintf("last commit is %s\n", commitHash)
 	return commitMessage, nil
 }
