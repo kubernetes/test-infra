@@ -196,7 +196,7 @@ def do_tg_url(testgrid_query, test_name=''):
 
 
 def do_gcs_browse_url(gcs_path):
-    return 'https://console.cloud.google.com/storage/browser' + gcs_path
+    return 'http://gcsweb.k8s.io/gcs' + gcs_path
 
 
 static_hashes = {}

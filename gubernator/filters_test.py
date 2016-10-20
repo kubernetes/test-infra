@@ -114,7 +114,7 @@ class HelperTest(unittest.TestCase):
     def test_gcs_browse_url(self):
         self.assertEqual(
             filters.do_gcs_browse_url('/k8s/foo'),
-            'https://console.cloud.google.com/storage/browser/k8s/foo')
+            'http://gcsweb.k8s.io/gcs/k8s/foo')
 
 if __name__ == '__main__':
     unittest.main()
