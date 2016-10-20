@@ -35,11 +35,14 @@ export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be crea
 export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
 export DNS_ZONE_NAME="pr-bldr.test-f8n.k8s.io."
 export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
-export KUBE_SKIP_PUSH_GCS=y
-export KUBE_RUN_FROM_OUTPUT=y
-export KUBE_FASTBUILD=true
 
 # Build the images.
+export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
+export KUBE_GCS_UPDATE_LATEST=n
+export KUBE_RUN_FROM_OUTPUT=y  # TODO(ixdy): remove
+export JENKINS_USE_LOCAL_BINARIES=y
+export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
 # Push federation images to GCS.
 ./build/push-federation-images.sh
