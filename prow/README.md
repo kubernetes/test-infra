@@ -42,3 +42,9 @@ to track. It only needs `pull_request` and `issue_comment` events. The OAuth
 token needs write access to the repository or you'll see lots of 404s in the
 logs. Note that even if there are no jobs defined for the repo, it will still
 make "is this PR ok to test" comments.
+
+## Bots home
+
+[@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
+[@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
+messages defined in [jobs.yaml](jobs.yaml).
