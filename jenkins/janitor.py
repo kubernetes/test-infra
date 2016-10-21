@@ -18,12 +18,10 @@ import argparse
 import collections
 import datetime
 import json
-import pytz
 import subprocess
 import sys
 
 from collections import namedtuple
-from dateutil import parser as dateparser
 
 
 # A resource that need to be cleared.
@@ -59,7 +57,7 @@ def collect(project, age, resource, filt):
     for item in json.loads(subprocess.check_output([
             'gcloud', 'compute', '-q',
             resource.name, 'list',
-            '--format=json',
+            '--format=json(name,creationTimestamp.date(tz=UTC),zone,region)',
             '--filter=%s' % filt,
             '--project=%s' % project])):
 
@@ -77,7 +75,7 @@ def collect(project, age, resource, filt):
             colname = ""
 
         # Unify datetime to use utc timezone.
-        created = dateparser.parse(item['creationTimestamp']).astimezone(pytz.utc)
+        created = datetime.datetime.strptime(item['creationTimestamp'],"%Y-%m-%dT%H:%M:%S")
         print "Found %s, %s in %s" % (resource.name, item['name'], colname)
         if created < age:
             print "Include %s, %s" % (resource.name, item['name'])
@@ -98,6 +96,10 @@ def clear_resources(project, col, resource):
     """
     err = 0
     for col, items in col.items():
+        if args.dryrun:
+            print "Resource to be deleted: %s" % list(items)
+            continue
+
         # construct the customized gcloud commend
         base = ['gcloud', 'compute', '-q', resource.name]
         if resource.status is not None:
@@ -117,7 +119,6 @@ def clear_resources(project, col, resource):
 def main(project, days, hours, filt):
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
-    age = age.replace(tzinfo=pytz.utc)
     for r in DEMOLISH_ORDER:
         print "Try to search for %s with condition %s" % (r.name, r.condition)
         col = collect(project, age, r, filt)
@@ -140,6 +141,10 @@ if __name__ == '__main__':
         '--filter',
         default="NOT tags.items:do-not-delete AND NOT name ~ ^default-route",
         help='Filter down to these instances')
+    parser.add_argument(
+        '--dryrun',
+        default=False,
+        help='list but not delete resources')
     args = parser.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
