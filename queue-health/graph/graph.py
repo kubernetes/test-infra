@@ -54,11 +54,11 @@ def fresh_color(dt):
 
 
 def merges_color(merges):
-    if merges > 30:
+    if merges < 5:
         return 'g'
-    if merges > 15:
-        return 'y'
-    return 'r'
+    if merges > 24:
+        return 'r'
+    return 'y'
 
 
 def happy_color(health):
@@ -112,20 +112,23 @@ def render(history_lines, out_file):
     dts = []
     prs = []
     queued = []
-    daily_happiness = []  # Percentage of last day queue was not blocked
-    merge_rate = []  # Merge rate for the past 24 active hours
-    real_merge_rate = []  # Merge rate including when queue is empty
+    queue_avg = []
+    happiness = {  # Percenteage of last N days queue was unblocked
+        1: [],
+        14: [],
+    }
+    merge_rate = []  # Merge rate including when queue is empty
     merges = []
+    backlog = {  # Queue time in hours during the past N days
+        1: [],
+        14: [],
+    }
 
     blocked_intervals = []
     offline_intervals = []
 
-    active_merges = Sampler()
     real_merges = Sampler()
-    happy_moments = Sampler()
-
-    daily_merged = collections.deque()
-    actually_merged = collections.deque()
+    happy_moments = {d: Sampler(d*60*24) for d in happiness}
 
     dt = None
     start_blocked = None
@@ -151,11 +154,10 @@ def render(history_lines, out_file):
             did_merge = 0
 
         last_merge = merged
-        happy_moments += int(bool(online and not blocked))
+        for moments in happy_moments.values():
+            moments += int(bool(online and not blocked))
 
         real_merges += did_merge
-        if queue or did_merge:  # Only add samples when queue is busy.
-            active_merges += did_merge
 
         if not start_offline and not online:
             start_offline = dt
@@ -172,20 +174,33 @@ def render(history_lines, out_file):
 
             # Append the previous value at the current time
             # which makes all changes move at right angles.
-            daily_happiness.append(daily_happiness[-1])
-            merge_rate.append(merge_rate[-1])
+            for happy in happiness.values():
+              happy.append(happy[-1])
             merges.append(did_merge)
             prs.append(prs[-1])
             queued.append(queued[-1])
-            real_merge_rate.append(real_merge_rate[-1])
+            queue_avg.append(queue_avg[-1])
+            merge_rate.append(merge_rate[-1])
         dts.append(dt)
-
-        daily_happiness.append(happy_moments.mean)
-        merge_rate.append(active_merges.total)
+        for d, happy in happiness.items():
+          happy.append(happy_moments[d].mean)
         merges.append(did_merge)
         prs.append(pr)
         queued.append(queue)
-        real_merge_rate.append(real_merges.total)
+        weeks2 = 14*24*60
+        queue_avg.append(sum(queued[-weeks2:])/len(queued[-weeks2:]))
+        merge_rate.append(real_merges.total)
+        for dur, items in backlog.items():
+            dur = 60*24*dur
+            if items:
+                items.append(items[-1])
+            dur_merges = sum(merges[-dur:]) * 24.0
+            if dur_merges:
+                items.append(sum(queued[-dur:]) / dur_merges)
+            elif items:
+                items.append(items[-1])
+            else:
+                items.append(0)
 
         if not start_blocked and blocked:
             start_blocked = dt
@@ -205,47 +220,46 @@ def render(history_lines, out_file):
     ax_health.yaxis.tick_right()
     ax_health.yaxis.set_label_position('right')
 
-    ax_open.plot(dts, prs, 'b-')
-    merge_color = merges_color(merge_rate[-1])
-    p_merge, = ax_merged.plot(dts, merge_rate, '%s-' % merge_color)
-    p_real_merge, = ax_merged.plot(dts, real_merge_rate, '%s:' % merge_color, alpha=0.5)
+    p_open, = ax_open.plot(dts, prs, 'b-')
+    merge_color = merges_color(backlog[1][-1])
+    p_day, = ax_merged.plot(dts, backlog[1], '%s-' % merge_color)
+    p_week, = ax_merged.plot(dts, backlog[14], 'k:')
 
-    health_color = happy_color(daily_happiness[-1])
+    health_color = happy_color(happiness[1][-1])
     health_line = '%s-' % health_color
-    ax_health.plot(dts, daily_happiness, health_line)
+    p_1dhealth, = ax_health.plot(dts, happiness[1], health_line)
+    p_14dhealth, = ax_health.plot(dts, happiness[14], 'k:')
 
-    ax_queued.plot(dts, queued, '%s-' % depth_color(queued[-1]))
+    p_queue, = ax_queued.plot(dts, queued, '%s-' % depth_color(queued[-1]))
+    p_14dqueue, = ax_queued.plot(dts, queue_avg, 'k:')
 
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
-    ax_open.set_ylabel('Open PRs: %d' % prs[-1], color='b')
+    ax_open.set_ylabel('Open: %d PRs' % prs[-1], color='b')
     ax_queued.set_ylabel(
-        'Queued PRs: %d' % queued[-1],
+        'Queued: %d PRs' % queued[-1],
         color=depth_color(queued[-1]))
 
     ax_health.set_ylabel(
-        'Queue health: %.2f' % daily_happiness[-1],
+        'Unblocked: %.1f%%' % (100 * happiness[1][-1]),
         color=health_color)
 
-    ax_merged.set_ylabel('Merge capacity: %d/d' % merge_rate[-1], color=merge_color)
+    ax_merged.set_ylabel('Backlog: %.1f hrs' % backlog[1][-1], color=merge_color)
 
     ax_health.set_ylim([0.0, 1.0])
     ax_health.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
 
     fig.autofmt_xdate()
 
-    for start, end in offline_intervals:
-        ax_merged.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
-        ax_health.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
-
     for start, end in blocked_intervals:
         ax_health.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
 
     p_blocked = mpatches.Patch(color='brown', label='blocked', alpha=0.2)
     p_offline = mpatches.Patch(color='black', label='offline', alpha=0.2)
-    ax_health.legend([p_offline, p_blocked], ['offline', 'blocked'], 'lower left', fontsize='x-small')
-    ax_merged.legend([p_merge, p_real_merge, p_offline], ['capacity', 'actual', 'offline'], 'lower left', fontsize='x-small')
+    ax_queued.legend([p_open, p_queue, p_14dqueue], ['open', 'queued', '14d avg'], 'lower left', fontsize='x-small')
+    ax_health.legend([p_1dhealth, p_14dhealth, p_offline, p_blocked], ['1d avg', '14d avg', 'offline', 'blocked'], 'lower left', fontsize='x-small')
+    ax_merged.legend([p_day, p_week], ['1d avg', '14d avg'], 'lower left', fontsize='x-small')
 
     last_week = datetime.datetime.now() - datetime.timedelta(days=6)
 
@@ -254,22 +268,15 @@ def render(history_lines, out_file):
     fig.text(
         xpos, 0.08, 'Weekly statistics', horizontalalignment=halign)
 
-    weekly_merge_rate = numpy.mean([
-        m for (d, m) in zip(dts, merge_rate) if d >= last_week])
-    weekly_merges = sum(
-        m for (d, m) in zip(dts, merges) if d >= last_week)
-    weekly_merges /= 2  # Due to steps
-
     fig.text(
         xpos, .00,
-        'Merge capacity: %.1f PRs/day (merged %d)' % (
-            weekly_merge_rate, weekly_merges),
-        color=merges_color(weekly_merge_rate),
+        'Queue backlog: %.1f hours' % backlog[1][-1],
+        color=merges_color(backlog[1][-1]),
         horizontalalignment=halign,
     )
 
     week_happiness = numpy.mean(
-        [h for (d, h) in zip(dts, daily_happiness) if d >= last_week])
+        [h for (d, h) in zip(dts, happiness[1]) if d >= last_week])
     fig.text(
         xpos, .04,
         'Unblocked %.1f%% of this week' % (100 * week_happiness),
@@ -277,25 +284,9 @@ def render(history_lines, out_file):
         horizontalalignment=halign,
     )
 
-    if not queued[-1]:
-      delta = datetime.timedelta(0)
-      wait = 'clear'
-    elif not merge_rate[-1]:
-      delta = datetime.timedelta(days=90)
-      wait = 'forever'
-    else:
-      delta = datetime.timedelta(float(queued[-1]) / merge_rate[-1])
-      wait = format_timedelta(delta)
-    fig.text(
-        xpos, -0.04,
-        'Queue backlog: %s' % wait,
-        color=wait_color(delta),
-        horizontalalignment=halign,
-    )
-
     if dt:
         fig.text(
-            0.1, -0.04,
+            0.1, 0.00,
             'image: %s, sample: %s' % (
                 datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M'),
                 dt.strftime('%Y-%m-%d %H:%M'),

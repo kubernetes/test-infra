@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google-containers/queue-health-base:v20160627
+FROM gcr.io/google-containers/queue-health-base:v20161020
 MAINTAINER Erick Fejta <fejta@google.com>
 
 # Install matplotlib
