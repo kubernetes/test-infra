@@ -129,7 +129,7 @@ func construct(srcRepo, srcDir, srcURL, srcBranch, dstRepo, dstSubdir string) (s
 	// client-go, rather than copying them from src.
 	if out, err := exec.Command("sh", "-c", fmt.Sprintf(`\
 find %s -depth -maxdepth 1 \( \
--name example -o \
+-name examples -o \
 -name .github -o \
 -name .git -o \
 -name README.md -o \
