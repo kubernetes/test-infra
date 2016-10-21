@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=locally-disabled,fixme
+disable=fixme,locally-disabled,locally-enabled
 
 [REPORTS]
 reports=no

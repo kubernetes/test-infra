@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Read historical samples of merge queue and plot them."""
+
 from __future__ import division
 
 import collections
@@ -27,33 +29,45 @@ import sys
 import time
 import traceback
 
+# pylint: disable=import-error
 import matplotlib
 matplotlib.use('Agg')  # For savefig
+# pylint: disable=wrong-import-position
 import matplotlib.dates as mdates
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy
+# pylint: enable=wrong-import-position,import-error
+
+def mean(*a):
+    """Calculate the mean for items."""
+    return numpy.mean(*a)  # pylint: disable=no-member
 
 def parse_line(
-        date, time, online, pr, queue,
+        date, timenow, online, pulls, queue,
         run, blocked, merge_count=0):  # merge_count may be missing
+    """Parse a sq/history.txt line."""
     return (
-        datetime.datetime.strptime('{} {}'.format(date, time), '%Y-%m-%d %H:%M:%S.%f'),
+        datetime.datetime.strptime(
+            '{} {}'.format(date, timenow),
+            '%Y-%m-%d %H:%M:%S.%f'),
         online == 'True',  # Merge queue is down/initializing
-        int(pr),  # Number of open PRs
+        int(pulls),  # Number of open PRs
         int(queue),  # PRs in the queue
         int(run),  # Totally worthless
         blocked == 'True',  # Cannot merge
         int(merge_count),  # Number of merges
     )
 
-def fresh_color(dt):
-    if datetime.datetime.utcnow() - dt < datetime.timedelta(hours=1):
-        return 'black'
+def fresh_color(tick):
+    """Return pyplot color for freshness of data."""
+    if datetime.datetime.utcnow() - tick < datetime.timedelta(hours=1):
+        return 'k'  # black
     return 'r'
 
 
-def merges_color(merges):
+def backlog_color(merges):
+    """Return pyplot color for queue backlog."""
     if merges < 5:
         return 'g'
     if merges > 24:
@@ -62,6 +76,7 @@ def merges_color(merges):
 
 
 def happy_color(health):
+    """Return pyplot color for health percentage."""
     if health > 0.8:
         return 'g'
     if health > 0.6:
@@ -70,6 +85,7 @@ def happy_color(health):
 
 
 def depth_color(depth):
+    """Return pyplot color for the queue depth."""
     if depth < 20:
         return 'g'
     if depth < 40:
@@ -77,20 +93,14 @@ def depth_color(depth):
     return 'r'
 
 
-def wait_color(delta):
-    if delta < datetime.timedelta(hours=4):
-        return 'g'
-    if delta < datetime.timedelta(hours=24):
-        return 'y'
-    return 'r'
-
-
 def format_timedelta(delta):
+    """Return XdYhZm string representing timedelta."""
     return '%dd%dh%dm' % (
         delta.days, delta.seconds / 3600, (delta.seconds % 3600) / 60)
 
 
-class Sampler(object):
+class Sampler(object):  # pylint: disable=too-few-public-methods
+    """Track mean and total for a given window of items."""
     mean = 0
     total = 0
 
@@ -99,51 +109,107 @@ class Sampler(object):
         self.samples = collections.deque()
 
     def __iadd__(self, sample):
+        self.append(sample)
+        return self
+
+    def append(self, sample):
+        """Append a sample, updating total and mean, dropping old samples."""
         self.samples.append(sample)
         self.total += sample
         while len(self.samples) > self.maxlen:
             self.total -= self.samples.popleft()
         self.mean = float(self.total) / len(self.samples)
-        return self
 
 
-def render(history_lines, out_file):
-    """Read historical data and save to out_file as img."""
-    dts = []
-    prs = []
-    queued = []
-    queue_avg = []
-    happiness = {  # Percenteage of last N days queue was unblocked
-        1: [],
-        14: [],
-    }
-    merge_rate = []  # Merge rate including when queue is empty
-    merges = []
-    backlog = {  # Queue time in hours during the past N days
-        1: [],
-        14: [],
-    }
+class Results(object):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+    """Results processed from sq/history.txt"""
+    def __init__(self):
+        self.dts = []
+        self.prs = []
+        self.queued = []
+        self.queue_avg = []
+        self.happiness = {  # Percenteage of last N days queue was unblocked
+            1: [],
+            14: [],
+        }
+        self.merge_rate = []  # Merge rate including when queue is empty
+        self.merges = []
+        self.backlog = {  # Queue time in hours during the past N days
+            1: [],
+            14: [],
+        }
 
-    blocked_intervals = []
-    offline_intervals = []
+        self.blocked_intervals = []
+        self.offline_intervals = []
 
+
+    def append(self, tick, did_merge, pulls, queue, real_merges, happy_moments):
+        """Append a sample of results.
+
+        Args:
+          tick: datetime of this sample
+          did_merge: number of prs merged
+          pulls: number of open prs
+          queue: number of approved prs waiting for merge
+          real_merges: count of merged prs since last sample
+          happy_moments: window of when the queue has been unblocked.
+        """
+        # Make them steps instead of slopes.
+        if self.dts:
+            self.dts.append(tick)
+
+            # Append the previous value at the current time
+            # which makes all changes move at right angles.
+            for happy in self.happiness.values():
+                happy.append(happy[-1])
+            self.merges.append(did_merge)  # ???
+            self.prs.append(self.prs[-1])
+            self.queued.append(self.queued[-1])
+            self.queue_avg.append(self.queue_avg[-1])
+            self.merge_rate.append(self.merge_rate[-1])
+        self.dts.append(tick)
+        for days, happy in self.happiness.items():
+            happy.append(happy_moments[days].mean)
+        self.merges.append(did_merge)
+        self.prs.append(pulls)
+        self.queued.append(queue)
+        weeks2 = 14*24*60
+        avg = mean(self.queued[-weeks2:])
+        self.queue_avg.append(avg)
+        self.merge_rate.append(real_merges.total)
+        for dur, items in self.backlog.items():
+            dur = 60*24*dur
+            if items:
+                items.append(items[-1])
+            dur_merges = sum(self.merges[-dur:]) * 24.0
+            if dur_merges:
+                items.append(sum(self.queued[-dur:]) / dur_merges)
+            elif items:
+                items.append(items[-1])
+            else:
+                items.append(0)
+
+
+
+def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-branches
+    """Read historical data and return processed info."""
     real_merges = Sampler()
-    happy_moments = {d: Sampler(d*60*24) for d in happiness}
+    happy_moments = {d: Sampler(d*60*24) for d in results.happiness}
 
-    dt = None
+    tick = None
+    last_merge = 0  # Number of merges last sample, resets on queue restart
     start_blocked = None
     start_offline = None
-    last_merge = 0  # Number of merges last sample, resets on queue restart
 
     for line in history_lines:
         try:
-            dt, online, pr, queue, _, blocked, merged = parse_line(
+            tick, online, pulls, queue, dummy, blocked, merged = parse_line(
                 *line.strip().split(' '))
         except TypeError:  # line does not fit expected criteria
             continue
-        if dt < datetime.datetime.now() - datetime.timedelta(days=30):
+        if tick < datetime.datetime.now() - datetime.timedelta(days=30):
             continue
-        if not pr and not queue and not merged:  # Bad sample
+        if not pulls and not queue and not merged:  # Bad sample
             continue
 
         if merged >= last_merge:
@@ -155,145 +221,154 @@ def render(history_lines, out_file):
 
         last_merge = merged
         for moments in happy_moments.values():
-            moments += int(bool(online and not blocked))
+            moments.append(int(bool(online and not blocked)))
 
         real_merges += did_merge
 
         if not start_offline and not online:
-            start_offline = dt
+            start_offline = tick
         if start_offline and online:
-            offline_intervals.append((start_offline, dt))
+            results.offline_intervals.append((start_offline, tick))
             start_offline = None
 
         if not online:  # Skip offline entries
             continue
 
-        # Make them steps instead of slopes.
-        if dts:
-            dts.append(dt)
-
-            # Append the previous value at the current time
-            # which makes all changes move at right angles.
-            for happy in happiness.values():
-              happy.append(happy[-1])
-            merges.append(did_merge)
-            prs.append(prs[-1])
-            queued.append(queued[-1])
-            queue_avg.append(queue_avg[-1])
-            merge_rate.append(merge_rate[-1])
-        dts.append(dt)
-        for d, happy in happiness.items():
-          happy.append(happy_moments[d].mean)
-        merges.append(did_merge)
-        prs.append(pr)
-        queued.append(queue)
-        weeks2 = 14*24*60
-        queue_avg.append(sum(queued[-weeks2:])/len(queued[-weeks2:]))
-        merge_rate.append(real_merges.total)
-        for dur, items in backlog.items():
-            dur = 60*24*dur
-            if items:
-                items.append(items[-1])
-            dur_merges = sum(merges[-dur:]) * 24.0
-            if dur_merges:
-                items.append(sum(queued[-dur:]) / dur_merges)
-            elif items:
-                items.append(items[-1])
-            else:
-                items.append(0)
+        results.append(
+            tick, did_merge, pulls, queue, real_merges, happy_moments)
 
         if not start_blocked and blocked:
-            start_blocked = dt
+            start_blocked = tick
         if start_blocked and not blocked:
-            blocked_intervals.append((start_blocked, dt))
+            results.blocked_intervals.append((start_blocked, tick))
             start_blocked = None
     if start_blocked:
-        blocked_intervals.append((start_blocked, dt))
+        results.blocked_intervals.append((start_blocked, tick))
     if start_offline:
-        offline_intervals.append((start_offline, dt))
+        results.offline_intervals.append((start_offline, tick))
+    return results
 
-    fig, (ax_open, ax_merged, ax_health) = plt.subplots(
-        3, sharex=True, figsize=(16, 8), dpi=100)
-    ax_queued = ax_open.twinx()
+
+def render_backlog(results, ax_merged, text):
+    """Render how long items spend in the queue."""
+    dts = results.dts
+    backlog = results.backlog
     ax_merged.yaxis.tick_right()
     ax_merged.yaxis.set_label_position('right')
+    merge_color = backlog_color(backlog[1][-1])
+    p_day, = ax_merged.plot(dts, backlog[1], '%s-' % merge_color)
+    p_week, = ax_merged.plot(dts, backlog[14], 'k:')
+    ax_merged.set_ylabel(
+        'Backlog: %.1f hrs' % backlog[1][-1], color=merge_color)
+    ax_merged.legend(
+        [p_day, p_week],
+        ['1d avg', '14d avg'],
+        'lower left',
+        fontsize='x-small',
+    )
+    text(
+        'Queue backlog: %.1f hours' % backlog[1][-1],
+        color=backlog_color(backlog[1][-1]),
+    )
+
+
+def render_health(results, ax_health, text):
+    """Render the percentage of time the queue is healthy/online."""
+    dts = results.dts
+    happiness = results.happiness
     ax_health.yaxis.tick_right()
     ax_health.yaxis.set_label_position('right')
 
-    p_open, = ax_open.plot(dts, prs, 'b-')
-    merge_color = merges_color(backlog[1][-1])
-    p_day, = ax_merged.plot(dts, backlog[1], '%s-' % merge_color)
-    p_week, = ax_merged.plot(dts, backlog[14], 'k:')
-
-    health_color = happy_color(happiness[1][-1])
-    health_line = '%s-' % health_color
-    p_1dhealth, = ax_health.plot(dts, happiness[1], health_line)
+    health_color = '%s-' % happy_color(happiness[1][-1])
+    p_1dhealth, = ax_health.plot(dts, happiness[1], health_color)
     p_14dhealth, = ax_health.plot(dts, happiness[14], 'k:')
+    ax_health.set_ylabel(
+        'Unblocked: %.1f%%' % (100 * happiness[1][-1]),
+        color=health_color[0])
 
-    p_queue, = ax_queued.plot(dts, queued, '%s-' % depth_color(queued[-1]))
+    ax_health.set_ylim([0.0, 1.0])
+    ax_health.set_xlim(
+        left=datetime.datetime.now() - datetime.timedelta(days=21))
+
+    for start, end in results.blocked_intervals:
+        ax_health.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
+    for start, end in results.offline_intervals:
+        ax_health.axvspan(start, end, alpha=0.2, color='black', linewidth=0)
+
+    patches = [
+        p_1dhealth,
+        p_14dhealth,
+        mpatches.Patch(color='brown', label='blocked', alpha=0.2),
+        mpatches.Patch(color='black', label='offline', alpha=0.2),
+    ]
+
+    last_week = datetime.datetime.now() - datetime.timedelta(days=6)
+    week_happiness = mean(
+        [h for (d, h) in zip(dts, happiness[1]) if d >= last_week])
+    text(
+        'Unblocked %.1f%% of this week' % (100 * week_happiness),
+        color=happy_color(week_happiness),
+    )
+
+    ax_health.legend(
+        patches,
+        ['1d avg', '14d avg', 'offline', 'blocked'],
+        'lower left',
+        fontsize='x-small',
+    )
+
+
+def render_queue(results, ax_open):
+    """Render the queue graph (open prs, queued, prs)."""
+    dts = results.dts
+    prs = results.prs
+    queued = results.queued
+    queue_avg = results.queue_avg
+    ax_queued = ax_open.twinx()
+    p_open, = ax_open.plot(dts, prs, 'b-')
+    color_depth = depth_color(queued[-1])
+    p_queue, = ax_queued.plot(dts, queued, color_depth)
     p_14dqueue, = ax_queued.plot(dts, queue_avg, 'k:')
-
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-
     ax_open.set_ylabel('Open: %d PRs' % prs[-1], color='b')
     ax_queued.set_ylabel(
         'Queued: %d PRs' % queued[-1],
-        color=depth_color(queued[-1]))
+        color=color_depth)
+    ax_queued.legend(
+        [p_open, p_queue, p_14dqueue],
+        ['open', 'queued', '14d avg'],
+        'lower left',
+        fontsize='x-small',
+    )
 
-    ax_health.set_ylabel(
-        'Unblocked: %.1f%%' % (100 * happiness[1][-1]),
-        color=health_color)
 
-    ax_merged.set_ylabel('Backlog: %.1f hrs' % backlog[1][-1], color=merge_color)
 
-    ax_health.set_ylim([0.0, 1.0])
-    ax_health.set_xlim(left=datetime.datetime.now() - datetime.timedelta(days=21))
-
-    fig.autofmt_xdate()
-
-    for start, end in blocked_intervals:
-        ax_health.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
-
-    p_blocked = mpatches.Patch(color='brown', label='blocked', alpha=0.2)
-    p_offline = mpatches.Patch(color='black', label='offline', alpha=0.2)
-    ax_queued.legend([p_open, p_queue, p_14dqueue], ['open', 'queued', '14d avg'], 'lower left', fontsize='x-small')
-    ax_health.legend([p_1dhealth, p_14dhealth, p_offline, p_blocked], ['1d avg', '14d avg', 'offline', 'blocked'], 'lower left', fontsize='x-small')
-    ax_merged.legend([p_day, p_week], ['1d avg', '14d avg'], 'lower left', fontsize='x-small')
-
-    last_week = datetime.datetime.now() - datetime.timedelta(days=6)
+def render(results, out_file):
+    """Render three graphs to outfile from results."""
+    fig, (ax_open, ax_merged, ax_health) = plt.subplots(
+        3, sharex=True, figsize=(16, 8), dpi=100)
 
     halign = 'center'
-    xpos = 0.5
-    fig.text(
-        xpos, 0.08, 'Weekly statistics', horizontalalignment=halign)
 
-    fig.text(
-        xpos, .00,
-        'Queue backlog: %.1f hours' % backlog[1][-1],
-        color=merges_color(backlog[1][-1]),
-        horizontalalignment=halign,
-    )
+    text = lambda y, txt, **kw: fig.text(
+        0.5, y, txt, horizontalalignment=halign, **kw)
+    text(0.08, 'Weekly statistics')
 
-    week_happiness = numpy.mean(
-        [h for (d, h) in zip(dts, happiness[1]) if d >= last_week])
-    fig.text(
-        xpos, .04,
-        'Unblocked %.1f%% of this week' % (100 * week_happiness),
-        color=happy_color(week_happiness),
-        horizontalalignment=halign,
-    )
-
-    if dt:
+    fig.autofmt_xdate()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+    if results.dts:
+        render_queue(results, ax_open)
+        render_backlog(results, ax_merged, lambda *a, **kw: text(0, *a, **kw))
+        render_health(results, ax_health, lambda *a, **kw: text(.04, *a, **kw))
         fig.text(
             0.1, 0.00,
             'image: %s, sample: %s' % (
                 datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M'),
-                dt.strftime('%Y-%m-%d %H:%M'),
+                results.dts[-1].strftime('%Y-%m-%d %H:%M'),
             ),
             horizontalalignment='left',
             fontsize='x-small',
-            color=fresh_color(dt),
+            color=fresh_color(results.dts[-1]),
         )
 
     plt.savefig(out_file, bbox_inches='tight', format='svg')
@@ -303,9 +378,14 @@ def render(history_lines, out_file):
 def render_forever(history_uri, img_uri, service_account=None):
     """Download results from history_uri, render to svg and save to img_uri."""
     if service_account:
-      print >>sys.stderr, 'Activating service account using: %s' % service_account
-      subprocess.check_call(
-          ['gcloud', 'auth', 'activate-service-account', '--key-file=%s' % service_account])
+        print >>sys.stderr, 'Activating service account using: %s' % (
+            service_account)
+        subprocess.check_call([
+            'gcloud',
+            'auth',
+            'activate-service-account',
+            '--key-file=%s' % service_account,
+        ])
     buf = cStringIO.StringIO()
     while True:
         print >>sys.stderr, 'Truncate render buffer'
@@ -323,27 +403,30 @@ def render_forever(history_uri, img_uri, service_account=None):
         print >>sys.stderr, 'Render results to buffer...'
         with gzip.GzipFile(
             os.path.basename(img_uri), mode='wb', fileobj=buf) as compressed:
-            render(history.split('\n')[-60*24*21:], compressed)  # Last 21 days
+            results = Results()
+            output(history.split('\n')[-60*24*21:], results)  # Last 21 days
+            render(results, compressed)
 
         print >>sys.stderr, 'Copy buffer to %s...' % img_uri
         proc = subprocess.Popen(
             ['gsutil', '-q',
              '-h', 'Content-Type:image/svg+xml',
-             '-h', 'Cache-Control:public, max-age=%d' % (60 if service_account else 5),
+             '-h', 'Cache-Control:public, max-age=%d' % (
+                 60 if service_account else 5),
              '-h', 'Content-Encoding:gzip',  # GCS decompresses if necessary
              'cp', '-a', 'public-read', '-', img_uri],
             stdin=subprocess.PIPE)
         proc.communicate(buf.getvalue())
         code = proc.wait()
         if code:
-          print >>sys.stderr, 'Failed to copy rendering to %s: %d' % (img_uri, code)
+            print >>sys.stderr, 'Failed to copy rendering to %s: %d' % (
+                img_uri, code)
         time.sleep(60)
 
 
 
 if __name__ == '__main__':
     # log all arguments.
-    pp = pprint.PrettyPrinter(stream=sys.stderr)
-    pp.pprint(sys.argv)
+    pprint.PrettyPrinter(stream=sys.stderr).pprint(sys.argv)
 
     render_forever(*sys.argv[1:])
