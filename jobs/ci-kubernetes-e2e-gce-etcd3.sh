@@ -47,22 +47,24 @@ export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
 
+export E2E_NAME='bootstrap-e2e'
+
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # Use default component update behavior
 export CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false
 
 # AWS variables
-export KUBE_AWS_INSTANCE_PREFIX="${E2E_NAME:-jenkins-e2e}"
+export KUBE_AWS_INSTANCE_PREFIX="${E2E_NAME}"
 
 # GCE variables
-export INSTANCE_PREFIX="${E2E_NAME:-jenkins-e2e}"
-export KUBE_GCE_NETWORK="${E2E_NAME:-jenkins-e2e}"
-export KUBE_GCE_INSTANCE_PREFIX="${E2E_NAME:-jenkins-e2e}"
+export INSTANCE_PREFIX="${E2E_NAME}"
+export KUBE_GCE_NETWORK="${E2E_NAME}"
+export KUBE_GCE_INSTANCE_PREFIX="${E2E_NAME}"
 
 # GKE variables
-export CLUSTER_NAME="${E2E_NAME:-jenkins-e2e}"
-export KUBE_GKE_NETWORK="${E2E_NAME:-jenkins-e2e}"
+export CLUSTER_NAME="${E2E_NAME}"
+export KUBE_GKE_NETWORK="${E2E_NAME}"
 
 # Get golang into our PATH so we can run e2e.go
 export PATH="${PATH}:/usr/local/go/bin"
