@@ -1,0 +1,43 @@
+- job-template:
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
+    disabled: false
+    name: 'ci-{suffix}'
+    node: 'e2e'
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    triggers:
+    - reverse:
+        jobs: 'kubernetes-build'
+        result: success
+    - timed: 'H/5 * * * *'  # Start at least every 30m
+    wrappers:
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - timeout:
+        timeout: 700
+        fail: true
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'go/src/{repo-name}/.git/'
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    jobs:
+    - 'ci-{suffix}'
+    name: bootstrap-ci
+    suffix:
+    - kubernetes-e2e-gce-etcd3:
+        branch: master
+        job-name: ci-kubernetes-e2e-gce-etcd3
+        repo-name: k8s.io/kubernetes

@@ -2,126 +2,126 @@
     name: 'pull-{suffix}'
     concurrent: true
     properties:
-        - build-discarder:
-            days-to-keep: 7
-        - throttle:
-            max-total: '{max-total}'
-            max-per-node: 2
-            option: project
-        - raw:
-            xml: |
-                <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
-                    <script>docker version; gcloud version</script>
-                    <interpreter>shell script</interpreter>
-                </com.cloudbees.plugins.JobPrerequisites>
+    - build-discarder:
+        days-to-keep: 7
+    - throttle:
+        max-total: '{max-total}'
+        max-per-node: 2
+        option: project
+    - raw:
+        xml: |
+            <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                <script>docker version; gcloud version</script>
+                <interpreter>shell script</interpreter>
+            </com.cloudbees.plugins.JobPrerequisites>
     parameters:
-        - string:
-            name: ghprbPullId
-        - string:
-            name: ghprbTargetBranch
-        # The test job tracks a run through the queue using the buildId parameter.
-        - string:
-            name: buildId
+    - string:
+        name: ghprbPullId
+    - string:
+        name: ghprbTargetBranch
+    # The test job tracks a run through the queue using the buildId parameter.
+    - string:
+        name: buildId
     wrappers:
-        - e2e-credentials-binding
-        - inject:
-            properties-content: |
-                GOROOT=/usr/local/go
-                GOPATH=$WORKSPACE/go
-                PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
-        - workspace-cleanup:
-            dirmatch: true
-            exclude:
-            - 'go/src/{repo-name}/.git/'
-            - 'test-infra/.git/'
-            external-deletion-command: 'sudo rm -rf %s'
-        - timeout:
-            timeout: 90
-            fail: true
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'go/src/{repo-name}/.git/'
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    - timeout:
+        timeout: 90
+        fail: true
     builders:
-        - shell: |
-            # TODO(fejta): consider a stable tag instead of master
-            git clone https://github.com/kubernetes/test-infra -b master
-            './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src"
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src"
 
 - project:
     name: bootstrap-pull-jobs
-    suffix:  # pull-<repo>-<suffix> is the expected format
-      - cadvisor-e2e:  # owner: stclair@google.com
-          job-name: pull-cadvisor-e2e
-          max-total: 5
-          repo-name: 'github.com/google/cadvisor'
-      - charts-e2e:
-          job-name: pull-charts-e2e
-          max-total: 5
-          repo-name: 'k8s.io/charts'
-      - heapster-e2e:  # owner: pszczesniak@google.com
-          job-name: pull-heapster-e2e
-          max-total: 5
-          repo-name: 'k8s.io/heapster'
-      - kubernetes-cross:
-          max-total: 12
-          job-name: pull-kubernetes-cross
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gce:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gce
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gce-cri:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gce-cri
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gce-gci:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gce-gci
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gce-etcd3:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gce-etcd3
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gke:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gke
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-e2e-gke-gci:
-          max-total: 12
-          job-name: pull-kubernetes-e2e-gke-gci
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-federation-e2e-gce:
-          max-total: 12
-          job-name: pull-kubernetes-federation-e2e-gce
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-federation-e2e-gce-gci:
-          max-total: 12
-          job-name: pull-kubernetes-federation-e2e-gce-gci
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-kubemark-e2e-gce:
-          max-total: 12
-          job-name: pull-kubernetes-kubemark-e2e-gce
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-kubemark-e2e-gce-gci:
-          max-total: 12
-          job-name: pull-kubernetes-kubemark-e2e-gce-gci
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-node-e2e:
-          max-total: 12
-          job-name: pull-kubernetes-node-e2e
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-node-e2e-cri:
-          max-total: 12
-          job-name: pull-kubernetes-node-e2e-cri
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-verify:
-          max-total: 12
-          job-name: pull-kubernetes-verify
-          repo-name: 'k8s.io/kubernetes'
-      - kubernetes-unit:
-          max-total: 12
-          job-name: pull-kubernetes-unit
-          repo-name: 'k8s.io/kubernetes'
-      - test-infra-go-test:
-          job-name: pull-test-infra-go-test
-          max-total: 5
-          repo-name: 'k8s.io/test-infra'
     jobs:
-        - 'pull-{suffix}'
+    - 'pull-{suffix}'
+    suffix:  # pull-<repo>-<suffix> is the expected format
+    - cadvisor-e2e:  # owner: stclair@google.com
+        job-name: pull-cadvisor-e2e
+        max-total: 5
+        repo-name: 'github.com/google/cadvisor'
+    - charts-e2e:
+        job-name: pull-charts-e2e
+        max-total: 5
+        repo-name: 'k8s.io/charts'
+    - heapster-e2e:  # owner: pszczesniak@google.com
+        job-name: pull-heapster-e2e
+        max-total: 5
+        repo-name: 'k8s.io/heapster'
+    - kubernetes-cross:
+        max-total: 12
+        job-name: pull-kubernetes-cross
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gce:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gce-cri:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-cri
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gce-gci:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-gci
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gce-etcd3:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-etcd3
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gke:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gke
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-gke-gci:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gke-gci
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-federation-e2e-gce:
+        max-total: 12
+        job-name: pull-kubernetes-federation-e2e-gce
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-federation-e2e-gce-gci:
+        max-total: 12
+        job-name: pull-kubernetes-federation-e2e-gce-gci
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-kubemark-e2e-gce:
+        max-total: 12
+        job-name: pull-kubernetes-kubemark-e2e-gce
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-kubemark-e2e-gce-gci:
+        max-total: 12
+        job-name: pull-kubernetes-kubemark-e2e-gce-gci
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-node-e2e:
+        max-total: 12
+        job-name: pull-kubernetes-node-e2e
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-node-e2e-cri:
+        max-total: 12
+        job-name: pull-kubernetes-node-e2e-cri
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-verify:
+        max-total: 12
+        job-name: pull-kubernetes-verify
+        repo-name: 'k8s.io/kubernetes'
+    - kubernetes-unit:
+        max-total: 12
+        job-name: pull-kubernetes-unit
+        repo-name: 'k8s.io/kubernetes'
+    - test-infra-go-test:
+        job-name: pull-test-infra-go-test
+        max-total: 5
+        repo-name: 'k8s.io/test-infra'

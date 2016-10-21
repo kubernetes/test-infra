@@ -713,8 +713,6 @@ class IntegrationTest(unittest.TestCase):
 
 class JobTest(unittest.TestCase):
 
-    suffix = 'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml'
-
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
@@ -724,9 +722,29 @@ class JobTest(unittest.TestCase):
                 job_path = os.path.join(path, job)
                 yield job, job_path
 
-
     def testBootstrapPullYaml(self):
-        with open(os.path.join(os.path.dirname(__file__), self.suffix)) as fp:
+        def Check(job, name):
+            job_name = 'pull-%s' % name
+            self.assertEquals(job_name, job.get('job-name'))
+            self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml', Check)
+
+    def testBootstrapCIYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertEquals(job_name, job.get('job-name'))
+            self.assertIn('branch', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
+
+    def CheckBootstrapYaml(self, path, check):
+        with open(os.path.join(
+            os.path.dirname(__file__), path)) as fp:
             doc = yaml.safe_load(fp)
 
         project = None
@@ -736,8 +754,7 @@ class JobTest(unittest.TestCase):
             if not isinstance(item.get('project'), dict):
                 continue
             project = item['project']
-            if not project.get('name') == 'bootstrap-pull-jobs':
-                continue
+            self.assertIn('bootstrap-', project.get('name'))
             break
         else:
             self.fail('Could not find bootstrap-pull-jobs project')
@@ -747,25 +764,24 @@ class JobTest(unittest.TestCase):
             self.fail('Could not find suffix list in %s' % project)
 
         for job in jobs:
+            # Things to check on all bootstrap jobs
             if not isinstance(job, dict):
                 self.fail('suffix items should be dicts', jobs)
-
             self.assertEquals(1, len(job), job)
             name = job.keys()[0]
-            job_name = 'pull-%s' % name
-            self.assertEquals(job_name, job[name].get('job-name'))
-            path = bootstrap.job_script(job_name)
+            real_job = job[name]
+
+            path = bootstrap.job_script(real_job.get('job-name'))
             self.assertTrue(os.path.isfile(path), path)
-            self.assertIn('max-total', job[name])
-            self.assertIn('repo-name', job[name])
-            self.assertIn('.', job[name]['repo-name'])  # Has domain
-            for key, value in job[name].items():
+            for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (
                         key, value))
                 if '{' in str(value):
                     self.fail('Jobs may not contain {expansions}' % (
                         key, value))  # Use simple strings
+            # Things to check on specific flavors.
+            check(real_job, name)
 
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
