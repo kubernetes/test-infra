@@ -722,6 +722,16 @@ class JobTest(unittest.TestCase):
                 job_path = os.path.join(path, job)
                 yield job, job_path
 
+    def testBootstrapMaintenanceYaml(self):
+        def Check(job, name):
+            job_name = 'maintenance-%s' % name
+            self.assertEquals(job_name, job.get('job-name'))
+            self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+
+        self.CheckBootstrapYaml('job-configs/bootstrap-maintenance.yaml', Check)
+
     def testBootstrapPullYaml(self):
         def Check(job, name):
             job_name = 'pull-%s' % name
