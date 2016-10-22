@@ -42,7 +42,7 @@
                         <configFactories>
                             <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNodesBuildParameterFactory plugin="nodelabelparameter@1.7"/>
                         </configFactories>
-                        <projects>maintenance-hourly</projects>
+                        <projects>{job-name}</projects>
                         <condition>ALWAYS</condition>
                         <triggerWithNoParameters>false</triggerWithNoParameters>
                         <block>
