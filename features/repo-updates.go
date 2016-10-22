@@ -106,10 +106,10 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		}
 		o.assignees[path] = sets.NewString()
 		if len(c.Assignees) > 0 {
-			o.assignees[path].Union(sets.NewString(c.Assignees...))
+			o.assignees[path] = o.assignees[path].Union(sets.NewString(c.Assignees...))
 		}
 		if len(c.Approvers) > 0 {
-			o.assignees[path].Union(sets.NewString(c.Approvers...))
+			o.assignees[path] = o.assignees[path].Union(sets.NewString(c.Approvers...))
 		}
 
 		return nil
@@ -143,9 +143,9 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	o.assignees[path] = sets.NewString()
 	if len(c.Assignees) > 0 {
-		o.assignees[path].Union(sets.NewString(c.Assignees...))
+		o.assignees[path] = o.assignees[path].Union(sets.NewString(c.Assignees...))
 	} else if len(c.Approvers) > 0 {
-		o.assignees[path].Union(sets.NewString(c.Approvers...))
+		o.assignees[path] = o.assignees[path].Union(sets.NewString(c.Approvers...))
 	}
 	//if len(c.Owners) > 0 {
 	//o.owners[path] = sets.NewString(c.Owners...)
