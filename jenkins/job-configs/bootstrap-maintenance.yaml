@@ -9,6 +9,9 @@
     properties:
     - build-discarder:
         days-to-keep: 30
+    - throttle:
+        max-total: 10
+        option: project
     wrappers:
     - e2e-credentials-binding
     - inject:
@@ -23,7 +26,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 15
+        timeout: 30
         fail: true
 
 - job-template:
