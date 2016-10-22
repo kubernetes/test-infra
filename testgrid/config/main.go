@@ -17,41 +17,40 @@ limitations under the License.
 package main
 
 import (
-    "os"
-    "fmt"
-    "io/ioutil"
+	"fmt"
+	"io/ioutil"
+	"os"
 
-    "k8s.io/test-infra/testgrid/config/yaml2proto"
+	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
 //
 // usage: config <input/path/to/yaml> <output/path/to/proto>
 //
 
-func main(){
-    args := os.Args[1:]
+func main() {
+	args := os.Args[1:]
 
-    if len(args) != 2 {
-        fmt.Printf("Wrong Arguments - usage: yaml2proto <input/path/to/yaml> <output/path/to/proto>\n")
-        os.Exit(-1)
-    }
+	if len(args) != 2 {
+		fmt.Printf("Wrong Arguments - usage: yaml2proto <input/path/to/yaml> <output/path/to/proto>\n")
+		os.Exit(-1)
+	}
 
-    yamlData, err := ioutil.ReadFile(args[0])
-    if err != nil {
-        fmt.Printf("IO Error : Cannot Read File %v\n", args[0])
-        os.Exit(-1)
-    } 
+	yamlData, err := ioutil.ReadFile(args[0])
+	if err != nil {
+		fmt.Printf("IO Error : Cannot Read File %v\n", args[0])
+		os.Exit(-1)
+	}
 
-    protobufData, err := yaml2proto.Yaml2Proto(yamlData)
-    if err != nil {
-        fmt.Printf("Yaml2Proto Error : %v\n", err)
-        os.Exit(-1)
-    }
+	protobufData, err := yaml2proto.Yaml2Proto(yamlData)
+	if err != nil {
+		fmt.Printf("Yaml2Proto Error : %v\n", err)
+		os.Exit(-1)
+	}
 
-    err = ioutil.WriteFile(args[1],protobufData,0777)
-    if err != nil {
-        fmt.Printf("IO Error : Cannot Write File %v\n", args[1])
-        os.Exit(-1)
-    }
+	err = ioutil.WriteFile(args[1], protobufData, 0777)
+	if err != nil {
+		fmt.Printf("IO Error : Cannot Write File %v\n", args[1])
+		os.Exit(-1)
+	}
 }
-

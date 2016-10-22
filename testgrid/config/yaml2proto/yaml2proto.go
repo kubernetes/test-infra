@@ -17,112 +17,111 @@ limitations under the License.
 package yaml2proto
 
 import (
-    "fmt"
-    "errors"
-    "gopkg.in/yaml.v2"
+	"errors"
+	"fmt"
+	"gopkg.in/yaml.v2"
 
-    "github.com/golang/protobuf/proto"
-    "k8s.io/test-infra/testgrid/config/pb"
+	"github.com/golang/protobuf/proto"
+	"k8s.io/test-infra/testgrid/config/pb"
 )
 
 // Set up unfilled field in a TestGroup using the default TestGroup
 func ValidateTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *config.TestGroup) {
-    if currentTestGroup.DaysOfResults == 0 {
-        currentTestGroup.DaysOfResults = defaultTestGroup.DaysOfResults
-    }
+	if currentTestGroup.DaysOfResults == 0 {
+		currentTestGroup.DaysOfResults = defaultTestGroup.DaysOfResults
+	}
 
-    if currentTestGroup.TestsNamePolicy == config.TestGroup_TESTS_NAME_MIN {
-        currentTestGroup.TestsNamePolicy = defaultTestGroup.TestsNamePolicy
-    }
+	if currentTestGroup.TestsNamePolicy == config.TestGroup_TESTS_NAME_MIN {
+		currentTestGroup.TestsNamePolicy = defaultTestGroup.TestsNamePolicy
+	}
 
-    if currentTestGroup.ColumnHeader == nil {
-        currentTestGroup.ColumnHeader = defaultTestGroup.ColumnHeader
-    }
+	if currentTestGroup.ColumnHeader == nil {
+		currentTestGroup.ColumnHeader = defaultTestGroup.ColumnHeader
+	}
 
-    // is_external and user_kubernetes_client should always be true
-    currentTestGroup.IsExternal = true
-    currentTestGroup.UseKubernetesClient = true
+	// is_external and user_kubernetes_client should always be true
+	currentTestGroup.IsExternal = true
+	currentTestGroup.UseKubernetesClient = true
 }
 
-
 // Set up unfilled field in a DashboardTab using the default DashboardTab
-func ValidateDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab){
-    if currentTab.BugComponent == 0 {
-        currentTab.BugComponent = defaultTab.BugComponent
-    }
+func ValidateDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
+	if currentTab.BugComponent == 0 {
+		currentTab.BugComponent = defaultTab.BugComponent
+	}
 
-    if currentTab.CodeSearchPath == "" {
-        currentTab.CodeSearchPath = defaultTab.CodeSearchPath
-    }
+	if currentTab.CodeSearchPath == "" {
+		currentTab.CodeSearchPath = defaultTab.CodeSearchPath
+	}
 
-    if currentTab.OpenTestTemplate == nil {
-        currentTab.OpenTestTemplate = defaultTab.OpenTestTemplate
-    }
+	if currentTab.OpenTestTemplate == nil {
+		currentTab.OpenTestTemplate = defaultTab.OpenTestTemplate
+	}
 
-    if currentTab.FileBugTemplate == nil {
-        currentTab.FileBugTemplate = defaultTab.FileBugTemplate
-    }
+	if currentTab.FileBugTemplate == nil {
+		currentTab.FileBugTemplate = defaultTab.FileBugTemplate
+	}
 
-    if currentTab.AttachBugTemplate == nil {
-        currentTab.AttachBugTemplate = defaultTab.AttachBugTemplate
-    }
+	if currentTab.AttachBugTemplate == nil {
+		currentTab.AttachBugTemplate = defaultTab.AttachBugTemplate
+	}
 
-    if currentTab.ResultsText == "" {
-        currentTab.ResultsText = defaultTab.ResultsText
-    }
+	if currentTab.ResultsText == "" {
+		currentTab.ResultsText = defaultTab.ResultsText
+	}
 
-    if currentTab.ResultsUrlTemplate == nil {
-        currentTab.ResultsUrlTemplate = defaultTab.ResultsUrlTemplate
-    }
+	if currentTab.ResultsUrlTemplate == nil {
+		currentTab.ResultsUrlTemplate = defaultTab.ResultsUrlTemplate
+	}
 
-    if currentTab.CodeSearchUrlTemplate == nil {
-        currentTab.CodeSearchUrlTemplate = defaultTab.CodeSearchUrlTemplate
-    }
+	if currentTab.CodeSearchUrlTemplate == nil {
+		currentTab.CodeSearchUrlTemplate = defaultTab.CodeSearchUrlTemplate
+	}
 }
 
 func Yaml2Proto(yamlData []byte) ([]byte, error) {
-    
-    // Unmarshal yaml to config
-    curConfig := &config.Configuration{}
-    defaultConfig := &config.DefaultConfiguration{}
-    err := yaml.Unmarshal(yamlData,&curConfig)
-    if err != nil {
-        fmt.Printf("Unmarshal Error for config : %v\n", err);
-        return nil, err
-    }
 
-    err = yaml.Unmarshal(yamlData,&defaultConfig)
-    if err != nil {
-        fmt.Printf("Unmarshal Error for defaultconfig : %v\n", err);
-        return nil, err
-    }
+	// Unmarshal yaml to config
+	curConfig := &config.Configuration{}
+	defaultConfig := &config.DefaultConfiguration{}
+	err := yaml.Unmarshal(yamlData, &curConfig)
+	if err != nil {
+		fmt.Printf("Unmarshal Error for config : %v\n", err)
+		return nil, err
+	}
 
-    // Reject empty yaml ( No testgroups or dashboards )
-    if len(curConfig.TestGroups) == 0 {
-        return nil, errors.New("Invalid Yaml : No Valid Testgroups")
-    }
+	err = yaml.Unmarshal(yamlData, &defaultConfig)
+	if err != nil {
+		fmt.Printf("Unmarshal Error for defaultconfig : %v\n", err)
+		return nil, err
+	}
 
-    if len(curConfig.Dashboards) == 0 {
-        return nil, errors.New("Invalid Yaml : No Valid Dashboards")
-    }
+	// Reject empty yaml ( No testgroups or dashboards )
+	if len(curConfig.TestGroups) == 0 {
+		return nil, errors.New("Invalid Yaml : No Valid Testgroups")
+	}
 
-    if defaultConfig.DefaultTestGroup == nil || defaultConfig.DefaultDashboardTab == nil {
-        return nil, errors.New("Please Include The Default Testgroup & Dashboardtab")
-    }
+	if len(curConfig.Dashboards) == 0 {
+		return nil, errors.New("Invalid Yaml : No Valid Dashboards")
+	}
 
-    // validating testgroups
-    for _,testgroup := range curConfig.TestGroups {
-        ValidateTestGroup(testgroup,defaultConfig.DefaultTestGroup)
-    }
+	if defaultConfig.DefaultTestGroup == nil || defaultConfig.DefaultDashboardTab == nil {
+		return nil, errors.New("Please Include The Default Testgroup & Dashboardtab")
+	}
 
-    // validating dashboards
-    for _,dashboard := range curConfig.Dashboards {
-        // validate dashboard tabs
-        for _,dashboardtab := range dashboard.DashboardTab {
-            ValidateDashboardtab(dashboardtab,defaultConfig.DefaultDashboardTab)
-        }
-    }
+	// validating testgroups
+	for _, testgroup := range curConfig.TestGroups {
+		ValidateTestGroup(testgroup, defaultConfig.DefaultTestGroup)
+	}
 
-    // Marshal config to protobuf
-    return proto.Marshal(curConfig)
+	// validating dashboards
+	for _, dashboard := range curConfig.Dashboards {
+		// validate dashboard tabs
+		for _, dashboardtab := range dashboard.DashboardTab {
+			ValidateDashboardtab(dashboardtab, defaultConfig.DefaultDashboardTab)
+		}
+	}
+
+	// Marshal config to protobuf
+	return proto.Marshal(curConfig)
 }

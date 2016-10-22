@@ -16,6 +16,7 @@ services:
 sudo: required
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:5
+    - docker pull golang:1.7.1
 install:
 # Create and move build under the go path
     - mkdir -p $HOME/gopath/src/k8s.io
@@ -40,4 +41,8 @@ script:
     - ./test.sh --nologcapture
     - ./lint.sh
     - ../node_modules/.bin/mocha static/build_test.js
+    - cd ..
+    - gofmt -l .
     - go test k8s.io/test-infra/testgrid/config/...
+    - chmod +x testgrid/jenkins_verify/verify.sh
+    - ./testgrid/jenkins_verify/verify.sh
