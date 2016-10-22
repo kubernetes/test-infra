@@ -31,6 +31,7 @@ script:
     - ./verify/verify-boilerplate.py
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - pylint jenkins/bootstrap.py  # TODO(fejta): all python files
+    - pylint queue-health/graph/graph.py  # TODO(fejta): all python files
     - ./jenkins/bootstrap_test.py
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
