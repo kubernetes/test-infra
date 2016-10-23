@@ -231,9 +231,21 @@ class GSUtilTest(unittest.TestCase):
 
 
 class FakeGSUtil(object):
+    generation = 123
+
     def __init__(self):
-        self.texts = []
+        self.cats = []
         self.jsons = []
+        self.stats = []
+        self.texts = []
+
+    def cat(self, *a, **kw):
+        self.cats.append((a, kw))
+        return 'this is not a list'
+
+    def stat(self, *a, **kw):
+        self.stats.append((a, kw))
+        return 'Generation: %s' % self.generation
 
     def upload_text(self, *args, **kwargs):
         self.texts.append((args, kwargs))
@@ -244,6 +256,71 @@ class FakeGSUtil(object):
 
 class AppendResultTest(unittest.TestCase):
     """Tests for append_result()."""
+
+    def testNewJob(self):
+        """Stat fails when the job doesn't exist."""
+        gsutil = FakeGSUtil()
+        build = 123
+        version = 'v.interesting'
+        success = True
+        def fake_stat(*a, **kw):
+            raise subprocess.CalledProcessError(1, ['gsutil'], None)
+        gsutil.stat = fake_stat
+        bootstrap.append_result(gsutil, 'fake_path', build, version, success)
+        cache = gsutil.jsons[0][0][1]
+        self.assertEquals(1, len(cache))
+
+    def testCollision_Cat(self):
+        """cat fails if the cache has been updated."""
+        gsutil = FakeGSUtil()
+        build = 42
+        version = 'v1'
+        success = False
+        generations = ['555', '444']
+        orig_stat = gsutil.stat
+        def fake_stat(*a, **kw):
+            gsutil.generation = generations.pop()
+            return orig_stat(*a, **kw)
+        def fake_cat(_, gen):
+            if gen == '555':  # Which version is requested?
+                return '[{"hello": 111}]'
+            raise subprocess.CalledProcessError(1, ['gsutil'], None)
+        with Stub(bootstrap, 'random_sleep', Pass):
+            with Stub(gsutil, 'stat', fake_stat):
+                with Stub(gsutil, 'cat', fake_cat):
+                    bootstrap.append_result(
+                        gsutil, 'fake_path', build, version, success)
+        self.assertIn('generation', gsutil.jsons[-1][1], gsutil.jsons)
+        self.assertEquals('555', gsutil.jsons[-1][1]['generation'], gsutil.jsons)
+
+
+    def testCollision_Upload(self):
+        """Test when upload_json tries to update an old version."""
+        gsutil = FakeGSUtil()
+        build = 42
+        version = 'v1'
+        success = False
+        generations = [555, 444]
+        orig = gsutil.upload_json
+        def fake_upload(path, cache, generation):
+            if generation == '555':
+                return orig(path, cache, generation=generation)
+            raise subprocess.CalledProcessError(128, ['gsutil'], None)
+        orig_stat = gsutil.stat
+        def fake_stat(*a, **kw):
+            gsutil.generation = generations.pop()
+            return orig_stat(*a, **kw)
+        def fake_call(*a, **kw):
+            return '[{"hello": 111}]'
+        with Stub(bootstrap, 'random_sleep', Pass):
+            with Stub(gsutil, 'stat', fake_stat):
+                with Stub(gsutil, 'upload_json', fake_upload):
+                    with Stub(bootstrap, 'call', fake_call):
+                        bootstrap.append_result(
+                            gsutil, 'fake_path', build, version, success)
+        self.assertIn('generation', gsutil.jsons[-1][1], gsutil.jsons)
+        self.assertEquals('555', gsutil.jsons[-1][1]['generation'], gsutil.jsons)
+
     def testHandleJunk(self):
         gsutil = FakeGSUtil()
         build = 123
@@ -300,6 +377,47 @@ class FinishTest(unittest.TestCase):
         for stub in self.stubs:
             with stub:
                 pass
+
+    def testIgnoreError_UploadArtifacts(self):
+        paths = FakePath()
+        gsutil = FakeGSUtil()
+        local_artifacts = None
+        build = 123
+        version = 'v1.terrible'
+        success = True
+        calls = []
+        with Stub(os.path, 'isdir', lambda _: True):
+            with Stub(os, 'walk', lambda d: [(True, True, True)]):
+                def fake_upload(*a, **kw):
+                    calls.append((a, kw))
+                    raise subprocess.CalledProcessError(1, ['fakecmd'], None)
+                gsutil.upload_artifacts = fake_upload
+                bootstrap.finish(
+                    gsutil, paths, success, local_artifacts,
+                    build, version, REPO)
+                self.assertTrue(calls)
+
+
+    def testIgnoreError_UploadText(self):
+        paths = FakePath()
+        gsutil = FakeGSUtil()
+        local_artifacts = None
+        build = 123
+        version = 'v1.terrible'
+        success = True
+        calls = []
+        with Stub(os.path, 'isdir', lambda _: True):
+            with Stub(os, 'walk', lambda d: [(True, True, True)]):
+                def fake_upload(*a, **kw):
+                    calls.append((a, kw))
+                    raise subprocess.CalledProcessError(1, ['fakecmd'], None)
+                gsutil.upload_artifacts = Pass
+                gsutil.upload_text = fake_upload
+                bootstrap.finish(
+                    gsutil, paths, success, local_artifacts,
+                    build, version, REPO)
+                self.assertTrue(calls)
+                self.assertGreater(calls, 1)
 
     def testSkipUploadArtifacts(self):
         """Do not upload artifacts dir if it doesn't exist."""
