@@ -40,9 +40,9 @@ var (
 	repoOwner = flag.String("repo-owner", "", "Owner of the repo.")
 	repoName  = flag.String("repo-name", "", "Name of the repo to test.")
 	pr        = flag.Int("pr", 0, "Pull request to test.")
-	branch    = flag.String("branch", "", "Target branch.")
-	headSHA   = flag.String("head-sha", "", "Head SHA of the PR.")
+	baseRef   = flag.String("base-ref", "", "Target branch.")
 	baseSHA   = flag.String("base-sha", "", "Base SHA of the PR.")
+	pullSHA   = flag.String("pull-sha", "", "Head SHA of the PR.")
 	namespace = flag.String("namespace", "default", "Namespace that we live in.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
@@ -64,9 +64,9 @@ type testClient struct {
 	RepoOwner string
 	RepoName  string
 	PRNumber  int
-	Branch    string
-	HeadSHA   string
+	BaseRef   string
 	BaseSHA   string
+	PullSHA   string
 
 	DryRun bool
 
@@ -136,9 +136,9 @@ func main() {
 		RepoOwner: *repoOwner,
 		RepoName:  *repoName,
 		PRNumber:  *pr,
-		Branch:    *branch,
-		HeadSHA:   *headSHA,
+		BaseRef:   *baseRef,
 		BaseSHA:   *baseSHA,
+		PullSHA:   *pullSHA,
 
 		DryRun: *dryRun,
 
@@ -161,9 +161,9 @@ func fields(c *testClient) logrus.Fields {
 		"org":      c.RepoOwner,
 		"repo":     c.RepoName,
 		"pr":       c.PRNumber,
-		"branch":   c.Branch,
-		"head-sha": c.HeadSHA,
+		"base-ref": c.BaseRef,
 		"base-sha": c.BaseSHA,
+		"pull-sha": c.PullSHA,
 	}
 }
 
@@ -174,9 +174,9 @@ func (c *testClient) TestPR() error {
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName:  c.Job,
 		PRNumber: c.PRNumber,
-		Branch:   c.Branch,
-		HeadSHA:  c.HeadSHA,
+		BaseRef:  c.BaseRef,
 		BaseSHA:  c.BaseSHA,
+		PullSHA:  c.PullSHA,
 	})
 	if err != nil {
 		return err
@@ -241,7 +241,7 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		"description": desc,
 		"url":         url,
 	}).Info("Setting GitHub and Kubernetes status.")
-	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.HeadSHA, github.Status{
+	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
 		State:       state,
 		Description: desc,
 		Context:     c.Context,
@@ -292,7 +292,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d).
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
-	body := fmt.Sprintf(bodyFormat, c.Context, url, c.HeadSHA, c.PRNumber, c.RerunCommand)
+	body := fmt.Sprintf(bodyFormat, c.Context, url, c.PullSHA, c.PRNumber, c.RerunCommand)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}

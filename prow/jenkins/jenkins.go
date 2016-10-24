@@ -52,9 +52,9 @@ type Client struct {
 type BuildRequest struct {
 	JobName  string
 	PRNumber int
-	Branch   string
-	HeadSHA  string
+	BaseRef  string
 	BaseSHA  string
+	PullSHA  string
 }
 
 type Build struct {
@@ -125,12 +125,12 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	// These two are provided for backwards-compatability with scripts that
 	// used the ghprb plugin.
 	q.Set("ghprbPullID", strconv.Itoa(br.PRNumber))
-	q.Set("ghprbTargetBranch", br.Branch)
+	q.Set("ghprbTargetBranch", br.BaseRef)
 
 	q.Set("PULL_NUMBER", strconv.Itoa(br.PRNumber))
-	q.Set("PULL_BASE_BRANCH", br.Branch)
-	q.Set("PULL_HEAD_SHA", br.HeadSHA)
+	q.Set("PULL_BASE_REF", br.BaseRef)
 	q.Set("PULL_BASE_SHA", br.BaseSHA)
+	q.Set("PULL_PULL_SHA", br.PullSHA)
 	u.RawQuery = q.Encode()
 	resp, err := c.request(http.MethodPost, u.String())
 	if err != nil {

@@ -51,9 +51,9 @@ type KubeRequest struct {
 	RepoName  string
 	PR        int
 	Author    string
-	Branch    string
-	HeadSHA   string
+	BaseRef   string
 	BaseSHA   string
+	PullSHA   string
 }
 
 type kubeClient interface {
@@ -75,9 +75,9 @@ func fields(kr KubeRequest) logrus.Fields {
 		"org":      kr.RepoOwner,
 		"repo":     kr.RepoName,
 		"pr":       kr.PR,
-		"head-sha": kr.HeadSHA,
+		"base-ref": kr.BaseRef,
 		"base-sha": kr.BaseSHA,
-		"branch":   kr.Branch,
+		"pull-sha": kr.PullSHA,
 	}
 }
 
@@ -123,9 +123,9 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 				"author":      kr.Author,
 				"description": "Build triggered.",
 				"url":         "",
-				"branch":      kr.Branch,
-				"head-sha":    kr.HeadSHA,
+				"base-ref":    kr.BaseRef,
 				"base-sha":    kr.BaseSHA,
+				"pull-sha":    kr.PullSHA,
 			},
 		},
 		Spec: kube.JobSpec{
@@ -143,9 +143,9 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 								"--repo-owner=" + kr.RepoOwner,
 								"--repo-name=" + kr.RepoName,
 								"--pr=" + strconv.Itoa(kr.PR),
-								"--branch=" + kr.Branch,
-								"--head-sha=" + kr.HeadSHA,
+								"--base-ref=" + kr.BaseRef,
 								"--base-sha=" + kr.BaseSHA,
+								"--pull-sha=" + kr.PullSHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
 								"--jenkins-url=$(JENKINS_URL)",
 								"--rerun-command=" + kr.RerunCommand,
