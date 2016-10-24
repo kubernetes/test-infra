@@ -234,8 +234,9 @@ func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
 		RepoName:  pr.Base.Repo.Name,
 		PR:        pr.Number,
 		Author:    pr.User.Login,
-		Branch:    pr.Base.Ref,
-		SHA:       pr.Head.SHA,
+		BaseRef:   pr.Base.Ref,
+		BaseSHA:   pr.Base.SHA,
+		PullSHA:   pr.Head.SHA,
 	}
 }
 

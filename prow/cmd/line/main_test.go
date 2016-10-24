@@ -56,7 +56,7 @@ func TestFailureComment(t *testing.T) {
 		Job:          "test-job",
 		Context:      "Jenkins test",
 		PRNumber:     5,
-		Commit:       "abcde",
+		PullSHA:      "abcde",
 		GitHubClient: ghc,
 	}
 	cl.tryCreateFailureComment("url")
