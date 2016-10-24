@@ -615,9 +615,9 @@ test_groups:
 - name: kubernetes-e2e-gke-gci-prod-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-prod-release-1.2
 - name: kubernetes-e2e-gke-large-deploy
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy 
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build 
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build
 - name: daily-shame-mail
   gcs_prefix: kubernetes-jenkins/logs/daily-shame-mail
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
@@ -639,17 +639,17 @@ test_groups:
 - name: maintenance-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-all-daily 
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-all-daily
 - name: maintenance-hourly
   gcs_prefix: kubernetes-jenkins/logs/maintenance-hourly
 - name: maintenance-all-hourly
   gcs_prefix: kubernetes-jenkins/logs/maintenance-all-hourly
+- name: maintenance-ci-clean-projects
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-clean-projects
 - name: kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-parallel-release-1.2
-- name: clean-ci-node-e2e
-  gcs_prefix: kubernetes-jenkins/logs/clean-ci-node-e2e
 - name: kubernetes-federation-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.4
 - name: kubernetes-e2e-gke-large-teardown
@@ -691,7 +691,8 @@ test_groups:
 #
 
 dashboards:
-- dashboard_tab:
+- name: k8s
+  dashboard_tab:
   # Blocking
   - name: kubelet
     test_group_name: kubelet-gce-e2e-ci
@@ -748,40 +749,46 @@ dashboards:
     test_group_name: kubernetes-garbage-collector
   - name: gci-garbage-collector
     test_group_name: kubernetes-gci-garbage-collector
-  name: k8s
-- dashboard_tab:
+
+- name: azure
+  dashboard_tab:
   - name: azure
     test_group_name: kubernetes-azure
-  name: azure
-- dashboard_tab:
+
+- name: kopeio
+  dashboard_tab:
   - name: kopeio-aws
     test_group_name: kopeio-kubernetes-e2e-aws
   - name: kopeio-upup-aws-ha
     test_group_name: kopeio-kubernetes-e2e-upup-aws-ha
   - name: kopeio-upup-aws
     test_group_name: kopeio-kubernetes-e2e-upup-aws
-  name: kopeio
-- dashboard_tab:
+
+- name: rkt
+  dashboard_tab:
   - name: rktnetes
     test_group_name: kubernetes-rktnetes
-  name: rkt
-- dashboard_tab:
+
+- name: docker
+  dashboard_tab:
   - name: docker-validation
     test_group_name: continuous-node-e2e-docker-validation
   - name: docker-benchmark
     test_group_name: continuous-node-e2e-docker-benchmark
   - name: master-docker-validation
     test_group_name: continuous-e2e-docker-validation
-  name: docker
-- dashboard_tab:
+
+- name: google-aws
+  dashboard_tab:
   - name: aws
     test_group_name: kubernetes-e2e-aws
   - name: aws-release-1.4
     test_group_name: kubernetes-e2e-aws-release-1.4
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
-  name: google-aws
-- dashboard_tab:
+
+- name: google-gce
+  dashboard_tab:
   - name: gce
     test_group_name: kubernetes-e2e-gce
   - name: gci-gce
@@ -920,8 +927,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-slow-release-1.3
   - name: gce-slow-release-1.4
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
-  name: google-gce
-- dashboard_tab:
+
+- name: google-gci
+  dashboard_tab:
   - name: gci
     test_group_name: kubernetes-e2e-gci-gce
   - name: gci-ci-master
@@ -992,8 +1000,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-slow
   - name: gci-slow-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-slow-release-1.4
-  name: google-gci
-- dashboard_tab:
+
+- name: google-gke
+  dashboard_tab:
   - name: gke
     test_group_name: kubernetes-e2e-gke
   - name: gke-alpha-features
@@ -1116,8 +1125,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: kubernetes-e2e-gci-gke-updown
-  name: google-gke
-- dashboard_tab:
+
+- name: google-kubemark
+  dashboard_tab:
   - name: kubemark-100-gce
     test_group_name: kubernetes-kubemark-100-gce
   - name: kubemark-5-gce
@@ -1128,8 +1138,9 @@ dashboards:
     test_group_name: kubernetes-kubemark-gce-scale
   - name: kubemark-high-density-100-gce
     test_group_name: kubernetes-kubemark-high-density-100-gce
-  name: google-kubemark
-- dashboard_tab:
+
+- name: google-node
+  dashboard_tab:
   - name: cadvisor-dockercanarybuild
     test_group_name: cadvisor-dockercanarybuild-ci
   - name: cadvisor-gce-e2e
@@ -1150,8 +1161,9 @@ dashboards:
     test_group_name: kubelet-cri-benchmark-gce-e2e-ci
   - name: kubelet-flaky-gce-e2e
     test_group_name: kubelet-flaky-gce-e2e-ci
-  name: google-node
-- dashboard_tab:
+
+- name: google-soak
+  dashboard_tab:
   - name: soak-continuous-e2e-gce
     test_group_name: kubernetes-soak-continuous-e2e-gce
   - name: soak-continuous-e2e-gce-1.2
@@ -1188,8 +1200,9 @@ dashboards:
     test_group_name: kubernetes-soak-weekly-deploy-gke
   - name: soak-weekly-deploy-gke-gci
     test_group_name: kubernetes-soak-weekly-deploy-gke-gci
-  name: google-soak
-- dashboard_tab:
+
+- name: google-unit
+  dashboard_tab:
   - name: build
     test_group_name: kubernetes-build
   - name: build-1.2
@@ -1212,8 +1225,9 @@ dashboards:
     test_group_name: kubernetes-verify-release-1.4
   - name: verify-release-1.3
     test_group_name: kubernetes-verify-release-1.3
-  name: google-unit
-- dashboard_tab:
+
+- name: google-kubectl-skew
+  dashboard_tab:
   - name: gke-1.2-1.3-cvm-kubectl-skew
     test_group_name: kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew
   - name: gke-1.2-1.3-gci-kubectl-skew
@@ -1238,8 +1252,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
   - name: gce-1.4-1.3-gci-kubectl-skew
     test_group_name: kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
-  name: google-kubectl-skew
-- dashboard_tab:
+
+- name: google-1.2-1.3-upgrade
+  dashboard_tab:
   - name: gke-cvm-1.2-cvm-1.3-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-1.2-1.3-upgrade-cluster
   - name: gke-cvm-1.2-gci-1.3-upgrade-cluster
@@ -1264,8 +1279,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-master
   - name: gke-gci-1.2-gci-1.3-upgrade-master
     test_group_name: kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-master
-  name: google-1.2-1.3-upgrade
-- dashboard_tab:
+
+- name: google-1.2-1.4-upgrade
+  dashboard_tab:
   - name: gke-cvm-1.2-cvm-1.4-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-1.2-1.4-upgrade-cluster
   - name: gke-cvm-1.2-gci-1.4-upgrade-cluster
@@ -1290,8 +1306,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-master
   - name: gke-gci-1.2-gci-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-master
-  name: google-1.2-1.4-upgrade
-- dashboard_tab:
+
+- name: google-1.3-1.4-upgrade
+  dashboard_tab:
   - name: gke-cvm-1.3-cvm-1.4-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-cluster
   - name: gce-cvm-1.3-cvm-1.4-upgrade-cluster
@@ -1322,8 +1339,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master
   - name: gke-gci-1.3-gci-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master
-  name: google-1.3-1.4-upgrade
-- dashboard_tab:
+
+- name: google-federation
+  dashboard_tab:
   - name: gce-federation
     test_group_name: kubernetes-e2e-gce-federation
   - name: gci-federation
@@ -1334,8 +1352,9 @@ dashboards:
     test_group_name: kubernetes-soak-weekly-deploy-gce-federation
   - name: soak-continuous-e2e-gce-federation
     test_group_name: kubernetes-soak-continuous-e2e-gce-federation
-  name: google-federation
-- dashboard_tab:
+
+- name: release-1.4-all
+  dashboard_tab:
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
   - name: gce-alpha-features-release-1.4
@@ -1416,8 +1435,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new
   - name: gke-1.3-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-master
-  name: release-1.4-all
-- dashboard_tab:
+
+- name: release-1.4-blocking
+  dashboard_tab:
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
   - name: verify-release-1.4
@@ -1462,8 +1482,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new
   - name: gke-1.3-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-1.3-1.4-upgrade-master
-  name: release-1.4-blocking
-- dashboard_tab:
+
+- name: upgrades-gce-cvm-and-gci
+  dashboard_tab:
   - name: gce-debian-latest-1.3-gci-latest-upgrade-master
     test_group_name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
   - name: gce-gci-latest-1.3-debian-latest-upgrade-master
@@ -1500,8 +1521,9 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
   - name: gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
     test_group_name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
-  name: upgrades-gce-cvm-and-gci
-- dashboard_tab:
+
+- name: misc
+  dashboard_tab:
   - name: mikedanese-kubernetes-anywhere-e2e-gce
     test_group_name: mikedanese-kubernetes-anywhere-e2e-gce
   - name: test-summary
@@ -1515,9 +1537,9 @@ dashboards:
   - name: gke-gci-prod-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-prod-release-1.2
   - name: gke-large-deploy
-    test_group_name: kubernetes-e2e-gke-large-deploy 
+    test_group_name: kubernetes-e2e-gke-large-deploy
   - name: cross-build
-    test_group_name: kubernetes-cross-build 
+    test_group_name: kubernetes-cross-build
   - name: daily-shame-mail
     test_group_name: daily-shame-mail
   - name: gke-gci-staging-release-1.2
@@ -1540,8 +1562,6 @@ dashboards:
     test_group_name: kubernetes-build-debian-unstable
   - name: gke-gci-staging-parallel-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
-  - name: clean-ci-node-e2e
-    test_group_name: clean-ci-node-e2e
   - name: federation-build-1.4
     test_group_name: kubernetes-federation-build-1.4
   - name: gke-large-teardown
@@ -1550,12 +1570,16 @@ dashboards:
     test_group_name: kubernetes-update-jenkins-jobs
   - name: ci-kubernetes-e2e-gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
-  - name: maintenance-daily
+
+- name: maintenance
+  dashboard_tab:
+  - name: daily
     test_group_name: maintenance-daily
-  - name: maintenance-all-daily
-    test_group_name: maintenance-all-daily 
-  - name: maintenance-hourly
+  - name: all-daily
+    test_group_name: maintenance-all-daily
+  - name: hourly
     test_group_name: maintenance-hourly
-  - name: maintenance-all-hourly
-    test_group_name: maintenance-all-hourly  
-  name: misc
+  - name: all-hourly
+    test_group_name: maintenance-all-hourly
+  - name: ci-clean-projects
+    test_group_name: maintenance-ci-clean-projects
