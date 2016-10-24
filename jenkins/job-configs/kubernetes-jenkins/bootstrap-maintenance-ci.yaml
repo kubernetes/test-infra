@@ -1,0 +1,40 @@
+- job-template:
+    name: 'maintenance-ci-{suffix}'  # Runs on each node once
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
+    node: 'node'  # light choices are node/e2e
+    properties:
+    - build-discarder:
+        days-to-keep: 14
+    wrappers:
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'go/src/{repo-name}/.git/'
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    - timeout:
+        timeout: 30
+        fail: true
+    triggers:
+    - timed: '{frequency}'
+
+- project:
+    name: bootstrap-maintenance-ci-jobs
+    jobs:
+    - 'maintenance-ci-{suffix}'
+    suffix:
+    - clean-projects:
+        branch: master
+        job-name: maintenance-ci-clean-projects
+        frequency: 'H H/3 * * *'
+        repo-name: 'k8s.io/test-infra'
