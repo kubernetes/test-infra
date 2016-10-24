@@ -52,7 +52,8 @@ type KubeRequest struct {
 	PR        int
 	Author    string
 	Branch    string
-	SHA       string
+	HeadSHA   string
+	BaseSHA   string
 }
 
 type kubeClient interface {
@@ -70,12 +71,13 @@ const jobDeadline = 10 * time.Hour
 
 func fields(kr KubeRequest) logrus.Fields {
 	return logrus.Fields{
-		"job":    kr.JobName,
-		"org":    kr.RepoOwner,
-		"repo":   kr.RepoName,
-		"pr":     kr.PR,
-		"commit": kr.SHA,
-		"branch": kr.Branch,
+		"job":      kr.JobName,
+		"org":      kr.RepoOwner,
+		"repo":     kr.RepoName,
+		"pr":       kr.PR,
+		"head-sha": kr.HeadSHA,
+		"base-sha": kr.BaseSHA,
+		"branch":   kr.Branch,
 	}
 }
 
@@ -121,6 +123,9 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 				"author":      kr.Author,
 				"description": "Build triggered.",
 				"url":         "",
+				"branch":      kr.Branch,
+				"head-sha":    kr.HeadSHA,
+				"base-sha":    kr.BaseSHA,
 			},
 		},
 		Spec: kube.JobSpec{
@@ -139,7 +144,8 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 								"--repo-name=" + kr.RepoName,
 								"--pr=" + strconv.Itoa(kr.PR),
 								"--branch=" + kr.Branch,
-								"--sha=" + kr.SHA,
+								"--head-sha=" + kr.HeadSHA,
+								"--base-sha=" + kr.BaseSHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
 								"--jenkins-url=$(JENKINS_URL)",
 								"--rerun-command=" + kr.RerunCommand,
@@ -239,7 +245,6 @@ func (ka *KubeAgent) deleteJob(kr KubeRequest) error {
 		}
 		newAnnotations["state"] = "aborted"
 		newAnnotations["description"] = "Build aborted."
-		newAnnotations["url"] = ""
 		newJob := kube.Job{
 			Metadata: kube.ObjectMeta{
 				Annotations: newAnnotations,

@@ -39,7 +39,7 @@ func TestCreateJob(t *testing.T) {
 		RepoName:  "kubernetes",
 		PR:        123,
 		Branch:    "master",
-		SHA:       "12345abcde",
+		HeadSHA:   "12345abcde",
 	}
 	if err := ka.createJob(br); err != nil {
 		t.Fatalf("Didn't expect error: %s", err)

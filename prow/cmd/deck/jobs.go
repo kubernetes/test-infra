@@ -34,6 +34,9 @@ const (
 
 type Job struct {
 	Repo        string `json:"repo"`
+	Branch      string `json:"branch"`
+	HeadSHA     string `json:"head_sha"`
+	BaseSHA     string `json:"base_sha"`
 	Number      int    `json:"number"`
 	Author      string `json:"author"`
 	Job         string `json:"job"`
@@ -93,6 +96,9 @@ func (ja *JobAgent) update() error {
 	for _, j := range js {
 		nj := Job{
 			Repo:        fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
+			Branch:      j.Metadata.Annotations["branch"],
+			HeadSHA:     j.Metadata.Annotations["head-sha"],
+			BaseSHA:     j.Metadata.Annotations["base-sha"],
 			Author:      j.Metadata.Annotations["author"],
 			Job:         j.Metadata.Labels["jenkins-job-name"],
 			Started:     j.Status.StartTime.Format(time.Stamp),
