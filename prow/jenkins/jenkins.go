@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -46,6 +47,14 @@ type Client struct {
 	user    string
 	token   string
 	dry     bool
+}
+
+type BuildRequest struct {
+	JobName  string
+	PRNumber int
+	BaseRef  string
+	BaseSHA  string
+	PullSHA  string
 }
 
 type Build struct {
@@ -103,13 +112,27 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
-func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
+func (c *Client) Build(br BuildRequest) (*Build, error) {
 	if c.dry {
 		return &Build{}, nil
 	}
 	buildID := uuid.NewV1().String()
-	u := fmt.Sprintf("%s/job/%s/buildWithParameters?ghprbPullId=%d&ghprbTargetBranch=%s&buildId=%s", c.baseURL, job, pr, branch, buildID)
-	resp, err := c.request(http.MethodPost, u)
+	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
+	if err != nil {
+		return nil, err
+	}
+	q := u.Query()
+	// These two are provided for backwards-compatability with scripts that
+	// used the ghprb plugin.
+	q.Set("ghprbPullID", strconv.Itoa(br.PRNumber))
+	q.Set("ghprbTargetBranch", br.BaseRef)
+
+	q.Set("PULL_NUMBER", strconv.Itoa(br.PRNumber))
+	q.Set("PULL_BASE_REF", br.BaseRef)
+	q.Set("PULL_BASE_SHA", br.BaseSHA)
+	q.Set("PULL_PULL_SHA", br.PullSHA)
+	u.RawQuery = q.Encode()
+	resp, err := c.request(http.MethodPost, u.String())
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +145,8 @@ func (c *Client) Build(job string, pr int, branch string) (*Build, error) {
 		return nil, err
 	}
 	return &Build{
-		jobName:  job,
-		pr:       pr,
+		jobName:  br.JobName,
+		pr:       br.PRNumber,
 		id:       buildID,
 		queueURL: loc,
 	}, nil

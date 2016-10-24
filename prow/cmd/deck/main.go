@@ -57,12 +57,14 @@ func main() {
 			logrus.WithError(err).Error("Error marshaling jobs.")
 			jd = []byte("[]")
 		}
-		v := "allBuilds"
-		if nv := r.URL.Query().Get("var"); nv != "" {
-			v = nv
+		// If we have a "var" query, then write out "var value = {...};".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
+		} else {
+			fmt.Fprintf(w, string(jd))
 		}
 		w.Header().Set("Cache-Control", "no-cache")
-		fmt.Fprintf(w, "var %s = %s;", v, string(jd))
 	})
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
 }
