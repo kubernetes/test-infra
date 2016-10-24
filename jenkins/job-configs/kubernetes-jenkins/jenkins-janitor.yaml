@@ -25,4 +25,14 @@
         - activate-gce-service-account
         - shell: |
             python $WORKSPACE/jenkins/janitor.py --project=sen-lu-test --hours=1
+            python $WORKSPACE/jenkins/janitor.py --project=kubernetes-pr-cri-validation --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-kubemark --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gce --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gci-gce --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gke --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gci-gke --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gci-kubemark --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-bldr-e2e-gce-fdrtn --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gce-etcd3 --hours=6 --dryrun=true
+            python $WORKSPACE/jenkins/janitor.py --project=k8s-jkns-pr-gci-bld-e2e-gce-fd --hours=6 --dryrun=true
 
