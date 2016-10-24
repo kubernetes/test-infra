@@ -83,11 +83,11 @@
     suffix:
     - daily:
         branch: master
+        frequency: '@daily'
         job-name: maintenance-daily
         repo-name: 'k8s.io/test-infra'
-        frequency: '@daily'
     - hourly:
         branch: master
+        frequency: '@hourly'
         job-name: maintenance-hourly
         repo-name: 'k8s.io/test-infra'
-        frequency: '@hourly'

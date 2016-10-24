@@ -843,30 +843,40 @@ class JobTest(unittest.TestCase):
     def testBootstrapMaintenanceYaml(self):
         def Check(job, name):
             job_name = 'maintenance-%s' % name
-            self.assertEquals(job_name, job.get('job-name'))
             self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
+            return job_name
 
         self.CheckBootstrapYaml('job-configs/bootstrap-maintenance.yaml', Check)
+
+    def testBootstrapMaintenanceCIYaml(self):
+        def Check(job, name):
+            job_name = 'maintenance-ci-%s' % name
+            self.assertIn('frequency', job)
+            return job_name
+
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml', Check)
+
+    def testBootstrapMaintenancePullYaml(self):
+        def Check(job, name):
+            job_name = 'maintenance-pull-%s' % name
+            self.assertIn('frequency', job)
+            return job_name
+
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
 
     def testBootstrapPullYaml(self):
         def Check(job, name):
             job_name = 'pull-%s' % name
-            self.assertEquals(job_name, job.get('job-name'))
             self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
+            return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml', Check)
 
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
-            self.assertEquals(job_name, job.get('job-name'))
             self.assertIn('branch', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
+            return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
 
@@ -876,9 +886,12 @@ class JobTest(unittest.TestCase):
             doc = yaml.safe_load(fp)
 
         project = None
+        defined_templates = set()
         for item in doc:
             if not isinstance(item, dict):
                 continue
+            if isinstance(item.get('job-template'), dict):
+                defined_templates.add(item['job-template']['name'])
             if not isinstance(item.get('project'), dict):
                 continue
             project = item['project']
@@ -886,6 +899,13 @@ class JobTest(unittest.TestCase):
             break
         else:
             self.fail('Could not find bootstrap-pull-jobs project')
+
+        self.assertIn('jobs', project)
+        used_templates = {j for j in project['jobs']}
+        msg = '\nMissing templates: %s\nUnused templates: %s' % (
+            ','.join(used_templates - defined_templates),
+            ','.join(defined_templates - used_templates))
+        self.assertEquals(defined_templates, used_templates, msg)
 
         jobs = project.get('suffix')
         if not jobs or not isinstance(jobs, list):
@@ -909,7 +929,11 @@ class JobTest(unittest.TestCase):
                     self.fail('Jobs may not contain {expansions}' % (
                         key, value))  # Use simple strings
             # Things to check on specific flavors.
-            check(real_job, name)
+            self.assertIn('repo-name', real_job)
+            self.assertIn('.', real_job['repo-name'])  # Has domain
+            job_name = check(real_job, name)
+            self.assertTrue(job_name)
+            self.assertEquals(job_name, real_job.get('job-name'))
 
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""

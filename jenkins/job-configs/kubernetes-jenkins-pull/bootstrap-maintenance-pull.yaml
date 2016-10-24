@@ -1,0 +1,44 @@
+- job-template:
+    name: 'maintenance-pull-{suffix}'  # Runs on each node once
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
+    properties:
+    - build-discarder:
+        days-to-keep: 14
+    wrappers:
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'go/src/{repo-name}/.git/'
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    - timeout:
+        timeout: 30
+        fail: true
+    triggers:
+    - timed: '{frequency}'
+
+- project:
+    name: bootstrap-maintenance-pull-jobs
+    jobs:
+    - 'maintenance-pull-{suffix}'
+    suffix:
+    - clean-projects:
+        branch: master
+        job-name: maintenance-pull-clean-projects
+        frequency: 'H H/3 * * *'
+        repo-name: 'k8s.io/test-infra'
+    - clean-ssh-keys:
+        branch: master
+        job-name: maintenance-pull-clean-ssh-keys
+        frequency: '@daily'
+        repo-name: 'k8s.io/test-infra'
