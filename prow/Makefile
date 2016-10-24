@@ -96,8 +96,8 @@ hook-service:
 
 line-image:
 	CGO_ENABLED=0 go build -o cmd/line/line k8s.io/test-infra/prow/cmd/line
-	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.21" cmd/line
-	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.21"
+	docker build -t "gcr.io/kubernetes-jenkins-pull/line:0.22" cmd/line
+	gcloud docker push "gcr.io/kubernetes-jenkins-pull/line:0.22"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker

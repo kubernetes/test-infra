@@ -122,9 +122,10 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 		return nil, err
 	}
 	q := u.Query()
+	q.Set("buildId", buildID)
 	// These two are provided for backwards-compatability with scripts that
 	// used the ghprb plugin.
-	q.Set("ghprbPullID", strconv.Itoa(br.PRNumber))
+	q.Set("ghprbPullId", strconv.Itoa(br.PRNumber))
 	q.Set("ghprbTargetBranch", br.BaseRef)
 
 	q.Set("PULL_NUMBER", strconv.Itoa(br.PRNumber))
