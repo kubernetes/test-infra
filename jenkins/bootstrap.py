@@ -110,7 +110,7 @@ def repository(repo):
 
 
 def random_sleep(attempt):
-    """Sleep 2**attempt seconds with a random factional offset."""
+    """Sleep 2**attempt seconds with a random fractional offset."""
     time.sleep(random.random() + attempt ** 2)
 
 
@@ -165,7 +165,7 @@ class GSUtil(object):
 
     def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
-        if generation:
+        if generation is not None:  # generation==0 means object does not exist
             gen = ['-h', 'x-goog-if-generation-match:%s' % generation]
         else:
             gen = []
@@ -605,7 +605,10 @@ def bootstrap(job, repo, branch, pull, root):
     except subprocess.CalledProcessError:
         logging.error('FAIL: %s', job)
     logging.info('Upload result and artifacts...')
-    finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    try:
+        finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    except subprocess.CalledProcessError:  # Still try to upload build log
+        success = False
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
     gsutil.copy_file(paths.build_log, build_log_path)
