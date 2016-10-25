@@ -132,7 +132,7 @@ function call_get_kube() {
       # We'll have to download and extract them ourselves instead.
       echo "Grabbing test binaries since cluster/get-kube-binaries.sh does not exist."
       local -r test_tarball=kubernetes-test.tar.gz
-      curl -L "${KUBERNETES_RELEASE_URL}/${KUBERNETES_RELEASE}/${test_tarball}" -o "${test_tarball}"
+      curl -L "${KUBERNETES_RELEASE_URL:-https://storage.googleapis.com/kubernetes-release/release}/${KUBERNETES_RELEASE}/${test_tarball}" -o "${test_tarball}"
       md5sum "${test_tarball}"
       tar -xzf "${test_tarball}"
     fi
