@@ -430,6 +430,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gke
 - name: kubernetes-soak-continuous-e2e-gke-gci
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gke-gci
+- name: kubernetes-soak-continuous-e2e-gce-cri
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-cri
 - name: kubernetes-soak-weekly-deploy-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce
 - name: kubernetes-soak-weekly-deploy-gce-1.2
@@ -448,6 +450,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gke
 - name: kubernetes-soak-weekly-deploy-gke-gci
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gke-gci
+- name: kubernetes-soak-weekly-deploy-gce-cri
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-cri
 - name: kubernetes-test-go
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go
 - name: kubernetes-test-go-release-1.2
@@ -1182,6 +1186,8 @@ dashboards:
     test_group_name: kubernetes-soak-continuous-e2e-gke
   - name: soak-continuous-e2e-gke-gci
     test_group_name: kubernetes-soak-continuous-e2e-gke-gci
+  - name: soak-continuous-e2e-gce-cri
+    test_group_name: kubernetes-soak-continuous-e2e-gce-cri
   - name: soak-weekly-deploy-gce
     test_group_name: kubernetes-soak-weekly-deploy-gce
   - name: soak-weekly-deploy-gce-1.2
@@ -1200,6 +1206,8 @@ dashboards:
     test_group_name: kubernetes-soak-weekly-deploy-gke
   - name: soak-weekly-deploy-gke-gci
     test_group_name: kubernetes-soak-weekly-deploy-gke-gci
+  - name: soak-weekly-deploy-gce-cri
+    test_group_name: kubernetes-soak-weekly-deploy-gce-cri
 
 - name: google-unit
   dashboard_tab:
