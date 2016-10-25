@@ -50,6 +50,7 @@ STAGE_KUBEMARK="KUBEMARK"
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
+: ${JENKINS_USE_GET_KUBE_SCRIPT:=y}
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
