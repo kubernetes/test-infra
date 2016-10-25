@@ -267,6 +267,7 @@
             timeout: 150
             job-env: |
                 export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
+                export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"

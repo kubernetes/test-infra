@@ -210,6 +210,7 @@
             description: 'Run the flaky tests on GCE, sequentially.'
             timeout: 180
             job-env: |
+                export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
                                          --ginkgo.skip=\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-flaky"
@@ -218,6 +219,7 @@
             description: 'Run the flaky tests on GCE, sequentially.'
             timeout: 180
             job-env: |
+                export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
                                          --ginkgo.skip=\[Feature:.+\]"
                 export PROJECT="k8s-jkns-gci-gce-flaky"
