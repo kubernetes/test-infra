@@ -621,7 +621,6 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_USE_SERVER_VERSION="y"
-                export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export PROJECT="k8s-e2e-gke-staging-parallel"
         - 'gke-prod':  # kubernetes-e2e-gke-prod
             description: 'Run E2E tests on GKE prod endpoint.'
