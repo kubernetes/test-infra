@@ -22,6 +22,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const lgtmLabel = "lgtm"
+
 func (ga *GitHubAgent) prTrigger(pr github.PullRequestEvent) error {
 	switch pr.Action {
 	case "opened":
@@ -48,6 +50,16 @@ func (ga *GitHubAgent) prTrigger(pr github.PullRequestEvent) error {
 		}
 	case "closed":
 		ga.deleteAll(pr.PullRequest)
+	case "labeled":
+		// When a PR is LGTMd, if it is untrusted then build it once.
+		if pr.Label.Name == lgtmLabel {
+			trusted, err := ga.trustedPullRequest(pr.PullRequest)
+			if err != nil {
+				return fmt.Errorf("could not validate PR: %s", err)
+			} else if !trusted {
+				ga.buildAll(pr.PullRequest)
+			}
+		}
 	}
 	return nil
 }
@@ -176,9 +188,9 @@ func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
 
 func (ga *GitHubAgent) askToJoin(pr github.PullRequest) error {
 	commentTemplate := `
-Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line.
+Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands will still work. Regular contributors should join the org to skip this step.
 
-Regular contributors should join the org to skip this step.`
+If you have questions or suggestions related to this bot's behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra) repository.`
 	comment := fmt.Sprintf(commentTemplate, ga.Org, ga.Org)
 
 	owner := pr.Base.Repo.Owner.Login

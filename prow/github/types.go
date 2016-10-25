@@ -42,6 +42,7 @@ type PullRequestEvent struct {
 	Action      string      `json:"action"`
 	Number      int         `json:"number"`
 	PullRequest PullRequest `json:"pull_request"`
+	Label       Label       `json:"label"`
 }
 
 // PullRequest contains information about a PullRequest.
