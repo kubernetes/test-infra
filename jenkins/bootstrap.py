@@ -45,12 +45,12 @@ import logging
 import os
 import pipes
 import random
+import re
 import select
 import socket
 import subprocess
 import sys
 import time
-
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -78,9 +78,10 @@ def call(cmd, stdin=None, check=True, output=None):
                 if not line:
                     reads.remove(fdesc)
                     continue
-                logging.info(line[:-1])
                 if output:
                     out.append(line)
+                else:
+                    logging.info(line[:-1])
             if fdesc == proc.stderr.fileno():
                 line = proc.stderr.readline()
                 if not line:
@@ -108,6 +109,11 @@ def repository(repo):
     return 'https://%s' % repo
 
 
+def random_sleep(attempt):
+    """Sleep 2**attempt seconds with a random fractional offset."""
+    time.sleep(random.random() + attempt ** 2)
+
+
 def checkout(repo, branch, pull):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
@@ -133,7 +139,7 @@ def checkout(repo, branch, pull):
             if cpe.returncode != 128:
                 raise
             logging.warning('git fetch failed')
-            time.sleep(random.random() + attempt ** 2)
+            random_sleep(attempt)
     call([git, 'checkout', 'FETCH_HEAD'])
 
 
@@ -152,11 +158,20 @@ class GSUtil(object):
     """A helper class for making gsutil commands."""
     gsutil = 'gsutil'
 
-    def upload_json(self, path, jdict):
+    def stat(self, path):
+        """Return metadata about the object, such as generation."""
+        cmd = [self.gsutil, 'stat', path]
+        return call(cmd, output=True)
+
+    def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
+        if generation is not None:  # generation==0 means object does not exist
+            gen = ['-h', 'x-goog-if-generation-match:%s' % generation]
+        else:
+            gen = []
         cmd = [
             self.gsutil, '-q',
-            '-h', 'Content-Type:application/json',
+            '-h', 'Content-Type:application/json'] + gen + [
             'cp', '-a', 'public-read',
             '-', path]
         call(cmd, stdin=json.dumps(jdict, indent=2))
@@ -178,6 +193,11 @@ class GSUtil(object):
         ]
         call(cmd, stdin=txt)
 
+    def cat(self, path, generation):
+        """Return contents of path#generation"""
+        cmd = [self.gsutil, '-q', 'cat', '%s#%s' % (path, generation)]
+        return call(cmd, output=True)
+
 
     def upload_artifacts(self, path, artifacts):
         """Upload artifacts to the specified path."""
@@ -194,24 +214,43 @@ class GSUtil(object):
 
 def append_result(gsutil, path, build, version, passed):
     """Download a json list and append metadata about this build to it."""
-    # TODO(fejta): ensure the object has not changed since downloading.
     # TODO(fejta): delete the clone of this logic in upload-to-gcs.sh
     #                  (this is update_job_result_cache)
-    cmd = ['gsutil', '-q', 'cat', path]
-    try:
-        cache = json.loads(call(cmd, output=True))
-        if not isinstance(cache, list):
-            raise ValueError(cache)
-    except (subprocess.CalledProcessError, ValueError):
-        cache = []
-    cache.append({
-        'version': version,
-        'buildnumber': build,
-        'passed': bool(passed),
-        'result': 'SUCCESS' if passed else 'FAILURE',
-    })
-    cache = cache[-200:]
-    gsutil.upload_json(path, cache)
+    end = time.time() + 300  # try for up to five minutes
+    errors = 0
+    while time.time() < end:
+        if errors:
+            random_sleep(min(errors, 3))
+        try:
+            out = gsutil.stat(path)
+            gen = re.search(r'Generation:\s+(\d+)', out).group(1)
+        except subprocess.CalledProcessError:
+            gen = 0
+        if gen:
+            try:
+                cache = json.loads(gsutil.cat(path, gen))
+                if not isinstance(cache, list):
+                    raise ValueError(cache)
+            except ValueError:
+                cache = []
+            except subprocess.CalledProcessError:  # gen doesn't exist
+                errors += 1
+                continue
+        else:
+            cache = []
+        cache.append({
+            'version': version,
+            'buildnumber': build,
+            'passed': bool(passed),
+            'result': 'SUCCESS' if passed else 'FAILURE',
+        })
+        cache = cache[-300:]
+        try:
+            gsutil.upload_json(path, cache, generation=gen)
+            return
+        except subprocess.CalledProcessError:
+            logging.warning('Failed to append to %s#%s', path, gen)
+        errors += 1
 
 
 def metadata(repo, artifacts):
@@ -244,16 +283,25 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
     """
 
     if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
-        gsutil.upload_artifacts(paths.artifacts, artifacts)
+        try:
+            gsutil.upload_artifacts(paths.artifacts, artifacts)
+        except subprocess.CalledProcessError:
+            logging.warning('Failed to upload artifacts')
 
     # Upload the latest build for the job
     for path in {paths.latest, paths.pr_latest}:
         if path:
-            gsutil.upload_text(path, str(build), cached=False)
+            try:
+                gsutil.upload_text(path, str(build), cached=False)
+            except subprocess.CalledProcessError:
+                logging.warning('Failed to update %s', path)
 
     # Upload a link to the build path in the directory
     if paths.pr_build_link:
-        gsutil.upload_text(paths.pr_build_link, paths.pr_path)
+        try:
+            gsutil.upload_text(paths.pr_build_link, paths.pr_path)
+        except subprocess.CalledProcessError:
+            logging.warning('Failed to write build path to %s', paths.pr_path)
 
     # github.com/kubernetes/release/find_green_build depends on append_result()
     # TODO(fejta): reconsider whether this is how we want to solve this problem.
@@ -267,7 +315,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         'passed': bool(success),
         'metadata': metadata(repo, artifacts),
     }
-    gsutil.upload_json(paths.finished, data)
+    gsutil.upload_json(paths.finished, data)  # Raise if this fails
 
 
 def test_infra(*paths):
@@ -557,7 +605,10 @@ def bootstrap(job, repo, branch, pull, root):
     except subprocess.CalledProcessError:
         logging.error('FAIL: %s', job)
     logging.info('Upload result and artifacts...')
-    finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    try:
+        finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    except subprocess.CalledProcessError:  # Still try to upload build log
+        success = False
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
     gsutil.copy_file(paths.build_log, build_log_path)
