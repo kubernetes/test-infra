@@ -126,6 +126,15 @@ function call_get_kube() {
     export KUBERNETES_RELEASE_URL
     KUBERNETES_SKIP_CONFIRM=y KUBERNETES_SKIP_CREATE_CLUSTER=y KUBERNETES_DOWNLOAD_TESTS=y \
       "$(dirname "${0}")/get-kube.sh"
+    if [[ ! -x kubernetes/cluster/get-kube-binaries.sh ]]; then
+      # If the get-kube-binaries.sh script doesn't exist, assume this is an older
+      # release without it, and thus the tests haven't been downloaded yet.
+      # We'll have to download and extract them ourselves instead.
+      local -r test_tarball=kubernetes-test.tar.gz
+      curl -L "${KUBERNETES_RELEASE_URL}/${KUBERNETES_RELEASE}/${test_tarball}" -o "${test_tarball}"
+      md5sum "${test_tarball}"
+      tar -xzf "${test_tarball}"
+    fi
 }
 
 ### END FUNCTIONS TO SUPPORT get-kube.sh ###
