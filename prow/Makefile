@@ -39,6 +39,7 @@ JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 # - line-image builds and pushes the line image.
 # - sinker-image builds and pushes the sinker image.
 # - sinker-deployment updates the sinker deployment.
+# - update-godeps deletes and recreates vendored dependencies.
 
 create-cluster:
 	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type "$(MACHINE_TYPE)" --scope "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --num-nodes "$(NUM_NODES)" --network "default" --enable-cloud-logging --enable-cloud-monitoring
@@ -119,3 +120,9 @@ deck-service:
 	kubectl create -f deck_service.yaml
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service
+
+update-godeps:
+	rm -rf vendor Godeps
+	godep save ./...
+
+.PHONY: update-godeps
