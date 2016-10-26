@@ -123,10 +123,19 @@ function set_release_vars_from_gke_cluster_version() {
 
 function call_get_kube() {
     [[ "${JENKINS_USE_GET_KUBE_SCRIPT:-}" =~ ^[yY]$ ]] || exit 2
+    local get_kube_sh="${WORKSPACE}/get-kube.sh"
+    if [[ ! -x "${get_kube_sh}" ]]; then
+      # If running outside docker (e.g. in soak tests) we may not have the
+      # script, so download it.
+      mkdir -p "${WORKSPACE}/_tmp/"
+      get_kube_sh="${WORKSPACE}/_tmp/get-kube.sh"
+      curl -fsSL --retry 3 --keepalive-time 2 https://get.k8s.io/ > "${get_kube_sh}"
+      chmod +x "${get_kube_sh}"
+    fi
     export KUBERNETES_RELEASE
     export KUBERNETES_RELEASE_URL
     KUBERNETES_SKIP_CONFIRM=y KUBERNETES_SKIP_CREATE_CLUSTER=y KUBERNETES_DOWNLOAD_TESTS=y \
-      "$(dirname "${0}")/get-kube.sh"
+      "${get_kube_sh}"
     if [[ ! -x kubernetes/cluster/get-kube-binaries.sh ]]; then
       # If the get-kube-binaries.sh script doesn't exist, assume this is an older
       # release without it, and thus the tests haven't been downloaded yet.
