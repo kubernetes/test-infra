@@ -96,7 +96,7 @@ test:
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)" cmd/hook
-	gcloud docker push "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)"
+	gcloud docker -- push "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)"
 
 hook-deployment:
 	kubectl apply -f cluster/hook_deployment.yaml
@@ -107,12 +107,12 @@ hook-service:
 line-image:
 	CGO_ENABLED=0 go build -o cmd/line/line k8s.io/test-infra/prow/cmd/line
 	docker build -t "gcr.io/$(PROJECT)/line:$(LINE_VERSION)" cmd/line
-	gcloud docker push "gcr.io/$(PROJECT)/line:$(LINE_VERSION)"
+	gcloud docker -- push "gcr.io/$(PROJECT)/line:$(LINE_VERSION)"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "gcr.io/$(PROJECT)/sinker:$(SINKER_VERSION)" cmd/sinker
-	gcloud docker push "gcr.io/$(PROJECT)/sinker:$(SINKER_VERSION)"
+	gcloud docker -- push "gcr.io/$(PROJECT)/sinker:$(SINKER_VERSION)"
 
 sinker-deployment:
 	kubectl apply -f cluster/sinker_deployment.yaml
@@ -120,7 +120,7 @@ sinker-deployment:
 deck-image:
 	CGO_ENABLED=0 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
 	docker build -t "gcr.io/$(PROJECT)/deck:$(DECK_VERSION)" cmd/deck
-	gcloud docker push "gcr.io/$(PROJECT)/deck:$(DECK_VERSION)"
+	gcloud docker -- push "gcr.io/$(PROJECT)/deck:$(DECK_VERSION)"
 
 deck-deployment:
 	kubectl apply -f cluster/deck_deployment.yaml
