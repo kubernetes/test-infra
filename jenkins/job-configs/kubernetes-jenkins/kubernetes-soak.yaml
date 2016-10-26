@@ -336,6 +336,29 @@
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
                 export E2E_OPT="--check_version_skew=false"
+        - 'gce-cri':
+            deploy-description: |
+                Deploy GCI based Kubernetes to soak cluster using the latest successful
+                Kubernetes build every week.<br>
+                If a kubernetes-soak-continuous-e2e-gce-cri build is running,
+                this deployment build will be blocked and remain in the queue
+                until the test run is complete.<br>
+            e2e-description: |
+                Assumes Kubernetes soak cluster is already deployed.<br>
+                If a kubernetes-soak-weekly-deploy-gce-cri build is enqueued,
+                builds will be blocked and remain in the queue until the
+                deployment is complete.<br>
+            branch: 'master'
+            job-env: |
+                export PROJECT="k8s-jkns-gce-cri-soak"
+                export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
+            provider-env: |
+                export KUBERNETES_PROVIDER="gce"
+                export E2E_MIN_STARTUP_PODS="8"
+                export KUBE_GCE_ZONE="us-central1-f"
+                export FAIL_ON_GCP_RESOURCE_LEAK="true"
+                export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
+                export KUBE_OS_DISTRIBUTION="gci"
     jobs:
         - 'kubernetes-soak-weekly-deploy-{suffix}'
         - 'kubernetes-soak-continuous-e2e-{suffix}'
