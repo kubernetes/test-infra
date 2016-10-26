@@ -622,8 +622,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build
-- name: daily-shame-mail
-  gcs_prefix: kubernetes-jenkins/logs/daily-shame-mail
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-release-1.2
 - name: kubelet-1.4-gce-e2e-ci
@@ -1548,8 +1546,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-large-deploy
   - name: cross-build
     test_group_name: kubernetes-cross-build
-  - name: daily-shame-mail
-    test_group_name: daily-shame-mail
   - name: gke-gci-staging-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-staging-release-1.2
   - name: kubelet-1.4-gce-e2e-ci
