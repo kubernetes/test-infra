@@ -23,24 +23,24 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"github.com/ghodss/yaml"
 )
 
 // JenkinsJob is the job-specific trigger info.
 type JenkinsJob struct {
 	// eg kubernetes-pull-build-test-e2e-gce
-	Name string `yaml:"name"`
+	Name string `json:"name"`
 	// Run for every PR, or only when a comment triggers it.
-	AlwaysRun bool `yaml:"always_run"`
+	AlwaysRun bool `json:"always_run"`
 	// Context line for GitHub status.
-	Context string `yaml:"context"`
+	Context string `json:"context"`
 	// eg @k8s-bot e2e test this
-	Trigger string `yaml:"trigger"`
+	Trigger string `json:"trigger"`
 	// Valid rerun command to give users. Must match Trigger.
-	RerunCommand string `yaml:"rerun_command"`
+	RerunCommand string `json:"rerun_command"`
 
 	// We'll set this when we load it. "-" means ignore.
-	re *regexp.Regexp `yaml:"-"`
+	re *regexp.Regexp `json:"-"`
 }
 
 type JobAgent struct {
