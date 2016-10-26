@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	"sync"
 
@@ -55,205 +54,40 @@ type githubClient interface {
 func (ga *GitHubAgent) Start() {
 	go func() {
 		for pr := range ga.PullRequestEvents {
-			if err := ga.handlePullRequestEvent(pr); err != nil {
-				logrus.WithError(err).Error("Error handling PR.")
-			}
+			ga.handlePullRequestEvent(pr)
 		}
 	}()
 	go func() {
 		for ic := range ga.IssueCommentEvents {
-			if err := ga.handleIssueCommentEvent(ic); err != nil {
-				logrus.WithError(err).Error("Error handling issue.")
-			}
+			ga.handleIssueCommentEvent(ic)
 		}
 	}()
 }
 
-func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) error {
-	owner := pr.PullRequest.Base.Repo.Owner.Login
-	name := pr.PullRequest.Base.Repo.Name
-	logrus.WithFields(logrus.Fields{
-		"org":  owner,
-		"repo": name,
+func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":  pr.PullRequest.Base.Repo.Owner.Login,
+		"repo": pr.PullRequest.Base.Repo.Name,
 		"pr":   pr.Number,
 		"url":  pr.PullRequest.HTMLURL,
-	}).Infof("Pull request %s.", pr.Action)
-
-	switch pr.Action {
-	case "opened":
-		// When a PR is opened, if the author is in the org then build it.
-		// Otherwise, ask for "ok to test". There's no need to look for previous
-		// "ok to test" comments since the PR was just opened!
-		member, err := ga.isMember(pr.PullRequest.User.Login)
-		if err != nil {
-			return fmt.Errorf("could not check membership: %s", err)
-		} else if member {
-			ga.buildAll(pr.PullRequest)
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"org":  owner,
-				"repo": name,
-				"pr":   pr.Number,
-			}).Infof("Commenting \"is this ok to test\".")
-			if err := ga.askToJoin(pr.PullRequest); err != nil {
-				return fmt.Errorf("could not ask to join: %s", err)
-			}
-		}
-	case "reopened", "synchronize":
-		// When a PR is updated, check that the user is in the org or that an org
-		// member has said "ok to test" before building. There's no need to ask
-		// for "ok to test" because we do that once when the PR is created.
-		trusted, err := ga.trustedPullRequest(pr.PullRequest)
-		if err != nil {
-			return fmt.Errorf("could not validate PR: %s", err)
-		} else if trusted {
-			ga.buildAll(pr.PullRequest)
-		}
-	case "closed":
-		ga.deleteAll(pr.PullRequest)
+	})
+	l.Infof("Pull request %s.", pr.Action)
+	if err := ga.prTrigger(pr); err != nil {
+		l.WithError(err).Error("Error triggering after pull request event.")
 	}
-	return nil
 }
 
-func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) error {
-	owner := ic.Repo.Owner.Login
-	name := ic.Repo.Name
-	number := ic.Issue.Number
-	author := ic.Comment.User.Login
-	logrus.WithFields(logrus.Fields{
-		"org":    owner,
-		"repo":   name,
-		"pr":     number,
-		"author": author,
+func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":    ic.Repo.Owner.Login,
+		"repo":   ic.Repo.Name,
+		"pr":     ic.Issue.Number,
+		"author": ic.Comment.User.Login,
 		"url":    ic.Comment.HTMLURL,
-	}).Infof("Issue comment %s.", ic.Action)
-
-	switch ic.Action {
-	case "created", "edited":
-		// If it's not an open PR, skip it.
-		if ic.Issue.PullRequest == nil {
-			return nil
-		}
-		if ic.Issue.State != "open" {
-			return nil
-		}
-		// Skip bot comments.
-		if author == "k8s-bot" || author == "k8s-ci-robot" {
-			return nil
-		}
-
-		// Which jobs does the comment want us to run?
-		requestedJobs := ga.JenkinsJobs.MatchingJobs(ic.Repo.FullName, ic.Comment.Body)
-		if len(requestedJobs) == 0 {
-			return nil
-		}
-
-		// Skip untrusted users.
-		orgMember, err := ga.isMember(author)
-		if err != nil {
-			return err
-		} else if !orgMember {
-			return nil
-		}
-
-		pr, err := ga.GitHubClient.GetPullRequest(owner, name, number)
-		if err != nil {
-			return err
-		}
-
-		for _, job := range requestedJobs {
-			kr := makeKubeRequest(job, *pr)
-			ga.BuildRequests <- kr
-		}
-	}
-	return nil
-}
-
-// trustedPullRequest returns whether or not the given PR should be tested.
-// It first checks if the author is in the org, then looks for "ok to test
-// comments by org members.
-func (ga *GitHubAgent) trustedPullRequest(pr github.PullRequest) (bool, error) {
-	author := pr.User.Login
-	// First check if the author is a member of the org.
-	orgMember, err := ga.isMember(author)
-	if err != nil {
-		return false, err
-	} else if orgMember {
-		return true, nil
-	}
-	// Next look for "ok to test" comments on the PR.
-	comments, err := ga.GitHubClient.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
-	if err != nil {
-		return false, err
-	}
-	for _, comment := range comments {
-		commentAuthor := comment.User.Login
-		// Skip comments by the PR author.
-		if commentAuthor == author {
-			continue
-		}
-		// Skip bot comments.
-		if commentAuthor == "k8s-bot" || commentAuthor == "k8s-ci-robot" {
-			continue
-		}
-		// Look for "ok to test"
-		if !okToTest.MatchString(comment.Body) {
-			continue
-		}
-		// Ensure that the commenter is in the org.
-		commentAuthorMember, err := ga.isMember(commentAuthor)
-		if err != nil {
-			return false, err
-		} else if commentAuthorMember {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (ga *GitHubAgent) askToJoin(pr github.PullRequest) error {
-	commentTemplate := `
-Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line.
-
-Regular contributors should join the org to skip this step.`
-	comment := fmt.Sprintf(commentTemplate, ga.Org, ga.Org)
-
-	owner := pr.Base.Repo.Owner.Login
-	name := pr.Base.Repo.Name
-	return ga.GitHubClient.CreateComment(owner, name, pr.Number, comment)
-}
-
-func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
-	return KubeRequest{
-		JobName: job.Name,
-		Context: job.Context,
-
-		RerunCommand: job.RerunCommand,
-
-		RepoOwner: pr.Base.Repo.Owner.Login,
-		RepoName:  pr.Base.Repo.Name,
-		PR:        pr.Number,
-		Author:    pr.User.Login,
-		BaseRef:   pr.Base.Ref,
-		BaseSHA:   pr.Base.SHA,
-		PullSHA:   pr.Head.SHA,
-	}
-}
-
-func (ga *GitHubAgent) buildAll(pr github.PullRequest) {
-	for _, job := range ga.JenkinsJobs.AllJobs(pr.Base.Repo.FullName) {
-		if !job.AlwaysRun {
-			continue
-		}
-		kr := makeKubeRequest(job, pr)
-		ga.BuildRequests <- kr
-	}
-}
-
-func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
-	for _, job := range ga.JenkinsJobs.AllJobs(pr.Base.Repo.FullName) {
-		kr := makeKubeRequest(job, pr)
-		ga.DeleteRequests <- kr
+	})
+	l.Infof("Issue comment %s.", ic.Action)
+	if err := ga.commentTrigger(ic); err != nil {
+		l.WithError(err).Error("Error triggering after issue comment event.")
 	}
 }
 

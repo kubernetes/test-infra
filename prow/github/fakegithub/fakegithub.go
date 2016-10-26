@@ -27,6 +27,10 @@ type FakeClient struct {
 	IssueComments  map[int][]github.IssueComment
 	IssueCommentID int
 	PullRequests   map[int]*github.PullRequest
+
+	// org/repo#number:label
+	LabelsAdded   []string
+	LabelsRemoved []string
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
@@ -68,5 +72,15 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 }
 
 func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) error {
+	return nil
+}
+
+func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
+	f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+	return nil
+}
+
+func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
+	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
 	return nil
 }
