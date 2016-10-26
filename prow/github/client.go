@@ -222,3 +222,33 @@ func (c *Client) CreateStatus(owner, repo, ref string, s Status) error {
 	}
 	return nil
 }
+
+func (c *Client) AddLabel(owner, repo string, number int, label string) error {
+	if c.dry {
+		return nil
+	}
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels", c.base, owner, repo, number), []string{label})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("response not 200: %s", resp.Status)
+	}
+	return nil
+}
+
+func (c *Client) RemoveLabel(owner, repo string, number int, label string) error {
+	if c.dry {
+		return nil
+	}
+	resp, err := c.request(http.MethodDelete, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, owner, repo, number, label), nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("response not 204: %s", resp.Status)
+	}
+	return nil
+}

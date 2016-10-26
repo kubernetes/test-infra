@@ -42,6 +42,7 @@ type PullRequestEvent struct {
 	Action      string      `json:"action"`
 	Number      int         `json:"number"`
 	PullRequest PullRequest `json:"pull_request"`
+	Label       Label       `json:"label"`
 }
 
 // PullRequest contains information about a PullRequest.
@@ -60,6 +61,12 @@ type PullRequestBranch struct {
 	Repo Repo   `json:"repo"`
 }
 
+type Label struct {
+	URL   string `json:"url"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
 // Repo contains general repository information.
 type Repo struct {
 	Owner    User   `json:"owner"`
@@ -76,11 +83,13 @@ type IssueCommentEvent struct {
 }
 
 type Issue struct {
-	User    User   `json:"user"`
-	Number  int    `json:"number"`
-	Title   string `json:"title"`
-	State   string `json:"state"`
-	HTMLURL string `json:"html_url"`
+	User      User    `json:"user"`
+	Number    int     `json:"number"`
+	Title     string  `json:"title"`
+	State     string  `json:"state"`
+	HTMLURL   string  `json:"html_url"`
+	Labels    []Label `json:"labels"`
+	Assignees []User  `json:"assignees"`
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
 }
