@@ -1,7 +1,7 @@
 - soak_defaults: &soak_defaults
     name: soak_defaults
     branch: 'master'
-    node: 'master'
+    node: 'e2e'
     disabled: '{obj:disable_job}'
     builders:
         - activate-gce-service-account
@@ -10,7 +10,7 @@
             {soak-env}
             {job-env}
             {post-env}
-            timeout -k {kill-timeout}m {run-timeout}m {legacy-runner} && rc=$? || rc=$?
+            timeout -k {kill-timeout}m {run-timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
 
 - job-template:
@@ -49,10 +49,11 @@
     workspace: '/var/lib/jenkins/jobs/kubernetes-soak-weekly-deploy-{suffix}/workspace'
     run-timeout: 600
     soak-env: |
-        export JENKINS_USE_EXISTING_BINARIES="y"
         export FAIL_ON_GCP_RESOURCE_LEAK="false"
         export E2E_UP="false"
         export E2E_DOWN="false"
+        # e2e tests will not exactly match server version
+        export E2E_OPT="--check_version_skew=false"
         # Clear out any orphaned namespaces in case previous run was interrupted.
         export E2E_CLEAN_START="true"
         # TODO: Remove when we figure out #22166 and other docker potential slowness.
@@ -79,6 +80,9 @@
         - timeout:
             timeout: '{jenkins-timeout}'
             fail: true
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
 
 - project:
     name: soak
@@ -302,7 +306,6 @@
                 export PROJECT="k8s-jkns-gke-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
-                export E2E_OPT="--check_version_skew=false"
         - 'gke-gci':
             deploy-description: |
                 Deploy GCI based Kubernetes to a GKE soak cluster using the staging GKE
@@ -335,7 +338,6 @@
                 export PROJECT="k8s-jkns-gke-gci-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
                 export MACHINE_TYPE="n1-standard-2"
-                export E2E_OPT="--check_version_skew=false"
         - 'gce-cri':
             deploy-description: |
                 Deploy GCI based Kubernetes to soak cluster using the latest successful
