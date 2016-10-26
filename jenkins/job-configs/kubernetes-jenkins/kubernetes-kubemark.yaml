@@ -119,7 +119,7 @@
             # TODO: We should replace it with 'scalability' instead of using
             # reusing "build" tag here once agents will have this tag.
             jenkins_node: 'build'
-            timeout: 300
+            timeout: 90
             cron-string: '{sq-cron-string}'
             job-env: |
                 export ENABLE_GARBAGE_COLLECTOR="true"
