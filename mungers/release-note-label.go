@@ -25,6 +25,8 @@ import (
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -40,6 +42,9 @@ const (
 One of the following labels is required %q, %q, %q or %q.
 Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes.`
 	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
+
+	noReleaseNoteComment = "none"
+	actionRequiredNote   = "action required"
 )
 
 var (
@@ -115,7 +120,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if completedReleaseNoteProcess(obj) {
+	if releaseNoteAlreadyAdded(obj) {
 		r.ensureNoRelNoteNeededLabel(obj)
 		return
 	}
@@ -125,8 +130,21 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !obj.HasLabel(releaseNoteLabelNeeded) {
-		obj.AddLabel(releaseNoteLabelNeeded)
+	labelToAdd := determineReleaseNoteLabel(obj)
+	if labelToAdd == releaseNoteLabelNeeded {
+		if !obj.HasLabel(releaseNoteLabelNeeded) {
+			obj.AddLabel(releaseNoteLabelNeeded)
+		}
+		if !obj.HasLabel(doNotMergeLabel) {
+			obj.AddLabel(doNotMergeLabel)
+		}
+	} else {
+		//going to apply some other release-note-label
+		if obj.HasLabel(releaseNoteLabelNeeded) {
+			obj.RemoveLabel(releaseNoteLabelNeeded)
+		}
+		obj.AddLabel(labelToAdd)
+		return
 	}
 
 	if !obj.HasLabel(lgtmLabel) {
@@ -141,7 +159,42 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 	obj.AddLabel(doNotMergeLabel)
 }
 
-func completedReleaseNoteProcess(obj *github.MungeObject) bool {
+// determineReleaseNoteLabel returns the label to be added if
+// correctly implemented in the PR template.  returns nil otherwise
+func determineReleaseNoteLabel(obj *github.MungeObject) string {
+	potentialMatch := getReleaseNote(*obj.Issue.Body)
+	return chooseLabel(potentialMatch)
+}
+
+// getReleaseNote returns the release note from a PR body
+// assumes that the PR body followed the PR template
+func getReleaseNote(body string) string {
+	noteMatcher := regexp.MustCompile("Release note.*```(.+)```")
+	potentialMatch := noteMatcher.FindStringSubmatch(body)
+	glog.Infof("Found %v as the release note", potentialMatch)
+	if potentialMatch == nil {
+		glog.Infof("The release note section was probably deleted")
+		return ""
+	}
+	return potentialMatch[1]
+}
+
+func chooseLabel(composedReleaseNote string) string {
+	composedReleaseNote = strings.ToLower(strings.Trim(composedReleaseNote, " "))
+
+	if composedReleaseNote == "" {
+		return releaseNoteLabelNeeded
+	}
+	if composedReleaseNote == noReleaseNoteComment {
+		return releaseNoteNone
+	}
+	if strings.Contains(composedReleaseNote, actionRequiredNote) {
+		return releaseNoteActionRequired
+	}
+	return releaseNote
+}
+
+func releaseNoteAlreadyAdded(obj *github.MungeObject) bool {
 	return obj.HasLabel(releaseNote) ||
 		obj.HasLabel(releaseNoteActionRequired) ||
 		obj.HasLabel(releaseNoteExperimental) ||
@@ -159,7 +212,7 @@ func (r *ReleaseNoteLabel) isStaleComment(obj *github.MungeObject, comment *gith
 		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
 		return true
 	}
-	stale := completedReleaseNoteProcess(obj)
+	stale := releaseNoteAlreadyAdded(obj)
 	if stale {
 		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
 	}
