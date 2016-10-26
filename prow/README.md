@@ -8,11 +8,7 @@
 1. The jobs themselves (`cmd/line`) start and watch the Jenkins job, setting
    the GitHub status line along the way.
 1. We garbage collect old jobs and pods using `cmd/sinker`.
-
-## Getting credentials
-
-Both update rules require your kubeconfig to point to the right place. Run
-`make get-cluster-credentials` to make it so.
+1. We provide a simple dashboard using `cmd/deck` that isn't quite useful yet.
 
 ## How to add new jobs
 
@@ -23,16 +19,6 @@ The Jenkins job itself should have no trigger. It will be called with string
 parameters `ghprbPullId` and `ghprbTargetBranch` which it can use to checkout
 the appropriate revision. It needs to accept the `buildId` parameter which the
 `line` job uses to track its progress.
-
-## How to update the cluster
-
-If you make a change to `hook`, `line`, or `sinker` bump the version in the
-makefile as well as in `hook_deployment.yaml`. Do not push yet, just make sure
-the code compiles and passes tests. Once your PR is reviewed, run
-`make update-cluster`.
-
-There shouldn't be any downtime for updates that don't reconfigure Jenkins
-jobs.
 
 ## Setup
 
