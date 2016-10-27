@@ -76,9 +76,9 @@ def collect(project, age, resource, filt):
 
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'],"%Y-%m-%dT%H:%M:%S")
-        print "Found %s, %s in %s" % (resource.name, item['name'], colname)
+        print "Found %s, %s in %s, created time = %s" % (resource.name, item['name'], colname, item['creationTimestamp'])
         if created < age:
-            print "Include %s, %s" % (resource.name, item['name'])
+            print "Added to janitor list: %s, %s" % (resource.name, item['name'])
             col[colname].append(item['name'])
     return col
 
@@ -97,7 +97,7 @@ def clear_resources(project, col, resource):
     err = 0
     for col, items in col.items():
         if args.dryrun:
-            print "Resource to be deleted: %s" % list(items)
+            print "Resource type %s to be deleted: %s" % (resource.name, list(items))
             continue
 
         # construct the customized gcloud commend
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         help='Filter down to these instances')
     parser.add_argument(
         '--dryrun',
-        default=False,
+        default=True,
         help='list but not delete resources')
     args = parser.parse_args()
 

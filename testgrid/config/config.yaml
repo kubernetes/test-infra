@@ -634,8 +634,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-deploy
-- name: jenkins-janitor
-  gcs_prefix: kubernetes-jenkins/logs/jenkins-janitor
 - name: kubernetes-e2e-gke-gci-subnet-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-subnet-release-1.2
 - name: maintenance-daily
@@ -1558,8 +1556,6 @@ dashboards:
     test_group_name: kops-build
   - name: gce-enormous-deploy
     test_group_name: kubernetes-e2e-gce-enormous-deploy
-  - name: jenkins-janitor
-    test_group_name: jenkins-janitor
   - name: gke-gci-subnet-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-subnet-release-1.2
   - name: debian-unstable
