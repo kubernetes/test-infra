@@ -23,6 +23,6 @@ build:
 	@echo Built $(IMG):$(TAG) and tagged with latest
 
 push: build
-	gcloud docker push $(IMG):$(TAG)
-	gcloud docker push $(IMG):latest
+	gcloud docker -- push $(IMG):$(TAG)
+	gcloud docker -- push $(IMG):latest
 	@echo Pushed $(IMG) with :latest and :$(TAG) tags
