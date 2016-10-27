@@ -207,21 +207,21 @@
               export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
               export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-flaky':  # kubernetes-e2e-gce-flaky
-            description: 'Run the flaky tests on GCE, sequentially.'
+            description: 'Run non-disruptive flaky tests on GCE, sequentially.'
             timeout: 180
             job-env: |
                 export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
-                                         --ginkgo.skip=\[Feature:.+\]"
+                                         --ginkgo.skip=\[Disruptive\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-e2e-gce-flaky"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gci-gce-flaky':  # kubernetes-e2e-gci-gce-flaky
-            description: 'Run the flaky tests on GCE, sequentially.'
+            description: 'Run non-disruptive flaky tests on GCE, sequentially.'
             timeout: 180
             job-env: |
                 export JENKINS_USE_GET_KUBE_SCRIPT=y
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Flaky\] \
-                                         --ginkgo.skip=\[Feature:.+\]"
+                                         --ginkgo.skip=\[Disruptive\]|\[Feature:.+\]"
                 export PROJECT="k8s-jkns-gci-gce-flaky"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-scalability':  # kubernetes-e2e-gce-scalability
