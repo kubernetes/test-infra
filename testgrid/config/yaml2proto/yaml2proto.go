@@ -42,6 +42,15 @@ func ValidateTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *con
 	// is_external and user_kubernetes_client should always be true
 	currentTestGroup.IsExternal = true
 	currentTestGroup.UseKubernetesClient = true
+
+	// deprecated
+	if currentTestGroup.NumFailuresToAlert == 0 {
+		currentTestGroup.NumFailuresToAlert = defaultTestGroup.NumFailuresToAlert
+	}
+
+	if currentTestGroup.AlertStateResultsHours == 0 {
+		currentTestGroup.AlertStateResultsHours = defaultTestGroup.AlertStateResultsHours
+	}
 }
 
 // Set up unfilled field in a DashboardTab using the default DashboardTab
