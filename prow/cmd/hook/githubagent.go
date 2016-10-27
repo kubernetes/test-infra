@@ -48,6 +48,8 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
+	AddLabel(owner, repo string, number int, label string) error
+	RemoveLabel(owner, repo string, number int, label string) error
 }
 
 // Start starts listening for events. It does not block.
@@ -88,6 +90,9 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	l.Infof("Issue comment %s.", ic.Action)
 	if err := ga.commentTrigger(ic); err != nil {
 		l.WithError(err).Error("Error triggering after issue comment event.")
+	}
+	if err := ga.lgtmComment(ic); err != nil {
+		l.WithError(err).Error("Error dealing with LGTM command.")
 	}
 }
 
