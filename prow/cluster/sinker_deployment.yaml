@@ -13,4 +13,4 @@ spec:
     spec:
       containers:
       - name: sinker
-        image: gcr.io/kubernetes-jenkins-pull/sinker:0.2
+        image: gcr.io/kubernetes-jenkins-pull/sinker:0.3
