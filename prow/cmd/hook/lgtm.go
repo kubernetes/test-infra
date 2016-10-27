@@ -31,7 +31,7 @@ var (
 // Add or remove LGTM when reviewers comment "/lgtm" or "/lgtm cancel".
 func (ga *GitHubAgent) lgtmComment(ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
-	if ic.Issue.PullRequest == nil || ic.Issue.State != "open" {
+	if ic.Issue.PullRequest == nil || ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
 	}
 
@@ -39,32 +39,21 @@ func (ga *GitHubAgent) lgtmComment(ic github.IssueCommentEvent) error {
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
-	// If we create or edit a "/lgtm" comment, add lgtm if necessary.
-	// If we delete a "/lgtm" comment, remove lgtm if necessary.
-	// If we create or edit a "/lgtm cancel" comment, remove lgtm if necessary.
-	act := false
+	// If we create an "/lgtm" comment, add lgtm if necessary.
+	// If we create a "/lgtm cancel" comment, remove lgtm if necessary.
 	wantLGTM := false
 	if lgtmRe.MatchString(ic.Comment.Body) {
-		act = true
-		wantLGTM = ic.Action == "created" || ic.Action == "edited"
+		wantLGTM = true
 	} else if lgtmCancelRe.MatchString(ic.Comment.Body) {
-		act = ic.Action == "created" || ic.Action == "edited"
 		wantLGTM = false
-	}
-	if !act {
+	} else {
 		return nil
 	}
 
-	isAssignee := false
-	for _, assignee := range ic.Issue.Assignees {
-		if ic.Comment.User.Login == assignee.Login {
-			isAssignee = true
-			break
-		}
-	}
-	isAuthor := ic.Comment.User.Login == ic.Issue.User.Login
 	// Allow authors to cancel LGTM. Do not allow authors to LGTM, and do not
 	// accept commands from any other user.
+	isAssignee := isIssueAssignee(ic.Issue, ic.Comment.User.Login)
+	isAuthor := ic.Comment.User.Login == ic.Issue.User.Login
 	if isAuthor && wantLGTM {
 		return ga.GitHubClient.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM your own PR.", ic.Comment.User.Login))
 	} else if !isAuthor {
@@ -75,18 +64,30 @@ func (ga *GitHubAgent) lgtmComment(ic github.IssueCommentEvent) error {
 		}
 	}
 
-	hasLGTM := false
-	for _, label := range ic.Issue.Labels {
-		if label.Name == lgtmLabel {
-			hasLGTM = true
-			break
-		}
-	}
-
+	// Only add the label if it doesn't have it, and vice versa.
+	hasLGTM := issueHasLabel(ic.Issue, lgtmLabel)
 	if hasLGTM && !wantLGTM {
 		return ga.GitHubClient.RemoveLabel(org, repo, number, lgtmLabel)
 	} else if !hasLGTM && wantLGTM {
 		return ga.GitHubClient.AddLabel(org, repo, number, lgtmLabel)
 	}
 	return nil
+}
+
+func isIssueAssignee(i github.Issue, user string) bool {
+	for _, assignee := range i.Assignees {
+		if user == assignee.Login {
+			return true
+		}
+	}
+	return false
+}
+
+func issueHasLabel(i github.Issue, label string) bool {
+	for _, label := range i.Labels {
+		if label.Name == lgtmLabel {
+			return true
+		}
+	}
+	return false
 }

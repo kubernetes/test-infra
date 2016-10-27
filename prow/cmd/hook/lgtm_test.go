@@ -59,14 +59,6 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle: true,
 		},
 		{
-			name:         "lgtm comment by reviewer, no lgtm on pr",
-			action:       "edited",
-			body:         "/lgtm",
-			commenter:    "r1",
-			hasLGTM:      false,
-			shouldToggle: true,
-		},
-		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
 			action:       "created",
 			body:         "/lgtm",
@@ -108,14 +100,6 @@ func TestLGTMComment(t *testing.T) {
 			hasLGTM:       true,
 			shouldToggle:  false,
 			shouldComment: true,
-		},
-		{
-			name:         "lgtm comment deleted by reviewer",
-			action:       "deleted",
-			body:         "/lgtm",
-			commenter:    "r1",
-			hasLGTM:      true,
-			shouldToggle: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer",
