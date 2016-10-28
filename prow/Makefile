@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-HOOK_VERSION   = 0.41
+HOOK_VERSION   = 0.42
 LINE_VERSION   = 0.23
 SINKER_VERSION = 0.3
 DECK_VERSION   = 0.4
