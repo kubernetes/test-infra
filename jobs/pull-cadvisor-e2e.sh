@@ -18,4 +18,4 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-BUILDER=true build-tools/jenkins_e2e.sh
+BUILDER=true build/jenkins_e2e.sh
