@@ -36,12 +36,12 @@ export KUBE_FASTBUILD=true
 
 # TODO(spxtr): once https://github.com/kubernetes/kubernetes/pull/35453 is in,
 # remove the first branch here.
-if [[ -e build/util.sh ]]; then
-  version=$(source build/util.sh && echo $(kube::release::semantic_version))
+if [[ -e build-tools/util.sh ]]; then
+  version=$(source build-tools/util.sh && echo $(kube::release::semantic_version))
 elif [[ -e build-tools/util.sh ]]; then
   version=$(source build-tools/util.sh && echo $(kube::release::semantic_version))
 else
-  echo "Could not find build/util.sh or build-tools/util.sh." >&2
+  echo "Could not find build-tools/util.sh or build-tools/util.sh." >&2
   exit 1
 fi
 gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${JOB_NAME}/${version}" "gs://kubernetes-release-dev/ci/${version}-pull-gke"
