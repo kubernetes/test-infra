@@ -45,7 +45,7 @@ export JENKINS_USE_LOCAL_BINARIES=y
 export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
 # Push federation images to GCS.
-./build-tools/push-federation-images.sh
+./build/push-federation-images.sh
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
 # Flake detection. Individual tests get a second chance to pass.
