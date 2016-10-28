@@ -68,8 +68,8 @@ export INSTANCE_PREFIX=${E2E_NAME}
 export KUBE_GCE_NETWORK=${E2E_NAME}
 export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 
-# Force to use container-vm.
-export KUBE_NODE_OS_DISTRIBUTION="debian"
+# Force to use GCI.
+export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
