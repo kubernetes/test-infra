@@ -1,0 +1,16 @@
+---
+google/cadvisor:
+- trigger
+
+kubernetes/charts:
+- trigger
+
+kubernetes/heapster:
+- trigger
+
+kubernetes/kubernetes:
+- trigger
+
+kubernetes/test-infra:
+- lgtm
+- trigger

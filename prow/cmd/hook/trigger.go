@@ -22,6 +22,9 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+// TODO(spxtr): Move all of this into a separate package.
+
+const triggerPluginName = "trigger"
 const lgtmLabel = "lgtm"
 
 func (ga *GitHubAgent) prTrigger(pr github.PullRequestEvent) error {

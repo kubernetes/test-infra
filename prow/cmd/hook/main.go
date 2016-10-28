@@ -37,7 +37,8 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to avoid mutating calls to GitHub.")
 	org       = flag.String("org", "kubernetes", "GitHub org to trust.")
 
-	jobConfig = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
+	jobConfig    = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
+	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	lineImage = flag.String("line-image", "", "Image to use for testing PRs.")
 
@@ -91,12 +92,16 @@ func main() {
 	jobAgent := &JobAgent{}
 	jobAgent.Start(*jobConfig)
 
+	pluginAgent := &PluginAgent{}
+	pluginAgent.Start(*pluginConfig)
+
 	githubAgent := &GitHubAgent{
 		DryRun:       *dryRun,
 		Org:          *org,
 		GitHubClient: githubClient,
 
 		JenkinsJobs: jobAgent,
+		Plugins:     pluginAgent,
 
 		PullRequestEvents:  prc,
 		IssueCommentEvents: icc,
