@@ -35,6 +35,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
     publishers:
         - junit-publisher
         - email-ext:
@@ -118,6 +119,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
     go-env: |
         export GOROOT=/usr/local/go
         export GOPATH=$WORKSPACE/go

@@ -28,6 +28,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
     builders:
         - activate-gce-service-account
         - shell: |
