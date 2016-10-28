@@ -55,7 +55,7 @@ if [[ "${JENKINS_ENABLE_DOCKER_IN_DOCKER:-}" =~ ^[yY]$ ]]; then
     )
 fi
 
-if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ ]]; then
+if [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
     docker_extra_args+=(\
       -v "${WORKSPACE}/_output":/workspace/_output:ro \
     )
