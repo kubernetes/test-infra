@@ -47,7 +47,14 @@ export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
 
 # Push federation images to GCS.
-./build/push-federation-images.sh
+if [[ -e build/push-federation-images.sh ]]; then
+  ./build/push-federation-images.sh
+elif [[ -e build-tools/push-federation-images.sh ]]; then
+  ./build-tools/push-federation-images.sh
+else
+  echo "Could not find build/push-federation-images.sh or build-tools/push-federation-images.sh." >&2
+  exit 1
+fi
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
 # Flake detection. Individual tests get a second chance to pass.
