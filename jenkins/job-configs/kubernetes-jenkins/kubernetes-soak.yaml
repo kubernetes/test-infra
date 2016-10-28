@@ -41,6 +41,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
 
 - job-template:
     name: 'kubernetes-soak-continuous-e2e-{suffix}'

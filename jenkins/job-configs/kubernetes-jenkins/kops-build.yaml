@@ -23,6 +23,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
     scm:
         - git:
             url: https://github.com/kubernetes/kops
@@ -43,6 +44,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
 
 - project:
     name: kops-builds

@@ -54,6 +54,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
 
 - project:
     name: kubernetes-test-go

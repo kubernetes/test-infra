@@ -33,6 +33,7 @@
         - workspace-cleanup:
             dirmatch: true
             external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
         - e2e-credentials-binding
 
 - project:
