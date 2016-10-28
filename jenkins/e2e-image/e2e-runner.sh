@@ -50,7 +50,6 @@ STAGE_KUBEMARK="KUBEMARK"
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
-: ${JENKINS_USE_GET_KUBE_SCRIPT:=y}
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -122,7 +121,6 @@ function set_release_vars_from_gke_cluster_version() {
 }
 
 function call_get_kube() {
-    [[ "${JENKINS_USE_GET_KUBE_SCRIPT:-}" =~ ^[yY]$ ]] || exit 2
     local get_kube_sh="${WORKSPACE}/get-kube.sh"
     if [[ ! -x "${get_kube_sh}" ]]; then
       # If running outside docker (e.g. in soak tests) we may not have the
@@ -149,69 +147,6 @@ function call_get_kube() {
 }
 
 ### END FUNCTIONS TO SUPPORT get-kube.sh ###
-
-### LEGACY FUNCTIONS TO SUPPORT DOWNLOADING BINARIES ###
-
-function fetch_output_tars() {
-    echo "Using binaries from _output."
-    cp _output/release-tars/kubernetes*.tar.gz .
-    unpack_binaries
-}
-
-function fetch_server_version_tars() {
-    local -r server_version="$(gcloud ${CMD_GROUP:-} container get-server-config --project=${PROJECT} --zone=${ZONE}  --format='value(defaultClusterVersion)')"
-    # Use latest build of the server version's branch for test files.
-    fetch_published_version_tars "ci/latest-${server_version:0:3}" false
-}
-
-function fetch_gci_version_tars() {
-    if ! [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-        echo "JENKINS_USE_GCI_VERSION must be set."
-        exit 1
-    fi
-    local -r gci_k8s_version="$(get_gci_k8s_version)"
-    echo "Using GCI builtin version: ${gci_k8s_version}"
-    fetch_tars_from_gcs "gs://${KUBE_GCS_RELEASE_BUCKET}/release" "${gci_k8s_version}"
-    unpack_binaries
-}
-
-# Use a published version like "ci/latest" (default), "release/latest",
-# "release/latest-1", or "release/stable". The second argument indicates
-# if we want to export the CLUSTER_API_VERSION variable for GKE CI.
-function fetch_published_version_tars() {
-    local -r published_version="${1}"
-    local -r set_cluster_version="${2:-false}"
-    IFS='/' read -a varr <<< "${published_version}"
-    path="${varr[0]}"
-    if [[ "${path}" == "release" ]]; then
-      local -r bucket="${KUBE_GCS_RELEASE_BUCKET}"
-    else
-      local -r bucket="${KUBE_GCS_DEV_RELEASE_BUCKET}"
-    fi
-    build_version=$(gsutil cat "gs://${bucket}/${published_version}.txt")
-    echo "Using published version $bucket/$build_version (from ${published_version})"
-    fetch_tars_from_gcs "gs://${bucket}/${path}" "${build_version}"
-    unpack_binaries
-    if [[ "${set_cluster_version}" == "true" ]]; then
-      # Set CLUSTER_API_VERSION for GKE CI
-      export CLUSTER_API_VERSION=$(echo ${build_version} | cut -c 2-)
-    fi
-}
-
-function fetch_tars_from_gcs() {
-    local -r gspath="${1}"
-    local -r build_version="${2}"
-    echo "Pulling binaries from GCS; using server version ${gspath}/${build_version}."
-    gsutil -mq cp "${gspath}/${build_version}/kubernetes.tar.gz" "${gspath}/${build_version}/kubernetes-test.tar.gz" .
-}
-
-function unpack_binaries() {
-    md5sum kubernetes*.tar.gz
-    tar -xzf kubernetes.tar.gz
-    tar -xzf kubernetes-test.tar.gz
-}
-
-### END LEGACY FUNCTIONS ###
 
 # TODO(ihmccreery) I'm not sure if this is necesssary, with the workspace check
 # below.
@@ -350,44 +285,24 @@ if [[ "${JENKINS_USE_EXISTING_BINARIES:-}" =~ ^[yY]$ ]]; then
 else
     clean_binaries
 
-    if [[ "${JENKINS_USE_GET_KUBE_SCRIPT:-}" =~ ^[yY]$ ]]; then
-        if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ || "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
-            set_release_vars_from_local_gcs_stage
-        elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
-            # This is for test, staging, and prod jobs on GKE, where we want to
-            # test what's running in GKE by default rather than some CI build.
-            set_release_vars_from_gke_cluster_version
-        elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-            KUBERNETES_RELEASE="$(get_gci_k8s_version)"
-            # Use the default KUBERNETES_RELEASE_URL.
-        else
-            # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
-            # usually what we're testing.
-            set_release_vars_from_gcs "${JENKINS_PUBLISHED_VERSION:-ci/latest}"
-            # Needed for GKE CI.
-            export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)
-        fi
-
-        call_get_kube
-
+    if [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
+        set_release_vars_from_local_gcs_stage
+    elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
+        # This is for test, staging, and prod jobs on GKE, where we want to
+        # test what's running in GKE by default rather than some CI build.
+        set_release_vars_from_gke_cluster_version
+    elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
+        KUBERNETES_RELEASE="$(get_gci_k8s_version)"
+        # Use the default KUBERNETES_RELEASE_URL.
     else
-        if [[ "${KUBE_RUN_FROM_OUTPUT:-}" =~ ^[yY]$ ]]; then
-            # TODO(spxtr) This should probably be JENKINS_USE_BINARIES_FROM_OUTPUT or
-            # something, rather than being prepended with KUBE, since it's sort of a
-            # meta-thing.
-            fetch_output_tars
-        elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
-            # This is for test, staging, and prod jobs on GKE, where we want to
-            # test what's running in GKE by default rather than some CI build.
-            fetch_server_version_tars
-        elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-            fetch_gci_version_tars
-        else
-            # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
-            # usually what we're testing.
-            fetch_published_version_tars "${JENKINS_PUBLISHED_VERSION:-ci/latest}" true
-        fi
+        # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
+        # usually what we're testing.
+        set_release_vars_from_gcs "${JENKINS_PUBLISHED_VERSION:-ci/latest}"
+        # Needed for GKE CI.
+        export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)
     fi
+
+    call_get_kube
 fi
 
 # Copy GCE keys so we don't keep cycling them.
@@ -448,15 +363,11 @@ esac
 # than the original version.
 if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
   mv kubernetes kubernetes_orig
-  if [[ "${JENKINS_USE_GET_KUBE_SCRIPT:-}" =~ ^[yY]$ ]]; then
-    (
+  (
       # Subshell so we don't override KUBERNETES_RELEASE
       set_release_vars_from_gcs "${JENKINS_PUBLISHED_SKEW_VERSION}"
       call_get_kube
-    )
-  else
-      fetch_published_version_tars "${JENKINS_PUBLISHED_SKEW_VERSION}" false
-  fi
+  )
   mv kubernetes kubernetes_skew
   mv kubernetes_orig kubernetes
   export BUILD_METADATA_KUBERNETES_SKEW_VERSION=$(cat kubernetes_skew/version || true)

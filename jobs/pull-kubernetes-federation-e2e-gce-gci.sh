@@ -41,7 +41,6 @@ export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
 export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n
-export KUBE_RUN_FROM_OUTPUT=y  # TODO(ixdy): remove
 export JENKINS_USE_LOCAL_BINARIES=y
 export KUBE_FASTBUILD=true
 ./hack/jenkins/build.sh
