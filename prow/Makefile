@@ -54,6 +54,7 @@ create-cluster:
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
+	kubectl create configmap plugins --from-file=plugins=plugins.yaml
 	@make line-image --no-print-directory
 	@make hook-image --no-print-directory
 	@make deck-image --no-print-directory
@@ -82,6 +83,9 @@ update-cluster: get-cluster-credentials
 update-jobs: get-cluster-credentials
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
+update-plugins: get-cluster-credentials
+	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+
 get-cluster-credentials:
 	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
 
@@ -91,7 +95,7 @@ clean:
 test:
 	go test -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster update-jobs clean test get-cluster-credentials
+.PHONY: create-cluster update-cluster update-jobs update-plugins clean test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook

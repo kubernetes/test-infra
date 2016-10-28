@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package lgtm
 
 import (
 	"fmt"
@@ -23,13 +23,23 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const PluginName = "lgtm"
+
 var (
+	lgtmLabel    = "lgtm"
 	lgtmRe       = regexp.MustCompile(`(?mi)^\/lgtm\r?$`)
 	lgtmCancelRe = regexp.MustCompile(`(?mi)^\/lgtm cancel\r?$`)
 )
 
-// Add or remove LGTM when reviewers comment "/lgtm" or "/lgtm cancel".
-func (ga *GitHubAgent) lgtmComment(ic github.IssueCommentEvent) error {
+type GitHubClient interface {
+	CreateComment(owner, repo string, number int, comment string) error
+	AddLabel(owner, repo string, number int, label string) error
+	RemoveLabel(owner, repo string, number int, label string) error
+}
+
+// HandleIssueComment adds or remove LGTM when reviewers comment "/lgtm" or
+// "/lgtm cancel".
+func HandleIssueComment(gc GitHubClient, ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
 	if ic.Issue.PullRequest == nil || ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
@@ -55,21 +65,21 @@ func (ga *GitHubAgent) lgtmComment(ic github.IssueCommentEvent) error {
 	isAssignee := isIssueAssignee(ic.Issue, ic.Comment.User.Login)
 	isAuthor := ic.Comment.User.Login == ic.Issue.User.Login
 	if isAuthor && wantLGTM {
-		return ga.GitHubClient.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM your own PR.", ic.Comment.User.Login))
+		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM your own PR.", ic.Comment.User.Login))
 	} else if !isAuthor {
 		if !isAssignee && wantLGTM {
-			return ga.GitHubClient.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
+			return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
 		} else if !isAssignee && !wantLGTM {
-			return ga.GitHubClient.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't remove LGTM from a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
+			return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't remove LGTM from a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
 		}
 	}
 
 	// Only add the label if it doesn't have it, and vice versa.
 	hasLGTM := issueHasLabel(ic.Issue, lgtmLabel)
 	if hasLGTM && !wantLGTM {
-		return ga.GitHubClient.RemoveLabel(org, repo, number, lgtmLabel)
+		return gc.RemoveLabel(org, repo, number, lgtmLabel)
 	} else if !hasLGTM && wantLGTM {
-		return ga.GitHubClient.AddLabel(org, repo, number, lgtmLabel)
+		return gc.AddLabel(org, repo, number, lgtmLabel)
 	}
 	return nil
 }

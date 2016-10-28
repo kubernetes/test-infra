@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
 // GitHubAgent consumes events off of the event channels and decides what
@@ -30,6 +31,7 @@ type GitHubAgent struct {
 	Org          string
 	GitHubClient githubClient
 
+	Plugins     *PluginAgent
 	JenkinsJobs *JobAgent
 
 	PullRequestEvents  <-chan github.PullRequestEvent
@@ -74,8 +76,10 @@ func (ga *GitHubAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
 		"url":  pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
-	if err := ga.prTrigger(pr); err != nil {
-		l.WithError(err).Error("Error triggering after pull request event.")
+	if ga.Plugins.Enabled(pr.PullRequest.Base.Repo.FullName, triggerPluginName) {
+		if err := ga.prTrigger(pr); err != nil {
+			l.WithError(err).Error("Error triggering after pull request event.")
+		}
 	}
 }
 
@@ -88,11 +92,15 @@ func (ga *GitHubAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 		"url":    ic.Comment.HTMLURL,
 	})
 	l.Infof("Issue comment %s.", ic.Action)
-	if err := ga.commentTrigger(ic); err != nil {
-		l.WithError(err).Error("Error triggering after issue comment event.")
+	if ga.Plugins.Enabled(ic.Repo.FullName, triggerPluginName) {
+		if err := ga.commentTrigger(ic); err != nil {
+			l.WithError(err).Error("Error triggering after issue comment event.")
+		}
 	}
-	if err := ga.lgtmComment(ic); err != nil {
-		l.WithError(err).Error("Error dealing with LGTM command.")
+	if ga.Plugins.Enabled(ic.Repo.FullName, lgtm.PluginName) {
+		if err := lgtm.HandleIssueComment(ga.GitHubClient, ic); err != nil {
+			l.WithError(err).Error("Error dealing with LGTM command.")
+		}
 	}
 }
 

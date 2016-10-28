@@ -52,6 +52,9 @@ spec:
         - name: job-configs
           mountPath: /etc/jobs
           readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
+          readOnly: true
       volumes:
       - name: hmac
         secret:
@@ -62,3 +65,6 @@ spec:
       - name: job-configs
         configMap:
           name: job-configs
+      - name: plugins
+        configMap:
+          name: plugins

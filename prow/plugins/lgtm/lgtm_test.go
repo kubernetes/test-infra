@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package lgtm
 
 import (
 	"testing"
@@ -122,9 +122,6 @@ func TestLGTMComment(t *testing.T) {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
 		}
-		ga := &GitHubAgent{
-			GitHubClient: fc,
-		}
 		ice := github.IssueCommentEvent{
 			Action: tc.action,
 			Comment: github.IssueComment{
@@ -142,7 +139,7 @@ func TestLGTMComment(t *testing.T) {
 		if tc.hasLGTM {
 			ice.Issue.Labels = []github.Label{{Name: lgtmLabel}}
 		}
-		if err := ga.lgtmComment(ice); err != nil {
+		if err := HandleIssueComment(fc, ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
