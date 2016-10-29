@@ -85,6 +85,33 @@ function running_in_docker() {
     grep -q docker /proc/self/cgroup
 }
 
+# Parse a published version like "ci/latest" (default), "release/latest",
+# "release/latest-1", "release/stable", or "release/v1.4.4", and extract the GCS
+# bucket, path and build version from it.
+# $1: published version
+function parse_published_version() {
+    local -r published_version="${1}"
+    IFS='/' read -a varr <<< "${published_version}"
+    local -r path="${varr[0]}"
+    if [[ "${path}" == "release" ]]; then
+      local -r bucket="${KUBE_GCS_RELEASE_BUCKET}"
+    else
+      local -r bucket="${KUBE_GCS_DEV_RELEASE_BUCKET}"
+    fi
+
+    version="${varr[1]}"
+    if [[ "${version}" =~ ^v[0-9]+.* ]]; then
+      # If the passed in `published_version` is already something like
+      # `release/v1.4.4`.
+      local -r build_version="${version}"
+    else
+      local -r build_version=$(gsutil cat "gs://${bucket}/${published_version}.txt")
+    fi
+
+    echo "${bucket}" "${path}" "${build_version}"
+}
+
+
 ### FUNCTIONS TO SUPPORT get-kube.sh ###
 
 # Sets KUBERNETES_RELEASE and KUBERNETES_RELEASE_URL to point to tarballs in the
@@ -100,18 +127,11 @@ function set_release_vars_from_local_gcs_stage() {
 }
 
 # Use a published version like "ci/latest" (default), "release/latest",
-# "release/latest-1", or "release/stable".
+# "release/latest-1", "release/stable", or "release/v1.4.4".
 # TODO(ixdy): maybe this should be in get-kube.sh?
 function set_release_vars_from_gcs() {
-    local -r published_version="${1}"
-    IFS='/' read -a varr <<< "${published_version}"
-    local -r path="${varr[0]}"
-    if [[ "${path}" == "release" ]]; then
-      local -r bucket="${KUBE_GCS_RELEASE_BUCKET}"
-    else
-      local -r bucket="${KUBE_GCS_DEV_RELEASE_BUCKET}"
-    fi
-    KUBERNETES_RELEASE=$(gsutil cat "gs://${bucket}/${published_version}.txt")
+    read bucket path build_version < <(parse_published_version "${1}")
+    KUBERNETES_RELEASE="${build_version}"
     KUBERNETES_RELEASE_URL="https://storage.googleapis.com/${bucket}/${path}"
 }
 
@@ -164,31 +184,13 @@ function fetch_server_version_tars() {
     fetch_published_version_tars "ci/latest-${server_version:0:3}" false
 }
 
-function fetch_gci_version_tars() {
-    if ! [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-        echo "JENKINS_USE_GCI_VERSION must be set."
-        exit 1
-    fi
-    local -r gci_k8s_version="$(get_gci_k8s_version)"
-    echo "Using GCI builtin version: ${gci_k8s_version}"
-    fetch_tars_from_gcs "gs://${KUBE_GCS_RELEASE_BUCKET}/release" "${gci_k8s_version}"
-    unpack_binaries
-}
-
 # Use a published version like "ci/latest" (default), "release/latest",
-# "release/latest-1", or "release/stable". The second argument indicates
-# if we want to export the CLUSTER_API_VERSION variable for GKE CI.
+# "release/latest-1", "release/stable" or "release/v1.4.4". The second argument
+# indicates if we want to export the CLUSTER_API_VERSION variable for GKE CI.
 function fetch_published_version_tars() {
     local -r published_version="${1}"
     local -r set_cluster_version="${2:-false}"
-    IFS='/' read -a varr <<< "${published_version}"
-    path="${varr[0]}"
-    if [[ "${path}" == "release" ]]; then
-      local -r bucket="${KUBE_GCS_RELEASE_BUCKET}"
-    else
-      local -r bucket="${KUBE_GCS_DEV_RELEASE_BUCKET}"
-    fi
-    build_version=$(gsutil cat "gs://${bucket}/${published_version}.txt")
+    read bucket path build_version < <(parse_published_version "${1}")
     echo "Using published version $bucket/$build_version (from ${published_version})"
     fetch_tars_from_gcs "gs://${bucket}/${path}" "${build_version}"
     unpack_binaries
@@ -251,6 +253,8 @@ function install_google_cloud_sdk_tarball() {
 }
 
 # Figures out the builtin k8s version of a GCI image.
+# If JENKINS_GCI_PATCH_K8S is set, returns the latest CI build on the same
+# branch instead.
 # Assumes: JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE
 function get_gci_k8s_version() {
     if ! [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
@@ -258,11 +262,18 @@ function get_gci_k8s_version() {
         exit 1
     fi
     if [[ -z "${JENKINS_GCI_HEAD_IMAGE_FAMILY:-}" ]] || [[ -z "${KUBE_GCE_MASTER_IMAGE:-}" ]]; then
-        echo "JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE must be set."
+        echo "JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE must both be set."
         exit 1
     fi
-    local -r gci_k8s_version="v$(gsutil cat gs://container-vm-image-staging/k8s-version-map/${KUBE_GCE_MASTER_IMAGE})"
-    echo "${gci_k8s_version}"
+    local -r gci_k8s_version="$(gsutil cat gs://container-vm-image-staging/k8s-version-map/${KUBE_GCE_MASTER_IMAGE})"
+    if [[ "${JENKINS_GCI_PATCH_K8S}" =~ ^[yY]$ ]]; then
+      # We always want to test against the builtin k8s version, but occationally
+      # the builtin version has known bugs that keep our tests red. In those
+      # cases, we use the latest CI build on the same branch instead.
+      echo "ci/latest-${gci_k8s_version:0:3}"
+    else
+      echo "release/v${gci_k8s_version}"
+    fi
 }
 
 # Specific settings for tests that use GCI HEAD images. I.e., if your test is
@@ -358,8 +369,7 @@ else
             # test what's running in GKE by default rather than some CI build.
             set_release_vars_from_gke_cluster_version
         elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-            KUBERNETES_RELEASE="$(get_gci_k8s_version)"
-            # Use the default KUBERNETES_RELEASE_URL.
+            set_release_vars_from_gcs "$(get_gci_k8s_version)"
         else
             # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
             # usually what we're testing.
@@ -381,7 +391,7 @@ else
             # test what's running in GKE by default rather than some CI build.
             fetch_server_version_tars
         elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-            fetch_gci_version_tars
+            fetch_published_version_tars "$(get_gci_k8s_version)"
         else
             # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
             # usually what we're testing.
