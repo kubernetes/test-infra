@@ -181,19 +181,29 @@ function install_google_cloud_sdk_tarball() {
     gcloud info
 }
 
-# Figures out the builtin k8s version of a GCI image.
+# Sets release vars using GCI image builtin k8s version.
+# If JENKINS_GCI_PATCH_K8S is set, uses the latest CI build on the same branch
+# instead.
 # Assumes: JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE
-function get_gci_k8s_version() {
+function set_release_vars_from_gci_builtin_version() {
     if ! [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
         echo "JENKINS_USE_GCI_VERSION must be set."
         exit 1
     fi
     if [[ -z "${JENKINS_GCI_HEAD_IMAGE_FAMILY:-}" ]] || [[ -z "${KUBE_GCE_MASTER_IMAGE:-}" ]]; then
-        echo "JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE must be set."
+        echo "JENKINS_GCI_HEAD_IMAGE_FAMILY and KUBE_GCE_MASTER_IMAGE must both be set."
         exit 1
     fi
-    local -r gci_k8s_version="v$(gsutil cat gs://container-vm-image-staging/k8s-version-map/${KUBE_GCE_MASTER_IMAGE})"
-    echo "${gci_k8s_version}"
+    local -r gci_k8s_version="$(gsutil cat gs://container-vm-image-staging/k8s-version-map/${KUBE_GCE_MASTER_IMAGE})"
+    if [[ "${JENKINS_GCI_PATCH_K8S}" =~ ^[yY]$ ]]; then
+      # We always want to test against the builtin k8s version, but occationally
+      # the builtin version has known bugs that keep our tests red. In those
+      # cases, we use the latest CI build on the same branch instead.
+      set_release_vars_from_gcs "ci/latest-${gci_k8s_version:0:3}"
+    else
+      KUBERNETES_RELEASE="v${gci_k8s_version}"
+      # Use the default KUBERNETES_RELEASE_URL.
+    fi
 }
 
 # Specific settings for tests that use GCI HEAD images. I.e., if your test is
@@ -288,8 +298,8 @@ else
         # test what's running in GKE by default rather than some CI build.
         set_release_vars_from_gke_cluster_version
     elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-        KUBERNETES_RELEASE="$(get_gci_k8s_version)"
-        # Use the default KUBERNETES_RELEASE_URL.
+        # Use GCI image builtin version. Needed for GCI release qual tests.
+        set_release_vars_from_gci_builtin_version
     else
         # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
         # usually what we're testing.
