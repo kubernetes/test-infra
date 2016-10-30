@@ -64,9 +64,10 @@ type Pod struct {
 }
 
 type PodSpec struct {
-	Volumes       []Volume    `json:"volumes,omitempty"`
-	Containers    []Container `json:"containers,omitempty"`
-	RestartPolicy string      `json:"restartPolicy,omitempty"`
+	Volumes       []Volume          `json:"volumes,omitempty"`
+	Containers    []Container       `json:"containers,omitempty"`
+	RestartPolicy string            `json:"restartPolicy,omitempty"`
+	NodeSelector  map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type PodPhase string
@@ -90,6 +91,16 @@ type Volume struct {
 	Name        string             `json:"name,omitempty"`
 	Secret      *SecretSource      `json:"secret,omitempty"`
 	DownwardAPI *DownwardAPISource `json:"downwardAPI,omitempty"`
+	HostPath    *HostPathSource    `json:"hostPath,omitempty"`
+	ConfigMap   *ConfigMapSource   `json:"configMap,omitempty"`
+}
+
+type ConfigMapSource struct {
+	Name string `json:"name,omitempty"`
+}
+
+type HostPathSource struct {
+	Path string `json:"path,omitempty"`
 }
 
 type SecretSource struct {
@@ -116,15 +127,21 @@ type Container struct {
 	Args    []string `json:"args,omitempty"`
 	WorkDir string   `json:"workingDir,omitempty"`
 	Env     []EnvVar `json:"env,omitempty"`
+	Ports   []Port   `json:"ports,omitempty"`
 
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
 	VolumeMounts    []VolumeMount    `json:"volumeMounts,omitempty"`
 }
 
+type Port struct {
+	ContainerPort int `json:"containerPort,omitempty"`
+	HostPort      int `json:"hostPort,omitempty"`
+}
+
 type EnvVar struct {
-	Name      string       `json:"name,omitempty"`
-	Value     string       `json:"value,omitempty"`
-	ValueFrom EnvVarSource `json:"valueFrom,omitempty"`
+	Name      string        `json:"name,omitempty"`
+	Value     string        `json:"value,omitempty"`
+	ValueFrom *EnvVarSource `json:"valueFrom,omitempty"`
 }
 
 type EnvVarSource struct {

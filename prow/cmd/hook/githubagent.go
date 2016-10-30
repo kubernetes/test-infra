@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
@@ -32,7 +33,7 @@ type GitHubAgent struct {
 	GitHubClient githubClient
 
 	Plugins     *PluginAgent
-	JenkinsJobs *JobAgent
+	JenkinsJobs *jobs.JobAgent
 
 	PullRequestEvents  <-chan github.PullRequestEvent
 	IssueCommentEvents <-chan github.IssueCommentEvent

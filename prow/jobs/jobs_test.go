@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package jobs
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ const testThis = "@k8s-bot test this"
 // Make sure that our rerun commands match our triggers.
 func TestJobTriggers(t *testing.T) {
 	ja := &JobAgent{}
-	if err := ja.load("../../jobs.yaml"); err != nil {
+	if err := ja.load("../jobs.yaml"); err != nil {
 		t.Fatalf("Could not load job configs: %v", err)
 	}
 	if len(ja.jobs) == 0 {
@@ -66,14 +66,14 @@ func TestJobTriggers(t *testing.T) {
 				}
 			}
 			// Ensure that jobs have a shell script of the same name.
-			if s, err := os.Stat(fmt.Sprintf("../../../jobs/%s.sh", job.Name)); err != nil {
+			if s, err := os.Stat(fmt.Sprintf("../../jobs/%s.sh", job.Name)); err != nil {
 				t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
 			} else {
-				if s.Mode() & 0111 == 0 {
-					t.Errorf("Not executable: %s.sh (%o)", job.Name, s.Mode() & 0777)
+				if s.Mode()&0111 == 0 {
+					t.Errorf("Not executable: %s.sh (%o)", job.Name, s.Mode()&0777)
 				}
-				if s.Mode() & 0444 == 0 {
-					t.Errorf("Not readable: %s.sh (%o)", job.Name, s.Mode() & 0777)
+				if s.Mode()&0444 == 0 {
+					t.Errorf("Not readable: %s.sh (%o)", job.Name, s.Mode()&0777)
 				}
 			}
 		}
@@ -156,7 +156,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actualJobs := ja.MatchingJobs(tc.repo, tc.body)
+		actualJobs := ja.MatchingJobs(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
 		match := true
 		if len(actualJobs) != len(tc.expectedJobs) {
 			match = false

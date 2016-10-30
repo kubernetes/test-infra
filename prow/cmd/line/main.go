@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// TODO(spxtr): Refactor and test this properly.
+
 package main
 
 import (
@@ -24,19 +26,21 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
+	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 )
 
 var (
 	job       = flag.String("job-name", "", "Which Jenkins job to build.")
-	context   = flag.String("context", "", "Build status context.")
 	repoOwner = flag.String("repo-owner", "", "Owner of the repo.")
 	repoName  = flag.String("repo-name", "", "Name of the repo to test.")
 	pr        = flag.Int("pr", 0, "Pull request to test.")
@@ -46,8 +50,7 @@ var (
 	namespace = flag.String("namespace", "default", "Namespace that we live in.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 
-	rerunCommand = flag.String("rerun-command", "", "What users should say to rerun the test.")
-
+	jobConfigs       = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
@@ -58,8 +61,7 @@ var (
 const guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
 
 type testClient struct {
-	Job     string
-	Context string
+	Job jobs.JenkinsJob
 
 	RepoOwner string
 	RepoName  string
@@ -69,8 +71,6 @@ type testClient struct {
 	PullSHA   string
 
 	DryRun bool
-
-	RerunCommand string
 
 	KubeJob       string
 	KubeClient    kubeClient
@@ -86,6 +86,8 @@ type githubClient interface {
 }
 
 type kubeClient interface {
+	GetPod(name string) (kube.Pod, error)
+	CreatePod(pod kube.Pod) (kube.Pod, error)
 	GetJob(name string) (kube.Job, error)
 	PatchJob(name string, job kube.Job) (kube.Job, error)
 }
@@ -130,9 +132,17 @@ func main() {
 		logrus.Fatalf("Error getting kube job name: %v", err)
 	}
 
+	ja := jobs.JobAgent{}
+	if err := ja.LoadOnce(*jobConfigs); err != nil {
+		logrus.WithError(err).Fatal("Error loading job config.")
+	}
+	found, jenkinsJob := ja.GetJob(fmt.Sprintf("%s/%s", *repoOwner, *repoName), *job)
+	if !found {
+		logrus.Fatalf("Could not find job %s in job config.", *job)
+	}
+
 	client := &testClient{
-		Job:       *job,
-		Context:   *context,
+		Job:       jenkinsJob,
 		RepoOwner: *repoOwner,
 		RepoName:  *repoName,
 		PRNumber:  *pr,
@@ -142,22 +152,25 @@ func main() {
 
 		DryRun: *dryRun,
 
-		RerunCommand: *rerunCommand,
-
 		KubeJob:       kubeJob,
 		KubeClient:    kc,
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
 	}
-	if err := client.TestPR(); err != nil {
-		logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR.")
-		return
+	if jenkinsJob.Spec == nil {
+		if err := client.TestPRJenkins(); err != nil {
+			logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR on Jenkins.")
+		}
+	} else {
+		if err := client.TestPRKubernetes(); err != nil {
+			logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR on Kubernetes.")
+		}
 	}
 }
 
 func fields(c *testClient) logrus.Fields {
 	return logrus.Fields{
-		"job":      c.Job,
+		"job":      c.Job.Name,
 		"org":      c.RepoOwner,
 		"repo":     c.RepoName,
 		"pr":       c.PRNumber,
@@ -167,12 +180,77 @@ func fields(c *testClient) logrus.Fields {
 	}
 }
 
-// TestPR starts a Jenkins build and watches it, updating the GitHub status as
+// TestPRKubernetes starts a pod and watches it, updating GitHub status as
 // necessary.
-func (c *testClient) TestPR() error {
+func (c *testClient) TestPRKubernetes() error {
+	logrus.WithFields(fields(c)).Info("Starting pod.")
+	name := uuid.NewV1().String()
+	spec := *c.Job.Spec
+	for i := range spec.Containers {
+		spec.Containers[i].Env = append(spec.Containers[i].Env,
+			kube.EnvVar{
+				Name:  "PULL_NUMBER",
+				Value: strconv.Itoa(c.PRNumber),
+			},
+			kube.EnvVar{
+				Name:  "PULL_BASE_REF",
+				Value: c.BaseRef,
+			},
+			kube.EnvVar{
+				Name:  "PULL_BASE_SHA",
+				Value: c.BaseSHA,
+			},
+			kube.EnvVar{
+				Name:  "PULL_PULL_SHA",
+				Value: c.PullSHA,
+			},
+			kube.EnvVar{
+				Name:  "BUILD_NUMBER",
+				Value: name,
+			},
+		)
+	}
+	p := kube.Pod{
+		Metadata: kube.ObjectMeta{
+			Name: name,
+		},
+		Spec: spec,
+	}
+	actual, err := c.KubeClient.CreatePod(p)
+	if err != nil {
+		c.tryCreateStatus(github.Error, "Error creating build pod.", "")
+		return err
+	}
+	c.tryCreateStatus(github.Pending, "Build started", "")
+	resultURL := c.guberURL(name)
+	for {
+		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
+		if err != nil {
+			c.tryCreateStatus(github.Error, "Error waiting for pod to complete.", "")
+			return err
+		}
+		if po.Status.Phase == kube.PodSucceeded {
+			c.tryCreateStatus(github.Success, "Build succeeded.", resultURL)
+			break
+		} else if po.Status.Phase == kube.PodFailed {
+			c.tryCreateStatus(github.Failure, "Build failed.", resultURL)
+			c.tryCreateFailureComment("")
+			break
+		} else if po.Status.Phase == kube.PodUnknown {
+			c.tryCreateStatus(github.Error, "Error watching build.", resultURL)
+			break
+		}
+		time.Sleep(20 * time.Second)
+	}
+	return nil
+}
+
+// TestPRJenkins starts a Jenkins build and watches it, updating the GitHub
+// status as necessary.
+func (c *testClient) TestPRJenkins() error {
 	logrus.WithFields(fields(c)).Info("Starting build.")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
-		JobName:  c.Job,
+		JobName:  c.Job.Name,
 		PRNumber: c.PRNumber,
 		BaseRef:  c.BaseRef,
 		BaseSHA:  c.BaseSHA,
@@ -201,7 +279,7 @@ func (c *testClient) TestPR() error {
 		return err
 	}
 
-	resultURL := c.guberURL(result.Number)
+	resultURL := c.guberURL(strconv.Itoa(result.Number))
 	c.tryCreateStatus(github.Pending, "Build started.", resultURL)
 	for {
 		if err != nil {
@@ -225,14 +303,14 @@ func (c *testClient) TestPR() error {
 	return nil
 }
 
-func (c *testClient) guberURL(number int) string {
+func (c *testClient) guberURL(build string) string {
 	url := guberBase
 	if c.RepoOwner != "kubernetes" {
 		url = fmt.Sprintf("%s/%s_%s", url, c.RepoOwner, c.RepoName)
 	} else if c.RepoName != "kubernetes" {
 		url = fmt.Sprintf("%s/%s", url, c.RepoName)
 	}
-	return fmt.Sprintf("%s/%d/%s/%d/", url, c.PRNumber, c.Job, number)
+	return fmt.Sprintf("%s/%d/%s/%s/", url, c.PRNumber, c.Job.Name, build)
 }
 
 func (c *testClient) tryCreateStatus(state, desc, url string) {
@@ -244,7 +322,7 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
 		State:       state,
 		Description: desc,
-		Context:     c.Context,
+		Context:     c.Job.Context,
 		TargetURL:   url,
 	})
 	if err != nil {
@@ -282,7 +360,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 		if ic.User.Login != "k8s-ci-robot" {
 			continue
 		}
-		if strings.HasPrefix(ic.Body, c.Context) {
+		if strings.HasPrefix(ic.Body, c.Job.Context) {
 			if err := c.GitHubClient.DeleteComment(c.RepoOwner, c.RepoName, ic.ID); err != nil {
 				logrus.WithFields(fields(c)).WithError(err).Error("Error deleting comment.")
 			}
@@ -292,7 +370,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d).
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/kubernetes/kubernetes/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
-	body := fmt.Sprintf(bodyFormat, c.Context, url, c.PullSHA, c.PRNumber, c.RerunCommand)
+	body := fmt.Sprintf(bodyFormat, c.Job.Context, url, c.PullSHA, c.PRNumber, c.Job.RerunCommand)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}

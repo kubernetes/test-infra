@@ -33,7 +33,6 @@ func TestCreateJob(t *testing.T) {
 	}
 	br := KubeRequest{
 		JobName: "kubernetes-e2e-gce",
-		Context: "GCE e2e",
 
 		RepoOwner: "kubernetes",
 		RepoName:  "kubernetes",

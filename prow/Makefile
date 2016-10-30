@@ -34,6 +34,9 @@ OAUTH_SECRET_FILE = ${HOME}/k8s-oauth-token
 JENKINS_SECRET_FILE = ${HOME}/jenkins
 JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 
+# Service account key for bootstrap jobs.
+SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
+
 # Useful rules:
 # - create-cluster turns up a cluster then prints out the webhook address.
 # - update-cluster pushes new image versions and updates the deployment.
@@ -48,10 +51,12 @@ JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 
 # Should probably move this to a script or something.
 create-cluster:
-	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type "$(MACHINE_TYPE)" --scope "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --num-nodes "$(NUM_NODES)" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type "$(MACHINE_TYPE)" --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --num-nodes "$(NUM_NODES)" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+	gcloud -q container --project "$(PROJECT)" node-pools create build-pool --zone "$(ZONE)" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=build
 	kubectl create secret generic hmac-token --from-file=hmac=$(HOOK_SECRET_FILE)
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
+	kubectl create secret generic service-account --from-file=service-account.json=$(JENKINS_SECRET_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml

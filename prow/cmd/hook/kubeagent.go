@@ -42,10 +42,6 @@ type KubeAgent struct {
 type KubeRequest struct {
 	// The Jenkins job name, such as "kubernetes-pull-build-test-e2e-gce".
 	JobName string
-	// The context string for the GitHub status, such as "Jenkins GCE e2e".
-	Context string
-
-	RerunCommand string
 
 	RepoOwner string
 	RepoName  string
@@ -139,7 +135,6 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 							Image: ka.LineImage,
 							Args: []string{
 								"--job-name=" + kr.JobName,
-								"--context=" + kr.Context,
 								"--repo-owner=" + kr.RepoOwner,
 								"--repo-name=" + kr.RepoName,
 								"--pr=" + strconv.Itoa(kr.PR),
@@ -148,7 +143,6 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 								"--pull-sha=" + kr.PullSHA,
 								"--dry-run=" + strconv.FormatBool(ka.DryRun),
 								"--jenkins-url=$(JENKINS_URL)",
-								"--rerun-command=" + kr.RerunCommand,
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
@@ -166,11 +160,16 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 									ReadOnly:  true,
 									MountPath: "/etc/labels",
 								},
+								{
+									Name:      "job-configs",
+									ReadOnly:  true,
+									MountPath: "/etc/jobs",
+								},
 							},
 							Env: []kube.EnvVar{
 								{
 									Name: "JENKINS_URL",
-									ValueFrom: kube.EnvVarSource{
+									ValueFrom: &kube.EnvVarSource{
 										ConfigMap: kube.ConfigMapKeySelector{
 											Name: "jenkins-address",
 											Key:  "jenkins-address",
@@ -204,6 +203,12 @@ func (ka *KubeAgent) createJob(kr KubeRequest) error {
 							Name: "jenkins",
 							Secret: &kube.SecretSource{
 								Name: "jenkins-token",
+							},
+						},
+						{
+							Name: "job-configs",
+							ConfigMap: &kube.ConfigMapSource{
+								Name: "job-configs",
 							},
 						},
 					},

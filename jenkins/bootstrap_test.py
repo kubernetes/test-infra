@@ -967,7 +967,6 @@ class JobTest(unittest.TestCase):
             'errexit',
             'nounset',
             'pipefail',
-            'xtrace',
         }
         for job, job_path in self.jobs:
             with open(job_path) as fp:
