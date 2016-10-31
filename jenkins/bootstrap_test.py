@@ -510,21 +510,6 @@ class SetupCredentialsTest(unittest.TestCase):
                 with Stub(bootstrap, 'call', Pass):
                     bootstrap.setup_credentials()
 
-    def testRequireGCEKey(self):
-        """Raise if the private gce does not exist."""
-        del self.env[bootstrap.GCE_KEY_ENV]
-        with Stub(os, 'environ', self.env) as fake:
-            pkf = 'FAKE_PRIVATE_KEY'
-            fake['HOME'] = 'kansas'
-            fake[bootstrap.GCE_KEY_ENV] = pkf
-            with Stub(os.path, 'isfile', lambda p: p != pkf):
-                with self.assertRaises(IOError):
-                    bootstrap.setup_credentials()
-
-            with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'call', Pass):
-                    bootstrap.setup_credentials()
-
 class SetupMagicEnvironmentTest(unittest.TestCase):
     def testWorkspace(self):
         """WORKSPACE exists, equals HOME and is set to cwd."""
@@ -834,11 +819,12 @@ class JobTest(unittest.TestCase):
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
-        for path, _, filenames in os.walk(
-            os.path.dirname(bootstrap.job_script(JOB))):
+        dirname = os.path.dirname(bootstrap.job_script(JOB))
+        for filenames in os.listdir(dirname):
             for job in filenames:
-                job_path = os.path.join(path, job)
-                yield job, job_path
+                if job.endswith('.sh'):
+                    job_path = os.path.join(dirname, job)
+                    yield job, job_path
 
     def testBootstrapMaintenanceYaml(self):
         def Check(job, name):
