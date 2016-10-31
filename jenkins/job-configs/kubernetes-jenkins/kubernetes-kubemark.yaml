@@ -150,7 +150,7 @@
             # reusing "build" tag here once agents will have this tag.
             jenkins_node: 'build'
             # 12h - load tests take really, really, really long time.
-            timeout: 720
+            timeout: 600
             cron-string: 'H H/12 * * *'
             job-env: |
                 export ENABLE_GARBAGE_COLLECTOR="true"
