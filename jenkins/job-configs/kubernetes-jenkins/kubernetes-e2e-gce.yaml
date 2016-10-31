@@ -321,6 +321,8 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 # Use new image for etcd.
+                export TEST_ETCD_IMAGE="3.0.12-experimental.1"
+                # TODO: Change to 3.0.12 after changes in main repo.
                 export TEST_ETCD_VERSION="3.0.12-experimental.1"
         - 'gci-gce-etcd3':  # kubernetes-e2e-gci-gce-etcd3
             cron-string: '{sq-cron-string}'
@@ -335,6 +337,8 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
                 # Use new image for etcd.
+                export TEST_ETCD_IMAGE="3.0.12-experimental.1"
+                # TODO: Change to 3.0.12 after changes in main repo.
                 export TEST_ETCD_VERSION="3.0.12-experimental.1"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
@@ -1015,7 +1019,10 @@
         export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
         # Increase delete collection parallelism
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
-        # Use etcd3 binary in etcd3 mode.
+        # =========================================
+        # Configuration we are targetting in 1.5
+        export TEST_ETCD_IMAGE="3.0.12-experimental.1"
+        # TODO: Change to 3.0.12 after changes in main repo.
         export TEST_ETCD_VERSION="3.0.12-experimental.1"
         export STORAGE_BACKEND="etcd3"
         export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
@@ -1041,12 +1048,6 @@
                 export APISERVER_TEST_ARGS="--max-requests-inflight=1000"
                 # Increase throughput in Load test.
                 export LOAD_TEST_THROUGHPUT=50
-                # =========================================
-                # Configuration we are targetting in 1.5
-                export TEST_ETCD_VERSION="3.0.12-experimental.1"
-                export STORAGE_BACKEND="etcd3"
-                export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
-                export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gce-enormous-deploy':  # kuberentes-e2e-gce-enormous-deploy
             description: 'Starts up empty 2000 node cluster and waits until it is running. Used for manual testing.'
             timeout: 300
