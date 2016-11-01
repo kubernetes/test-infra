@@ -234,7 +234,7 @@ func (c *testClient) TestPRKubernetes() error {
 			break
 		} else if po.Status.Phase == kube.PodFailed {
 			c.tryCreateStatus(github.Failure, "Build failed.", resultURL)
-			c.tryCreateFailureComment("")
+			c.tryCreateFailureComment(resultURL)
 			break
 		} else if po.Status.Phase == kube.PodUnknown {
 			c.tryCreateStatus(github.Error, "Error watching build.", resultURL)
