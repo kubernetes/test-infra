@@ -70,6 +70,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.3
 - name: kubernetes-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.4
+- name: kubernetes-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.5
 - name: kubernetes-e2e-aws
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.4
@@ -1283,6 +1285,8 @@ dashboards:
     test_group_name: kubernetes-build-1.3
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
   - name: test-go
     test_group_name: kubernetes-test-go
   - name: test-go-release-1.2

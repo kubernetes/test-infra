@@ -66,6 +66,10 @@
             branch: 'release-1.4'
             timeout: 50
             job-env: ''  # Empty expected
+        - 'build-1.5':
+            branch: 'release-1.5'
+            timeout: 50
+            job-env: ''  # Empty expected
         - 'federation-build':
             branch: 'master'
             timeout: 50
