@@ -68,5 +68,13 @@
                 export E2E_NAME="e2e-aws-1-4"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
+        - 'aws-release-1.5':  # kubernetes-e2e-aws-release-1.5
+            description: 'Run e2e tests on AWS using the latest successful 1.5 Kubernetes build.'
+            cron-string: '@daily'
+            trigger-job: 'kubernetes-build-1.5'
+            job-env: |
+                export E2E_NAME="e2e-aws-1-5"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector"
     jobs:
         - 'kubernetes-e2e-{aws-suffix}'
