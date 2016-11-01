@@ -472,6 +472,9 @@ test_groups:
 - name: kubernetes-test-go-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.4
   days_of_results: 4
+- name: kubernetes-test-go-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.5
+  days_of_results: 4
 - name: kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-master
 - name: kubernetes-verify-release-1.4
@@ -1297,6 +1300,8 @@ dashboards:
     test_group_name: kubernetes-test-go-release-1.3
   - name: test-go-release-1.4
     test_group_name: kubernetes-test-go-release-1.4
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
   - name: verify-master
     test_group_name: kubernetes-verify-master
   - name: verify-release-1.4
