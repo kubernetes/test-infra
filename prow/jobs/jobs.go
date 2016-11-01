@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package jobs
 
 import (
 	"io/ioutil"
@@ -24,6 +24,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 // JenkinsJob is the job-specific trigger info.
@@ -38,6 +40,8 @@ type JenkinsJob struct {
 	Trigger string `json:"trigger"`
 	// Valid rerun command to give users. Must match Trigger.
 	RerunCommand string `json:"rerun_command"`
+	// Kubernetes pod spec.
+	Spec *kube.PodSpec `json:"spec,omitempty"`
 
 	// We'll set this when we load it. "-" means ignore.
 	re *regexp.Regexp `json:"-"`
@@ -59,11 +63,36 @@ func (ja *JobAgent) Start(path string) {
 	}()
 }
 
-func (ja *JobAgent) MatchingJobs(fullRepoName, body string) []JenkinsJob {
+func (ja *JobAgent) SetJobs(jobs map[string][]JenkinsJob) error {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	nj := map[string][]JenkinsJob{}
+	for k, v := range jobs {
+		nj[k] = make([]JenkinsJob, len(v))
+		copy(nj[k], v)
+		for i := range v {
+			if re, err := regexp.Compile(v[i].Trigger); err != nil {
+				return err
+			} else {
+				nj[k][i].re = re
+			}
+		}
+	}
+	ja.jobs = nj
+	return nil
+}
+
+func (ja *JobAgent) LoadOnce(path string) error {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	return ja.load(path)
+}
+
+func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Regexp) []JenkinsJob {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	var result []JenkinsJob
-	ott := okToTest.MatchString(body)
+	ott := testAll.MatchString(body)
 	if jobs, ok := ja.jobs[fullRepoName]; ok {
 		for _, job := range jobs {
 			if job.re.MatchString(body) || (ott && job.AlwaysRun) {
@@ -80,6 +109,17 @@ func (ja *JobAgent) AllJobs(fullRepoName string) []JenkinsJob {
 	res := make([]JenkinsJob, len(ja.jobs[fullRepoName]))
 	copy(res, ja.jobs[fullRepoName])
 	return res
+}
+
+func (ja *JobAgent) GetJob(repo, job string) (bool, JenkinsJob) {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	for _, j := range ja.jobs[repo] {
+		if j.Name == job {
+			return true, j
+		}
+	}
+	return false, JenkinsJob{}
 }
 
 // Hold the lock.
@@ -112,5 +152,3 @@ func (ja *JobAgent) tryLoad(path string) {
 		logrus.WithField("path", path).WithError(err).Error("Error loading config.")
 	}
 }
-
-var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)

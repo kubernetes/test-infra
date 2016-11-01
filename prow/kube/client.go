@@ -125,6 +125,18 @@ func NewClientInCluster(namespace string) (*Client, error) {
 		namespace: namespace,
 	}, nil
 }
+func (c *Client) GetPod(name string) (Pod, error) {
+	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
+	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
+	if err != nil {
+		return Pod{}, err
+	}
+	var retPod Pod
+	if err = json.Unmarshal(body, &retPod); err != nil {
+		return Pod{}, err
+	}
+	return retPod, nil
+}
 
 func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
 	var sel []string
@@ -189,6 +201,24 @@ func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
 		return nil, err
 	}
 	return jl.Items, nil
+}
+
+func (c *Client) CreatePod(p Pod) (Pod, error) {
+	b, err := json.Marshal(p)
+	if err != nil {
+		return Pod{}, err
+	}
+	buf := bytes.NewBuffer(b)
+	path := fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace)
+	body, err := c.request(http.MethodPost, path, map[string]string{}, buf)
+	if err != nil {
+		return Pod{}, err
+	}
+	var retPod Pod
+	if err = json.Unmarshal(body, &retPod); err != nil {
+		return Pod{}, err
+	}
+	return retPod, nil
 }
 
 func (c *Client) CreateJob(j Job) (Job, error) {

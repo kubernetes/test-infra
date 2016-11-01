@@ -28,6 +28,7 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -89,7 +90,7 @@ func main() {
 		IssueCommentEvents: icc,
 	}
 
-	jobAgent := &JobAgent{}
+	jobAgent := &jobs.JobAgent{}
 	jobAgent.Start(*jobConfig)
 
 	pluginAgent := &PluginAgent{}

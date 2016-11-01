@@ -18,14 +18,18 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jobs"
 )
 
 // TODO(spxtr): Move all of this into a separate package.
 
 const triggerPluginName = "trigger"
 const lgtmLabel = "lgtm"
+
+var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
 
 func (ga *GitHubAgent) prTrigger(pr github.PullRequestEvent) error {
 	switch pr.Action {
@@ -87,7 +91,7 @@ func (ga *GitHubAgent) commentTrigger(ic github.IssueCommentEvent) error {
 		}
 
 		// Which jobs does the comment want us to run?
-		requestedJobs := ga.JenkinsJobs.MatchingJobs(ic.Repo.FullName, ic.Comment.Body)
+		requestedJobs := ga.JenkinsJobs.MatchingJobs(ic.Repo.FullName, ic.Comment.Body, okToTest)
 		if len(requestedJobs) == 0 {
 			return nil
 		}
@@ -130,12 +134,9 @@ func (ga *GitHubAgent) deleteAll(pr github.PullRequest) {
 	}
 }
 
-func makeKubeRequest(job JenkinsJob, pr github.PullRequest) KubeRequest {
+func makeKubeRequest(job jobs.JenkinsJob, pr github.PullRequest) KubeRequest {
 	return KubeRequest{
 		JobName: job.Name,
-		Context: job.Context,
-
-		RerunCommand: job.RerunCommand,
 
 		RepoOwner: pr.Base.Repo.Owner.Login,
 		RepoName:  pr.Base.Repo.Name,

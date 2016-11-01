@@ -17,11 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"regexp"
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/jobs"
 )
 
 func TestTrusted(t *testing.T) {
@@ -237,21 +237,21 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		}
 		s := &GitHubAgent{
-			GitHubClient: g,
-			JenkinsJobs: &JobAgent{
-				jobs: map[string][]JenkinsJob{
-					"org/repo": {
-						{
-							Name:      "job",
-							AlwaysRun: true,
-							Context:   "job job",
-							re:        regexp.MustCompile(`@k8s-bot test this`),
-						},
-					},
-				},
-			},
+			GitHubClient:  g,
+			JenkinsJobs:   &jobs.JobAgent{},
 			BuildRequests: brc,
 		}
+		s.JenkinsJobs.SetJobs(map[string][]jobs.JenkinsJob{
+			"org/repo": {
+				{
+					Name:      "job",
+					AlwaysRun: true,
+					Context:   "job job",
+					Trigger:   "@k8s-bot test this",
+				},
+			},
+		})
+
 		var pr *struct{}
 		if tc.IsPR {
 			pr = &struct{}{}
@@ -296,22 +296,22 @@ func TestHandleIssueComment(t *testing.T) {
 func TestClosePR(t *testing.T) {
 	drc := make(chan KubeRequest, 2)
 	s := &GitHubAgent{
-		JenkinsJobs: &JobAgent{
-			jobs: map[string][]JenkinsJob{
-				"org/repo": {
-					{
-						Name:      "job1",
-						AlwaysRun: true,
-					},
-					{
-						Name:      "job2",
-						AlwaysRun: false,
-					},
-				},
-			},
-		},
+		JenkinsJobs:    &jobs.JobAgent{},
 		DeleteRequests: drc,
 	}
+	s.JenkinsJobs.SetJobs(map[string][]jobs.JenkinsJob{
+		"org/repo": {
+			{
+				Name:      "job1",
+				AlwaysRun: true,
+			},
+			{
+				Name:      "job2",
+				AlwaysRun: false,
+			},
+		},
+	})
+
 	err := s.prTrigger(github.PullRequestEvent{
 		Action: "closed",
 		PullRequest: github.PullRequest{

@@ -1,7 +1,7 @@
 # PR Jenkins job triggering definitions.
 # Keys: Full repo name: "org/repo".
 # Values: List of jobs to run when events occur in the repo.
-#   name:          Jenkins job name.
+#   name:          Job name.
 #   trigger:       Regexp commenters can say to trigger the job.
 #   always_run:    Whether to run for every PR. Default is false. If this is
 #                  set then your trigger needs to match "@k8s-bot test this".
@@ -9,9 +9,11 @@
 #   rerun_command: How should users trigger just this job, as a string, not a
 #                  regex. For example, if the trigger regex is "(e2e )?test",
 #                  then a rerun command might be "e2e test".
+#   spec:          If this exists then run a kubernetes pod with this spec.
+#                  Otherwise, run a Jenkins job.
 # The unit tests in cmd/hook/jobs_test.go ensure that the job definitions are
 # valid.
-# TODO(fejta): ensure all jobs define an owner
+# TODO(fejta): Ensure all jobs define an owner.
 ---
 google/cadvisor:
 - name: pull-cadvisor-e2e
@@ -35,6 +37,44 @@ kubernetes/heapster:
   trigger: "@k8s-bot test this"
 
 kubernetes/kubernetes:
+- name: pull-kubernetes-bazel
+  context: Jenkins Bazel Build
+  rerun_command: "@k8s-bot bazel build this"
+  trigger: "@k8s-bot bazel build this"
+  spec:
+    nodeSelector:
+      role: build
+    containers:
+    - name: builder
+      image: gcr.io/k8s-testimages/bazelbuild:0.0
+      command: ["/bin/bash", "-c"]
+      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=github.com/kubernetes/kubernetes --pull=${PULL_NUMBER} --branch=${PULL_BASE_REF} --job=pull-kubernetes-bazel"]
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache/bazel
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      # We only want one of these to run per node. Once pod affinity is GA, use
+      # that. Until then, use a hostPort.
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+    restartPolicy: Never
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: service
+      secret:
+        secretName: service-account
+
 - name: pull-kubernetes-cross
   context: Jenkins Cross Build
   rerun_command: "@k8s-bot build this"

@@ -466,13 +466,6 @@ def build_name(started):
 
 def setup_credentials():
     """Run some sanity checks and activate gcloud."""
-    # TODO(fejta): also check aws, and skip gce check when not necessary.
-    if not os.path.isfile(os.environ[GCE_KEY_ENV]):
-        raise IOError(
-            'Cannot find gce ssh key',
-            os.environ[GCE_KEY_ENV],
-        )
-
     # TODO(fejta): stop activating inside the image
     # TODO(fejta): allow use of existing gcloud auth
     if not os.path.isfile(os.environ[SERVICE_ACCOUNT_ENV]):

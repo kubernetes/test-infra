@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/jobs"
 )
 
 func TestFailureComment(t *testing.T) {
@@ -53,8 +54,10 @@ func TestFailureComment(t *testing.T) {
 		IssueCommentID: 9,
 	}
 	cl := testClient{
-		Job:          "test-job",
-		Context:      "Jenkins test",
+		Job: jobs.JenkinsJob{
+			Name:    "test-job",
+			Context: "Jenkins test",
+		},
 		PRNumber:     5,
 		PullSHA:      "abcde",
 		GitHubClient: ghc,
@@ -100,12 +103,12 @@ func TestGuberURL(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		c := &testClient{
-			Job:       "j",
+			Job:       jobs.JenkinsJob{Name: "j"},
 			PRNumber:  5,
 			RepoOwner: tc.RepoOwner,
 			RepoName:  tc.RepoName,
 		}
-		actual := c.guberURL(1)[len(guberBase):]
+		actual := c.guberURL("1")[len(guberBase):]
 		if actual != tc.ExpectedURL {
 			t.Errorf("Gubernator URL wrong. Got %s, expected %s", actual, tc.ExpectedURL)
 		}
