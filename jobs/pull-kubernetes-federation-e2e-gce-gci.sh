@@ -69,7 +69,7 @@ export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 export PATH=${PATH}:/usr/local/go/bin
 
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 55m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 90m "${runner}" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
     echo "Dumping logs for any remaining nodes"
