@@ -75,6 +75,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws-release-1.4
+- name: kubernetes-e2e-kops-aws
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws
 - name: kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
@@ -849,6 +851,8 @@ dashboards:
     test_group_name: kubernetes-e2e-aws
   - name: aws-release-1.4
     test_group_name: kubernetes-e2e-aws-release-1.4
+  - name: kops-aws
+    test_group_name: kubernetes-e2e-kops-aws
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
 
