@@ -219,3 +219,16 @@
             shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
     jobs:
         - '{gitproject}-gce-e2e-ci'
+
+- project:
+    name: node-gce-e2e-1.5
+    gitproject:
+        - 'kubelet-1.5':
+            cron-string: '{sq-cron-string}'
+            repoName: 'kubernetes/kubernetes'
+            gitbasedir: 'k8s.io/kubernetes'
+            branch: 'release-1.5'
+            owner: 'dawnchen@google.com'
+            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
+    jobs:
+        - '{gitproject}-gce-e2e-ci'

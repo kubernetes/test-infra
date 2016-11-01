@@ -701,6 +701,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-release-1.2
 - name: kubelet-1.4-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-1.4-gce-e2e-ci
+- name: kubelet-1.5-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-1.5-gce-e2e-ci
 - name: kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
@@ -1694,6 +1696,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-staging-release-1.2
   - name: kubelet-1.4-gce-e2e-ci
     test_group_name: kubelet-1.4-gce-e2e-ci
+  - name: kubelet-1.5-gce-e2e-ci
+    test_group_name: kubelet-1.5-gce-e2e-ci
   - name: federation-build
     test_group_name: kubernetes-federation-build
   - name: gke-gci-prod-parallel-release-1.2
