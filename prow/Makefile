@@ -13,7 +13,7 @@
 # limitations under the License.
 
 HOOK_VERSION   = 0.43
-LINE_VERSION   = 0.24
+LINE_VERSION   = 0.25
 SINKER_VERSION = 0.3
 DECK_VERSION   = 0.4
 
