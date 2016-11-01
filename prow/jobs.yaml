@@ -48,7 +48,7 @@ kubernetes/kubernetes:
     - name: builder
       image: gcr.io/k8s-testimages/bazelbuild:0.0
       command: ["/bin/bash", "-c"]
-      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=github.com/kubernetes/kubernetes --pull=${PULL_NUMBER} --branch=${PULL_BASE_REF} --job=pull-kubernetes-bazel"]
+      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=github.com/kubernetes/kubernetes --pull=${PULL_NUMBER} --job=pull-kubernetes-bazel"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel

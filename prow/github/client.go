@@ -247,7 +247,8 @@ func (c *Client) RemoveLabel(owner, repo string, number int, label string) error
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 204 {
+	// GitHub sometimes returns 200 for this call, which is a bug on their end.
+	if resp.StatusCode != 204 && resp.StatusCode != 200 {
 		return fmt.Errorf("response not 204: %s", resp.Status)
 	}
 	return nil

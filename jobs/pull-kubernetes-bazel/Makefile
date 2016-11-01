@@ -15,7 +15,7 @@
 VERSION = 0.0
 
 image:
-	docker build -t "gcr.io/k8s-testimages/bazelbuild:$(VERSION)"
+	docker build -t "gcr.io/k8s-testimages/bazelbuild:$(VERSION)" .
 
 push:
 	gcloud docker -- push "gcr.io/k8s-testimages/bazelbuild:$(VERSION)"
