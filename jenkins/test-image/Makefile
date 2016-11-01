@@ -23,7 +23,7 @@ do_build = \
 	echo Built $(IMG):$(VERSION)-$(TAG) and tagged with $(IMG):$(VERSION)-latest ;
 
 do_push = \
-	$(eval FILETAG := $(subst ./Dockerfile-,,$(v)))\
+	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
 	gcloud docker -- push $(IMG):$(VERSION)-$(TAG);\
 	gcloud docker -- push $(IMG):$(VERSION)-latest;\
 	echo Pushed $(IMG):$(VERSION)-latest and $(IMG):$(VERSION)-$(TAG);
