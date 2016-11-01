@@ -720,6 +720,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-parallel-release-1.2
 - name: kubernetes-federation-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.4
+- name: kubernetes-federation-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
@@ -1695,6 +1697,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
   - name: federation-build-1.4
     test_group_name: kubernetes-federation-build-1.4
+  - name: federation-build-1.5
+    test_group_name: kubernetes-federation-build-1.5
   - name: gke-large-teardown
     test_group_name: kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs
