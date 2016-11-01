@@ -48,6 +48,10 @@
             branch: 'master'
             cron-string: '{sq-cron-string}'
             timeout: 80
+        - 'release-1.5': # kubernetes-verify-release-1.5
+            branch: 'release-1.5'
+            cron-string: '{sq-cron-string}'
+            timeout: 80
         - 'release-1.4': # kubernetes-verify-release-1.4
             branch: 'release-1.4'
             cron-string: '{sq-cron-string}'
