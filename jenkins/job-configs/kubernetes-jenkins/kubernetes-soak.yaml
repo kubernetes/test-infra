@@ -298,7 +298,7 @@
                 export CLOUDSDK_BUCKET="gs://cloud-sdk-testing/ci/staging"
                 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
-                export KUBE_GKE_IMAGE_TYPE="debian"
+                export KUBE_GKE_IMAGE_TYPE="container_vm"
             job-env: |
                 export PROJECT="k8s-jkns-gke-soak"
                 # Need at least n1-standard-2 nodes to run kubelet_perf tests
