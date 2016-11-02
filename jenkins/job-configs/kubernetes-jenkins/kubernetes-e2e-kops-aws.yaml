@@ -36,7 +36,7 @@
             export KOPS_DEPLOY_LATEST_KUBE=y
             export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
             # TODO(zmerlynn): Take out --kops-ssh-key after fixing kops-e2e-runner again.
-            export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${{E2E_NAME}}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/"
+            export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${{E2E_NAME}}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
             export GINKGO_PARALLEL="y"
             timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
             {report-rc}
