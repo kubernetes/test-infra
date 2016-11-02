@@ -24,6 +24,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"regexp"
 	"strconv"
@@ -31,7 +32,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
@@ -95,6 +95,8 @@ type kubeClient interface {
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
@@ -184,7 +186,8 @@ func fields(c *testClient) logrus.Fields {
 // necessary.
 func (c *testClient) TestPRKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
-	name := uuid.NewV1().String()
+	// TODO(spxtr): Sequential build numbers.
+	buildID := strconv.Itoa(rand.Int())
 	spec := *c.Job.Spec
 	for i := range spec.Containers {
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
@@ -206,13 +209,13 @@ func (c *testClient) TestPRKubernetes() error {
 			},
 			kube.EnvVar{
 				Name:  "BUILD_NUMBER",
-				Value: name,
+				Value: buildID,
 			},
 		)
 	}
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
-			Name: name,
+			Name: buildID,
 		},
 		Spec: spec,
 	}
@@ -221,8 +224,8 @@ func (c *testClient) TestPRKubernetes() error {
 		c.tryCreateStatus(github.Error, "Error creating build pod.", "")
 		return err
 	}
-	c.tryCreateStatus(github.Pending, "Build started", "")
-	resultURL := c.guberURL(name)
+	resultURL := c.guberURL(buildID)
+	c.tryCreateStatus(github.Pending, "Build started", resultURL)
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
 		if err != nil {
