@@ -152,7 +152,7 @@ def do_render_status(payload, user):
 
     for ctx, (state, _url, desc) in payload.get('status', {}).items():
         if ctx == 'Submit Queue' and state == 'pending':
-            if 'does not have LGTM' in desc:
+            if 'does not have lgtm' in desc.lower():
                 # Don't show overall status as pending when Submit
                 # won't continue without LGTM.
                 continue
