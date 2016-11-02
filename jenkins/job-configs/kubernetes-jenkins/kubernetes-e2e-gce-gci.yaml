@@ -98,6 +98,37 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-ci-serial"
+        - 'release-1.5':  # kubernetes-e2e-gce-gci-ci-release-1.5
+            description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.5 branch.'
+            timeout: 50
+            trigger-job: 'kubernetes-build-1.5'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="kubekins-gce-gci-ci-1-5"
+        - 'slow-release-1.5':  # kubernetes-e2e-gce-gci-ci-slow-release-1.5
+            description: 'Runs slow tests on GCE with GCI images, sequentially on the release-1.5 branch.'
+            timeout: 150
+            trigger-job: 'kubernetes-build-1.5'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
+                                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                export GINKGO_PARALLEL="y"
+                export PROJECT="kubekins-gce-gci-ci-slow-1-5"
+        - 'serial-release-1.5':  # kubernetes-e2e-gce-gci-ci-serial-release-1.5
+            description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images, on the release-1.5 branch.'
+            timeout: 300
+            trigger-job: 'kubernetes-build-1.5'
+            job-env: |
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
+                export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                export PROJECT="kubekins-gce-gci-ci-serial-1-5"
         - 'release-1.4':  # kubernetes-e2e-gce-gci-ci-release-1.4
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images in parallel on the release-1.4 branch.'
             timeout: 50
