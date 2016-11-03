@@ -295,6 +295,17 @@
                 export JENKINS_USE_SKEW_TESTS="true"
         - 'kubernetes-e2e-gke-{version-cluster}-{version-client}-kubectl-skew':
             version-cluster: '1.4'
+            version-client: '1.5'
+            version-infix: '1-4-1-5'
+            version-env: ''
+        - 'kubernetes-e2e-gke-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.5'
+            version-client: '1.4'
+            version-infix: '1-5-1-4'
+            version-env: |
+                export JENKINS_USE_SKEW_TESTS="true"
+        - 'kubernetes-e2e-gke-{version-cluster}-{version-client}-kubectl-skew':
+            version-cluster: '1.4'
             version-client: 'latest'
             version-infix: '1-4-lat'
             version-env: ''
