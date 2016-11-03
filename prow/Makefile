@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-HOOK_VERSION   = 0.43
+HOOK_VERSION   = 0.44
 LINE_VERSION   = 0.26
 SINKER_VERSION = 0.3
 DECK_VERSION   = 0.4
@@ -92,7 +92,7 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
 get-cluster-credentials:
-	gcloud container clusters get-credentials ciongke --project="$(PROJECT)"
+	gcloud container clusters get-credentials ciongke --project="$(PROJECT)" --zone="$(ZONE)"
 
 clean:
 	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck
