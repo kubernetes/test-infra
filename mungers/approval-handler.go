@@ -142,3 +142,15 @@ func (h *ApprovalHandler) hasApproval(filename string, approverSet sets.String, 
 	}
 	return false
 }
+
+func getCommentsAfterLastModified(obj *github.MungeObject) ([]*githubapi.IssueComment, error) {
+	afterLastModified := func(opt *githubapi.IssueListCommentsOptions) *githubapi.IssueListCommentsOptions {
+		// Only comments updated at or after this time are returned.
+		// One possible case is that reviewer might "/lgtm" first, contributor updated PR, and reviewer updated "/lgtm".
+		// This is still valid. We don't recommend user to update it.
+		lastModified := *obj.LastModifiedTime()
+		opt.Since = lastModified
+		return opt
+	}
+	return obj.ListComments(afterLastModified)
+}
