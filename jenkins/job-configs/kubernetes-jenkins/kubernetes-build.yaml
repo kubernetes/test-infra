@@ -13,12 +13,6 @@
             timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/build.sh && rc=$? || rc=$?
             {report-rc}
     publishers:
-        - email-ext:
-            presend-script: $DEFAULT_PRESEND_SCRIPT
-            fail: true
-            fixed: true
-            send-to:
-                - culprits
         - gcs-uploader
         - workspace-cleanup:
             dirmatch: true
