@@ -8,10 +8,13 @@
 % if testgrid_query
 <a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a>
 % endif
-<a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a>
+<a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a><br>
+% if 'pr-logs' in job_dir and 'directory' not in job_dir
+<a href="/builds{{job_dir|dirname|dirname|dirname|dirname}}/directory/{{job}}">Recent Runs Across PRs</a><br>
+% endif
 <h3>Builds</h3>
-% for build, started, finished in builds
-<a href="/build{{job_dir}}{{build}}/">{{build}}
+% for build, loc, started, finished in builds
+<a href="/build{{loc}}/">{{build}}
 % if finished
   <span class="build-{{finished['result'] | slugify}}" title="Result: {{finished['result']}}">
   % if started and 'timestamp' in started
@@ -28,8 +31,14 @@
 % endif
 </a><br>
 % endfor
-% if builds and 'pr-logs' not in job_dir
-<a href="?before={{builds[-1][0]}}" rel="nofollow">View earlier builds...</a>
+% if 'directory' in job_dir or 'pr-logs' not in job_dir
+<br>
+% if before
+<a href="?" rel="nofollow">View latest builds...</a><br>
+% endif
+% if builds
+<a href="?before={{builds[-1][0]}}" rel="nofollow">View earlier builds...</a><br>
+% endif
 % endif
 </div>
 % endblock

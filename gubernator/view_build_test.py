@@ -225,19 +225,27 @@ class BuildTest(main_test.TestBase):
         response2 = self.get_build_page()
         self.assertEqual(str(response), str(response2))
 
-    def do_view_build_list_test(self):
+    def do_view_build_list_test(self, job_dir='/buck/some-job/', indirect=False):
         sta_result = {'timestamp': 12345}
         fin_result = {'result': 'SUCCESS'}
         for n in xrange(120):
-            write('/buck/some-job/%d/started.json' % n, sta_result)
-            write('/buck/some-job/%d/finished.json' % n, fin_result)
-        builds = view_build.build_list('/buck/some-job/', None)
+            write('%s%d/started.json' % (job_dir, n), sta_result)
+            write('%s%d/finished.json' % (job_dir, n), fin_result)
+        if indirect:
+            for n in xrange(120):
+                write('%sdirectory/%d.txt' % (job_dir, n), 'gs:/%s%d' % (job_dir, n))
+
+        view_target = job_dir if not indirect else job_dir + 'directory/'
+
+        builds = view_build.build_list(view_target, None)
         self.assertEqual(builds,
-                         [(str(n), sta_result, fin_result) for n in range(119, 79, -1)])
+                         [(str(n), '%s%s' % (job_dir, n), sta_result, fin_result)
+                          for n in range(119, 79, -1)])
         # test that ?before works
-        builds = view_build.build_list('/buck/some-job/', '80')
+        builds = view_build.build_list(view_target, '80')
         self.assertEqual(builds,
-                         [(str(n), sta_result, fin_result) for n in range(79, 39, -1)])
+                         [(str(n), '%s%s' % (job_dir, n), sta_result, fin_result)
+                          for n in range(79, 39, -1)])
 
     def test_view_build_list_with_latest(self):
         write('/buck/some-job/latest-build.txt', '119')
@@ -250,6 +258,13 @@ class BuildTest(main_test.TestBase):
 
     def test_view_build_list_no_latest(self):
         self.do_view_build_list_test()
+
+    def test_view_build_list_indirect_with_latest(self):
+        write('/buck/some-job/directory/latest-build.txt', '119')
+        self.do_view_build_list_test(indirect=True)
+
+    def test_view_build_list_indirect_no_latest(self):
+        self.do_view_build_list_test(indirect=True)
 
     def test_build_list_handler(self):
         """Test that the job page shows a list of builds."""
