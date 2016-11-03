@@ -130,6 +130,11 @@
             version-new: '1.4'
             version-infix: '1-3-1-4'
             version-env: ''
+        - 'kubernetes-e2e-gce-{version-old}-{version-new}':  # kubernetes-e2e-gce-1.3-1.4
+            version-old: '1.4'
+            version-new: '1.5'
+            version-infix: '1-4-1-5'
+            version-env: ''
 
 # This is the job definition for GCE upgrade tests for GCI and between container-vm and GCI.
 - job-group:
