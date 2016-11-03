@@ -162,55 +162,83 @@ def build_list(job_dir, before):
         a list of [(build, finished)]. build is a string like "123",
         finished is either None or a dict of the finished.json.
     '''
-    latest_fut = gcs_async.read(job_dir + 'latest-build.txt')
+
+    # /directory/ folders have a series of .txt files pointing at the correct location,
+    # as a sort of fake symlink.
+    indirect = '/directory/' in job_dir
+
     try:
-        if 'pr-logs' in job_dir:
+        if 'pr-logs' in job_dir and not indirect:
             raise ValueError('bad code path for PR build list')
         # If we have latest-build.txt, we can skip an expensive GCS ls call!
-        latest_build = int(latest_fut.get_result())
         if before:
             latest_build = int(before) - 1
         else:
+            latest_build = int(gcs_async.read(job_dir + 'latest-build.txt').get_result())
             # latest-build.txt has the most recent finished build. There might
             # be newer builds that have started but not finished. Probe for them.
-            while gcs_async.read('%s%s/started.json' % (job_dir, latest_build + 1)).get_result():
+            suffix = '/started.json' if not indirect else '.txt'
+            while gcs_async.read('%s%s%s' % (job_dir, latest_build + 1, suffix)).get_result():
                 latest_build += 1
         builds = range(latest_build, max(0, latest_build - 40), -1)
     except (ValueError, TypeError):
         fstats = view_base.gcs_ls(job_dir)
         fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
                     reverse=True)
-        builds = [os.path.basename(os.path.dirname(f.filename))
-                  for f in fstats if f.is_dir]
+        if indirect:
+            builds = [re.search(r'([0-9a-f][^/]*)\.txt$', f.filename)
+                      for f in fstats if not f.is_dir]
+            builds = [m.group(1) for m in builds if m]
+        else:
+            builds = [os.path.basename(os.path.dirname(f.filename))
+                      for f in fstats if f.is_dir]
         if before and before in builds:
             builds = builds[builds.index(before) + 1:]
         builds = builds[:40]
 
-    build_futures = [
-        (build,
-         gcs_async.read('%s%s/started.json' % (job_dir, build)),
-         gcs_async.read('%s%s/finished.json' % (job_dir, build)))
-        for build in builds
-    ]
+    if indirect:
+        # follow the indirect links
+        build_symlinks = [
+            (build,
+             gcs_async.read('%s%s.txt' % (job_dir, build)))
+            for build in builds
+        ]
+        build_futures = []
+        for build, sym_fut in build_symlinks:
+            redir = sym_fut.get_result()
+            if redir and redir.startswith('gs://'):
+                redir = redir[4:].strip()
+                build_futures.append(
+                    (build, redir,
+                     gcs_async.read('%s/started.json' % redir),
+                     gcs_async.read('%s/finished.json' % redir)))
+    else:
+        build_futures = [
+            (build, '%s%s' % (job_dir, build),
+             gcs_async.read('%s%s/started.json' % (job_dir, build)),
+             gcs_async.read('%s%s/finished.json' % (job_dir, build)))
+            for build in builds
+        ]
 
     def resolve(future):
         res = future.get_result()
         if res:
             return json.loads(res)
 
-    return [(str(build), resolve(started), resolve(finished))
-            for build, started, finished in build_futures]
+    return [(str(build), loc, resolve(started), resolve(finished))
+            for build, loc, started, finished in build_futures]
 
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
-        builds = build_list(job_dir, self.request.get('before'))
+        before = self.request.get('before')
+        builds = build_list(job_dir, before)
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir,
                          testgrid_query=testgrid_query,
-                         builds=builds))
+                         builds=builds, before=before))
 
 
 class JobListHandler(view_base.BaseHandler):
