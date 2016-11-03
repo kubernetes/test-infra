@@ -1788,6 +1788,138 @@ dashboards:
   - name: soak-continuous-e2e-gce-federation
     test_group_name: kubernetes-soak-continuous-e2e-gce-federation
 
+- name: release-1.5-all
+  dashboard_tab:
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
+  - name: gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gce-alpha-features-release-1.5
+  - name: gci-gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-alpha-features-release-1.5
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
+  - name: gce-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-serial-release-1.5
+  # Uncomment after 1.4 scale tests are turned off
+  # - name: gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  # - name: gci-gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
+  - name: gce-release-1.5
+    test_group_name: kubernetes-e2e-gce-release-1.5
+  - name: gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gce-reboot-release-1.5
+  - name: gci-gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.5
+  - name: gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gce-ingress-release-1.5
+  - name: gci-gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.5
+  - name: gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gke-slow-release-1.5
+  - name: gci-gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
+  - name: gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gke-serial-release-1.5
+  - name: gci-gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-serial-release-1.5
+  - name: gke-release-1.5
+    test_group_name: kubernetes-e2e-gke-release-1.5
+  - name: gci-gke-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-release-1.5
+  - name: gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gke-reboot-release-1.5
+  - name: gci-gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
+  - name: gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gke-ingress-release-1.5
+  - name: gci-gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.5
+  - name: gci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.5
+  - name: gci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.5
+  - name: gci-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-release-1.5
+  - name: gci-ci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
+  - name: gci-ci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.5
+  - name: gci-ci-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-release-1.5
+  - name: aws-release-1.5
+    test_group_name: kubernetes-e2e-aws-release-1.5
+  - name: soak-weekly-deploy-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gce-1.5
+  - name: soak-weekly-deploy-gci-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.5
+  - name: soak-continuous-e2e-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gce-1.5
+  - name: soak-continuous-e2e-gci-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.5
+  - name: gke-1.3-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-1.3-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.3-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  - name: gke-1.4-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-1.4-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.4-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+
+- name: release-1.5-blocking
+  dashboard_tab:
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
+  - name: verify-release-1.5
+    test_group_name: kubernetes-verify-release-1.5
+  - name: gce-release-1.5
+    test_group_name: kubernetes-e2e-gce-release-1.5
+  - name: gce-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-serial-release-1.5
+  - name: gce-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gce-reboot-release-1.5
+  # Uncomment after 1.4 scale tests are turned off
+  # - name: gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
+  - name: gke-release-1.5
+    test_group_name: kubernetes-e2e-gke-release-1.5
+  - name: gci-gke-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-release-1.5
+  - name: gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gke-serial-release-1.5
+  - name: gci-gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-serial-release-1.5
+  - name: gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gke-slow-release-1.5
+  - name: gci-gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
+  - name: gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gke-reboot-release-1.5
+  - name: gci-gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
+  - name: gke-1.3-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-1.3-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.3-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  - name: gke-1.4-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-1.4-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.4-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+
 - name: release-1.4-all
   dashboard_tab:
   - name: build-1.4
