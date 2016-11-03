@@ -53,14 +53,17 @@ type JobAgent struct {
 	jobs map[string][]JenkinsJob
 }
 
-func (ja *JobAgent) Start(path string) {
-	ja.tryLoad(path)
+func (ja *JobAgent) Start(path string) error {
+	if err := ja.LoadOnce(path); err != nil {
+		return err
+	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
 			ja.tryLoad(path)
 		}
 	}()
+	return nil
 }
 
 func (ja *JobAgent) SetJobs(jobs map[string][]JenkinsJob) error {

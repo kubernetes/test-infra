@@ -21,9 +21,10 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
-const PluginName = "lgtm"
+const pluginName = "lgtm"
 
 var (
 	lgtmLabel    = "lgtm"
@@ -31,15 +32,21 @@ var (
 	lgtmCancelRe = regexp.MustCompile(`(?mi)^\/lgtm cancel\r?$`)
 )
 
-type GitHubClient interface {
+func init() {
+	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+}
+
+type gitHubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-// HandleIssueComment adds or remove LGTM when reviewers comment "/lgtm" or
-// "/lgtm cancel".
-func HandleIssueComment(gc GitHubClient, ic github.IssueCommentEvent) error {
+func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) error {
+	return handle(pa.GitHubClient, ic)
+}
+
+func handle(gc gitHubClient, ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
 	if ic.Issue.PullRequest == nil || ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
