@@ -55,7 +55,6 @@ A small amount of information about some of the individual mungers inside each o
 * comment-deleter - deletes comments created by the k8s-merge-robot which are no longer relevant. Such as comments about a rebase being required if it has been rebased.
 * comment-deleter-jenkins - deleted comments create by the k8s-bot jenkins bot which are no longer relevant. Such as old test results.
 * lgtm-after-commit - removes `lgtm` label if a PR is changed after the label was added
-* lgtm-handler - adds LGTM label if reviewer has commented "/lgtm", or remove LGTM label if reviewer has commented "/lgtm cancel"
 * needs-rebase - adds and removes a `needs-rebase` label if a PR needs to be rebased before it can be applied.
 * path-label - adds labels, such as `kind/new-api` based on if ANY file which matches changed
 * release-note-label - Manages the addition/removal of `release-note-label-required` and all of the rest of the `release-note-*` labels.
