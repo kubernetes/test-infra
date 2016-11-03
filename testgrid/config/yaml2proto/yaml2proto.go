@@ -44,10 +44,6 @@ func ValidateTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *con
 	currentTestGroup.UseKubernetesClient = true
 
 	// deprecated
-	if currentTestGroup.NumFailuresToAlert == 0 {
-		currentTestGroup.NumFailuresToAlert = defaultTestGroup.NumFailuresToAlert
-	}
-
 	if currentTestGroup.AlertStateResultsHours == 0 {
 		currentTestGroup.AlertStateResultsHours = defaultTestGroup.AlertStateResultsHours
 	}

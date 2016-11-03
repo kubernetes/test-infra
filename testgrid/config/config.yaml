@@ -18,7 +18,6 @@ default_test_group:
   use_kubernetes_client: true # These two fields are depricated and should always be true
   is_external: true
   alert_stale_results_hours: 0 # Deprecated, set to 0.
-  num_failures_to_alert: 65535 # Deprecated, set to a large enough number to disable cs. Need to make it to work later.
 
 default_dashboard_tab:
   open_test_template: # The URL template to visit after clicking on a cell
