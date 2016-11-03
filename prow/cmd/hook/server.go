@@ -69,9 +69,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Event received. Have a nice day.")
 
 	if err := s.demuxEvent(eventType, payload); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("Error parsing event.")
+		logrus.WithError(err).Error("Error parsing event.")
 	}
 }
 

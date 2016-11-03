@@ -139,7 +139,7 @@ func TestLGTMComment(t *testing.T) {
 		if tc.hasLGTM {
 			ice.Issue.Labels = []github.Label{{Name: lgtmLabel}}
 		}
-		if err := HandleIssueComment(fc, ice); err != nil {
+		if err := handle(fc, ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}

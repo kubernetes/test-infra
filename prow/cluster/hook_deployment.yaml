@@ -35,10 +35,11 @@ spec:
       - name: hook
         image: gcr.io/kubernetes-jenkins-pull/hook:0.43
         imagePullPolicy: Always
-        args:
-        - --line-image=gcr.io/kubernetes-jenkins-pull/line:0.26
-        - --org=kubernetes
-        - --dry-run=false
+        env:
+        - name: LINE_IMAGE
+          value: "gcr.io/kubernetes-jenkins-pull/line:0.26"
+        - name: DRY_RUN
+          value: "false"
         ports:
           - name: http
             containerPort: 8888

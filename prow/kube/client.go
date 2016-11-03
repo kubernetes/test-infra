@@ -43,6 +43,8 @@ type Client struct {
 	namespace string
 }
 
+type ConflictError error
+
 // Retry on transport failures. Does not retry on 500s.
 func (c *Client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
 	var resp *http.Response
@@ -66,7 +68,9 @@ func (c *Client) request(method, urlPath string, query map[string]string, body i
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	if resp.StatusCode == 409 {
+		return nil, ConflictError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}
 	return rb, nil
