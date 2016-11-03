@@ -4,7 +4,7 @@ syntax = "proto3";
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 4, 5, 7, 8, 10, 13 to 23, 26;
+  reserved 4, 5, 7, 8, 10, 12 to 23, 26;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -37,7 +37,6 @@ message TestGroup {
 
   // deprecated - do not touch
   int32 alert_state_results_hours = 11;
-  int32 num_failures_to_alert = 12;
 
   // deprecated - always set to true
   bool use_kubernetes_client = 24;
