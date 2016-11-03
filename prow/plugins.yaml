@@ -1,3 +1,6 @@
+# Plugin repository whitelist.
+# Keys: Full repo name: "org/repo".
+# Values: List of plugins to run against the repo.
 ---
 google/cadvisor:
 - trigger
@@ -5,10 +8,14 @@ google/cadvisor:
 kubernetes/charts:
 - trigger
 
+kubernetes/contrib:
+- lgtm
+
 kubernetes/heapster:
 - trigger
 
 kubernetes/kubernetes:
+- lgtm
 - trigger
 
 kubernetes/test-infra:
