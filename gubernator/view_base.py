@@ -20,12 +20,16 @@ import re
 import cloudstorage as gcs
 import jinja2
 import webapp2
+import yaml
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from webapp2_extras import sessions
 
 import filters as jinja_filters
+
+
+PROW_JOBS = yaml.load(open('prow_jobs.yaml'))
 
 DEFAULT_JOBS = {
     'kubernetes-jenkins/logs/': {
@@ -39,7 +43,10 @@ DEFAULT_JOBS = {
         'kubernetes-kubemark-5-gce',
         'kubernetes-kubemark-500-gce',
         'kubernetes-test-go',
-    }
+    },
+    'kubernetes-jenkins/pr-logs/directory/': {
+        j['name'] for j in PROW_JOBS['kubernetes/kubernetes'] if j.get('always_run')
+    },
 }
 
 PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
