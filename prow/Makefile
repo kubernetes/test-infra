@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-HOOK_VERSION   = 0.44
+HOOK_VERSION   = 0.45
 LINE_VERSION   = 0.26
 SINKER_VERSION = 0.3
 DECK_VERSION   = 0.4
@@ -20,8 +20,6 @@ DECK_VERSION   = 0.4
 # These are the usual GKE variables.
 PROJECT = kubernetes-jenkins-pull
 ZONE = us-central1-f
-NUM_NODES = 3
-MACHINE_TYPE = n1-standard-2
 
 # These are GitHub credentials in files on your own machine.
 # The hook secret is your HMAC token, the OAuth secret is the OAuth
@@ -51,7 +49,7 @@ SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
 
 # Should probably move this to a script or something.
 create-cluster:
-	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type "$(MACHINE_TYPE)" --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --num-nodes "$(NUM_NODES)" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=ciongke --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
 	gcloud -q container node-pools create build-pool --project "$(PROJECT)" --cluster "ciongke" --zone "$(ZONE)" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
 	kubectl create secret generic hmac-token --from-file=hmac=$(HOOK_SECRET_FILE)
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)

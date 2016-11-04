@@ -11,6 +11,8 @@ spec:
       labels:
         app: sinker
     spec:
+      nodeSelector:
+        role: ciongke
       containers:
       - name: sinker
         image: gcr.io/kubernetes-jenkins-pull/sinker:0.3
