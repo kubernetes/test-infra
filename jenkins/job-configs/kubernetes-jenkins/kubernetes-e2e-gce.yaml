@@ -1047,7 +1047,7 @@
                 # Increase limit for inflight requests in apiserver.
                 export APISERVER_TEST_ARGS="--max-requests-inflight=1000"
                 # Increase throughput in Load test.
-                export LOAD_TEST_THROUGHPUT=50
+                export LOAD_TEST_THROUGHPUT=40
         - 'gce-enormous-deploy':  # kuberentes-e2e-gce-enormous-deploy
             description: 'Starts up empty 2000 node cluster and waits until it is running. Used for manual testing.'
             timeout: 300
