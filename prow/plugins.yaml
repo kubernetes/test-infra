@@ -19,5 +19,6 @@ kubernetes/kubernetes:
 - trigger
 
 kubernetes/test-infra:
+- close
 - lgtm
 - trigger

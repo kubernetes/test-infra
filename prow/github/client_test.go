@@ -238,3 +238,31 @@ func TestRemoveLabel(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestCloseIssue(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 1 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if ps["state"] != "closed" {
+			t.Errorf("Wrong state: %s", ps["state"])
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CloseIssue("k8s", "kuber", 5); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
