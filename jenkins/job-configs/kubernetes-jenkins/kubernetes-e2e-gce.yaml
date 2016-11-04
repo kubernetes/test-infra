@@ -964,7 +964,10 @@
             emails: 'lantaol@google.com'
             test-owner: 'Random-Liu'
             job-env: |
-                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+                # Temporarily skip the test "Network should set TCP CLOSE_WAIT timeout" because it relies
+                # on host port, which is not implemented in CRI integration yet.
+                # TODO(random-liu): Re-enable the test.
+                export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout"
                 export PROJECT="kubernetes-e2e-cri-validation"
                 export GINKGO_PARALLEL="y"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
