@@ -42,8 +42,11 @@ export GINKGO_TOLERATE_FLAKES="y"
 
 export E2E_NAME="cri-e2e-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
+# Temporarily skip the test "Network should set TCP CLOSE_WAIT timeout" because it relies
+# on host port, which is not implemented in CRI integration yet.
+# TODO(random-liu): Re-enable the test.
 # This list should match the list in kubernetes-e2e-gce.
-export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="kubernetes-pr-cri-validation"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
