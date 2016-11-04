@@ -264,7 +264,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-master"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'slow-master':  # kubernetes-e2e-gce-gci-qa-slow-master
             description: 'Runs slow tests on GCE with GCI images from the master branch, sequentially.'
             timeout: 150
@@ -275,7 +275,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-slow-master"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'serial-master':  # kubernetes-e2e-gce-gci-qa-serial-master
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images from the master branch.'
             timeout: 300
@@ -284,7 +284,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-master"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'm55':  # kubernetes-e2e-gce-gci-qa-m55
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 55, in parallel.'
             timeout: 50
@@ -293,7 +293,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-m55"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'slow-m55':  # kubernetes-e2e-gce-gci-qa-slow-m55
             description: 'Runs slow tests on GCE with GCI images on milestone 55, sequentially.'
             timeout: 150
@@ -303,7 +303,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export PROJECT="e2e-gce-gci-qa-slow-m55"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'serial-m55':  # kubernetes-e2e-gce-gci-qa-serial-m55
             description: 'Run [Serial], [Disruptive], tests on GCE, with GCI images on milestone 55.'
             timeout: 300
@@ -312,7 +312,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export PROJECT="e2e-gce-gci-qa-serial-m55"
-                export JENKINS_GCI_PATCH_K8S="y"
+                export JENKINS_GCI_PATCH_K8S="n"
         - 'm54':  # kubernetes-e2e-gce-gci-qa-m54
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE with GCI images on milestone 54, in parallel.'
             timeout: 50
