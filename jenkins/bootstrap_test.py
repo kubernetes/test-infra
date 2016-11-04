@@ -964,6 +964,64 @@ class JobTest(unittest.TestCase):
                      '%s not found in %s' % (expected, job_path))
 
 
+def FailCall(cmd, **kw):
+    """Simulate a subprocess exiting nonzero:"""
+    raise subprocess.CalledProcessError(1, cmd, None)
+
+
+class FindVersionTest(unittest.TestCase):
+
+    test_cases = [
+        ('v1.4.1', '33cf7b9acbb2cb7c9c72a10d6636321fb180b159'),
+        ('v1.5.0-alpha.2.484+04a74570323eae', '04a74570323eae3fc843ca7a6c34c28ada2847a9'),
+    ]
+
+    def testVersionFromKubectl(self):
+        for p in ('client/bin', 'platforms/linux/amd64'):
+            kubectl = os.path.join(p, 'kubectl')
+            with Stub(os.path, 'isfile', lambda f: f == kubectl):
+                with Stub(bootstrap, 'call', lambda *a, **kw: kubectl_output):
+                    for test_case in self.test_cases:
+                        # More correct would be to update Major and Minor, but that takes
+                        # effort.
+                        kubectl_output = (
+                            'Client Version: version.Info{Major:"1", Minor:"4", '
+                            'GitVersion:"%s", GitCommit:"%s", '
+                            'GitTreeState:"clean", BuildDate:"2016-10-10T18:19:49Z", '
+                            'GoVersion:"go1.6.3", Compiler:"gc", Platform:"linux/amd64"}\n'
+                            % test_case)
+                        self.assertEqual(bootstrap.find_version(), test_case)
+
+    def testKubectlFailures(self):
+        with Stub(os.path, 'isfile', lambda f: f == 'platforms/linux/amd64/kubectl'):
+            with Stub(bootstrap, 'call', lambda *a, **kw: 'something bad'):
+                self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
+            with Stub(bootstrap, 'call', FailCall):
+                self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
+    def testVersionFromHackScript(self):
+        for test_case in self.test_cases:
+            script_output = '%s\n%s\n' % test_case
+            with Stub(os.path, 'isfile', lambda f: f == 'hack/lib/version.sh'):
+                with Stub(bootstrap, 'call', lambda *a, **kw: script_output):
+                    self.assertEqual(bootstrap.find_version(), test_case)
+
+    def testHackScriptFailures(self):
+        with Stub(os.path, 'isfile', lambda f: f == 'hack/lib/version.sh'):
+            with Stub(bootstrap, 'call', lambda *a, **kw: ''):
+                self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
+            with Stub(bootstrap, 'call', lambda *a, **kw: 'one\ntwo\nthree\n'):
+                self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
+            with Stub(bootstrap, 'call', FailCall):
+                self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
+    def testNoKubectlOrHackScript(self):
+        with Stub(os.path, 'isfile', lambda *a, **kw: False):
+            self.assertEqual(('unknown', 'unknown'), bootstrap.find_version())
+
 
 if __name__ == '__main__':
     unittest.main()
