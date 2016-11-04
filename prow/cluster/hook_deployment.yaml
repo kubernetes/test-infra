@@ -19,7 +19,7 @@ metadata:
   labels:
     app: hook
 spec:
-  replicas: 3
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -30,10 +30,12 @@ spec:
       labels:
         app: hook
     spec:
+      nodeSelector:
+        role: ciongke
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/kubernetes-jenkins-pull/hook:0.44
+        image: gcr.io/kubernetes-jenkins-pull/hook:0.45
         imagePullPolicy: Always
         env:
         - name: LINE_IMAGE

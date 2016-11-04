@@ -30,6 +30,8 @@ spec:
       labels:
         app: deck
     spec:
+      nodeSelector:
+        role: ciongke
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck

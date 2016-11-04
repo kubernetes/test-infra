@@ -91,6 +91,9 @@ func createJob(c client, jobName string, pr github.PullRequest) error {
 			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
+					NodeSelector: map[string]string{
+						"role": "build",
+					},
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
 						{
