@@ -20,7 +20,7 @@ data:
   submit-queue.jenkins-jobs: kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gci-gce,kubernetes-e2e-gci-gce-slow,kubernetes-e2e-gci-gke,kubernetes-e2e-gci-gke-slow,kubernetes-kubemark-500-gce,kubernetes-e2e-gce-etcd3
   submit-queue.presubmit-jobs: kubernetes-pull-build-test-e2e-gce,kubernetes-pull-build-test-e2e-gke,kubernetes-pull-build-test-federation-e2e-gce,node-pull-build-e2e-test,kubernetes-pull-build-test-gci-e2e-gce,kubernetes-pull-build-test-gci-e2e-gke,kubernetes-pull-build-test-gci-kubemark-e2e-gce
   submit-queue.weak-stable-jobs: "\"\""
-  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.do-not-merge-milestones: "next-candidate,v1.6,"
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
   submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
