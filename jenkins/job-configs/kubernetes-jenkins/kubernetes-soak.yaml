@@ -396,7 +396,7 @@
             branch: 'master'
             job-env: |
                 export PROJECT="k8s-jkns-gce-cri-soak"
-                export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
+                export KUBELET_TEST_ARGS="--experimental-cri=true"
             provider-env: |
                 export KUBERNETES_PROVIDER="gce"
                 export E2E_MIN_STARTUP_PODS="8"
