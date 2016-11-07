@@ -64,6 +64,7 @@
     emails: ''
     cron-string: 'H/30 * * * *'  # Set a 30m floor to start jobs.
     sq-cron-string: 'H/5 * * * *'  # Lower floor to 5m for blocking jobs.
+    old-cron-string: 'H H/6 * * *' # 4 times a day for older jobs.
     # How long to wait after sending TERM to send KILL (minutes)
     kill-timeout: 15
     # Just to be safe, use the Jenkins timeout after a long time.

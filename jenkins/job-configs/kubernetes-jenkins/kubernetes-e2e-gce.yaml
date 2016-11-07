@@ -464,6 +464,7 @@
     name: kubernetes-e2e-gce-1-2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'Build Cop'
+    cron-string: '{old-cron-string}'
     suffix:
         - 'gce-release-1.2':  # kubernetes-e2e-gce-release-1.2
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel on the release-1.2 branch.'
@@ -508,6 +509,7 @@
     name: kubernetes-e2e-gci-gce-1-2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'Build Cop'
+    cron-string: '{old-cron-string}'
     suffix:
         - 'gci-gce-release-1.2':  # kubernetes-e2e-gci-gce-release-1.2
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel on the release-1.2 branch, using GCI image.'
@@ -552,6 +554,7 @@
     name: kubernetes-e2e-gce-1-3
     trigger-job: 'kubernetes-build-1.3'
     test-owner: 'Release 1.3 owner'
+    cron-string: '{old-cron-string}'
     suffix:
         - 'gce-release-1.3':  # kubernetes-e2e-gce-release-1.3
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel on the release-1.3 branch.'
@@ -616,6 +619,7 @@
     name: kubernetes-e2e-gci-gce-1-3
     trigger-job: 'kubernetes-build-1.3'
     test-owner: 'Release 1.3 owner'
+    cron-string: '{old-cron-string}'
     suffix:
         - 'gci-gce-release-1.3':  # kubernetes-e2e-gci-gce-release-1.3
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel on the release-1.3 branch, using GCI image.'
