@@ -36,7 +36,7 @@ func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 }
 
-type gitHubClient interface {
+type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
@@ -46,9 +46,9 @@ func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) er
 	return handle(pa.GitHubClient, ic)
 }
 
-func handle(gc gitHubClient, ic github.IssueCommentEvent) error {
+func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
-	if ic.Issue.PullRequest == nil || ic.Issue.State != "open" || ic.Action != "created" {
+	if !ic.Issue.IsPullRequest() || ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
 	}
 
@@ -69,8 +69,8 @@ func handle(gc gitHubClient, ic github.IssueCommentEvent) error {
 
 	// Allow authors to cancel LGTM. Do not allow authors to LGTM, and do not
 	// accept commands from any other user.
-	isAssignee := isIssueAssignee(ic.Issue, ic.Comment.User.Login)
-	isAuthor := ic.Comment.User.Login == ic.Issue.User.Login
+	isAssignee := ic.Issue.IsAssignee(ic.Comment.User.Login)
+	isAuthor := ic.Issue.IsAuthor(ic.Comment.User.Login)
 	if isAuthor && wantLGTM {
 		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM your own PR.", ic.Comment.User.Login))
 	} else if !isAuthor {
@@ -89,15 +89,6 @@ func handle(gc gitHubClient, ic github.IssueCommentEvent) error {
 		return gc.AddLabel(org, repo, number, lgtmLabel)
 	}
 	return nil
-}
-
-func isIssueAssignee(i github.Issue, user string) bool {
-	for _, assignee := range i.Assignees {
-		if user == assignee.Login {
-			return true
-		}
-	}
-	return false
 }
 
 func issueHasLabel(i github.Issue, label string) bool {

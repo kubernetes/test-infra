@@ -90,8 +90,26 @@ type Issue struct {
 	HTMLURL   string  `json:"html_url"`
 	Labels    []Label `json:"labels"`
 	Assignees []User  `json:"assignees"`
+
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
+}
+
+func (i Issue) IsAssignee(login string) bool {
+	for _, assignee := range i.Assignees {
+		if login == assignee.Login {
+			return true
+		}
+	}
+	return false
+}
+
+func (i Issue) IsAuthor(login string) bool {
+	return i.User.Login == login
+}
+
+func (i Issue) IsPullRequest() bool {
+	return i.PullRequest != nil
 }
 
 type IssueComment struct {

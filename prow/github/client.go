@@ -253,3 +253,18 @@ func (c *Client) RemoveLabel(owner, repo string, number int, label string) error
 	}
 	return nil
 }
+
+func (c *Client) CloseIssue(owner, repo string, number int) error {
+	if c.dry {
+		return nil
+	}
+	resp, err := c.request(http.MethodPatch, fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, owner, repo, number), map[string]string{"state": "closed"})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("response not 200: %s", resp.Status)
+	}
+	return nil
+}

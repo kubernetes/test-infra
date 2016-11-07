@@ -34,7 +34,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// If it's not an open PR, skip it.
-	if ic.Issue.PullRequest == nil {
+	if !ic.Issue.IsPullRequest() {
 		return nil
 	}
 	if ic.Issue.State != "open" {
