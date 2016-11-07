@@ -43,7 +43,7 @@ func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	// Only consider open issues and new comments.
-	if ic.Issue.State != "open" || ic.Issue.PullRequest != nil || ic.Action != "created" {
+	if ic.Issue.State != "open" || ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil
 	}
 
@@ -55,20 +55,11 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
-	// Allow assignees and authors to close issues.
-	canClose := false
-	for _, assignee := range ic.Issue.Assignees {
-		if ic.Comment.User.Login == assignee.Login {
-			canClose = true
-			break
-		}
-	}
-	if ic.Comment.User.Login == ic.Issue.User.Login {
-		canClose = true
-	}
+	commentAuthor := ic.Comment.User.Login
 
-	if !canClose {
-		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't close an issue unless you authored it or you are assigned to it.", ic.Comment.User.Login))
+	// Allow assignees and authors to close issues.
+	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
+		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't close an issue unless you authored it or you are assigned to it.", commentAuthor))
 	}
 
 	return gc.CloseIssue(org, repo, number)
