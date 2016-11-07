@@ -20,12 +20,14 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-readonly KOPS_LATEST=${KOPS_LATEST:-"latest-ci.txt"}
-readonly LATEST_URL="https://storage.googleapis.com/kops-ci/bin/${KOPS_LATEST}"
-readonly KOPS_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
-if [[ -z "${KOPS_URL}" ]]; then
-  echo "Can't fetch kops latest URL" >&2
-  exit 1
+if [[ -z "${KOPS_URL:-}" ]]; then
+  readonly KOPS_LATEST=${KOPS_LATEST:-"latest-ci.txt"}
+  readonly LATEST_URL="https://storage.googleapis.com/kops-ci/bin/${KOPS_LATEST}"
+  readonly KOPS_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
+  if [[ -z "${KOPS_URL}" ]]; then
+    echo "Can't fetch kops latest URL" >&2
+    exit 1
+  fi
 fi
 
 curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_URL}/linux/amd64/kops"
