@@ -38,9 +38,8 @@ export PROJECT="k8s-jkns-e2e-etcd3"
 export STORAGE_BACKEND="etcd3"
 export KUBE_NODE_OS_DISTRIBUTION="debian"
 # Use new image for etcd.
-export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-# TODO: Change to 3.0.12 after changes in main repo.
-export TEST_ETCD_VERSION="3.0.12-experimental.1"
+export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+export TEST_ETCD_VERSION="3.0.14"
 
 ### post-env
 

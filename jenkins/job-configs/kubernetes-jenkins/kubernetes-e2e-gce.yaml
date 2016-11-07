@@ -321,9 +321,8 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
                 # Use new image for etcd.
-                export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-                # TODO: Change to 3.0.12 after changes in main repo.
-                export TEST_ETCD_VERSION="3.0.12-experimental.1"
+                export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+                export TEST_ETCD_VERSION="3.0.14"
         - 'gci-gce-etcd3':  # kubernetes-e2e-gci-gce-etcd3
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with etcd3 underneath.'
@@ -337,9 +336,8 @@
                 export STORAGE_BACKEND="etcd3"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
                 # Use new image for etcd.
-                export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-                # TODO: Change to 3.0.12 after changes in main repo.
-                export TEST_ETCD_VERSION="3.0.12-experimental.1"
+                export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+                export TEST_ETCD_VERSION="3.0.14"
         - 'gce-proto':  # kubernetes-e2e-gce-proto
             cron-string: '{sq-cron-string}'
             description: 'Runs all non-slow, non-serial, non-flaky, tests on GCE in parallel with protobuf communication.'
@@ -1024,9 +1022,8 @@
         export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
         # =========================================
         # Configuration we are targetting in 1.5
-        export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-        # TODO: Change to 3.0.12 after changes in main repo.
-        export TEST_ETCD_VERSION="3.0.12-experimental.1"
+        export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+        export TEST_ETCD_VERSION="3.0.14"
         export STORAGE_BACKEND="etcd3"
         export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
         export KUBE_NODE_OS_DISTRIBUTION="gci"

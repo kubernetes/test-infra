@@ -182,9 +182,8 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 # =========================================
                 # Configuration we are targetting in 1.5
-                export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-                # TODO: Change to 3.0.12 after changes in main repo.
-                export TEST_ETCD_VERSION="3.0.12-experimental.1"
+                export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+                export TEST_ETCD_VERSION="3.0.14"
                 export STORAGE_BACKEND="etcd3"
                 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
                 # The kubemark scripts build a Docker image
