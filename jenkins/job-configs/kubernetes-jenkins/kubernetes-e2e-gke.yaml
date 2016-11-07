@@ -551,6 +551,7 @@
     name: kubernetes-e2e-gke-1-3
     trigger-job: 'kubernetes-build-1.3'
     test-owner: 'Release owner'
+    cron-string: '{old-cron-string}'
     gke-suffix:
         - 'gke-release-1.3':  # kubernetes-e2e-gke-release-1.3
             description: 'Run E2E tests on GKE from the release-1.3 branch.'
@@ -601,6 +602,7 @@
     name: kubernetes-e2e-gci-gke-1-3
     trigger-job: 'kubernetes-build-1.3'
     test-owner: 'Release owner'
+    cron-string: '{old-cron-string}'
     gke-suffix:
         - 'gci-gke-release-1.3':  # kubernetes-e2e-gci-gke-release-1.3
             description: 'Run E2E tests on GKE from the release-1.3 branch, using GCI image.'
@@ -656,6 +658,7 @@
     name: kubernetes-e2e-gke-1-2
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'Build Cop'
+    cron-string: '{old-cron-string}'
     gke-suffix:
         - 'gke-release-1.2':  # kubernetes-e2e-gke-release-1.2
             description: 'Run E2E tests on GKE from the release-1.2 branch.'
@@ -912,6 +915,7 @@
     trigger-job: 'kubernetes-build-1.2'
     test-owner: 'wonderfly'
     emails: 'gci-alerts+kubekins@google.com'
+    cron-string: '{old-cron-string}'
     gke-suffix:
         - 'gke-gci-test-release-1.2':  # kubernetes-e2e-gke-gci-test-release-1.2
             description: 'Run E2E tests on GKE test endpoint.'
@@ -992,4 +996,3 @@
                 export PROJECT="e2e-gke-trusty-prod-p"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
-
