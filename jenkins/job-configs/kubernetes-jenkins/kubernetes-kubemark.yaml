@@ -164,7 +164,7 @@
                 # Increase throughput in Kubemark master components.
                 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
                 # Increase limit for inflight requests in apiserver.
-                export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1600"
+                export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
                 # TODO: Reduce this once we have log rotation in Kubemark.
                 export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
                 # Increase throughput in Load test.
