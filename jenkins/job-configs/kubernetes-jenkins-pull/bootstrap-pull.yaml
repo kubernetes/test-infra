@@ -89,6 +89,10 @@
         max-total: 12
         job-name: pull-kubernetes-e2e-gke-gci
         repo-name: 'k8s.io/kubernetes'
+    - kubernetes-e2e-kops-aws:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-kops-aws
+        repo-name: 'k8s.io/kubernetes'
     - kubernetes-federation-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-federation-e2e-gce
