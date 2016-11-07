@@ -974,6 +974,7 @@
                 export GINKGO_PARALLEL="y"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
                 export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
+                export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
         - 'gci-gce-cri-serial': # kubernetes-e2e-gci-gce-cri-serial
             description: 'Run [Serial], [Disruptive], tests with CRI enabled on GCE with GCI, sequentially.'
             timeout: 300
@@ -986,6 +987,7 @@
                 export PROJECT="jkns-e2e-cri-serial-validation" # kubernetes-e2e-cri-serial-validation exceeds the length limit.
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
                 export KUBELET_TEST_ARGS="--experimental-runtime-integration-type=cri"
+                export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
     jobs:
         - 'kubernetes-e2e-{suffix}'
