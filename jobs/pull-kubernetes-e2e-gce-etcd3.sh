@@ -50,9 +50,8 @@ export NUM_NODES="4"
 export GINKGO_PARALLEL_NODES="30"
 # Use etcd3 as storage backend.
 export STORAGE_BACKEND="etcd3"
-export TEST_ETCD_IMAGE="3.0.12-experimental.1"
-# TODO: Change to 3.0.12 after changes in main repo.
-export TEST_ETCD_VERSION="3.0.12-experimental.1"
+export TEST_ETCD_IMAGE="3.0.14-experimental.1"
+export TEST_ETCD_VERSION="3.0.14"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
