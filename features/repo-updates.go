@@ -51,6 +51,7 @@ type assignmentConfig struct {
 type RepoInfo struct {
 	BaseDir      string
 	EnableMdYaml bool
+	UseReviewers bool
 
 	enabled    bool
 	projectDir string
@@ -243,6 +244,7 @@ func (o *RepoInfo) EachLoop() error {
 func (o *RepoInfo) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&o.BaseDir, "repo-dir", "", "Path to perform checkout of repository")
 	cmd.Flags().BoolVar(&o.EnableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
+	cmd.Flags().BoolVar(&o.UseReviewers, "use-reviewers", false, "Use \"reviewers\" rather than \"approvers\" for review")
 }
 
 // GitCommand will execute the git command with the `args` within the project directory.
@@ -332,6 +334,9 @@ func (o *RepoInfo) Approvers(path string) sets.String {
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) LeafReviewers(path string) sets.String {
+	if !o.UseReviewers {
+		return o.LeafApprovers(path)
+	}
 	return peopleForPath(path, o.reviewers, true, o.EnableMdYaml)
 }
 
@@ -340,5 +345,8 @@ func (o *RepoInfo) LeafReviewers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Reviewers(path string) sets.String {
+	if !o.UseReviewers {
+		return o.Approvers(path)
+	}
 	return peopleForPath(path, o.reviewers, false, o.EnableMdYaml)
 }
