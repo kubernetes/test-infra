@@ -70,12 +70,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.3
 - name: kubernetes-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.4
+- name: kubernetes-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.5
 - name: kubernetes-e2e-aws
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws-release-1.4
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws
+- name: kubernetes-e2e-aws-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-aws-release-1.5
 - name: kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
@@ -86,8 +90,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features
 - name: kubernetes-e2e-gce-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features-release-1.4
+- name: kubernetes-e2e-gce-alpha-features-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features-release-1.5
 - name: kubernetes-e2e-gci-gce-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features-release-1.4
+- name: kubernetes-e2e-gci-gce-alpha-features-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features-release-1.5
 - name: kubernetes-e2e-gce-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-autoscaling
 - name: kubernetes-e2e-gci-gce-autoscaling
@@ -114,6 +122,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation
 - name: kubernetes-e2e-gce-federation-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.4
+- name: kubernetes-e2e-gce-federation-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.5
 - name: kubernetes-soak-weekly-deploy-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-federation
 - name: kubernetes-soak-continuous-e2e-gce-federation
@@ -132,6 +142,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-release-1.3
 - name: kubernetes-e2e-gce-gci-ci-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-release-1.4
+- name: kubernetes-e2e-gce-gci-ci-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-release-1.5
 - name: kubernetes-e2e-gce-gci-ci-serial-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-master
 - name: kubernetes-e2e-gce-gci-ci-serial-release-1.2
@@ -140,6 +152,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-release-1.3
 - name: kubernetes-e2e-gce-gci-ci-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-release-1.4
+- name: kubernetes-e2e-gce-gci-ci-serial-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-release-1.5
 - name: kubernetes-e2e-gce-gci-ci-slow-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-master
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.2
@@ -148,6 +162,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.3
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.4
+- name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.5
 - name: kubernetes-e2e-gci-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-examples
 - name: kubernetes-e2e-gci-gce-federation
@@ -184,16 +200,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-master
 - name: kubernetes-e2e-gci-gce-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.4
+- name: kubernetes-e2e-gci-gce-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.5
 - name: kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability
 - name: kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial
 - name: kubernetes-e2e-gci-gce-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.4
+- name: kubernetes-e2e-gci-gce-serial-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.5
 - name: kubernetes-e2e-gci-gce-slow
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow
 - name: kubernetes-e2e-gci-gce-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.4
+- name: kubernetes-e2e-gci-gce-slow-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.5
 - name: kubernetes-e2e-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress
 - name: kubernetes-e2e-gci-gce-ingress
@@ -208,8 +230,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.3
 - name: kubernetes-e2e-gce-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress-release-1.4
+- name: kubernetes-e2e-gce-ingress-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress-release-1.5
 - name: kubernetes-e2e-gci-gce-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.4
+- name: kubernetes-e2e-gci-gce-ingress-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.5
 - name: kubernetes-e2e-gce-kubenet
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-kubenet
 - name: kubernetes-e2e-gci-gce-kubenet
@@ -244,8 +270,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot-release-1.3
 - name: kubernetes-e2e-gce-reboot-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.4
+- name: kubernetes-e2e-gce-reboot-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.5
 - name: kubernetes-e2e-gci-gce-reboot-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot-release-1.4
+- name: kubernetes-e2e-gci-gce-reboot-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot-release-1.5
 - name: kubernetes-e2e-gce-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.2
 - name: kubernetes-e2e-gci-gce-release-1.2
@@ -256,12 +286,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.3
 - name: kubernetes-e2e-gce-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.4
+- name: kubernetes-e2e-gce-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.5
 - name: kubernetes-e2e-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-scalability
 - name: kubernetes-e2e-gce-scalability-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-scalability-release-1.4
+# Uncomment when 1.4 scale tests are turned off
+# - name: kubernetes-e2e-gce-scalability-release-1.5
+#   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-scalability-release-1.5
 - name: kubernetes-e2e-gci-gce-scalability-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability-release-1.4
+# Uncomment when 1.4 scale tests are turned off
+# - name: kubernetes-e2e-gci-gce-scalability-release-1.5
+#   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability-release-1.5
 - name: kubernetes-e2e-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial
 - name: kubernetes-e2e-gce-serial-release-1.2
@@ -274,6 +312,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.3
 - name: kubernetes-e2e-gce-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.4
+- name: kubernetes-e2e-gce-serial-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.5
 - name: kubernetes-e2e-gce-slow
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow
 - name: kubernetes-e2e-gce-slow-release-1.2
@@ -286,6 +326,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.3
 - name: kubernetes-e2e-gce-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.4
+- name: kubernetes-e2e-gce-slow-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.5
 - name: kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke
 - name: kubernetes-e2e-gke-alpha-features
@@ -294,6 +336,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-alpha-features
 - name: kubernetes-e2e-gke-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-alpha-features-release-1.4
+- name: kubernetes-e2e-gke-alpha-features-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-alpha-features-release-1.5
 - name: kubernetes-e2e-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-autoscaling
 - name: kubernetes-e2e-gci-gke-autoscaling
@@ -318,8 +362,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-ingress-release-1.3
 - name: kubernetes-e2e-gke-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-ingress-release-1.4
+- name: kubernetes-e2e-gke-ingress-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-ingress-release-1.5
 - name: kubernetes-e2e-gci-gke-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-ingress-release-1.4
+- name: kubernetes-e2e-gci-gke-ingress-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-ingress-release-1.5
 - name: kubernetes-e2e-gke-large-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-cluster
 - name: kubernetes-e2e-gke-multizone
@@ -352,8 +400,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-reboot-release-1.3
 - name: kubernetes-e2e-gke-reboot-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-reboot-release-1.4
+- name: kubernetes-e2e-gke-reboot-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-reboot-release-1.5
 - name: kubernetes-e2e-gci-gke-reboot-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-reboot-release-1.4
+- name: kubernetes-e2e-gci-gke-reboot-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-reboot-release-1.5
 - name: kubernetes-e2e-gke-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-release-1.2
 - name: kubernetes-e2e-gke-release-1.3
@@ -362,8 +414,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-release-1.3
 - name: kubernetes-e2e-gke-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-release-1.4
+- name: kubernetes-e2e-gke-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-release-1.5
 - name: kubernetes-e2e-gci-gke-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-release-1.4
+- name: kubernetes-e2e-gci-gke-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-release-1.5
 - name: kubernetes-e2e-gke-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-serial
 - name: kubernetes-e2e-gke-serial-release-1.2
@@ -374,8 +430,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-serial-release-1.3
 - name: kubernetes-e2e-gke-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-serial-release-1.4
+- name: kubernetes-e2e-gke-serial-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-serial-release-1.5
 - name: kubernetes-e2e-gci-gke-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-serial-release-1.4
+- name: kubernetes-e2e-gci-gke-serial-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-serial-release-1.5
 - name: kubernetes-e2e-gke-slow
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-slow
 - name: kubernetes-e2e-gke-slow-release-1.2
@@ -386,8 +446,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow-release-1.3
 - name: kubernetes-e2e-gke-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-slow-release-1.4
+- name: kubernetes-e2e-gke-slow-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-slow-release-1.5
 - name: kubernetes-e2e-gci-gke-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow-release-1.4
+- name: kubernetes-e2e-gci-gke-slow-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow-release-1.5
 - name: kubernetes-e2e-gke-staging
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-staging
 - name: kubernetes-e2e-gci-gke-staging
@@ -426,8 +490,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.3
 - name: kubernetes-soak-continuous-e2e-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.4
+- name: kubernetes-soak-continuous-e2e-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.5
 - name: kubernetes-soak-continuous-e2e-gci-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gci-gce-1.4
+- name: kubernetes-soak-continuous-e2e-gci-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gci-gce-1.5
 - name: kubernetes-soak-continuous-e2e-gce-2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-2
 - name: kubernetes-soak-continuous-e2e-gce-gci
@@ -446,8 +514,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.3
 - name: kubernetes-soak-weekly-deploy-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.4
+- name: kubernetes-soak-weekly-deploy-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.5
 - name: kubernetes-soak-weekly-deploy-gci-gce-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gci-gce-1.4
+- name: kubernetes-soak-weekly-deploy-gci-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gci-gce-1.5
 - name: kubernetes-soak-weekly-deploy-gce-2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-2
 - name: kubernetes-soak-weekly-deploy-gce-gci
@@ -470,8 +542,13 @@ test_groups:
 - name: kubernetes-test-go-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.4
   days_of_results: 4
+- name: kubernetes-test-go-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.5
+  days_of_results: 4
 - name: kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-master
+- name: kubernetes-verify-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-release-1.5
 - name: kubernetes-verify-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-release-1.4
 - name: kubernetes-verify-release-1.3
@@ -510,6 +587,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew
 - name: kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
+- name: kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
+- name: kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
+- name: kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
+- name: kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
 - name: kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew
 - name: kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew
@@ -518,6 +603,55 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew
 - name: kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew
+- name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+- name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
+- name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
+- name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
+- name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+- name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master
+- name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
+- name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
+- name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
+  
 - name: kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster
 - name: kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster-new
@@ -576,12 +710,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.3-1.4-cvm-kubectl-skew
 - name: kubernetes-e2e-gce-1.3-1.4-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.3-1.4-gci-kubectl-skew
+- name: kubernetes-e2e-gce-1.4-1.5-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.5-cvm-kubectl-skew
+- name: kubernetes-e2e-gce-1.4-1.5-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.5-gci-kubectl-skew
 - name: kubernetes-e2e-gce-1.3-1.4-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.3-1.4-upgrade-cluster
 - name: kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new
 - name: kubernetes-e2e-gce-1.3-1.4-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.3-1.4-upgrade-master
+- name: kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
+- name: kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
+- name: kubernetes-e2e-gce-1.4-1.5-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.5-upgrade-master
 - name: kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster
 - name: kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new
@@ -634,6 +778,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.3-cvm-kubectl-skew
 - name: kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
+- name: kubernetes-e2e-gce-1.5-1.4-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.5-1.4-cvm-kubectl-skew
+- name: kubernetes-e2e-gce-1.5-1.4-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-1.5-1.4-gci-kubectl-skew
 - name: kubelet-flaky-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-flaky-gce-e2e-ci
 - name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
@@ -692,6 +840,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-release-1.2
 - name: kubelet-1.4-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-1.4-gce-e2e-ci
+- name: kubelet-1.5-gce-e2e-ci
+  gcs_prefix: kubernetes-jenkins/logs/kubelet-1.5-gce-e2e-ci
 - name: kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
@@ -718,6 +868,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-parallel-release-1.2
 - name: kubernetes-federation-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.4
+- name: kubernetes-federation-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
@@ -852,6 +1004,8 @@ dashboards:
     test_group_name: kubernetes-e2e-aws-release-1.4
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
+  - name: aws-release-1.5
+    test_group_name: kubernetes-e2e-aws-release-1.5
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
 
@@ -867,8 +1021,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-alpha-features
   - name: gce-alpha-features-release-1.4
     test_group_name: kubernetes-e2e-gce-alpha-features-release-1.4
+  - name: gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gce-alpha-features-release-1.5
   - name: gci-gce-alpha-features-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-alpha-features-release-1.4
+  - name: gci-gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-alpha-features-release-1.5
   - name: gce-autoscaling
     test_group_name: kubernetes-e2e-gce-autoscaling
   - name: gci-gce-autoscaling
@@ -911,8 +1069,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.3
   - name: gce-ingress-release-1.4
     test_group_name: kubernetes-e2e-gce-ingress-release-1.4
+  - name: gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gce-ingress-release-1.5
   - name: gci-gce-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.4
+  - name: gci-gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.5
   - name: gce-kubenet
     test_group_name: kubernetes-e2e-gce-kubenet
   - name: gci-gce-kubenet
@@ -947,8 +1109,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.3
   - name: gce-reboot-release-1.4
     test_group_name: kubernetes-e2e-gce-reboot-release-1.4
+  - name: gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gce-reboot-release-1.5
   - name: gci-gce-reboot-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.4
+  - name: gci-gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.5
   - name: gce-release-1.2
     test_group_name: kubernetes-e2e-gce-release-1.2
   - name: gci-gce-release-1.2
@@ -959,14 +1125,22 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-release-1.3
   - name: gce-release-1.4
     test_group_name: kubernetes-e2e-gce-release-1.4
+  - name: gce-release-1.5
+    test_group_name: kubernetes-e2e-gce-release-1.5
   - name: gce-scalability
     test_group_name: kubernetes-e2e-gce-scalability
   - name: gci-gce-scalability
     test_group_name: kubernetes-e2e-gci-gce-scalability
   - name: gce-scalability-release-1.4
     test_group_name: kubernetes-e2e-gce-scalability-release-1.4
+  # Uncomment when 1.4 scale tests are turned off
+  # - name: gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
   - name: gci-gce-scalability-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.4
+  # Uncomment when 1.4 scale tests are turned off
+  # - name: gci-gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
   - name: gce-serial
     test_group_name: kubernetes-e2e-gce-serial
   - name: gci-gce-serial
@@ -981,6 +1155,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-serial-release-1.3
   - name: gce-serial-release-1.4
     test_group_name: kubernetes-e2e-gce-serial-release-1.4
+  - name: gce-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-serial-release-1.5
   - name: gce-slow
     test_group_name: kubernetes-e2e-gce-slow
   - name: gci-gce-slow
@@ -995,6 +1171,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-slow-release-1.3
   - name: gce-slow-release-1.4
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
+  - name: gce-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-slow-release-1.5
 
 - name: google-gci
   dashboard_tab:
@@ -1008,6 +1186,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-release-1.3
   - name: gci-ci-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-release-1.4
+  - name: gci-ci-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-release-1.5
   - name: gci-ci-serial-master
     test_group_name: kubernetes-e2e-gce-gci-ci-serial-master
   - name: gci-ci-serial-release-1.2
@@ -1016,6 +1196,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.3
   - name: gci-ci-serial-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.4
+  - name: gci-ci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.5
   - name: gci-ci-slow-master
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-master
   - name: gci-ci-slow-release-1.2
@@ -1024,6 +1206,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.3
   - name: gci-ci-slow-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
+  - name: gci-ci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
   - name: gci-examples
     test_group_name: kubernetes-e2e-gci-gce-examples
   - name: gci-qa-m52
@@ -1058,16 +1242,22 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-master
   - name: gci-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-release-1.4
+  - name: gci-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-release-1.5
   - name: gci-scalability
     test_group_name: kubernetes-e2e-gci-gce-scalability
   - name: gci-serial
     test_group_name: kubernetes-e2e-gci-gce-serial
   - name: gci-serial-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-serial-release-1.4
+  - name: gci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.5
   - name: gci-slow
     test_group_name: kubernetes-e2e-gci-gce-slow
   - name: gci-slow-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-slow-release-1.4
+  - name: gci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.5
 
 - name: google-gke
   dashboard_tab:
@@ -1079,6 +1269,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-alpha-features
   - name: gke-alpha-features-release-1.4
     test_group_name: kubernetes-e2e-gke-alpha-features-release-1.4
+  - name: gke-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gke-alpha-features-release-1.5
   - name: gke-autoscaling
     test_group_name: kubernetes-e2e-gke-autoscaling
   - name: gci-gke-autoscaling
@@ -1103,8 +1295,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.3
   - name: gke-ingress-release-1.4
     test_group_name: kubernetes-e2e-gke-ingress-release-1.4
+  - name: gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gke-ingress-release-1.5
   - name: gci-gke-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.4
+  - name: gci-gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.5
   - name: gke-large-cluster
     test_group_name: kubernetes-e2e-gke-large-cluster
   - name: gke-multizone
@@ -1137,8 +1333,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.3
   - name: gke-reboot-release-1.4
     test_group_name: kubernetes-e2e-gke-reboot-release-1.4
+  - name: gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gke-reboot-release-1.5
   - name: gci-gke-reboot-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.4
+  - name: gci-gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
   - name: gke-release-1.2
     test_group_name: kubernetes-e2e-gke-release-1.2
   - name: gke-release-1.3
@@ -1147,8 +1347,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-release-1.3
   - name: gke-release-1.4
     test_group_name: kubernetes-e2e-gke-release-1.4
+  - name: gke-release-1.5
+    test_group_name: kubernetes-e2e-gke-release-1.5
   - name: gci-gke-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-release-1.4
+  - name: gci-gke-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-release-1.5
   - name: gke-serial
     test_group_name: kubernetes-e2e-gke-serial
   - name: gke-serial-release-1.2
@@ -1159,8 +1363,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-serial-release-1.3
   - name: gke-serial-release-1.4
     test_group_name: kubernetes-e2e-gke-serial-release-1.4
+  - name: gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gke-serial-release-1.5
   - name: gci-gke-serial-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-serial-release-1.4
+  - name: gci-gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-serial-release-1.5
   - name: gke-slow
     test_group_name: kubernetes-e2e-gke-slow
   - name: gke-slow-release-1.2
@@ -1171,8 +1379,12 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-slow-release-1.3
   - name: gke-slow-release-1.4
     test_group_name: kubernetes-e2e-gke-slow-release-1.4
+  - name: gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gke-slow-release-1.5
   - name: gci-gke-slow-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-slow-release-1.4
+  - name: gci-gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
   - name: gke-staging
     test_group_name: kubernetes-e2e-gke-staging
   - name: gci-gke-staging
@@ -1240,8 +1452,12 @@ dashboards:
     test_group_name: kubernetes-soak-continuous-e2e-gce-1.3
   - name: soak-continuous-e2e-gce-1.4
     test_group_name: kubernetes-soak-continuous-e2e-gce-1.4
+  - name: soak-continuous-e2e-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gce-1.5
   - name: soak-continuous-e2e-gci-gce-1.4
     test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.4
+  - name: soak-continuous-e2e-gci-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.5
   - name: soak-continuous-e2e-gce-2
     test_group_name: kubernetes-soak-continuous-e2e-gce-2
   - name: soak-continuous-e2e-gce-gci
@@ -1260,8 +1476,12 @@ dashboards:
     test_group_name: kubernetes-soak-weekly-deploy-gce-1.3
   - name: soak-weekly-deploy-gce-1.4
     test_group_name: kubernetes-soak-weekly-deploy-gce-1.4
+  - name: soak-weekly-deploy-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gce-1.5
   - name: soak-weekly-deploy-gci-gce-1.4
     test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.4
+  - name: soak-weekly-deploy-gci-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.5
   - name: soak-weekly-deploy-gce-2
     test_group_name: kubernetes-soak-weekly-deploy-gce-2
   - name: soak-weekly-deploy-gce-gci
@@ -1283,6 +1503,8 @@ dashboards:
     test_group_name: kubernetes-build-1.3
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
   - name: test-go
     test_group_name: kubernetes-test-go
   - name: test-go-release-1.2
@@ -1291,8 +1513,12 @@ dashboards:
     test_group_name: kubernetes-test-go-release-1.3
   - name: test-go-release-1.4
     test_group_name: kubernetes-test-go-release-1.4
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
   - name: verify-master
     test_group_name: kubernetes-verify-master
+  - name: verify-release-1.5
+    test_group_name: kubernetes-verify-release-1.5
   - name: verify-release-1.4
     test_group_name: kubernetes-verify-release-1.4
   - name: verify-release-1.3
@@ -1324,6 +1550,22 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
   - name: gce-1.4-1.3-gci-kubectl-skew
     test_group_name: kubernetes-e2e-gce-1.4-1.3-gci-kubectl-skew
+  - name: gce-1.4-1.5-cvm-kubectl-skew
+    test_group_name: kubernetes-e2e-gce-1.4-1.5-cvm-kubectl-skew
+  - name: gce-1.4-1.5-gci-kubectl-skew
+    test_group_name: kubernetes-e2e-gce-1.4-1.5-gci-kubectl-skew
+  - name: gke-1.4-1.5-cvm-kubectl-skew
+    test_group_name: kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
+  - name: gke-1.4-1.5-gci-kubectl-skew
+    test_group_name: kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
+  - name: gce-1.5-1.4-cvm-kubectl-skew
+    test_group_name: kubernetes-e2e-gce-1.5-1.4-cvm-kubectl-skew
+  - name: gce-1.5-1.4-gci-kubectl-skew
+    test_group_name: kubernetes-e2e-gce-1.5-1.4-gci-kubectl-skew
+  - name: gke-1.5-1.4-cvm-kubectl-skew
+    test_group_name: kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
+  - name: gke-1.5-1.4-gci-kubectl-skew
+    test_group_name: kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
   - name: gke-1.4-latest-gci-kubectl-skew
     test_group_name: kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew
   - name: gke-1.4-latest-cvm-kubectl-skew
@@ -1420,6 +1662,66 @@ dashboards:
   - name: gke-gci-1.3-gci-1.4-upgrade-master
     test_group_name: kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master
 
+- name: google-1.3-1.5-upgrade
+  dashboard_tab:
+  - name: gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-container_vm-1.3-container_vm-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  - name: gke-container_vm-1.3-gci-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
+  - name: gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+  - name: gke-container_vm-1.3-gci-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
+  - name: gke-gci-1.3-container_vm-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-gci-1.3-container_vm-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
+  - name: gke-gci-1.3-gci-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
+  - name: gke-gci-1.3-gci-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
+  - name: gke-gci-1.3-gci-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
+
+- name: google-1.4-1.5-upgrade
+  dashboard_tab:
+  - name: gce-cvm-1.4-cvm-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
+  - name: gce-cvm-1.4-cvm-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
+  - name: gce-cvm-1.4-cvm-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gce-1.4-1.5-upgrade-master
+  - name: gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-container_vm-1.4-container_vm-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+  - name: gke-container_vm-1.4-gci-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster
+  - name: gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+  - name: gke-container_vm-1.4-gci-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master
+  - name: gke-gci-1.4-container_vm-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-gci-1.4-container_vm-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
+  - name: gke-gci-1.4-gci-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
+  - name: gke-gci-1.4-gci-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
+  - name: gke-gci-1.4-gci-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
+
 - name: google-gke-latest-upgrade
   dashboard_tab:
   - name: gke-container_vm-1.3-container_vm-latest-upgrade-cluster
@@ -1479,10 +1781,144 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-federation
   - name: gce-federation-1.4
     test_group_name: kubernetes-e2e-gce-federation-release-1.4
+  - name: gce-federation-1.5
+    test_group_name: kubernetes-e2e-gce-federation-release-1.5
   - name: soak-weekly-deploy-gce-federation
     test_group_name: kubernetes-soak-weekly-deploy-gce-federation
   - name: soak-continuous-e2e-gce-federation
     test_group_name: kubernetes-soak-continuous-e2e-gce-federation
+
+- name: release-1.5-all
+  dashboard_tab:
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
+  - name: gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gce-alpha-features-release-1.5
+  - name: gci-gce-alpha-features-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-alpha-features-release-1.5
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
+  - name: gce-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-serial-release-1.5
+  # Uncomment after 1.4 scale tests are turned off
+  # - name: gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  # - name: gci-gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
+  - name: gce-release-1.5
+    test_group_name: kubernetes-e2e-gce-release-1.5
+  - name: gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gce-reboot-release-1.5
+  - name: gci-gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.5
+  - name: gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gce-ingress-release-1.5
+  - name: gci-gce-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.5
+  - name: gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gke-slow-release-1.5
+  - name: gci-gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
+  - name: gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gke-serial-release-1.5
+  - name: gci-gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-serial-release-1.5
+  - name: gke-release-1.5
+    test_group_name: kubernetes-e2e-gke-release-1.5
+  - name: gci-gke-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-release-1.5
+  - name: gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gke-reboot-release-1.5
+  - name: gci-gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
+  - name: gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gke-ingress-release-1.5
+  - name: gci-gke-ingress-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.5
+  - name: gci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-slow-release-1.5
+  - name: gci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-serial-release-1.5
+  - name: gci-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-release-1.5
+  - name: gci-ci-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
+  - name: gci-ci-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.5
+  - name: gci-ci-release-1.5
+    test_group_name: kubernetes-e2e-gce-gci-ci-release-1.5
+  - name: aws-release-1.5
+    test_group_name: kubernetes-e2e-aws-release-1.5
+  - name: soak-weekly-deploy-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gce-1.5
+  - name: soak-weekly-deploy-gci-gce-1.5
+    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.5
+  - name: soak-continuous-e2e-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gce-1.5
+  - name: soak-continuous-e2e-gci-gce-1.5
+    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.5
+  - name: gke-1.3-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-1.3-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.3-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  - name: gke-1.4-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-1.4-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.4-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+
+- name: release-1.5-blocking
+  dashboard_tab:
+  - name: build-1.5
+    test_group_name: kubernetes-build-1.5
+  - name: verify-release-1.5
+    test_group_name: kubernetes-verify-release-1.5
+  - name: gce-release-1.5
+    test_group_name: kubernetes-e2e-gce-release-1.5
+  - name: gce-serial-release-1.5
+    test_group_name: kubernetes-e2e-gce-serial-release-1.5
+  - name: gce-slow-release-1.5
+    test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gce-reboot-release-1.5
+  # Uncomment after 1.4 scale tests are turned off
+  # - name: gce-scalability-release-1.5
+  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  - name: test-go-release-1.5
+    test_group_name: kubernetes-test-go-release-1.5
+  - name: gke-release-1.5
+    test_group_name: kubernetes-e2e-gke-release-1.5
+  - name: gci-gke-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-release-1.5
+  - name: gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gke-serial-release-1.5
+  - name: gci-gke-serial-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-serial-release-1.5
+  - name: gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gke-slow-release-1.5
+  - name: gci-gke-slow-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
+  - name: gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gke-reboot-release-1.5
+  - name: gci-gke-reboot-release-1.5
+    test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
+  - name: gke-1.3-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+  - name: gke-1.3-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.3-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+  - name: gke-1.4-1.5-upgrade-cluster
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+  - name: gke-1.4-1.5-upgrade-cluster-new
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+  - name: gke-1.4-1.5-upgrade-master
+    test_group_name: kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
 
 - name: release-1.4-all
   dashboard_tab:
@@ -1675,6 +2111,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-staging-release-1.2
   - name: kubelet-1.4-gce-e2e-ci
     test_group_name: kubelet-1.4-gce-e2e-ci
+  - name: kubelet-1.5-gce-e2e-ci
+    test_group_name: kubelet-1.5-gce-e2e-ci
   - name: federation-build
     test_group_name: kubernetes-federation-build
   - name: gke-gci-prod-parallel-release-1.2
@@ -1691,6 +2129,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
   - name: federation-build-1.4
     test_group_name: kubernetes-federation-build-1.4
+  - name: federation-build-1.5
+    test_group_name: kubernetes-federation-build-1.5
   - name: gke-large-teardown
     test_group_name: kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs

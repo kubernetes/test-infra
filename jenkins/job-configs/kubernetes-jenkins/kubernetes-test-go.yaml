@@ -63,6 +63,10 @@
             branch: 'master'
             cron-string: '{sq-cron-string}'
             timeout: 100
+        - 'go-release-1.5':
+            branch: 'release-1.5'
+            cron-string: '{sq-cron-string}'
+            timeout: 100
         - 'go-release-1.4':
             branch: 'release-1.4'
             cron-string: '{sq-cron-string}'
