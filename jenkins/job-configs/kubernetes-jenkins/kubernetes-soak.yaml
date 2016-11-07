@@ -404,6 +404,7 @@
                 export FAIL_ON_GCP_RESOURCE_LEAK="true"
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_OS_DISTRIBUTION="gci"
+                export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
     jobs:
         - 'kubernetes-soak-weekly-deploy-{suffix}'
         - 'kubernetes-soak-continuous-e2e-{suffix}'
