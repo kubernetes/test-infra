@@ -143,7 +143,7 @@
                 export KUBE_GCE_ZONE="us-central1-f"
                 export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
                 export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
-                export KUBE_NODE_OS_DISTRIBUTION="debian"true
+                export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-gci':
             deploy-description: |
                 Deploy GCI based Kubernetes to soak cluster using the latest successful
