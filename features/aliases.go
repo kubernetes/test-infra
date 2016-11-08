@@ -19,12 +19,14 @@ package features
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/ghodss/yaml"
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
@@ -92,6 +94,14 @@ func (a *Aliases) EachLoop() error {
 
 	// read and check the alias-file.
 	fileContents, err := a.aliasReader.read()
+	if os.IsNotExist(err) {
+		glog.Infof("Missing alias-file (%s), using empty alias structure.", a.AliasFile)
+		a.data = &aliasData{
+			AliasMap: map[string][]string{},
+		}
+		a.prevHash = ""
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("Unable to read alias file: %v", err)
 	}

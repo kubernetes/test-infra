@@ -44,3 +44,4 @@ data:
   check-labels.label-file: "/gitrepos/contrib/labels.yaml"
   issue-categorizer.triager-url: ""
   cla.cla-status-context: "cla/linuxfoundation"
+  alias.alias-file: "/gitrepos/contrib/OWNERS_ALIASES"
