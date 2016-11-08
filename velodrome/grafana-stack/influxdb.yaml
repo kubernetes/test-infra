@@ -22,7 +22,10 @@ spec:
               name: influxdb
               key: rootpassword
         - name: PRE_CREATE_DB
-          value: github
+          value: github;monitoring
+        resources:
+          limits:
+            memory: "3Gi"
         ports:
         - name: influxdb-port
           containerPort: 8086
