@@ -1484,6 +1484,11 @@ dashboards:
   - name: soak-continuous-e2e-gce-federation
     test_group_name: kubernetes-soak-continuous-e2e-gce-federation
 
+- name: google-federation-aws
+  dashboard_tab:
+  - name: aws-federation
+    test_group_name: kubernetes-e2e-aws-federation
+
 - name: release-1.4-all
   dashboard_tab:
   - name: build-1.4
