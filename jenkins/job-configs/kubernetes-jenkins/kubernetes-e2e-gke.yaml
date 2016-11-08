@@ -337,7 +337,7 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gke-1-5"
+                export PROJECT="k8s-gke-1-5"
         - 'gke-serial-release-1.5':  # kubernetes-e2e-gke-serial-release-1.5
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.5 branch.'
             timeout: 300
@@ -345,12 +345,12 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gke-serial-1-5"
+                export PROJECT="k8s-gke-serial-1-5"
         - 'gke-alpha-features-release-1.5':
             description: 'Run alpha feature tests on GKE on the release-1.5 branch.'
             timeout: 180
             job-env: |
-                export PROJECT="k8s-jkns-e2e-gke-alpha-1-5"
+                export PROJECT="k8s-e2e-gke-alpha-1-5"
                 export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
@@ -362,14 +362,14 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gke-slow-1-5"
+                export PROJECT="k8s-gke-slow-1-5"
         - 'gke-reboot-release-1.5':  # kubernetes-e2e-gke-reboot-release-1.5
             description: 'Run [Feature:Reboot] tests on GKE on the release-1.5 branch.'
             timeout: 180
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gke-reboot-1-5"
+                export PROJECT="k8s-gke-reboot-1-5"
         - 'gke-ingress-release-1.5':  # kubernetes-e2e-gke-ingress-release-1.5
             description: 'Run [Feature:Ingress] tests on GKE on the release-1.5 branch.'
             timeout: 90
@@ -378,7 +378,7 @@
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gke-ingress-1-5"
+                export PROJECT="k8s-gke-ingress-1-5"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
 
@@ -394,7 +394,7 @@
                 export GINKGO_PARALLEL="y"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gci-gke-1-5"
+                export PROJECT="k8s-gci-gke-1-5"
                 export KUBE_GKE_IMAGE_TYPE="gci"
         - 'gci-gke-serial-release-1.5':  # kubernetes-e2e-gci-gke-serial-release-1.5
             description: 'Run [Serial], [Disruptive] tests on GKE on the release-1.5 branch, using GCI image.'
@@ -403,7 +403,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gci-gke-serial-1-5"
+                export PROJECT="k8s-gci-gke-serial-1-5"
                 export KUBE_GKE_IMAGE_TYPE="gci"
         - 'gci-gke-slow-release-1.5':  # kubernetes-e2e-gci-gke-slow-release-1.5
             description: 'Run slow E2E tests on GKE using the release-1.5 branch, using GCI image.'
@@ -413,7 +413,7 @@
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gci-gke-slow-1-5"
+                export PROJECT="k8s-gci-gke-slow-1-5"
                 export KUBE_GKE_IMAGE_TYPE="gci"
         - 'gci-gke-reboot-release-1.5':  # kubernetes-e2e-gci-gke-reboot-release-1.5
             description: 'Run [Feature:Reboot] tests on GKE on the release-1.5 branch, using GCI image.'
@@ -421,7 +421,7 @@
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gci-gke-reboot-1-5"
+                export PROJECT="k8s-gci-gke-reboot-1-5"
                 export KUBE_GKE_IMAGE_TYPE="gci"
         - 'gci-gke-ingress-release-1.5':  # kubernetes-e2e-gci-gke-ingress-release-1.5
             description: 'Run [Feature:Ingress] tests on GKE on the release-1.5 branch, using GCI image.'
@@ -431,7 +431,7 @@
             job-env: |
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-                export PROJECT="k8s-jkns-gci-gke-ingress-1-5"
+                export PROJECT="k8s-gci-gke-ingress-1-5"
                 export KUBE_GKE_IMAGE_TYPE="gci"
     jobs:
         - 'kubernetes-e2e-{gke-suffix}'
