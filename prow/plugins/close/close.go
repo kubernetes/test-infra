@@ -17,7 +17,6 @@ limitations under the License.
 package close
 
 import (
-	"fmt"
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
@@ -59,7 +58,8 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 
 	// Allow assignees and authors to close issues.
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
-		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't close an issue unless you authored it or you are assigned to it.", commentAuthor))
+		resp := "you can't close an issue unless you authored it or you are assigned to it"
+		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	}
 
 	return gc.CloseIssue(org, repo, number)

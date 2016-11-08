@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func handlePR(c client, pr github.PullRequestEvent) error {
@@ -66,8 +67,11 @@ func askToJoin(ghc githubClient, pr github.PullRequest) error {
 	commentTemplate := `
 Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands will still work. Regular contributors should join the org to skip this step.
 
-If you have questions or suggestions related to this bot's behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.`
-	comment := fmt.Sprintf(commentTemplate, trustedOrg, trustedOrg)
+<details>
+%s
+</details
+`
+	comment := fmt.Sprintf(commentTemplate, trustedOrg, trustedOrg, plugins.AboutThisBot)
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name

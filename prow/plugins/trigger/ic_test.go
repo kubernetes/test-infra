@@ -96,7 +96,8 @@ func TestHandleIssueComment(t *testing.T) {
 	for _, tc := range testcases {
 		k := &fakekube.FakeClient{}
 		g := &fakegithub.FakeClient{
-			OrgMembers: []string{"t"},
+			IssueComments: map[int][]github.IssueComment{},
+			OrgMembers:    []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
 				0: &github.PullRequest{
 					Number: 0,

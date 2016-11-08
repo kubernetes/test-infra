@@ -17,7 +17,6 @@ limitations under the License.
 package lgtm
 
 import (
-	"fmt"
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
@@ -69,15 +68,19 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 
 	// Allow authors to cancel LGTM. Do not allow authors to LGTM, and do not
 	// accept commands from any other user.
-	isAssignee := ic.Issue.IsAssignee(ic.Comment.User.Login)
-	isAuthor := ic.Issue.IsAuthor(ic.Comment.User.Login)
+	commentAuthor := ic.Comment.User.Login
+	isAssignee := ic.Issue.IsAssignee(commentAuthor)
+	isAuthor := ic.Issue.IsAuthor(commentAuthor)
 	if isAuthor && wantLGTM {
-		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM your own PR.", ic.Comment.User.Login))
+		resp := "you can't LGTM your own PR"
+		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	} else if !isAuthor {
 		if !isAssignee && wantLGTM {
-			return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't LGTM a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
+			resp := "you can't LGTM a PR unless you are assigned as a reviewer"
+			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		} else if !isAssignee && !wantLGTM {
-			return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't remove LGTM from a PR unless you are assigned as a reviewer.", ic.Comment.User.Login))
+			resp := "you can't remove LGTM from a PR unless you are assigned as a reviewer"
+			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		}
 	}
 
