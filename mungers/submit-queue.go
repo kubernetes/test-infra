@@ -798,6 +798,7 @@ const (
 	ghE2ERunning            = "Running github e2e tests a second time."
 	ghE2EFailed             = "Second github e2e run failed."
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
+	headCommitChanged       = "This PR has changed since we ran the tests"
 )
 
 func getEarliestApprovedTime(obj *github.MungeObject) *time.Time {
@@ -1157,6 +1158,12 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
+	sha, _, ok := obj.GetHeadAndBase()
+	if !ok {
+		glog.Errorf("%d: Unable to get SHA", *obj.Issue.Number)
+		sq.SetMergeStatus(obj, unknown)
+		return true
+	}
 	if interruptedObj != nil {
 		if interruptedObj.hasSHAChanged() {
 			// This PR will have to be rested.
@@ -1165,8 +1172,33 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		}
 		glog.Infof("Skipping retest since head and base sha match previous attempt!")
 		atomic.AddInt32(&sq.retestsAvoided, 1)
-	} else if sq.retestPR(obj) {
+	} else {
+		if sq.retestPR(obj) {
+			return true
+		}
+
+		err := obj.Refresh()
+		if err != nil {
+			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+			sq.SetMergeStatus(obj, unknown)
+			return true
+		}
+	}
+
+	// We shouldn't merge if it's not valid anymore
+	if !sq.validForMerge(obj) {
+		glog.Errorf("%d: Not mergeable anymore. Do not merge.", *obj.Issue.Number)
 		return true
+	}
+
+	if newSha, _, ok := obj.GetHeadAndBase(); !ok {
+		glog.Errorf("%d: Unable to get SHA", *obj.Issue.Number)
+		sq.SetMergeStatus(obj, unknown)
+		return true
+	} else if newSha != sha {
+		glog.Errorf("%d: Changed while running the test. Do not merge.", *obj.Issue.Number)
+		sq.SetMergeStatus(obj, headCommitChanged)
+		return false
 	}
 
 	if !sq.e2eStable(true) {
