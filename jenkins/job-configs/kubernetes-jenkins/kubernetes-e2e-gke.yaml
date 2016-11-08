@@ -516,6 +516,15 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export PROJECT="k8s-jkns-gci-gke-serial-1-4"
                 export KUBE_GKE_IMAGE_TYPE="gci"
+        - 'gci-gke-alpha-features-release-1.4':
+            description: 'Run alpha feature tests on GKE on the release-1.4 branch.'
+            timeout: 180
+            job-env: |
+                export PROJECT="k8s-jkns-gci-gke-alpha-1-4"
+                export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
+                export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+                export KUBE_GKE_IMAGE_TYPE="gci"
         - 'gci-gke-slow-release-1.4':  # kubernetes-e2e-gci-gke-slow-release-1.4
             description: 'Run slow E2E tests on GKE using the release-1.4 branch, using GCI image.'
             timeout: 150  #  See kubernetes/kubernetes#24072
