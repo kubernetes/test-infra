@@ -123,9 +123,10 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot (gci )?(gce )?(e2e )?test this"
 
 - name: pull-kubernetes-e2e-kops-aws
+  always_run: true
   context: Jenkins kops AWS e2e
   rerun_command: "@k8s-bot kops aws e2e test this"
-  trigger: "@k8s-bot kops aws (e2e )?test this"
+  trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
 - name: pull-kubernetes-federation-e2e-gce
   context: Jenkins Federation GCE e2e
