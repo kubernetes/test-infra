@@ -19,6 +19,8 @@ package lgtm
 import (
 	"regexp"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -41,11 +43,11 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) error {
-	return handle(pa.GitHubClient, ic)
+func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
-func handle(gc githubClient, ic github.IssueCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
 	if !ic.Issue.IsPullRequest() || ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
@@ -73,13 +75,16 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	isAuthor := ic.Issue.IsAuthor(commentAuthor)
 	if isAuthor && wantLGTM {
 		resp := "you can't LGTM your own PR"
+		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	} else if !isAuthor {
 		if !isAssignee && wantLGTM {
 			resp := "you can't LGTM a PR unless you are assigned as a reviewer"
+			log.Infof("Commenting with \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		} else if !isAssignee && !wantLGTM {
 			resp := "you can't remove LGTM from a PR unless you are assigned as a reviewer"
+			log.Infof("Commenting with \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		}
 	}
@@ -87,8 +92,10 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	// Only add the label if it doesn't have it, and vice versa.
 	hasLGTM := issueHasLabel(ic.Issue, lgtmLabel)
 	if hasLGTM && !wantLGTM {
+		log.Info("Removing LGTM label.")
 		return gc.RemoveLabel(org, repo, number, lgtmLabel)
 	} else if !hasLGTM && wantLGTM {
+		log.Info("Adding LGTM label.")
 		return gc.AddLabel(org, repo, number, lgtmLabel)
 	}
 	return nil

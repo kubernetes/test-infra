@@ -33,9 +33,13 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
+			c.Logger.Info("Starting all jobs for new PR.")
 			return buildAll(c, pr.PullRequest)
-		} else if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
-			return fmt.Errorf("could not ask to join: %s", err)
+		} else {
+			c.Logger.Info("Asking PR author to join the org.")
+			if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
+				return fmt.Errorf("could not ask to join: %s", err)
+			}
 		}
 	case "reopened", "synchronize":
 		// When a PR is updated, check that the user is in the org or that an org
@@ -45,9 +49,11 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
+			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
 	case "closed":
+		c.Logger.Info("Aborting all jobs for closed PR.")
 		return deleteAll(c, pr.PullRequest)
 	case "labeled":
 		// When a PR is LGTMd, if it is untrusted then build it once.
@@ -56,6 +62,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
+				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
 				return buildAll(c, pr.PullRequest)
 			}
 		}

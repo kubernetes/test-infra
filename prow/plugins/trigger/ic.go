@@ -59,6 +59,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return err
 	} else if !orgMember {
 		resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/%s/people) member", trustedOrg, trustedOrg)
+		c.Logger.Infof("Commenting \"%s\".", resp)
 		return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	}
 
@@ -68,6 +69,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	for _, job := range requestedJobs {
+		c.Logger.Info("Starting %s build.", job.Name)
 		if err := build(c, job, *pr); err != nil {
 			return err
 		}

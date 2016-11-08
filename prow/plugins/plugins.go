@@ -36,24 +36,29 @@ var (
 	pullRequestHandlers  = map[string]PullRequestHandler{}
 )
 
-type IssueCommentHandler func(*PluginAgent, github.IssueCommentEvent) error
+type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
 
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler) {
 	allPlugins[name] = struct{}{}
 	issueCommentHandlers[name] = fn
 }
 
-type PullRequestHandler func(*PluginAgent, github.PullRequestEvent) error
+type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
 
 func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
 	allPlugins[name] = struct{}{}
 	pullRequestHandlers[name] = fn
 }
 
-type PluginAgent struct {
+type PluginClient struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
 	JobAgent     *jobs.JobAgent
+	Logger       *logrus.Entry
+}
+
+type PluginAgent struct {
+	PluginClient
 
 	mut sync.Mutex
 	// Repo (eg "k/k") -> list of handler names.

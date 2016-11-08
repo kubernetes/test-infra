@@ -17,6 +17,8 @@ limitations under the License.
 package trigger
 
 import (
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
@@ -53,20 +55,22 @@ type client struct {
 	GitHubClient githubClient
 	JobAgent     *jobs.JobAgent
 	KubeClient   kubeClient
+	Logger       *logrus.Entry
 }
 
-func paToClient(pa *plugins.PluginAgent) client {
+func pcToClient(pc plugins.PluginClient) client {
 	return client{
-		GitHubClient: pa.GitHubClient,
-		JobAgent:     pa.JobAgent,
-		KubeClient:   pa.KubeClient,
+		GitHubClient: pc.GitHubClient,
+		JobAgent:     pc.JobAgent,
+		KubeClient:   pc.KubeClient,
+		Logger:       pc.Logger,
 	}
 }
 
-func handlePullRequest(pa *plugins.PluginAgent, pr github.PullRequestEvent) error {
-	return handlePR(paToClient(pa), pr)
+func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+	return handlePR(pcToClient(pc), pr)
 }
 
-func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) error {
-	return handleIC(paToClient(pa), ic)
+func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	return handleIC(pcToClient(pc), ic)
 }
