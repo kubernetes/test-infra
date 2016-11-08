@@ -203,7 +203,7 @@
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
             job-env: |
-                export PROJECT="k8s-jkns-gce-soak-1-5"
+                export PROJECT="k8s-gce-soak-1-5"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
         - 'gci-gce-1.5':
             deploy-description: |
@@ -225,7 +225,7 @@
                 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
             job-env: |
-                export PROJECT="k8s-jkns-gci-gce-soak-1-5"
+                export PROJECT="k8s-gci-gce-soak-1-5"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
         - 'gce-1.4':
             deploy-description: |

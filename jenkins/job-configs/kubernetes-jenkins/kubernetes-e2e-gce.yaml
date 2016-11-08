@@ -807,7 +807,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-                export PROJECT="k8s-jkns-gce-1-5"
+                export PROJECT="k8s-gce-1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-reboot-release-1.5':  # kubernetes-e2e-gce-reboot-release-1.5
             description: 'Run [Feature:Reboot] tests on GCE on the release-1.5 branch.'
@@ -815,7 +815,7 @@
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
-                export PROJECT="k8s-jkns-gce-reboot-1-5"
+                export PROJECT="k8s-gce-reboot-1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-slow-release-1.5':  # kubernetes-e2e-gce-slow-release-1.5
             description: 'Runs slow tests on GCE, sequentially on the release-1.5 branch.'
@@ -825,7 +825,7 @@
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Slow\] \
                                          --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
                 export GINKGO_PARALLEL="y"
-                export PROJECT="k8s-jkns-gce-slow-1-5"
+                export PROJECT="k8s-gce-slow-1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-serial-release-1.5':  # kubernetes-e2e-gce-serial-release-1.5
             description: 'Run [Serial], [Disruptive], tests on GCE on the release-1.5 branch.'
@@ -834,7 +834,7 @@
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-                export PROJECT="k8s-jkns-gce-serial-1-5"
+                export PROJECT="k8s-gce-serial-1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-ingress-release-1.5':  # kubernetes-e2e-gce-ingress-release-1.5
             description: 'Run [Feature:Ingress] tests on GCE on the release-1.5 branch.'
@@ -844,7 +844,7 @@
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
-                export PROJECT="k8s-jkns-gce-ingress1-5"
+                export PROJECT="k8s-gce-ingress1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         - 'gce-alpha-features-release-1.5': # kubernetes-e2e-gce-alpha-features-release-1.5
             description: 'Run alpha feature tests on GCE on the release-1.5 branch.'
@@ -853,7 +853,7 @@
                 export KUBE_FEATURE_GATES="AllAlpha=true"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
-                export PROJECT="k8s-jkns-e2e-gce-alpha1-5"
+                export PROJECT="k8s-e2e-gce-alpha1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="debian"
         # Uncomment when 1.4 scale tests are turned off
         # - 'gce-scalability-release-1.5':  # kubernetes-e2e-gce-scalability-release-1.5
@@ -896,7 +896,7 @@
             emails: 'quinton@google.com, colin.hom@coreos.com, madhusudancs@google.com'
             test-owner: 'madhusudancs'
             job-env: |
-                export PROJECT="k8s-jkns-e2e-gce-f8n-1-5"
+                export PROJECT="k8s-e2e-gce-f8n-1-5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
                 export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
                 export FEDERATION="true"
@@ -930,7 +930,7 @@
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Reboot\]"
-                export PROJECT="k8s-jkns-gci-gce-reboot-1-5"
+                export PROJECT="k8s-gci-gce-reboot-1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gci-gce-slow-release-1.5':  # kubernetes-e2e-gci-gce-slow-release-1.5
             description: 'Runs slow tests on GCE, sequentially on the release-1.5 branch, using GCI image.'
@@ -959,7 +959,7 @@
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
-                export PROJECT="k8s-jkns-gci-gce-ingress1-5"
+                export PROJECT="k8s-gci-gce-ingress1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         - 'gci-gce-alpha-features-release-1.5': # kubernetes-e2e-gci-gce-alpha-features-release-1.5
             description: 'Run alpha feature tests on GCE on the release-1.5 branch.'
@@ -968,7 +968,7 @@
                 export KUBE_FEATURE_GATES="AllAlpha=true"
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
-                export PROJECT="k8s-jkns-e2e-gci-gce-alpha1-5"
+                export PROJECT="k8s-e2e-gci-gce-alpha1-5"
                 export KUBE_NODE_OS_DISTRIBUTION="gci"
         # Uncomment when 1.4 scale tests are turned off
         # - 'gci-gce-scalability-release-1.5':  # kubernetes-e2e-gci-gce-scalability-release-1.5
