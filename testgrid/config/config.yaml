@@ -893,6 +893,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 - name: ci-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
+- name: ci-kubernetes-e2e-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 # Manual, federated groups
 # rktnetes
 - name: kubernetes-rktnetes
