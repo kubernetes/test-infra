@@ -893,6 +893,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 - name: ci-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
+- name: ci-kubernetes-e2e-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 # Manual, federated groups
 # rktnetes
 - name: kubernetes-rktnetes
@@ -2170,8 +2172,13 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
+
+- name: bootstrap
+  dashboard_tab:
   - name: ci-kubernetes-e2e-gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
+  - name: ci-kubernetes-e2e-gce-flaky
+    test_group_name: ci-kubernetes-e2e-gce-flaky
 
 - name: maintenance
   dashboard_tab:
