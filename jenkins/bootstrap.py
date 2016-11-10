@@ -22,7 +22,7 @@
 The following should already be done:
   git checkout http://k8s.io/test-infra
   cd $WORKSPACE
-  test-infra/jenkins/bootstrap.py <--repo=R> <--job=J> <--pull=P || --branch=B>
+  test-infra/jenkins/bootstrap.py <--repo=R || --bare> <--job=J> <--pull=P || --branch=B>
 
 The bootstrapper now does the following:
   # Note start time
@@ -149,8 +149,10 @@ def start(gsutil, paths, stamp, node_name, version):
         'timestamp': stamp,
         'jenkins-node': node_name,
         'node': node_name,
-        'version': version,
     }
+    if version:
+        data['repo-version'] = version
+        data['version'] = version  # TODO(fejta): retire
     gsutil.upload_json(paths.started, data)
 
 
@@ -239,7 +241,8 @@ def append_result(gsutil, path, build, version, passed):
         else:
             cache = []
         cache.append({
-            'version': version,
+            'version': version,  # TODO(fejta): retire
+            'job-version': version,
             'buildnumber': build,
             'passed': bool(passed),
             'result': 'SUCCESS' if passed else 'FAILURE',
@@ -303,6 +306,11 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         except subprocess.CalledProcessError:
             logging.warning('Failed to write build path to %s', paths.pr_path)
 
+    meta = metadata(repo, artifacts)
+    if not version:
+        version = meta.get('job-version')
+    if not version:  # TODO(fejta): retire
+        version = meta.get('version')
     # github.com/kubernetes/release/find_green_build depends on append_result()
     # TODO(fejta): reconsider whether this is how we want to solve this problem.
     append_result(gsutil, paths.result_cache, build, version, success)
@@ -313,8 +321,11 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         'timestamp': time.time(),
         'result': 'SUCCESS' if success else 'FAILURE',
         'passed': bool(success),
-        'metadata': metadata(repo, artifacts),
+        'metadata': meta,
     }
+    if version:
+        data['job-version'] = version
+        data['version'] = version  # TODO(fejta): retire
     gsutil.upload_json(paths.finished, data)  # Raise if this fails
 
 
@@ -334,6 +345,8 @@ def node():
 
 def find_version():
     """Determine and return the version of the build."""
+    # TODO(fejta): once job-version is functional switch this to
+    # git rev-parse [--short=N] HEAD^{commit}
     version_file = 'version'
     if os.path.isfile(version_file):
         # e2e tests which download kubernetes use this path:
@@ -572,14 +585,20 @@ def bootstrap(job, repo, branch, pull, root):
     build = build_name(started)
     logging.info(
         'Check out %s at %s...',
-        os.path.join(root, repo),
+        os.path.join(root, repo or ''),
         pull if pull else branch)
     if not os.path.exists(root):
         os.makedirs(root)
     os.chdir(root)
-    checkout(repo, branch, pull)
+    if repo:
+        checkout(repo, branch, pull)
+    elif branch or pull:
+        raise ValueError('--branch and --pull require --repo', branch, pull)
     logging.info('Configure environment...')
-    version = find_version()
+    if repo:
+        version = find_version()
+    else:
+        version = ''
     setup_magic_environment(job)
     setup_credentials()
     if pull:
@@ -617,8 +636,11 @@ if __name__ == '__main__':
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
     PARSER.add_argument('--pull', type=int, help='PR number')
     PARSER.add_argument('--branch', help='Checkout the following branch')
-    PARSER.add_argument(
-        '--repo', required=True, help='The repository to fetch from')
+    PARSER.add_argument('--repo', help='The repository to fetch from')
+    PARSER.add_argument('--bare', action='store_true', help='Do not check out a repository')
     PARSER.add_argument('--job', required=True, help='Name of the job to run')
     ARGS = PARSER.parse_args()
+    if bool(ARGS.repo) == bool(ARGS.bare):
+        raise argparse.ArgumentTypeError(
+            'Expected --repo xor --bare:', ARGS.repo, ARGS.bare)
     bootstrap(ARGS.job, ARGS.repo, ARGS.branch, ARGS.pull, ARGS.root)
