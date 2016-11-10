@@ -124,7 +124,7 @@ func (h *ApprovalHandler) hasApproval(filename string, approverSet sets.String, 
 	paths := strings.Split(filename, "/")
 	p := ""
 	for i := 0; i < len(paths) && i < depth; i++ {
-		fileOwners := h.features.Repos.LeafAssignees(p)
+		fileOwners := h.features.Repos.LeafApprovers(p)
 		if fileOwners.Len() == 0 {
 			glog.Warningf("Couldn't find an owner for path (%s)", p)
 			continue

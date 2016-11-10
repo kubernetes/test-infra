@@ -105,9 +105,9 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 		fileWeight = int64(math.Log10(float64(fileWeight))) + 1
 		fileOwners := sets.String{}
 		if leafOnly {
-			fileOwners = feats.Repos.LeafAssignees(*file.Filename)
+			fileOwners = feats.Repos.LeafReviewers(*file.Filename)
 		} else {
-			fileOwners = feats.Repos.Assignees(*file.Filename)
+			fileOwners = feats.Repos.Reviewers(*file.Filename)
 		}
 		if fileOwners.Len() == 0 {
 			glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
