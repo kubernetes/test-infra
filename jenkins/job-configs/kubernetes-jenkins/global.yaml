@@ -22,24 +22,40 @@
                     condition-worst: SUCCESS
                     condition-best: SUCCESS
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=SUCCESS ./_tmp/upload-to-gcs.sh'
+                        - shell: |
+                            export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+                            export HOME="{WORKSPACE}"
+                            export JENKINS_BUILD_FINISHED=SUCCESS
+                            ./_tmp/upload-to-gcs.sh
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: UNSTABLE
                     condition-best: UNSTABLE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=UNSTABLE ./_tmp/upload-to-gcs.sh'
+                        - shell: |
+                            export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+                            export HOME="{WORKSPACE}"
+                            export JENKINS_BUILD_FINISHED=UNSTABLE
+                            ./_tmp/upload-to-gcs.sh
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: FAILURE
                     condition-best: FAILURE
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=FAILURE ./_tmp/upload-to-gcs.sh'
+                        - shell: |
+                            export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+                            export HOME="{WORKSPACE}"
+                            export JENKINS_BUILD_FINISHED=FAILURE
+                            ./_tmp/upload-to-gcs.sh
                 - conditional-step:
                     condition-kind: current-status
                     condition-worst: ABORTED
                     condition-best: ABORTED
                     steps:
-                        - shell: 'JENKINS_BUILD_FINISHED=ABORTED ./_tmp/upload-to-gcs.sh'
+                        - shell: |
+                            export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+                            export HOME="{WORKSPACE}"
+                            export JENKINS_BUILD_FINISHED=ABORTED
+                            ./_tmp/upload-to-gcs.sh
             script-only-if-succeeded: False
             script-only-if-failed: False

@@ -23,6 +23,7 @@
         - inject:
             properties-content: |
                 CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
+                HOME="${WORKSPACE}"
                 GOROOT=/usr/local/go
                 GOPATH=$WORKSPACE/go
                 PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
