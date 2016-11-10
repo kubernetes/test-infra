@@ -235,3 +235,46 @@ func TestReleaseNoteLabel(t *testing.T) {
 		server.Close()
 	}
 }
+
+func TestGetReleaseNote(t *testing.T) {
+
+	tests := []struct {
+		body                        string
+		expectedReleaseNote         string
+		expectedReleaseNoteVariable string
+	}{
+		{
+			body:                        "**Release note**: <other unimportant information> ```NONE```",
+			expectedReleaseNote:         "NONE",
+			expectedReleaseNoteVariable: releaseNoteNone,
+		},
+		{
+			body:                        "**Release note**: <other unimportant information> ```This is a description of my feature```",
+			expectedReleaseNote:         "This is a description of my feature",
+			expectedReleaseNoteVariable: releaseNote,
+		},
+		{
+			body:                        "**Release note**: <other unimportant information> ```This is my feature. There is some action required for my feature.```",
+			expectedReleaseNote:         "This is my feature. There is some action required for my feature.",
+			expectedReleaseNoteVariable: releaseNoteActionRequired,
+		},
+		{
+			body:                        "",
+			expectedReleaseNote:         "",
+			expectedReleaseNoteVariable: releaseNoteLabelNeeded,
+		},
+	}
+
+	for testNum, test := range tests {
+		calculatedReleaseNote := getReleaseNote(test.body)
+		if test.expectedReleaseNote != calculatedReleaseNote {
+			t.Errorf("Test %v: Expected %v as the release note, got %v", testNum, test.expectedReleaseNote, calculatedReleaseNote)
+		}
+		calculatedLabel := chooseLabel(calculatedReleaseNote)
+		if test.expectedReleaseNoteVariable != calculatedLabel {
+			t.Errorf("%v, %v", calculatedReleaseNote, chooseLabel(calculatedReleaseNote))
+			t.Errorf("Test %v: Expected %v as the release note label, got %v", testNum, test.expectedReleaseNoteVariable, calculatedLabel)
+		}
+	}
+
+}
