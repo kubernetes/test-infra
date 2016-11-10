@@ -268,3 +268,25 @@ func (c *Client) CloseIssue(owner, repo string, number int) error {
 	}
 	return nil
 }
+
+// FindIssues uses the github search API to find issues which match a particular query.
+func (c *Client) FindIssues(query string) ([]Issue, error) {
+	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/search/issues?q=%s", c.base, query), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("response not 200: %s", resp.Status)
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var issSearchResult IssuesSearchResult
+	if err := json.Unmarshal(b, &issSearchResult); err != nil {
+		return nil, err
+	}
+	return issSearchResult.Issues, nil
+}

@@ -31,6 +31,7 @@ import (
 type Server struct {
 	PullRequestEvents  chan<- github.PullRequestEvent
 	IssueCommentEvents chan<- github.IssueCommentEvent
+	StatusEvents       chan<- github.StatusEvent
 
 	HMACSecret []byte
 }
@@ -91,6 +92,15 @@ func (s *Server) demuxEvent(eventType string, payload []byte) error {
 		go func() {
 			s.IssueCommentEvents <- ic
 		}()
+	case "status":
+		var se github.StatusEvent
+		if err := json.Unmarshal(payload, &se); err != nil {
+			return err
+		}
+		go func() {
+			s.StatusEvents <- se
+		}()
 	}
+
 	return nil
 }

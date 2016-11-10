@@ -221,26 +221,26 @@ func (c *testClient) TestPRKubernetes() error {
 	}
 	actual, err := c.KubeClient.CreatePod(p)
 	if err != nil {
-		c.tryCreateStatus(github.Error, "Error creating build pod.", "")
+		c.tryCreateStatus(github.StatusError, "Error creating build pod.", "")
 		return err
 	}
 	resultURL := c.guberURL(buildID)
-	c.tryCreateStatus(github.Pending, "Build started", resultURL)
+	c.tryCreateStatus(github.StatusPending, "Build started", resultURL)
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
 		if err != nil {
-			c.tryCreateStatus(github.Error, "Error waiting for pod to complete.", "")
+			c.tryCreateStatus(github.StatusError, "Error waiting for pod to complete.", "")
 			return err
 		}
 		if po.Status.Phase == kube.PodSucceeded {
-			c.tryCreateStatus(github.Success, "Build succeeded.", resultURL)
+			c.tryCreateStatus(github.StatusSuccess, "Build succeeded.", resultURL)
 			break
 		} else if po.Status.Phase == kube.PodFailed {
-			c.tryCreateStatus(github.Failure, "Build failed.", resultURL)
+			c.tryCreateStatus(github.StatusFailure, "Build failed.", resultURL)
 			c.tryCreateFailureComment(resultURL)
 			break
 		} else if po.Status.Phase == kube.PodUnknown {
-			c.tryCreateStatus(github.Error, "Error watching build.", resultURL)
+			c.tryCreateStatus(github.StatusError, "Error watching build.", resultURL)
 			break
 		}
 		time.Sleep(20 * time.Second)
@@ -264,39 +264,39 @@ func (c *testClient) TestPRJenkins() error {
 	}
 	eq, err := c.JenkinsClient.Enqueued(b)
 	if err != nil {
-		c.tryCreateStatus(github.Error, "Error queueing build.", "")
+		c.tryCreateStatus(github.StatusError, "Error queueing build.", "")
 		return err
 	}
 	for eq {
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
 		if err != nil {
-			c.tryCreateStatus(github.Error, "Error in queue.", "")
+			c.tryCreateStatus(github.StatusError, "Error in queue.", "")
 			return err
 		}
 	}
 
 	result, err := c.JenkinsClient.Status(b)
 	if err != nil {
-		c.tryCreateStatus(github.Error, "Error waiting for build.", "")
+		c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")
 		return err
 	}
 
 	resultURL := c.guberURL(strconv.Itoa(result.Number))
-	c.tryCreateStatus(github.Pending, "Build started.", resultURL)
+	c.tryCreateStatus(github.StatusPending, "Build started.", resultURL)
 	for {
 		if err != nil {
-			c.tryCreateStatus(github.Error, "Error waiting for build.", "")
+			c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")
 			return err
 		}
 		if result.Building {
 			time.Sleep(30 * time.Second)
 		} else {
 			if result.Success {
-				c.tryCreateStatus(github.Success, "Build succeeded.", resultURL)
+				c.tryCreateStatus(github.StatusSuccess, "Build succeeded.", resultURL)
 				break
 			} else {
-				c.tryCreateStatus(github.Failure, "Build failed.", resultURL)
+				c.tryCreateStatus(github.StatusFailure, "Build failed.", resultURL)
 				c.tryCreateFailureComment(resultURL)
 				break
 			}

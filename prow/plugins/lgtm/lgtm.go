@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/util"
 )
 
 const pluginName = "lgtm"
@@ -90,7 +91,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	}
 
 	// Only add the label if it doesn't have it, and vice versa.
-	hasLGTM := issueHasLabel(ic.Issue, lgtmLabel)
+	hasLGTM := util.IssueHasLabel(ic.Issue, lgtmLabel)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
 		return gc.RemoveLabel(org, repo, number, lgtmLabel)
@@ -99,13 +100,4 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		return gc.AddLabel(org, repo, number, lgtmLabel)
 	}
 	return nil
-}
-
-func issueHasLabel(i github.Issue, label string) bool {
-	for _, label := range i.Labels {
-		if label.Name == lgtmLabel {
-			return true
-		}
-	}
-	return false
 }

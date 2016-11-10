@@ -18,10 +18,10 @@ package github
 
 // These are possible State entries for a Status.
 const (
-	Pending = "pending"
-	Success = "success"
-	Error   = "error"
-	Failure = "failure"
+	StatusPending = "pending"
+	StatusSuccess = "success"
+	StatusError   = "error"
+	StatusFailure = "failure"
 )
 
 // Status is used to set a commit status line.
@@ -117,4 +117,22 @@ type IssueComment struct {
 	Body    string `json:"body"`
 	User    User   `json:"user,omitempty"`
 	HTMLURL string `json:"html_url,omitempty"`
+}
+
+type StatusEvent struct {
+	SHA         *string `json:"sha,omitempty"`
+	State       *string `json:"state,omitempty"`
+	Description *string `json:"description,omitempty"`
+	TargetURL   *string `json:"target_url,omitempty"`
+	ID          *int    `json:"id,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Context     *string `json:"context,omitempty"`
+	Sender      *User   `json:"sender,omitempty"`
+	Repo        *Repo   `json:"repository,omitempty"`
+}
+
+// IssuesSearchResult represents the result of an issues search.
+type IssuesSearchResult struct {
+	Total  *int    `json:"total_count,omitempty"`
+	Issues []Issue `json:"items,omitempty"`
 }

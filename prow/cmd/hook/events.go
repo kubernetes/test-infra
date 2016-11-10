@@ -30,6 +30,7 @@ type EventAgent struct {
 
 	PullRequestEvents  <-chan github.PullRequestEvent
 	IssueCommentEvents <-chan github.IssueCommentEvent
+	StatusEvents       <-chan github.StatusEvent
 }
 
 // Start starts listening for events. It does not block.
@@ -44,6 +45,12 @@ func (ea *EventAgent) Start() {
 			go ea.handleIssueCommentEvent(ic)
 		}
 	}()
+	go func() {
+		for se := range ea.StatusEvents {
+			go ea.handleStatusEvents(se)
+		}
+	}()
+
 }
 
 func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
@@ -78,6 +85,22 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, ic); err != nil {
 			pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
+		}
+	}
+}
+
+func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"context": se.Context,
+		"sha":     se.Context,
+		"state":   se.State,
+		"id":      se.ID,
+		"repo":    se.Repo.Name,
+	})
+	l.Infof("Status description %s.", se.Description)
+	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.FullName) {
+		if err := h(ea.Plugins, se); err != nil {
+			l.WithError(err).WithField("plugin", p).Error("Error handling StatusEvent.")
 		}
 	}
 }

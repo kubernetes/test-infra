@@ -34,6 +34,7 @@ var (
 	allPlugins           = map[string]struct{}{}
 	issueCommentHandlers = map[string]IssueCommentHandler{}
 	pullRequestHandlers  = map[string]PullRequestHandler{}
+	statusEventHandlers  = map[string]StatusEventHandler{}
 )
 
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
@@ -55,6 +56,13 @@ type PluginClient struct {
 	KubeClient   *kube.Client
 	JobAgent     *jobs.JobAgent
 	Logger       *logrus.Entry
+}
+
+type StatusEventHandler func(*PluginAgent, github.StatusEvent) error
+
+func RegisterStatusEventHandler(name string, fn StatusEventHandler) {
+	allPlugins[name] = struct{}{}
+	statusEventHandlers[name] = fn
 }
 
 type PluginAgent struct {
@@ -128,6 +136,20 @@ func (pa *PluginAgent) PullRequestHandlers(repo string) map[string]PullRequestHa
 	hs := map[string]PullRequestHandler{}
 	for _, p := range pa.ps[repo] {
 		if h, ok := pullRequestHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+	return hs
+}
+
+// IssueCommentHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) StatusEventHandlers(repo string) map[string]StatusEventHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]StatusEventHandler{}
+	for _, p := range pa.ps[repo] {
+		if h, ok := statusEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
