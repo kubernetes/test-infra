@@ -22,6 +22,7 @@
         - e2e-credentials-binding
         - inject:
             properties-content: |
+                CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
                 GOROOT=/usr/local/go
                 GOPATH=$WORKSPACE/go
                 PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin

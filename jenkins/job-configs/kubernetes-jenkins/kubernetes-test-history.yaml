@@ -18,6 +18,9 @@
             skip-tag: true
     wrappers:
         - e2e-credentials-binding
+        - inject:
+            properties-content: |
+                CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
     builders:
         - activate-gce-service-account
         - shell: |
