@@ -48,6 +48,7 @@ type SizeMunger struct {
 	GeneratedFilesFile string
 	genFilePaths       *sets.String
 	genFilePrefixes    *sets.String
+	genFileNames       *sets.String
 	genPathPrefixes    *[]string
 }
 
@@ -93,11 +94,16 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	if s.genFilePrefixes != nil {
 		return
 	}
+	if s.genFileNames != nil {
+		return
+	}
 	paths := sets.NewString()
 	filePrefixes := sets.NewString()
+	fileNames := sets.NewString()
 	pathPrefixes := []string{}
 	s.genFilePaths = &paths
 	s.genFilePrefixes = &filePrefixes
+	s.genFileNames = &fileNames
 	s.genPathPrefixes = &pathPrefixes
 
 	file := s.GeneratedFilesFile
@@ -129,6 +135,8 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 			pathPrefixes = append(pathPrefixes, file)
 		} else if eType == "file-prefix" {
 			filePrefixes.Insert(file)
+		} else if eType == "file-name" {
+			fileNames.Insert(file)
 		} else if eType == "path" {
 			paths.Insert(file)
 		} else if eType == "paths-from-repo" {
@@ -162,6 +170,7 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	s.getGeneratedFiles(obj)
 	genFilePaths := *s.genFilePaths
 	genFilePrefixes := *s.genFilePrefixes
+	genFileNames := *s.genFileNames
 	genPathPrefixes := *s.genPathPrefixes
 
 	files, err := obj.ListFiles()
@@ -185,7 +194,11 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 		if genFilePaths.Has(*f.Filename) {
 			continue
 		}
-		if fileHasPrefix(*f.Filename, genFilePrefixes) {
+		_, filename := path.Split(*f.Filename)
+		if hasPrefix(filename, genFilePrefixes) {
+			continue
+		}
+		if genFileNames.Has(filename) {
 			continue
 		}
 		if f.Additions != nil {
@@ -216,10 +229,9 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	}
 }
 
-func fileHasPrefix(filepath string, filePrefixes sets.String) bool {
-	_, basename := path.Split(filepath)
+func hasPrefix(filename string, filePrefixes sets.String) bool {
 	for pfx := range filePrefixes {
-		if strings.HasPrefix(basename, pfx) {
+		if strings.HasPrefix(filename, pfx) {
 			return true
 		}
 	}
