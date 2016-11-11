@@ -846,7 +846,7 @@ test_groups:
 - name: kubernetes-e2e-gke-gci-test-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-test-release-1.2
 - name: testgrid-config-upload
-  gcs_prefix: kubernetes-jenkins/logs/testgrid-config-upload
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: kubernetes-e2e-gke-gci-prod-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-prod-release-1.2
 - name: kubernetes-e2e-gke-large-deploy
@@ -2134,8 +2134,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-enormous-teardown
   - name: gke-gci-test-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-test-release-1.2
-  - name: testgrid-config-upload
-    test_group_name: testgrid-config-upload
   - name: gke-gci-prod-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-prod-release-1.2
   - name: gke-large-deploy
@@ -2188,3 +2186,5 @@ dashboards:
     test_group_name: maintenance-all-hourly
   - name: ci-clean-projects
     test_group_name: maintenance-ci-clean-projects
+  - name: testgrid-config-upload
+    test_group_name: testgrid-config-upload
