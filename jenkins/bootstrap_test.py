@@ -875,6 +875,8 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'maintenance-%s' % name
             self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
             return job_name
 
         self.CheckBootstrapYaml('job-configs/bootstrap-maintenance.yaml', Check)
@@ -883,6 +885,8 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'maintenance-ci-%s' % name
             self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml', Check)
@@ -891,6 +895,8 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'maintenance-pull-%s' % name
             self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
@@ -899,6 +905,8 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml', Check)
@@ -906,7 +914,6 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
-            self.assertIn('branch', job)
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
@@ -960,8 +967,6 @@ class JobTest(unittest.TestCase):
                     self.fail('Jobs may not contain {expansions}' % (
                         key, value))  # Use simple strings
             # Things to check on specific flavors.
-            self.assertIn('repo-name', real_job)
-            self.assertIn('.', real_job['repo-name'])  # Has domain
             job_name = check(real_job, name)
             self.assertTrue(job_name)
             self.assertEquals(job_name, real_job.get('job-name'))

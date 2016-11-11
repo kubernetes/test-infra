@@ -3,7 +3,7 @@
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
-        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --bare --root="${{GOPATH}}/src/k8s.io"
     disabled: false
     name: 'ci-{suffix}'
     node: 'e2e'
@@ -28,7 +28,6 @@
     - workspace-cleanup:
         dirmatch: true
         exclude:
-        - 'go/src/{repo-name}/.git/'
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
 
@@ -38,50 +37,26 @@
     name: bootstrap-ci
     suffix:
     - kubernetes-e2e-gce-etcd3:
-        branch: master
         job-name: ci-kubernetes-e2e-gce-etcd3
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gce-alpha-features:
-        branch: master
         job-name: ci-kubernetes-e2e-gce-alpha-features
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gci-gce-alpha-features:
-        branch: master
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gce-flaky:
-        branch: master
         job-name: ci-kubernetes-e2e-gce-flaky
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gci-gce-flaky:
-        branch: master
         job-name: ci-kubernetes-e2e-gci-gce-flaky
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gce-proto:
-        branch: master
         job-name: ci-kubernetes-e2e-gce-proto
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gci-gce-proto:
-        branch: master
         job-name: ci-kubernetes-e2e-gci-gce-proto
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gke-autoscaling:
-        branch: master
         job-name: ci-kubernetes-e2e-gke-autoscaling
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gke-flaky:
-        branch: master
         job-name: ci-kubernetes-e2e-gke-flaky
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gke-reboot:
-        branch: master
         job-name: ci-kubernetes-e2e-gke-reboot
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gke-serial:
-        branch: master
         job-name: ci-kubernetes-e2e-gke-serial
-        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gke-updown:
-        branch: master
         job-name: ci-kubernetes-e2e-gke-updown
-        repo-name: k8s.io/kubernetes
