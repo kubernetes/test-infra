@@ -207,7 +207,7 @@ class GSUtil(object):
                 self.gsutil, '-m', '-q',
                 '-o', 'GSUtil:use_magicfile=True',
                 'cp', '-a', 'public-read', '-r', '-c', '-z', 'log,txt,xml',
-                artifacts, path,
+                '%s/*' % artifacts, path,
             ]
             call(cmd)
 
