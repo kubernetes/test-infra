@@ -913,6 +913,8 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
+            self.assertIn('frequency', job)
+            self.assertNotIn('branch', job)
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
@@ -982,7 +984,12 @@ class JobTest(unittest.TestCase):
             self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
     def testAllProjectAreUnique(self):
-        projects = collections.defaultdict(list)
+        allowed_list = {  # TODO(fejta): remove these
+            'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
+        }
+        projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
             with open(job_path) as fp:
                 lines = list(fp)
@@ -991,7 +998,7 @@ class JobTest(unittest.TestCase):
                     continue
                 self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
-                projects[project].append(job)
+                projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
         if duplicates:
             self.fail('Jobs duplicate projects:\n  %s' % (
