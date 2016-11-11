@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func handlePR(c client, pr github.PullRequestEvent) error {
@@ -32,9 +33,13 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
+			c.Logger.Info("Starting all jobs for new PR.")
 			return buildAll(c, pr.PullRequest)
-		} else if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
-			return fmt.Errorf("could not ask to join: %s", err)
+		} else {
+			c.Logger.Info("Asking PR author to join the org.")
+			if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
+				return fmt.Errorf("could not ask to join: %s", err)
+			}
 		}
 	case "reopened", "synchronize":
 		// When a PR is updated, check that the user is in the org or that an org
@@ -44,9 +49,11 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
+			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
 	case "closed":
+		c.Logger.Info("Aborting all jobs for closed PR.")
 		return deleteAll(c, pr.PullRequest)
 	case "labeled":
 		// When a PR is LGTMd, if it is untrusted then build it once.
@@ -55,6 +62,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
+				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
 				return buildAll(c, pr.PullRequest)
 			}
 		}
@@ -66,8 +74,11 @@ func askToJoin(ghc githubClient, pr github.PullRequest) error {
 	commentTemplate := `
 Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is reasonable to test? If so, please reply with "@k8s-bot ok to test" on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands will still work. Regular contributors should join the org to skip this step.
 
-If you have questions or suggestions related to this bot's behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.`
-	comment := fmt.Sprintf(commentTemplate, trustedOrg, trustedOrg)
+<details>
+%s
+</details>
+`
+	comment := fmt.Sprintf(commentTemplate, trustedOrg, trustedOrg, plugins.AboutThisBot)
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name

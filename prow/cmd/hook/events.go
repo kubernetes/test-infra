@@ -48,15 +48,18 @@ func (ea *EventAgent) Start() {
 
 func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
 	l := logrus.WithFields(logrus.Fields{
-		"org":  pr.PullRequest.Base.Repo.Owner.Login,
-		"repo": pr.PullRequest.Base.Repo.Name,
-		"pr":   pr.Number,
-		"url":  pr.PullRequest.HTMLURL,
+		"org":    pr.PullRequest.Base.Repo.Owner.Login,
+		"repo":   pr.PullRequest.Base.Repo.Name,
+		"pr":     pr.Number,
+		"author": pr.PullRequest.User.Login,
+		"url":    pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
 	for p, h := range ea.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.FullName) {
-		if err := h(ea.Plugins, pr); err != nil {
-			l.WithError(err).WithField("plugin", p).Error("Error handling PullRequestEvent.")
+		pc := ea.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		if err := h(pc, pr); err != nil {
+			pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 		}
 	}
 }
@@ -71,8 +74,10 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	})
 	l.Infof("Issue comment %s.", ic.Action)
 	for p, h := range ea.Plugins.IssueCommentHandlers(ic.Repo.FullName) {
-		if err := h(ea.Plugins, ic); err != nil {
-			l.WithError(err).WithField("plugin", p).Error("Error handling IssueCommentEvent.")
+		pc := ea.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		if err := h(pc, ic); err != nil {
+			pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 		}
 	}
 }

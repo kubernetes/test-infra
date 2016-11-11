@@ -17,16 +17,18 @@ limitations under the License.
 package trigger
 
 import (
+	"fmt"
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
 
 func handleIC(c client, ic github.IssueCommentEvent) error {
-	owner := ic.Repo.Owner.Login
-	name := ic.Repo.Name
+	org := ic.Repo.Owner.Login
+	repo := ic.Repo.Name
 	number := ic.Issue.Number
 	author := ic.Comment.User.Login
 	// Only take action when a comment is first created.
@@ -56,15 +58,18 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	if err != nil {
 		return err
 	} else if !orgMember {
-		return nil
+		resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/%s/people) member", trustedOrg, trustedOrg)
+		c.Logger.Infof("Commenting \"%s\".", resp)
+		return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	}
 
-	pr, err := c.GitHubClient.GetPullRequest(owner, name, number)
+	pr, err := c.GitHubClient.GetPullRequest(org, repo, number)
 	if err != nil {
 		return err
 	}
 
 	for _, job := range requestedJobs {
+		c.Logger.Info("Starting %s build.", job.Name)
 		if err := build(c, job, *pr); err != nil {
 			return err
 		}

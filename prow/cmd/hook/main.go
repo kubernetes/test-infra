@@ -91,9 +91,12 @@ func main() {
 	}
 
 	pluginAgent := &plugins.PluginAgent{
-		GitHubClient: githubClient,
-		KubeClient:   kubeClient,
-		JobAgent:     jobAgent,
+		PluginClient: plugins.PluginClient{
+			GitHubClient: githubClient,
+			KubeClient:   kubeClient,
+			JobAgent:     jobAgent,
+			Logger:       logrus.NewEntry(logrus.StandardLogger()),
+		},
 	}
 	if err := pluginAgent.Start(*pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")

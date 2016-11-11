@@ -19,6 +19,8 @@ package close
 import (
 	"testing"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -118,7 +120,7 @@ func TestCloseComment(t *testing.T) {
 				Assignees: []github.User{{"a"}, {"r1"}, {"r2"}},
 			},
 		}
-		if err := handle(fc, ice); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

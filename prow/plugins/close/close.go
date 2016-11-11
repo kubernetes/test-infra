@@ -17,8 +17,9 @@ limitations under the License.
 package close
 
 import (
-	"fmt"
 	"regexp"
+
+	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -37,11 +38,11 @@ type githubClient interface {
 	CloseIssue(owner, repo string, number int) error
 }
 
-func handleIssueComment(pa *plugins.PluginAgent, ic github.IssueCommentEvent) error {
-	return handle(pa.GitHubClient, ic)
+func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
-func handle(gc githubClient, ic github.IssueCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider open issues and new comments.
 	if ic.Issue.State != "open" || ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil
@@ -59,8 +60,11 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 
 	// Allow assignees and authors to close issues.
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
-		return gc.CreateComment(org, repo, number, fmt.Sprintf("@%s: you can't close an issue unless you authored it or you are assigned to it.", commentAuthor))
+		resp := "you can't close an issue unless you authored it or you are assigned to it"
+		log.Infof("Commenting \"%s\".", resp)
+		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	}
 
+	log.Info("Closing issue.")
 	return gc.CloseIssue(org, repo, number)
 }

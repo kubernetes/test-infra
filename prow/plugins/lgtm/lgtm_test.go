@@ -19,6 +19,8 @@ package lgtm
 import (
 	"testing"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -139,7 +141,7 @@ func TestLGTMComment(t *testing.T) {
 		if tc.hasLGTM {
 			ice.Issue.Labels = []github.Label{{Name: lgtmLabel}}
 		}
-		if err := handle(fc, ice); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}

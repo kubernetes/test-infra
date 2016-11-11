@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/jobs"
@@ -96,7 +98,8 @@ func TestHandleIssueComment(t *testing.T) {
 	for _, tc := range testcases {
 		k := &fakekube.FakeClient{}
 		g := &fakegithub.FakeClient{
-			OrgMembers: []string{"t"},
+			IssueComments: map[int][]github.IssueComment{},
+			OrgMembers:    []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
 				0: &github.PullRequest{
 					Number: 0,
@@ -112,6 +115,7 @@ func TestHandleIssueComment(t *testing.T) {
 			GitHubClient: g,
 			JobAgent:     &jobs.JobAgent{},
 			KubeClient:   k,
+			Logger:       logrus.WithField("plugin", pluginName),
 		}
 		c.JobAgent.SetJobs(map[string][]jobs.JenkinsJob{
 			"org/repo": {
