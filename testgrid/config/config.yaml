@@ -85,9 +85,9 @@ test_groups:
 - name: kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce
 - name: kubernetes-e2e-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features
 - name: kubernetes-e2e-gci-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: kubernetes-e2e-gce-alpha-features-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-alpha-features-release-1.4
 - name: kubernetes-e2e-gce-alpha-features-release-1.5
@@ -129,9 +129,9 @@ test_groups:
 - name: kubernetes-soak-continuous-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-federation
 - name: kubernetes-e2e-gce-flaky
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 - name: kubernetes-e2e-gci-gce-flaky
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
 - name: kubernetes-e2e-gce-gci-ci-master
@@ -253,9 +253,9 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-cri-serial
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-cri-serial
 - name: kubernetes-e2e-gce-proto
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-proto
 - name: kubernetes-e2e-gci-gce-proto
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-proto
 - name: kubernetes-e2e-gce-reboot
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot
 - name: kubernetes-e2e-gci-gce-reboot
@@ -893,8 +893,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 - name: ci-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
-- name: ci-kubernetes-e2e-gce-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 # Manual, federated groups
 # rktnetes
 - name: kubernetes-rktnetes
@@ -2177,8 +2175,6 @@ dashboards:
   dashboard_tab:
   - name: ci-kubernetes-e2e-gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
-  - name: ci-kubernetes-e2e-gce-flaky
-    test_group_name: ci-kubernetes-e2e-gce-flaky
 
 - name: maintenance
   dashboard_tab:
