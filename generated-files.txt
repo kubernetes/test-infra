@@ -1,5 +1,5 @@
 # File is of the format [TYPE] [NAME]
-# Where type can be path, prefix, or paths-from-repo
+# Where type can be path, path-prefix, file-prefix, or paths-from-repo
 #
 # Files which match these things will not be counted when determining
 # the size of a given PR
@@ -27,8 +27,11 @@ path		pkg/api/v1/types_swagger_doc_generated.go
 path		pkg/kubectl/testing/types.generated.go
 path		pkg/storage/testing/types.generated.go
 
-prefix		Godeps/
-prefix		vendor/
-prefix		api/swagger-spec/
+file-prefix	zz_generated.
 
-paths-from-repo .generated_docs
+path-prefix	Godeps/
+path-prefix	vendor/
+path-prefix	api/swagger-spec/
+path-prefix	pkg/generated/
+
+paths-from-repo	.generated_docs
