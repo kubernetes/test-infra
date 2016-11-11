@@ -41,3 +41,7 @@
         branch: master
         job-name: ci-kubernetes-e2e-gce-etcd3
         repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gce-flaky:
+        branch: master
+        job-name: ci-kubernetes-e2e-gce-flaky
+        repo-name: k8s.io/kubernetes
