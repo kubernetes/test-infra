@@ -38,3 +38,8 @@
         job-name: maintenance-ci-clean-projects
         frequency: 'H H/3 * * *'
         repo-name: 'k8s.io/test-infra'
+    - upload-testgrid-config:
+        branch: master
+        job-name: maintenance-ci-upload-testgrid-config
+        frequency: '*/10 * * * *' # every 10min, till we have scm in prow
+        repo-name: 'k8s.io/test-infra'
