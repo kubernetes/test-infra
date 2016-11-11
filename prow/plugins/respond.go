@@ -25,6 +25,7 @@ import (
 
 const AboutThisBot = "If you have questions or suggestions related to this bot's behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
 
+// FormatResponse nicely formats a response to an issue comment.
 func FormatResponse(ic github.IssueComment, s string) string {
 	format := `@%s: %s.
 
@@ -36,6 +37,7 @@ In response to [this comment](%s):
 %s
 </details>
 `
+	// Quote the user's comment by prepending ">" to each line.
 	var quoted []string
 	for _, l := range strings.Split(ic.Body, "\n") {
 		quoted = append(quoted, ">"+l)

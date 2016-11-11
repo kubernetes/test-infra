@@ -58,7 +58,7 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-func pcToClient(pc plugins.PluginClient) client {
+func getClient(pc plugins.PluginClient) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
 		JobAgent:     pc.JobAgent,
@@ -68,9 +68,9 @@ func pcToClient(pc plugins.PluginClient) client {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
-	return handlePR(pcToClient(pc), pr)
+	return handlePR(getClient(pc), pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(pcToClient(pc), ic)
+	return handleIC(getClient(pc), ic)
 }

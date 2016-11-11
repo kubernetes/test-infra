@@ -76,7 +76,7 @@ Can a [%s](https://github.com/orgs/%s/people) member verify that this patch is r
 
 <details>
 %s
-</details
+</details>
 `
 	comment := fmt.Sprintf(commentTemplate, trustedOrg, trustedOrg, plugins.AboutThisBot)
 
