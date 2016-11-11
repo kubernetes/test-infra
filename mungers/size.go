@@ -46,10 +46,10 @@ var (
 // file provided in --generated-files-config
 type SizeMunger struct {
 	GeneratedFilesFile string
-	genFilePaths       *sets.String
-	genFilePrefixes    *sets.String
-	genFileNames       *sets.String
-	genPathPrefixes    *[]string
+	genFilePaths       sets.String
+	genFilePrefixes    sets.String
+	genFileNames       sets.String
+	genPathPrefixes    sets.String
 }
 
 func init() {
@@ -97,14 +97,16 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	if s.genFileNames != nil {
 		return
 	}
+	if s.genPathPrefixes != nil {
+		return
+	}
+
+	// Don't write into s yet, since this might fail, and these are indicators
+	// to not repeat this function.
 	paths := sets.NewString()
 	filePrefixes := sets.NewString()
 	fileNames := sets.NewString()
-	pathPrefixes := []string{}
-	s.genFilePaths = &paths
-	s.genFilePrefixes = &filePrefixes
-	s.genFileNames = &fileNames
-	s.genPathPrefixes = &pathPrefixes
+	pathPrefixes := sets.NewString()
 
 	file := s.GeneratedFilesFile
 	if len(file) == 0 {
@@ -132,7 +134,7 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 		eType := fields[0]
 		file := fields[1]
 		if eType == "prefix" || eType == "path-prefix" {
-			pathPrefixes = append(pathPrefixes, file)
+			pathPrefixes.Insert(file)
 		} else if eType == "file-prefix" {
 			filePrefixes.Insert(file)
 		} else if eType == "file-name" {
@@ -156,6 +158,12 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 		return
 	}
 
+	// Save the results so we don't repeat this function.
+	s.genFilePaths = paths
+	s.genFilePrefixes = filePrefixes
+	s.genFileNames = fileNames
+	s.genPathPrefixes = pathPrefixes
+
 	return
 }
 
@@ -168,10 +176,6 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	issue := obj.Issue
 
 	s.getGeneratedFiles(obj)
-	genFilePaths := *s.genFilePaths
-	genFilePrefixes := *s.genFilePrefixes
-	genFileNames := *s.genFileNames
-	genPathPrefixes := *s.genPathPrefixes
 
 	files, err := obj.ListFiles()
 	if err != nil {
@@ -182,7 +186,7 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	dels := 0
 	for _, f := range files {
 		skip := false
-		for _, p := range genPathPrefixes {
+		for p := range s.genPathPrefixes {
 			if strings.HasPrefix(*f.Filename, p) {
 				skip = true
 				break
@@ -191,14 +195,14 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 		if skip {
 			continue
 		}
-		if genFilePaths.Has(*f.Filename) {
+		if s.genFilePaths.Has(*f.Filename) {
 			continue
 		}
 		_, filename := path.Split(*f.Filename)
-		if hasPrefix(filename, genFilePrefixes) {
+		if hasPrefix(filename, s.genFilePrefixes) {
 			continue
 		}
-		if genFileNames.Has(filename) {
+		if s.genFileNames.Has(filename) {
 			continue
 		}
 		if f.Additions != nil {
