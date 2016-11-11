@@ -41,7 +41,27 @@
         branch: master
         job-name: ci-kubernetes-e2e-gce-etcd3
         repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gce-alpha-features:
+        branch: master
+        job-name: ci-kubernetes-e2e-gce-alpha-features
+        repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gci-gce-alpha-features:
+        branch: master
+        job-name: ci-kubernetes-e2e-gci-gce-alpha-features
+        repo-name: k8s.io/kubernetes
     - kubernetes-e2e-gce-flaky:
         branch: master
         job-name: ci-kubernetes-e2e-gce-flaky
+        repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gci-gce-flaky:
+        branch: master
+        job-name: ci-kubernetes-e2e-gci-gce-flaky
+        repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gce-proto:
+        branch: master
+        job-name: ci-kubernetes-e2e-gce-proto
+        repo-name: k8s.io/kubernetes
+    - kubernetes-e2e-gci-gce-proto:
+        branch: master
+        job-name: ci-kubernetes-e2e-gci-gce-proto
         repo-name: k8s.io/kubernetes
