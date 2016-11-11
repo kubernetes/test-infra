@@ -378,6 +378,42 @@ class FinishTest(unittest.TestCase):
             with stub:
                 pass
 
+    def testNoVersion(self):
+        gsutil = FakeGSUtil()
+        paths = FakePath()
+        success = True
+        artifacts = 'not-a-dir'
+        no_version = ''
+        version = 'should not have found it'
+        with Stub(bootstrap, 'metadata', lambda *a: {'random-meta': version}):
+            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO)
+        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO)
+        calls = gsutil.jsons[-1]
+        # json data is second positional argument
+        self.assertNotIn('job-version', calls[0][1])
+        self.assertNotIn('version', calls[0][1])
+        self.assertTrue(calls[0][1].get('metadata'))
+
+
+    def testMetadataVersion(self):
+        """Test that we will extract version info from metadata."""
+        self.CheckMetadataVersion('job-version')
+        self.CheckMetadataVersion('version')
+
+    def CheckMetadataVersion(self, key):
+        gsutil = FakeGSUtil()
+        paths = FakePath()
+        success = True
+        artifacts = 'not-a-dir'
+        no_version = ''
+        version = 'found it'
+        with Stub(bootstrap, 'metadata', lambda *a: {key: version}):
+            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO)
+        calls = gsutil.jsons[-1]
+        # Meta is second positional argument
+        self.assertEquals(version, calls[0][1].get('job-version'))
+        self.assertEquals(version, calls[0][1].get('version'))
+
     def testIgnoreError_UploadArtifacts(self):
         paths = FakePath()
         gsutil = FakeGSUtil()
@@ -649,6 +685,15 @@ class BootstrapTest(unittest.TestCase):
         for stub in self.boiler:
             with stub:  # Leaving with restores things
                 pass
+
+    def testEmptyRepo(self):
+        repo = None
+        with Stub(bootstrap, 'checkout', Bomb):
+            bootstrap.bootstrap(JOB, repo, None, None, ROOT)
+        with self.assertRaises(ValueError):
+            bootstrap.bootstrap(JOB, repo, None, PULL, ROOT)
+        with self.assertRaises(ValueError):
+            bootstrap.bootstrap(JOB, repo, BRANCH, None, ROOT)
 
     def testRoot_NotExists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
