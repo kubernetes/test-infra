@@ -143,13 +143,14 @@ def checkout(repo, branch, pull):
     call([git, 'checkout', 'FETCH_HEAD'])
 
 
-def start(gsutil, paths, stamp, node_name, version):
+def start(gsutil, paths, stamp, node_name, version, git_commit):
     """Construct and upload started.json."""
     data = {
         'timestamp': stamp,
         'jenkins-node': node_name,
         'node': node_name,
         'version': version,
+        'git-commit': git_commit,
     }
     gsutil.upload_json(paths.started, data)
 
@@ -333,17 +334,24 @@ def node():
 
 
 def find_version():
-    """Determine and return the version of the build."""
-    version_file = 'version'
-    if os.path.isfile(version_file):
-        # e2e tests which download kubernetes use this path:
-        with open(version_file) as fp:
-            return fp.read().strip()
+    """Determine and return the version and git commit of the build."""
+    try:
+        # First try using kubectl
+        for loc in ('client/bin', 'platforms/linux/amd64'):
+            kubectl_bin = os.path.join(loc, 'kubectl')
+            if os.path.isfile(kubectl_bin):
+                kubectl_version_output = call([kubectl_bin, 'version', '--client'], output=True)
+                m = re.match(
+                    'Client Version: version.Info\{.*GitVersion:"(?P<version>[^"]+)".*GitCommit:"(?P<commit>[^"]+)".*\}',
+                    kubectl_version_output)
+                if m:
+                    return m.group('version'), m.group('commit')
 
-    version_script = 'hack/lib/version.sh'
-    if os.path.isfile(version_script):
-        cmd = [
-            'bash', '-c', (
+        # If we can't find kubectl, try using the version.sh script
+        version_script = 'hack/lib/version.sh'
+        if os.path.isfile(version_script):
+            cmd = [
+                'bash', '-c', (
 """
 set -o errexit
 set -o nounset
@@ -351,11 +359,17 @@ export KUBE_ROOT=.
 source %s
 kube::version::get_version_vars
 echo $KUBE_GIT_VERSION
+echo $KUBE_GIT_COMMIT
 """ % version_script)
-        ]
-        return call(cmd, output=True).strip()
+            ]
+            version_lines = call(cmd, output=True).splitlines()
+            if len(version_lines) == 2:
+                return version_lines[0], version_lines[1]
 
-    return 'unknown'
+    except subprocess.CalledProcessError:
+        pass
+
+    return 'unknown', 'unknown'
 
 
 class Paths(object):  # pylint: disable=too-many-instance-attributes,too-few-public-methods
@@ -579,7 +593,7 @@ def bootstrap(job, repo, branch, pull, root):
     os.chdir(root)
     checkout(repo, branch, pull)
     logging.info('Configure environment...')
-    version = find_version()
+    version, git_commit = find_version()
     setup_magic_environment(job)
     setup_credentials()
     if pull:
@@ -588,7 +602,7 @@ def bootstrap(job, repo, branch, pull, root):
         paths = ci_paths(job, build)
     gsutil = GSUtil()
     logging.info('Start %s at %s...', build, version)
-    start(gsutil, paths, started, node(), version)
+    start(gsutil, paths, started, node(), version, git_commit)
     success = False
     try:
         cmd = [job_script(job)]
