@@ -865,11 +865,10 @@ class JobTest(unittest.TestCase):
     def jobs(self):
         """[(job, job_path)] sequence"""
         dirname = os.path.dirname(bootstrap.job_script(JOB))
-        for filenames in os.listdir(dirname):
-            for job in filenames:
-                if job.endswith('.sh'):
-                    job_path = os.path.join(dirname, job)
-                    yield job, job_path
+        for job in os.listdir(dirname):
+            if job.endswith('.sh'):
+                job_path = os.path.join(dirname, job)
+                yield job, job_path
 
     def testBootstrapMaintenanceYaml(self):
         def Check(job, name):
