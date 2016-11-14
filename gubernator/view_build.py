@@ -129,10 +129,13 @@ class BuildHandler(view_base.BaseHandler):
                 finished.get('result') != 'SUCCESS' and len(failures) == 0):
             build_log = get_build_log(build_dir)
 
-        if started:
-            commit = started['version'].split('+')[-1]
+        # 'version' might be in either started or finished.
+        # prefer finished.
+        if finished and 'version' in finished:
+            version = finished['version']
         else:
-            commit = None
+            version = started and started.get('version')
+        commit = version and version.split('+')[-1]
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
 
