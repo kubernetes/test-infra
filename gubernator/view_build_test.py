@@ -101,12 +101,18 @@ class BuildTest(main_test.TestBase):
         """Test that the build page works in the happy case."""
         response = self.get_build_page()
         self.assertIn('2014-07-28', response)  # started
+        self.assertIn('v1+56', response)       # build version
         self.assertIn('16m40s', response)      # build duration
         self.assertIn('Third', response)       # test name
         self.assertIn('1m36s', response)       # test duration
         self.assertRegexpMatches(response.body, 'Result.*SUCCESS')
         self.assertIn('Error Goes Here', response)
         self.assertIn('test.go#L123">', response)  # stacktrace link works
+
+    def test_finished_has_version(self):
+        """Test that metadata with version in finished works."""
+        init_build(self.BUILD_DIR, finished_has_version=True)
+        self.test_build()
 
     def test_build_no_failures(self):
         """Test that builds with no Junit artifacts work."""
