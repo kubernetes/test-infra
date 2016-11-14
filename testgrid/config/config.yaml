@@ -135,7 +135,7 @@ test_groups:
 - name: kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
 - name: kubernetes-e2e-gce-gci-ci-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-master
 - name: kubernetes-e2e-gce-gci-ci-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-release-1.2
 - name: kubernetes-e2e-gce-gci-ci-release-1.3
@@ -145,7 +145,7 @@ test_groups:
 - name: kubernetes-e2e-gce-gci-ci-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-release-1.5
 - name: kubernetes-e2e-gce-gci-ci-serial-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-serial-master
 - name: kubernetes-e2e-gce-gci-ci-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-release-1.2
 - name: kubernetes-e2e-gce-gci-ci-serial-release-1.3
@@ -155,7 +155,7 @@ test_groups:
 - name: kubernetes-e2e-gce-gci-ci-serial-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-serial-release-1.5
 - name: kubernetes-e2e-gce-gci-ci-slow-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-master
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-ci-slow-release-1.2
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.3
@@ -169,35 +169,35 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-gci-qa-m52
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m52
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m52
 - name: kubernetes-e2e-gce-gci-qa-m53
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m53
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m53
 - name: kubernetes-e2e-gce-gci-qa-m54
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m54
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m54
 - name: kubernetes-e2e-gce-gci-qa-m55
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-m55
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m55
 - name: kubernetes-e2e-gce-gci-qa-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
 - name: kubernetes-e2e-gce-gci-qa-serial-m52
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m52
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m52
 - name: kubernetes-e2e-gce-gci-qa-serial-m53
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m53
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m53
 - name: kubernetes-e2e-gce-gci-qa-serial-m54
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m54
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m54
 - name: kubernetes-e2e-gce-gci-qa-serial-m55
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-m55
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m55
 - name: kubernetes-e2e-gce-gci-qa-serial-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-serial-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-master
 - name: kubernetes-e2e-gce-gci-qa-slow-m52
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m52
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m52
 - name: kubernetes-e2e-gce-gci-qa-slow-m53
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m53
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m53
 - name: kubernetes-e2e-gce-gci-qa-slow-m54
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m54
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m54
 - name: kubernetes-e2e-gce-gci-qa-slow-m55
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-m55
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m55
 - name: kubernetes-e2e-gce-gci-qa-slow-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-qa-slow-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
 - name: kubernetes-e2e-gci-gce-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.4
 - name: kubernetes-e2e-gci-gce-release-1.5

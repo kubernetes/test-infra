@@ -46,6 +46,46 @@
         job-name: ci-kubernetes-e2e-gce-flaky
     - kubernetes-e2e-gci-gce-flaky:
         job-name: ci-kubernetes-e2e-gci-gce-flaky
+
+    - kubernetes-e2e-gce-gci-ci-master:
+        job-name: ci-kubernetes-e2e-gce-gci-ci-master
+    - kubernetes-e2e-gce-gci-qa-master:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-master
+    - kubernetes-e2e-gce-gci-qa-m55:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-m55
+    - kubernetes-e2e-gce-gci-qa-m54:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-m54
+    - kubernetes-e2e-gce-gci-qa-m53:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-m53
+    - kubernetes-e2e-gce-gci-qa-m52:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-m52
+
+    - kubernetes-e2e-gce-gci-ci-serial-master:
+        job-name: ci-kubernetes-e2e-gce-gci-ci-serial-master
+    - kubernetes-e2e-gce-gci-qa-serial-master:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-master
+    - kubernetes-e2e-gce-gci-qa-serial-m55:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
+    - kubernetes-e2e-gce-gci-qa-serial-m54:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
+    - kubernetes-e2e-gce-gci-qa-serial-m53:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m53
+    - kubernetes-e2e-gce-gci-qa-serial-m52:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m52
+
+    - kubernetes-e2e-gce-gci-ci-slow-master:
+        job-name: ci-kubernetes-e2e-gce-gci-ci-slow-master
+    - kubernetes-e2e-gce-gci-qa-slow-master:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-master
+    - kubernetes-e2e-gce-gci-qa-slow-m55:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m55
+    - kubernetes-e2e-gce-gci-qa-slow-m54:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m54
+    - kubernetes-e2e-gce-gci-qa-slow-m53:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m53
+    - kubernetes-e2e-gce-gci-qa-slow-m52:
+        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m52
+
     - kubernetes-e2e-gce-proto:
         job-name: ci-kubernetes-e2e-gce-proto
     - kubernetes-e2e-gci-gce-proto:
