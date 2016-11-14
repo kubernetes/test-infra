@@ -31,7 +31,7 @@
 - project:
     jobs:
     - 'ci-{repo-suffix}'
-    name: bootstrap-ci
+    name: bootstrap-ci-repo
     repo-suffix:
     # TODO(fejta): migrate critical jobs later
     # kubernetes-verify-master:
