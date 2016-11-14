@@ -914,6 +914,7 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
+            self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
             return job_name
 
@@ -975,8 +976,8 @@ class JobTest(unittest.TestCase):
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
-            # Jobs should have simple names
-            self.assertTrue(re.match(r'[0-9a-z-]+.sh', job), job)
+            # Jobs should have simple names: letters, numbers, -, .
+            self.assertTrue(re.match(r'[.0-9a-z-]+.sh', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
