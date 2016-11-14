@@ -266,3 +266,41 @@ func TestCloseIssue(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestFindIssues(t *testing.T) {
+	issueNum := 5
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/search/issues" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		issueList := IssuesSearchResult{
+			Total: 1,
+			Issues: []Issue{
+				{Number: issueNum},
+			},
+		}
+		b, err := json.Marshal(&issueList)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, bytes.NewBuffer(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	var result []Issue
+	var err error
+	if result, err = c.FindIssues("commit_hash"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+	if len(result) != 1 {
+		t.Errorf("Unexpected number of results: %v", len(result))
+	}
+	if result[0].Number != issueNum {
+		t.Errorf("Expected issue author %+v, got %+v", issueNum, result[0].Number)
+	}
+
+}

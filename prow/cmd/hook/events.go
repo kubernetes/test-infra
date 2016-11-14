@@ -99,8 +99,10 @@ func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.FullName) {
-		if err := h(ea.Plugins, se); err != nil {
-			l.WithError(err).WithField("plugin", p).Error("Error handling StatusEvent.")
+		pc := ea.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		if err := h(pc, se); err != nil {
+			pc.Logger.WithError(err).Error("Error handling StatusEvent.")
 		}
 	}
 }

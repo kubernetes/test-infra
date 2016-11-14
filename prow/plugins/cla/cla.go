@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/util"
 )
 
 const (
@@ -45,66 +44,76 @@ type gitHubClient interface {
 	FindIssues(query string) ([]github.Issue, error)
 }
 
-func handleStatusEvent(pa *plugins.PluginAgent, se github.StatusEvent) error {
-	return handle(pa.GitHubClient, pa.Logger, se)
+func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, se)
 }
 
+// 1. Check that the status event received from the webhook is for the CNCF-CLA.
+// 2. Use the github search API to search for the PRs which match the commit hash corresponding to the status event.
+// 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
+//    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
+// 4. Set the corresponding CLA label if needed.
 func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
-	if se.State == nil || se.Context == nil {
-		return fmt.Errorf("Invalid status event delivered with empty state/context")
+	if se.State == "" || se.Context == "" {
+		return fmt.Errorf("invalid status event delivered with empty state/context")
 	}
 
-	if *se.Context != claContextName {
+	if se.Context != claContextName {
+		// Not the CNCF CLA context, do not process this.
 		return nil
 	}
 
-	if *se.State == github.StatusPending {
+	if se.State == github.StatusPending {
 		// do nothing and wait for state to be updated.
 		return nil
 	}
 
 	org := se.Repo.Owner.Login
 	repo := se.Repo.Name
-	issues, err := gc.FindIssues(fmt.Sprintf("%s&repo=%s/%s&type=pr", *se.SHA, org, repo))
+	issues, err := gc.FindIssues(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo))
 	if err != nil {
 		return err
 	}
 
 	for _, issue := range issues {
-		hasCncfYes := util.IssueHasLabel(issue, claYesLabel)
-		hasCncfNo := util.IssueHasLabel(issue, claNoLabel)
-		if hasCncfYes && *se.State == github.StatusSuccess {
+		hasCncfYes := issue.HasLabel(claYesLabel)
+		hasCncfNo := issue.HasLabel(claNoLabel)
+		if hasCncfYes && se.State == github.StatusSuccess {
 			// nothing to update.
 			continue
 		}
 
-		if hasCncfNo && (*se.State == github.StatusFailure || *se.State == github.StatusError) {
+		if hasCncfNo && (se.State == github.StatusFailure || se.State == github.StatusError) {
 			// nothing to update.
 			continue
 		}
 
 		pr, err := gc.GetPullRequest(org, repo, issue.Number)
 		if err != nil {
-			log.Warningf("Unable to fetch PR-%d from %s/%s.", issue.Number, org, repo)
+			log.WithError(err).Warningf("Unable to fetch PR-%d from %s/%s.", issue.Number, org, repo)
 			continue
 		}
 
-		if pr.Head.SHA != *se.SHA {
+		// Check if this is the latest commit in the PR.
+		if pr.Head.SHA != se.SHA {
 			continue
 		}
 
 		number := pr.Number
-		if *se.State == github.StatusSuccess {
+		if se.State == github.StatusSuccess {
 			if hasCncfNo {
 				gc.RemoveLabel(org, repo, number, claNoLabel)
 			}
 			gc.AddLabel(org, repo, number, claYesLabel)
-		} else {
-			if hasCncfYes {
-				gc.RemoveLabel(org, repo, number, claYesLabel)
-			}
-			gc.AddLabel(org, repo, number, claNoLabel)
+			continue
 		}
+
+		// if we end up here, the status is a failure/error.
+		// TODO: add a comment which explains what happened and how to rectify it.
+		if hasCncfYes {
+			gc.RemoveLabel(org, repo, number, claYesLabel)
+		}
+		gc.AddLabel(org, repo, number, claNoLabel)
 	}
 	return nil
 }

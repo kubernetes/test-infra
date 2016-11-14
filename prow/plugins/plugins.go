@@ -58,7 +58,7 @@ type PluginClient struct {
 	Logger       *logrus.Entry
 }
 
-type StatusEventHandler func(*PluginAgent, github.StatusEvent) error
+type StatusEventHandler func(PluginClient, github.StatusEvent) error
 
 func RegisterStatusEventHandler(name string, fn StatusEventHandler) {
 	allPlugins[name] = struct{}{}
