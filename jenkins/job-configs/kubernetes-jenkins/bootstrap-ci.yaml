@@ -14,7 +14,7 @@
     - reverse:
         jobs: 'kubernetes-build'
         result: success
-    - timed: 'H/5 * * * *'  # Start at least every 30m
+    - timed: '{frequency}'
     wrappers:
     - e2e-credentials-binding
     - inject:
@@ -38,65 +38,107 @@
     suffix:
     - kubernetes-e2e-gce-etcd3:
         job-name: ci-kubernetes-e2e-gce-etcd3
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gce-alpha-features:
         job-name: ci-kubernetes-e2e-gce-alpha-features
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gci-gce-alpha-features:
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gce-flaky:
         job-name: ci-kubernetes-e2e-gce-flaky
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gci-gce-flaky:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gci-gce-flaky
 
     - kubernetes-e2e-gce-gci-ci-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-master
     - kubernetes-e2e-gce-gci-qa-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-master
     - kubernetes-e2e-gce-gci-qa-m55:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m55
     - kubernetes-e2e-gce-gci-qa-m54:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m54
     - kubernetes-e2e-gce-gci-qa-m53:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m53
     - kubernetes-e2e-gce-gci-qa-m52:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m52
 
     - kubernetes-e2e-gce-gci-ci-serial-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-master
     - kubernetes-e2e-gce-gci-qa-serial-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-master
     - kubernetes-e2e-gce-gci-qa-serial-m55:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
     - kubernetes-e2e-gce-gci-qa-serial-m54:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
     - kubernetes-e2e-gce-gci-qa-serial-m53:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m53
     - kubernetes-e2e-gce-gci-qa-serial-m52:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m52
 
     - kubernetes-e2e-gce-gci-ci-slow-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-master
     - kubernetes-e2e-gce-gci-qa-slow-master:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-master
     - kubernetes-e2e-gce-gci-qa-slow-m55:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m55
     - kubernetes-e2e-gce-gci-qa-slow-m54:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m54
     - kubernetes-e2e-gce-gci-qa-slow-m53:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m53
     - kubernetes-e2e-gce-gci-qa-slow-m52:
+        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m52
 
     - kubernetes-e2e-gce-proto:
         job-name: ci-kubernetes-e2e-gce-proto
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gci-gce-proto:
         job-name: ci-kubernetes-e2e-gci-gce-proto
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gke-autoscaling:
         job-name: ci-kubernetes-e2e-gke-autoscaling
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gke-flaky:
         job-name: ci-kubernetes-e2e-gke-flaky
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gke-reboot:
         job-name: ci-kubernetes-e2e-gke-reboot
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gke-serial:
         job-name: ci-kubernetes-e2e-gke-serial
+        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gke-updown:
         job-name: ci-kubernetes-e2e-gke-updown
+        frequency: 'H/5 * * * *' # At least every 30m
+    - kubernetes-kubemark-5-gce:
+        job-name: ci-kubernetes-kubemark-5-gce
+        frequency: 'H/5 * * * *' # At least every 30m
+    - kubernetes-kubemark-100-gce:
+        job-name: ci-kubernetes-kubemark-100-gce
+        frequency: 'H H/6 * * *'
+    - kubernetes-kubemark-high-density-100-gce:
+        job-name: ci-kubernetes-kubemark-high-density-100-gce
+        frequency: 'H 20 * * 6'
+    - kubernetes-kubemark-gce-scale:
+        job-name: ci-kubernetes-kubemark-gce-scale
+        frequency: 'H H/12 * * *'
