@@ -36,6 +36,19 @@
     - 'ci-{suffix}'
     name: bootstrap-ci
     suffix:
+    - kubernetes-e2e-aws:
+        job-name: ci-kubernetes-e2e-aws
+        frequency: 'H/5 * * * *' # At least every 30m
+        #trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-aws-release-1.4:
+        job-name: ci-kubernetes-e2e-aws-release-1.4
+        frequency: '@daily'
+        #trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-aws-release-1.5:
+        job-name: ci-kubernetes-e2e-aws-release-1.5
+        frequency: '@daily'
+        #trigger-job: 'kubernetes-build-1.5'
+
     - kubernetes-e2e-gce-etcd3:
         job-name: ci-kubernetes-e2e-gce-etcd3
         frequency: 'H/5 * * * *' # At least every 30m
