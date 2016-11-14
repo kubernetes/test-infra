@@ -96,7 +96,9 @@ clean:
 	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck
 
 test:
-	go test -cover $$(go list ./... | grep -v "\/vendor\/")
+	go install cmd/...
+	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
+	go vet $$(go list ./... | grep -v "\/vendor\/")
 
 .PHONY: create-cluster update-cluster update-jobs update-plugins clean test get-cluster-credentials
 

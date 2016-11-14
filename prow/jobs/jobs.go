@@ -43,8 +43,8 @@ type JenkinsJob struct {
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 
-	// We'll set this when we load it. "-" means ignore.
-	re *regexp.Regexp `json:"-"`
+	// We'll set this when we load it.
+	re *regexp.Regexp
 }
 
 type JobAgent struct {

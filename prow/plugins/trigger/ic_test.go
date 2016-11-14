@@ -140,7 +140,7 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			Comment: github.IssueComment{
 				Body: tc.Body,
-				User: github.User{tc.Author},
+				User: github.User{Login: tc.Author},
 			},
 			Issue: github.Issue{
 				PullRequest: pr,

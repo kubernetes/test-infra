@@ -27,22 +27,22 @@ import (
 func TestFailureComment(t *testing.T) {
 	comments := []github.IssueComment{
 		{
-			User: github.User{"unrelated"},
+			User: github.User{Login: "unrelated"},
 			Body: "looks nice",
 			ID:   0,
 		},
 		{
-			User: github.User{"k8s-ci-robot"},
+			User: github.User{Login: "k8s-ci-robot"},
 			Body: "Jenkins test failed for commit abcdef",
 			ID:   1,
 		},
 		{
-			User: github.User{"unrelated2"},
+			User: github.User{Login: "unrelated2"},
 			Body: "Jenkins test is strange, what's going on there?",
 			ID:   3,
 		},
 		{
-			User: github.User{"k8s-ci-robot"},
+			User: github.User{Login: "k8s-ci-robot"},
 			Body: "Jenkins test failed for commit qwerty",
 			ID:   8,
 		},

@@ -26,7 +26,7 @@ import (
 func TestFormatResponse(t *testing.T) {
 	ic := github.IssueComment{
 		Body:    "Looks neat.\r\nI like it.\r\n",
-		User:    github.User{"ca"},
+		User:    github.User{Login: "ca"},
 		HTMLURL: "happygoodsite.com",
 	}
 	s := "you are a nice person"

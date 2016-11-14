@@ -47,8 +47,8 @@ type Job struct {
 	Description string `json:"description"`
 	URL         string `json:"url"`
 
-	st time.Time `json:"-"`
-	ft time.Time `json:"-"`
+	st time.Time
+	ft time.Time
 }
 
 type JobAgent struct {

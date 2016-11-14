@@ -111,13 +111,13 @@ func TestCloseComment(t *testing.T) {
 			Action: tc.action,
 			Comment: github.IssueComment{
 				Body: tc.body,
-				User: github.User{tc.commenter},
+				User: github.User{Login: tc.commenter},
 			},
 			Issue: github.Issue{
-				User:      github.User{"a"},
+				User:      github.User{Login: "a"},
 				Number:    5,
 				State:     tc.state,
-				Assignees: []github.User{{"a"}, {"r1"}, {"r2"}},
+				Assignees: []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			},
 		}
 		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
@@ -125,14 +125,14 @@ func TestCloseComment(t *testing.T) {
 			continue
 		}
 		if tc.shouldClose && !fc.closed {
-			t.Errorf("For case %s, should have closed but didn't.")
+			t.Errorf("For case %s, should have closed but didn't.", tc.name)
 		} else if !tc.shouldClose && fc.closed {
-			t.Errorf("For case %s, should not have closed but did.")
+			t.Errorf("For case %s, should not have closed but did.", tc.name)
 		}
 		if tc.shouldComment && !fc.commented {
-			t.Errorf("For case %s, should have commented but didn't.")
+			t.Errorf("For case %s, should have commented but didn't.", tc.name)
 		} else if !tc.shouldComment && fc.commented {
-			t.Errorf("For case %s, should not have commented but did.")
+			t.Errorf("For case %s, should not have commented but did.", tc.name)
 		}
 	}
 }

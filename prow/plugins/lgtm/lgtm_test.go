@@ -128,14 +128,14 @@ func TestLGTMComment(t *testing.T) {
 			Action: tc.action,
 			Comment: github.IssueComment{
 				Body: tc.body,
-				User: github.User{tc.commenter},
+				User: github.User{Login: tc.commenter},
 			},
 			Issue: github.Issue{
-				User:        github.User{"a"},
+				User:        github.User{Login: "a"},
 				Number:      5,
 				State:       "open",
 				PullRequest: &struct{}{},
-				Assignees:   []github.User{{"a"}, {"r1"}, {"r2"}},
+				Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			},
 		}
 		if tc.hasLGTM {
