@@ -32,26 +32,26 @@ func TestTrusted(t *testing.T) {
 		// Org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"t1"},
+				User: github.User{Login: "t1"},
 			},
 			Trusted: true,
 		},
 		// Non org member, no comments.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Trusted: false,
 		},
 		// Non org member, random comment by org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "this is evil!",
-					User: github.User{"t1"},
+					User: github.User{Login: "t1"},
 				},
 			},
 			Trusted: false,
@@ -59,12 +59,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, "not ok to test" comment by org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "not ok to test",
-					User: github.User{"t1"},
+					User: github.User{Login: "t1"},
 				},
 			},
 			Trusted: false,
@@ -72,12 +72,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, ok to test comment by org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "@k8s-bot ok to test",
-					User: github.User{"t1"},
+					User: github.User{Login: "t1"},
 				},
 			},
 			Trusted: true,
@@ -85,12 +85,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, multiline ok to test comment by org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "ok to test\r\nthanks",
-					User: github.User{"t1"},
+					User: github.User{Login: "t1"},
 				},
 			},
 			Trusted: true,
@@ -98,12 +98,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, ok to test comment by non-org member.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "ok to test",
-					User: github.User{"u2"},
+					User: github.User{Login: "u2"},
 				},
 			},
 			Trusted: false,
@@ -111,12 +111,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, ok to test comment by bot.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "ok to test",
-					User: github.User{"k8s-bot"},
+					User: github.User{Login: "k8s-bot"},
 				},
 			},
 			Trusted: false,
@@ -124,12 +124,12 @@ func TestTrusted(t *testing.T) {
 		// Non org member, ok to test comment by author.
 		{
 			PR: github.PullRequest{
-				User: github.User{"u"},
+				User: github.User{Login: "u"},
 			},
 			Comments: []github.IssueComment{
 				{
 					Body: "ok to test",
-					User: github.User{"u"},
+					User: github.User{Login: "u"},
 				},
 			},
 			Trusted: false,
