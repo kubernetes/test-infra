@@ -97,29 +97,29 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-alpha-features-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-alpha-features-release-1.5
 - name: kubernetes-e2e-gce-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-autoscaling
 - name: kubernetes-e2e-gci-gce-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling
 - name: kubernetes-e2e-gce-autoscaling-migs
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-autoscaling-migs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-autoscaling-migs
 - name: kubernetes-e2e-gci-gce-autoscaling-migs
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-autoscaling-migs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs
 - name: kubernetes-e2e-gce-container-vm
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-container-vm
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-container-vm
 - name: kubernetes-e2e-gce-enormous-cluster
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-cluster
 - name: kubernetes-e2e-gce-es-logging
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
 - name: kubernetes-e2e-gci-gce-es-logging
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: kubernetes-e2e-gce-etcd3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
 - name: kubernetes-e2e-gci-gce-etcd3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: kubernetes-e2e-gce-examples
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-examples
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-examples
 - name: kubernetes-e2e-gce-federation
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
 - name: kubernetes-e2e-gce-federation-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-federation-release-1.4
 - name: kubernetes-e2e-gce-federation-release-1.5
@@ -165,9 +165,9 @@ test_groups:
 - name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5
 - name: kubernetes-e2e-gci-gce-examples
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-examples
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-examples
 - name: kubernetes-e2e-gci-gce-federation
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-gci-qa-m52
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m52
 - name: kubernetes-e2e-gce-gci-qa-m53
@@ -203,9 +203,9 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-release-1.5
 - name: kubernetes-e2e-gci-gce-scalability
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
 - name: kubernetes-e2e-gci-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: kubernetes-e2e-gci-gce-serial-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-serial-release-1.4
 - name: kubernetes-e2e-gci-gce-serial-release-1.5
@@ -217,9 +217,9 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-slow-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow-release-1.5
 - name: kubernetes-e2e-gce-ingress
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress
 - name: kubernetes-e2e-gci-gce-ingress
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
 - name: kubernetes-e2e-gce-ingress-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-ingress-release-1.2
 - name: kubernetes-e2e-gci-gce-ingress-release-1.2
@@ -237,29 +237,29 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-ingress-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-ingress-release-1.5
 - name: kubernetes-e2e-gce-kubenet
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-kubenet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubenet
 - name: kubernetes-e2e-gci-gce-kubenet
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-kubenet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kubenet
 - name: kubernetes-e2e-gce-master-on-cvm
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-master-on-cvm
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-on-cvm
 - name: kubernetes-e2e-gce-multizone
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-multizone
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
 - name: kubernetes-e2e-gce-petset
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-petset
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-petset
 - name: kubernetes-e2e-gci-gce-petset
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-petset
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-petset
 - name: kubernetes-e2e-gci-gce-cri
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-cri
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-cri
 - name: kubernetes-e2e-gci-gce-cri-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-cri-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-cri-serial
 - name: kubernetes-e2e-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-proto
 - name: kubernetes-e2e-gci-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-proto
 - name: kubernetes-e2e-gce-reboot
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot
 - name: kubernetes-e2e-gci-gce-reboot
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot
 - name: kubernetes-e2e-gce-reboot-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-reboot-release-1.2
 - name: kubernetes-e2e-gci-gce-reboot-release-1.2
@@ -289,7 +289,7 @@ test_groups:
 - name: kubernetes-e2e-gce-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-release-1.5
 - name: kubernetes-e2e-gce-scalability
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-scalability
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability
 - name: kubernetes-e2e-gce-scalability-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-scalability-release-1.4
 # Uncomment when 1.4 scale tests are turned off
@@ -301,7 +301,7 @@ test_groups:
 # - name: kubernetes-e2e-gci-gce-scalability-release-1.5
 #   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-scalability-release-1.5
 - name: kubernetes-e2e-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial
 - name: kubernetes-e2e-gce-serial-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.2
 - name: kubernetes-e2e-gci-gce-serial-release-1.2
@@ -315,7 +315,7 @@ test_groups:
 - name: kubernetes-e2e-gce-serial-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-serial-release-1.5
 - name: kubernetes-e2e-gce-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow
 - name: kubernetes-e2e-gce-slow-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-slow-release-1.2
 - name: kubernetes-e2e-gci-gce-slow-release-1.2
