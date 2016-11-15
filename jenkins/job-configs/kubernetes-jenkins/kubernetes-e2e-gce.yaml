@@ -841,7 +841,7 @@
                 export DNS_ZONE_NAME="release1-5.test-f8n.k8s.io."
                 export FEDERATIONS_DOMAIN_MAP="federation=release1-5.test-f8n.k8s.io"
                 export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
-                export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-f8n-1-5"
+                export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-e2e-gce-f8n-1-5"
                 export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
                 export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-5
                 export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release-1-5
