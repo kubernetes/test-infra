@@ -27,10 +27,23 @@ import (
 )
 
 const (
-	pluginName     = "cla"
-	claContextName = "cla/linuxfoundation"
-	claYesLabel    = "cncf-cla: yes"
-	claNoLabel     = "cncf-cla: no"
+	pluginName             = "cla"
+	claContextName         = "cla/linuxfoundation"
+	claYesLabel            = "cncf-cla: yes"
+	claNoLabel             = "cncf-cla: no"
+	cncfclaNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA).
+
+:memo: **Please visit <https://identity.linuxfoundation.org/projects/cncf> to sign.**
+
+Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  Thanks.
+
+---
+
+- If you've already signed a CLA, it's possible we don't have your GitHub username or you're using a different email address.  Check your existing CLA data and verify that your [email is set on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
+- If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
+
+<!-- need_sender_cla -->
+	`
 )
 
 func init() {
@@ -110,10 +123,10 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		}
 
 		// If we end up here, the status is a failure/error.
-		// TODO(foxish): add a comment which explains what happened and how to rectify it.
 		if hasCncfYes {
 			gc.RemoveLabel(org, repo, number, claYesLabel)
 		}
+		gc.CreateComment(org, repo, number, cncfclaNotFoundMessage)
 		gc.AddLabel(org, repo, number, claNoLabel)
 	}
 	return nil
