@@ -18,6 +18,7 @@ package cla
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/Sirupsen/logrus"
 
@@ -70,7 +71,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 
 	org := se.Repo.Owner.Login
 	repo := se.Repo.Name
-	issues, err := gc.FindIssues(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo))
+	issues, err := gc.FindIssues(url.QueryEscape(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo)))
 	if err != nil {
 		return err
 	}
