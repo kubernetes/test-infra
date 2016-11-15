@@ -25,8 +25,7 @@ export KUBE_VERIFY_GIT_BRANCH='release-1.5'
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 
 ### Runner
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 80m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 80m "${KUBE_TEST_SCRIPT}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
