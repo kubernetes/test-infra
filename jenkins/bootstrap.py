@@ -472,7 +472,7 @@ def build_name(started):
     if BUILD_ENV not in os.environ:
         # Automatically generate a build number if none is set
         uniq = '%x-%d' % (hash(node()), os.getpid())
-        autogen = time.strftime('%Y%m%d-%H%M%S' + uniq, time.gmtime(started))
+        autogen = time.strftime('%Y%m%d-%H%M%S-' + uniq, time.gmtime(started))
         os.environ[BUILD_ENV] = autogen
     return os.environ[BUILD_ENV]
 
@@ -576,6 +576,17 @@ def job_script(job):
     return test_infra('jobs/%s.sh' % job)
 
 
+GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
+
+
+def gubernator_uri(paths):
+    """Return a gubernator link for this build."""
+    job = os.path.dirname(paths.build_log)
+    if job.startswith('gs:/'):
+        return job.replace('gs:/', GUBERNATOR, 1)
+    return job
+
+
 def bootstrap(job, repo, branch, pull, root):
     """Clone repo at pull/branch into root and run job script."""
     build_log_path = os.path.abspath('build-log.txt')
@@ -605,6 +616,7 @@ def bootstrap(job, repo, branch, pull, root):
         paths = pr_paths(repo, job, build, pull)
     else:
         paths = ci_paths(job, build)
+    logging.info('Gubernator results at %s', gubernator_uri(paths))
     gsutil = GSUtil()
     logging.info('Start %s at %s...', build, version)
     start(gsutil, paths, started, node(), version)
@@ -617,6 +629,7 @@ def bootstrap(job, repo, branch, pull, root):
     except subprocess.CalledProcessError:
         logging.error('FAIL: %s', job)
     logging.info('Upload result and artifacts...')
+    logging.info('Gubernator results at %s', gubernator_uri(paths))
     try:
         finish(gsutil, paths, success, '_artifacts', build, version, repo)
     except subprocess.CalledProcessError:  # Still try to upload build log
