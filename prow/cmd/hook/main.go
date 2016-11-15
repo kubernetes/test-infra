@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 
+	_ "k8s.io/test-infra/prow/plugins/cla"
 	_ "k8s.io/test-infra/prow/plugins/close"
 	_ "k8s.io/test-infra/prow/plugins/lgtm"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
@@ -104,16 +105,19 @@ func main() {
 
 	prc := make(chan github.PullRequestEvent)
 	icc := make(chan github.IssueCommentEvent)
+	sec := make(chan github.StatusEvent)
 	server := &Server{
 		HMACSecret:         webhookSecret,
 		PullRequestEvents:  prc,
 		IssueCommentEvents: icc,
+		StatusEvents:       sec,
 	}
 
 	events := &EventAgent{
 		Plugins:            pluginAgent,
 		PullRequestEvents:  prc,
 		IssueCommentEvents: icc,
+		StatusEvents:       sec,
 	}
 	events.Start()
 

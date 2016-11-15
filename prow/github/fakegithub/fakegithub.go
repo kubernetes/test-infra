@@ -23,6 +23,7 @@ import (
 )
 
 type FakeClient struct {
+	Issues         []github.Issue
 	OrgMembers     []string
 	IssueComments  map[int][]github.IssueComment
 	IssueCommentID int
@@ -83,4 +84,8 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
 	return nil
+}
+
+func (f *FakeClient) FindIssues(query string) ([]github.Issue, error) {
+	return f.Issues, nil
 }
