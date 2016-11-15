@@ -536,16 +536,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go
   days_of_results: 4
 - name: kubernetes-test-go-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.2
   days_of_results: 4
 - name: kubernetes-test-go-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.3
   days_of_results: 4
 - name: kubernetes-test-go-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.4
   days_of_results: 4
 - name: kubernetes-test-go-release-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.5
   days_of_results: 4
 - name: kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-master

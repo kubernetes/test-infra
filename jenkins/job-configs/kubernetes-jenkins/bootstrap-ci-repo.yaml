@@ -55,3 +55,28 @@
         repo-name: k8s.io/kubernetes
         frequency: 'H/5 * * * *'
 
+    # kubernetes-test-go:
+    #   branch: master
+    #   job-name: ci-kubernetes-test-go
+    #   repo-name: k8s.io/kubernetes
+    #   frequency: 'H/5 * * * *'
+    - kubernetes-test-go-release-1.5:
+        branch: release-1.5
+        job-name: ci-kubernetes-test-go-release-1.5
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/3 * * *'
+    - kubernetes-test-go-release-1.4:
+        branch: release-1.4
+        job-name: ci-kubernetes-test-go-release-1.4
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/3 * * *'
+    - kubernetes-test-go-release-1.3:
+        branch: release-1.3
+        job-name: ci-kubernetes-test-go-release-1.3
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/3 * * *'
+    - kubernetes-test-go-release-1.2:
+        branch: release-1.2
+        job-name: ci-kubernetes-test-go-release-1.2
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/3 * * *'
