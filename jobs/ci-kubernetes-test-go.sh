@@ -22,10 +22,10 @@ readonly testinfra="$(dirname "${0}")/.."
 
 export KUBE_FORCE_VERIFY_CHECKS='y'
 export KUBE_VERIFY_GIT_BRANCH='master'
-export KUBE_TEST_SCRIPT="./hack/jenkins/gotest-dockerized.sh"
 
 ### Runner
-timeout -k 15m 100m "${KUBE_TEST_SCRIPT}" && rc=$? || rc=$?
+readonly runner="./hack/jenkins/gotest-dockerized.sh"
+timeout -k 15m 100m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
