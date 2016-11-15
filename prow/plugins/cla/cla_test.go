@@ -17,14 +17,14 @@ limitations under the License.
 package cla
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
 
-	"fmt"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"reflect"
 )
 
 func TestCLALabels(t *testing.T) {

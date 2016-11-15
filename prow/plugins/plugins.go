@@ -142,7 +142,7 @@ func (pa *PluginAgent) PullRequestHandlers(repo string) map[string]PullRequestHa
 	return hs
 }
 
-// IssueCommentHandlers returns a map of plugin names to handlers for the repo.
+// StatusEventHandlers returns a map of plugin names to handlers for the repo.
 func (pa *PluginAgent) StatusEventHandlers(repo string) map[string]StatusEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()

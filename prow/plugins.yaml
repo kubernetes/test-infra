@@ -22,3 +22,6 @@ kubernetes/test-infra:
 - close
 - lgtm
 - trigger
+
+kubernetes/pr-bot:
+- cla

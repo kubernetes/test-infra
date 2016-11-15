@@ -300,7 +300,7 @@ func TestFindIssues(t *testing.T) {
 		t.Errorf("Unexpected number of results: %v", len(result))
 	}
 	if result[0].Number != issueNum {
-		t.Errorf("Expected issue author %+v, got %+v", issueNum, result[0].Number)
+		t.Errorf("Expected issue number %+v, got %+v", issueNum, result[0].Number)
 	}
 
 }

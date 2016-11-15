@@ -79,12 +79,12 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		hasCncfYes := issue.HasLabel(claYesLabel)
 		hasCncfNo := issue.HasLabel(claNoLabel)
 		if hasCncfYes && se.State == github.StatusSuccess {
-			// nothing to update.
+			// Nothing to update.
 			continue
 		}
 
 		if hasCncfNo && (se.State == github.StatusFailure || se.State == github.StatusError) {
-			// nothing to update.
+			// Nothing to update.
 			continue
 		}
 
@@ -108,8 +108,8 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 			continue
 		}
 
-		// if we end up here, the status is a failure/error.
-		// TODO: add a comment which explains what happened and how to rectify it.
+		// If we end up here, the status is a failure/error.
+		// TODO(foxish): add a comment which explains what happened and how to rectify it.
 		if hasCncfYes {
 			gc.RemoveLabel(org, repo, number, claYesLabel)
 		}

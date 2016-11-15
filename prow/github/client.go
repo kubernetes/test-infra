@@ -270,6 +270,7 @@ func (c *Client) CloseIssue(owner, repo string, number int) error {
 }
 
 // FindIssues uses the github search API to find issues which match a particular query.
+// TODO(foxish): we should accept map[string][]string and use net/url properly.
 func (c *Client) FindIssues(query string) ([]Issue, error) {
 	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/search/issues?q=%s", c.base, query), nil)
 	if err != nil {
