@@ -29,4 +29,4 @@ git remote set-url --push "${remote}" no_push
 git fetch "${remote}"  # fetch branches
 export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
-./hack/jenkins/gotest-dockerized.sh
+${testinfra}/jenkins/gotest-dockerized.sh
