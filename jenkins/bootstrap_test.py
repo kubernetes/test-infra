@@ -253,6 +253,22 @@ class FakeGSUtil(object):
     def upload_json(self, *args, **kwargs):
         self.jsons.append((args, kwargs))
 
+class GubernatorUriTest(unittest.TestCase):
+    def create_path(self, uri):
+        fake_path = FakePath()
+        fake_path.build_log = uri
+        return fake_path
+
+    def testNonGS(self):
+        uri = 'hello/world'
+        self.assertEquals('hello', bootstrap.gubernator_uri(self.create_path(uri)))
+
+    def testMultipleGs(self):
+        uri = 'gs://hello/gs://there'
+        self.assertEquals(
+            bootstrap.GUBERNATOR + '/hello/gs:',
+            bootstrap.gubernator_uri(self.create_path(uri)))
+
 
 class AppendResultTest(unittest.TestCase):
     """Tests for append_result()."""
