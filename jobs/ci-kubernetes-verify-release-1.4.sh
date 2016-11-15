@@ -25,7 +25,7 @@ export KUBE_VERIFY_GIT_BRANCH='release-1.4'
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 
 ### Runner
-readonly runner="./hack/jenkins/gotest-dockerized.sh"
+readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
 timeout -k 15m 80m "${runner}" && rc=$? || rc=$?
 
 ### Reporting

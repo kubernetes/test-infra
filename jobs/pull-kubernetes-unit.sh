@@ -21,5 +21,4 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
-echo "TODO(fejta): migrate gotest-dockerized.sh to test-infra"
-./hack/jenkins/gotest-dockerized.sh
+${testinfra}/jenkins/gotest-dockerized.sh
