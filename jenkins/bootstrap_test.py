@@ -920,7 +920,19 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
 
-    def CheckBootstrapYaml(self, path, check):
+    def testBootstrapCIRepoYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('branch', job)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
+            Check, suffix='repo-suffix')
+
+    def CheckBootstrapYaml(self, path, check, suffix='suffix'):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
             doc = yaml.safe_load(fp)
@@ -947,7 +959,7 @@ class JobTest(unittest.TestCase):
             ','.join(defined_templates - used_templates))
         self.assertEquals(defined_templates, used_templates, msg)
 
-        jobs = project.get('suffix')
+        jobs = project.get(suffix)
         if not jobs or not isinstance(jobs, list):
             self.fail('Could not find suffix list in %s' % project)
 
