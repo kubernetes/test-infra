@@ -43,6 +43,10 @@ Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  T
 - If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
 
 <!-- need_sender_cla -->
+
+<details>
+%s
+</details>
 	`
 )
 
@@ -126,7 +130,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		if hasCncfYes {
 			gc.RemoveLabel(org, repo, number, claYesLabel)
 		}
-		gc.CreateComment(org, repo, number, cncfclaNotFoundMessage)
+		gc.CreateComment(org, repo, number, fmt.Sprintf(cncfclaNotFoundMessage, plugins.AboutThisBot))
 		gc.AddLabel(org, repo, number, claNoLabel)
 	}
 	return nil

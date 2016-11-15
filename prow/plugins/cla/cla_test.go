@@ -147,8 +147,9 @@ func TestCLALabels(t *testing.T) {
 		}
 
 		fc := &fakegithub.FakeClient{
-			PullRequests: pullRequests,
-			Issues:       tc.issues,
+			PullRequests:  pullRequests,
+			Issues:        tc.issues,
+			IssueComments: make(map[int][]github.IssueComment),
 		}
 		se := github.StatusEvent{
 			Context: tc.context,
