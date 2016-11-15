@@ -94,9 +94,9 @@
             branch: 'release-1.5'
             timeout: 50
             job-env: |
-              export PROJECT="k8s-jkns-e2e-gce-f8n-1-5"
+              export PROJECT="k8s-e2e-gce-f8n-1-5"
               export FEDERATION=true
-              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-f8n-1-5"
+              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-e2e-gce-f8n-1-5"
               export KUBE_FASTBUILD=true
               export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-5
               export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-5
