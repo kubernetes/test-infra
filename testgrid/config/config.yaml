@@ -290,16 +290,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1.5
 - name: kubernetes-e2e-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability
-- name: kubernetes-e2e-gce-scalability-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1.4
-# Uncomment when 1.4 scale tests are turned off
-# - name: kubernetes-e2e-gce-scalability-release-1.5
-#   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1.5
-- name: kubernetes-e2e-gci-gce-scalability-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1.4
-# Uncomment when 1.4 scale tests are turned off
-# - name: kubernetes-e2e-gci-gce-scalability-release-1.5
-#   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1.5
+- name: kubernetes-e2e-gce-scalability-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1.5
+- name: kubernetes-e2e-gci-gce-scalability-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1.5
 - name: kubernetes-e2e-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial
 - name: kubernetes-e2e-gce-serial-release-1.2
@@ -1148,16 +1142,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-scalability
   - name: gci-gce-scalability
     test_group_name: kubernetes-e2e-gci-gce-scalability
-  - name: gce-scalability-release-1.4
-    test_group_name: kubernetes-e2e-gce-scalability-release-1.4
-  # Uncomment when 1.4 scale tests are turned off
-  # - name: gce-scalability-release-1.5
-  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
-  - name: gci-gce-scalability-release-1.4
-    test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.4
-  # Uncomment when 1.4 scale tests are turned off
-  # - name: gci-gce-scalability-release-1.5
-  #   test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
+  - name: gce-scalability-release-1.5
+    test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  - name: gci-gce-scalability-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
   - name: gce-serial
     test_group_name: kubernetes-e2e-gce-serial
   - name: gci-gce-serial
@@ -1837,11 +1825,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.5
   - name: gce-serial-release-1.5
     test_group_name: kubernetes-e2e-gce-serial-release-1.5
-  # Uncomment after 1.4 scale tests are turned off
-  # - name: gce-scalability-release-1.5
-  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
-  # - name: gci-gce-scalability-release-1.5
-  #   test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
+  - name: gce-scalability-release-1.5
+    test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  - name: gci-gce-scalability-release-1.5
+    test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.5
   - name: gce-release-1.5
     test_group_name: kubernetes-e2e-gce-release-1.5
   - name: gce-reboot-release-1.5
@@ -1921,9 +1908,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.5
   - name: gce-reboot-release-1.5
     test_group_name: kubernetes-e2e-gce-reboot-release-1.5
-  # Uncomment after 1.4 scale tests are turned off
-  # - name: gce-scalability-release-1.5
-  #   test_group_name: kubernetes-e2e-gce-scalability-release-1.5
+  - name: gce-scalability-release-1.5
+    test_group_name: kubernetes-e2e-gce-scalability-release-1.5
   - name: test-go-release-1.5
     test_group_name: kubernetes-test-go-release-1.5
   - name: gke-release-1.5
@@ -1969,10 +1955,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
   - name: gce-serial-release-1.4
     test_group_name: kubernetes-e2e-gce-serial-release-1.4
-  - name: gce-scalability-release-1.4
-    test_group_name: kubernetes-e2e-gce-scalability-release-1.4
-  - name: gci-gce-scalability-release-1.4
-    test_group_name: kubernetes-e2e-gci-gce-scalability-release-1.4
   - name: gce-release-1.4
     test_group_name: kubernetes-e2e-gce-release-1.4
   - name: gce-reboot-release-1.4
@@ -2052,8 +2034,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
   - name: gce-reboot-release-1.4
     test_group_name: kubernetes-e2e-gce-reboot-release-1.4
-  - name: gce-scalability-release-1.4
-    test_group_name: kubernetes-e2e-gce-scalability-release-1.4
   - name: test-go-release-1.4
     test_group_name: kubernetes-test-go-release-1.4
   - name: gke-release-1.4
