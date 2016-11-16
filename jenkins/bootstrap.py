@@ -146,7 +146,7 @@ def checkout(repo, branch, pull):
 def start(gsutil, paths, stamp, node_name, version):
     """Construct and upload started.json."""
     data = {
-        'timestamp': stamp,
+        'timestamp': int(stamp),
         'jenkins-node': node_name,
         'node': node_name,
     }
@@ -318,7 +318,8 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         append_result(gsutil, paths.pr_result_cache, build, version, success)
 
     data = {
-        'timestamp': time.time(),
+        # TODO(fejta): update utils.go in contrib to accept a float
+        'timestamp': int(time.time()),
         'result': 'SUCCESS' if success else 'FAILURE',
         'passed': bool(success),
         'metadata': meta,
