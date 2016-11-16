@@ -17,9 +17,8 @@ limitations under the License.
 package mungers
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"path"
 	"regexp"
 	"strings"
 
@@ -45,8 +44,10 @@ var (
 // file provided in --generated-files-config
 type SizeMunger struct {
 	GeneratedFilesFile string
-	genFiles           *sets.String
-	genPrefixes        *[]string
+	genFilePaths       sets.String
+	genFilePrefixes    sets.String
+	genFileNames       sets.String
+	genPathPrefixes    sets.String
 }
 
 func init() {
@@ -73,7 +74,7 @@ func (SizeMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file containing the pathname to label mappings")
+	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file in the repo containing the generated file rules")
 }
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
@@ -85,61 +86,76 @@ func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 // generated files once and if someone changed what files are generated
 // we'll size slightly wrong. No biggie.
 func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
-	if s.genFiles != nil {
+	if s.genFilePaths != nil {
 		return
 	}
-	files := sets.NewString()
-	prefixes := []string{}
-	s.genFiles = &files
-	s.genPrefixes = &prefixes
+	if s.genFilePrefixes != nil {
+		return
+	}
+	if s.genFileNames != nil {
+		return
+	}
+	if s.genPathPrefixes != nil {
+		return
+	}
+
+	// Don't write into s yet, since this might fail, and these are indicators
+	// to not repeat this function.
+	paths := sets.NewString()
+	filePrefixes := sets.NewString()
+	fileNames := sets.NewString()
+	pathPrefixes := sets.NewString()
 
 	file := s.GeneratedFilesFile
 	if len(file) == 0 {
 		glog.Infof("No --generated-files-config= supplied, applying no labels")
 		return
 	}
-	fp, err := os.Open(file)
+
+	contents, err := obj.GetFileContents(file, "")
 	if err != nil {
-		glog.Errorf("Unable to open %q: %v", file, err)
-		return
+		glog.Errorf("Failed to read generated-files-config %q: %v", file, err)
 	}
 
-	defer fp.Close()
-	scanner := bufio.NewScanner(fp)
-	for scanner.Scan() {
-		line := scanner.Text()
+	lines := strings.Split(contents, "\n")
+	for i, line := range lines {
+		line := strings.TrimSpace(line)
 		if strings.HasPrefix(line, "#") || line == "" {
 			continue
 		}
 		fields := strings.Fields(line)
 		if len(fields) != 2 {
-			glog.Errorf("Invalid line in generated docs config %s: %q", file, line)
+			glog.Errorf("Invalid line %d in generated docs config %s: %q", i, file, line)
 			continue
 		}
-		eType := fields[0]
-		file := fields[1]
-		if eType == "prefix" {
-			prefixes = append(prefixes, file)
-		} else if eType == "path" {
-			files.Insert(file)
-		} else if eType == "paths-from-repo" {
-			docs, err := obj.GetFileContents(file, "")
+		key := fields[0]
+		val := fields[1]
+		if key == "prefix" || key == "path-prefix" {
+			pathPrefixes.Insert(val)
+		} else if key == "file-prefix" {
+			filePrefixes.Insert(val)
+		} else if key == "file-name" {
+			fileNames.Insert(val)
+		} else if key == "path" {
+			paths.Insert(val)
+		} else if key == "paths-from-repo" {
+			docs, err := obj.GetFileContents(val, "")
 			if err != nil {
 				continue
 			}
 			docSlice := strings.Split(docs, "\n")
-			files.Insert(docSlice...)
+			paths.Insert(docSlice...)
 		} else {
-			glog.Errorf("Invalid line in generated docs config, unknown type: %s, %q", eType, line)
+			glog.Errorf("Invalid line %d in generated docs config, unknown key: %s, %q", i, key, line)
 			continue
 		}
 	}
-	if scanner.Err() != nil {
-		glog.Errorf("Error scanning %s: %v", file, err)
-		return
-	}
-	s.genFiles = &files
-	s.genPrefixes = &prefixes
+
+	// Save the results so we don't repeat this function.
+	s.genFilePaths = paths
+	s.genFilePrefixes = filePrefixes
+	s.genFileNames = fileNames
+	s.genPathPrefixes = pathPrefixes
 
 	return
 }
@@ -153,8 +169,6 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	issue := obj.Issue
 
 	s.getGeneratedFiles(obj)
-	genFiles := *s.genFiles
-	genPrefixes := *s.genPrefixes
 
 	files, err := obj.ListFiles()
 	if err != nil {
@@ -165,7 +179,7 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	dels := 0
 	for _, f := range files {
 		skip := false
-		for _, p := range genPrefixes {
+		for p := range s.genPathPrefixes {
 			if strings.HasPrefix(*f.Filename, p) {
 				skip = true
 				break
@@ -174,7 +188,14 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 		if skip {
 			continue
 		}
-		if genFiles.Has(*f.Filename) {
+		if s.genFilePaths.Has(*f.Filename) {
+			continue
+		}
+		_, filename := path.Split(*f.Filename)
+		if hasPrefix(filename, s.genFilePrefixes) {
+			continue
+		}
+		if s.genFileNames.Has(filename) {
 			continue
 		}
 		if f.Additions != nil {
@@ -203,6 +224,15 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 		body := fmt.Sprintf("Labelling this PR as %s", newLabel)
 		obj.WriteComment(body)
 	}
+}
+
+func hasPrefix(filename string, filePrefixes sets.String) bool {
+	for pfx := range filePrefixes {
+		if strings.HasPrefix(filename, pfx) {
+			return true
+		}
+	}
+	return false
 }
 
 const (
