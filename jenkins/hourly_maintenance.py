@@ -124,7 +124,7 @@ def RemoveImages(skip, ancient):
     dangling = subprocess.check_output([
         'docker', 'images', '-q', '-f', 'dangling=true'])
     if dangling:
-        err |= subprocess.call(['docker', 'rmi'] + dangling.split())
+        err |= subprocess.call(['docker', 'rmi', '-f'] + dangling.split())
 
     if err:
         print >>sys.stderr, 'RemoveImages failed'
