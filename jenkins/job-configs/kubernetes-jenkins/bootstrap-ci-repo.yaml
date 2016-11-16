@@ -6,7 +6,7 @@
         './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
     disabled: false
     name: 'ci-{repo-suffix}'
-    node: 'e2e'
+    node: 'build'
     properties:
     - build-discarder:
         days-to-keep: 7
