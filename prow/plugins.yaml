@@ -10,6 +10,7 @@ kubernetes/charts:
 
 kubernetes/contrib:
 - lgtm
+- cla
 
 kubernetes/heapster:
 - trigger
