@@ -674,7 +674,7 @@
             job-env: |
                 export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
-                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
+                                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|'regular resource usage tracking'"
                 export PROJECT="e2e-gce-gci-ci-serial-1-4"
                 export KUBE_OS_DISTRIBUTION="gci"
         - 'gci-gce-ingress-release-1.4':  # kubernetes-e2e-gci-gce-ingress-release-1.4
