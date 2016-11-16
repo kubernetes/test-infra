@@ -154,6 +154,9 @@ def start(gsutil, paths, stamp, node_name, version):
         data['repo-version'] = version
         data['version'] = version  # TODO(fejta): retire
     gsutil.upload_json(paths.started, data)
+    # Upload a link to the build path in the directory
+    if paths.pr_build_link:
+        gsutil.upload_text(paths.pr_build_link, paths.pr_path)
 
 
 class GSUtil(object):
@@ -291,21 +294,6 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
 
-    # Upload the latest build for the job
-    for path in {paths.latest, paths.pr_latest}:
-        if path:
-            try:
-                gsutil.upload_text(path, str(build), cached=False)
-            except subprocess.CalledProcessError:
-                logging.warning('Failed to update %s', path)
-
-    # Upload a link to the build path in the directory
-    if paths.pr_build_link:
-        try:
-            gsutil.upload_text(paths.pr_build_link, paths.pr_path)
-        except subprocess.CalledProcessError:
-            logging.warning('Failed to write build path to %s', paths.pr_path)
-
     meta = metadata(repo, artifacts)
     if not version:
         version = meta.get('job-version')
@@ -327,7 +315,17 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
     if version:
         data['job-version'] = version
         data['version'] = version  # TODO(fejta): retire
-    gsutil.upload_json(paths.finished, data)  # Raise if this fails
+    gsutil.upload_json(paths.finished, data)
+
+    # Upload the latest build for the job.
+    # Do this last, since other tools expect the rest of the data to be
+    # published when this file is created.
+    for path in {paths.latest, paths.pr_latest}:
+        if path:
+            try:
+                gsutil.upload_text(path, str(build), cached=False)
+            except subprocess.CalledProcessError:
+                logging.warning('Failed to update %s', path)
 
 
 def test_infra(*paths):
