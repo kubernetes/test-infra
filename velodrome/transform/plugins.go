@@ -46,6 +46,7 @@ type Plugins []Plugin
 // NewPlugins create a new Plugins list (and initialize each plugin)
 func NewPlugins(idb InfluxDatabase) Plugins {
 	plugins := Plugins{
+		NewPRStatsPlugin(idb),
 		NewOpenToClosePlugin(idb),
 		NewMergedPlugin(idb),
 		NewLGTMToMergedPlugin(idb),
