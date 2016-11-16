@@ -90,7 +90,9 @@
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 600
             emails: 'zml@google.com wojtekt@google.com'
-            cron-string: '0 17 * * *'
+            # TODO: Enable again when we're done with 3000-ndoe testing.
+            # cron-string: '0 17 * * *'
+            cron-string: ''
             trigger-job: ''
             job-env: |
                 export E2E_NAME="gke-large-cluster"
