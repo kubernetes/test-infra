@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -145,6 +146,7 @@ type Config struct {
 	apiLimit *callLimitRoundTripper
 	Org      string
 	Project  string
+	Url      string
 
 	State  string
 	Labels []string
@@ -322,6 +324,7 @@ func (config *Config) AddRootFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&config.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
 	cmd.PersistentFlags().StringVar(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
 	cmd.PersistentFlags().Uint64Var(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
+	cmd.PersistentFlags().StringVar(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 }
 
@@ -398,6 +401,14 @@ func (config *Config) PreExecute() error {
 		Transport: transport,
 	}
 	config.client = github.NewClient(client)
+	rawurl := config.Url
+	if len(rawurl) > 0 {
+		url, err := url.Parse(rawurl)
+		if err != nil {
+			glog.Fatalf("Unable to parse url: %v: %v", rawurl, err)
+		}
+		config.client.BaseURL = url
+	}
 	config.ResetAPICount()
 	return nil
 }
