@@ -22,11 +22,12 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 
+	"regexp"
+	"strings"
+
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
-	"regexp"
-	"strings"
 )
 
 const (
@@ -168,9 +169,7 @@ func determineReleaseNoteLabel(obj *github.MungeObject) string {
 func getReleaseNote(body string) string {
 	noteMatcher := regexp.MustCompile("Release note.*```(.+)```")
 	potentialMatch := noteMatcher.FindStringSubmatch(body)
-	glog.Infof("Found %v as the release note", potentialMatch)
 	if potentialMatch == nil {
-		glog.Infof("The release note section was probably deleted")
 		return ""
 	}
 	return potentialMatch[1]
