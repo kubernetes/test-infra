@@ -103,7 +103,7 @@
                 #   We should change it start running it here too.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|should\stest\skube-proxy \
                                          --allowed-not-ready-nodes=30 \
-                                         --system-pods-startup-timeout=120m"
+                                         --system-pods-startup-timeout=300m"
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-east1-a"
                 export NUM_NODES=3000
