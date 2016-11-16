@@ -50,7 +50,7 @@ STAGE_KUBEMARK="KUBEMARK"
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
-JENKINS_SOAK_BUCKET="gs://kubernetes-jenkins/soak"
+JENKINS_SOAK_PREFIX="gs://kubernetes-jenkins/soak/${JOB_NAME}"
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -297,9 +297,10 @@ else
   if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} != "true" ]]; then
     # We are restoring the cluster, copy state from gcs
     # TODO(fejta): auto-detect and recover from deployment failures
-    gsutil cp "${HOME}/.kube/config" "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/kube-config"
-    export KUBERNETES_RELEASE=$(gsutil cat "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release.txt")
-    export KUBERNETES_RELEASE_URL=$(gsutil cat "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release-uri.txt")
+    mkdir -p "${HOME}/.kube"
+    gsutil cp "${JENKINS_SOAK_PREFIX}/kube-config" "${HOME}/.kube/config"
+    export KUBERNETES_RELEASE=$(gsutil cat "${JENKINS_SOAK_PREFIX}/release.txt")
+    export KUBERNETES_RELEASE_URL=$(gsutil cat "${JENKINS_SOAK_PREFIX}/release-url.txt")
     export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)  # for GKE CI
   elif [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
     set_release_vars_from_local_gcs_stage
@@ -488,7 +489,7 @@ fi
 
 if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} == "true" ]]; then
   # We deployed a cluster, save state to gcs
-  gsutil cp -a project-private "${HOME}/.kube/config" "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/kube-config"
-  gsutil cp - "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release.txt" <(echo "${KUBERNETES_RELEASE}")
-  gsutil cp - "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release-uri.txt" <(echo "${KUBERNETES_RELEASE_URL}")
+  gsutil cp -a project-private "${HOME}/.kube/config" "${JENKINS_SOAK_PREFIX}/kube-config"
+  gsutil cp - "${JENKINS_SOAK_PREFIX}/release.txt" <(echo "${KUBERNETES_RELEASE}")
+  gsutil cp - "${JENKINS_SOAK_PREFIX}/release-url.txt" <(echo "${KUBERNETES_RELEASE_URL}")
 fi
