@@ -52,22 +52,22 @@
     # END AWS
 
     # START GCE
-#    - kubernetes-e2e-gce:
-#        job-name: ci-kubernetes-e2e-gce
-#        frequency: 'H/5 * * * *' # At least every 30m
-#        trigger-job: 'kubernetes-build'
-#    - kubernetes-e2e-gci-gce:
-#        job-name: ci-kubernetes-e2e-gci-gce
-#        frequency: 'H/5 * * * *' # At least every 30m
-#        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gce:
+        job-name: ci-kubernetes-e2e-gce
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce:
+        job-name: ci-kubernetes-e2e-gci-gce
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-slow:
         job-name: ci-kubernetes-e2e-gce-slow
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-#    - kubernetes-e2e-gci-gce-slow:
-#        job-name: ci-kubernetes-e2e-gci-gce-slow
-#        frequency: 'H/5 * * * *' # At least every 30m
-#        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-slow:
+        job-name: ci-kubernetes-e2e-gci-gce-slow
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-serial:
         job-name: ci-kubernetes-e2e-gce-serial
         frequency: 'H/5 * * * *' # At least every 30m
@@ -586,6 +586,10 @@
     - kubernetes-kubemark-high-density-100-gce:
         job-name: ci-kubernetes-kubemark-high-density-100-gce
         frequency: 'H 20 * * 6'
+        trigger-job: 'kubernetes-build'
+    - kubernetes-kubemark-500-gce:
+        job-name: ci-kubernetes-kubemark-500-gce
+        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
