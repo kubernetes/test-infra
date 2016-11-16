@@ -33,12 +33,11 @@
     - 'ci-{repo-suffix}'
     name: bootstrap-ci-repo
     repo-suffix:
-    # TODO(fejta): migrate critical jobs later
-    # kubernetes-verify-master:
-    #   branch: master
-    #   job-name: ci-kubernetes-verify-master
-    #   repo-name: k8s.io/kubernetes
-    #   frequency: 'H/5 * * * *'
+    - kubernetes-verify-master:
+        branch: master
+        job-name: ci-kubernetes-verify-master
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/5 * * * *'
     - kubernetes-verify-release-1.5:
         branch: release-1.5
         job-name: ci-kubernetes-verify-release-1.5
@@ -55,11 +54,11 @@
         repo-name: k8s.io/kubernetes
         frequency: 'H/5 * * * *'
 
-    # kubernetes-test-go:
-    #   branch: master
-    #   job-name: ci-kubernetes-test-go
-    #   repo-name: k8s.io/kubernetes
-    #   frequency: 'H/5 * * * *'
+    - kubernetes-test-go:
+        branch: master
+        job-name: ci-kubernetes-test-go
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/5 * * * *'
     - kubernetes-test-go-release-1.5:
         branch: release-1.5
         job-name: ci-kubernetes-test-go-release-1.5
