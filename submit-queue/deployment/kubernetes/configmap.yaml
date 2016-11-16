@@ -95,7 +95,8 @@ data:
     kubernetes-e2e-gci-gke,\
     kubernetes-e2e-gci-gke-slow,\
     kubernetes-kubemark-500-gce,\
-    ci-kubernetes-e2e-gce-etcd3"
+    ci-kubernetes-e2e-gce-etcd3,\
+    kubernetes-e2e-kops-aws"
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
     kubernetes-pull-build-test-e2e-gke,\
