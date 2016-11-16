@@ -40,7 +40,7 @@ data:
   old-test-getter.number-of-old-test-results: "5"
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"
-  size.generated-files-config: generated-files.txt
+  size.generated-files-config: .generated-files
   check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"
   issue-categorizer.triager-url: "http://issue-triager-service:5000"
   cla.cla-status-context: ""

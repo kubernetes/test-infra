@@ -17,9 +17,7 @@ limitations under the License.
 package mungers
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -76,7 +74,7 @@ func (SizeMunger) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file containing the pathname to label mappings")
+	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file in the repo containing the generated file rules")
 }
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
@@ -113,49 +111,44 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 		glog.Infof("No --generated-files-config= supplied, applying no labels")
 		return
 	}
-	fp, err := os.Open(file)
+
+	contents, err := obj.GetFileContents(file, "")
 	if err != nil {
-		glog.Errorf("Unable to open %q: %v", file, err)
-		return
+		glog.Errorf("Failed to read generated-files-config %q: %v", file, err)
 	}
 
-	defer fp.Close()
-	scanner := bufio.NewScanner(fp)
-	for scanner.Scan() {
-		line := scanner.Text()
+	lines := strings.Split(contents, "\n")
+	for i, line := range lines {
+		line := strings.TrimSpace(line)
 		if strings.HasPrefix(line, "#") || line == "" {
 			continue
 		}
 		fields := strings.Fields(line)
 		if len(fields) != 2 {
-			glog.Errorf("Invalid line in generated docs config %s: %q", file, line)
+			glog.Errorf("Invalid line %d in generated docs config %s: %q", i, file, line)
 			continue
 		}
-		eType := fields[0]
-		file := fields[1]
-		if eType == "prefix" || eType == "path-prefix" {
-			pathPrefixes.Insert(file)
-		} else if eType == "file-prefix" {
-			filePrefixes.Insert(file)
-		} else if eType == "file-name" {
-			fileNames.Insert(file)
-		} else if eType == "path" {
-			paths.Insert(file)
-		} else if eType == "paths-from-repo" {
-			docs, err := obj.GetFileContents(file, "")
+		key := fields[0]
+		val := fields[1]
+		if key == "prefix" || key == "path-prefix" {
+			pathPrefixes.Insert(val)
+		} else if key == "file-prefix" {
+			filePrefixes.Insert(val)
+		} else if key == "file-name" {
+			fileNames.Insert(val)
+		} else if key == "path" {
+			paths.Insert(val)
+		} else if key == "paths-from-repo" {
+			docs, err := obj.GetFileContents(val, "")
 			if err != nil {
 				continue
 			}
 			docSlice := strings.Split(docs, "\n")
 			paths.Insert(docSlice...)
 		} else {
-			glog.Errorf("Invalid line in generated docs config, unknown type: %s, %q", eType, line)
+			glog.Errorf("Invalid line %d in generated docs config, unknown key: %s, %q", i, key, line)
 			continue
 		}
-	}
-	if scanner.Err() != nil {
-		glog.Errorf("Error scanning %s: %v", file, err)
-		return
 	}
 
 	// Save the results so we don't repeat this function.
