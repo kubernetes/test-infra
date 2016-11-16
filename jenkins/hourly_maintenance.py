@@ -35,6 +35,33 @@ def ContainerImages():
       yield line
 
 
+def KillContainers():
+    """Kill containers that have been running for a long time."""
+    now = datetime.datetime.now()
+    old = []
+    for line in subprocess.check_output([
+        'docker', 'ps', '-a',
+        '-f', 'status=running',
+        '--format={{.CreatedAt}}\t{{.ID}}',
+    ]).split('\n'):
+        if not line:
+            continue
+        created, name = line.split('\t')
+        fmt = 'YYYY-MM-dd HH:MM'
+        dt = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
+        if now - dt > datetime.timedelta(days=1):
+            old.append(name)
+
+    if not old:
+        return 0
+
+    print 'Old running containers to kill:', old
+    err = subprocess.call(['docker', 'kill'] + old)
+    if err:
+        print >>sys.stderr, 'KillContainers failed'
+    return err
+
+
 def RemoveContainers():
     """Remove non-running containers that we created a long time ago."""
     now = datetime.datetime.now()
@@ -53,14 +80,12 @@ def RemoveContainers():
         fmt = 'YYYY-mm-dd HH:MM'
         dt = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
         if now - dt > datetime.timedelta(hours=2):
-            print '%s %s' % (name, created)
             old.append(name)
-        else:
-            print 'SKIP: %s %s' % (name, created)
 
     if not old:
         return 0
 
+    print 'Old non-running containers to remove:', old
     err = subprocess.call(['docker', 'rm', '-v'] + old)
     if err:
         print >>sys.stderr, 'RemoveContainers failed'
@@ -172,6 +197,7 @@ def DeleteCorruptGitRepos():
 def main(ancient):
     # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
     err = 0
+    err |= KillContainers()
     err |= RemoveContainers()
     err |= RemoveImages(set(ContainerImages()), ancient)
     err |= RemoveVolumes()
