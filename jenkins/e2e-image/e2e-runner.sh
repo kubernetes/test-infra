@@ -50,6 +50,7 @@ STAGE_KUBEMARK="KUBEMARK"
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
+JENKINS_SOAK_BUCKET="gs://kubernetes-jenkins/soak"
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -289,28 +290,35 @@ EXIT_CODE=0
 
 # We get the Kubernetes tarballs unless we are going to use old ones
 if [[ "${JENKINS_USE_EXISTING_BINARIES:-}" =~ ^[yY]$ ]]; then
-    echo "Using existing binaries; not cleaning, fetching, or unpacking new ones."
+  echo "Using existing binaries; not cleaning, fetching, or unpacking new ones."
 else
-    clean_binaries
+  clean_binaries
 
-    if [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
-        set_release_vars_from_local_gcs_stage
-    elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
-        # This is for test, staging, and prod jobs on GKE, where we want to
-        # test what's running in GKE by default rather than some CI build.
-        set_release_vars_from_gke_cluster_version
-    elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-        # Use GCI image builtin version. Needed for GCI release qual tests.
-        set_release_vars_from_gci_builtin_version
-    else
-        # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
-        # usually what we're testing.
-        set_release_vars_from_gcs "${JENKINS_PUBLISHED_VERSION:-ci/latest}"
-        # Needed for GKE CI.
-        export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)
-    fi
+  if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} != "true" ]]; then
+    # We are restoring the cluster, copy state from gcs
+    # TODO(fejta): auto-detect and recover from deployment failures
+    gsutil cp "${HOME}/.kube/config" "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/kube-config"
+    export KUBERNETES_RELEASE=$(gsutil cat "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release.txt")
+    export KUBERNETES_RELEASE_URL=$(gsutil cat "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release-uri.txt")
+    export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)  # for GKE CI
+  elif [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
+    set_release_vars_from_local_gcs_stage
+  elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
+    # This is for test, staging, and prod jobs on GKE, where we want to
+    # test what's running in GKE by default rather than some CI build.
+    set_release_vars_from_gke_cluster_version
+  elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
+    # Use GCI image builtin version. Needed for GCI release qual tests.
+    set_release_vars_from_gci_builtin_version
+  else
+    # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
+    # usually what we're testing.
+    set_release_vars_from_gcs "${JENKINS_PUBLISHED_VERSION:-ci/latest}"
+    # Needed for GKE CI.
+    export CLUSTER_API_VERSION=$(echo "${KUBERNETES_RELEASE}" | cut -c 2-)
+  fi
 
-    call_get_kube
+  call_get_kube
 fi
 
 # Copy GCE keys so we don't keep cycling them.
@@ -436,15 +444,15 @@ if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
   esac
 fi
 
-if [[ "${E2E_UP,,}" == "true" ]]; then
+if [[ "${E2E_UP:-}" == "true" ]]; then
   e2e_go_args+=(--up --ctl="version --match-server-version=false")
 fi
 
-if [[ "${E2E_DOWN,,}" == "true" ]]; then
+if [[ "${E2E_DOWN:-}" == "true" ]]; then
   e2e_go_args+=(--down)
 fi
 
-if [[ "${E2E_TEST,,}" == "true" ]]; then
+if [[ "${E2E_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--test)
   if [[ -n "${GINKGO_TEST_ARGS:-}" ]]; then
     e2e_go_args+=(--test_args="${GINKGO_TEST_ARGS}")
@@ -476,4 +484,11 @@ if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
   # Use plaintext version file packaged with kubernetes.tar.gz
   echo "Publish version to ci/latest-green.txt: $(cat version)"
   gsutil cp ./version "gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt"
+fi
+
+if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} == "true" ]]; then
+  # We deployed a cluster, save state to gcs
+  gsutil cp -a project-private "${HOME}/.kube/config" "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/kube-config"
+  gsutil cp - "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release.txt" <(echo "${KUBERNETES_RELEASE}")
+  gsutil cp - "${JENKINS_SOAK_BUCKET}/${JOB_NAME}/release-uri.txt" <(echo "${KUBERNETES_RELEASE_URL}")
 fi
