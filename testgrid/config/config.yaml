@@ -83,7 +83,7 @@ test_groups:
 - name: kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
 - name: kubernetes-e2e-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features
 - name: kubernetes-e2e-gci-gce-alpha-features
@@ -133,7 +133,7 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: kubernetes-e2e-gci-gce
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
 - name: kubernetes-e2e-gce-gci-ci-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-master
 - name: kubernetes-e2e-gce-gci-ci-release-1.2
@@ -211,7 +211,7 @@ test_groups:
 - name: kubernetes-e2e-gci-gce-serial-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1.5
 - name: kubernetes-e2e-gci-gce-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow
 - name: kubernetes-e2e-gci-gce-slow-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1.4
 - name: kubernetes-e2e-gci-gce-slow-release-1.5
@@ -473,7 +473,7 @@ test_groups:
 - name: kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
 - name: kubernetes-kubemark-500-gce
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-kubemark-500-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
 - name: kubernetes-kubemark-gce-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
 - name: kubernetes-kubemark-high-density-100-gce
