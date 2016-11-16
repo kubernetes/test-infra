@@ -48,7 +48,6 @@ func NewPlugins(idb InfluxDatabase) Plugins {
 	plugins := Plugins{
 		NewPRStatsPlugin(idb),
 		NewOpenToClosePlugin(idb),
-		NewMergedPlugin(idb),
 		NewLGTMToMergedPlugin(idb),
 		NewFirstCommentPlugin(idb),
 		NewRebasePlugin(idb),
