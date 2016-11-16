@@ -115,12 +115,20 @@ func (pa *PluginAgent) Start(path string) error {
 }
 
 // IssueCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueCommentHandlers(repo string) map[string]IssueCommentHandler {
+func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]IssueCommentHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.ps[fullName] {
+		if h, ok := issueCommentHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
+	// Also find matches for just the organization/owner.
+	for _, p := range pa.ps[owner] {
 		if h, ok := issueCommentHandlers[p]; ok {
 			hs[p] = h
 		}
@@ -129,29 +137,46 @@ func (pa *PluginAgent) IssueCommentHandlers(repo string) map[string]IssueComment
 }
 
 // PullRequestHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PullRequestHandlers(repo string) map[string]PullRequestHandler {
+func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]PullRequestHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.ps[fullName] {
 		if h, ok := pullRequestHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
+
+	// Also find matches for just the organization/owner.
+	for _, p := range pa.ps[owner] {
+		if h, ok := pullRequestHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
 	return hs
 }
 
 // StatusEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) StatusEventHandlers(repo string) map[string]StatusEventHandler {
+func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]StatusEventHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.ps[fullName] {
 		if h, ok := statusEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
+	// Also find matches for just the organization/owner.
+	for _, p := range pa.ps[owner] {
+		if h, ok := statusEventHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
 	return hs
 }
