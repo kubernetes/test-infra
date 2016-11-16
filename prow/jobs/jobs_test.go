@@ -61,6 +61,9 @@ func TestJobTriggers(t *testing.T) {
 				if i == j {
 					continue
 				}
+				if job.Context == job2.Context && i > j {
+					t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
+				}
 				if job2.re.MatchString(job.RerunCommand) {
 					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
