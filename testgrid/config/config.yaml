@@ -533,7 +533,7 @@ test_groups:
 - name: kubernetes-soak-weekly-deploy-gce-cri
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-cri
 - name: kubernetes-test-go
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-go
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go
   days_of_results: 4
 - name: kubernetes-test-go-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.2
@@ -548,7 +548,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.5
   days_of_results: 4
 - name: kubernetes-verify-master
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-verify-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-master
 - name: kubernetes-verify-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.5
 - name: kubernetes-verify-release-1.4
