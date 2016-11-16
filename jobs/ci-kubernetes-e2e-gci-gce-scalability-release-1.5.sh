@@ -31,8 +31,8 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
-export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
-export E2E_NAME="e2e-scalability-1-4"
+export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
+export E2E_NAME="e2e-scalability-1-5"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
                          --gather-resource-usage=true \
                          --gather-metrics-at-teardown=true \
