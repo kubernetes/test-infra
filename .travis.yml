@@ -34,6 +34,7 @@ script:
     - pylint jenkins/bootstrap.py  # TODO(fejta): all python files
     - pylint queue-health/graph/graph.py  # TODO(fejta): all python files
     - ./jenkins/bootstrap_test.py
+    - nosetests --with-doctest jenkins/bootstrap.py
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
     - make -C gcsweb test
