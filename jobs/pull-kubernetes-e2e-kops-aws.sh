@@ -38,7 +38,17 @@ if [[ -z "${SKIP_BUILD:-}" ]]; then
   ./hack/jenkins/build.sh
 fi
 
-readonly version=$(source build-tools/util.sh && echo $(kube::release::semantic_version))
+# TODO(spxtr): once we no longer have any PRs against release-1.4,
+# remove the first branch.
+if [[ -e build/util.sh ]]; then
+  readonly version=$(source build/util.sh && echo $(kube::release::semantic_version))
+elif [[ -e build-tools/util.sh ]]; then
+  readonly version=$(source build-tools/util.sh && echo $(kube::release::semantic_version))
+fi
+if [[ -z "{version:-}" ]]; then
+  echo "Could not find build/util.sh or build-tools/util.sh, or kube::release::semantic_version failed." >&2
+  exit 1
+fi
 export KUBERNETES_PROVIDER="kops-aws"
 
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
