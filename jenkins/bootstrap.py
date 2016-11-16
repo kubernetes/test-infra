@@ -98,8 +98,27 @@ def call(cmd, stdin=None, check=True, output=None):
 
 
 def pull_ref(pull):
-    """Return the tag associated with the PR."""
-    return '+refs/pull/%d/merge' % pull
+    """Turn a PR number of list of refs into specific refs to fetch and check out.
+
+    >>> pull_ref('123')
+    (['+refs/pull/123/merge'], ['FETCH_HEAD'])
+    >>> pull_ref('master:abcd,123:effe')
+    (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe'])
+    """
+    if isinstance(pull, basestring) and ':' in pull:
+        refs = []
+        checkouts = []
+        for name, sha in (x.split(':') for x in pull.split(',')):
+            if len(refs) == 0:
+                # first entry is the branch spec ("master")
+                refs.append(name)
+            else:
+                num = int(name)
+                refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
+            checkouts.append(sha)
+        return refs, checkouts
+    else:
+        return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
 
 
 def repository(repo):
@@ -118,20 +137,24 @@ def checkout(repo, branch, pull):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
+
     if pull:
-        ref = pull_ref(pull)
+        refs, checkouts = pull_ref(pull)
     else:
-        ref = branch
+        refs, checkouts = [branch], ['FETCH_HEAD']
 
     git = 'git'
     call([git, 'init', repo])
     os.chdir(repo)
+
+    # To make a merge commit, a user needs to be set. It's okay to use a dummy
+    # user here, since we're not exporting the history.
+    call([git, 'config', '--local', 'user.name', 'K8S Bootstrap'])
+    call([git, 'config', '--local', 'user.email', 'k8s_bootstrap@localhost'])
     retries = 3
     for attempt in range(retries):
         try:
-            call([
-                git, 'fetch', '--tags', repository(repo), ref,
-            ])
+            call([git, 'fetch', '--tags', repository(repo)] + refs)
             break
         except subprocess.CalledProcessError as cpe:
             if attempt >= retries - 1:
@@ -140,7 +163,9 @@ def checkout(repo, branch, pull):
                 raise
             logging.warning('git fetch failed')
             random_sleep(attempt)
-    call([git, 'checkout', 'FETCH_HEAD'])
+    call([git, 'checkout', '-B', 'test', checkouts[0]])
+    for ref, head in zip(refs, checkouts)[1:]:
+        call(['git', 'merge', '--no-ff', '-m', 'Merge %s' % ref, head])
 
 
 def start(gsutil, paths, stamp, node_name, version):
@@ -432,7 +457,10 @@ def pr_paths(repo, job, build, pull):
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
-    pull = os.path.join(prefix, pull)
+    if ':' in pull:
+        pull = os.path.join(prefix, 'batch')
+    else:
+        pull = os.path.join(prefix, pull)
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
             base, 'directory', job, 'jobResultsCache.json')
@@ -634,7 +662,8 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Checks out a github PR/branch to <basedir>/<repo>/')
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
-    PARSER.add_argument('--pull', type=int, help='PR number')
+    PARSER.add_argument('--pull',
+        help='PR number, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
     PARSER.add_argument('--branch', help='Checkout the following branch')
     PARSER.add_argument('--repo', help='The repository to fetch from')
     PARSER.add_argument('--bare', action='store_true', help='Do not check out a repository')

@@ -140,14 +140,13 @@ class CheckoutTest(unittest.TestCase):
                     bootstrap.checkout(REPO, None, PULL)
         self.assertEquals(expected_attempts, self.tries)
 
-
     def testPull(self):
         """checkout fetches the right ref for a pull."""
         with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
             with Stub(os, 'chdir', Pass):
                 bootstrap.checkout(REPO, None, PULL)
 
-        expected_ref = bootstrap.pull_ref(PULL)
+        expected_ref = bootstrap.pull_ref(PULL)[0][0]
         self.assertTrue(any(
             expected_ref in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
 
@@ -781,7 +780,7 @@ class IntegrationTest(unittest.TestCase):
     PR_FILE = 'fake-pr-file'
     BRANCH = 'another-branch'
     PR = 42
-    PR_TAG = bootstrap.pull_ref(PR).strip('+')
+    PR_TAG = bootstrap.pull_ref(PR)[0][0].strip('+')
 
     def FakeRepo(self, repo):
         return os.path.join(self.root_github, repo)
@@ -835,6 +834,26 @@ class IntegrationTest(unittest.TestCase):
 
         os.chdir('/tmp')
         bootstrap.bootstrap('fake-branch', self.REPO, self.BRANCH, None, self.root_workspace)
+
+    def testBatch(self):
+        def head_sha():
+            # We can't hardcode the SHAs for the test, so we need to determine
+            # them after each commit.
+            return subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+        refs = ['master:%s' % head_sha()]
+        for pr in (123, 456):
+            subprocess.check_call(['git', 'checkout', '-b', 'refs/pull/%d/head' % pr, 'master'])
+            subprocess.check_call(['git', 'rm', self.MASTER])
+            subprocess.check_call(['touch', self.PR_FILE])
+            subprocess.check_call(['git', 'add', self.PR_FILE])
+            open('pr_%d.txt' % pr, 'w').write('some text')
+            subprocess.check_call(['git', 'add', 'pr_%d.txt' % pr])
+            subprocess.check_call(['git', 'commit', '-m', 'add some stuff (#%d)' % pr])
+            refs.append('%d:%s' % (pr, head_sha()))
+        os.chdir('/tmp')
+        pull = ','.join(refs)
+        print '--pull', pull
+        bootstrap.bootstrap('fake-pr', self.REPO, None, pull, self.root_workspace)
 
     def testPr_Bad(self):
         random_pr = 111
