@@ -1020,10 +1020,14 @@ class JobTest(unittest.TestCase):
             self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
     def testAllProjectAreUnique(self):
-        allowed_list = {  # TODO(fejta): remove these (found while migrating jobs)
+        allowed_list = {
+            # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
+            # TODO(fejta): will deal with these test jobs later
+            'ci-fejta-soak-test.sh': 'ci-fejta-soak-*',
+            'ci-fejta-soak-deploy.sh': 'ci-fejta-soak-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
