@@ -31,16 +31,17 @@ export E2E_MIN_STARTUP_PODS="8"
 export KUBE_GCE_ZONE="us-central1-f"
 export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-export KUBE_NODE_OS_DISTRIBUTION="debian"
+export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### soak-env
+export JENKINS_SOAK_MODE="y"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export E2E_TEST="false"
 export E2E_DOWN="false"
 
 ### job-env
-export PROJECT="fejta-prod"
-export JENKINS_SOAK_MODE="y"
+export PROJECT="k8s-jkns-gci-gce-soak-1-4"
+export JENKINS_PUBLISHED_VERSION="ci/latest-1.4"
 
 ### post-env
 
@@ -73,7 +74,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 180m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 90m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

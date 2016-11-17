@@ -1,0 +1,170 @@
+- job-template:
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --bare --root="${{GOPATH}}/src/k8s.io"
+    disabled: false
+    name: 'ci-{soak-suffix}'
+    node: 'e2e'
+    properties:
+    - build-blocker:
+        blocking-jobs:
+        - '{blocker}'
+        queue-scanning: '{scan}'
+        use-build-blocker: true
+    - build-discarder:
+        days-to-keep: 7
+    triggers:
+    - timed: '{frequency}'
+    wrappers:
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - timeout:
+        timeout: 700
+        fail: true
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    jobs:
+    - 'ci-{soak-suffix}'
+    name: bootstrap-ci
+    suffix:
+    - kubernetes-soak-gce-deploy:
+        blocker: ci-kubernetes-soak-gce-test
+        job-name: ci-kubernetes-soak-gce-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-test:
+        blocker: ci-kubernetes-soak-gce-deploy
+        job-name: ci-kubernetes-soak-gce-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-cri-deploy:
+        blocker: ci-kubernetes-soak-gce-cri-test
+        job-name: ci-kubernetes-soak-gce-cri-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-cri-test:
+        blocker: ci-kubernetes-soak-gce-cri-deploy
+        job-name: ci-kubernetes-soak-gce-cri-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-federation-deploy:
+        blocker: ci-kubernetes-soak-gce-federation-test
+        job-name: ci-kubernetes-soak-gce-federation-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-federation-test:
+        blocker: ci-kubernetes-soak-gce-federation-deploy
+        job-name: ci-kubernetes-soak-gce-federation-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-gci-deploy:
+        blocker: ci-kubernetes-soak-gce-gci-test
+        job-name: ci-kubernetes-soak-gce-gci-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-gci-test:
+        blocker: ci-kubernetes-soak-gce-gci-deploy
+        job-name: ci-kubernetes-soak-gce-gci-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-2-deploy:
+        blocker: ci-kubernetes-soak-gce-2-test
+        job-name: ci-kubernetes-soak-gce-2-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-2-test:
+        blocker: ci-kubernetes-soak-gce-2-deploy
+        job-name: ci-kubernetes-soak-gce-2-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-1.5-deploy:
+        blocker: ci-kubernetes-soak-gce-1.5-test
+        job-name: ci-kubernetes-soak-gce-1.5-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-1.5-test:
+        blocker: ci-kubernetes-soak-gce-1.5-deploy
+        job-name: ci-kubernetes-soak-gce-1.5-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-1.4-deploy:
+        blocker: ci-kubernetes-soak-gce-1.4-test
+        job-name: ci-kubernetes-soak-gce-1.4-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-1.4-test:
+        blocker: ci-kubernetes-soak-gce-1.4-deploy
+        job-name: ci-kubernetes-soak-gce-1.4-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gci-gce-1.5-deploy:
+        blocker: ci-kubernetes-soak-gci-gce-1.5-test
+        job-name: ci-kubernetes-soak-gci-gce-1.5-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gci-gce-1.5-test:
+        blocker: ci-kubernetes-soak-gci-gce-1.5-deploy
+        job-name: ci-kubernetes-soak-gci-gce-1.5-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gci-gce-1.4-deploy:
+        blocker: ci-kubernetes-soak-gci-gce-1.4-test
+        job-name: ci-kubernetes-soak-gci-gce-1.4-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gci-gce-1.4-test:
+        blocker: ci-kubernetes-soak-gci-gce-1.4-deploy
+        job-name: ci-kubernetes-soak-gci-gce-1.4-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-1.3-deploy:
+        blocker: ci-kubernetes-soak-gce-1.3-test
+        job-name: ci-kubernetes-soak-gce-1.3-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-1.3-test:
+        blocker: ci-kubernetes-soak-gce-1.3-deploy
+        job-name: ci-kubernetes-soak-gce-1.3-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gce-1.2-deploy:
+        blocker: ci-kubernetes-soak-gce-1.2-test
+        job-name: ci-kubernetes-soak-gce-1.2-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gce-1.2-test:
+        blocker: ci-kubernetes-soak-gce-1.2-deploy
+        job-name: ci-kubernetes-soak-gce-1.2-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gke-deploy:
+        blocker: ci-kubernetes-soak-gke-test
+        job-name: ci-kubernetes-soak-gke-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gke-test:
+        blocker: ci-kubernetes-soak-gke-deploy
+        job-name: ci-kubernetes-soak-gke-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+    - kubernetes-soak-gke-gci-deploy:
+        blocker: ci-kubernetes-soak-gke-gci-test
+        job-name: ci-kubernetes-soak-gke-gci-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+    - kubernetes-soak-gke-gci-test:
+        blocker: ci-kubernetes-soak-gke-gci-deploy
+        job-name: ci-kubernetes-soak-gke-gci-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
