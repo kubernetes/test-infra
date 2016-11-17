@@ -52,76 +52,41 @@
     # END AWS
 
     # START GCE
+    # gce-master
     - kubernetes-e2e-gce:
         job-name: ci-kubernetes-e2e-gce
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce:
-        job-name: ci-kubernetes-e2e-gci-gce
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-slow:
         job-name: ci-kubernetes-e2e-gce-slow
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-slow:
-        job-name: ci-kubernetes-e2e-gci-gce-slow
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-serial:
         job-name: ci-kubernetes-e2e-gce-serial
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-serial:
-        job-name: ci-kubernetes-e2e-gci-gce-serial
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-reboot:
         job-name: ci-kubernetes-e2e-gce-reboot
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-reboot:
-        job-name: ci-kubernetes-e2e-gci-gce-reboot
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-autoscaling:
         job-name: ci-kubernetes-e2e-gce-autoscaling
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-autoscaling:
-        job-name: ci-kubernetes-e2e-gci-gce-autoscaling
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-gce-autoscaling-migs
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-autoscaling-migs:
-        job-name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-alpha-features:
         job-name: ci-kubernetes-e2e-gce-alpha-features
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-alpha-features:
-        job-name: ci-kubernetes-e2e-gci-gce-alpha-features
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-flaky:
         job-name: ci-kubernetes-e2e-gce-flaky
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-flaky:
-        job-name: ci-kubernetes-e2e-gci-gce-flaky
-        trigger-job: 'kubernetes-build'
-        frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gce-scalability:
         job-name: ci-kubernetes-e2e-gce-scalability
-        frequency: 'H H/12 * * *'
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-scalability:
-        job-name: ci-kubernetes-e2e-gci-gce-scalability
         frequency: 'H H/12 * * *'
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-container-vm:
@@ -136,24 +101,12 @@
         job-name: ci-kubernetes-e2e-gce-etcd3
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-etcd3:
-        job-name: ci-kubernetes-e2e-gci-gce-etcd3
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-proto:
         job-name: ci-kubernetes-e2e-gce-proto
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-proto:
-        job-name: ci-kubernetes-e2e-gci-gce-proto
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-examples:
         job-name: ci-kubernetes-e2e-gce-examples
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-examples:
-        job-name: ci-kubernetes-e2e-gci-gce-examples
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-multizone:
@@ -164,12 +117,62 @@
         job-name: ci-kubernetes-e2e-gce-federation
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-federation:
-        job-name: ci-kubernetes-e2e-gci-gce-federation
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-kubenet:
         job-name: ci-kubernetes-e2e-gce-kubenet
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+
+    # gci-gce-master
+    - kubernetes-e2e-gci-gce:
+        job-name: ci-kubernetes-e2e-gci-gce
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-slow:
+        job-name: ci-kubernetes-e2e-gci-gce-slow
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-serial:
+        job-name: ci-kubernetes-e2e-gci-gce-serial
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-reboot:
+        job-name: ci-kubernetes-e2e-gci-gce-reboot
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-autoscaling:
+        job-name: ci-kubernetes-e2e-gci-gce-autoscaling
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-autoscaling-migs:
+        job-name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-alpha-features:
+        job-name: ci-kubernetes-e2e-gci-gce-alpha-features
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-flaky:
+        job-name: ci-kubernetes-e2e-gci-gce-flaky
+        trigger-job: 'kubernetes-build'
+        frequency: 'H/5 * * * *' # At least every 30m
+    - kubernetes-e2e-gci-gce-scalability:
+        job-name: ci-kubernetes-e2e-gci-gce-scalability
+        frequency: 'H H/12 * * *'
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-etcd3:
+        job-name: ci-kubernetes-e2e-gci-gce-etcd3
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-proto:
+        job-name: ci-kubernetes-e2e-gci-gce-proto
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-examples:
+        job-name: ci-kubernetes-e2e-gci-gce-examples
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gce-federation:
+        job-name: ci-kubernetes-e2e-gci-gce-federation
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gci-gce-kubenet:
@@ -177,7 +180,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
 
-    # gce - 1.2
+    # gce-1.2
     - kubernetes-e2e-gce-release-1.2:
         job-name: ci-kubernetes-e2e-gce-release-1.2
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -199,7 +202,7 @@
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         trigger-job: 'kubernetes-build-1.2'
 
-    # gci-gce - 1.2
+    # gci-gce-1.2
     - kubernetes-e2e-gci-gce-release-1.2:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.2
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -221,7 +224,7 @@
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         trigger-job: 'kubernetes-build-1.2'
 
-    # gce - 1.3
+    # gce-1.3
     - kubernetes-e2e-gce-release-1.3:
         job-name: ci-kubernetes-e2e-gce-release-1.3
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -243,7 +246,7 @@
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         trigger-job: 'kubernetes-build-1.3'
 
-    # gci-gce - 1.3
+    # gci-gce-1.3
     - kubernetes-e2e-gci-gce-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.3
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -265,7 +268,7 @@
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         trigger-job: 'kubernetes-build-1.3'
 
-    # gce - 1.4
+    # gce-1.4
     - kubernetes-e2e-gce-release-1.4:
         job-name: ci-kubernetes-e2e-gce-release-1.4
         frequency: 'H/5 * * * *' # At least every 30m
@@ -295,7 +298,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build-1.4'
 
-    # gci-gce - 1.4
+    # gci-gce-1.4
     - kubernetes-e2e-gci-gce-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.4
         frequency: 'H/5 * * * *' # At least every 30m
@@ -321,7 +324,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build-1.4'
 
-    # gce - 1.5
+    # gce-1.5
     - kubernetes-e2e-gce-release-1.5:
         job-name: ci-kubernetes-e2e-gce-release-1.5
         frequency: 'H/5 * * * *' # At least every 30m
@@ -355,7 +358,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build-1.5'
 
-    # gci-gce - 1.5
+    # gci-gce-1.5
     - kubernetes-e2e-gci-gce-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.5
         frequency: 'H/5 * * * *' # At least every 30m
@@ -420,7 +423,6 @@
         job-name: ci-kubernetes-e2e-gci-gce-cri-serial
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-
     # END GCE
     
     # START GCE-GCI
@@ -552,6 +554,23 @@
     # END GCE-GCI
 
     # START GKE
+    # gke-master
+    - kubernetes-e2e-gke:
+        job-name: ci-kubernetes-e2e-gke
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gke-slow:
+        job-name: ci-kubernetes-e2e-gke-slow
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gke-multizone:
+        job-name: ci-kubernetes-e2e-gke-multizone
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gke-alpha-features:
+        job-name: ci-kubernetes-e2e-gke-alpha-features
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gke-autoscaling:
         job-name: ci-kubernetes-e2e-gke-autoscaling
         frequency: 'H/5 * * * *' # At least every 30m
@@ -572,6 +591,212 @@
         job-name: ci-kubernetes-e2e-gke-updown
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gke-ingress:
+        job-name: ci-kubernetes-e2e-gke-ingress
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+
+    # gci-gke-master
+#    Blocking, update SQ
+#    - kubernetes-e2e-gci-gke:
+#        job-name: ci-kubernetes-e2e-gci-gke
+#        frequency: 'H/5 * * * *' # At least every 30m
+#        trigger-job: 'kubernetes-build'
+#    - kubernetes-e2e-gci-gke-slow:
+#        job-name: ci-kubernetes-e2e-gci-gke-slow
+#        frequency: 'H/5 * * * *' # At least every 30m
+#        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-multizone:
+        job-name: ci-kubernetes-e2e-gci-gke-multizone
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-alpha-features:
+        job-name: ci-kubernetes-e2e-gci-gke-alpha-features
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-autoscaling:
+        job-name: ci-kubernetes-e2e-gci-gke-autoscaling
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-flaky:
+        job-name: ci-kubernetes-e2e-gci-gke-flaky
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-reboot:
+        job-name: ci-kubernetes-e2e-gci-gke-reboot
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-serial:
+        job-name: ci-kubernetes-e2e-gci-gke-serial
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-updown:
+        job-name: ci-kubernetes-e2e-gci-gke-updown
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-ingress:
+        job-name: ci-kubernetes-e2e-gci-gke-ingress
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+
+    # gke-1.2
+    - kubernetes-e2e-gke-release-1.2:
+        job-name: ci-kubernetes-e2e-gke-release-1.2
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.2'
+    - kubernetes-e2e-gke-serial-release-1.2:
+        job-name: ci-kubernetes-e2e-gke-serial-release-1.2
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.2'
+    - kubernetes-e2e-gke-slow-release-1.2:
+        job-name: ci-kubernetes-e2e-gke-slow-release-1.2
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.2'
+
+    # gke-1.3
+    - kubernetes-e2e-gke-release-1.3:
+        job-name: ci-kubernetes-e2e-gke-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gke-serial-release-1.3:
+        job-name: ci-kubernetes-e2e-gke-serial-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gke-slow-release-1.3:
+        job-name: ci-kubernetes-e2e-gke-slow-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gke-reboot-release-1.3:
+        job-name: ci-kubernetes-e2e-gke-reboot-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gke-ingress-release-1.3:
+        job-name: ci-kubernetes-e2e-gke-ingress-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+
+    # gci-gke-1.3
+    - kubernetes-e2e-gci-gke-release-1.3:
+        job-name: ci-kubernetes-e2e-gci-gke-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gci-gke-serial-release-1.3:
+        job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gci-gke-slow-release-1.3:
+        job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gci-gke-reboot-release-1.3:
+        job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+    - kubernetes-e2e-gci-gke-ingress-release-1.3:
+        job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.3
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: 'kubernetes-build-1.3'
+
+    # gke-1.4
+    - kubernetes-e2e-gke-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gke-serial-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-serial-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gke-alpha-features-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gke-slow-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-slow-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gke-reboot-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-reboot-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gke-ingress-release-1.4:
+        job-name: ci-kubernetes-e2e-gke-ingress-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+
+    # gci-gke-1.4
+    - kubernetes-e2e-gci-gke-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gci-gke-serial-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gci-gke-alpha-features-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gci-gke-slow-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gci-gke-reboot-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+    - kubernetes-e2e-gci-gke-ingress-release-1.4:
+        job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.4
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.4'
+
+    # gke-1.5
+    - kubernetes-e2e-gke-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gke-serial-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-serial-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gke-alpha-features-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gke-slow-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-slow-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gke-reboot-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-reboot-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gke-ingress-release-1.5:
+        job-name: ci-kubernetes-e2e-gke-ingress-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+
+    # gci-gke-1.5
+    - kubernetes-e2e-gci-gke-release-1.5:
+        job-name: ci-kubernetes-e2e-gci-gke-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gci-gke-serial-release-1.5:
+        job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gci-gke-slow-release-1.5:
+        job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gci-gke-reboot-release-1.5:
+        job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+    - kubernetes-e2e-gci-gke-ingress-release-1.5:
+        job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
+
     # END GKE
 
     # START KUBEMARK
