@@ -490,6 +490,6 @@ fi
 if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} == "true" ]]; then
   # We deployed a cluster, save state to gcs
   gsutil cp -a project-private "${HOME}/.kube/config" "${JENKINS_SOAK_PREFIX}/kube-config"
-  gsutil cp - "${JENKINS_SOAK_PREFIX}/release.txt" <(echo "${KUBERNETES_RELEASE}")
-  gsutil cp - "${JENKINS_SOAK_PREFIX}/release-url.txt" <(echo "${KUBERNETES_RELEASE_URL}")
+  echo ${KUBERNETES_RELEASE} | gsutil cp - "${JENKINS_SOAK_PREFIX}/release.txt"
+  echo ${KUBERNETES_RELEASE_URL} | gsutil cp - "${JENKINS_SOAK_PREFIX}/release-url.txt"
 fi
