@@ -43,7 +43,6 @@ export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export NUM_NODES="8"
 export MASTER_SIZE="n1-standard-2"
 export NODE_SIZE="n1-standard-8"
-export KUBE_GCE_ZONE="us-east1-d"
 export KUBEMARK_MASTER_SIZE="n1-standard-4"
 export KUBEMARK_NUM_NODES="600"
 # The kubemark scripts build a Docker image
