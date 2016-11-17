@@ -955,6 +955,20 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
             Check, suffix='repo-suffix')
 
+    def testBootstrapCISoakYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertIn('blocker', job)
+            self.assertIn('frequency', job)
+            self.assertIn('scan', job)
+            self.assertNotIn('repo-name', job)
+            self.assertNotIn('branch', job)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
+            Check, suffix='soak-suffix')
+
     def CheckBootstrapYaml(self, path, check, suffix='suffix'):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
@@ -984,7 +998,7 @@ class JobTest(unittest.TestCase):
 
         jobs = project.get(suffix)
         if not jobs or not isinstance(jobs, list):
-            self.fail('Could not find suffix list in %s' % project)
+            self.fail('Could not find %s list in %s' % (suffix, project))
 
         for job in jobs:
             # Things to check on all bootstrap jobs
@@ -1025,9 +1039,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
-            # TODO(fejta): will deal with these test jobs later
-            'ci-fejta-soak-test.sh': 'ci-fejta-soak-*',
-            'ci-fejta-soak-deploy.sh': 'ci-fejta-soak-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
@@ -1036,6 +1047,8 @@ class JobTest(unittest.TestCase):
             for line in lines:
                 if 'PROJECT' not in line:
                     continue
+                if '-soak-' in job:  # Soak jobs have deploy/test pairs
+                    job = job.replace('-test', '-*').replace('-deploy', '-*')
                 self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))

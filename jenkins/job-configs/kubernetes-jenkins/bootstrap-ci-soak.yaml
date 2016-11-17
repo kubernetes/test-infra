@@ -37,7 +37,7 @@
     jobs:
     - 'ci-{soak-suffix}'
     name: bootstrap-ci
-    suffix:
+    soak-suffix:
     - kubernetes-soak-gce-deploy:
         blocker: ci-kubernetes-soak-gce-test
         job-name: ci-kubernetes-soak-gce-deploy
