@@ -18,11 +18,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-# Hack to test use a test image
-#OVERRIDE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
-#mkdir -p $(dirname "${OVERRIDE}")
-#echo v20161116-fc014f3 > "${OVERRIDE}"
-
 readonly testinfra="$(dirname "${0}")/.."
 
 ### provider-env
@@ -31,9 +26,12 @@ export E2E_MIN_STARTUP_PODS="8"
 export KUBE_GCE_ZONE="us-central1-f"
 export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
-export KUBE_NODE_OS_DISTRIBUTION="debian"
+export KUBE_OS_DISTRIBUTION="gci"
+export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
 ### soak-env
+export JENKINS_SOAK_MODE="y"
+export JOB_NAME="${JOB_NAME//-test/-deploy}"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export E2E_UP="false"
 export E2E_DOWN="false"
@@ -44,12 +42,11 @@ export DOCKER_TEST_LOG_LEVEL="--log-level=warn"
 # We should be testing the reliability of a long-running cluster. The
 # [Disruptive] tests kill/restart components or nodes in the cluster,
 # defeating the purpose of a soak cluster. (#15722)
-export GINKGO_TEST_ARGS="--ginkgo.focus=ResourceQuota"
+export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
 
 ### job-env
-export PROJECT="fejta-prod"
-export JENKINS_SOAK_MODE="y"
-export JOB_NAME="${JOB_NAME//-test/-deploy}"
+export PROJECT="k8s-jkns-gce-cri-soak"
+export KUBELET_TEST_ARGS="--experimental-cri=true"
 
 ### post-env
 
@@ -82,7 +79,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 180m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 600m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

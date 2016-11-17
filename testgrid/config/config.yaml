@@ -124,10 +124,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1.4
 - name: kubernetes-e2e-gce-federation-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1.5
-- name: kubernetes-soak-weekly-deploy-gce-federation
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-federation
-- name: kubernetes-soak-continuous-e2e-gce-federation
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-federation
+- name: kubernetes-soak-gce-federation-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-deploy
+- name: kubernetes-soak-gce-federation-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 - name: kubernetes-e2e-gci-gce-flaky
@@ -480,54 +480,54 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
 - name: kubernetes-kubemark-high-density-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-high-density-100-gce
-- name: kubernetes-soak-continuous-e2e-gce
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce
-- name: kubernetes-soak-continuous-e2e-gce-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.2
-- name: kubernetes-soak-continuous-e2e-gce-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.3
-- name: kubernetes-soak-continuous-e2e-gce-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.4
-- name: kubernetes-soak-continuous-e2e-gce-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-1.5
-- name: kubernetes-soak-continuous-e2e-gci-gce-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gci-gce-1.4
-- name: kubernetes-soak-continuous-e2e-gci-gce-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gci-gce-1.5
-- name: kubernetes-soak-continuous-e2e-gce-2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-2
-- name: kubernetes-soak-continuous-e2e-gce-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-gci
-- name: kubernetes-soak-continuous-e2e-gke
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gke
-- name: kubernetes-soak-continuous-e2e-gke-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gke-gci
-- name: kubernetes-soak-continuous-e2e-gce-cri
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-continuous-e2e-gce-cri
-- name: kubernetes-soak-weekly-deploy-gce
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce
-- name: kubernetes-soak-weekly-deploy-gce-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.2
-- name: kubernetes-soak-weekly-deploy-gce-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.3
-- name: kubernetes-soak-weekly-deploy-gce-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.4
-- name: kubernetes-soak-weekly-deploy-gce-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-1.5
-- name: kubernetes-soak-weekly-deploy-gci-gce-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gci-gce-1.4
-- name: kubernetes-soak-weekly-deploy-gci-gce-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gci-gce-1.5
-- name: kubernetes-soak-weekly-deploy-gce-2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-2
-- name: kubernetes-soak-weekly-deploy-gce-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-gci
-- name: kubernetes-soak-weekly-deploy-gke
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gke
-- name: kubernetes-soak-weekly-deploy-gke-gci
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gke-gci
-- name: kubernetes-soak-weekly-deploy-gce-cri
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-soak-weekly-deploy-gce-cri
+- name: kubernetes-soak-gce-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-test
+- name: kubernetes-soak-gce-1.2-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.2-test
+- name: kubernetes-soak-gce-1.3-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.3-test
+- name: kubernetes-soak-gce-1.4-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.4-test
+- name: kubernetes-soak-gce-1.5-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.5-test
+- name: kubernetes-soak-gci-gce-1.4-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.4-test
+- name: kubernetes-soak-gci-gce-1.5-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.5-test
+- name: kubernetes-soak-gce-2-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-2-test
+- name: kubernetes-soak-gce-gci-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci-test
+- name: kubernetes-soak-gke-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-test
+- name: kubernetes-soak-gke-gci-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-test
+- name: kubernetes-soak-gce-cri-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-cri-test
+- name: kubernetes-soak-gce-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-deploy
+- name: kubernetes-soak-gce-1.2-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.2-deploy
+- name: kubernetes-soak-gce-1.3-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.3-deploy
+- name: kubernetes-soak-gce-1.4-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.4-deploy
+- name: kubernetes-soak-gce-1.5-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.5-deploy
+- name: kubernetes-soak-gci-gce-1.4-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.4-deploy
+- name: kubernetes-soak-gci-gce-1.5-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.5-deploy
+- name: kubernetes-soak-gce-2-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-2-deploy
+- name: kubernetes-soak-gce-gci-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci-deploy
+- name: kubernetes-soak-gke-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-deploy
+- name: kubernetes-soak-gke-gci-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-deploy
+- name: kubernetes-soak-gce-cri-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-cri-deploy
 - name: kubernetes-test-go
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go
   days_of_results: 4
@@ -887,8 +887,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
-- name: ci-kubernetes-e2e-gce-etcd3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
 # Manual, federated groups
 # rktnetes
 - name: kubernetes-rktnetes
@@ -916,10 +914,6 @@ test_groups:
 - name: kubernetes-gci-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-gci-feature
 # Add New Testgroups Here
-- name: fejta-soak-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-fejta-soak-deploy
-- name: fejta-soak-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-fejta-soak-test
 
 #
 # Start dashboards
@@ -1459,54 +1453,54 @@ dashboards:
 
 - name: google-soak
   dashboard_tab:
-  - name: soak-continuous-e2e-gce
-    test_group_name: kubernetes-soak-continuous-e2e-gce
-  - name: soak-continuous-e2e-gce-1.2
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.2
-  - name: soak-continuous-e2e-gce-1.3
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.3
-  - name: soak-continuous-e2e-gce-1.4
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.4
-  - name: soak-continuous-e2e-gce-1.5
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.5
-  - name: soak-continuous-e2e-gci-gce-1.4
-    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.4
-  - name: soak-continuous-e2e-gci-gce-1.5
-    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.5
-  - name: soak-continuous-e2e-gce-2
-    test_group_name: kubernetes-soak-continuous-e2e-gce-2
-  - name: soak-continuous-e2e-gce-gci
-    test_group_name: kubernetes-soak-continuous-e2e-gce-gci
-  - name: soak-continuous-e2e-gke
-    test_group_name: kubernetes-soak-continuous-e2e-gke
-  - name: soak-continuous-e2e-gke-gci
-    test_group_name: kubernetes-soak-continuous-e2e-gke-gci
-  - name: soak-continuous-e2e-gce-cri
-    test_group_name: kubernetes-soak-continuous-e2e-gce-cri
-  - name: soak-weekly-deploy-gce
-    test_group_name: kubernetes-soak-weekly-deploy-gce
-  - name: soak-weekly-deploy-gce-1.2
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.2
-  - name: soak-weekly-deploy-gce-1.3
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.3
-  - name: soak-weekly-deploy-gce-1.4
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.4
-  - name: soak-weekly-deploy-gce-1.5
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.5
-  - name: soak-weekly-deploy-gci-gce-1.4
-    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.4
-  - name: soak-weekly-deploy-gci-gce-1.5
-    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.5
-  - name: soak-weekly-deploy-gce-2
-    test_group_name: kubernetes-soak-weekly-deploy-gce-2
-  - name: soak-weekly-deploy-gce-gci
-    test_group_name: kubernetes-soak-weekly-deploy-gce-gci
-  - name: soak-weekly-deploy-gke
-    test_group_name: kubernetes-soak-weekly-deploy-gke
-  - name: soak-weekly-deploy-gke-gci
-    test_group_name: kubernetes-soak-weekly-deploy-gke-gci
-  - name: soak-weekly-deploy-gce-cri
-    test_group_name: kubernetes-soak-weekly-deploy-gce-cri
+  - name: soak-gce-test
+    test_group_name: kubernetes-soak-gce-test
+  - name: soak-gce-1.2-test
+    test_group_name: kubernetes-soak-gce-1.2-test
+  - name: soak-gce-1.3-test
+    test_group_name: kubernetes-soak-gce-1.3-test
+  - name: soak-gce-1.4-test
+    test_group_name: kubernetes-soak-gce-1.4-test
+  - name: soak-gce-1.5-test
+    test_group_name: kubernetes-soak-gce-1.5-test
+  - name: soak-gci-gce-1.4-test
+    test_group_name: kubernetes-soak-gci-gce-1.4-test
+  - name: soak-gci-gce-1.5-test
+    test_group_name: kubernetes-soak-gci-gce-1.5-test
+  - name: soak-gce-2-test
+    test_group_name: kubernetes-soak-gce-2-test
+  - name: soak-gce-gci-test
+    test_group_name: kubernetes-soak-gce-gci-test
+  - name: soak-gke-test
+    test_group_name: kubernetes-soak-gke-test
+  - name: soak-gke-gci-test
+    test_group_name: kubernetes-soak-gke-gci-test
+  - name: soak-gce-cri-test
+    test_group_name: kubernetes-soak-gce-cri-test
+  - name: soak-gce-deploy
+    test_group_name: kubernetes-soak-gce-deploy
+  - name: soak-gce-1.2-deploy
+    test_group_name: kubernetes-soak-gce-1.2-deploy
+  - name: soak-gce-1.3-deploy
+    test_group_name: kubernetes-soak-gce-1.3-deploy
+  - name: soak-gce-1.4-deploy
+    test_group_name: kubernetes-soak-gce-1.4-deploy
+  - name: soak-gce-1.5-deploy
+    test_group_name: kubernetes-soak-gce-1.5-deploy
+  - name: soak-gci-gce-1.4-deploy
+    test_group_name: kubernetes-soak-gci-gce-1.4-deploy
+  - name: soak-gci-gce-1.5-deploy
+    test_group_name: kubernetes-soak-gci-gce-1.5-deploy
+  - name: soak-gce-2-deploy
+    test_group_name: kubernetes-soak-gce-2-deploy
+  - name: soak-gce-gci-deploy
+    test_group_name: kubernetes-soak-gce-gci-deploy
+  - name: soak-gke-deploy
+    test_group_name: kubernetes-soak-gke-deploy
+  - name: soak-gke-gci-deploy
+    test_group_name: kubernetes-soak-gke-gci-deploy
+  - name: soak-gce-cri-deploy
+    test_group_name: kubernetes-soak-gce-cri-deploy
 
 - name: google-unit
   dashboard_tab:
@@ -1814,10 +1808,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-federation-release-1.4
   - name: gce-federation-1.5
     test_group_name: kubernetes-e2e-gce-federation-release-1.5
-  - name: soak-weekly-deploy-gce-federation
-    test_group_name: kubernetes-soak-weekly-deploy-gce-federation
-  - name: soak-continuous-e2e-gce-federation
-    test_group_name: kubernetes-soak-continuous-e2e-gce-federation
+  - name: soak-gce-federation-deploy
+    test_group_name: kubernetes-soak-gce-federation-deploy
+  - name: soak-gce-federation-test
+    test_group_name: kubernetes-soak-gce-federation-test
 
 - name: release-1.5-all
   dashboard_tab:
@@ -1881,14 +1875,14 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-release-1.5
   - name: aws-release-1.5
     test_group_name: kubernetes-e2e-aws-release-1.5
-  - name: soak-weekly-deploy-gce-1.5
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.5
-  - name: soak-weekly-deploy-gci-gce-1.5
-    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.5
-  - name: soak-continuous-e2e-gce-1.5
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.5
-  - name: soak-continuous-e2e-gci-gce-1.5
-    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.5
+  - name: soak-gce-1.5-deploy
+    test_group_name: kubernetes-soak-gce-1.5-deploy
+  - name: soak-gci-gce-1.5-deploy
+    test_group_name: kubernetes-soak-gci-gce-1.5-deploy
+  - name: soak-gce-1.5-test
+    test_group_name: kubernetes-soak-gce-1.5-test
+  - name: soak-gci-gce-1.5-test
+    test_group_name: kubernetes-soak-gci-gce-1.5-test
   - name: gke-1.3-1.5-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
   - name: gke-1.3-1.5-upgrade-cluster-new
@@ -2007,14 +2001,14 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-release-1.4
   - name: aws-release-1.4
     test_group_name: kubernetes-e2e-aws-release-1.4
-  - name: soak-weekly-deploy-gce-1.4
-    test_group_name: kubernetes-soak-weekly-deploy-gce-1.4
-  - name: soak-weekly-deploy-gci-gce-1.4
-    test_group_name: kubernetes-soak-weekly-deploy-gci-gce-1.4
-  - name: soak-continuous-e2e-gce-1.4
-    test_group_name: kubernetes-soak-continuous-e2e-gce-1.4
-  - name: soak-continuous-e2e-gci-gce-1.4
-    test_group_name: kubernetes-soak-continuous-e2e-gci-gce-1.4
+  - name: soak-gce-1.4-deploy
+    test_group_name: kubernetes-soak-gce-1.4-deploy
+  - name: soak-gci-gce-1.4-deploy
+    test_group_name: kubernetes-soak-gci-gce-1.4-deploy
+  - name: soak-gce-1.4-test
+    test_group_name: kubernetes-soak-gce-1.4-test
+  - name: soak-gci-gce-1.4-test
+    test_group_name: kubernetes-soak-gci-gce-1.4-test
   - name: gke-1.2-1.4-upgrade-cluster
     test_group_name: kubernetes-e2e-gke-1.2-1.4-upgrade-cluster
   - name: gke-1.2-1.4-upgrade-cluster-new
@@ -2156,15 +2150,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
-
-- name: bootstrap
-  dashboard_tab:
-  - name: ci-kubernetes-e2e-gce-etcd3
-    test_group_name: ci-kubernetes-e2e-gce-etcd3
-  - name: fejta-soak-deploy
-    test_group_name: fejta-soak-deploy
-  - name: fejta-soak-test
-    test_group_name: fejta-soak-test
 
 - name: maintenance
   dashboard_tab:

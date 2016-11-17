@@ -600,11 +600,3 @@
         frequency: 'H H/12 * * *'
         trigger-job: 'kubernetes-build'
     # END KUBEMARK
-    - fejta-soak-deploy:
-        job-name: ci-fejta-soak-deploy
-        frequency: '@daily'
-        trigger-job: 'kubernetes-build-1.2'  # Simulate manual triggering
-    - fejta-soak-test:
-        job-name: ci-fejta-soak-test
-        frequency: '@daily'
-        trigger-job: 'kubernetes-build-1.2'  # Simulate manual triggering
