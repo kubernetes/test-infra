@@ -10,7 +10,6 @@ kubernetes/charts:
 
 kubernetes/contrib:
 - lgtm
-- cla
 
 kubernetes/heapster:
 - trigger
@@ -24,5 +23,5 @@ kubernetes/test-infra:
 - lgtm
 - trigger
 
-kubernetes/pr-bot:
+kubernetes:
 - cla
