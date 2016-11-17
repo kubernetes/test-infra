@@ -44,7 +44,6 @@ data:
     ci-kubernetes-e2e-gci-gce-serial-release-1.4,\
     ci-kubernetes-e2e-gci-gce-slow-release-1.4,\
     ci-kubernetes-kubemark-5-gce,\
-    ci-kubernetes-kubemark-gce-scale,\
     continuous-e2e-docker-validation-gci,\
     kubelet-serial-gce-e2e-ci,\
     kuberentes-e2e-gce-enormous-deploy,\
