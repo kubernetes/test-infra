@@ -79,3 +79,50 @@
         job-name: ci-kubernetes-test-go-release-1.2
         repo-name: k8s.io/kubernetes
         frequency: 'H H/3 * * *'
+
+# TODO(fejta): migrate this critical job
+#   - kubernetes-node-kubelet:  # dawnchen
+#       branch: master
+#       job-name: ci-kubernetes-node-kubelet
+#       repo-name: k8s.io/kubernetes
+#       frequency: 'H/30 * * * *'
+    - kubernetes-node-kubelet-serial:  # lantaol
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-serial
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/1 * * *'
+    - kubernetes-node-kubelet-benchmark:  # zhoufang
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-benchmark
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/2 * * *'
+    - kubernetes-node-kubelet-flaky:  # lantaol
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-flaky
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/1 * * *'
+    - kubernetes-node-kubelet-cri:  # yjhong
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-cri
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/30 * * * *'
+    - kubernetes-node-kubelet-cri-serial:  # lantaol
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-cri-serial
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/1 * * *'
+    - kubernetes-node-kubelet-cri-benchmark:  # lantaol
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-cri-benchmark
+        repo-name: k8s.io/kubernetes
+        frequency: 'H H/2 * * *'
+    - kubernetes-node-kubelet-1.4:  # dawnchen
+        branch: release-1.4
+        job-name: ci-kubernetes-node-kubelet-1.4
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/5 * * * *'
+    - kubernetes-node-kubelet-1.5:  # dawnchen
+        branch: release-1.5
+        job-name: ci-kubernetes-node-kubelet-1.5
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/5 * * * *'
