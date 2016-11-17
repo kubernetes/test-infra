@@ -45,9 +45,15 @@ export MASTER_SIZE="n1-standard-2"
 export NODE_SIZE="n1-standard-8"
 export KUBEMARK_MASTER_SIZE="n1-standard-32"
 export KUBEMARK_NUM_NODES="600"
+
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
+
+# TODO: remove after we stabilize performance of this suite.
+export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
+export MASTER_DISK_SIZE="100GB"
+export SCHEDULER_TEST_ARGS="--v=4"
 
 ### post-env
 
