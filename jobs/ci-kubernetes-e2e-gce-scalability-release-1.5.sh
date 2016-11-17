@@ -34,6 +34,8 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
 export E2E_NAME="e2e-scalability-1-5"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
+                         --kube-api-content-type=application/vnd.kubernetes.protobuf \
+                         --allowed-not-ready-nodes=1 \
                          --gather-resource-usage=true \
                          --gather-metrics-at-teardown=true \
                          --gather-logs-sizes=true \
@@ -43,11 +45,11 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
 export PROJECT="k8s-e2e-gce-scalability-1-1"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override GCE defaults.
-export KUBE_GCE_ZONE="us-east1-b"
 export MASTER_SIZE="n1-standard-4"
 export NODE_SIZE="n1-standard-1"
 export NODE_DISK_SIZE="50GB"
 export NUM_NODES="100"
+export ALLOWED_NOTREADY_NODES="1"
 export REGISTER_MASTER="true"
 # Reduce logs verbosity
 export TEST_CLUSTER_LOG_LEVEL="--v=2"

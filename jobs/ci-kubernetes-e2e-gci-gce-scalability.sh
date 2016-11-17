@@ -42,7 +42,7 @@ export PROJECT="k8s-jenkins-gci-scalability"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override GCE defaults.
 export MASTER_SIZE="n1-standard-4"
-export NODE_SIZE="n1-standard-2"
+export NODE_SIZE="n1-standard-1"
 export NODE_DISK_SIZE="50GB"
 export NUM_NODES="100"
 export ALLOWED_NOTREADY_NODES="1"
@@ -55,7 +55,7 @@ export KUBELET_TEST_LOG_LEVEL="--v=5"
 export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
 # Increase delete collection parallelism
 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
-export KUBE_OS_DISTRIBUTION="gci"
+export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### post-env
 

@@ -472,6 +472,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
+- name: kubernetes-kubemark-5-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-1.5
 - name: kubernetes-kubemark-500-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
 - name: kubernetes-kubemark-gce-scale
@@ -1423,6 +1425,8 @@ dashboards:
     test_group_name: kubernetes-kubemark-100-gce
   - name: kubemark-5-gce
     test_group_name: kubernetes-kubemark-5-gce
+  - name: kubemark-5-gce-1.5
+    test_group_name: kubernetes-kubemark-5-gce-1.5
   - name: kubemark-500-gce
     test_group_name: kubernetes-kubemark-500-gce
   - name: kubemark-gce-scale

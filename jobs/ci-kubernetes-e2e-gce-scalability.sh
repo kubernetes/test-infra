@@ -44,7 +44,7 @@ export PROJECT="google.com:k8s-jenkins-scalability"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override GCE defaults.
 export MASTER_SIZE="n1-standard-4"
-export NODE_SIZE="n1-standard-2"
+export NODE_SIZE="n1-standard-1"
 export NODE_DISK_SIZE="50GB"
 export NUM_NODES="100"
 export ALLOWED_NOTREADY_NODES="1"
