@@ -34,7 +34,6 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 export KUBE_NODE_OS_DISTRIBUTION="debian"
 
 ### soak-env
-export JENKINS_USE_EXISTING_BINARIES="y"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export E2E_UP="false"
 export E2E_DOWN="false"
