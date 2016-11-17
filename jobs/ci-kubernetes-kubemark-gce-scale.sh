@@ -45,6 +45,8 @@ export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burs
 export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
 # TODO: Reduce this once we have log rotation in Kubemark.
 export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
+# TODO remove after #19188 is fixed
+export CUSTOM_ADMISSION_PLUGINS="NamespaceLifecycle,LimitRanger,ResourceQuota"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
