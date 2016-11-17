@@ -19,6 +19,7 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
+source "$(testinfra)/jobs/kubemark-common.sh"
 
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
@@ -57,10 +58,10 @@ export MASTER_SIZE="n1-standard-4"
 # Note: can fit about 17 hollow nodes per core so NUM_NODES x
 # cores_per_node should be set accordingly.
 export NODE_SIZE="n1-standard-8"
-export KUBEMARK_MASTER_SIZE="n1-standard-32"
 # Increase disk size to check if that helps for etcd latency.
 export MASTER_DISK_SIZE="100GB"
 export KUBEMARK_NUM_NODES="5000"
+export KUBEMARK_MASTER_SIZE=$(get-kubemark-master-size)
 export KUBE_GCE_ZONE="us-central1-f"
 # =========================================
 # Configuration we are targetting in 1.5
