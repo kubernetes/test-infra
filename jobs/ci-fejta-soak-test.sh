@@ -49,6 +49,7 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=ResourceQuota"
 ### job-env
 export PROJECT="fejta-prod"
 export JENKINS_SOAK_MODE="y"
+export JOB_NAME="${JOB_NAME//-test/-deploy}"
 
 ### post-env
 
