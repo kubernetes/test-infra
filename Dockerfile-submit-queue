@@ -23,7 +23,6 @@ CMD ["--dry-run", "--token-file=/token"]
 
 ADD path-label.txt /path-label.txt
 ADD block-path.yaml /block-path.yaml
-ADD generated-files.txt /generated-files.txt
 # User lists for submit-queue and 'needs-ok-to-merge'
 ADD committers.txt /committers.txt
 ADD whitelist.txt /whitelist.txt
