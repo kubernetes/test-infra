@@ -19,6 +19,7 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
+source "$(testinfra)/jobs/kubemark-common.sh"
 
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
@@ -48,8 +49,8 @@ export NUM_NODES="6"
 export MASTER_SIZE="n1-standard-4"
 export NODE_SIZE="n1-standard-8"
 export KUBE_GCE_ZONE="us-central1-f"
-export KUBEMARK_MASTER_SIZE="n1-standard-16"
 export KUBEMARK_NUM_NODES="500"
+export KUBEMARK_MASTER_SIZE=$(get-kubemark-master-size)
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"

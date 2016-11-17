@@ -19,6 +19,7 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
+source "$(testinfra)/jobs/kubemark-common.sh"
 
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
@@ -44,10 +45,8 @@ export NUM_NODES="1"
 export MASTER_SIZE="n1-standard-1"
 export NODE_SIZE="n1-standard-2"
 export KUBE_GCE_ZONE="us-central1-f"
-# TODO: This is to check if that helps with #26185.
-# Revert it after migrating to etcd3.
-export KUBEMARK_MASTER_SIZE="n1-standard-2"
 export KUBEMARK_NUM_NODES="5"
+export KUBEMARK_MASTER_SIZE=$(get-kubemark-master-size)
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
