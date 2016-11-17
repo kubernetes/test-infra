@@ -914,6 +914,10 @@ test_groups:
 - name: kubernetes-gci-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-gci-feature
 # Add New Testgroups Here
+- name: fejta-soak-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-fejta-soak-deploy
+- name: fejta-soak-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-fejta-soak-test
 
 #
 # Start dashboards
@@ -2153,6 +2157,10 @@ dashboards:
   dashboard_tab:
   - name: ci-kubernetes-e2e-gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
+  - name: fejta-soak-deploy
+    test_group_name: fejta-soak-deploy
+  - name: fejta-soak-test
+    test_group_name: fejta-soak-test
 
 - name: maintenance
   dashboard_tab:
