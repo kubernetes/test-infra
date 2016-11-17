@@ -19,9 +19,9 @@ set -o pipefail
 set -o xtrace
 
 # Hack to test use a test image
-OVERRIDE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
-mkdir -p $(dirname "${OVERRIDE}")
-echo v20161116-fc014f3 > "${OVERRIDE}"
+#OVERRIDE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
+#mkdir -p $(dirname "${OVERRIDE}")
+#echo v20161116-fc014f3 > "${OVERRIDE}"
 
 readonly testinfra="$(dirname "${0}")/.."
 
