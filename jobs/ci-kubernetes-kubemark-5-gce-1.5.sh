@@ -22,7 +22,7 @@ readonly testinfra="$(dirname "${0}")/.."
 
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
-export E2E_MIN_STARTUP_PODS="8"
+export E2E_MIN_STARTUP_PODS="1"
 export KUBE_GCE_ZONE="us-central1-f"
 export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
@@ -32,31 +32,25 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 
 ### job-env
 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-export E2E_NAME="e2e-scalability-1-5"
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
-                         --gather-resource-usage=true \
-                         --gather-metrics-at-teardown=true \
-                         --gather-logs-sizes=true \
-                         --output-print-type=json"
-# Use the 1.1 project for now, since it has quota.
-# TODO: create a project k8s-e2e-gce-scalability-release and move this test there
-export PROJECT="k8s-e2e-gci-gce-scale-1-4"
+export ENABLE_GARBAGE_COLLECTOR="true"
+export E2E_NAME="kubemark-5-1-5"
+export PROJECT="k8s-kubemark-1-5"
+export E2E_TEST="false"
+export USE_KUBEMARK="true"
+export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-# Override GCE defaults.
-export MASTER_SIZE="n1-standard-4"
-export NODE_SIZE="n1-standard-1"
-export NODE_DISK_SIZE="50GB"
-export NUM_NODES="100"
-export ALLOWED_NOTREADY_NODES="1"
-export REGISTER_MASTER="true"
-# Reduce logs verbosity
-export TEST_CLUSTER_LOG_LEVEL="--v=2"
-# TODO: Remove when we figure out the reason for occasional failures #19048
-export KUBELET_TEST_LOG_LEVEL="--v=4"
-# Increase resync period to simulate production
-export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
-# Increase delete collection parallelism
-export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
+# Override defaults to be independent from GCE defaults and set kubemark parameters
+export NUM_NODES="1"
+export MASTER_SIZE="n1-standard-1"
+export NODE_SIZE="n1-standard-2"
+export KUBE_GCE_ZONE="us-central1-f"
+# TODO: This is to check if that helps with #26185.
+# Revert it after migrating to etcd3.
+export KUBEMARK_MASTER_SIZE="n1-standard-2"
+export KUBEMARK_NUM_NODES="5"
+# The kubemark scripts build a Docker image
+export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### post-env
@@ -65,8 +59,6 @@ export KUBE_NODE_OS_DISTRIBUTION="gci"
 export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
-
-export E2E_NAME='bootstrap-e2e'
 
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
@@ -90,7 +82,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 120m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 60m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

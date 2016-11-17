@@ -579,6 +579,10 @@
         job-name: ci-kubernetes-kubemark-5-gce
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
+    - kubernetes-kubemark-5-gce-1.5:
+        job-name: ci-kubernetes-kubemark-5-gce-1.5
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build-1.5'
     - kubernetes-kubemark-100-gce:
         job-name: ci-kubernetes-kubemark-100-gce
         frequency: 'H H/6 * * *'
