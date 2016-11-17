@@ -119,7 +119,7 @@
         - 'cadvisor':
             repoName: 'google/cadvisor'
             gitbasedir: 'github.com/google/cadvisor'
-            dockerfilePath: 'deploy/canary/Dockerfile'
+            shell: 'make canary'
             owner: 'stclair@google.com'
         - 'heapster':
             repoName: 'kubernetes/heapster'
