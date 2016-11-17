@@ -119,20 +119,13 @@ func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]Issue
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
-	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]IssueCommentHandler{}
-	for _, p := range pa.ps[fullName] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := issueCommentHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
 
-	// Also find matches for just the organization/owner.
-	for _, p := range pa.ps[owner] {
-		if h, ok := issueCommentHandlers[p]; ok {
-			hs[p] = h
-		}
-	}
 	return hs
 }
 
@@ -141,16 +134,8 @@ func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRe
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
-	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]PullRequestHandler{}
-	for _, p := range pa.ps[fullName] {
-		if h, ok := pullRequestHandlers[p]; ok {
-			hs[p] = h
-		}
-	}
-
-	// Also find matches for just the organization/owner.
-	for _, p := range pa.ps[owner] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := pullRequestHandlers[p]; ok {
 			hs[p] = h
 		}
@@ -164,19 +149,24 @@ func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]Status
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
-	fullName := fmt.Sprintf("%s/%s", owner, repo)
 	hs := map[string]StatusEventHandler{}
-	for _, p := range pa.ps[fullName] {
-		if h, ok := statusEventHandlers[p]; ok {
-			hs[p] = h
-		}
-	}
-	// Also find matches for just the organization/owner.
-	for _, p := range pa.ps[owner] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := statusEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
 
 	return hs
+}
+
+// getPlugins returns a list of plugins that are enabled on a given (org, repository).
+func (pa *PluginAgent) getPlugins(owner, repo string) []string {
+	// TODO: use a set here to avoid repetitions?
+	var plugins []string
+
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
+	plugins = append(plugins, pa.ps[owner]...)
+	plugins = append(plugins, pa.ps[fullName]...)
+
+	return plugins
 }
