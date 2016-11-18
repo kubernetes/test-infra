@@ -1068,7 +1068,10 @@ class JobTest(unittest.TestCase):
                     continue
                 if '-soak-' in job:  # Soak jobs have deploy/test pairs
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
-                self.assertIn('export', line, line)
+                if job.startswith('ci-kubernetes-node-'):
+                    job = 'ci-kubernetes-node-*'
+                if not line.startswith('#'):
+                    self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]

@@ -50,18 +50,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/cadvisor-gce-e2e-ci
 - name: heapster-dockercanarybuild-ci
   gcs_prefix: kubernetes-jenkins/logs/heapster-dockercanarybuild-ci
-- name: kubelet-benchmark-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-benchmark-gce-e2e-ci
-- name: kubelet-cri-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-gce-e2e-ci
-- name: kubelet-cri-serial-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-serial-gce-e2e-ci
-- name: kubelet-cri-benchmark-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-cri-benchmark-gce-e2e-ci
+- name: ci-kubernetes-node-kubelet-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
+- name: ci-kubernetes-node-kubelet-cri
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri
+- name: ci-kubernetes-node-kubelet-cri-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri-serial
+- name: ci-kubernetes-node-kubelet-cri-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri-benchmark
 - name: kubelet-gce-e2e-ci
   gcs_prefix: kubernetes-jenkins/logs/kubelet-gce-e2e-ci
-- name: kubelet-serial-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-serial-gce-e2e-ci
+- name: ci-kubernetes-node-kubelet-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
 - name: kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build
 - name: kubernetes-build-1.2
@@ -795,8 +795,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
 - name: kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
-- name: kubelet-flaky-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-flaky-gce-e2e-ci
+- name: ci-kubernetes-node-kubelet-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
 - name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
 - name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
@@ -851,10 +851,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-release-1.2
-- name: kubelet-1.4-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-1.4-gce-e2e-ci
-- name: kubelet-1.5-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-1.5-gce-e2e-ci
+- name: ci-kubernetes-node-kubelet-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.4
+- name: ci-kubernetes-node-kubelet-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.5
 - name: kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
@@ -1437,19 +1437,23 @@ dashboards:
   - name: heapster-dockercanarybuild
     test_group_name: heapster-dockercanarybuild-ci
   - name: kubelet-benchmark-gce-e2e
-    test_group_name: kubelet-benchmark-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-benchmark
   - name: kubelet-gce-e2e
     test_group_name: kubelet-gce-e2e-ci
   - name: kubelet-serial-gce-e2e
-    test_group_name: kubelet-serial-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-cri-gce-e2e
-    test_group_name: kubelet-cri-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-cri
   - name: kubelet-cri-serial-gce-e2e
-    test_group_name: kubelet-cri-serial-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-cri-serial
   - name: kubelet-cri-benchmark-gce-e2e
-    test_group_name: kubelet-cri-benchmark-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-cri-benchmark
   - name: kubelet-flaky-gce-e2e
-    test_group_name: kubelet-flaky-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet-flaky
+  - name: kubelet-1.4
+    test_group_name: ci-kubernetes-node-kubelet-1.4
+  - name: kubelet-1.5
+    test_group_name: ci-kubernetes-node-kubelet-1.5
 
 - name: google-soak
   dashboard_tab:
@@ -1900,6 +1904,8 @@ dashboards:
   dashboard_tab:
   - name: build-1.5
     test_group_name: kubernetes-build-1.5
+  - name: kubelet-1.5
+    test_group_name: ci-kubernetes-node-kubelet-1.5
   - name: verify-release-1.5
     test_group_name: kubernetes-verify-release-1.5
   - name: gce-release-1.5
@@ -2026,6 +2032,8 @@ dashboards:
   dashboard_tab:
   - name: build-1.4
     test_group_name: kubernetes-build-1.4
+  - name: kubelet-1.4
+    test_group_name: ci-kubernetes-node-kubelet-1.4
   - name: verify-release-1.4
     test_group_name: kubernetes-verify-release-1.4
   - name: gce-release-1.4
@@ -2124,10 +2132,6 @@ dashboards:
     test_group_name: kubernetes-cross-build
   - name: gke-gci-staging-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-staging-release-1.2
-  - name: kubelet-1.4-gce-e2e-ci
-    test_group_name: kubelet-1.4-gce-e2e-ci
-  - name: kubelet-1.5-gce-e2e-ci
-    test_group_name: kubelet-1.5-gce-e2e-ci
   - name: federation-build
     test_group_name: kubernetes-federation-build
   - name: gke-gci-prod-parallel-release-1.2

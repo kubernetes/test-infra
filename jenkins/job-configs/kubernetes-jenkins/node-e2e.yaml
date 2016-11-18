@@ -14,37 +14,37 @@
     description: 'Build and push {gitproject} docker image.<br>Test Owner: {owner}.'
     node: 'node'
     properties:
-        - build-discarder:
-            num-to-keep: 200
+    - build-discarder:
+        num-to-keep: 200
     builders:
-        - activate-gce-service-account
-        - docker-build-publish:
-             repoName: '{repoName}'
-             dockerfilePath: 'go/src/{gitbasedir}/{dockerfilePath}'
-             tag: 'canary'
-             credentialsId: '1f361efb-5b85-4f61-91a7-4ec7fb2a5c23'
+    - activate-gce-service-account
+    - docker-build-publish:
+         repoName: '{repoName}'
+         dockerfilePath: 'go/src/{gitbasedir}/{dockerfilePath}'
+         tag: 'canary'
+         credentialsId: '1f361efb-5b85-4f61-91a7-4ec7fb2a5c23'
     publishers:
-        - email-ext:
-            recipients: '{owner}'
-        - gcs-uploader
+    - email-ext:
+        recipients: '{owner}'
+    - gcs-uploader
     scm:
-        - git:
-            url: 'https://github.com/{repoName}'
-            browser: githubweb
-            browser-url: 'https://github.com/{repoName}'
-            branches:
-                - 'master'
-            skip-tag: true
-            basedir: 'go/src/{gitbasedir}'
+    - git:
+        url: 'https://github.com/{repoName}'
+        browser: githubweb
+        browser-url: 'https://github.com/{repoName}'
+        branches:
+        - 'master'
+        skip-tag: true
+        basedir: 'go/src/{gitbasedir}'
     triggers:
-        - pollscm:
-            cron: 'H/5 * * * *'
-        - timed: '@daily'
+    - pollscm:
+        cron: 'H/5 * * * *'
+    - timed: '@daily'
     wrappers:
-        - e2e-credentials-binding
-        - timeout:
-            timeout: 30
-            fail: true
+    - e2e-credentials-binding
+    - timeout:
+        timeout: 30
+        fail: true
 
 # Job template to checkout source from github to $WORKSPACE/go/src/{gitbasedir}, setup go environment variables, and execute a
 # shell script.
@@ -62,36 +62,36 @@
     disabled: '{obj:disable_job}'
     node: 'node'
     properties:
-        - build-discarder:
-            num-to-keep: 200
+    - build-discarder:
+        num-to-keep: 200
     builders:
-         - activate-gce-service-account
-         - shell: |
-              #!/bin/bash
-              set -e
-              set -x
-              cd go/src/{gitbasedir}
-              {shell}
+    - activate-gce-service-account
+    - shell: |
+         #!/bin/bash
+         set -e
+         set -x
+         cd go/src/{gitbasedir}
+         {shell}
     publishers:
-        - junit-publisher-fully-specified:
-                allow-empty-results: true
-        - gcs-uploader
-        - email-ext:
-            recipients: '{owner}'
-        - gcs-uploader
+    - junit-publisher-fully-specified:
+            allow-empty-results: true
+    - gcs-uploader
+    - email-ext:
+        recipients: '{owner}'
+    - gcs-uploader
     scm:
-        - git:
-            url: 'https://github.com/{repoName}'
-            browser: githubweb
-            browser-url: 'https://github.com/{repoName}'
-            branches:
-                - '{branch}'
-            skip-tag: true
-            basedir: 'go/src/{gitbasedir}'
+    - git:
+        url: 'https://github.com/{repoName}'
+        browser: githubweb
+        browser-url: 'https://github.com/{repoName}'
+        branches:
+        - '{branch}'
+        skip-tag: true
+        basedir: 'go/src/{gitbasedir}'
     triggers:
-        - pollscm:
-            cron: '{scm-cron-string}'
-        - timed: '{cron-string}'
+    - pollscm:
+        cron: '{scm-cron-string}'
+    - timed: '{cron-string}'
     wrappers:
         - e2e-credentials-binding
         - timeout:
@@ -116,119 +116,39 @@
     name: node-docker-canary-build
     repoName: 'google/cadvisor'
     gitproject:
-        - 'cadvisor':
-            repoName: 'google/cadvisor'
-            gitbasedir: 'github.com/google/cadvisor'
-            dockerfilePath: 'deploy/canary/Dockerfile'
-            owner: 'stclair@google.com'
-        - 'heapster':
-            repoName: 'kubernetes/heapster'
-            gitbasedir: 'k8s.io/heapster'
-            dockerfilePath: 'deploy/docker/canary/Dockerfile'
-            owner: 'pszczesniak@google.com'
+    - 'cadvisor':
+        repoName: 'google/cadvisor'
+        gitbasedir: 'github.com/google/cadvisor'
+        dockerfilePath: 'deploy/canary/Dockerfile'
+        owner: 'stclair@google.com'
+    - 'heapster':
+        repoName: 'kubernetes/heapster'
+        gitbasedir: 'k8s.io/heapster'
+        dockerfilePath: 'deploy/docker/canary/Dockerfile'
+        owner: 'pszczesniak@google.com'
     jobs:
-        - '{gitproject}-dockercanarybuild-ci'
+    - '{gitproject}-dockercanarybuild-ci'
     wrappers:
-        - workspace-cleanup:
-            dirmatch: true
-            external-deletion-command: 'sudo rm -rf %s'
-            exclude: ['**/.git/']
+    - workspace-cleanup:
+        dirmatch: true
+        external-deletion-command: 'sudo rm -rf %s'
+        exclude: ['**/.git/']
 
 - project:
     name: node-gce-e2e
     gitproject:
-        - 'cadvisor':
-            repoName: 'google/cadvisor'
-            gitbasedir: 'github.com/google/cadvisor'
-            owner: 'stclair@google.com'
-            shell: 'build/jenkins_e2e.sh'
-        - 'kubelet':
-            # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-ci.properties:
-            # PROJECT="k8s-jkns-ci-node-e2e"
-            cron-string: '{sq-cron-string}'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'pwittroc@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
-        - 'kubelet-serial':
-            # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-serial.properties:
-            # PROJECT="k8s-jkns-ci-node-e2e"
-            scm-cron-string: 'H H/1 * * *'
-            cron-string: 'H H/2 * * *'
-            test-timeout: '{jenkins-timeout}'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'lantaol@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-serial.properties'
-        - 'kubelet-benchmark':
-            # GCP project set in kubernetes/test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties:
-            # PROJECT="k8s-jkns-ci-node-e2e"
-            scm-cron-string: 'H H/2 * * *'
-            cron-string: 'H H/4 * * *'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'zhoufang@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties'
-        - 'kubelet-flaky':
-            scm-cron-string: 'H H/1 * * *'
-            cron-string: 'H * * * *'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'lantaol@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-flaky.properties' 
+    - 'cadvisor':
+        repoName: 'google/cadvisor'
+        gitbasedir: 'github.com/google/cadvisor'
+        owner: 'stclair@google.com'
+        shell: 'build/jenkins_e2e.sh'
+    - 'kubelet':
+        # GCP project set in kubernetes/test/e2e_node/jenkins/jenkins-ci.properties:
+        # PROJECT="k8s-jkns-ci-node-e2e"
+        cron-string: '{sq-cron-string}'
+        repoName: 'kubernetes/kubernetes'
+        gitbasedir: 'k8s.io/kubernetes'
+        owner: 'pwittroc@google.com'
+        shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
     jobs:
-        - '{gitproject}-gce-e2e-ci'
-
-- project:
-    name: cri-validation
-    gitproject:
-        - 'kubelet-cri': # kubelet-cri-gce-e2e-ci
-            scm-cron-string: 'H/30 * * * *'
-            cron-string: 'H H/1 * * *'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'yjhong@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/cri_validation/jenkins-validation.properties'
-        - 'kubelet-cri-serial': # kubelet-cri-serial-gce-e2e-ci
-            scm-cron-string: 'H H/1 * * *'
-            cron-string: 'H H/2 * * *'
-            test-timeout: '{jenkins-timeout}'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'lantaol@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/cri_validation/jenkins-serial.properties'
-        - 'kubelet-cri-benchmark': # kubelet-cri-benchmark-gce-e2e-ci
-            scm-cron-string: 'H H/2 * * *'
-            cron-string: 'H H/4 * * *'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            owner: 'lantaol@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/cri_validation/jenkins-benchmark.properties'
-    jobs:
-        - '{gitproject}-gce-e2e-ci'
-
-- project:
-    name: node-gce-e2e-1.4
-    gitproject:
-        - 'kubelet-1.4':
-            cron-string: '{sq-cron-string}'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            branch: 'release-1.4'
-            owner: 'dawnchen@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
-    jobs:
-        - '{gitproject}-gce-e2e-ci'
-
-- project:
-    name: node-gce-e2e-1.5
-    gitproject:
-        - 'kubelet-1.5':
-            cron-string: '{sq-cron-string}'
-            repoName: 'kubernetes/kubernetes'
-            gitbasedir: 'k8s.io/kubernetes'
-            branch: 'release-1.5'
-            owner: 'dawnchen@google.com'
-            shell: 'test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties'
-    jobs:
-        - '{gitproject}-gce-e2e-ci'
+    - '{gitproject}-gce-e2e-ci'
