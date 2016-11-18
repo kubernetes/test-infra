@@ -597,15 +597,14 @@
         trigger-job: 'kubernetes-build'
 
     # gci-gke-master
-#    Blocking, update SQ
-#    - kubernetes-e2e-gci-gke:
-#        job-name: ci-kubernetes-e2e-gci-gke
-#        frequency: 'H/5 * * * *' # At least every 30m
-#        trigger-job: 'kubernetes-build'
-#    - kubernetes-e2e-gci-gke-slow:
-#        job-name: ci-kubernetes-e2e-gci-gke-slow
-#        frequency: 'H/5 * * * *' # At least every 30m
-#        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke:
+        job-name: ci-kubernetes-e2e-gci-gke
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gci-gke-slow:
+        job-name: ci-kubernetes-e2e-gci-gke-slow
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gci-gke-multizone:
         job-name: ci-kubernetes-e2e-gci-gke-multizone
         frequency: 'H/5 * * * *' # At least every 30m
