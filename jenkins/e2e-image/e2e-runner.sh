@@ -411,7 +411,7 @@ if [[ -n "${BOOTSTRAP_MIGRATION:-}" ]]; then
   # until that time. This environment variable will do that.
   source "$(dirname "${0}")/upload-to-gcs.sh"
   version=$(find_version)  # required by print_started
-  print_started | jq '.metadata?' > "${ARTIFACTS}/metadata.json"
+  print_started | jq '.metadata? + {version, "job-version"}' > "${ARTIFACTS}/metadata.json"
 elif [[ ! "${JOB_NAME}" =~ -pull- ]]; then
   echo "The bootstrapper should handle Tracking the start/finish of a job and "
   echo "uploading artifacts. TODO(fejta): migrate this job"
