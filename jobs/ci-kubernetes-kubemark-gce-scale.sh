@@ -43,10 +43,6 @@ export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enab
 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
 # Increase limit for inflight requests in apiserver.
 export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
-# TODO: Reduce this once we have log rotation in Kubemark.
-export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
-# TODO remove after #19188 is fixed
-export CUSTOM_ADMISSION_PLUGINS="NamespaceLifecycle,LimitRanger,ResourceQuota"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
@@ -71,6 +67,13 @@ export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.k
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
+
+# TODO: revert after running experiments.
+export EVENT_PD="true"
+# TODO remove after #19188 is fixed
+export CUSTOM_ADMISSION_PLUGINS="NamespaceLifecycle,LimitRanger,ResourceQuota"
+# TODO: Reduce this once we have log rotation in Kubemark.
+export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
 
 ### post-env
 
