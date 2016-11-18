@@ -107,7 +107,7 @@ make secret APP=submit-queue TARGET=<TARGET>
 
 ## Communicating with the Bot
 
-Github contributors and reviewers can communicate with the mungebot by commenting on a PR with the following commands entered alone in the text field. All commands require the following syntax: /<COMMAND> [OPTIONAL ARGS].  Note the forward slashing preceding the command name.
+Github contributors and reviewers can communicate with the mungebot by commenting on a PR with the following commands entered alone in the text field. All commands require the following syntax: `/<COMMAND> [OPTIONAL ARGS]`.  Note the forward slashing preceding the command name.
 
 ### List of Commands
 
