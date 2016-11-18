@@ -51,31 +51,31 @@ data:
     kubernetes-cross-build,\
     kubernetes-e2e-gce-enormous-cluster,\
     kubernetes-e2e-gce-serial,\
-    kubernetes-e2e-gci-gke-alpha-features,\
-    kubernetes-e2e-gci-gke-autoscaling,\
-    kubernetes-e2e-gci-gke-ingress,\
-    kubernetes-e2e-gci-gke-ingress-release-1.4,\
-    kubernetes-e2e-gci-gke-multizone,\
-    kubernetes-e2e-gci-gke-pre-release,\
-    kubernetes-e2e-gci-gke-prod,\
-    kubernetes-e2e-gci-gke-prod-parallel,\
-    kubernetes-e2e-gci-gke-prod-smoke,\
-    kubernetes-e2e-gci-gke-reboot,\
-    kubernetes-e2e-gci-gke-reboot-release-1.4,\
-    kubernetes-e2e-gci-gke-release-1.4,\
-    kubernetes-e2e-gci-gke-serial,\
-    kubernetes-e2e-gci-gke-serial-release-1.4,\
-    kubernetes-e2e-gci-gke-slow-release-1.4,\
-    kubernetes-e2e-gci-gke-staging,\
-    kubernetes-e2e-gci-gke-staging-parallel,\
-    kubernetes-e2e-gci-gke-subnet,\
-    kubernetes-e2e-gci-gke-test,\
-    kubernetes-e2e-gci-gke-updown,\
-    kubernetes-e2e-gke-large-cluster,\
-    kubernetes-e2e-gke-serial,\
-    kubernetes-e2e-gke-staging,\
-    kubernetes-e2e-gke-staging-parallel,\
-    kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-gci-gke-alpha-features,\
+    ci-kubernetes-e2e-gci-gke-autoscaling,\
+    ci-kubernetes-e2e-gci-gke-ingress,\
+    ci-kubernetes-e2e-gci-gke-ingress-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-multizone,\
+    ci-kubernetes-e2e-gci-gke-pre-release,\
+    ci-kubernetes-e2e-gci-gke-prod,\
+    ci-kubernetes-e2e-gci-gke-prod-parallel,\
+    ci-kubernetes-e2e-gci-gke-prod-smoke,\
+    ci-kubernetes-e2e-gci-gke-reboot,\
+    ci-kubernetes-e2e-gci-gke-reboot-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-serial,\
+    ci-kubernetes-e2e-gci-gke-serial-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-slow-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-staging,\
+    ci-kubernetes-e2e-gci-gke-staging-parallel,\
+    ci-kubernetes-e2e-gci-gke-subnet,\
+    ci-kubernetes-e2e-gci-gke-test,\
+    ci-kubernetes-e2e-gci-gke-updown,\
+    ci-kubernetes-e2e-gke-large-cluster,\
+    ci-kubernetes-e2e-gke-serial,\
+    ci-kubernetes-e2e-gke-staging,\
+    ci-kubernetes-e2e-gke-staging-parallel,\
+    ci-kubernetes-e2e-gke-test,\
     kubernetes-garbagecollector-gci-feature,\
     kubernetes-soak-continuous-e2e-gce,\
     kubernetes-soak-continuous-e2e-gci-gce-1.4,\
@@ -93,8 +93,8 @@ data:
     ci-kubernetes-verify-master,\
     kubelet-gce-e2e-ci,\
     kubernetes-build,\
-    kubernetes-e2e-gci-gke,\
-    kubernetes-e2e-gci-gke-slow,\
+    ci-kubernetes-e2e-gci-gke,\
+    ci-kubernetes-e2e-gci-gke-slow,\
     kubernetes-e2e-kops-aws"
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
