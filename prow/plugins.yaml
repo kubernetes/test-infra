@@ -25,3 +25,6 @@ kubernetes/test-infra:
 
 kubernetes:
 - cla
+
+kubernetes-incubator:
+- cla
