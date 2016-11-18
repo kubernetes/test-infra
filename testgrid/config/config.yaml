@@ -371,21 +371,21 @@ test_groups:
 - name: kubernetes-e2e-gci-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: kubernetes-e2e-gke-pre-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-pre-release
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-pre-release
 - name: kubernetes-e2e-gci-gke-pre-release
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-pre-release
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-pre-release
 - name: kubernetes-e2e-gke-prod
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod
 - name: kubernetes-e2e-gci-gke-prod
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod
 - name: kubernetes-e2e-gke-prod-parallel
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod-parallel
 - name: kubernetes-e2e-gci-gke-prod-parallel
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-parallel
 - name: kubernetes-e2e-gke-prod-smoke
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-prod-smoke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod-smoke
 - name: kubernetes-e2e-gci-gke-prod-smoke
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-prod-smoke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-smoke
 - name: kubernetes-e2e-gke-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-reboot
 - name: kubernetes-e2e-gci-gke-reboot
@@ -449,21 +449,21 @@ test_groups:
 - name: kubernetes-e2e-gci-gke-slow-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-release-1.5
 - name: kubernetes-e2e-gke-staging
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-staging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging
 - name: kubernetes-e2e-gci-gke-staging
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-staging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-staging
 - name: kubernetes-e2e-gke-staging-parallel
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-staging-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-parallel
 - name: kubernetes-e2e-gci-gke-staging-parallel
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-staging-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-staging-parallel
 - name: kubernetes-e2e-gke-subnet
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-subnet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-subnet
 - name: kubernetes-e2e-gci-gke-subnet
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-subnet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-subnet
 - name: kubernetes-e2e-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-test
 - name: kubernetes-e2e-gci-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-test
 - name: kubernetes-e2e-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-updown
 - name: kubernetes-e2e-gci-gke-updown
@@ -840,17 +840,17 @@ test_groups:
 - name: kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-teardown
 - name: kubernetes-e2e-gke-gci-test-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-test-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-test-release-1.2
 - name: testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: kubernetes-e2e-gke-gci-prod-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-prod-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-release-1.2
 - name: kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-staging-release-1.2
 - name: ci-kubernetes-node-kubelet-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.4
 - name: ci-kubernetes-node-kubelet-1.5
@@ -858,13 +858,13 @@ test_groups:
 - name: kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-prod-parallel-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-parallel-release-1.2
 - name: kops-build
   gcs_prefix: kubernetes-jenkins/logs/kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-deploy
 - name: kubernetes-e2e-gke-gci-subnet-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-subnet-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-subnet-release-1.2
 - name: maintenance-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
@@ -878,7 +878,7 @@ test_groups:
 - name: kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-gci-staging-parallel-release-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-staging-parallel-release-1.2
 - name: kubernetes-federation-build-1.4
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.4
 - name: kubernetes-federation-build-1.5
