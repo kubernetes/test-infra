@@ -44,12 +44,12 @@ default_dashboard_tab:
 #
 
 test_groups:
-- name: cadvisor-dockercanarybuild-ci
-  gcs_prefix: kubernetes-jenkins/logs/cadvisor-dockercanarybuild-ci
-- name: cadvisor-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/cadvisor-gce-e2e-ci
-- name: heapster-dockercanarybuild-ci
-  gcs_prefix: kubernetes-jenkins/logs/heapster-dockercanarybuild-ci
+- name: cadvisor-canarypush
+  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
+- name: cadvisor-node-kubelet
+  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
+- name: heapster-canarypush
+  gcs_prefix: kubernetes-jenkins/logs/ci-heapster-canarypush
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
 - name: ci-kubernetes-node-kubelet-cri
@@ -58,8 +58,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri-serial
 - name: ci-kubernetes-node-kubelet-cri-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri-benchmark
-- name: kubelet-gce-e2e-ci
-  gcs_prefix: kubernetes-jenkins/logs/kubelet-gce-e2e-ci
+- name: ci-kubernetes-node-kubelet
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
 - name: kubernetes-build
@@ -924,7 +924,7 @@ dashboards:
   dashboard_tab:
   # Blocking
   - name: kubelet
-    test_group_name: kubelet-gce-e2e-ci
+    test_group_name: ci-kubernetes-node-kubelet
   - name: build
     test_group_name: kubernetes-build
   - name: gce
@@ -1430,16 +1430,16 @@ dashboards:
 
 - name: google-node
   dashboard_tab:
-  - name: cadvisor-dockercanarybuild
-    test_group_name: cadvisor-dockercanarybuild-ci
-  - name: cadvisor-gce-e2e
-    test_group_name: cadvisor-gce-e2e-ci
-  - name: heapster-dockercanarybuild
-    test_group_name: heapster-dockercanarybuild-ci
+  - name: cadvisor-push
+    test_group_name: cadvisor-canarypush
+  - name: cadvisor-kubelet
+    test_group_name: cadvisor-node-kubelet
+  - name: heapster-push
+    test_group_name: heapster-canarypush
   - name: kubelet-benchmark-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-benchmark
-  - name: kubelet-gce-e2e
-    test_group_name: kubelet-gce-e2e-ci
+  - name: kubelet
+    test_group_name: ci-kubernetes-node-kubelet
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-cri-gce-e2e
