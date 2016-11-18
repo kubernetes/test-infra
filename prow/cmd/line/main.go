@@ -37,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/line"
 )
 
 var (
@@ -73,7 +74,7 @@ type testClient struct {
 	DryRun bool
 
 	KubeJob       string
-	KubeClient    kubeClient
+	KubeClient    *kube.Client
 	JenkinsClient *jenkins.Client
 	GitHubClient  githubClient
 }
@@ -83,13 +84,6 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	DeleteComment(owner, repo string, ID int) error
-}
-
-type kubeClient interface {
-	GetPod(name string) (kube.Pod, error)
-	CreatePod(pod kube.Pod) (kube.Pod, error)
-	GetJob(name string) (kube.Job, error)
-	PatchJob(name string, job kube.Job) (kube.Job, error)
 }
 
 func main() {
@@ -322,34 +316,16 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		"description": desc,
 		"url":         url,
 	}).Info("Setting GitHub and Kubernetes status.")
-	err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
+	if err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
 		State:       state,
 		Description: desc,
 		Context:     c.Job.Context,
 		TargetURL:   url,
-	})
-	if err != nil {
+	}); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
 	}
-	j, err := c.KubeClient.GetJob(c.KubeJob)
-	if err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error getting job.")
-		return
-	}
-	newAnnotations := j.Metadata.Annotations
-	if newAnnotations == nil {
-		newAnnotations = make(map[string]string)
-	}
-	newAnnotations["state"] = state
-	newAnnotations["description"] = desc
-	newAnnotations["url"] = url
-	_, err = c.KubeClient.PatchJob(c.KubeJob, kube.Job{
-		Metadata: kube.ObjectMeta{
-			Annotations: newAnnotations,
-		},
-	})
-	if err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error setting kubernetes job status.")
+	if err := line.SetJobStatus(c.KubeClient, c.KubeJob, state, desc, url); err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Error("Error setting Kube Job status.")
 	}
 }
 

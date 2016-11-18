@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package trigger
+package line
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -25,47 +26,29 @@ import (
 	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 )
 
 // Cut off line jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
-func build(c client, job jobs.JenkinsJob, pr github.PullRequest) error {
-	return createJob(c, job.Name, pr)
+type startClient interface {
+	CreateJob(kube.Job) (kube.Job, error)
 }
 
-func buildAll(c client, pr github.PullRequest) error {
-	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
-		if !job.AlwaysRun {
-			continue
-		}
-		if err := build(c, job, pr); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func deleteAll(c client, pr github.PullRequest) error {
-	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
-		if err := deleteJob(c, job.Name, pr); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func createJob(c client, jobName string, pr github.PullRequest) error {
+func StartJob(k *kube.Client, jobName string, pr github.PullRequest) error {
 	lineImage := os.Getenv("LINE_IMAGE")
 	if lineImage == "" {
 		return errors.New("LINE_IMAGE not set")
 	}
 	dry, err := strconv.ParseBool(os.Getenv("DRY_RUN"))
 	if err != nil {
-		return err
+		return fmt.Errorf("DRY_RUN not parseable: %v", err)
 	}
+	return startJob(k, jobName, pr, lineImage, dry)
+}
+
+func startJob(k startClient, jobName string, pr github.PullRequest, lineImage string, dry bool) error {
 	name := uuid.NewV1().String()
 	job := kube.Job{
 		Metadata: kube.ObjectMeta{
@@ -91,9 +74,6 @@ func createJob(c client, jobName string, pr github.PullRequest) error {
 			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
-					NodeSelector: map[string]string{
-						"role": "build",
-					},
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
 						{
@@ -182,14 +162,25 @@ func createJob(c client, jobName string, pr github.PullRequest) error {
 			},
 		},
 	}
-	if _, err := c.KubeClient.CreateJob(job); err != nil {
+	if _, err := k.CreateJob(job); err != nil {
 		return err
 	}
 	return nil
 }
 
-func deleteJob(c client, jobName string, pr github.PullRequest) error {
-	jobs, err := c.KubeClient.ListJobs(map[string]string{
+type deleteClient interface {
+	ListJobs(labels map[string]string) ([]kube.Job, error)
+	GetJob(name string) (kube.Job, error)
+	PatchJob(name string, job kube.Job) (kube.Job, error)
+	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
+}
+
+func DeleteJob(k *kube.Client, jobName string, pr github.PullRequest) error {
+	return deleteJob(k, jobName, pr)
+}
+
+func deleteJob(k deleteClient, jobName string, pr github.PullRequest) error {
+	jobs, err := k.ListJobs(map[string]string{
 		"owner":            pr.Base.Repo.Owner.Login,
 		"repo":             pr.Base.Repo.Name,
 		"pr":               strconv.Itoa(pr.Number),
@@ -204,14 +195,14 @@ func deleteJob(c client, jobName string, pr github.PullRequest) error {
 	for _, j := range jobs {
 		job = j
 		for i := 0; i < 3; i++ {
-			if err := deleteKubeJob(c, job); err == nil {
+			if err := deleteKubeJob(k, job); err == nil {
 				break
 			} else {
 				if _, ok := err.(kube.ConflictError); !ok {
 					return err
 				}
 			}
-			job, err = c.KubeClient.GetJob(j.Metadata.Name)
+			job, err = k.GetJob(j.Metadata.Name)
 			if err != nil {
 				return err
 			}
@@ -220,7 +211,7 @@ func deleteJob(c client, jobName string, pr github.PullRequest) error {
 	return nil
 }
 
-func deleteKubeJob(c client, job kube.Job) error {
+func deleteKubeJob(k deleteClient, job kube.Job) error {
 	if job.Spec.Parallelism != nil && *job.Spec.Parallelism == 0 {
 		// Already aborted this one.
 		return nil
@@ -248,11 +239,31 @@ func deleteKubeJob(c client, job kube.Job) error {
 		Status: newStatus,
 	}
 	// For some reason kubernetes makes you do this in two steps.
-	if _, err := c.KubeClient.PatchJob(job.Metadata.Name, newJob); err != nil {
+	if _, err := k.PatchJob(job.Metadata.Name, newJob); err != nil {
 		return err
 	}
-	if _, err := c.KubeClient.PatchJobStatus(job.Metadata.Name, newJob); err != nil {
+	if _, err := k.PatchJobStatus(job.Metadata.Name, newJob); err != nil {
 		return err
 	}
 	return nil
+}
+
+func SetJobStatus(k *kube.Client, jobName, state, desc, url string) error {
+	j, err := k.GetJob(jobName)
+	if err != nil {
+		return err
+	}
+	newAnnotations := j.Metadata.Annotations
+	if newAnnotations == nil {
+		newAnnotations = make(map[string]string)
+	}
+	newAnnotations["state"] = state
+	newAnnotations["description"] = desc
+	newAnnotations["url"] = url
+	_, err = k.PatchJob(jobName, kube.Job{
+		Metadata: kube.ObjectMeta{
+			Annotations: newAnnotations,
+		},
+	})
+	return err
 }

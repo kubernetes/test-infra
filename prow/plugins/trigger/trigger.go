@@ -22,6 +22,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/line"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -43,20 +44,15 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 }
 
-type kubeClient interface {
-	CreateJob(j kube.Job) (kube.Job, error)
-	ListJobs(labels map[string]string) ([]kube.Job, error)
-	GetJob(name string) (kube.Job, error)
-	PatchJob(name string, job kube.Job) (kube.Job, error)
-	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
-}
-
 type client struct {
 	GitHubClient githubClient
 	JobAgent     *jobs.JobAgent
-	KubeClient   kubeClient
+	KubeClient   *kube.Client
 	Logger       *logrus.Entry
 }
+
+var lineStartJob = line.StartJob
+var lineDeleteJob = line.DeleteJob
 
 func getClient(pc plugins.PluginClient) client {
 	return client{

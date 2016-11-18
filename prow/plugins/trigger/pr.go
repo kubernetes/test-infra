@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/line"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -125,4 +126,25 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func buildAll(c client, pr github.PullRequest) error {
+	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
+		if !job.AlwaysRun {
+			continue
+		}
+		if err := line.StartJob(c.KubeClient, job.Name, pr); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func deleteAll(c client, pr github.PullRequest) error {
+	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
+		if err := lineDeleteJob(c.KubeClient, job.Name, pr); err != nil {
+			return err
+		}
+	}
+	return nil
 }
