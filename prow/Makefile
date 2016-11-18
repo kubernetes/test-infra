@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: test
+all: build fmt vet test
+
 
 HOOK_VERSION   = 0.50
 LINE_VERSION   = 0.26
@@ -97,12 +98,19 @@ get-cluster-credentials:
 clean:
 	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck
 
-test:
+build:
 	go install cmd/...
-	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
+
+fmt:
+	(diff=$$(find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -d -s 2>&1); if [[ -n "$${diff}" ]]; then echo "$${diff}"; false; fi)
+
+vet:
 	go vet $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster update-jobs update-plugins clean test get-cluster-credentials
+test:
+	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
+
+.PHONY: create-cluster update-cluster update-jobs update-plugins clean build fmt vet test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
