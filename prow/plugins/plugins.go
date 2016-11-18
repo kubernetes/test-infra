@@ -115,43 +115,58 @@ func (pa *PluginAgent) Start(path string) error {
 }
 
 // IssueCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueCommentHandlers(repo string) map[string]IssueCommentHandler {
+func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
 	hs := map[string]IssueCommentHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := issueCommentHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
+
 	return hs
 }
 
 // PullRequestHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PullRequestHandlers(repo string) map[string]PullRequestHandler {
+func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
 	hs := map[string]PullRequestHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := pullRequestHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
+
 	return hs
 }
 
 // StatusEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) StatusEventHandlers(repo string) map[string]StatusEventHandler {
+func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
 	hs := map[string]StatusEventHandler{}
-	for _, p := range pa.ps[repo] {
+	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := statusEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
+
 	return hs
+}
+
+// getPlugins returns a list of plugins that are enabled on a given (org, repository).
+func (pa *PluginAgent) getPlugins(owner, repo string) []string {
+	// TODO: use a set here to avoid repetitions?
+	var plugins []string
+
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
+	plugins = append(plugins, pa.ps[owner]...)
+	plugins = append(plugins, pa.ps[fullName]...)
+
+	return plugins
 }

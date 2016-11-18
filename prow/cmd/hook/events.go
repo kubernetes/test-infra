@@ -62,7 +62,7 @@ func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
 		"url":    pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
-	for p, h := range ea.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.FullName) {
+	for p, h := range ea.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
 		pc := ea.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, pr); err != nil {
@@ -80,7 +80,7 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 		"url":    ic.Comment.HTMLURL,
 	})
 	l.Infof("Issue comment %s.", ic.Action)
-	for p, h := range ea.Plugins.IssueCommentHandlers(ic.Repo.FullName) {
+	for p, h := range ea.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
 		pc := ea.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, ic); err != nil {
@@ -98,7 +98,7 @@ func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
 		"repo":    se.Repo.Name,
 	})
 	l.Infof("Status description %s.", se.Description)
-	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.FullName) {
+	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
 		pc := ea.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, se); err != nil {
