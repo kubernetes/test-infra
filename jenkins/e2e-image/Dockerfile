@@ -52,4 +52,7 @@ ADD ["e2e-runner.sh", \
     "/workspace/"]
 RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/upload-to-gcs.sh", "/workspace/sh2ju.sh"]
 
+ADD ["configure-image.sh", "/tmp"]
+RUN ["/tmp/configure-image.sh"]
+
 ENTRYPOINT "/workspace/e2e-runner.sh"
