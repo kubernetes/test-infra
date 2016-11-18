@@ -17,7 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
+#bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
+bazel build //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
 case "${rc}" in
     0) echo "Success" ;;
     1) echo "Build failed" ;;
