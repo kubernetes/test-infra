@@ -17,7 +17,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
+TEST_CMD=(bazel test)
+TEST_OPTS=("--test_output=errors" "--test_tag_filters" "-skip")
+TEST_TARGETS=("//cmd/..." "//pkg/..." "//plugin/...")
+
+BUILD_TARGETS=("//cmd/..." "//pkg/..." "//federation/..." "//plugin/..." "//build-tools/..." "//test/...")
+BUILD_CMD=(bazel build)
+
+# only build for now.
+# TODO(mikedaanese): make this run tests
+"${BUILD_CMD[@]}" "${BUILD_TARGETS[@]}" && rc=$? || rc=$?
 case "${rc}" in
     0) echo "Success" ;;
     1) echo "Build failed" ;;
