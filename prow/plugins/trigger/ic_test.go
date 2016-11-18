@@ -17,7 +17,6 @@ limitations under the License.
 package trigger
 
 import (
-	"os"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -25,7 +24,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/jobs"
-	"k8s.io/test-infra/prow/kube/fakekube"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestHandleIssueComment(t *testing.T) {
@@ -93,10 +92,7 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild: true,
 		},
 	}
-	os.Setenv("LINE_IMAGE", "gcr.io/test/line:0.0-test")
-	os.Setenv("DRY_RUN", "false")
 	for _, tc := range testcases {
-		k := &fakekube.FakeClient{}
 		g := &fakegithub.FakeClient{
 			IssueComments: map[int][]github.IssueComment{},
 			OrgMembers:    []string{"t"},
@@ -114,7 +110,6 @@ func TestHandleIssueComment(t *testing.T) {
 		c := client{
 			GitHubClient: g,
 			JobAgent:     &jobs.JobAgent{},
-			KubeClient:   k,
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
 		c.JobAgent.SetJobs(map[string][]jobs.JenkinsJob{
@@ -148,12 +143,19 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		}
 
+		oldLineStartJob := lineStartJob
+		defer func() { lineStartJob = oldLineStartJob }()
+		var startedJobs []string
+		lineStartJob = func(k *kube.Client, jobName string, pr github.PullRequest) error {
+			startedJobs = append(startedJobs, jobName)
+			return nil
+		}
 		if err := handleIC(c, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
-		if len(k.Jobs) > 0 && !tc.ShouldBuild {
+		if len(startedJobs) > 0 && !tc.ShouldBuild {
 			t.Errorf("Built but should not have: %+v", tc)
-		} else if len(k.Jobs) == 0 && tc.ShouldBuild {
+		} else if len(startedJobs) == 0 && tc.ShouldBuild {
 			t.Errorf("Not built but should have: %+v", tc)
 		}
 	}
