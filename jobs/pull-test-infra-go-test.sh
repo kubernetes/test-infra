@@ -21,4 +21,4 @@ set -o xtrace
 docker run --rm \
     -w "/go/src/k8s.io/test-infra/prow" \
     -v "${GOPATH}/src/k8s.io/test-infra:/go/src/k8s.io/test-infra" \
-    golang:1.7.3 make test
+    golang:1.7.3 make -k

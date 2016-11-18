@@ -101,7 +101,7 @@ func TestHandleIssueComment(t *testing.T) {
 			IssueComments: map[int][]github.IssueComment{},
 			OrgMembers:    []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
-				0: &github.PullRequest{
+				0: {
 					Number: 0,
 					Base: github.PullRequestBranch{
 						Repo: github.Repo{
