@@ -913,6 +913,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-feature
 - name: kubernetes-gci-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-gci-feature
+# kubeadm tests
+- name: kubernetes-e2e-kubeadm-gce
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-kubeadm-gce
 # Add New Testgroups Here
 
 #
@@ -1178,6 +1181,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
   - name: gce-slow-release-1.5
     test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-kubeadm
+    test_group_name: kubernetes-e2e-kubeadm-gce
 
 - name: google-gci
   dashboard_tab:

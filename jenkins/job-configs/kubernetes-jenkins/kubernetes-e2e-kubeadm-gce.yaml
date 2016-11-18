@@ -1,0 +1,51 @@
+- job-template:
+    name: 'kubernetes-e2e-kubeadm-{suffix}'
+    node: '{jenkins_node}'
+    description: '{description} Test owner: beacham.'
+    jenkins_node: 'e2e'
+    disabled: '{obj:disable_job}'
+    properties:
+        - build-discarder:
+            days-to-keep: 7
+    triggers:
+        - reverse:
+            jobs: 'kubernetes-build'
+            result: success
+        - timed: '{sq-cron-string}'
+    publishers:
+        - junit-publisher
+        - email-ext:
+            recipients: 'beacham@google.com'
+        - gcs-uploader
+    builders:
+        - activate-gce-service-account
+        - shell: |
+            {job-env}
+            {post-env}
+            export KUBE_E2E_RUNNER="/workspace/kubernetes-anywhere-e2e-runner.sh"
+            export E2E_OPT="--kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${{E2E_NAME}}.test-kubeadm.k8s.io"
+            export GINKGO_PARALLEL="y"
+            timeout -k {kill-timeout}m {timeout}m {runner} && rc=$? || rc=$?
+            {report-rc}
+    wrappers:
+        - e2e-credentials-binding
+        - timeout:
+            timeout: '{jenkins-timeout}'
+            fail: true
+        - workspace-cleanup:
+            dirmatch: true
+            external-deletion-command: 'sudo rm -rf %s'
+            exclude: ['**/.git/']
+
+- project:
+    name: kubernetes-e2e-kubeadm-gce-master
+    suffix:
+        - 'gce':  # kubernetes-e2e-kubeadm-gce
+            # TODO(beacham): Make this actually run against master instead of the latest stable .debs published
+            description: 'Run e2e tests on GCE deployed via kubeadm using the latest successful Kubernetes build.'
+            timeout: 240
+            job-env: |
+                export E2E_NAME="e2e-kubeadm-gce"
+                export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
+    jobs:
+        - 'kubernetes-e2e-kubeadm-{suffix}'
