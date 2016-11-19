@@ -24,9 +24,15 @@ TARGET="google/cadvisor:canary"
 FILE="deploy/canary/Dockerfile"
 docker build -t "${TARGET}" --no-cache=true --pull=true --file="${FILE}" .
 docker inspect "${TARGET}"
+if [[ "$(docker version --format='{{.Client.Version}}')" =~ ^1.9 ]]; then
+  DOCKER_EMAIL="--email=not@val.id"
+else
+  DOCKER_EMAIL=
+fi
 set +o xtrace  # Do not log credentials
-docker login --username="${DOCKER_USER}" --password="${DOCKER_PASSWORD}"
-unset DOCKER_USER DOCKER_PASSWORD
+echo "Logging in as ${DOCKER_USER}..."
+docker login ${DOCKER_EMAIL:-} --username="${DOCKER_USER}" --password="${DOCKER_PASSWORD}"
 set -o xtrace
+unset DOCKER_USER DOCKER_PASSWORD DOCKER_EMAIL
 docker push "${TARGET}"
 docker logout
