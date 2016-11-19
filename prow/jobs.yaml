@@ -38,9 +38,10 @@ kubernetes/heapster:
 
 kubernetes/kubernetes:
 - name: pull-kubernetes-bazel
+  always_run: true
   context: Jenkins Bazel Build
-  rerun_command: "@k8s-bot bazel build this"
-  trigger: "@k8s-bot bazel build this"
+  rerun_command: "@k8s-bot bazel test this"
+  trigger: "@k8s-bot (bazel )?test this"
   spec:
     nodeSelector:
       role: build
