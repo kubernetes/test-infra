@@ -343,11 +343,11 @@ test_groups:
 - name: kubernetes-e2e-gci-gke-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-flaky
 - name: kubernetes-e2e-gci-gke
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke
 - name: kubernetes-e2e-gci-gke-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial
 - name: kubernetes-e2e-gci-gke-slow
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gci-gke-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow
 - name: kubernetes-e2e-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ingress
 - name: kubernetes-e2e-gci-gke-ingress
