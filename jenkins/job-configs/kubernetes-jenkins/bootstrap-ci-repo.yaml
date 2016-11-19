@@ -33,6 +33,12 @@
     - 'ci-{repo-suffix}'
     name: bootstrap-ci-repo
     repo-suffix:
+    - cadvisor-node-kubelet:  # dawnchen
+        branch: master
+        job-name: ci-cadvisor-node-kubelet
+        repo-name: google/cadvisor
+        frequency: 'H/30 * * * *'
+
     - kubernetes-verify-master:
         branch: master
         job-name: ci-kubernetes-verify-master
@@ -80,12 +86,11 @@
         repo-name: k8s.io/kubernetes
         frequency: 'H H/3 * * *'
 
-# TODO(fejta): migrate this critical job
-#   - kubernetes-node-kubelet:  # dawnchen
-#       branch: master
-#       job-name: ci-kubernetes-node-kubelet
-#       repo-name: k8s.io/kubernetes
-#       frequency: 'H/30 * * * *'
+    - kubernetes-node-kubelet:  # dawnchen
+        branch: master
+        job-name: ci-kubernetes-node-kubelet
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/30 * * * *'
     - kubernetes-node-kubelet-serial:  # lantaol
         branch: master
         job-name: ci-kubernetes-node-kubelet-serial

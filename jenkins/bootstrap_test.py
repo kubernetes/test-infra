@@ -965,9 +965,9 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIRepoYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
+            self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
-            self.assertIn('branch', job)
             return job_name
 
         self.CheckBootstrapYaml(
@@ -987,6 +987,19 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
             Check, suffix='soak-suffix')
+
+    def testBootstrapCIDockerpushYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertIn('branch', job)
+            self.assertIn('frequency', job)
+            self.assertIn('repo-name', job)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
+            Check, suffix='dockerpush-suffix')
+
 
     def CheckBootstrapYaml(self, path, check, suffix='suffix'):
         with open(os.path.join(
