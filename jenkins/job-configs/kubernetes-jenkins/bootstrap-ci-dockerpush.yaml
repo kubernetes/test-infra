@@ -41,7 +41,7 @@
     - cadvisor-canarypush:
         branch: master
         job-name: ci-cadvisor-canarypush
-        repo-name: google/cadvisor
+        repo-name: github.com/google/cadvisor
         frequency: '@daily'
     - heapster-canarypush:
         branch: master

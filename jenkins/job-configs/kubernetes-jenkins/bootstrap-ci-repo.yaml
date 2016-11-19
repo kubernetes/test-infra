@@ -36,7 +36,7 @@
     - cadvisor-node-kubelet:  # dawnchen
         branch: master
         job-name: ci-cadvisor-node-kubelet
-        repo-name: google/cadvisor
+        repo-name: github.com/google/cadvisor
         frequency: 'H/30 * * * *'
 
     - kubernetes-verify-master:
