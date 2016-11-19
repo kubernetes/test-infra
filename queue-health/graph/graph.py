@@ -255,14 +255,16 @@ def render_backlog(results, ax_merged, text):
     backlog = results.backlog
     ax_merged.yaxis.tick_right()
     ax_merged.yaxis.set_label_position('right')
-    merge_color = backlog_color(backlog[1][-1])
+    cur = backlog[1][-1]
+    merge_color = backlog_color(cur)
     p_day, = ax_merged.plot(dts, backlog[1], '%s-' % merge_color)
     p_week, = ax_merged.plot(dts, backlog[14], 'k:')
+    ax_merged.set_ylim([0, 100])
     ax_merged.set_ylabel(
-        'Backlog: %.1f hrs' % backlog[1][-1], color=merge_color)
+        'Backlog: %.1f hrs' % cur, color=merge_color)
     ax_merged.legend(
         [p_day, p_week],
-        ['1d avg', '14d avg'],
+        ['1d avg: %.1f hrs' % cur, '14d avg: %.1f hrs' % backlog[14][-1]],
         'lower left',
         fontsize='x-small',
     )
@@ -282,8 +284,10 @@ def render_health(results, ax_health, text):
     health_color = '%s-' % happy_color(happiness[1][-1])
     p_1dhealth, = ax_health.plot(dts, happiness[1], health_color)
     p_14dhealth, = ax_health.plot(dts, happiness[14], 'k:')
+    cur = 100 * happiness[1][-1]
+    cur14 = 100 * happiness[14][-1]
     ax_health.set_ylabel(
-        'Unblocked: %.1f%%' % (100 * happiness[1][-1]),
+        'Unblocked: %.1f%%' % cur,
         color=health_color[0])
 
     ax_health.set_ylim([0.0, 1.0])
@@ -312,7 +316,7 @@ def render_health(results, ax_health, text):
 
     ax_health.legend(
         patches,
-        ['1d avg', '14d avg', 'offline', 'blocked'],
+        ['1d avg: %.1f%%' % cur, '14d avg: %.1f%%' % cur14, 'offline', 'blocked'],
         'lower left',
         fontsize='x-small',
     )
@@ -335,7 +339,7 @@ def render_queue(results, ax_open):
         color=color_depth)
     ax_queued.legend(
         [p_open, p_queue, p_14dqueue],
-        ['open', 'queued', '14d avg'],
+        ['open', 'queued', '14d avg: %.1f' % queue_avg[-1]],
         'lower left',
         fontsize='x-small',
     )
