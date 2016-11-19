@@ -75,11 +75,12 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 300m "${runner}" && rc=$? || rc=$?
+readonly timeoutTime="500m"
+timeout -k 15m "${timeoutTime}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
-    echo "Build timed out" >&2
+    echo "Build timed out after ${timeoutTime}" >&2
 elif [[ ${rc} -ne 0 ]]; then
     echo "Build failed" >&2
 fi
