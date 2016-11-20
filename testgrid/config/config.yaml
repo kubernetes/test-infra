@@ -902,12 +902,12 @@ test_groups:
 - name: kopeio-kubernetes-e2e-upup-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws
 # docker
-- name: continuous-node-e2e-docker-validation
-  gcs_prefix: kubernetes-jenkins/logs/continuous-node-e2e-docker-validation
-- name: continuous-node-e2e-docker-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/continuous-node-e2e-docker-benchmark
-- name: continuous-e2e-docker-validation
-  gcs_prefix: kubernetes-jenkins/logs/continuous-e2e-docker-validation-gci
+- name: kubernetes-e2e-gci-docker
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-docker
+- name: kubernetes-node-docker-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker-benchmark
+- name: kubernetes-node-docker
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker
 # garbage collector tests
 - name: kubernetes-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-feature
@@ -998,15 +998,6 @@ dashboards:
   - name: rktnetes
     test_group_name: kubernetes-rktnetes
 
-- name: docker
-  dashboard_tab:
-  - name: docker-validation
-    test_group_name: continuous-node-e2e-docker-validation
-  - name: docker-benchmark
-    test_group_name: continuous-node-e2e-docker-benchmark
-  - name: master-docker-validation
-    test_group_name: continuous-e2e-docker-validation
-
 - name: google-aws
   dashboard_tab:
   - name: aws
@@ -1019,6 +1010,15 @@ dashboards:
     test_group_name: kubernetes-e2e-aws-release-1.5
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
+
+- name: google-docker
+  dashboard_tab:
+  - name: e2e-gci
+    test_group_name: kubernetes-e2e-gci-docker
+  - name: benchmark
+    test_group_name: kubernetes-node-docker-benchmark
+  - name: kubelet
+    test_group_name: kubernetes-node-docker
 
 - name: google-gce
   dashboard_tab:
@@ -1454,6 +1454,13 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.4
   - name: kubelet-1.5
     test_group_name: ci-kubernetes-node-kubelet-1.5
+  - name: docker-kubelet
+    test_group_name: kubernetes-node-docker
+  - name: docker-e2e
+    test_group_name: kubernetes-e2e-gci-docker
+  - name: docker-kubelet-benchmark
+    test_group_name: kubernetes-node-docker-benchmark
+
 
 - name: google-soak
   dashboard_tab:
