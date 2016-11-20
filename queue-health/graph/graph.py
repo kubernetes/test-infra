@@ -276,6 +276,7 @@ def render_backlog(results, ax_merged, text):
 
 def render_health(results, ax_health, text):
     """Render the percentage of time the queue is healthy/online."""
+    # pylint: disable=too-many-locals
     dts = results.dts
     happiness = results.happiness
     ax_health.yaxis.tick_right()
