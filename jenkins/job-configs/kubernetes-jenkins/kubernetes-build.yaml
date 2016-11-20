@@ -3,102 +3,124 @@
     description: 'Grab the latest from GitHub, build. Test owner: Build Cop.'
     node: 'build'
     properties:
-        - build-discarder:
-            num-to-keep: 200
+    - build-discarder:
+        num-to-keep: 200
     builders:
-        - activate-gce-service-account
-        - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
-        - shell: |
-            {job-env}
-            timeout -k {kill-timeout}m {timeout}m ./hack/jenkins/build.sh && rc=$? || rc=$?
-            {report-rc}
+    - activate-gce-service-account
+    - shell: 'JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")'
+    - shell: |
+        {job-env}
+        timeout -k {kill-timeout}m {timeout}m {script} && rc=$? || rc=$?
+        {report-rc}
     publishers:
-        - gcs-uploader
-        - workspace-cleanup:
-            dirmatch: true
-            exclude: ['.git/']
-            external-deletion-command: 'sudo rm -rf %s'
+    - gcs-uploader
     scm:
-        - git:
-            url: https://github.com/kubernetes/kubernetes
-            branches:
-                - '{branch}'
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/kubernetes
-            wipe-workspace: false
-            skip-tag: true
+    - git:
+        url: '{giturl}'
+        branches:
+        - '{branch}'
+        browser: githubweb
+        browser-url: '{giturl}'
+        wipe-workspace: false
+        skip-tag: true
     triggers:
-        - pollscm:
-            cron: 'H/2 * * * *'
+    - pollscm:
+        cron: 'H/2 * * * *'
     wrappers:
-        - e2e-credentials-binding
-        - timeout:
-            timeout: '{jenkins-timeout}'
-            fail: true
-        - workspace-cleanup:
-            dirmatch: true
-            exclude: ['.git/']
-            external-deletion-command: 'sudo rm -rf %s'
+    - e2e-credentials-binding
+    - timeout:
+        timeout: '{jenkins-timeout}'
+        fail: true
+    - workspace-cleanup:
+        dirmatch: true
+        exclude: ['**/.git/']
+        external-deletion-command: 'sudo rm -rf %s'
 
 - project:
     name: kubernetes-builds
     build:
-        - 'build':
-            branch: 'master'
-            timeout: 30
-            job-env: |
-              export KUBE_FASTBUILD=true
-        - 'cross-build':
-            branch: 'master'
-            timeout: 50
-            job-env: |
-              export KUBE_FASTBUILD=false
-              export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with 'kubernetes-build'
-        - 'build-1.2':
-            branch: 'release-1.2'
-            timeout: 30
-            job-env: ''  # Empty expected
-        - 'build-1.3':
-            branch: 'release-1.3'
-            timeout: 50
-            job-env: ''  # Empty expected
-        - 'build-1.4':
-            branch: 'release-1.4'
-            timeout: 50
-            job-env: ''  # Empty expected
-        - 'build-1.5':
-            branch: 'release-1.5'
-            timeout: 50
-            job-env: ''  # Empty expected
-        - 'federation-build':
-            branch: 'master'
-            timeout: 50
-            job-env: |
-              export PROJECT="k8s-jkns-e2e-gce-federation"
-              export FEDERATION=true
-              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
-              export KUBE_FASTBUILD=true
-              export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
-              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
-        - 'federation-build-1.4':
-            branch: 'release-1.4'
-            timeout: 50
-            job-env: |
-              export PROJECT="k8s-jkns-e2e-gce-f8n-1-4"
-              export FEDERATION=true
-              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-f8n-1-4"
-              export KUBE_FASTBUILD=true
-              export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-4
-              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-4
-        - 'federation-build-1.5':
-            branch: 'release-1.5'
-            timeout: 50
-            job-env: |
-              export PROJECT="k8s-e2e-gce-f8n-1-5"
-              export FEDERATION=true
-              export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-e2e-gce-f8n-1-5"
-              export KUBE_FASTBUILD=true
-              export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-5
-              export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-5
+    - 'build':
+        branch: 'master'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 30
+        job-env: |
+          export KUBE_FASTBUILD=true
+    - 'cross-build':
+        branch: 'master'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: |
+          export KUBE_FASTBUILD=false
+          export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with 'kubernetes-build'
+    - 'build-1.2':
+        branch: 'release-1.2'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 30
+        job-env: ''  # Empty expected
+    - 'build-1.3':
+        branch: 'release-1.3'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: ''  # Empty expected
+    - 'build-1.4':
+        branch: 'release-1.4'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: ''  # Empty expected
+    - 'build-1.5':
+        branch: 'release-1.5'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: ''  # Empty expected
+    - 'federation-build':
+        branch: 'master'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: |
+          export PROJECT="k8s-jkns-e2e-gce-federation"
+          export FEDERATION=true
+          export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
+          export KUBE_FASTBUILD=true
+          export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
+          export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
+    - 'federation-build-1.4':
+        branch: 'release-1.4'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: |
+          export PROJECT="k8s-jkns-e2e-gce-f8n-1-4"
+          export FEDERATION=true
+          export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-f8n-1-4"
+          export KUBE_FASTBUILD=true
+          export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-4
+          export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-4
+    - 'federation-build-1.5':
+        branch: 'release-1.5'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        script: ./hack/jenkins/build.sh
+        timeout: 50
+        job-env: |
+          export PROJECT="k8s-e2e-gce-f8n-1-5"
+          export FEDERATION=true
+          export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-e2e-gce-f8n-1-5"
+          export KUBE_FASTBUILD=true
+          export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release-1-5
+          export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-5
+    - 'build-debian-unstable':
+        branch: 'master'
+        giturl: 'https://github.com/kubernetes/release'
+        script: ./debian/jenkins.sh
+        timeout: 300
+        job-env: |
+          export DEB_CHANNEL="unstable"
+
     jobs:
-        - 'kubernetes-{build}'
+    - 'kubernetes-{build}'
