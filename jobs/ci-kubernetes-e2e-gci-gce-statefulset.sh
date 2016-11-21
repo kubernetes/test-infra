@@ -31,10 +31,10 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:PetSet\]"
-export PROJECT="kubernetes-petset"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:StatefulSet\]"
+export PROJECT="kubernetes-gci-petset"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
-export KUBE_NODE_OS_DISTRIBUTION="debian"
+export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### post-env
 
@@ -67,7 +67,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 50m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 90m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
