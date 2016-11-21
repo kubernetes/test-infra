@@ -58,6 +58,7 @@ export KUBE_AWS_INSTANCE_PREFIX="${E2E_NAME}"
 export INSTANCE_PREFIX="${E2E_NAME}"
 export KUBE_GCE_NETWORK="${E2E_NAME}"
 export KUBE_GCE_INSTANCE_PREFIX="${E2E_NAME}"
+export MULTIZONE="true"  # Needed for HA-master tests.
 
 # GKE variables
 export CLUSTER_NAME="${E2E_NAME}"
@@ -68,7 +69,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 300m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 420m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
