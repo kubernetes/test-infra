@@ -54,3 +54,8 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
 fi
 
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
+
+if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
+  echo "Publish version to ${KOPS_PUBLISH_GREEN_PATH}: ${KOPS_URL}"
+  echo "${KOPS_URL}" | gsutil cp - "${KOPS_PUBLISH_GREEN_PATH}"
+fi
