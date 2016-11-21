@@ -31,8 +31,8 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:PetSet\]"
-export PROJECT="kubernetes-gci-petset"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:StatefulSet\]"
+export PROJECT="kubernetes-gci-statefulset"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
