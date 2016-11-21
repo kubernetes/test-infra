@@ -910,9 +910,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/continuous-e2e-docker-validation-gci
 # garbage collector tests
 - name: kubernetes-garbage-collector
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-feature
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage
 - name: kubernetes-gci-garbage-collector
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-garbagecollector-gci-feature
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage-gci
 # Add New Testgroups Here
 
 #
@@ -974,9 +974,9 @@ dashboards:
   - name: azure
     test_group_name: kubernetes-azure
   # Garbage Collector
-  - name: garbage-collector
+  - name: garbage
     test_group_name: kubernetes-garbage-collector
-  - name: gci-garbage-collector
+  - name: garbage-gci
     test_group_name: kubernetes-gci-garbage-collector
 
 - name: azure
