@@ -30,6 +30,7 @@ func FormatResponse(ic github.IssueComment, s string) string {
 	format := `@%s: %s.
 
 <details>
+
 In response to [this comment](%s):
 
 %s
