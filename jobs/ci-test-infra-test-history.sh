@@ -21,4 +21,4 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 cd "${testinfra}/jenkins/test-history"
-exec gen_history
+exec ./gen_history
