@@ -74,6 +74,9 @@ func startJob(k startClient, jobName string, pr github.PullRequest, lineImage st
 			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
+					NodeSelector: map[string]string{
+						"role": "ciongke",
+					},
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
 						{

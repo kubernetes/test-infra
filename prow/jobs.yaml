@@ -67,6 +67,9 @@ kubernetes/kubernetes:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 6
     restartPolicy: Never
     volumes:
     - name: cache-ssd
