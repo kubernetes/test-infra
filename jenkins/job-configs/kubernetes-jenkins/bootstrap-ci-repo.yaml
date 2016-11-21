@@ -39,6 +39,12 @@
         repo-name: github.com/google/cadvisor
         frequency: 'H/30 * * * *'
 
+    - test-infra-test-history:
+        branch: master
+        job-name: ci-test-infra-test-history
+        repo-name: github.com/kubernetes/test-infra
+        frequency: 'H * * * *'
+
     - kubernetes-verify-master:
         branch: master
         job-name: ci-kubernetes-verify-master

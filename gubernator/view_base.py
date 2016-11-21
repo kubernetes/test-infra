@@ -33,16 +33,17 @@ PROW_JOBS = yaml.load(open('prow_jobs.yaml'))
 
 DEFAULT_JOBS = {
     'kubernetes-jenkins/logs/': {
-        'kubelet-gce-e2e-ci',
+        'ci-kubernetes-e2e-gce-etcd3',
+        'ci-kubernetes-e2e-gci-gce',
+        'ci-kubernetes-e2e-gci-gce-slow',
+        'ci-kubernetes-e2e-gci-gke',
+        'ci-kubernetes-e2e-gci-gke-slow',
+        'ci-kubernetes-kubemark-500-gce',
+        'ci-kubernetes-node-kubelet',
+        'ci-kubernetes-test-go',
+        'ci-kubernetes-verify-master',
         'kubernetes-build',
-        'kubernetes-e2e-gce',
-        'kubernetes-e2e-gce-scalability',
-        'kubernetes-e2e-gce-slow',
-        'kubernetes-e2e-gke',
-        'kubernetes-e2e-gke-slow',
-        'kubernetes-kubemark-5-gce',
-        'kubernetes-kubemark-500-gce',
-        'kubernetes-test-go',
+        'kubernetes-e2e-kops-aws',
     },
     'kubernetes-jenkins/pr-logs/directory/': {
         j['name'] for j in PROW_JOBS['kubernetes/kubernetes'] if j.get('always_run')

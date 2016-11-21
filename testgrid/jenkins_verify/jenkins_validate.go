@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/testgrid/config/pb"
+	config "k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
@@ -87,7 +87,7 @@ func main() {
 	for jenkinsjob, valid := range jenkinsjobs {
 		if !valid {
 			badjobs = append(badjobs, jenkinsjob)
-			fmt.Printf("Jenkins Job %v does not have a matching testgrid test\n", jenkinsjob)
+			fmt.Printf("Jenkins Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
 		}
 	}
 
