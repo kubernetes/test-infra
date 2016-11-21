@@ -59,6 +59,7 @@
             job-env: |
                 export E2E_NAME="e2e-kops-aws-updown"
                 export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+                export KOPS_PUBLISH_GREEN_PATH="gs://kops-ci/bin/latest-ci-updown-green.txt"
         - 'aws':  # kubernetes-e2e-kops-aws
             description: 'Run e2e tests on AWS deployed via kops using the latest successful Kubernetes build.'
             timeout: 240
@@ -69,5 +70,7 @@
             job-env: |
                 export E2E_NAME="e2e-kops-aws"
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
+                export KOPS_LATEST="latest-ci-updown-green.txt"
+                export KOPS_PUBLISH_GREEN_PATH="gs://kops-ci/bin/latest-ci-green.txt"
     jobs:
         - 'kubernetes-e2e-kops-{suffix}'
