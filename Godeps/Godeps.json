@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "bitbucket.org/ww/goautoneg",
+			"Comment": "null-5",
+			"Rev": "'75cd24fc2f2c2a2088577d12123ddee5f54e0675'"
+		},
+		{
 			"ImportPath": "cloud.google.com/go/compute/metadata",
 			"Comment": "v0.1.0-125-g64568e4",
 			"Rev": "64568e4898e813ad748cf9523d56a65209c7dc18"
@@ -24,6 +29,10 @@
 		{
 			"ImportPath": "github.com/NYTimes/gziphandler",
 			"Rev": "63027b26b87e2ae2ce3810393d4b81021cfd3a35"
+		},
+		{
+			"ImportPath": "github.com/beorn7/perks/quantile",
+			"Rev": "3ac7bf7a47d159a033b107610db8a1b6575507a4"
 		},
 		{
 			"ImportPath": "github.com/ghodss/yaml",
@@ -66,9 +75,40 @@
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 		},
 		{
+			"ImportPath": "github.com/matttproud/golang_protobuf_extensions/pbutil",
+			"Rev": "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
+		},
+		{
 			"ImportPath": "github.com/peterbourgon/diskv",
 			"Comment": "v2.0.0-2-g5dfcb07",
 			"Rev": "5dfcb07a075adbaaa4094cddfd160b1e1c77a043"
+		},
+		{
+			"ImportPath": "github.com/prometheus/client_golang/prometheus",
+			"Comment": "v0.8.0",
+			"Rev": "c5b7fccd204277076155f10851dad72b76a49317"
+		},
+		{
+			"ImportPath": "github.com/prometheus/client_golang/prometheus/promhttp",
+			"Comment": "v0.8.0",
+			"Rev": "c5b7fccd204277076155f10851dad72b76a49317"
+		},
+		{
+			"ImportPath": "github.com/prometheus/client_model/go",
+			"Comment": "model-0.0.2-12-gfa8ad6f",
+			"Rev": "fa8ad6fec33561be4280a8f0514318c79d7f6cb6"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/expfmt",
+			"Rev": "ffe929a3f4c4faeaa10f2b9535c2b1be3ad15650"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/model",
+			"Rev": "ffe929a3f4c4faeaa10f2b9535c2b1be3ad15650"
+		},
+		{
+			"ImportPath": "github.com/prometheus/procfs",
+			"Rev": "454a56f35412459b5e684fd5ec0f9211b94f002a"
 		},
 		{
 			"ImportPath": "github.com/spf13/cobra",
