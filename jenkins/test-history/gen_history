@@ -36,7 +36,7 @@ docker run --rm -v '/etc/localtime:/etc/localtime:ro' \
     pip install -r requirements.txt && \
     time python gen_json.py \
         --buckets=buckets.yaml \
-        \"--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci\" && \
+        \"--match=^kubernetes|kubernetes-build|kubelet-gce-e2e-ci|ci-kubernetes\" && \
     time python gen_html.py \
         --output-dir=static \
         --input=tests.json \
