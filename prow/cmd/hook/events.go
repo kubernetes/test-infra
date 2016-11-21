@@ -91,11 +91,12 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 
 func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
 	l := logrus.WithFields(logrus.Fields{
+		"org":     se.Repo.Owner.Login,
+		"repo":    se.Repo.Name,
 		"context": se.Context,
 		"sha":     se.Context,
 		"state":   se.State,
 		"id":      se.ID,
-		"repo":    se.Repo.Name,
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
