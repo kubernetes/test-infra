@@ -61,7 +61,7 @@
     - kubernetes-soak-gce-federation-deploy:
         blocker: ci-kubernetes-soak-gce-federation-test
         job-name: ci-kubernetes-soak-gce-federation-deploy
-        frequency: 'H 0 * * 2'
+        frequency: 'H 0 * * *'
         scan: DISABLED
     - kubernetes-soak-gce-federation-test:
         blocker: ci-kubernetes-soak-gce-federation-deploy
