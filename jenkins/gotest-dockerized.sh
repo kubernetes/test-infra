@@ -35,6 +35,15 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # From _inside_ a container that has the host's docker mapped in, the $PATH
 # provided must be resolvable on the *HOST*, not the container.
 
+# default to go version 1.5 image tag
+KUBEKINS_TAG="1.5-v20161109-d9a98f2"
+
+if [[ ${KUBE_VERIFY_GIT_BRANCH} == *"1.2" ]] || \
+   [[ ${KUBE_VERIFY_GIT_BRANCH} == *"1.3" ]] || \
+   [[ ${KUBE_VERIFY_GIT_BRANCH} == *"1.4" ]]; then
+  KUBEKINS_TAG="1.4-v20161109-d9a98f2"
+fi
+
 docker run --rm=true \
   --privileged=true \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -45,5 +54,5 @@ docker run --rm=true \
   -e "KUBE_VERIFY_GIT_BRANCH=${KUBE_VERIFY_GIT_BRANCH:-}" \
   -e "REPO_DIR=${REPO_DIR}" \
   -e "HOST_ARTIFACTS_DIR=${HOST_ARTIFACTS_DIR}" \
-  -i gcr.io/k8s-testimages/kubekins-test:1.5-v20161109-d9a98f2 \
+  -i gcr.io/k8s-testimages/kubekins-test:${KUBEKINS_TAG} \
   bash -c "cd kubernetes && ${KUBE_TEST_SCRIPT:-./hack/jenkins/test-dockerized.sh}"
