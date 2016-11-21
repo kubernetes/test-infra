@@ -219,25 +219,20 @@ class GSUtil(object):
         cmd = [
             self.gsutil, '-q',
             '-h', 'Content-Type:application/json'] + gen + [
-            'cp', '-a', 'public-read',
-            '-', path]
+            'cp', '-', path]
         call(cmd, stdin=json.dumps(jdict, indent=2))
 
     def copy_file(self, dest, orig):
         """Copy the file to the specified path using compressed encoding."""
-        cmd = [self.gsutil, '-q', 'cp', '-Z', '-a', 'public-read', orig, dest]
+        cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
         call(cmd)
 
     def upload_text(self, path, txt, cached=True):
         """Copy the text to path, optionally disabling caching."""
-        cp_args = ['-a', 'public-read']
         headers = ['-h', 'Content-Type:text/plain']
         if not cached:
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
-        cmd = [self.gsutil, '-q'] + headers + [
-            'cp'] + cp_args + [
-            '-', path,
-        ]
+        cmd = [self.gsutil, '-q'] + headers + ['cp', '-', path]
         call(cmd, stdin=txt)
 
     def cat(self, path, generation):
@@ -253,8 +248,8 @@ class GSUtil(object):
             cmd = [
                 self.gsutil, '-m', '-q',
                 '-o', 'GSUtil:use_magicfile=True',
-                'cp', '-a', 'public-read', '-r', '-c', '-z', 'log,txt,xml',
-                '%s/*' % artifacts, path,
+                'cp', '-r', '-c', '-z', 'log,txt,xml',
+                artifacts, path,
             ]
             call(cmd)
 
