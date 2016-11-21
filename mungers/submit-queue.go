@@ -43,6 +43,8 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
 
@@ -150,6 +152,39 @@ type submitQueueMetadata struct {
 	RepoPullUrl string
 }
 
+type prometheusMetrics struct {
+	Loops      prometheus.Counter
+	Blocked    prometheus.Gauge
+	OpenPRs    prometheus.Gauge
+	QueuedPRs  prometheus.Gauge
+	MergeCount prometheus.Counter
+}
+
+var (
+	promMetrics = prometheusMetrics{
+		Loops: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "submitqueue_loops",
+			Help: "Number of loops performed by the queue",
+		}),
+		Blocked: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "submitqueue_blocked",
+			Help: "The submit-queue is currently blocked",
+		}),
+		OpenPRs: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "submitqueue_open_pullrequests_total",
+			Help: "Number of open pull-requests",
+		}),
+		QueuedPRs: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "submitqueue_queued_pullrequests_total",
+			Help: "Number of pull-requests queued",
+		}),
+		MergeCount: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "submitqueue_merge_total",
+			Help: "Number of merges done",
+		}),
+	}
+)
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -211,6 +246,11 @@ type SubmitQueue struct {
 
 func init() {
 	clock := utilclock.RealClock{}
+	prometheus.MustRegister(promMetrics.Loops)
+	prometheus.MustRegister(promMetrics.Blocked)
+	prometheus.MustRegister(promMetrics.OpenPRs)
+	prometheus.MustRegister(promMetrics.QueuedPRs)
+	prometheus.MustRegister(promMetrics.MergeCount)
 	sq := &SubmitQueue{
 		clock:          clock,
 		startTime:      clock.Now(),
@@ -323,6 +363,7 @@ func (sq *SubmitQueue) updateMergeRate() {
 	sq.mergeRate = calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
 
 	// Update stats
+	promMetrics.MergeCount.Inc()
 	atomic.AddInt32(&sq.totalMerges, 1)
 	sq.lastMergeTime = now
 }
@@ -419,6 +460,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		if len(config.WWWRoot) > 0 {
 			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot))))
 		}
+		http.Handle("/prometheus", gziphandler.GzipHandler(promhttp.Handler()))
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
 		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
@@ -459,6 +501,8 @@ func (sq *SubmitQueue) EachLoop() error {
 	sq.updateHealth()
 	sq.lastPRStatus = sq.prStatus
 	sq.prStatus = map[string]submitStatus{}
+	promMetrics.OpenPRs.Set(float64(len(sq.lastPRStatus)))
+	promMetrics.QueuedPRs.Set(float64(len(sq.githubE2EQueue)))
 
 	objs := []*github.MungeObject{}
 	for _, obj := range sq.githubE2EQueue {
@@ -472,6 +516,7 @@ func (sq *SubmitQueue) EachLoop() error {
 		_ = sq.validForMerge(obj)
 	}
 	atomic.AddInt32(&sq.loopStarts, 1)
+	promMetrics.Loops.Inc()
 	return nil
 }
 
@@ -521,6 +566,11 @@ func (sq *SubmitQueue) updateHealth() {
 	sq.health.NumStable = 0
 	sq.health.NumStablePerJob = map[string]int{}
 	sq.health.MergePossibleNow = stable && !emergencyStop
+	if sq.health.MergePossibleNow {
+		promMetrics.Blocked.Set(0)
+	} else {
+		promMetrics.Blocked.Set(1)
+	}
 	for _, record := range sq.healthHistory {
 		if record.Overall {
 			sq.health.NumStable += 1
