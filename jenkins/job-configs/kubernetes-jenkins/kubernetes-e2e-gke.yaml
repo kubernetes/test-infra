@@ -55,9 +55,7 @@
             description: 'Run all non-flaky, non-slow, non-disruptive, non-feature tests on GKE, in parallel on a large GKE cluster'
             timeout: 600
             emails: 'zml@google.com wojtekt@google.com'
-            # TODO: Enable again when we're done with 3000-ndoe testing.
-            # cron-string: '0 17 * * *'
-            cron-string: ''
+            cron-string: '0 17 * * *'
             trigger-job: ''
             job-env: |
                 export E2E_NAME="gke-large-cluster"
@@ -67,14 +65,14 @@
                 # TODO: should test kube-proxy test is not designed to run in large clusters.
                 #   We should change it start running it here too.
                 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|should\stest\skube-proxy \
-                                         --allowed-not-ready-nodes=30 \
+                                         --allowed-not-ready-nodes=20 \
                                          --system-pods-startup-timeout=300m"
                 export GINKGO_PARALLEL="y"
                 export ZONE="us-east1-a"
-                export NUM_NODES=3000
+                export NUM_NODES=2000
                 export MACHINE_TYPE="n1-standard-1"
                 export HEAPSTER_MACHINE_TYPE="n1-standard-8"
-                export ALLOWED_NOTREADY_NODES="30"
+                export ALLOWED_NOTREADY_NODES="20"
                 # We were asked (by MIG team) to not create more than 5 MIGs per zone.
                 # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
                 # So setting max-nodes-per-pool=1000, to check if that helps.
