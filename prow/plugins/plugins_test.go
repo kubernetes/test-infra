@@ -32,7 +32,7 @@ func TestGetPlugins(t *testing.T) {
 		{
 			name: "All plugins enabled for org should be returned for any org/repo query",
 			pluginMap: map[string][]string{
-				"org1": []string{"plugin1", "plugin2"},
+				"org1": {"plugin1", "plugin2"},
 			},
 			owner:           "org1",
 			repo:            "repo",
@@ -41,8 +41,8 @@ func TestGetPlugins(t *testing.T) {
 		{
 			name: "All plugins enabled for org/repo should be returned for a org/repo query",
 			pluginMap: map[string][]string{
-				"org1":      []string{"plugin1", "plugin2"},
-				"org1/repo": []string{"plugin3"},
+				"org1":      {"plugin1", "plugin2"},
+				"org1/repo": {"plugin3"},
 			},
 			owner:           "org1",
 			repo:            "repo",
@@ -51,8 +51,8 @@ func TestGetPlugins(t *testing.T) {
 		{
 			name: "Plugins for org1/repo should not be returned for org2/repo query",
 			pluginMap: map[string][]string{
-				"org1":      []string{"plugin1", "plugin2"},
-				"org1/repo": []string{"plugin3"},
+				"org1":      {"plugin1", "plugin2"},
+				"org1/repo": {"plugin3"},
 			},
 			owner:           "org2",
 			repo:            "repo",
@@ -61,8 +61,8 @@ func TestGetPlugins(t *testing.T) {
 		{
 			name: "Plugins for org1 should not be returned for org2/repo query",
 			pluginMap: map[string][]string{
-				"org1":      []string{"plugin1", "plugin2"},
-				"org2/repo": []string{"plugin3"},
+				"org1":      {"plugin1", "plugin2"},
+				"org2/repo": {"plugin3"},
 			},
 			owner:           "org2",
 			repo:            "repo",

@@ -88,50 +88,67 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 
 	org := se.Repo.Owner.Login
 	repo := se.Repo.Name
+	log.Info("Searching for PRs matching the commit.")
 	issues, err := gc.FindIssues(url.QueryEscape(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo)))
 	if err != nil {
-		return err
+		return fmt.Errorf("error searching for issues matching commit: %v", err)
 	}
+	log.Infof("Found %d PRs matching commit.", len(issues))
 
 	for _, issue := range issues {
+		l := log.WithField("pr", issue.Number)
 		hasCncfYes := issue.HasLabel(claYesLabel)
 		hasCncfNo := issue.HasLabel(claNoLabel)
 		if hasCncfYes && se.State == github.StatusSuccess {
 			// Nothing to update.
+			l.Infof("PR has up-to-date %s label.", claYesLabel)
 			continue
 		}
 
 		if hasCncfNo && (se.State == github.StatusFailure || se.State == github.StatusError) {
 			// Nothing to update.
+			l.Infof("PR has up-to-date %s label.", claNoLabel)
 			continue
 		}
 
+		l.Info("PR labels may be out of date. Getting pull request info.")
 		pr, err := gc.GetPullRequest(org, repo, issue.Number)
 		if err != nil {
-			log.WithError(err).Warningf("Unable to fetch PR-%d from %s/%s.", issue.Number, org, repo)
+			l.WithError(err).Warningf("Unable to fetch PR-%d from %s/%s.", issue.Number, org, repo)
 			continue
 		}
 
 		// Check if this is the latest commit in the PR.
 		if pr.Head.SHA != se.SHA {
+			l.Info("Event is not for PR HEAD, skipping.")
 			continue
 		}
 
 		number := pr.Number
 		if se.State == github.StatusSuccess {
 			if hasCncfNo {
-				gc.RemoveLabel(org, repo, number, claNoLabel)
+				if err := gc.RemoveLabel(org, repo, number, claNoLabel); err != nil {
+					l.WithError(err).Warningf("Could not remove %s label.", claNoLabel)
+				}
 			}
-			gc.AddLabel(org, repo, number, claYesLabel)
+			if err := gc.AddLabel(org, repo, number, claYesLabel); err != nil {
+				l.WithError(err).Warningf("Could not add %s label.", claYesLabel)
+			}
 			continue
 		}
 
 		// If we end up here, the status is a failure/error.
 		if hasCncfYes {
-			gc.RemoveLabel(org, repo, number, claYesLabel)
+			if err := gc.RemoveLabel(org, repo, number, claYesLabel); err != nil {
+				l.WithError(err).Warningf("Could not remove %s label.", claYesLabel)
+			}
 		}
-		gc.CreateComment(org, repo, number, fmt.Sprintf(cncfclaNotFoundMessage, plugins.AboutThisBot))
-		gc.AddLabel(org, repo, number, claNoLabel)
+		if err := gc.CreateComment(org, repo, number, fmt.Sprintf(cncfclaNotFoundMessage, plugins.AboutThisBot)); err != nil {
+			l.WithError(err).Warning("Could not create CLA not found comment.")
+		}
+		if err := gc.AddLabel(org, repo, number, claNoLabel); err != nil {
+			l.WithError(err).Warningf("Could not add %s label.", claNoLabel)
+		}
 	}
 	return nil
 }
