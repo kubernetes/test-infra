@@ -50,6 +50,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
 - name: heapster-canarypush
   gcs_prefix: kubernetes-jenkins/logs/ci-heapster-canarypush
+- name: test-infra-test-history
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-test-history
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
 - name: ci-kubernetes-node-kubelet-cri
@@ -835,8 +837,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 - name: mikedanese-kubernetes-anywhere-e2e-gce
   gcs_prefix: kubernetes-jenkins/logs/mikedanese-kubernetes-anywhere-e2e-gce
-- name: kubernetes-test-summary
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-test-summary
 - name: kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-teardown
 - name: kubernetes-e2e-gke-gci-test-release-1.2
@@ -2118,8 +2118,6 @@ dashboards:
   dashboard_tab:
   - name: mikedanese-kubernetes-anywhere-e2e-gce
     test_group_name: mikedanese-kubernetes-anywhere-e2e-gce
-  - name: test-summary
-    test_group_name: kubernetes-test-summary
   - name: gce-enormous-teardown
     test_group_name: kubernetes-e2e-gce-enormous-teardown
   - name: gke-gci-test-release-1.2
@@ -2169,3 +2167,5 @@ dashboards:
     test_group_name: maintenance-ci-clean-projects
   - name: testgrid-config-upload
     test_group_name: testgrid-config-upload
+  - name: test-history
+    test_group_name: test-infra-test-history
