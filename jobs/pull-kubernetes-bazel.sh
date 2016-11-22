@@ -21,9 +21,7 @@ set -o pipefail
 export TEST_TMPDIR="/root/.cache/bazel"
 
 #bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
-bazel build \
-  --local_resources 9500,6,1.0 \
-  //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
+bazel build //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
 case "${rc}" in
     0) echo "Success" ;;
     1) echo "Build failed" ;;
