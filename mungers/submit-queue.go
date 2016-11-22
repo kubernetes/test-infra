@@ -460,7 +460,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		if len(config.WWWRoot) > 0 {
 			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot))))
 		}
-		http.Handle("/prometheus", gziphandler.GzipHandler(promhttp.Handler()))
+		http.Handle("/prometheus", promhttp.Handler())
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
 		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
