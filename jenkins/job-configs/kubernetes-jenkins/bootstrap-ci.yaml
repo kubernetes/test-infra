@@ -561,6 +561,11 @@
         trigger-job: 'kubernetes-build'
     # END GCE-GCI
 
+    - kubernetes-e2e-gci-docker:
+        job-name: ci-kubernetes-e2e-gci-docker
+        frequency: 'H H/6 * * *'
+        trigger-job: ''
+
     # START GKE
     # gke-master
     - kubernetes-e2e-gke:

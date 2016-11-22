@@ -137,3 +137,14 @@
         job-name: ci-kubernetes-node-kubelet-1.5
         repo-name: k8s.io/kubernetes
         frequency: 'H/5 * * * *'
+
+    - kubernetes-node-docker:  # dawnchen
+        branch: master
+        job-name: ci-kubernetes-node-docker
+        repo-name: k8s.io/kubernetes
+        frequency: '@hourly'
+    - kubernetes-node-docker-benchmark:  # dawnchen
+        branch: master
+        job-name: ci-kubernetes-node-docker-benchmark
+        repo-name: k8s.io/kubernetes
+        frequency: '@daily'
