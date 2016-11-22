@@ -1,2 +1,9 @@
 global:
   scrape_interval: 1m
+
+scrape_configs:
+- job_name: kubernetes-submit-queue
+  metrics_path: /prometheus
+  static_configs:
+    - targets:
+      - submit-queue.k8s.io
