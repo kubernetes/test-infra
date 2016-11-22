@@ -222,18 +222,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress
 - name: kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
-- name: kubernetes-e2e-gce-ingress-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress-release-1.2
-- name: kubernetes-e2e-gci-gce-ingress-release-1.2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.2
-- name: kubernetes-e2e-gce-ingress-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress-release-1.3
-- name: kubernetes-e2e-gci-gce-ingress-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.3
-- name: kubernetes-e2e-gce-ingress-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress-release-1.4
-- name: kubernetes-e2e-gce-ingress-release-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress-release-1.5
 - name: kubernetes-e2e-gci-gce-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.4
 - name: kubernetes-e2e-gci-gce-ingress-release-1.5
@@ -354,14 +342,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ingress
 - name: kubernetes-e2e-gci-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
-- name: kubernetes-e2e-gke-ingress-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ingress-release-1.3
-- name: kubernetes-e2e-gci-gke-ingress-release-1.3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1.3
-- name: kubernetes-e2e-gke-ingress-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ingress-release-1.4
-- name: kubernetes-e2e-gke-ingress-release-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ingress-release-1.5
 - name: kubernetes-e2e-gci-gke-ingress-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1.4
 - name: kubernetes-e2e-gci-gke-ingress-release-1.5
@@ -1070,18 +1050,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-ingress
   - name: gci-gce-ingress
     test_group_name: kubernetes-e2e-gci-gce-ingress
-  - name: gce-ingress-release-1.2
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.2
-  - name: gci-gce-ingress-release-1.2
-    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.2
-  - name: gce-ingress-release-1.3
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.3
-  - name: gci-gce-ingress-release-1.3
-    test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.3
-  - name: gce-ingress-release-1.4
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.4
-  - name: gce-ingress-release-1.5
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.5
   - name: gci-gce-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.4
   - name: gci-gce-ingress-release-1.5
@@ -1296,14 +1264,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-ingress
   - name: gci-gke-ingress
     test_group_name: kubernetes-e2e-gci-gke-ingress
-  - name: gke-ingress-release-1.3
-    test_group_name: kubernetes-e2e-gke-ingress-release-1.3
-  - name: gci-gke-ingress-release-1.3
-    test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.3
-  - name: gke-ingress-release-1.4
-    test_group_name: kubernetes-e2e-gke-ingress-release-1.4
-  - name: gke-ingress-release-1.5
-    test_group_name: kubernetes-e2e-gke-ingress-release-1.5
   - name: gci-gke-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.4
   - name: gci-gke-ingress-release-1.5
@@ -1848,8 +1808,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-reboot-release-1.5
   - name: gci-gce-reboot-release-1.5
     test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.5
-  - name: gce-ingress-release-1.5
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.5
   - name: gci-gce-ingress-release-1.5
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.5
   - name: gke-slow-release-1.5
@@ -1868,8 +1826,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-reboot-release-1.5
   - name: gci-gke-reboot-release-1.5
     test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.5
-  - name: gke-ingress-release-1.5
-    test_group_name: kubernetes-e2e-gke-ingress-release-1.5
   - name: gci-gke-ingress-release-1.5
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.5
   - name: gci-slow-release-1.5
@@ -1976,8 +1932,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-reboot-release-1.4
   - name: gci-gce-reboot-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-reboot-release-1.4
-  - name: gce-ingress-release-1.4
-    test_group_name: kubernetes-e2e-gce-ingress-release-1.4
   - name: gci-gce-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.4
   - name: gke-slow-release-1.4
@@ -1996,8 +1950,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-reboot-release-1.4
   - name: gci-gke-reboot-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-reboot-release-1.4
-  - name: gke-ingress-release-1.4
-    test_group_name: kubernetes-e2e-gke-ingress-release-1.4
   - name: gci-gke-ingress-release-1.4
     test_group_name: kubernetes-e2e-gci-gke-ingress-release-1.4
   - name: gci-slow-release-1.4
