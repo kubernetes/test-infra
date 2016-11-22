@@ -61,6 +61,10 @@
         job-name: pull-heapster-e2e
         max-total: 5
         repo-name: 'k8s.io/heapster'
+    - kops-e2e-kubernetes-aws:  # owner: zml@google.com
+        job-name: pull-kops-e2e-kubernetes-aws
+        max-total: 5
+        repo-name: 'k8s.io/heapster'
     - kubernetes-cross:
         max-total: 12
         job-name: pull-kubernetes-cross
