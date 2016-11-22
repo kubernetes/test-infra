@@ -122,6 +122,20 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
 
+    # gce-manual-jobs #gmarek
+    - kubernetes-e2e-gce-enormous-cluster:
+        job-name: ci-kubernetes-e2e-gce-enormous-cluster
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gce-enormous-deploy:
+        job-name: ci-kubernetes-e2e-gce-enormous-deploy
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gce-enormous-teardown:
+        job-name: ci-kubernetes-e2e-gce-enormous-teardown
+        frequency: '' #manual
+        trigger-job: ''
+
     # gci-gce-master
     - kubernetes-e2e-gci-gce:
         job-name: ci-kubernetes-e2e-gci-gce
