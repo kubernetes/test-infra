@@ -1071,6 +1071,10 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-gce-scale.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-scale-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
@@ -1084,8 +1088,11 @@ class JobTest(unittest.TestCase):
                 if job.startswith('ci-kubernetes-node-'):
                     job = 'ci-kubernetes-node-*'
                 if not line.startswith('#'):
-                    self.assertIn('export', line, line)
-                project = re.search(r'PROJECT="([^"]+)"', line).group(1)
+                  self.assertIn('export', line, line)
+                try:
+                  project = re.search(r'PROJECT="([^"]+)"', line).group(1)
+                except: # catch *all* parsing exceptions
+                  continue
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
         if duplicates:
