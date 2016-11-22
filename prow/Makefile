@@ -15,10 +15,10 @@
 all: build fmt vet test
 
 
-HOOK_VERSION   = 0.53
-LINE_VERSION   = 0.26
-SINKER_VERSION = 0.3
-DECK_VERSION   = 0.4
+HOOK_VERSION   = 0.54
+LINE_VERSION   = 0.27
+SINKER_VERSION = 0.4
+DECK_VERSION   = 0.5
 
 # These are the usual GKE variables.
 PROJECT = kubernetes-jenkins-pull

@@ -129,6 +129,7 @@ type Container struct {
 	Env     []EnvVar `json:"env,omitempty"`
 	Ports   []Port   `json:"ports,omitempty"`
 
+	Resources       Resources        `json:"resources,omitempty"`
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
 	VolumeMounts    []VolumeMount    `json:"volumeMounts,omitempty"`
 }
@@ -151,6 +152,16 @@ type EnvVarSource struct {
 type ConfigMapKeySelector struct {
 	Name string `json:"name,omitempty"`
 	Key  string `json:"key,omitempty"`
+}
+
+type Resources struct {
+	Requests *ResourceRequest `json:"requests,omitempty"`
+	Limits   *ResourceRequest `json:"limits,omitempty"`
+}
+
+type ResourceRequest struct {
+	CPU    string `json:"cpu,omitempty"`
+	Memory string `json:"memory,omitempty"`
 }
 
 type SecurityContext struct {
