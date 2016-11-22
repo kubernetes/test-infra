@@ -1071,20 +1071,24 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-e2e-gke-large-*',
+            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-e2e-gke-large-*',
+            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-e2e-gke-large-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
             with open(job_path) as fp:
                 lines = list(fp)
             for line in lines:
+                if line.startswith('#'):
+                    continue
                 if 'PROJECT' not in line:
                     continue
                 if '-soak-' in job:  # Soak jobs have deploy/test pairs
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
                 if job.startswith('ci-kubernetes-node-'):
                     job = 'ci-kubernetes-node-*'
-                if not line.startswith('#'):
-                    self.assertIn('export', line, line)
+                self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
