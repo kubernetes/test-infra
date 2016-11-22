@@ -33,7 +33,7 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 ### job-env
 export KUBE_FEATURE_GATES="AllAlpha=true"
 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\]|ScheduledJob"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]|ScheduledJob"
 export PROJECT="k8s-e2e-gce-alpha1-5"
 export KUBE_NODE_OS_DISTRIBUTION="debian"
 
