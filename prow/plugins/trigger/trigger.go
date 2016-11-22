@@ -51,8 +51,8 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-var lineStartJob = line.StartJob
-var lineDeleteJob = line.DeleteJob
+var lineStartPRJob = line.StartPRJob
+var lineDeletePRJob = line.DeletePRJob
 
 func getClient(pc plugins.PluginClient) client {
 	return client{

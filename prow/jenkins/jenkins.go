@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -50,16 +49,16 @@ type Client struct {
 }
 
 type BuildRequest struct {
-	JobName  string
-	PRNumber int
-	BaseRef  string
-	BaseSHA  string
-	PullSHA  string
+	JobName string
+	Refs    string
+	BaseRef string
+	BaseSHA string
+	PullSHA string
 }
 
 type Build struct {
 	jobName  string
-	pr       int
+	refs     string
 	id       string
 	queueURL *url.URL
 }
@@ -125,10 +124,10 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	q.Set("buildId", buildID)
 	// These two are provided for backwards-compatability with scripts that
 	// used the ghprb plugin.
-	q.Set("ghprbPullId", strconv.Itoa(br.PRNumber))
+	q.Set("ghprbPullId", br.Refs)
 	q.Set("ghprbTargetBranch", br.BaseRef)
 
-	q.Set("PULL_NUMBER", strconv.Itoa(br.PRNumber))
+	q.Set("PULL_NUMBER", br.Refs)
 	q.Set("PULL_BASE_REF", br.BaseRef)
 	q.Set("PULL_BASE_SHA", br.BaseSHA)
 	q.Set("PULL_PULL_SHA", br.PullSHA)
@@ -147,7 +146,7 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	}
 	return &Build{
 		jobName:  br.JobName,
-		pr:       br.PRNumber,
+		refs:     br.Refs,
 		id:       buildID,
 		queueURL: loc,
 	}, nil

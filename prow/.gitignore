@@ -2,3 +2,4 @@ cmd/hook/hook
 cmd/line/line
 cmd/sinker/sinker
 cmd/deck/deck
+cmd/splice/splice

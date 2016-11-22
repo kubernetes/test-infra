@@ -17,10 +17,10 @@ limitations under the License.
 package line
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -29,6 +29,25 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+var (
+	// Set by LINE_IMAGE environment variable.
+	lineImage string
+	// Set by DRY_RUN environment variable, defaults to true.
+	dryRun bool
+)
+
+func init() {
+	lineImage = os.Getenv("LINE_IMAGE")
+	dry := os.Getenv("DRY_RUN")
+	if dry == "" {
+		dryRun = true
+	} else if db, err := strconv.ParseBool(dry); err != nil {
+		panic(fmt.Sprintf("DRY_RUN not parseable: %v", err))
+	} else {
+		dryRun = db
+	}
+}
+
 // Cut off line jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
@@ -36,39 +55,95 @@ type startClient interface {
 	CreateJob(kube.Job) (kube.Job, error)
 }
 
-func StartJob(k *kube.Client, jobName string, pr github.PullRequest) error {
-	lineImage := os.Getenv("LINE_IMAGE")
-	if lineImage == "" {
-		return errors.New("LINE_IMAGE not set")
-	}
-	dry, err := strconv.ParseBool(os.Getenv("DRY_RUN"))
-	if err != nil {
-		return fmt.Errorf("DRY_RUN not parseable: %v", err)
-	}
-	return startJob(k, jobName, pr, lineImage, dry)
+type Pull struct {
+	Number int
+	Author string
+	SHA    string
 }
 
-func startJob(k startClient, jobName string, pr github.PullRequest, lineImage string, dry bool) error {
+type BuildRequest struct {
+	Org  string
+	Repo string
+
+	BaseRef string
+	BaseSHA string
+
+	Pulls []Pull
+}
+
+func StartPRJob(k *kube.Client, jobName string, pr github.PullRequest) error {
+	br := BuildRequest{
+		Org:  pr.Base.Repo.Owner.Login,
+		Repo: pr.Base.Repo.Name,
+
+		BaseRef: pr.Base.Ref,
+		BaseSHA: pr.Base.SHA,
+
+		Pulls: []Pull{
+			{
+				Number: pr.Number,
+				Author: pr.User.Login,
+				SHA:    pr.Head.SHA,
+			},
+		},
+	}
+	return startJob(k, jobName, br)
+}
+
+func StartJob(k *kube.Client, jobName string, br BuildRequest) error {
+	return startJob(k, jobName, br)
+}
+
+func startJob(k startClient, jobName string, br BuildRequest) error {
+	rs := []string{fmt.Sprintf("%s:%s", br.BaseRef, br.BaseSHA)}
+	for _, pull := range br.Pulls {
+		rs = append(rs, fmt.Sprintf("%d:%s", pull.Number, pull.SHA))
+	}
+	refs := strings.Join(rs, ",")
+
+	labels := map[string]string{
+		"owner":            br.Org,
+		"repo":             br.Repo,
+		"jenkins-job-name": jobName,
+	}
+	annotations := map[string]string{
+		"state":       "triggered",
+		"description": "Build triggered.",
+		"url":         "",
+		"refs":        refs,
+		"base-ref":    br.BaseRef,
+		"base-sha":    br.BaseSHA,
+	}
+	args := []string{
+		"--job-name=" + jobName,
+		"--repo-owner=" + br.Org,
+		"--repo-name=" + br.Repo,
+		"--base-ref=" + br.BaseRef,
+		"--base-sha=" + br.BaseSHA,
+		"--refs=" + refs,
+		"--dry-run=" + strconv.FormatBool(dryRun),
+		"--jenkins-url=$(JENKINS_URL)",
+	}
+	if len(br.Pulls) == 1 {
+		labels["type"] = "pr"
+		labels["pr"] = strconv.Itoa(br.Pulls[0].Number)
+		annotations["author"] = br.Pulls[0].Author
+		annotations["pull-sha"] = br.Pulls[0].SHA
+		args = append(args, "--pr"+strconv.Itoa(br.Pulls[0].Number))
+		args = append(args, "--pull-sha"+br.Pulls[0].SHA)
+		args = append(args, "--report=true")
+	} else if len(br.Pulls) > 1 {
+		labels["type"] = "batch"
+		args = append(args, "--report=false")
+	}
+
 	name := uuid.NewV1().String()
 	job := kube.Job{
 		Metadata: kube.ObjectMeta{
-			Name:      name,
-			Namespace: "default",
-			Labels: map[string]string{
-				"owner":            pr.Base.Repo.Owner.Login,
-				"repo":             pr.Base.Repo.Name,
-				"pr":               strconv.Itoa(pr.Number),
-				"jenkins-job-name": jobName,
-			},
-			Annotations: map[string]string{
-				"state":       "triggered",
-				"author":      pr.User.Login,
-				"description": "Build triggered.",
-				"url":         "",
-				"base-ref":    pr.Base.Ref,
-				"base-sha":    pr.Base.SHA,
-				"pull-sha":    pr.Head.SHA,
-			},
+			Name:        name,
+			Namespace:   "default",
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: kube.JobSpec{
 			ActiveDeadlineSeconds: int(jobDeadline / time.Second),
@@ -81,18 +156,8 @@ func startJob(k startClient, jobName string, pr github.PullRequest, lineImage st
 					Containers: []kube.Container{
 						{
 							Name:  "line",
-							Image: os.Getenv("LINE_IMAGE"),
-							Args: []string{
-								"--job-name=" + jobName,
-								"--repo-owner=" + pr.Base.Repo.Owner.Login,
-								"--repo-name=" + pr.Base.Repo.Name,
-								"--pr=" + strconv.Itoa(pr.Number),
-								"--base-ref=" + pr.Base.Ref,
-								"--base-sha=" + pr.Base.SHA,
-								"--pull-sha=" + pr.Head.SHA,
-								"--dry-run=" + strconv.FormatBool(dry),
-								"--jenkins-url=$(JENKINS_URL)",
-							},
+							Image: lineImage,
+							Args:  args,
 							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "oauth",
@@ -178,7 +243,7 @@ type deleteClient interface {
 	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
 }
 
-func DeleteJob(k *kube.Client, jobName string, pr github.PullRequest) error {
+func DeletePRJob(k *kube.Client, jobName string, pr github.PullRequest) error {
 	return deleteJob(k, jobName, pr)
 }
 

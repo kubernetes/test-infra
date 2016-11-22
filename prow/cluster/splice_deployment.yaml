@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: splice
+  labels:
+    app: splice
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: splice
+    spec:
+      nodeSelector:
+        role: ciongke
+      containers:
+      - name: splice
+        image: gcr.io/kubernetes-jenkins-pull/splice:0.0
+        volumeMounts:
+        - name: job-configs
+          mountPath: /etc/jobs
+          readOnly: true
+      volumes:
+      - name: job-configs
+        configMap:
+          name: job-configs
+ 

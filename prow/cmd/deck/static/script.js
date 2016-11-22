@@ -1,6 +1,8 @@
 var repos = {};
 var jobs = {};
 
+var maxLength = 500;
+
 window.onload = function() {
     for (var i = 0; i < allBuilds.length; i++) {
         repos[allBuilds[i].repo] = true;
@@ -130,6 +132,10 @@ function redraw() {
     var pr = document.getElementById("pr").value;
 
     for (var i = 0; i < allBuilds.length; i++) {
+        // Only display first 500 results.
+        if (i > 500) {
+            break;
+        }
         if (!repos[allBuilds[i].repo])
             continue;
         if (!jobs[allBuilds[i].job])
@@ -144,8 +150,13 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(allBuilds[i].state));
         r.appendChild(createLinkCell(allBuilds[i].repo, "https://github.com/" + allBuilds[i].repo));
-        r.appendChild(createLinkCell(allBuilds[i].number, "https://github.com/" + allBuilds[i].repo + "/pull/" + allBuilds[i].number));
-        r.appendChild(createLinkCell(allBuilds[i].author, "https://github.com/" + allBuilds[i].author));
+        if (allBuilds[i].type == "batch") {
+            r.appendChild(createTextCell("Batch"));
+            r.appendChild(createTextCell(""));
+        } else {
+            r.appendChild(createLinkCell(allBuilds[i].number, "https://github.com/" + allBuilds[i].repo + "/pull/" + allBuilds[i].number));
+            r.appendChild(createLinkCell(allBuilds[i].author, "https://github.com/" + allBuilds[i].author));
+        }
         r.appendChild(createTextCell(allBuilds[i].job));
         if (allBuilds[i].url === "") {
             r.appendChild(createTextCell(allBuilds[i].description));

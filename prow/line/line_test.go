@@ -55,21 +55,20 @@ func (c *kc) PatchJobStatus(name string, job kube.Job) (kube.Job, error) {
 // Make sure we set labels properly.
 func TestStartJob(t *testing.T) {
 	c := &kc{}
-	pr := github.PullRequest{
-		Number: 5,
-		Base: github.PullRequestBranch{
-			Ref: "master",
-			SHA: "abc",
-			Repo: github.Repo{
-				Name:  "kube",
-				Owner: github.User{Login: "owner"},
+	br := BuildRequest{
+		Org:     "owner",
+		Repo:    "kube",
+		BaseRef: "master",
+		BaseSHA: "abc",
+		Pulls: []Pull{
+			{
+				Number: 5,
+				Author: "a",
+				SHA:    "123",
 			},
 		},
-		Head: github.PullRequestBranch{
-			SHA: "123",
-		},
 	}
-	if err := startJob(c, "job-name", pr, "im:0", false); err != nil {
+	if err := startJob(c, "job-name", br); err != nil {
 		t.Fatalf("Didn't expect error starting job: %v", err)
 	}
 	labels := c.job.Metadata.Labels

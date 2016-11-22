@@ -143,10 +143,10 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		}
 
-		oldLineStartJob := lineStartJob
-		defer func() { lineStartJob = oldLineStartJob }()
+		oldLineStartPRJob := lineStartPRJob
+		defer func() { lineStartPRJob = oldLineStartPRJob }()
 		var startedJobs []string
-		lineStartJob = func(k *kube.Client, jobName string, pr github.PullRequest) error {
+		lineStartPRJob = func(k *kube.Client, jobName string, pr github.PullRequest) error {
 			startedJobs = append(startedJobs, jobName)
 			return nil
 		}

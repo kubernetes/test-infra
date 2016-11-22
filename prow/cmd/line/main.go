@@ -48,8 +48,11 @@ var (
 	baseRef   = flag.String("base-ref", "", "Target branch.")
 	baseSHA   = flag.String("base-sha", "", "Base SHA of the PR.")
 	pullSHA   = flag.String("pull-sha", "", "Head SHA of the PR.")
+	refs      = flag.String("refs", "", "Refs to merge together, as expected by bootstrap.py.")
+
 	namespace = flag.String("namespace", "default", "Namespace that we live in.")
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
+	report    = flag.Bool("report", true, "Whether or not to report the status on GitHub.")
 
 	jobConfigs       = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
@@ -70,8 +73,10 @@ type testClient struct {
 	BaseRef   string
 	BaseSHA   string
 	PullSHA   string
+	Refs      string
 
 	DryRun bool
+	Report bool
 
 	KubeJob       string
 	KubeClient    *kube.Client
@@ -145,8 +150,10 @@ func main() {
 		BaseRef:   *baseRef,
 		BaseSHA:   *baseSHA,
 		PullSHA:   *pullSHA,
+		Refs:      *refs,
 
 		DryRun: *dryRun,
+		Report: *report,
 
 		KubeJob:       kubeJob,
 		KubeClient:    kc,
@@ -173,6 +180,7 @@ func fields(c *testClient) logrus.Fields {
 		"base-ref": c.BaseRef,
 		"base-sha": c.BaseSHA,
 		"pull-sha": c.PullSHA,
+		"refs":     c.Refs,
 	}
 }
 
@@ -187,7 +195,7 @@ func (c *testClient) TestPRKubernetes() error {
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "PULL_NUMBER",
-				Value: strconv.Itoa(c.PRNumber),
+				Value: c.Refs,
 			},
 			kube.EnvVar{
 				Name:  "PULL_BASE_REF",
@@ -247,11 +255,11 @@ func (c *testClient) TestPRKubernetes() error {
 func (c *testClient) TestPRJenkins() error {
 	logrus.WithFields(fields(c)).Info("Starting build.")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
-		JobName:  c.Job.Name,
-		PRNumber: c.PRNumber,
-		BaseRef:  c.BaseRef,
-		BaseSHA:  c.BaseSHA,
-		PullSHA:  c.PullSHA,
+		JobName: c.Job.Name,
+		Refs:    c.Refs,
+		BaseRef: c.BaseRef,
+		BaseSHA: c.BaseSHA,
+		PullSHA: c.PullSHA,
 	})
 	if err != nil {
 		return err
@@ -316,13 +324,15 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 		"description": desc,
 		"url":         url,
 	}).Info("Setting GitHub and Kubernetes status.")
-	if err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
-		State:       state,
-		Description: desc,
-		Context:     c.Job.Context,
-		TargetURL:   url,
-	}); err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
+	if c.Report {
+		if err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
+			State:       state,
+			Description: desc,
+			Context:     c.Job.Context,
+			TargetURL:   url,
+		}); err != nil {
+			logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
+		}
 	}
 	if err := line.SetJobStatus(c.KubeClient, c.KubeJob, state, desc, url); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting Kube Job status.")
@@ -330,6 +340,9 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 }
 
 func (c *testClient) tryCreateFailureComment(url string) {
+	if !c.Report {
+		return
+	}
 	ics, err := c.GitHubClient.ListIssueComments(c.RepoOwner, c.RepoName, c.PRNumber)
 	if err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error listing issue comments.")

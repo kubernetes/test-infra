@@ -60,6 +60,7 @@ func TestFailureComment(t *testing.T) {
 		},
 		PRNumber:     5,
 		PullSHA:      "abcde",
+		Report:       true,
 		GitHubClient: ghc,
 	}
 	cl.tryCreateFailureComment("url")
