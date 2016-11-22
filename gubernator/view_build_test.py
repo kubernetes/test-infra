@@ -160,10 +160,12 @@ class BuildTest(main_test.TestBase):
     def test_build_optional_log(self):
         write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
         response = self.get_build_page()
-        self.assertIn('<a href="?log">', response)
+        self.assertIn('<a href="?log#log">', response)
         self.assertNotIn('timeout', response)
+        self.assertNotIn('build-log.txt', response)
         response = self.get_build_page('?log')
         self.assertIn('timeout', response)
+        self.assertIn('build-log.txt', response)
 
     def test_build_testgrid_links(self):
         response = self.get_build_page()

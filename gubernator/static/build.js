@@ -87,6 +87,7 @@ function expand_skipped(els) {
 		parent.normalize();  // merge adjacent text nodes
 		fix_escape_codes();  // colorize new segments
 	});
+	document.querySelector('h2#log').innerHTML = 'Build Log';
 }
 
 function expand_all(btn) {
