@@ -20,3 +20,6 @@ gs://kopeio-kubernetes-e2e/logs/:
   contact: "justinsb"
   prefix: "kopeio:"
   sequential: false
+gs://canonical-kubernetes-tests/logs/:
+  contact: "chuckbutler"
+  prefix: "juju:"
