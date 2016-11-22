@@ -1089,6 +1089,9 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
@@ -1101,7 +1104,7 @@ class JobTest(unittest.TestCase):
             with open(job_path) as fp:
                 lines = list(fp)
             for line in lines:
-                if 'PROJECT' not in line:
+                if 'PROJECT=' not in line:
                     continue
                 if '-soak-' in job:  # Soak jobs have deploy/test pairs
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
