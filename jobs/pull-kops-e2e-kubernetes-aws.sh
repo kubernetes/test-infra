@@ -28,11 +28,8 @@ make gcs-publish-ci "VERSION=${KOPS_VERSION}"
 # TODO(zmerlynn): Change this to stable.txt (which is kops default
 # anyways) after 1.5 becomes stable.txt. (Some AWS test deflaking was
 # in 1.5.)
-export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/release/latest-1.5.txt")
-export KUBERNETES_RELEASE_URL="https://storage.googleapis.com/kubernetes-release/release"
-KUBERNETES_SKIP_CONFIRM=y KUBERNETES_SKIP_CREATE_CLUSTER=y KUBERNETES_DOWNLOAD_TESTS=y \
-  "/workspace/get-kube.sh"
-export JENKINS_USE_EXISTING_BINARIES=y
+export JENKINS_PUBLISHED_VERSION=release/latest-1.5
+export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/${JENKINS_PUBLISHED_VERSION}.txt")
 
 export KUBERNETES_PROVIDER="kops-aws"
 
