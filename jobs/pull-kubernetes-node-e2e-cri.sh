@@ -18,4 +18,11 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+case "${ghprbTargetBranch:-}" in
+release-1.0|release-1.1|release-1.2|release-1.3|release-1.4)
+  echo "PR cri node e2e job disabled for legacy branches."
+  exit 0
+  ;;
+esac
+
 ./test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/cri_validation/jenkins-pull.properties
