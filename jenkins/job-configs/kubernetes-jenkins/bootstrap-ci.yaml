@@ -371,8 +371,8 @@
         job-name: ci-kubernetes-e2e-gce-es-logging
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gce-petset:
-        job-name: ci-kubernetes-e2e-gce-petset
+    - kubernetes-e2e-gce-statefulset:
+        job-name: ci-kubernetes-e2e-gce-statefulset
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
 
@@ -385,8 +385,8 @@
         job-name: ci-kubernetes-e2e-gci-gce-es-logging
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
-    - kubernetes-e2e-gci-gce-petset:
-        job-name: ci-kubernetes-e2e-gci-gce-petset
+    - kubernetes-e2e-gci-gce-statefulset:
+        job-name: ci-kubernetes-e2e-gci-gce-statefulset
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gci-gce-cri:

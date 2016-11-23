@@ -234,10 +234,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-on-cvm
 - name: kubernetes-e2e-gce-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
-- name: kubernetes-e2e-gce-petset
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-petset
-- name: kubernetes-e2e-gci-gce-petset
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-petset
+- name: kubernetes-e2e-gce-statefulset
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-statefulset
+- name: kubernetes-e2e-gci-gce-statefulset
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-statefulset
 - name: kubernetes-e2e-gci-gce-cri
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-cri
 - name: kubernetes-e2e-gci-gce-cri-serial
@@ -1060,10 +1060,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-master-on-cvm
   - name: gce-multizone
     test_group_name: kubernetes-e2e-gce-multizone
-  - name: gce-petset
-    test_group_name: kubernetes-e2e-gce-petset
-  - name: gci-gce-petset
-    test_group_name: kubernetes-e2e-gci-gce-petset
+  - name: gce-statefulset
+    test_group_name: kubernetes-e2e-gce-statefulset
+  - name: gci-gce-statefulset
+    test_group_name: kubernetes-e2e-gci-gce-statefulset
   - name: gci-gce-cri
     test_group_name: kubernetes-e2e-gci-gce-cri
   - name: gci-gce-cri-serial

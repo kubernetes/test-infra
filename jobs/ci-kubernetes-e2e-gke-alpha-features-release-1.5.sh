@@ -35,7 +35,7 @@ export ZONE="us-central1-f"
 export PROJECT="k8s-e2e-gke-alpha-1-5"
 export GKE_CREATE_FLAGS="--enable-kubernetes-alpha"
 export JENKINS_PUBLISHED_VERSION="ci/latest-1.5"
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|PetSet)\]|ScheduledJob"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\]|ScheduledJob"
 export ZONE="us-central1-a"
 
 ### post-env
