@@ -292,7 +292,6 @@ func (c *testClient) TestPRJenkins() error {
 		resultURL = c.guberURL(strconv.Itoa(result.Number))
 	}
 	c.tryCreateStatus(github.StatusPending, "Build started.", resultURL)
-	time.Sleep(2 * time.Minute)
 	for {
 		if err != nil {
 			c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")
