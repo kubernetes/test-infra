@@ -19,6 +19,7 @@ HOOK_VERSION   = 0.54
 LINE_VERSION   = 0.27
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.5
+SPLICE_VERSION   = 0.0
 
 # These are the usual GKE variables.
 PROJECT = kubernetes-jenkins-pull
@@ -70,6 +71,8 @@ create-cluster:
 	@make sinker-deployment --no-print-directory
 	@make deck-deployment --no-print-directory
 	@make deck-service --no-print-directory
+	@make splice-image --no-print-directory
+	@make splice-deployment --no-print-directory
 	@echo -n "Waiting for hook ingress IP "; while [[ "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)" == "null" ]]; do echo -n "."; sleep 5; done; echo " Done"
 	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
 	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
@@ -85,6 +88,8 @@ update-cluster: get-cluster-credentials
 	@make hook-deployment --no-print-directory
 	@make sinker-deployment --no-print-directory
 	@make deck-deployment --no-print-directory
+	@make splice-image --no-print-directory
+	@make splice-deployment --no-print-directory
 
 update-jobs: get-cluster-credentials
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
@@ -96,7 +101,7 @@ get-cluster-credentials:
 	gcloud container clusters get-credentials ciongke --project="$(PROJECT)" --zone="$(ZONE)"
 
 clean:
-	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck
+	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck cmd/splice/splice
 
 build:
 	go install cmd/...
@@ -147,7 +152,15 @@ deck-deployment:
 deck-service:
 	kubectl create -f cluster/deck_service.yaml
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service
+splice-image:
+	CGO_ENABLED=0 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
+	docker build -t "gcr.io/$(PROJECT)/splice:$(SPLICE_VERSION)" cmd/splice
+	gcloud docker -- push "gcr.io/$(PROJECT)/splice:$(SPLICE_VERSION)"
+
+splice-deployment:
+	kubectl apply -f cluster/splice_deployment.yaml
+
+.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment
 
 update-godeps:
 	rm -rf vendor Godeps

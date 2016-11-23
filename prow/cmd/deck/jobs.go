@@ -29,11 +29,13 @@ import (
 )
 
 const (
-	period = 10 * time.Second
+	period = 30 * time.Second
 )
 
 type Job struct {
+	Type        string `json:"type"`
 	Repo        string `json:"repo"`
+	Refs        string `json:"refs"`
 	BaseRef     string `json:"base_ref"`
 	BaseSHA     string `json:"base_sha"`
 	PullSHA     string `json:"pull_sha"`
@@ -95,7 +97,9 @@ func (ja *JobAgent) update() error {
 	var njs []Job
 	for _, j := range js {
 		nj := Job{
+			Type:        j.Metadata.Labels["type"],
 			Repo:        fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
+			Refs:        j.Metadata.Annotations["refs"],
 			BaseRef:     j.Metadata.Annotations["base-ref"],
 			BaseSHA:     j.Metadata.Annotations["base-sha"],
 			PullSHA:     j.Metadata.Annotations["pull-sha"],
@@ -115,8 +119,6 @@ func (ja *JobAgent) update() error {
 		}
 		if pr, err := strconv.Atoi(j.Metadata.Labels["pr"]); err == nil {
 			nj.Number = pr
-		} else {
-			return err
 		}
 		njs = append(njs, nj)
 	}

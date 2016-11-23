@@ -133,7 +133,7 @@ func buildAll(c client, pr github.PullRequest) error {
 		if !job.AlwaysRun {
 			continue
 		}
-		if err := line.StartJob(c.KubeClient, job.Name, pr); err != nil {
+		if err := line.StartPRJob(c.KubeClient, job.Name, pr); err != nil {
 			return err
 		}
 	}
@@ -142,7 +142,7 @@ func buildAll(c client, pr github.PullRequest) error {
 
 func deleteAll(c client, pr github.PullRequest) error {
 	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
-		if err := lineDeleteJob(c.KubeClient, job.Name, pr); err != nil {
+		if err := lineDeletePRJob(c.KubeClient, job.Name, pr); err != nil {
 			return err
 		}
 	}

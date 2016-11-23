@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -144,24 +143,4 @@ func TestFindMergeable(t *testing.T) {
 	// reset into a state so it can try to merge again.
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2, 1})
-}
-
-func TestMakeBuildRef(t *testing.T) {
-	s, _ := makeSplicer()
-	defer s.cleanup()
-	s.firstCommit()
-	err := s.addBranches(branchesSpec{
-		"pr/1": {"a": "1"},
-		"pr/2": {"b": "2"},
-	})
-	buildRef := s.makeBuildRef("test", []int{1, 2})
-	buf, err := json.Marshal(buildRef)
-	if err != nil {
-		t.Fatal(err)
-	}
-	expectedRef := fmt.Sprintf(
-		`{"repo":"test","base_ref":"%s",`+
-			`"prs":[{"pr":1,"sha":"%s"},{"pr":2,"sha":"%s"}]}`,
-		s.gitRef("master"), s.gitRef("pr/1"), s.gitRef("pr/2"))
-	expectEqual(t, "JSON buildRef", string(buf), expectedRef)
 }

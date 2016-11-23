@@ -28,7 +28,6 @@ import (
 
 const (
 	namespace = "default"
-	maxJobs   = 500
 )
 
 var ja *JobAgent
@@ -49,9 +48,6 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("/static")))
 	http.HandleFunc("/data.js", func(w http.ResponseWriter, r *http.Request) {
 		jobs := ja.Jobs()
-		if len(jobs) > maxJobs {
-			jobs = jobs[:maxJobs]
-		}
 		jd, err := json.Marshal(jobs)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling jobs.")
@@ -66,5 +62,6 @@ func main() {
 		}
 		w.Header().Set("Cache-Control", "no-cache")
 	})
+
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
 }

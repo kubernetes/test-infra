@@ -28,13 +28,19 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/jobs"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/line"
 )
 
 var (
 	submitQueueURL = flag.String("submit-queue-endpoint", "http://submit-queue.k8s.io/github-e2e-queue", "Submit Queue status URL")
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
-	repoName       = flag.String("repo", "kubernetes/kubernetes", "Repo name")
+	orgName        = flag.String("org", "kubernetes", "Org name")
+	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	logJson        = flag.Bool("logjson", false, "output log in JSON format")
+	jobConfigs     = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
 )
 
 // Call a binary and return its output and success status.
@@ -169,27 +175,20 @@ func (s *splicer) gitRef(ref string) string {
 	return strings.TrimSpace(output)
 }
 
-type prRef struct {
-	PR  int    `json:"pr"`
-	SHA string `json:"sha"`
-}
-
-type buildRef struct {
-	Repo string  `json:"repo"`
-	Base string  `json:"base_ref"`
-	PRs  []prRef `json:"prs"`
-}
-
-// Produce a struct describing the exact revisions that were merged together.
-// This is sent to Prow and used by the Submit Queue when deciding whether it
-// can use a batch test result to merge something.
-func (s *splicer) makeBuildRef(repo string, prs []int) *buildRef {
-	ref := &buildRef{Repo: repo, Base: s.gitRef("master")}
+// Produce a line.BuildRequest for the given pull requests. This involves
+// computing the git ref for master and the PRs.
+func (s *splicer) makeBuildRequest(org, repo string, prs []int) line.BuildRequest {
+	req := line.BuildRequest{
+		Org:     org,
+		Repo:    repo,
+		BaseRef: "master",
+		BaseSHA: s.gitRef("master"),
+	}
 	for _, pr := range prs {
 		branch := fmt.Sprintf("pr/%d", pr)
-		ref.PRs = append(ref.PRs, prRef{pr, s.gitRef(branch)})
+		req.Pulls = append(req.Pulls, line.Pull{Number: pr, SHA: s.gitRef(branch)})
 	}
-	return ref
+	return req
 }
 
 func main() {
@@ -202,32 +201,64 @@ func main() {
 
 	splicer, err := makeSplicer()
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("Could not make splicer.")
 	}
 	defer splicer.cleanup()
 
+	ja := &jobs.JobAgent{}
+	if err := ja.Start(*jobConfigs); err != nil {
+		log.WithError(err).Fatal("Could not start job agent.")
+	}
+
+	kc, err := kube.NewClientInCluster("default")
+	if err != nil {
+		log.WithError(err).Fatal("Error getting kube client.")
+	}
+
 	// Loop endless, sleeping a minute between iterations
-	for {
+	for range time.Tick(1 * time.Minute) {
+		// List batch jobs, only start a new one if none are active.
+		currentJobs, err := kc.ListJobs(map[string]string{"type": "batch"})
+		if err != nil {
+			log.WithError(err).Error("Error listing batch jobs.")
+			continue
+		}
+		running := []string{}
+		for _, job := range currentJobs {
+			if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
+				running = append(running, job.Metadata.Labels["jenkins-job-name"])
+			}
+		}
+		if len(running) > 0 {
+			log.Infof("Waiting on %d jobs: %v", len(running), running)
+			continue
+		}
+		// Start a new batch.
 		queue, err := getQueuedPRs(*submitQueueURL)
 		log.Info("PRs in queue:", queue)
 		if err != nil {
-			log.WithError(err).Error("error getting queued PRs")
-			time.Sleep(1 * time.Minute)
+			log.WithError(err).Error("Error getting queued PRs.")
 			continue
 		}
 		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
 		if err != nil {
-			log.WithError(err).Error("error computing mergeable PRs")
-			time.Sleep(1 * time.Minute)
+			log.WithError(err).Error("Error computing mergeable PRs.")
 			continue
 		}
-		buildRef := splicer.makeBuildRef(*repoName, batchPRs)
-		buf, err := json.Marshal(buildRef)
-		if err != nil {
-			log.WithError(err).Fatal("unable to marshal JSON")
+		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
+		log.Infof("Batch PRs: %v", batchPRs)
+		if len(batchPRs) <= 1 {
+			continue
 		}
-		log.Info("batch PRs:", batchPRs)
-		log.Info("batch buildRef:", string(buf))
-		time.Sleep(1 * time.Minute)
+		if len(batchPRs) > 5 {
+			batchPRs = batchPRs[:5]
+		}
+		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
+			if job.AlwaysRun {
+				if err := line.StartJob(kc, job.Name, buildReq); err != nil {
+					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
+				}
+			}
+		}
 	}
 }
