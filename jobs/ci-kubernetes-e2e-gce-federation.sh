@@ -75,7 +75,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-readonly timeoutTime="500m"
+readonly timeoutTime="900m"
 timeout -k 15m "${timeoutTime}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
