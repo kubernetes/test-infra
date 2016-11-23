@@ -31,7 +31,7 @@ make gcs-publish-ci "VERSION=${KOPS_VERSION}"
 export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/release/latest-1.5.txt")
 export KUBERNETES_RELEASE_URL="https://storage.googleapis.com/kubernetes-release/release"
 KUBERNETES_SKIP_CONFIRM=y KUBERNETES_SKIP_CREATE_CLUSTER=y KUBERNETES_DOWNLOAD_TESTS=y \
-  "${WORKSPACE}/get-kube.sh"
+  "/workspace/get-kube.sh"
 export JENKINS_USE_EXISTING_BINARIES=y
 
 export KUBERNETES_PROVIDER="kops-aws"
