@@ -131,11 +131,7 @@ function redraw() {
     var author = document.getElementById("author").value;
     var pr = document.getElementById("pr").value;
 
-    for (var i = 0; i < allBuilds.length; i++) {
-        // Only display first 500 results.
-        if (i > 500) {
-            break;
-        }
+    for (var i = 0; i < allBuilds.length && i < 500; i++) {
         if (!repos[allBuilds[i].repo])
             continue;
         if (!jobs[allBuilds[i].job])
@@ -150,6 +146,7 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(allBuilds[i].state));
         r.appendChild(createLinkCell(allBuilds[i].repo, "https://github.com/" + allBuilds[i].repo));
+        // TODO(spxtr): Display batches in a more helpful manner.
         if (allBuilds[i].type == "batch") {
             r.appendChild(createTextCell("Batch"));
             r.appendChild(createTextCell(""));

@@ -68,7 +68,6 @@ func getQueuedPRs(url string) ([]int, error) {
 	queue := struct {
 		E2EQueue []struct {
 			Number int
-			Login  string
 		}
 	}{}
 	err = json.Unmarshal(body, &queue)
@@ -176,9 +175,8 @@ func (s *splicer) gitRef(ref string) string {
 	return strings.TrimSpace(output)
 }
 
-// Produce a struct describing the exact revisions that were merged together.
-// This is sent to Prow and used by the Submit Queue when deciding whether it
-// can use a batch test result to merge something.
+// Produce a line.BuildRequest for the given pull requests. This involves
+// computing the git ref for master and the PRs.
 func (s *splicer) makeBuildRequest(org, repo string, prs []int) line.BuildRequest {
 	req := line.BuildRequest{
 		Org:     org,
@@ -248,13 +246,13 @@ func main() {
 			continue
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
-		if len(batchPRs) < 2 {
+		log.Infof("Batch PRs: %v", batchPRs)
+		if len(batchPRs) <= 1 {
 			continue
 		}
 		if len(batchPRs) > 5 {
 			batchPRs = batchPRs[:5]
 		}
-		log.Infof("Batch PRs: %v", batchPRs)
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
 			if job.AlwaysRun {
 				if err := line.StartJob(kc, job.Name, buildReq); err != nil {

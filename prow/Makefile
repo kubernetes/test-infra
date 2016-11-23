@@ -88,6 +88,8 @@ update-cluster: get-cluster-credentials
 	@make hook-deployment --no-print-directory
 	@make sinker-deployment --no-print-directory
 	@make deck-deployment --no-print-directory
+	@make splice-image --no-print-directory
+	@make splice-deployment --no-print-directory
 
 update-jobs: get-cluster-credentials
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
