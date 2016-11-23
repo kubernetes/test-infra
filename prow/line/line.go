@@ -130,8 +130,8 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 		labels["pr"] = strconv.Itoa(br.Pulls[0].Number)
 		annotations["author"] = br.Pulls[0].Author
 		annotations["pull-sha"] = br.Pulls[0].SHA
-		args = append(args, "--pr"+strconv.Itoa(br.Pulls[0].Number))
-		args = append(args, "--pull-sha"+br.Pulls[0].SHA)
+		args = append(args, "--pr="+strconv.Itoa(br.Pulls[0].Number))
+		args = append(args, "--pull-sha="+br.Pulls[0].SHA)
 		args = append(args, "--report=true")
 	} else if len(br.Pulls) > 1 {
 		labels["type"] = "batch"
