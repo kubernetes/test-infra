@@ -1,7 +1,7 @@
 # This is the old job definition for GKE upgrade tests.
 - job-group:
     name: 'kubernetes-e2e-gke-{version-old}-{version-new}'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     test-owner: 'maisem'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
@@ -78,7 +78,7 @@
 - job-group:
     name: 'kubernetes-e2e-gce-{version-old}-{version-new}'
     test-owner: 'davidopp'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     jobs:
         - 'kubernetes-e2e-{suffix}':
             suffix: 'gce-{version-old}-{version-new}-upgrade-master'
@@ -141,7 +141,7 @@
 - job-group:
     name: 'kubernetes-e2e-gce-{image-old}-{version-old}-{image-new}-{version-new}'
     test-owner: 'mtaufen'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     jobs:
         - 'kubernetes-e2e-{suffix}':
             suffix: 'gce-{image-old}-{version-old}-{image-new}-{version-new}-upgrade-master'
@@ -235,7 +235,7 @@
 # This is the job definition for all GKE kubectl skew tests
 - job-group:
     name: 'kubernetes-e2e-gke-{version-cluster}-{version-client}-kubectl-skew'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     test-owner: 'maisem'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
@@ -329,7 +329,7 @@
 # This is the job definition for all GCE kubectl skew tests
 - job-group:
     name: 'kubernetes-e2e-gce-{version-cluster}-{version-client}-kubectl-skew'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     test-owner: 'davidopp'
     jobs:
         - 'kubernetes-e2e-{suffix}':
@@ -414,7 +414,7 @@
 # These is the job definition for all new GKE upgrade tests.
 - job-group:
     name: 'kubernetes-e2e-gke-{image-old}-{version-old}-{image-new}-{version-new}'
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     test-owner: 'maisem'
     jobs:
         - 'kubernetes-e2e-{gke-suffix}':
