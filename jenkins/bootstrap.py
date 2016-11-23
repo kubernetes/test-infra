@@ -112,6 +112,22 @@ def pull_has_shas(pull):
     return isinstance(pull, basestring) and ':' in pull
 
 
+def pull_numbers(pull):
+    """Turn a pull reference list into a list of PR numbers to merge.
+
+    >>> pull_numbers(123)
+    [123]
+    >>> pull_numbers('master:abcd')
+    []
+    >>> pull_numbers('master:abcd,123:qwer,124:zxcv')
+    [123, 124]
+    """
+    if pull_has_shas(pull):
+        return [r.split(':')[0] for r in pull.split(',')][1:]
+    else:
+        return [int(pull)]
+
+
 def pull_ref(pull):
     """Turn a PR number of list of refs into specific refs to fetch and check out.
 
@@ -468,10 +484,11 @@ def pr_paths(repo, job, build, pull):
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
-    if pull_has_shas(pull):
+    pr_nums = pull_numbers(pull)
+    if len(pr_nums) > 1:
         pull = os.path.join(prefix, 'batch')
     else:
-        pull = os.path.join(prefix, pull)
+        pull = os.path.join(prefix, str(pr_nums[0]))
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
             base, 'directory', job, 'jobResultsCache.json')
