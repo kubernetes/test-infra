@@ -815,8 +815,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
 - name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
-- name: mikedanese-kubernetes-anywhere-e2e-gce
-  gcs_prefix: kubernetes-jenkins/logs/mikedanese-kubernetes-anywhere-e2e-gce
 - name: kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-teardown
 - name: kubernetes-e2e-gke-gci-test-release-1.2
@@ -2075,8 +2073,6 @@ dashboards:
 
 - name: misc
   dashboard_tab:
-  - name: mikedanese-kubernetes-anywhere-e2e-gce
-    test_group_name: mikedanese-kubernetes-anywhere-e2e-gce
   - name: gce-enormous-teardown
     test_group_name: kubernetes-e2e-gce-enormous-teardown
   - name: gke-gci-test-release-1.2
