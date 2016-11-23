@@ -565,7 +565,7 @@ func TestSubmitQueue(t *testing.T) {
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     false,
 			retest2Pass:     false,
-			reason:          merged,
+			reason:          mergedSkippedRetest,
 			state:           "success",
 			isMerged:        true,
 		},
