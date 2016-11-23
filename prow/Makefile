@@ -19,7 +19,7 @@ HOOK_VERSION   = 0.57
 LINE_VERSION   = 0.29
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.6
-SPLICE_VERSION   = 0.0
+SPLICE_VERSION   = 0.1
 
 # These are the usual GKE variables.
 PROJECT = kubernetes-jenkins-pull
