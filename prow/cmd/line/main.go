@@ -226,7 +226,10 @@ func (c *testClient) TestPRKubernetes() error {
 		c.tryCreateStatus(github.StatusError, "Error creating build pod.", "")
 		return err
 	}
-	resultURL := c.guberURL(buildID)
+	var resultURL string
+	if c.Report {
+		resultURL = c.guberURL(buildID)
+	}
 	c.tryCreateStatus(github.StatusPending, "Build started", resultURL)
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
@@ -284,8 +287,12 @@ func (c *testClient) TestPRJenkins() error {
 		return err
 	}
 
-	resultURL := c.guberURL(strconv.Itoa(result.Number))
+	var resultURL string
+	if c.Report {
+		resultURL = c.guberURL(strconv.Itoa(result.Number))
+	}
 	c.tryCreateStatus(github.StatusPending, "Build started.", resultURL)
+	time.Sleep(2 * time.Minute)
 	for {
 		if err != nil {
 			c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")

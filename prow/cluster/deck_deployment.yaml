@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/kubernetes-jenkins-pull/deck:0.5
+        image: gcr.io/kubernetes-jenkins-pull/deck:0.6
         ports:
           - name: http
             containerPort: 80

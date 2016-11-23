@@ -70,7 +70,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 
 	for _, job := range requestedJobs {
 		c.Logger.Info("Starting %s build.", job.Name)
-		if err := lineStartPRJob(c.KubeClient, job.Name, *pr); err != nil {
+		if err := lineStartPRJob(c.KubeClient, job.Name, job.Context, *pr); err != nil {
 			return err
 		}
 	}
