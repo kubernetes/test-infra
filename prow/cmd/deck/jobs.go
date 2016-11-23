@@ -42,6 +42,7 @@ type Job struct {
 	Number      int    `json:"number"`
 	Author      string `json:"author"`
 	Job         string `json:"job"`
+	Context     string `json:"context"`
 	Started     string `json:"started"`
 	Finished    string `json:"finished"`
 	Duration    string `json:"duration"`
@@ -105,6 +106,7 @@ func (ja *JobAgent) update() error {
 			PullSHA:     j.Metadata.Annotations["pull-sha"],
 			Author:      j.Metadata.Annotations["author"],
 			Job:         j.Metadata.Labels["jenkins-job-name"],
+			Context:     j.Metadata.Annotations["context"],
 			Started:     j.Status.StartTime.Format(time.Stamp),
 			State:       j.Metadata.Annotations["state"],
 			Description: j.Metadata.Annotations["description"],

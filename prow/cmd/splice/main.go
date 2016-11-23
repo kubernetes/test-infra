@@ -255,7 +255,7 @@ func main() {
 		}
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
 			if job.AlwaysRun {
-				if err := line.StartJob(kc, job.Name, buildReq); err != nil {
+				if err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
 					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
 				}
 			}

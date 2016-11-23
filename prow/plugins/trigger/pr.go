@@ -133,7 +133,7 @@ func buildAll(c client, pr github.PullRequest) error {
 		if !job.AlwaysRun {
 			continue
 		}
-		if err := line.StartPRJob(c.KubeClient, job.Name, pr); err != nil {
+		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr); err != nil {
 			return err
 		}
 	}

@@ -71,7 +71,7 @@ type BuildRequest struct {
 	Pulls []Pull
 }
 
-func StartPRJob(k *kube.Client, jobName string, pr github.PullRequest) error {
+func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest) error {
 	br := BuildRequest{
 		Org:  pr.Base.Repo.Owner.Login,
 		Repo: pr.Base.Repo.Name,
@@ -87,14 +87,14 @@ func StartPRJob(k *kube.Client, jobName string, pr github.PullRequest) error {
 			},
 		},
 	}
-	return startJob(k, jobName, br)
+	return startJob(k, jobName, context, br)
 }
 
-func StartJob(k *kube.Client, jobName string, br BuildRequest) error {
-	return startJob(k, jobName, br)
+func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
+	return startJob(k, jobName, context, br)
 }
 
-func startJob(k startClient, jobName string, br BuildRequest) error {
+func startJob(k startClient, jobName, context string, br BuildRequest) error {
 	rs := []string{fmt.Sprintf("%s:%s", br.BaseRef, br.BaseSHA)}
 	for _, pull := range br.Pulls {
 		rs = append(rs, fmt.Sprintf("%d:%s", pull.Number, pull.SHA))
@@ -113,6 +113,7 @@ func startJob(k startClient, jobName string, br BuildRequest) error {
 		"refs":        refs,
 		"base-ref":    br.BaseRef,
 		"base-sha":    br.BaseSHA,
+		"context":     context,
 	}
 	args := []string{
 		"--job-name=" + jobName,
@@ -150,7 +151,7 @@ func startJob(k startClient, jobName string, br BuildRequest) error {
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
 					NodeSelector: map[string]string{
-						"role": "ciongke",
+						"role": "build",
 					},
 					RestartPolicy: "Never",
 					Containers: []kube.Container{

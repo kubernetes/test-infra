@@ -20,6 +20,11 @@ spec:
         - name: job-configs
           mountPath: /etc/jobs
           readOnly: true
+        env:
+        - name: LINE_IMAGE
+          value: "gcr.io/kubernetes-jenkins-pull/line:0.28"
+        - name: DRY_RUN
+          value: "false"
       volumes:
       - name: job-configs
         configMap:
