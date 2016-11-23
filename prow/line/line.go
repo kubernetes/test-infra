@@ -151,7 +151,7 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 			Template: kube.PodTemplateSpec{
 				Spec: kube.PodSpec{
 					NodeSelector: map[string]string{
-						"role": "ciongke",
+						"role": "build",
 					},
 					RestartPolicy: "Never",
 					Containers: []kube.Container{
