@@ -468,7 +468,8 @@ def pr_paths(repo, job, build, pull):
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
-    if pull_has_shas(pull):
+    # Batch if we are doing more than master + pull.
+    if len(pull_ref(pull)[0]) > 2:
         pull = os.path.join(prefix, 'batch')
     else:
         pull = os.path.join(prefix, pull)
