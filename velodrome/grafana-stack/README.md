@@ -44,6 +44,11 @@ Create/Update prometheus configuration configmap:
 kubectl create configmap prometheus --from-file=prometheus-config.yml
 ```
 
+Add Google analytics to grafana (keep value empty if not needed):
+```
+kubectl create configmap grafana --from-literal=google-analytics-uaid=YOUR_UAID
+```
+
 Deploying is simple:
 ```
 kubectl apply -f grafana.yaml -f influxdb.yaml -f nginx.yaml
