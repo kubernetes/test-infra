@@ -46,3 +46,6 @@ data:
   issue-categorizer.triager-url: ""
   cla.cla-status-context: "cla/linuxfoundation"
   alias.alias-file: "/gitrepos/contrib/OWNERS_ALIASES"
+
+  # Temporary gate approval process
+  approval-activated: "true"

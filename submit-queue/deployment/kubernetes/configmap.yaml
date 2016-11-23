@@ -195,3 +195,6 @@ data:
   issue-categorizer.triager-url: "http://issue-triager-service:5000"
   cla.cla-status-context: ""
   alias.alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
+
+  # Temporary gate approval process
+  approval-activated: "false"

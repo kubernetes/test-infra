@@ -86,8 +86,13 @@ func BareIssue() *github.Issue {
 func LGTMIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 }
+
 func LGTMApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel}, true)
+}
+
+func OnlyApprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, approvedLabel}, true)
 }
 
 func DoNotMergeIssue() *github.Issue {
@@ -184,6 +189,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
 	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
+	sq.GateApproved = true
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
 	sq.BlockingJobNames = []string{"foo"}
@@ -500,6 +506,22 @@ func TestSubmitQueue(t *testing.T) {
 			reason:          merged,
 			state:           "success",
 			isMerged:        true,
+		},
+		{
+			name:            "Test1+NoLgtm",
+			pr:              ValidPR(),
+			issue:           OnlyApprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noLGTM,
+			state:           "pending",
+			isMerged:        false,
 		},
 		// Entire thing was run and good, but emergency merge stop in progress
 		{
