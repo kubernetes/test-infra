@@ -25,6 +25,15 @@ export KOPS_VERSION="pull-$(git describe --always)"
 export KOPS_URL="${GCS_LOCATION/gs:\/\//https:\/\/storage.googleapis.com\/}/${KOPS_VERSION}"
 make gcs-publish-ci "VERSION=${KOPS_VERSION}"
 
+# TODO(zmerlynn): Change this to stable.txt (which is kops default
+# anyways) after 1.5 becomes stable.txt. (Some AWS test deflaking was
+# in 1.5.)
+export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/release/latest-1.5.txt")
+export KUBERNETES_RELEASE_URL="https://storage.googleapis.com/kubernetes-release/release"
+KUBERNETES_SKIP_CONFIRM=y KUBERNETES_SKIP_CREATE_CLUSTER=y KUBERNETES_DOWNLOAD_TESTS=y \
+  "${WORKSPACE}/get-kube.sh"
+export JENKINS_USE_EXISTING_BINARIES=y
+
 export KUBERNETES_PROVIDER="kops-aws"
 
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
@@ -32,6 +41,7 @@ export KOPS_CLUSTER_DOMAIN="${KOPS_CLUSTER_DOMAIN:-test-aws.k8s.io}"
 export E2E_NAME="aws-kops-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export E2E_OPT="${E2E_OPT:-}\
   --kops-cluster ${E2E_NAME}.${KOPS_CLUSTER_DOMAIN}\
+  --kops-kubernetes-version ${KUBERNETES_RELEASE}\
   --kops-nodes 4\
   --kops-state ${KOPS_STATE_STORE}"
 export E2E_MIN_STARTUP_PODS="1"
