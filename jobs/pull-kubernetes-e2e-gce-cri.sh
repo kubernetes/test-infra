@@ -21,10 +21,12 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 # TODO(fejta): remove this
-if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "release-1.1" ]]; then
-  echo "PR GCE job disabled for legacy branches."
-  exit
-fi
+case "${ghprbTargetBranch:-}" in
+release-1.0|release-1.1|release-1.2|release-1.3|release-1.4)
+  echo "PR cri e2e job disabled for legacy branches."
+  exit 0
+  ;;
+esac
 
 export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
