@@ -116,16 +116,16 @@ def pull_numbers(pull):
     """Turn a pull reference list into a list of PR numbers to merge.
 
     >>> pull_numbers(123)
-    [123]
+    ['123']
     >>> pull_numbers('master:abcd')
     []
     >>> pull_numbers('master:abcd,123:qwer,124:zxcv')
-    [123, 124]
+    ['123', '124']
     """
     if pull_has_shas(pull):
         return [r.split(':')[0] for r in pull.split(',')][1:]
     else:
-        return [int(pull)]
+        return [str(pull)]
 
 
 def pull_ref(pull):
@@ -484,11 +484,12 @@ def pr_paths(repo, job, build, pull):
     else:
         prefix = repo.replace('/', '_')
     base = 'gs://kubernetes-jenkins/pr-logs'
+    # Batch merges are those with more than one PR specified.
     pr_nums = pull_numbers(pull)
     if len(pr_nums) > 1:
         pull = os.path.join(prefix, 'batch')
     else:
-        pull = os.path.join(prefix, str(pr_nums[0]))
+        pull = os.path.join(prefix, pr_nums[0])
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
             base, 'directory', job, 'jobResultsCache.json')
