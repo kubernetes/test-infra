@@ -56,6 +56,13 @@ fi
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
+  if ! which gsutil; then
+    export PATH=/google-cloud-sdk/bin:${PATH}
+    if ! which gsutil; then
+      echo "Can't find gsutil" >&2
+      exit 1
+    fi
+  fi
   echo "Publish version to ${KOPS_PUBLISH_GREEN_PATH}: ${KOPS_URL}"
   echo "${KOPS_URL}" | gsutil cp - "${KOPS_PUBLISH_GREEN_PATH}"
 fi
