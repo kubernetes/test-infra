@@ -104,7 +104,7 @@ clean:
 	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck cmd/splice/splice
 
 build:
-	go install cmd/...
+	go install ./cmd/...
 
 fmt:
 	(diff=$$(find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -d -s 2>&1); if [[ -n "$${diff}" ]]; then echo "$${diff}"; false; fi)
