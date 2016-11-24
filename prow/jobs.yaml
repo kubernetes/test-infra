@@ -38,6 +38,7 @@ kubernetes/heapster:
 
 kubernetes/kops:
 - name: pull-kops-e2e-kubernetes-aws
+  always_run: true
   context: Jenkins Kubernetes AWS e2e
   rerun_command: "@k8s-bot aws e2e test this"
   trigger: "@k8s-bot (aws )?(e2e )?test this"
