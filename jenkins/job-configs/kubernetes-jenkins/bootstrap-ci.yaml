@@ -127,6 +127,10 @@
         job-name: ci-kubernetes-e2e-gce-kubenet
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gce-ha-master:
+        job-name: ci-kubernetes-e2e-gce-ha-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'kubernetes-build'
 
     # gce-manual-jobs #gmarek
     - kubernetes-e2e-gce-enormous-cluster:
