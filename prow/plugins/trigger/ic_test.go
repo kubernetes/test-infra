@@ -144,10 +144,17 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 
 		oldLineStartPRJob := lineStartPRJob
-		defer func() { lineStartPRJob = oldLineStartPRJob }()
+		oldLineDeletePRJob := lineDeletePRJob
+		defer func() {
+			lineStartPRJob = oldLineStartPRJob
+			lineDeletePRJob = oldLineDeletePRJob
+		}()
 		var startedJobs []string
 		lineStartPRJob = func(k *kube.Client, jobName, context string, pr github.PullRequest) error {
 			startedJobs = append(startedJobs, jobName)
+			return nil
+		}
+		lineDeletePRJob = func(k *kube.Client, jobName string, pr github.PullRequest) error {
 			return nil
 		}
 		if err := handleIC(c, event); err != nil {

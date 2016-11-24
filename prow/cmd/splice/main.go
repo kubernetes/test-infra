@@ -215,6 +215,7 @@ func main() {
 		log.WithError(err).Fatal("Error getting kube client.")
 	}
 
+	cooldown := 0
 	// Loop endless, sleeping a minute between iterations
 	for range time.Tick(1 * time.Minute) {
 		// List batch jobs, only start a new one if none are active.
@@ -233,7 +234,12 @@ func main() {
 			log.Infof("Waiting on %d jobs: %v", len(running), running)
 			continue
 		}
-		// Start a new batch.
+		// Start a new batch if the cooldown is 0, otherwise wait. This gives
+		// the SQ some time to merge before we start a new batch.
+		if cooldown > 0 {
+			cooldown--
+			continue
+		}
 		queue, err := getQueuedPRs(*submitQueueURL)
 		log.Info("PRs in queue:", queue)
 		if err != nil {
@@ -260,5 +266,6 @@ func main() {
 				}
 			}
 		}
+		cooldown = 5
 	}
 }

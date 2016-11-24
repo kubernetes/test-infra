@@ -265,6 +265,7 @@ func (c *testClient) TestPRJenkins() error {
 		PullSHA: c.PullSHA,
 	})
 	if err != nil {
+		c.tryCreateStatus(github.StatusError, "Error starting build.", "")
 		return err
 	}
 	eq, err := c.JenkinsClient.Enqueued(b)
