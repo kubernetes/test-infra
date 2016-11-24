@@ -38,3 +38,11 @@ func ValidatePayload(payload []byte, sig string, key []byte) bool {
 	expected := mac.Sum(nil)
 	return hmac.Equal(sb, expected)
 }
+
+// PayloadSignature returns the signature that matches the payload.
+func PayloadSignature(payload []byte, key []byte) string {
+	mac := hmac.New(sha1.New, key)
+	mac.Write(payload)
+	sum := mac.Sum(nil)
+	return "sha1=" + hex.EncodeToString(sum)
+}

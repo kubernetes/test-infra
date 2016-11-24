@@ -42,48 +42,67 @@ import (
 var (
 	port = flag.Int("port", 8888, "Port to listen on.")
 
-	jobConfig         = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
-	pluginConfig      = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+	jobConfig    = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
+	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+
+	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
+
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-	// We'll get SIGTERM first and then SIGKILL after our graceful termination
-	// deadline.
-	signal.Ignore(syscall.SIGTERM)
-
-	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not read webhook secret file.")
-	}
-	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
-
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not read oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	dry, err := strconv.ParseBool(os.Getenv("DRY_RUN"))
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to parse DRY_RUN environment variable.")
-	}
-
+	var webhookSecret []byte
 	var githubClient *github.Client
-	if dry {
-		githubClient = github.NewDryRunClient(oauthSecret)
-	} else {
-		githubClient = github.NewClient(oauthSecret)
-	}
+	var kubeClient *kube.Client
+	if *local {
+		logrus.Warning("Running in local mode for dev only.")
 
-	kubeClient, err := kube.NewClientInCluster("default")
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logrus.Print("HMAC Secret: abcde12345")
+		webhookSecret = []byte("abcde12345")
+
+		githubClient = github.NewFakeClient()
+		githubClient.Logger = logrus.StandardLogger()
+
+		kubeClient = kube.NewFakeClient()
+		kubeClient.Logger = logrus.StandardLogger()
+	} else {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+
+		// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
+		// We'll get SIGTERM first and then SIGKILL after our graceful termination
+		// deadline.
+		signal.Ignore(syscall.SIGTERM)
+
+		webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not read webhook secret file.")
+		}
+		webhookSecret = bytes.TrimSpace(webhookSecretRaw)
+
+		oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not read oauth secret file.")
+		}
+		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+		dry, err := strconv.ParseBool(os.Getenv("DRY_RUN"))
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to parse DRY_RUN environment variable.")
+		}
+
+		if dry {
+			githubClient = github.NewDryRunClient(oauthSecret)
+		} else {
+			githubClient = github.NewClient(oauthSecret)
+		}
+
+		kubeClient, err = kube.NewClientInCluster("default")
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
 	}
 
 	jobAgent := &jobs.JobAgent{}
