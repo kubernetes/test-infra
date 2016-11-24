@@ -39,18 +39,6 @@ JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 # Service account key for bootstrap jobs.
 SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
 
-# Useful rules:
-# - create-cluster turns up a cluster then prints out the webhook address.
-# - update-cluster pushes new image versions and updates the deployment.
-# - update-jobs updates the configmap defining the Jenkins jobs.
-# - hook-image builds and pushes the hook image.
-# - hook-deployment updates the deployment.
-# - hook-service create the hook service.
-# - line-image builds and pushes the line image.
-# - sinker-image builds and pushes the sinker image.
-# - sinker-deployment updates the sinker deployment.
-# - update-godeps deletes and recreates vendored dependencies.
-
 # Should probably move this to a script or something.
 create-cluster:
 	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=ciongke --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
