@@ -266,6 +266,6 @@ func main() {
 				}
 			}
 		}
-		cooldown = 10
+		cooldown = 5
 	}
 }
