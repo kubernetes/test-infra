@@ -87,6 +87,7 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # Get golang into our PATH so we can run e2e.go
 export PATH=${PATH}:/usr/local/go/bin
 
+export KOPS_LATEST="latest-ci-green.txt"
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
 timeout -k 15m 55m "${testinfra}/jenkins/dockerized-e2e-runner.sh" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
