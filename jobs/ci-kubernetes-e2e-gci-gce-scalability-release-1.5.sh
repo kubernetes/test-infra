@@ -23,7 +23,7 @@ readonly testinfra="$(dirname "${0}")/.."
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="8"
-export KUBE_GCE_ZONE="us-central1-f"
+export KUBE_GCE_ZONE="us-east1-b"
 export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 
