@@ -17,12 +17,13 @@ data:
   # submit-queue options.
   submit-queue.required-contexts: "Jenkins GCE Node e2e"
   submit-queue.nonblocking-jenkins-jobs: "\
+    ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-aws,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
-    ci-kubernetes-e2e-gce-serial,\
     ci-kubernetes-e2e-gce-scalability,\
+    ci-kubernetes-e2e-gce-serial,\
     ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4,\
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
@@ -79,23 +80,22 @@ data:
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
     ci-kubernetes-soak-gke-test,\
-    kubernetes-cross-build,\
     kubernetes-e2e-gce-enormous-cluster,\
     kubernetes-e2e-gce-enormous-deploy,\
     kubernetes-e2e-gce-enormous-teardown,\
     kubernetes-garbagecollector-gci-feature,\
     kubernetes-e2e-kops-aws-updown"
   submit-queue.jenkins-jobs: "\
-    ci-kubernetes-node-kubelet,\
+    ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce,\
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gke,\
     ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-kubemark-500-gce,\
+    ci-kubernetes-node-kubelet,\
     ci-kubernetes-test-go,\
     ci-kubernetes-verify-master,\
-    kubernetes-build,\
     kubernetes-e2e-kops-aws"
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
