@@ -194,8 +194,12 @@ func (c *testClient) TestPRKubernetes() error {
 	for i := range spec.Containers {
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
-				Name:  "PULL_NUMBER",
+				Name:  "PULL_REFS",
 				Value: c.Refs,
+			},
+			kube.EnvVar{
+				Name:  "PULL_NUMBER",
+				Value: strconv.Itoa(c.PRNumber),
 			},
 			kube.EnvVar{
 				Name:  "PULL_BASE_REF",
@@ -259,6 +263,7 @@ func (c *testClient) TestPRJenkins() error {
 	logrus.WithFields(fields(c)).Info("Starting build.")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Job.Name,
+		Number:  c.PRNumber,
 		Refs:    c.Refs,
 		BaseRef: c.BaseRef,
 		BaseSHA: c.BaseSHA,
