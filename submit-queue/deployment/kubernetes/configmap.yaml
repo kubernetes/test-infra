@@ -80,9 +80,9 @@ data:
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
     ci-kubernetes-soak-gke-test,\
-    kubernetes-e2e-gce-enormous-cluster,\
-    kubernetes-e2e-gce-enormous-deploy,\
-    kubernetes-e2e-gce-enormous-teardown,\
+    ci-kubernetes-e2e-gce-enormous-cluster,\
+    ci-kubernetes-e2e-gce-enormous-deploy,\
+    ci-kubernetes-e2e-gce-enormous-teardown,\
     kubernetes-garbagecollector-gci-feature,\
     kubernetes-e2e-kops-aws-updown"
   submit-queue.jenkins-jobs: "\
