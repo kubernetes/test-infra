@@ -110,6 +110,7 @@ data:
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
   submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
+  submit-queue.batch-url: https://prow.k8s.io/data.js
 
   # options used by the GCS feature.
   gcs.gcs-bucket: kubernetes-jenkins

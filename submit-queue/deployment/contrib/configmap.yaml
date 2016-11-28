@@ -26,6 +26,7 @@ data:
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: ""
   submit-queue.history-url: ""
+  submit-queue.batch-url: ""
 
   # options used by the GCS feature.
   gcs.gcs-bucket: ""

@@ -49,6 +49,7 @@ spec:
         - --triager-url=$(TRIAGER_URL)
         - --cla-status-context=$(CLA_STATUS_CONTEXT)
         - --alias-file=$(ALIAS_FILE_PATH)
+        - --batch-url=$(BATCH_URL)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -121,6 +122,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: submit-queue.admin-port
+          - name: BATCH_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.batch-url
           - name: GCS_BUCKET
             valueFrom:
               configMapKeyRef:
