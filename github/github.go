@@ -48,7 +48,8 @@ const (
 	maxInt     = int(^uint(0) >> 1)
 	tokenLimit = 250 // How many github api tokens to not use
 
-	// Unit tests take over an hour now...
+	// This should be >2x as long as it normally takes for a PR
+	// to complete, to avoid congestion collapse in the queue.
 	prMaxWaitTime = 2 * time.Hour
 
 	headerRateRemaining = "X-RateLimit-Remaining"
@@ -1236,8 +1237,8 @@ func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c 
 func (obj *MungeObject) WaitForPending(requiredContexts []string) error {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan error, 1)
-	// Wait 45 minutes for the github e2e test to start
-	go timeout(45*time.Minute, timeoutChan)
+	// Wait for the github e2e test to start
+	go timeout(prMaxWaitTime, timeoutChan)
 	go obj.doWaitStatus(true, requiredContexts, done)
 	select {
 	case err := <-done:
