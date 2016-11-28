@@ -106,7 +106,7 @@ data:
     kubernetes-pull-build-test-gci-e2e-gke,\
     kubernetes-pull-build-test-gci-kubemark-e2e-gce"
   submit-queue.weak-stable-jobs: "\"\""
-  submit-queue.do-not-merge-milestones: "next-candidate,v1.6,v1.5,"
+  submit-queue.do-not-merge-milestones: "\"\""
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
   submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
