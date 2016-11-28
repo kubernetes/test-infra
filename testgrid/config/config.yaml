@@ -109,7 +109,7 @@ test_groups:
 - name: kubernetes-e2e-gce-container-vm
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-container-vm
 - name: kubernetes-e2e-gce-enormous-cluster
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-cluster
 - name: kubernetes-e2e-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
 - name: kubernetes-e2e-gci-gce-es-logging
@@ -816,7 +816,7 @@ test_groups:
 - name: kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 - name: kubernetes-e2e-gce-enormous-teardown
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-teardown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
 - name: kubernetes-e2e-gke-gci-test-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-test-release-1.2
 - name: testgrid-config-upload
@@ -840,7 +840,7 @@ test_groups:
 - name: kops-build
   gcs_prefix: kubernetes-jenkins/logs/kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gce-enormous-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
 - name: kubernetes-e2e-gke-gci-subnet-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-subnet-release-1.2
 - name: maintenance-daily

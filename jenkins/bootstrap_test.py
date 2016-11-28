@@ -1071,6 +1071,10 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-gce-scale.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
