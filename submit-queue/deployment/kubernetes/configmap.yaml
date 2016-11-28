@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: kubernetes
-  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest,nag-flake-issues
+  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
   config.state: open
   config.token-file: /etc/secret-volume/token
 
