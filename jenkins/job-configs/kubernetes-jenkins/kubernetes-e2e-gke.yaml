@@ -48,7 +48,7 @@
 # Manual jobs, migrate later.
 - project:
     name: kubernetes-e2e-gke-master
-    trigger-job: 'kubernetes-build'
+    trigger-job: 'ci-kubernetes-build'
     test-owner: 'Build Cop'
     gke-suffix:
         - 'gke-large-cluster':  # kubernetes-e2e-gke-large-cluster

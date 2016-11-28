@@ -962,6 +962,20 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
 
+    def testBootstrapCICommitYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertIn('branch', job)
+            self.assertTrue('commit-frequency', job.get('commit-frequency'))
+            self.assertIn('giturl', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('timed-frequency', job)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
+            Check, suffix='commit-suffix')
+
     def testBootstrapCIRepoYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
@@ -1041,7 +1055,7 @@ class JobTest(unittest.TestCase):
             real_job = job[name]
 
             path = bootstrap.job_script(real_job.get('job-name'))
-            self.assertTrue(os.path.isfile(path), path)
+            self.assertTrue(os.path.isfile(path), name)
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (
@@ -1075,6 +1089,12 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
+            'ci-kubernetes-e2e-gce-federation.sh': 'ci-kubernetes-federation-*',
+            'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.5.sh': 'ci-kubernetes-federation-1.5-*',
+            'ci-kubernetes-federation-build-1.4.sh': 'ci-kubernetes-federation-1.4-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.4.sh': 'ci-kubernetes-federation-1.4-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:

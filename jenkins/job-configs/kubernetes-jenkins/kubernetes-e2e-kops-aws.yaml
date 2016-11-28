@@ -9,7 +9,7 @@
             days-to-keep: 7
     triggers:
         - reverse:
-            jobs: 'kubernetes-build'
+            jobs: 'ci-kubernetes-build'
             result: success
         - timed: '{sq-cron-string}'
     publishers:

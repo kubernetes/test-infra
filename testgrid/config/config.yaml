@@ -66,14 +66,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
 - name: kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-build
+- name: kubernetes-build-bootstrap
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: kubernetes-build-1.2
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.2
 - name: kubernetes-build-1.3
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.3
 - name: kubernetes-build-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.4
 - name: kubernetes-build-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.5
 - name: kubernetes-e2e-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.4
@@ -826,7 +828,7 @@ test_groups:
 - name: kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-cross-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-staging-release-1.2
 - name: ci-kubernetes-node-kubelet-1.4
@@ -834,11 +836,11 @@ test_groups:
 - name: ci-kubernetes-node-kubelet-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.5
 - name: kubernetes-federation-build
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-parallel-release-1.2
 - name: kops-build
-  gcs_prefix: kubernetes-jenkins/logs/kops-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
 - name: kubernetes-e2e-gke-gci-subnet-release-1.2
@@ -854,13 +856,13 @@ test_groups:
 - name: maintenance-ci-clean-projects
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-clean-projects
 - name: kubernetes-build-debian-unstable
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build-debian-unstable
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-staging-parallel-release-1.2
 - name: kubernetes-federation-build-1.4
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
 - name: kubernetes-federation-build-1.5
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-federation-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
@@ -905,6 +907,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: build
     test_group_name: kubernetes-build
+  - name: build-bootstrap  # Delete after migrating SQ
+    test_group_name: kubernetes-build-bootstrap
   - name: gce
     test_group_name: kubernetes-e2e-gce
   - name: gce-scalability
