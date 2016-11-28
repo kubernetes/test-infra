@@ -274,6 +274,8 @@ func (sq *SubmitQueue) doBatchMerge(batch Batch) {
 	if !sq.e2eStable(true) {
 		return
 	}
+
+	glog.Infof("merging batch: %s", batch)
 	prs := []*github.MungeObject{}
 	// Check entire batch's preconditions first.
 	for _, pull := range batch.Pulls[match:] {
