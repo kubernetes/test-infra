@@ -569,6 +569,28 @@ func (config *Config) NewIssue(title, body string, labels []string, owner string
 	return obj, nil
 }
 
+// GetBranchCommits gets recent commits for the given branch.
+func (config *Config) GetBranchCommits(branch string, limit int) ([]*github.RepositoryCommit, error) {
+	commits := []*github.RepositoryCommit{}
+	page := 0
+	for {
+		commitsPage, response, err := config.client.Repositories.ListCommits(
+			config.Org, config.Project,
+			&github.CommitsListOptions{ListOptions: github.ListOptions{PerPage: 100, Page: page}, SHA: branch})
+		config.analytics.ListCommits.Call(config, response)
+		if err != nil {
+			glog.Errorf("Error reading commits for branch %s: %v", branch, err)
+			return nil, err
+		}
+		commits = append(commits, commitsPage...)
+		if response.LastPage == 0 || response.LastPage <= page || len(commits) > limit {
+			break
+		}
+		page++
+	}
+	return commits, nil
+}
+
 // Branch returns the branch the PR is for. Return "" if this is not a PR or
 // it does not have the required information.
 func (obj *MungeObject) Branch() string {

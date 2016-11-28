@@ -124,7 +124,8 @@ type submitQueueStats struct {
 	Added              int // Number of items added to the queue since restart
 	FlakesIgnored      int
 	Initialized        bool // true if we've made at least one complete pass
-	InstantMerges      int  // Number of commits without retests required
+	InstantMerges      int  // Number of merges without retests required
+	BatchMerges        int  // Number of merges caused by batch
 	LastMergeTime      time.Time
 	MergeRate          float64
 	MergesSinceRestart int
@@ -150,6 +151,10 @@ type submitQueueMetadata struct {
 	ChartUrl    string
 	HistoryUrl  string
 	RepoPullUrl string
+}
+
+type submitQueueBatchStatus struct {
+	Error map[string]string
 }
 
 type prometheusMetrics struct {
@@ -230,7 +235,8 @@ type SubmitQueue struct {
 
 	interruptedObj *submitQueueInterruptedObject
 	flakesIgnored  int32 // Increments for each merge while 1+ job is flaky
-	instantMerges  int32 // Increments whenever we commit without retesting
+	instantMerges  int32 // Increments whenever we merge without retesting
+	batchMerges    int32 // Increments whenever we merge because of a batch
 	prsAdded       int32 // Increments whenever an items queues
 	prsRemoved     int32 // Increments whenever an item dequeues
 	prsTested      int32 // Number of prs that completed second testing
@@ -242,6 +248,10 @@ type SubmitQueue struct {
 	emergencyMergeStopFlag int32
 
 	features *features.Features
+
+	mergeLock   sync.Mutex // acquired when attempting to merge a specific PR
+	BatchURL    string
+	batchStatus submitQueueBatchStatus
 }
 
 func init() {
@@ -472,6 +482,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
 		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
 		http.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
+		if sq.BatchURL != "" {
+			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
+		}
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(config.Address, nil)
 	}
@@ -488,6 +501,10 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
+	if sq.BatchURL != "" {
+		go sq.handleGithubE2EBatchMerge()
+
+	}
 
 	if sq.AdminPort != 0 {
 		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.AdminPort), admin.Mux)
@@ -536,6 +553,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
 	cmd.Flags().StringVar(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	cmd.Flags().StringVar(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
+	cmd.Flags().StringVar(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
 }
 
 // Hold the lock
@@ -701,17 +719,9 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 
 func reasonToState(reason string) string {
 	switch reason {
-	case merged:
+	case merged, mergedByHand, mergedSkippedRetest, mergedBatch:
 		return "success"
-	case mergedByHand:
-		return "success"
-	case e2eFailure:
-		return "success"
-	case ghE2EQueued:
-		return "success"
-	case ghE2EWaitingStart:
-		return "success"
-	case ghE2ERunning:
+	case e2eFailure, ghE2EQueued, ghE2EWaitingStart, ghE2ERunning:
 		return "success"
 	case unknown:
 		return "failure"
@@ -842,6 +852,8 @@ const (
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
 	e2eRecover              = "The e2e tests started passing. The submit queue is unblocked."
 	merged                  = "MERGED!"
+	mergedSkippedRetest     = "MERGED! (skipped retest because of label)"
+	mergedBatch             = "MERGED! (batch)"
 	mergedByHand            = "MERGED! (by hand outside of submit queue)"
 	ghE2EQueued             = "Queued to run github e2e tests a second time."
 	ghE2EWaitingStart       = "Requested and waiting for github e2e test to start running a second time."
@@ -865,13 +877,16 @@ func getEarliestApprovedTime(obj *github.MungeObject) *time.Time {
 	return approvedTime
 }
 
-// validForMerge is the base logic about what PR can be automatically merged.
+// validForMergeExt is the base logic about what PR can be automatically merged.
 // PRs must pass this logic to be placed on the queue and they must pass this
 // logic a second time to be retested/merged after they get to the top of
 // the queue.
 //
+// checkStatus is true if the PR should only merge if the appropriate Github status
+// checks are passing.
+//
 // If you update the logic PLEASE PLEASE PLEASE update serveMergeInfo() as well.
-func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
+func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus bool) bool {
 	// Can't merge an issue!
 	if !obj.IsPR() {
 		return false
@@ -917,16 +932,18 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	// Validate the status information for this PR
-	if len(sq.RequiredStatusContexts) > 0 {
-		if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
-			sq.SetMergeStatus(obj, ciFailure)
-			return false
+	if checkStatus {
+		if len(sq.RequiredStatusContexts) > 0 {
+			if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
+				sq.SetMergeStatus(obj, ciFailure)
+				return false
+			}
 		}
-	}
-	if len(sq.RequiredRetestContexts) > 0 {
-		if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
-			sq.SetMergeStatus(obj, ciFailure)
-			return false
+		if len(sq.RequiredRetestContexts) > 0 {
+			if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
+				sq.SetMergeStatus(obj, ciFailure)
+				return false
+			}
 		}
 	}
 
@@ -960,6 +977,10 @@ func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
 	}
 
 	return true
+}
+
+func (sq *SubmitQueue) validForMerge(obj *github.MungeObject) bool {
+	return sq.validForMergeExt(obj, true)
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -1139,10 +1160,14 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 	}
 }
 
-func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject) {
-	obj.MergePR("submit-queue")
-	sq.SetMergeStatus(obj, merged)
+func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg string) error {
+	err := obj.MergePR("submit-queue")
+	if err != nil {
+		return err
+	}
+	sq.SetMergeStatus(obj, msg)
 	sq.updateMergeRate()
+	return nil
 }
 
 func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
@@ -1187,6 +1212,7 @@ func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject
 }
 
 // Returns true if we can discard the PR from the queue, false if we must keep it for later.
+// If you modify this, consider modifying maybeMergeBatch too.
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	interruptedObj := sq.interruptedObj
 	sq.interruptedObj = nil
@@ -1204,7 +1230,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
 		atomic.AddInt32(&sq.instantMerges, 1)
-		sq.mergePullRequest(obj)
+		sq.mergePullRequest(obj, mergedSkippedRetest)
 		return true
 	}
 
@@ -1235,6 +1261,9 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		}
 	}
 
+	sq.mergeLock.Lock()
+	defer sq.mergeLock.Unlock()
+
 	// We shouldn't merge if it's not valid anymore
 	if !sq.validForMerge(obj) {
 		glog.Errorf("%d: Not mergeable anymore. Do not merge.", *obj.Issue.Number)
@@ -1259,7 +1288,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	sq.mergePullRequest(obj)
+	sq.mergePullRequest(obj, merged)
 	return true
 }
 
@@ -1344,6 +1373,7 @@ func (sq *SubmitQueue) serveSQStats(res http.ResponseWriter, req *http.Request) 
 		FlakesIgnored:      int(atomic.LoadInt32(&sq.flakesIgnored)),
 		Initialized:        atomic.LoadInt32(&sq.loopStarts) > 1,
 		InstantMerges:      int(atomic.LoadInt32(&sq.instantMerges)),
+		BatchMerges:        int(atomic.LoadInt32(&sq.batchMerges)),
 		LastMergeTime:      sq.lastMergeTime,
 		MergeRate:          sq.calcMergeRateWithTail(),
 		MergesSinceRestart: int(atomic.LoadInt32(&sq.totalMerges)),
@@ -1363,6 +1393,10 @@ func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
 func (sq *SubmitQueue) serveMetadata(res http.ResponseWriter, req *http.Request) {
 	data := sq.getMetaData()
 	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveBatch(res http.ResponseWriter, req *http.Request) {
+	sq.serve(sq.marshal(sq.batchStatus), res, req)
 }
 
 func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {
