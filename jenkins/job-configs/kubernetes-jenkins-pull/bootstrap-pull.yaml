@@ -15,10 +15,17 @@
                 <interpreter>shell script</interpreter>
             </com.cloudbees.plugins.JobPrerequisites>
     parameters:
+    # TODO(spxtr): Delete these two.
     - string:
         name: ghprbPullId
     - string:
         name: ghprbTargetBranch
+    - string:
+        name: PULL_REFS
+    - string:
+        name: PULL_NUMBER
+    - string:
+        name: PULL_BASE_REF
     # The test job tracks a run through the queue using the buildId parameter.
     - string:
         name: buildId
@@ -42,7 +49,7 @@
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
-        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --pull="${{ghprbPullId}}" --root="${{GOPATH}}/src"
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --pull="${{PULL_REFS}}" --root="${{GOPATH}}/src"
 
 - project:
     name: bootstrap-pull-jobs

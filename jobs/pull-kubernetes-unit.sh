@@ -20,5 +20,5 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
-export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
+export KUBE_VERIFY_GIT_BRANCH="${PULL_BASE_REF}"
 ${testinfra}/jenkins/gotest-dockerized.sh

@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-case "${ghprbTargetBranch:-}" in
+case "${PULL_BASE_REF:-}" in
 release-1.0|release-1.1|release-1.2)
   echo "PR node e2e job disabled for legacy branches."
   exit 0

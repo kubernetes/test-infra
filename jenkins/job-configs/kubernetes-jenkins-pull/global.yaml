@@ -15,7 +15,7 @@
           _script_repo_path="hack/jenkins/upload-to-gcs.sh"
           _script_local_repo_path="${{WORKSPACE}}/{git-basedir}/${{_script_repo_path}}"
           mkdir -p "${{WORKSPACE}}/_tmp"
-          if [[ "${{ghprbTargetBranch:-}}" == 'master' && -x "${{_script_local_repo_path}}" ]]; then
+          if [[ "${{PULL_BASE_REF:-}}" == 'master' && -x "${{_script_local_repo_path}}" ]]; then
             # Force using the checked-out version if we're testing the master branch
             ln -sf "${{_script_local_repo_path}}" "${{_script_tmp_path}}"
           fi
