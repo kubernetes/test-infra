@@ -384,6 +384,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1.4
 - name: kubernetes-e2e-gci-gke-reboot-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1.5
+- name: kubernetes-e2e-gce-ha-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ha-master
 - name: kubernetes-e2e-gke-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-release-1.2
 - name: kubernetes-e2e-gke-release-1.3
@@ -1144,6 +1146,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.4
   - name: gce-slow-release-1.5
     test_group_name: kubernetes-e2e-gce-slow-release-1.5
+  - name: gce-ha-master
+    test_group_name: kubernetes-e2e-gce-ha-master
 
 - name: google-gci
   dashboard_tab:

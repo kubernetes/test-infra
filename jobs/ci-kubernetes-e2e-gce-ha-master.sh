@@ -22,20 +22,19 @@ readonly testinfra="$(dirname "${0}")/.."
 
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
-export E2E_MIN_STARTUP_PODS="8"
 export KUBE_GCE_ZONE="us-central1-f"
-export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 
 ### project-env
 # expected empty
 
 ### job-env
-export ENABLE_GARBAGE_COLLECTOR="true"
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
-                         --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-export PROJECT="kubernetes-jkns-e2e-gce-serial"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:HAMaster\]"
+export PROJECT="kubernetes-ha-master"
+# TODO: Enable this when we've split 1.2 tests into another project.
+export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+export MULTIZONE="true"  # Needed for HA-master tests.
 
 ### post-env
 
@@ -68,7 +67,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 300m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 150m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
