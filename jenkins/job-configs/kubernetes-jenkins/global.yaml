@@ -24,7 +24,7 @@
                     steps:
                         - shell: |
                             export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-                            export HOME="{WORKSPACE}"
+                            export HOME="${WORKSPACE}"
                             export JENKINS_BUILD_FINISHED=SUCCESS
                             ./_tmp/upload-to-gcs.sh
                 - conditional-step:
@@ -34,7 +34,7 @@
                     steps:
                         - shell: |
                             export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-                            export HOME="{WORKSPACE}"
+                            export HOME="${WORKSPACE}"
                             export JENKINS_BUILD_FINISHED=UNSTABLE
                             ./_tmp/upload-to-gcs.sh
                 - conditional-step:
@@ -44,7 +44,7 @@
                     steps:
                         - shell: |
                             export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-                            export HOME="{WORKSPACE}"
+                            export HOME="${WORKSPACE}"
                             export JENKINS_BUILD_FINISHED=FAILURE
                             ./_tmp/upload-to-gcs.sh
                 - conditional-step:
@@ -54,7 +54,7 @@
                     steps:
                         - shell: |
                             export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-                            export HOME="{WORKSPACE}"
+                            export HOME="${WORKSPACE}"
                             export JENKINS_BUILD_FINISHED=ABORTED
                             ./_tmp/upload-to-gcs.sh
             script-only-if-succeeded: False
