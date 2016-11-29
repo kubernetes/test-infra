@@ -22,7 +22,7 @@ readonly testinfra="$(dirname "${0}")/.."
 
 # TODO(fejta): remove this
 case "${ghprbTargetBranch:-}" in
-  "release-1.0"|"release-1.1"|"release-1.2"|"release-1.3")
+  "release-1.0"|"release-1.1"|"release-1.2"|"release-1.3"|"release-1.4")
     echo "PR AWS kops job disabled for legacy branches."
     exit
     ;;
