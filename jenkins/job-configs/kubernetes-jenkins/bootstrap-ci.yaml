@@ -133,14 +133,17 @@
         job-name: ci-kubernetes-e2e-gce-enormous-cluster
         frequency: '' #manual
         trigger-job: ''
+        disabled: true
     - kubernetes-e2e-gce-enormous-deploy:
         job-name: ci-kubernetes-e2e-gce-enormous-deploy
         frequency: '' #manual
         trigger-job: ''
+        disabled: true
     - kubernetes-e2e-gce-enormous-teardown:
         job-name: ci-kubernetes-e2e-gce-enormous-teardown
         frequency: '' #manual
         trigger-job: ''
+        disabled: true
 
     # gci-gce-master
     - kubernetes-e2e-gci-gce:
@@ -608,14 +611,17 @@
         job-name: ci-kubernetes-e2e-gke-large-cluster
         frequency: '0 17 * * *'
         trigger-job: ''
+        disabled: true
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
         frequency: ''
         trigger-job: ''
+        disabled: true
     - kubernetes-e2e-gke-large-teardown:
         job-name: ci-kubernetes-e2e-gke-large-teardown
         frequency: ''
         trigger-job: ''    
+        disabled: true
 
     # gci-gke-master
     - kubernetes-e2e-gci-gke:
