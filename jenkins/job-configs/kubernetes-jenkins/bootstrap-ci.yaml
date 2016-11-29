@@ -49,6 +49,14 @@
         job-name: ci-kubernetes-e2e-aws-release-1.5
         frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.5'
+    - kubernetes-e2e-kops-aws: #zmerlynn
+        job-name: ci-kubernetes-e2e-kops-aws
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-updown: #zmerlynn
+        job-name: ci-kubernetes-e2e-kops-aws-updown
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
     # END AWS
 
     # START GCE
