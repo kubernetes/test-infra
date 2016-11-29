@@ -242,7 +242,7 @@ func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 	for range time.Tick(1 * time.Minute) {
 		jobs, err := getSuccessfulBatchJobs(repo, sq.BatchURL)
 		if err != nil {
-			glog.Errorf("Error reading batch jobs from Prow URL %v", sq.BatchURL)
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.BatchURL, err)
 			continue
 		}
 		batches := sq.getCompleteBatches(jobs)
