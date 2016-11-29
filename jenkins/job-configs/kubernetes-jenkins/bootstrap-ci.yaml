@@ -28,7 +28,13 @@
     - workspace-cleanup:
         dirmatch: true
         exclude:
-        - 'test-infra/.git/'
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - '**/.git/'
         external-deletion-command: 'sudo rm -rf %s'
 
 - project:
