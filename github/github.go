@@ -166,6 +166,7 @@ type Config struct {
 
 	HTTPCacheDir  string
 	HTTPCacheSize uint64
+	httpCache     httpcache.Cache
 
 	MinPRNumber int
 	MaxPRNumber int
@@ -398,8 +399,11 @@ func (config *Config) PreExecute() error {
 		})
 		cache := diskcache.NewWithDiskv(d)
 		t = httpcache.NewTransport(cache)
+		config.httpCache = cache
 	} else {
-		t = httpcache.NewMemoryCacheTransport()
+		cache := httpcache.NewMemoryCache()
+		t = httpcache.NewTransport(cache)
+		config.httpCache = cache
 	}
 	t.Transport = transport
 
@@ -510,6 +514,23 @@ func (config *Config) getIssue(num int) (*github.Issue, error) {
 		return nil, err
 	}
 	return issue, nil
+}
+
+func (config *Config) deleteCache(resp *github.Response) {
+	cache := config.httpCache
+	if cache == nil {
+		return
+	}
+	if resp.Response == nil {
+		return
+	}
+	req := resp.Response.Request
+	if req == nil {
+		return
+	}
+	cacheKey := req.URL.String()
+	glog.Infof("Deleting cache entry for %q", cacheKey)
+	cache.Delete(cacheKey)
 }
 
 // Refresh will refresh the Issue (and PR if this is a PR)
@@ -1050,6 +1071,7 @@ func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, error) {
 	page := 1
 	// Try to work around not finding events--suspect some cache invalidation bug when the number of pages changes.
 	tryNextPageAnyway := false
+	var lastResponse *github.Response
 	for {
 		eventPage, response, err := config.client.Issues.ListIssueEvents(config.Org, config.Project, prNum, &github.ListOptions{PerPage: 100, Page: page})
 		config.analytics.ListIssueEvents.Call(config, response)
@@ -1066,12 +1088,14 @@ func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, error) {
 				break
 			}
 			glog.Infof("For %v: supposedly there weren't more events, but we asked anyway and found %v more.", prNum, len(eventPage))
+			obj.config.deleteCache(lastResponse)
 			tryNextPageAnyway = false
 		}
 		events = append(events, eventPage...)
 		if response.LastPage == 0 || response.LastPage <= page {
 			if len(events)%100 == 0 {
 				tryNextPageAnyway = true
+				lastResponse = response
 			} else {
 				break
 			}
@@ -1628,6 +1652,7 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, erro
 	page := 1
 	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.
 	tryNextPageAnyway := false
+	var lastResponse *github.Response
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
@@ -1645,12 +1670,14 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, erro
 				break
 			}
 			glog.Infof("For %v: supposedly there weren't more review comments, but we asked anyway and found %v more.", prNum, len(comments))
+			obj.config.deleteCache(lastResponse)
 			tryNextPageAnyway = false
 		}
 		allComments = append(allComments, comments...)
 		if response.LastPage == 0 || response.LastPage <= page {
 			if len(allComments)%100 == 0 {
 				tryNextPageAnyway = true
+				lastResponse = response
 			} else {
 				break
 			}
@@ -1682,6 +1709,7 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 	page := 1
 	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.
 	tryNextPageAnyway := false
+	var lastResponse *github.Response
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, issueNum)
@@ -1699,12 +1727,14 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 				break
 			}
 			glog.Infof("For %v: supposedly there weren't more comments, but we asked anyway and found %v more.", issueNum, len(comments))
+			obj.config.deleteCache(lastResponse)
 			tryNextPageAnyway = false
 		}
 		allComments = append(allComments, comments...)
 		if response.LastPage == 0 || response.LastPage <= page {
 			if len(comments)%100 == 0 {
 				tryNextPageAnyway = true
+				lastResponse = response
 			} else {
 				break
 			}
