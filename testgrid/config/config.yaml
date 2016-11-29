@@ -65,8 +65,6 @@ test_groups:
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
 - name: kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-build
-- name: kubernetes-build-bootstrap
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: kubernetes-build-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.2
@@ -907,8 +905,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: build
     test_group_name: kubernetes-build
-  - name: build-bootstrap  # Delete after migrating SQ
-    test_group_name: kubernetes-build-bootstrap
   - name: gce
     test_group_name: kubernetes-e2e-gce
   - name: gce-scalability
