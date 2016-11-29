@@ -606,16 +606,16 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
-        frequency: '0 17 * * *'
+        frequency: '' # '0 17 * * *'
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
-        frequency: ''
+        frequency: '' #manual
         trigger-job: ''
     - kubernetes-e2e-gke-large-teardown:
         job-name: ci-kubernetes-e2e-gke-large-teardown
-        frequency: ''
-        trigger-job: ''    
+        frequency: '' #manual
+        trigger-job: ''
 
     # gci-gke-master
     - kubernetes-e2e-gci-gke:
