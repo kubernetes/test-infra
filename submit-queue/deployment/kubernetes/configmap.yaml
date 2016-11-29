@@ -83,9 +83,9 @@ data:
     ci-kubernetes-e2e-gce-enormous-cluster,\
     ci-kubernetes-e2e-gce-enormous-deploy,\
     ci-kubernetes-e2e-gce-enormous-teardown,\
-    kubernetes-garbagecollector-gci-feature,\
-    kubernetes-e2e-kops-aws,\
-    kubernetes-e2e-kops-aws-updown"
+    ci-kubernetes-e2e-garbage-gci,\
+    ci-kubernetes-e2e-kops-aws,\
+    ci-kubernetes-e2e-kops-aws-updown"
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
