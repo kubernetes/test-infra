@@ -969,7 +969,6 @@ class JobTest(unittest.TestCase):
             self.assertTrue('commit-frequency', job.get('commit-frequency'))
             self.assertIn('giturl', job)
             self.assertIn('repo-name', job)
-            self.assertIn('timed-frequency', job)
             return job_name
 
         self.CheckBootstrapYaml(
