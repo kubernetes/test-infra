@@ -25,10 +25,16 @@
     - timeout:
         timeout: 700
         fail: true
-    - workspace-cleanup:
+    - workspace-cleanup:  # cleanup before the job starts, for clean build.
         dirmatch: true
         exclude:
-        - 'test-infra/.git/'
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+    - workspace-cleanup:  # cleanup after job finishes, to not waste space.
+        dirmatch: true
+        exclude:
+        - '**/.git/'
         external-deletion-command: 'sudo rm -rf %s'
 
 - project:
