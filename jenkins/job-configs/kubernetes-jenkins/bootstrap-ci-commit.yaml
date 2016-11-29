@@ -15,7 +15,7 @@
     scm:  # TODO(fejta): migrate scm monitoring to prow.
     - git:
         url: '{giturl}'
-        basedir: '${{GOPATH}}/src/{repo-name}'
+        basedir: 'go/src/{repo-name}'  # Must match GOPATH below
         branches:
         - '{branch}'
         skip-tag: true
