@@ -51,18 +51,6 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # Use default component update behavior
 export CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false
 
-# AWS variables
-export KUBE_AWS_INSTANCE_PREFIX="${E2E_NAME}"
-
-# GCE variables
-export INSTANCE_PREFIX="${E2E_NAME}"
-export KUBE_GCE_NETWORK="${E2E_NAME}"
-export KUBE_GCE_INSTANCE_PREFIX="${E2E_NAME}"
-
-# GKE variables
-export CLUSTER_NAME="${E2E_NAME}"
-export KUBE_GKE_NETWORK="${E2E_NAME}"
-
 # Get golang into our PATH so we can run e2e.go
 export PATH="${PATH}:/usr/local/go/bin"
 
@@ -70,7 +58,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 export KOPS_DEPLOY_LATEST_KUBE=y
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
 # TODO(zmerlynn): Take out --kops-ssh-key after fixing kops-e2e-runner again.
-export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${{E2E_NAME}}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
+export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${E2E_NAME}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
 export GINKGO_PARALLEL="y"
 
 ### Runner
