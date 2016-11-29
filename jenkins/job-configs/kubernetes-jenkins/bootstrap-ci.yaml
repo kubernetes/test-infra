@@ -907,8 +907,6 @@
         job-name: ci-kubernetes-e2e-gci-gke-prod-smoke
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build-1.4'
-
-
     # END GKE
 
     # START KUBEMARK
@@ -937,3 +935,627 @@
         frequency: 'H H/12 * * *'
         trigger-job: 'ci-kubernetes-build'
     # END KUBEMARK
+
+    # START UPGRADE
+    ### kubernetes-e2e-upgrades-gke
+    - kubernetes-e2e-gke-1.2-1.3-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.3-upgrade-master
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.2-1.3-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.3-upgrade-cluster
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.2-1.3-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.3-upgrade-cluster-new
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.2-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.2-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.2-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.3-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    ### kubernetes-e2e-upgrades-gce
+    - kubernetes-e2e-gce-1.3-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-1.4-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    ### kubernetes-e2e-upgrades-gce-cross-image-and-gci
+    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+
+    ### kubernetes-e2e-kubectl-skew-gke
+    - kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.2-1.3-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.2-1.3-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.3-1.2-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.2-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.3-1.2-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.2-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    ### kubernetes-e2e-kubectl-skew-gce
+    - kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gce-latest-latest-1.4-cvm-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-latest-1.4-cvm-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-latest-latest-1.4-gci-kubectl-skew:
+        job-name: ci-kubernetes-e2e-gce-latest-latest-1.4-gci-kubectl-skew
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+
+    ### kubernetes-e2e-upgrades-image-gke
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.3-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.3-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.3-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-container_vm-1.4-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-master
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-cluster
+        frequency: '@daily'
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.2-gci-1.4-upgrade-cluster-new
+        frequency: '@daily'
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new:
+        job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+
+    # END UPGRADE
+
