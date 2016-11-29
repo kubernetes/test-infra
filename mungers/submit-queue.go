@@ -282,7 +282,7 @@ func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (sq *SubmitQueue) RequiredFeatures() []string {
-	return []string{features.GCSFeature, features.TestOptionsFeature}
+	return []string{features.GCSFeature, features.TestOptionsFeature, features.BranchProtectionFeature}
 }
 
 func (sq *SubmitQueue) emergencyMergeStop() bool {
