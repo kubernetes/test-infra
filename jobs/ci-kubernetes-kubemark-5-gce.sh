@@ -36,7 +36,7 @@ export E2E_NAME="kubemark-5"
 export PROJECT="k8s-jenkins-kubemark"
 export E2E_TEST="false"
 export USE_KUBEMARK="true"
-export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+export KUBEMARK_TESTS="\[Feature:Empty\]"
 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override defaults to be independent from GCE defaults and set kubemark parameters
@@ -44,9 +44,7 @@ export NUM_NODES="1"
 export MASTER_SIZE="n1-standard-1"
 export NODE_SIZE="n1-standard-2"
 export KUBE_GCE_ZONE="us-central1-f"
-# TODO: This is to check if that helps with #26185.
-# Revert it after migrating to etcd3.
-export KUBEMARK_MASTER_SIZE="n1-standard-2"
+export KUBEMARK_MASTER_SIZE="n1-standard-1"
 export KUBEMARK_NUM_NODES="5"
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"

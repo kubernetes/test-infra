@@ -47,7 +47,7 @@ export E2E_UP="true"
 export E2E_TEST="false"
 export E2E_DOWN="true"
 export USE_KUBEMARK="true"
-export KUBEMARK_TESTS="starting\s30\spods\sper\snode"
+export KUBEMARK_TESTS="\[Feature:Empty\]"
 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 
