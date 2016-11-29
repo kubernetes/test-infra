@@ -85,15 +85,17 @@ func NewDryRunClient(url, user, token string) *Client {
 	}
 }
 
-// Retry on transport failures. Does not retry on 500s.
+// Retry on transport failures and 500s.
 func (c *Client) request(method, path string) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 	backoff := retryDelay
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path)
-		if err == nil {
+		if err == nil && resp.StatusCode < 500 {
 			break
+		} else if err == nil {
+			resp.Body.Close()
 		}
 
 		time.Sleep(backoff)
