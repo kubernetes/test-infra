@@ -349,7 +349,7 @@ test_groups:
 - name: kubernetes-e2e-gci-gke-ingress-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1.5
 - name: kubernetes-e2e-gke-large-cluster
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-cluster
 - name: kubernetes-e2e-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: kubernetes-e2e-gci-gke-multizone
@@ -826,7 +826,7 @@ test_groups:
 - name: kubernetes-e2e-gke-gci-prod-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-release-1.2
 - name: kubernetes-e2e-gke-large-deploy
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
@@ -864,7 +864,7 @@ test_groups:
 - name: kubernetes-federation-build-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gke-large-teardown
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-e2e-gke-large-teardown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 # Manual, federated groups
