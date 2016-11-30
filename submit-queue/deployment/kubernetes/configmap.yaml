@@ -70,6 +70,7 @@ data:
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
     ci-kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-kubemark-5-gce,\
     ci-kubernetes-node-kubelet-serial,\
     ci-kubernetes-soak-gce-deploy,\
@@ -83,9 +84,7 @@ data:
     ci-kubernetes-e2e-gce-enormous-cluster,\
     ci-kubernetes-e2e-gce-enormous-deploy,\
     ci-kubernetes-e2e-gce-enormous-teardown,\
-    ci-kubernetes-e2e-garbage-gci,\
-    ci-kubernetes-e2e-kops-aws,\
-    ci-kubernetes-e2e-kops-aws-updown"
+    ci-kubernetes-e2e-garbage-gci"
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
@@ -93,6 +92,7 @@ data:
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gke,\
     ci-kubernetes-e2e-gci-gke-slow,\
+    ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
     ci-kubernetes-test-go,\
