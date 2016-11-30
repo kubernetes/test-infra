@@ -33,6 +33,13 @@
 		% if 'jenkins-node' in started
 			<tr><td>Builder<td>{{started['jenkins-node']}}
 		% endif
+		% if 'pull' in started
+			<tr><td>Refs<td>
+			{% for x in started['pull'].split(',') -%}
+				{% set x=x.split(':', 1) %}
+				{{x[0]}}{% if x|length == 2 %}{% set commit=x[1] %}:{{x[1]|github_commit_link}}{% endif %}<br>
+			{%- endfor %}
+		% endif
 		% if 'metadata' in started
 			% for k, v in started['metadata']|dictsort
 			<tr><td>{{k}}<td>{{v}}

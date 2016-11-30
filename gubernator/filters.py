@@ -80,7 +80,7 @@ def do_linkify_stacktrace(inp, commit):
 
 def do_github_commit_link(commit):
     commit_url = jinja2.escape(GITHUB_COMMIT_TEMPLATE % commit)
-    return jinja2.Markup('<a href="%s">%s</a>' % (commit_url, commit[:6]))
+    return jinja2.Markup('<a href="%s">%s</a>' % (commit_url, commit[:8]))
 
 
 def do_testcmd(name):
