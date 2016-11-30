@@ -15,4 +15,4 @@ spec:
         role: ciongke
       containers:
       - name: sinker
-        image: gcr.io/kubernetes-jenkins-pull/sinker:0.4
+        image: gcr.io/k8s-prow/sinker:0.4

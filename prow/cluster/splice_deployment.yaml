@@ -12,17 +12,17 @@ spec:
         app: splice
     spec:
       nodeSelector:
-        role: ciongke
+        role: prow
       containers:
       - name: splice
-        image: gcr.io/kubernetes-jenkins-pull/splice:0.1
+        image: gcr.io/k8s-prow/splice:0.1
         volumeMounts:
         - name: job-configs
           mountPath: /etc/jobs
           readOnly: true
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/kubernetes-jenkins-pull/line:0.31"
+          value: "gcr.io/k8s-prow/line:0.31"
         - name: DRY_RUN
           value: "false"
       volumes:

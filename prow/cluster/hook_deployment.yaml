@@ -31,15 +31,15 @@ spec:
         app: hook
     spec:
       nodeSelector:
-        role: ciongke
+        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/kubernetes-jenkins-pull/hook:0.58
+        image: gcr.io/k8s-prow/hook:0.58
         imagePullPolicy: Always
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/kubernetes-jenkins-pull/line:0.31"
+          value: "gcr.io/k8s-prow/line:0.31"
         - name: DRY_RUN
           value: "false"
         ports:
