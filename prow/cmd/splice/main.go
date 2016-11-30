@@ -138,7 +138,7 @@ func (s *splicer) gitCalls(argsList [][]string) error {
 // findMergeable fetches given PRs from upstream, merges them locally,
 // and finally returns a list of PRs that can be merged without conflicts.
 func (s *splicer) findMergeable(remote string, prs []int) ([]int, error) {
-	args := []string{"fetch", remote, "master:master"}
+	args := []string{"fetch", "-f", remote, "master:master"}
 	for _, pr := range prs {
 		args = append(args, fmt.Sprintf("pull/%d/head:pr/%d", pr, pr))
 	}

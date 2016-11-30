@@ -58,7 +58,7 @@ func TestGetQueuedPRs(t *testing.T) {
 
 // branch creates a new branch off of master
 func (s *splicer) branch(name string) error {
-	return s.gitCall("checkout", "-b", name, "master")
+	return s.gitCall("checkout", "-B", name, "master")
 }
 
 // commit makes a new commit with the provided files added.
@@ -122,7 +122,7 @@ func TestFindMergeable(t *testing.T) {
 	defer up.cleanup()
 	up.firstCommit()
 	err := up.addBranches(branchesSpec{
-		"pull/1/head": {"a": "1"},
+		"pull/1/head": {"a": "1", "e": "1"},
 		"pull/2/head": {"b": "2"},
 		"pull/3/head": {"a": "1", "b": "2", "c": "3"},
 		"pull/4/head": {"a": "5"},
@@ -143,4 +143,15 @@ func TestFindMergeable(t *testing.T) {
 	// reset into a state so it can try to merge again.
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2, 1})
+
+	// doing a force push should work as well!
+	err = up.addBranches(branchesSpec{
+		"pull/2/head": {"b": "2", "e": "2"}, // now conflicts with 1
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
+	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2})
+
 }
