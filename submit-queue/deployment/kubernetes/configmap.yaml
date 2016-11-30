@@ -14,11 +14,15 @@ data:
   # test-options feature options.
   test-options.required-retest-contexts: "\"Jenkins GCE e2e\",\"Jenkins unit/integration\",\"Jenkins verification\",\"Jenkins GCE Node e2e\",\"Jenkins Kubemark GCE e2e\",\"Jenkins GCE etcd3 e2e\""
 
-  # submit-queue options.
+  # submit-queue options. Keep job lists sorted!
   submit-queue.required-contexts: "Jenkins GCE Node e2e"
   submit-queue.nonblocking-jenkins-jobs: "\
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-aws,\
+    ci-kubernetes-e2e-garbage-gci,\
+    ci-kubernetes-e2e-gce-enormous-cluster,\
+    ci-kubernetes-e2e-gce-enormous-deploy,\
+    ci-kubernetes-e2e-gce-enormous-teardown,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
@@ -80,22 +84,18 @@ data:
     ci-kubernetes-soak-gke-deploy,\
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
-    ci-kubernetes-soak-gke-test,\
-    ci-kubernetes-e2e-gce-enormous-cluster,\
-    ci-kubernetes-e2e-gce-enormous-deploy,\
-    ci-kubernetes-e2e-gce-enormous-teardown,\
-    ci-kubernetes-e2e-garbage-gci"
+    ci-kubernetes-soak-gke-test"
   submit-queue.jenkins-jobs: "\
-    ci-kubernetes-build,\
-    ci-kubernetes-e2e-gce-etcd3,\
-    ci-kubernetes-e2e-gci-gce,\
-    ci-kubernetes-e2e-gci-gce-slow,\
-    ci-kubernetes-e2e-gci-gke,\
-    ci-kubernetes-e2e-gci-gke-slow,\
-    ci-kubernetes-e2e-kops-aws,\
-    ci-kubernetes-kubemark-500-gce,\
-    ci-kubernetes-node-kubelet,\
-    ci-kubernetes-test-go,\
+    ci-kubernetes-build,
+    ci-kubernetes-e2e-gce-etcd3,
+    ci-kubernetes-e2e-gci-gce,
+    ci-kubernetes-e2e-gci-gce-slow,
+    ci-kubernetes-e2e-gci-gke,
+    ci-kubernetes-e2e-gci-gke-slow,
+    ci-kubernetes-e2e-kops-aws,
+    ci-kubernetes-kubemark-500-gce,
+    ci-kubernetes-node-kubelet,
+    ci-kubernetes-test-go,
     ci-kubernetes-verify-master"
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
