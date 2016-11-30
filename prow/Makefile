@@ -22,8 +22,9 @@ DECK_VERSION   = 0.6
 SPLICE_VERSION   = 0.1
 
 # These are the usual GKE variables.
-PROJECT = kubernetes-jenkins-pull
+PROJECT = k8s-prow
 ZONE = us-central1-f
+CLUSTER = prow
 
 # These are GitHub credentials in files on your own machine.
 # The hook secret is your HMAC token, the OAuth secret is the OAuth
@@ -41,8 +42,8 @@ SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
 
 # Should probably move this to a script or something.
 create-cluster:
-	gcloud -q container --project "$(PROJECT)" clusters create ciongke --zone "$(ZONE)" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=ciongke --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
-	gcloud -q container node-pools create build-pool --project "$(PROJECT)" --cluster "ciongke" --zone "$(ZONE)" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
+	gcloud -q container --project "$(PROJECT)" clusters create "$(CLUSTER)" --zone "$(ZONE)" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=prow --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+	gcloud -q container node-pools create build-pool --project "$(PROJECT)" --cluster "$(CLUSTER)" --zone "$(ZONE)" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
 	kubectl create secret generic hmac-token --from-file=hmac=$(HOOK_SECRET_FILE)
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
@@ -61,12 +62,7 @@ create-cluster:
 	@make deck-service --no-print-directory
 	@make splice-image --no-print-directory
 	@make splice-deployment --no-print-directory
-	@echo -n "Waiting for hook ingress IP "; while [[ "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)" == "null" ]]; do echo -n "."; sleep 5; done; echo " Done"
-	@echo "Webhook address: http://$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip):8888/"
-	gcloud compute --project "$(PROJECT)" addresses create ciongke --addresses "$$(kubectl get svc hook -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
-	@echo -n "Waiting for deck ingress IP "; while [[ "$$(kubectl get svc deck -o=json | jq -r .status.loadBalancer.ingress[0].ip)" == "null" ]]; do echo -n "."; sleep 5; done; echo " Done"
-	@echo "Deck address: http://$$(kubectl get svc deck -o=json | jq -r .status.loadBalancer.ingress[0].ip)/"
-	gcloud compute --project "$(PROJECT)" addresses create deck --addresses "$$(kubectl get svc deck -o=json | jq -r .status.loadBalancer.ingress[0].ip)"
+	kubectl apply -f cluster/ingress.yaml
 
 update-cluster: get-cluster-credentials
 	@make line-image --no-print-directory

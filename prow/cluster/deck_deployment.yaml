@@ -31,11 +31,11 @@ spec:
         app: deck
     spec:
       nodeSelector:
-        role: ciongke
+        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/kubernetes-jenkins-pull/deck:0.6
+        image: gcr.io/k8s-prow/deck:0.6
         ports:
           - name: http
             containerPort: 80

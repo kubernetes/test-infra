@@ -21,4 +21,4 @@ spec:
     app: hook
   ports:
   - port: 8888
-  type: LoadBalancer
+  type: NodePort
