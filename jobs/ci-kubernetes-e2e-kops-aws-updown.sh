@@ -63,7 +63,7 @@ export GINKGO_PARALLEL="y"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 20m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 30m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
