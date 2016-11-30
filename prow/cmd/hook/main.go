@@ -140,5 +140,9 @@ func main() {
 	}
 	events.Start()
 
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), server))
+	// Return 200 on / for health checks.
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	// For /hook, handle a webhook normally.
+	http.Handle("/hook", server)
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
