@@ -1133,6 +1133,14 @@ class JobTest(unittest.TestCase):
                      expected, lines,
                      '%s not found in %s' % (expected, job_path))
 
+    def testNoBadVarsInJobs(self):
+        """Searches for jobs that contain ${{VAR}}"""
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                script = fp.read()
+            bad_vars = re.findall(r'(\${{.+}})', script)
+            if bad_vars:
+                self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
 
 
 if __name__ == '__main__':
