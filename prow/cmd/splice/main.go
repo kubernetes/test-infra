@@ -251,7 +251,6 @@ func main() {
 			log.WithError(err).Error("Error computing mergeable PRs.")
 			continue
 		}
-		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
 		log.Infof("Batch PRs: %v", batchPRs)
 		if len(batchPRs) <= 1 {
 			continue
@@ -259,6 +258,7 @@ func main() {
 		if len(batchPRs) > 5 {
 			batchPRs = batchPRs[:5]
 		}
+		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
 			if job.AlwaysRun {
 				if err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
