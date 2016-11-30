@@ -77,7 +77,7 @@ app = webapp2.WSGIApplication([
     (r'/builds/(.*)/([^/]+)/?', view_build.BuildListHandler),
     (r'/build/(.*)/([^/]+)/([\d_:.]+)/?', view_build.BuildHandler),
     (r'/build/(.*)/([^/]+)/([\d_:.]+)/nodelog*', view_logs.NodeLogHandler),
-    (r'/pr/([^/]*/)?(\d+)', view_pr.PRHandler),
+    (r'/pr/([^/]*/)?(\d+|batch)', view_pr.PRHandler),
     (r'/pr/?', view_pr.PRDashboard),
     (r'/pr/([-\w]+)', view_pr.PRDashboard),
     (r'/pr/(.*/build-log.txt)', view_pr.PRBuildLogHandler),

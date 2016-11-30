@@ -16,6 +16,7 @@ import datetime
 import json
 import logging
 import os
+import time
 
 import webapp2
 
@@ -78,6 +79,10 @@ class PRHandler(view_base.BaseHandler):
             path = ''
             repo = 'kubernetes/kubernetes'
         builds = pr_builds(path, pr)
+        if pr == 'batch':  # truncate batch results to last day
+            cutoff = time.time() - 60 * 60 * 24
+            builds = {j: [(b, s, f) for b, s, f in bs if not s or s['timestamp'] > cutoff]
+                      for j, bs in builds.iteritems()}
         max_builds, headings, rows = pull_request.builds_to_table(builds)
         digest = ghm.GHIssueDigest.get(repo, pr)
         self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX, digest=digest,
