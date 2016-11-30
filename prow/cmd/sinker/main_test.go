@@ -63,7 +63,6 @@ func (c *fakeClient) DeleteJob(name string) error {
 	return fmt.Errorf("job %s not found", name)
 }
 
-
 func (c *fakeClient) DeletePod(name string) error {
 	for i, p := range c.Pods {
 		if p.Metadata.Name == name {
