@@ -20,3 +20,6 @@
 ^docs/getting-started-guides	kind/old-docs
 ^docs/admin			kind/old-docs
 ^docs/user-guide		kind/old-docs
+^docs/devel             kind/old-docs
+^docs/design            kind/old-docs
+^docs/proposals         kind/old-docs
