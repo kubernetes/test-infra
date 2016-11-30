@@ -167,7 +167,7 @@ func determineReleaseNoteLabel(obj *github.MungeObject) string {
 // getReleaseNote returns the release note from a PR body
 // assumes that the PR body followed the PR template
 func getReleaseNote(body string) string {
-	noteMatcher := regexp.MustCompile("Release note.*```(.+)```")
+	noteMatcher := regexp.MustCompile(`Release note\*\*:\s*` + "```" + `(.+?)` + "```")
 	potentialMatch := noteMatcher.FindStringSubmatch(body)
 	if potentialMatch == nil {
 		return ""
