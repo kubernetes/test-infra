@@ -21,7 +21,7 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 # TODO(fejta): remove this
-if [[ "${ghprbTargetBranch:-}" == "release-1.0" || "${ghprbTargetBranch:-}" == "release-1.1" ]]; then
+if [[ "${PULL_BASE_REF:-}" == "release-1.0" || "${PULL_BASE_REF:-}" == "release-1.1" ]]; then
   echo "PR GCE job disabled for legacy branches."
   exit
 fi

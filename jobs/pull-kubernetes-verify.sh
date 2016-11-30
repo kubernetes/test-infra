@@ -27,6 +27,6 @@ git remote add "${remote}" 'https://github.com/kubernetes/kubernetes.git'
 git remote set-url --push "${remote}" no_push
 # If .git is cached between runs this data may be stale
 git fetch "${remote}"  # fetch branches
-export KUBE_VERIFY_GIT_BRANCH="${ghprbTargetBranch}"
+export KUBE_VERIFY_GIT_BRANCH="${PULL_BASE_REF}"
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 ${testinfra}/jenkins/gotest-dockerized.sh
