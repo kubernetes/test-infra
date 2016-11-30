@@ -26,6 +26,6 @@ import (
 func TestPlugins(t *testing.T) {
 	pa := &plugins.PluginAgent{}
 	if err := pa.Load("../../plugins.yaml"); err != nil {
-		t.Fatalf("Could not load plugins: %v. Did you forget an import in cmd/hook?", err)
+		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }

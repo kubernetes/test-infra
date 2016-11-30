@@ -17,7 +17,6 @@ limitations under the License.
 package plugins
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -74,8 +73,14 @@ func TestGetPlugins(t *testing.T) {
 		pa.ps = tc.pluginMap
 
 		plugins := pa.getPlugins(tc.owner, tc.repo)
-		if !reflect.DeepEqual(plugins, tc.expectedPlugins) {
-			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.expectedPlugins, plugins, tc.name)
+		if len(plugins) != len(tc.expectedPlugins) {
+			t.Errorf("Different number of plugins for case \"%s\". Got %v, expected %v", tc.name, plugins, tc.expectedPlugins)
+		} else {
+			for i := range plugins {
+				if plugins[i] != tc.expectedPlugins[i] {
+					t.Errorf("Different plugin for case \"%s\": Got %v expected %v", tc.name, plugins, tc.expectedPlugins)
+				}
+			}
 		}
 	}
 }
