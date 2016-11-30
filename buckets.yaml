@@ -23,3 +23,4 @@ gs://kopeio-kubernetes-e2e/logs/:
 gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"
+  sequential: false
