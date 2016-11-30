@@ -54,7 +54,7 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
 fi
 
 # Define a custom instance lister for cluster/log-dump.sh.
-function log-dump-custom-get-instances() {
+function log_dump_custom_get_instances() {
   local -r role=$1
   local kops_regions
   IFS=', ' read -r -a kops_regions <<< "${KOPS_REGIONS:-us-west-2}"
@@ -69,7 +69,7 @@ function log-dump-custom-get-instances() {
       --output text
   done
 }
-export -f log-dump-custom-get-instances
+export -f log_dump_custom_get_instances
 
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
 
