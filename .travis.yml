@@ -47,3 +47,5 @@ script:
     - go test k8s.io/test-infra/testgrid/config/...
     - chmod +x testgrid/jenkins_verify/verify.sh
     - ./testgrid/jenkins_verify/verify.sh
+# Make sure we don't have any lingering ${{VAR}}s from the bootstrap migration.
+    - "!" grep -rE '\${{.+}}' jobs/
