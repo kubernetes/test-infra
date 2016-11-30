@@ -53,6 +53,24 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
   export E2E_OPT="${E2E_OPT} --kops-kubernetes-version ${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}"
 fi
 
+# Define a custom instance lister for cluster/log-dump.sh.
+function log-dump-custom-get-instances() {
+  local -r role=$1
+  local kops_regions
+  IFS=', ' read -r -a kops_regions <<< "${KOPS_REGIONS:-us-west-2}"
+  for region in "${kops_regions[@]}"; do
+    aws ec2 describe-instances \
+      --region "${region}" \
+      --filter \
+        "Name=tag:KubernetesCluster,Values=$(kubectl config current-context)" \
+        "Name=tag:k8s.io/role/${role},Values=1" \
+        "Name=instance-state-name,Values=running" \
+      --query "Reservations[].Instances[].PublicDnsName" \
+      --output text
+  done
+}
+export -f log-dump-custom-get-instances
+
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
