@@ -39,8 +39,9 @@ var (
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	logJson        = flag.Bool("logjson", false, "output log in JSON format")
+	logJson        = flag.Bool("log-json", false, "output log in JSON format")
 	jobConfigs     = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
+	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 
 // Call a binary and return its output and success status.
@@ -255,8 +256,8 @@ func main() {
 		if len(batchPRs) <= 1 {
 			continue
 		}
-		if len(batchPRs) > 5 {
-			batchPRs = batchPRs[:5]
+		if len(batchPRs) > *maxBatchSize {
+			batchPRs = batchPRs[:*maxBatchSize]
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {

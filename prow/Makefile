@@ -19,7 +19,7 @@ HOOK_VERSION   = 0.58
 LINE_VERSION   = 0.31
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.6
-SPLICE_VERSION   = 0.2
+SPLICE_VERSION   = 0.3
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow
