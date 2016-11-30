@@ -92,6 +92,14 @@ export PATH="${PATH}:/usr/local/go/bin"
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 timeout -k 15m 120m "${runner}" && rc=$? || rc=$?
 
+# If we timed out, make sure we collect logs anyways.
+if [[ ${rc} -ne 0 ]]; then
+  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
+    echo "Dumping logs for any remaining nodes"
+    ./cluster/log-dump.sh _artifacts
+  fi
+fi
+
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
     echo "Build timed out" >&2
