@@ -35,18 +35,40 @@ const (
 	retryDelay       = 2 * time.Second
 )
 
+type Logger interface {
+	Printf(s string, v ...interface{})
+}
+
 // Client interacts with the Kubernetes api-server.
 type Client struct {
+	// If Logger is non-nil, log all method calls with it.
+	Logger Logger
+
 	baseURL   string
 	client    *http.Client
 	token     string
 	namespace string
+	fake      bool
+}
+
+func (c *Client) log(methodName string, args ...interface{}) {
+	if c.Logger == nil {
+		return
+	}
+	var as []string
+	for _, arg := range args {
+		as = append(as, fmt.Sprintf("%v", arg))
+	}
+	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type ConflictError error
 
 // Retry on transport failures. Does not retry on 500s.
 func (c *Client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
+	if c.fake {
+		return []byte("{}"), nil
+	}
 	var resp *http.Response
 	var err error
 	backoff := retryDelay
@@ -98,6 +120,14 @@ func (c *Client) doRequest(method, urlPath string, query map[string]string, body
 	return c.client.Do(req)
 }
 
+// NewFakeClient creates a client that doesn't do anything.
+func NewFakeClient() *Client {
+	return &Client{
+		namespace: "default",
+		fake:      true,
+	}
+}
+
 // NewClientInCluster creates a Client that works from within a pod.
 func NewClientInCluster(namespace string) (*Client, error) {
 	tokenFile := "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -129,7 +159,9 @@ func NewClientInCluster(namespace string) (*Client, error) {
 		namespace: namespace,
 	}, nil
 }
+
 func (c *Client) GetPod(name string) (Pod, error) {
+	c.log("GetPod", name)
 	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
 	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
 	if err != nil {
@@ -143,6 +175,7 @@ func (c *Client) GetPod(name string) (Pod, error) {
 }
 
 func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
+	c.log("ListPods", labels)
 	var sel []string
 	for k, v := range labels {
 		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
@@ -166,12 +199,14 @@ func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
 }
 
 func (c *Client) DeletePod(name string) error {
+	c.log("DeletePod", name)
 	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
 	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
 	return err
 }
 
 func (c *Client) GetJob(name string) (Job, error) {
+	c.log("GetJob", name)
 	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
 	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
 	if err != nil {
@@ -185,6 +220,7 @@ func (c *Client) GetJob(name string) (Job, error) {
 }
 
 func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
+	c.log("ListJobs", labels)
 	var sel []string
 	for k, v := range labels {
 		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
@@ -208,6 +244,7 @@ func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
 }
 
 func (c *Client) CreatePod(p Pod) (Pod, error) {
+	c.log("CreatePod", p)
 	b, err := json.Marshal(p)
 	if err != nil {
 		return Pod{}, err
@@ -226,6 +263,7 @@ func (c *Client) CreatePod(p Pod) (Pod, error) {
 }
 
 func (c *Client) CreateJob(j Job) (Job, error) {
+	c.log("CreateJob", j)
 	b, err := json.Marshal(j)
 	if err != nil {
 		return Job{}, err
@@ -244,12 +282,14 @@ func (c *Client) CreateJob(j Job) (Job, error) {
 }
 
 func (c *Client) DeleteJob(name string) error {
+	c.log("DeleteJob", name)
 	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
 	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
 	return err
 }
 
 func (c *Client) PatchJob(name string, job Job) (Job, error) {
+	c.log("PatchJob", name, job)
 	b, err := json.Marshal(job)
 	if err != nil {
 		return Job{}, err
@@ -268,6 +308,7 @@ func (c *Client) PatchJob(name string, job Job) (Job, error) {
 }
 
 func (c *Client) PatchJobStatus(name string, job Job) (Job, error) {
+	c.log("PatchJobStatus", name, job)
 	b, err := json.Marshal(job)
 	if err != nil {
 		return Job{}, err

@@ -23,14 +23,23 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
+type Logger interface {
+	Printf(s string, v ...interface{})
+}
+
 type Client struct {
+	// If Logger is non-nil, log all method calls with it.
+	Logger Logger
+
 	client *http.Client
 	token  string
 	base   string
 	dry    bool
+	fake   bool
 }
 
 const (
@@ -59,6 +68,25 @@ func NewDryRunClient(token string) *Client {
 		base:   githubBase,
 		dry:    true,
 	}
+}
+
+// NewFakeClient creates a new client that will not perform any actions at all.
+func NewFakeClient() *Client {
+	return &Client{
+		fake: true,
+		dry:  true,
+	}
+}
+
+func (c *Client) log(methodName string, args ...interface{}) {
+	if c.Logger == nil {
+		return
+	}
+	var as []string
+	for _, arg := range args {
+		as = append(as, fmt.Sprintf("%v", arg))
+	}
+	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 // Retry on transport failures. Does not retry on 500s.
@@ -103,6 +131,10 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 
 // IsMember returns whether or not the user is a member of the org.
 func (c *Client) IsMember(org, user string) (bool, error) {
+	c.log("IsMember", org, user)
+	if c.fake {
+		return true, nil
+	}
 	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/orgs/%s/members/%s", c.base, org, user), nil)
 	if err != nil {
 		return false, err
@@ -119,7 +151,8 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 }
 
 // CreateComment creates a comment on the issue.
-func (c *Client) CreateComment(owner, repo string, number int, comment string) error {
+func (c *Client) CreateComment(org, repo string, number int, comment string) error {
+	c.log("CreateComment", org, repo, number, comment)
 	if c.dry {
 		return nil
 	}
@@ -127,7 +160,7 @@ func (c *Client) CreateComment(owner, repo string, number int, comment string) e
 	ic := IssueComment{
 		Body: comment,
 	}
-	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.base, owner, repo, number), ic)
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.base, org, repo, number), ic)
 	if err != nil {
 		return err
 	}
@@ -139,12 +172,13 @@ func (c *Client) CreateComment(owner, repo string, number int, comment string) e
 }
 
 // DeleteComment deletes the comment.
-func (c *Client) DeleteComment(owner, repo string, ID int) error {
+func (c *Client) DeleteComment(org, repo string, ID int) error {
+	c.log("DeleteComment", org, repo, ID)
 	if c.dry {
 		return nil
 	}
 
-	resp, err := c.request(http.MethodDelete, fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", c.base, owner, repo, ID), nil)
+	resp, err := c.request(http.MethodDelete, fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", c.base, org, repo, ID), nil)
 	if err != nil {
 		return err
 	}
@@ -157,8 +191,12 @@ func (c *Client) DeleteComment(owner, repo string, ID int) error {
 
 // ListIssueComments returns all comments on an issue. This may use more than
 // one API token.
-func (c *Client) ListIssueComments(owner, repo string, number int) ([]IssueComment, error) {
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments?per_page=100", c.base, owner, repo, number)
+func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {
+	c.log("ListIssueComments", org, repo, number)
+	if c.fake {
+		return nil, nil
+	}
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments?per_page=100", c.base, org, repo, number)
 	var comments []IssueComment
 	for nextURL != "" {
 		resp, err := c.request(http.MethodGet, nextURL, nil)
@@ -186,8 +224,12 @@ func (c *Client) ListIssueComments(owner, repo string, number int) ([]IssueComme
 }
 
 // GetPullRequest gets a pull request.
-func (c *Client) GetPullRequest(owner, repo string, number int) (*PullRequest, error) {
-	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, owner, repo, number), nil)
+func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, error) {
+	c.log("GetPullRequest", org, repo, number)
+	if c.fake {
+		return &PullRequest{}, nil
+	}
+	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -207,12 +249,13 @@ func (c *Client) GetPullRequest(owner, repo string, number int) (*PullRequest, e
 }
 
 // CreateStatus creates or updates the status of a commit.
-func (c *Client) CreateStatus(owner, repo, ref string, s Status) error {
+func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
+	c.log("CreateStatus", org, repo, ref, s)
 	if c.dry {
 		return nil
 	}
 
-	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, owner, repo, ref), s)
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, ref), s)
 	if err != nil {
 		return err
 	}
@@ -223,11 +266,12 @@ func (c *Client) CreateStatus(owner, repo, ref string, s Status) error {
 	return nil
 }
 
-func (c *Client) AddLabel(owner, repo string, number int, label string) error {
+func (c *Client) AddLabel(org, repo string, number int, label string) error {
+	c.log("AddLabel", org, repo, number, label)
 	if c.dry {
 		return nil
 	}
-	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels", c.base, owner, repo, number), []string{label})
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels", c.base, org, repo, number), []string{label})
 	if err != nil {
 		return err
 	}
@@ -238,11 +282,12 @@ func (c *Client) AddLabel(owner, repo string, number int, label string) error {
 	return nil
 }
 
-func (c *Client) RemoveLabel(owner, repo string, number int, label string) error {
+func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
+	c.log("RemoveLabel", org, repo, number, label)
 	if c.dry {
 		return nil
 	}
-	resp, err := c.request(http.MethodDelete, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, owner, repo, number, label), nil)
+	resp, err := c.request(http.MethodDelete, fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, org, repo, number, label), nil)
 	if err != nil {
 		return err
 	}
@@ -254,11 +299,12 @@ func (c *Client) RemoveLabel(owner, repo string, number int, label string) error
 	return nil
 }
 
-func (c *Client) CloseIssue(owner, repo string, number int) error {
+func (c *Client) CloseIssue(org, repo string, number int) error {
+	c.log("CloseIssue", org, repo, number)
 	if c.dry {
 		return nil
 	}
-	resp, err := c.request(http.MethodPatch, fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, owner, repo, number), map[string]string{"state": "closed"})
+	resp, err := c.request(http.MethodPatch, fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number), map[string]string{"state": "closed"})
 	if err != nil {
 		return err
 	}
@@ -272,6 +318,10 @@ func (c *Client) CloseIssue(owner, repo string, number int) error {
 // FindIssues uses the github search API to find issues which match a particular query.
 // TODO(foxish): we should accept map[string][]string and use net/url properly.
 func (c *Client) FindIssues(query string) ([]Issue, error) {
+	c.log("FindIssues", query)
+	if c.fake {
+		return nil, nil
+	}
 	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/search/issues?q=%s", c.base, query), nil)
 	if err != nil {
 		return nil, err
