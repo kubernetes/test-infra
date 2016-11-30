@@ -61,9 +61,6 @@ export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
 export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${E2E_NAME}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
 export GINKGO_PARALLEL="y"
 
-# TODO(zmerlynn): Take this out after the e2e-image is rev'd.
-export CLOUDSDK_CONFIG="/workspace/.config/gcloud"
-
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 timeout -k 15m 20m "${runner}" && rc=$? || rc=$?
