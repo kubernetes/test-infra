@@ -41,7 +41,7 @@ KUBEKINS_TAG="1.5-v20161109-d9a98f2"
 if [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.2" ]] || \
    [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.3" ]] || \
    [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.4" ]]; then
-  KUBEKINS_TAG="1.4-v20161109-d9a98f2"
+  KUBEKINS_TAG="1.4-v20161130-8958f82"
 fi
 
 docker run --rm=true \
