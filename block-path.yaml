@@ -2,6 +2,9 @@ blockRegexp:
   - ^docs/getting-started-guides
   - ^docs/admin
   - ^docs/user-guide
+  - ^docs/devel
+  - ^docs/design
+  - ^docs/proposals
 doNotBlockRegexp:
   - ^docs/admin/kube-apiserver.md$
   - ^docs/admin/kube-controller-manager.md$
