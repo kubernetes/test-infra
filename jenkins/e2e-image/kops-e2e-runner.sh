@@ -56,6 +56,8 @@ fi
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
+  export CLOUDSDK_CONFIG="/workspace/.config/gcloud"
+
   if ! which gsutil; then
     export PATH=/google-cloud-sdk/bin:${PATH}
     if ! which gsutil; then
