@@ -34,6 +34,6 @@ projects=(
 ./jenkins/janitor.py --project=sen-lu-test --hours=1 --dryrun=False
 
 for proj in "${projects[@]}"; do
-  ./jenkins/janitor.py --project="${proj}" --hours=1
+  ./jenkins/janitor.py --project="${proj}" --hours=24 --dryrun=False
 done
 
