@@ -42,3 +42,9 @@ class TableTest(unittest.TestCase):
         jobs = {'J': [make(5, None, 'A', 3), make(4, '', 'B', 2)]}
         self.assertEqual(pull_request.builds_to_table(jobs),
                          (0, [], [('J', [(5, 'A'), (4, 'B')])]))
+
+    def test_pull_ref_commit(self):
+        jobs = {'J1': [make(4, 'v2', 'A', 9)]}
+        jobs['J1'][0][1]['pull'] = 'master:1234,35:abcd'
+        _, headings, _ = pull_request.builds_to_table(jobs)
+        self.assertEqual(headings, [('abcd', 1, 9)])
