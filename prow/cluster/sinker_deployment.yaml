@@ -12,7 +12,7 @@ spec:
         app: sinker
     spec:
       nodeSelector:
-        role: ciongke
+        role: prow
       containers:
       - name: sinker
         image: gcr.io/k8s-prow/sinker:0.4
