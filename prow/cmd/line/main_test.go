@@ -77,35 +77,46 @@ func TestFailureComment(t *testing.T) {
 
 func TestGuberURL(t *testing.T) {
 	var testcases = []struct {
+		PRNumber    int
 		RepoOwner   string
 		RepoName    string
 		ExpectedURL string
 	}{
 		{
+			5,
 			"kubernetes",
 			"kubernetes",
 			"/5/j/1/",
 		},
 		{
+			5,
 			"kubernetes",
 			"charts",
 			"/charts/5/j/1/",
 		},
 		{
+			5,
 			"other",
 			"kubernetes",
 			"/other_kubernetes/5/j/1/",
 		},
 		{
+			5,
 			"other",
 			"other",
 			"/other_other/5/j/1/",
+		},
+		{
+			0,
+			"kubernetes",
+			"kubernetes",
+			"/batch/j/1/",
 		},
 	}
 	for _, tc := range testcases {
 		c := &testClient{
 			Job:       jobs.JenkinsJob{Name: "j"},
-			PRNumber:  5,
+			PRNumber:  tc.PRNumber,
 			RepoOwner: tc.RepoOwner,
 			RepoName:  tc.RepoName,
 		}
