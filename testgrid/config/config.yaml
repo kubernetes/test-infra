@@ -874,6 +874,9 @@ test_groups:
 # azure
 - name: kubernetes-azure
   gcs_prefix: kube_azure_log/kubernetes.azure.nightly
+# Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
+- name: canonical-kubernetes-e2e-gce
+  gcs_prefix: canonical-kubernetes-tests/logs/gce-e2e-node
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
@@ -963,6 +966,11 @@ dashboards:
   dashboard_tab:
   - name: azure
     test_group_name: kubernetes-azure
+
+- name: canonical-kubernetes
+  dashboard_tab:
+  - name: cdk-gce
+    test_group_name: canonical-kubernetes-e2e-gce
 
 - name: kopeio
   dashboard_tab:
