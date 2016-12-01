@@ -88,6 +88,7 @@ type statusPullRequest struct {
 	Additions int
 	Deletions int
 	ExtraInfo []string
+	BaseRef   string
 }
 
 type e2eQueueStatus struct {
@@ -689,6 +690,9 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	}
 	if pr.Deletions != nil {
 		res.Deletions = *pr.Deletions
+	}
+	if pr.Base != nil && pr.Base.Ref != nil {
+		res.BaseRef = *pr.Base.Ref
 	}
 
 	prio, ok := obj.Annotations["priority"]

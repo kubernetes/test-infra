@@ -1228,6 +1228,12 @@ func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c 
 			glog.V(4).Infof("PR# %d is pending, waiting for %f seconds", *obj.Issue.Number, sleepTime.Seconds())
 		}
 		time.Sleep(sleepTime)
+
+		// If it has been closed, assume that we want to break from the poll loop early.
+		obj.Refresh()
+		if obj.Issue != nil && obj.Issue.State != nil && *obj.Issue.State == "closed" {
+			c <- fmt.Errorf("PR# %d has been closed", *obj.Issue.Number)
+		}
 	}
 }
 
