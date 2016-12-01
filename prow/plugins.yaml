@@ -8,9 +8,6 @@ google/cadvisor:
 kubernetes/charts:
 - trigger
 
-kubernetes/contrib:
-- lgtm
-
 kubernetes/heapster:
 - trigger
 
@@ -18,16 +15,15 @@ kubernetes/kops:
 - trigger
 
 kubernetes/kubernetes:
-- lgtm
 - trigger
 
 kubernetes/test-infra:
-- close
-- lgtm
 - trigger
 
 kubernetes:
 - cla
+- close
+- lgtm
 
 kubernetes-incubator:
 - cla

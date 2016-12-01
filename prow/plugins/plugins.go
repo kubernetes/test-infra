@@ -19,6 +19,7 @@ package plugins
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"sync"
 	"time"
 
@@ -86,10 +87,24 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := yaml.Unmarshal(b, &np); err != nil {
 		return err
 	}
+	// Check that there are no plugins that we don't know about.
 	for _, v := range np {
 		for _, p := range v {
 			if _, ok := allPlugins[p]; !ok {
 				return fmt.Errorf("unknown plugin: %s", p)
+			}
+		}
+	}
+	// Check that there are no duplicates.
+	for k, v := range np {
+		if strings.Contains(k, "/") {
+			org := strings.Split(k, "/")[0]
+			for _, p1 := range v {
+				for _, p2 := range np[org] {
+					if p1 == p2 {
+						return fmt.Errorf("plugin %s is duplicated for %s and %s", p1, k, org)
+					}
+				}
 			}
 		}
 	}
@@ -161,7 +176,6 @@ func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]Status
 
 // getPlugins returns a list of plugins that are enabled on a given (org, repository).
 func (pa *PluginAgent) getPlugins(owner, repo string) []string {
-	// TODO: use a set here to avoid repetitions?
 	var plugins []string
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
