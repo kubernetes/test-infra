@@ -56,7 +56,7 @@ export FEDERATION="true"
 export DNS_ZONE_NAME="soak.test-f8n.k8s.io."
 export FEDERATIONS_DOMAIN_MAP="federation=soak.test-f8n.k8s.io"
 export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
-export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-gce-federation-soak"
+export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
 
 ### post-env
 
