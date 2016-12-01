@@ -23,16 +23,13 @@ readonly testinfra="$(dirname "${0}")/.."
 ### provider-env
 export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
-export KUBE_GCE_ZONE="us-central1-f"
-export FAIL_ON_GCP_RESOURCE_LEAK="true"
+export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 
 ### project-env
 # expected empty
 
 ### job-env
-export ENABLE_GARBAGE_COLLECTOR="true"
-# XXX Not a unique project
 export E2E_NAME="kubemark-2000"
 export PROJECT="kubernetes-scale"
 export E2E_TEST="false"
@@ -45,7 +42,6 @@ export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burs
 export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
-export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override defaults to be independent from GCE defaults and set kubemark parameters
 # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
 export NUM_NODES="51"
@@ -57,7 +53,7 @@ export KUBEMARK_MASTER_SIZE="n1-standard-32"
 # Increase disk size to check if that helps for etcd latency.
 export MASTER_DISK_SIZE="100GB"
 export KUBEMARK_NUM_NODES="5000"
-export KUBE_GCE_ZONE="us-central1-f"
+export KUBE_GCE_ZONE="us-central1-b"
 # =========================================
 # Configuration we are targetting in 1.5
 export TEST_ETCD_IMAGE="3.0.14-experimental.1"
