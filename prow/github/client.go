@@ -44,9 +44,9 @@ type Client struct {
 }
 
 const (
-	githubBase = "https://api.github.com"
-	maxRetries = 8
-	retryDelay = 2 * time.Second
+	githubBase   = "https://api.github.com"
+	maxRetries   = 8
+	initialDelay = 2 * time.Second
 )
 
 // NewClient creates a new fully operational GitHub client.
@@ -97,7 +97,7 @@ var timeSleep = time.Sleep
 func (c *Client) request(method, path string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
-	backoff := retryDelay
+	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path, body)
 		if err == nil {
