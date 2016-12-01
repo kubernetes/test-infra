@@ -71,13 +71,13 @@ type BuildRequest struct {
 	Pulls []Pull
 }
 
-func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, baseRef string) error {
+func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, baseSHA string) error {
 	br := BuildRequest{
 		Org:  pr.Base.Repo.Owner.Login,
 		Repo: pr.Base.Repo.Name,
 
-		BaseRef: baseRef,
-		BaseSHA: pr.Base.SHA,
+		BaseRef: pr.Base.Ref,
+		BaseSHA: baseSHA,
 
 		Pulls: []Pull{
 			{
