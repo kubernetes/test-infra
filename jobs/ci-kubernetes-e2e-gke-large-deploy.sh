@@ -39,7 +39,7 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Empty\] \
                          --system-pods-startup-timeout=600m"
 export ZONE="us-east1-a"
 export NUM_NODES=3500
-export MACHINE_TYPE="n1-standard-1"
+export MACHINE_TYPE="g1-small"
 export HEAPSTER_MACHINE_TYPE="n1-standard-8"
 export ALLOWED_NOTREADY_NODES="20"
 # We were asked (by MIG team) to not create more than 5 MIGs per zone.
