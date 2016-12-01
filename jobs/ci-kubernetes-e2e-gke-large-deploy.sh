@@ -36,9 +36,9 @@ export PROJECT="kubernetes-scale"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Empty\] \
                          --allowed-not-ready-nodes=20 \
-                         --system-pods-startup-timeout=300m"
+                         --system-pods-startup-timeout=600m"
 export ZONE="us-east1-a"
-export NUM_NODES=3000
+export NUM_NODES=3500
 export MACHINE_TYPE="n1-standard-1"
 export HEAPSTER_MACHINE_TYPE="n1-standard-8"
 export ALLOWED_NOTREADY_NODES="20"
@@ -82,7 +82,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 300m "${runner}" && rc=$? || rc=$?
+timeout -k 15m 600m "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
