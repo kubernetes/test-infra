@@ -26,7 +26,8 @@ export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with 'kubernetes-bui
 
 ### Runner
 readonly runner="./hack/jenkins/build.sh"
-timeout -k 15m 50m "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="50"
+timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
