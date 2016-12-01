@@ -24,7 +24,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func getClient(url string) *Client {
@@ -35,6 +37,29 @@ func getClient(url string) *Client {
 			},
 		},
 		base: url,
+	}
+}
+
+func TestRequestRateLimit(t *testing.T) {
+	var slept time.Duration
+	timeSleep = func(d time.Duration) { slept = d }
+	defer func() { timeSleep = time.Sleep }()
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if slept == 0 {
+			w.Header().Set("X-RateLimit-Remaining", "0")
+			w.Header().Set("X-RateLimit-Reset", strconv.Itoa(int(time.Now().Add(time.Second).Unix())))
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	resp, err := c.request(http.MethodGet, c.base, nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	} else if slept < time.Second {
+		t.Errorf("Expected to sleep for at least a second, got %v", slept)
 	}
 }
 

@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -89,7 +90,10 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-// Retry on transport failures. Does not retry on 500s.
+var timeSleep = time.Sleep
+
+// Retry on transport failures. Retries on 500s and retries after sleep on
+// ratelimit exceeded.
 func (c *Client) request(method, path string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
@@ -97,11 +101,25 @@ func (c *Client) request(method, path string, body interface{}) (*http.Response,
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path, body)
 		if err == nil {
-			break
+			// If we are out of API tokens, sleep first. The X-RateLimit-Reset
+			// header tells us the time at which we can request again.
+			if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+				resp.Body.Close()
+				var t int
+				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
+					timeSleep(time.Unix(int64(t), 0).Sub(time.Now()) + time.Second)
+				}
+			} else if resp.StatusCode < 500 {
+				break
+			} else {
+				resp.Body.Close()
+				timeSleep(backoff)
+				backoff *= 2
+			}
+		} else {
+			timeSleep(backoff)
+			backoff *= 2
 		}
-
-		time.Sleep(backoff)
-		backoff *= 2
 	}
 	return resp, err
 }
