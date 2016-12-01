@@ -937,7 +937,7 @@
     # END KUBEMARK
 
     # START UPGRADE
-    ### kubernetes-e2e-upgrades-gke
+    ### kubernetes-e2e-upgrades-gke #maisem
     - kubernetes-e2e-gke-1.2-1.3-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-1.2-1.3-upgrade-master
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -977,7 +977,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
-    ### kubernetes-e2e-upgrades-gce
+    ### kubernetes-e2e-upgrades-gce #davidopp
     - kubernetes-e2e-gce-1.3-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-master
         frequency: 'H/5 * * * *' # At least every 30m
@@ -1004,7 +1004,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
-    ### kubernetes-e2e-upgrades-gce-cross-image-and-gci
+    ### kubernetes-e2e-upgrades-gce-cross-image-and-gci #mtaufen
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
         frequency: 'H/5 * * * *' # At least every 30m
@@ -1084,7 +1084,7 @@
         trigger-job: ''
 
 
-    ### kubernetes-e2e-kubectl-skew-gke
+    ### kubernetes-e2e-kubectl-skew-gke #maisem
     - kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
@@ -1157,7 +1157,7 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
-    ### kubernetes-e2e-kubectl-skew-gce
+    ### kubernetes-e2e-kubectl-skew-gce #davidopp
     - kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
