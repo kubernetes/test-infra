@@ -20,9 +20,6 @@ data:
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-aws,\
     ci-kubernetes-e2e-garbage-gci,\
-    ci-kubernetes-e2e-gce-enormous-cluster,\
-    ci-kubernetes-e2e-gce-enormous-deploy,\
-    ci-kubernetes-e2e-gce-enormous-teardown,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
@@ -35,7 +32,6 @@ data:
     ci-kubernetes-e2e-gci-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce-examples,\
     ci-kubernetes-e2e-gci-gce-federation,\
-    ci-kubernetes-e2e-gci-gce-flannel,\
     ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-e2e-gci-gce-ingress-release-1.4,\
     ci-kubernetes-e2e-gci-gce-kubenet,\
@@ -79,8 +75,6 @@ data:
     ci-kubernetes-node-kubelet-serial,\
     ci-kubernetes-soak-gce-deploy,\
     ci-kubernetes-soak-gce-test,\
-    ci-kubernetes-soak-gci-gce-deploy,\
-    ci-kubernetes-soak-gci-gce-test,\
     ci-kubernetes-soak-gke-deploy,\
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
