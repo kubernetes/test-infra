@@ -96,7 +96,7 @@ def clear_resources(project, col, resource):
     """
     err = 0
     for col, items in col.items():
-        if args.dryrun:
+        if args.dryrun is True:
             print "Resource type %s to be deleted: %s" % (resource.name, list(items))
             continue
 
@@ -143,7 +143,8 @@ if __name__ == '__main__':
         help='Filter down to these instances')
     parser.add_argument(
         '--dryrun',
-        default=True,
+        default=False,
+        action='store_true',
         help='list but not delete resources')
     args = parser.parse_args()
 
