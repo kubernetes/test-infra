@@ -31,9 +31,9 @@ projects=(
   k8s-jkns-pr-gci-bld-e2e-gce-fd
 )
 
-./jenkins/janitor.py --project=sen-lu-test --hours=1 --dryrun=False
+./jenkins/janitor.py --project=sen-lu-test --hours=1
 
 for proj in "${projects[@]}"; do
-  ./jenkins/janitor.py --project="${proj}" --hours=24 --dryrun=False
+  ./jenkins/janitor.py --project="${proj}" --hours=24
 done
 
