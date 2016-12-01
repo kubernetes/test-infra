@@ -72,6 +72,10 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 	return f.PullRequests[number], nil
 }
 
+func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
+	return "abcde", nil
+}
+
 func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) error {
 	return nil
 }

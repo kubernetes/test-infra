@@ -68,12 +68,17 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return err
 	}
 
+	ref, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	if err != nil {
+		return err
+	}
+
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		if err := lineDeletePRJob(c.KubeClient, job.Name, *pr); err != nil {
 			c.Logger.WithError(err).Error("Could not delete old PR job.")
 		}
-		if err := lineStartPRJob(c.KubeClient, job.Name, job.Context, *pr); err != nil {
+		if err := lineStartPRJob(c.KubeClient, job.Name, job.Context, *pr, ref); err != nil {
 			return err
 		}
 	}

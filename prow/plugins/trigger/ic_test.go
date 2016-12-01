@@ -150,7 +150,7 @@ func TestHandleIssueComment(t *testing.T) {
 			lineDeletePRJob = oldLineDeletePRJob
 		}()
 		var startedJobs []string
-		lineStartPRJob = func(k *kube.Client, jobName, context string, pr github.PullRequest) error {
+		lineStartPRJob = func(k *kube.Client, jobName, context string, pr github.PullRequest, ref string) error {
 			startedJobs = append(startedJobs, jobName)
 			return nil
 		}
