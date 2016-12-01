@@ -25,7 +25,8 @@ export KUBE_FASTBUILD=true
 
 ### Runner
 readonly runner="./hack/jenkins/build.sh"
-timeout -k 15m 30m "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="30"
+timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

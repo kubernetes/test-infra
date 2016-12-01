@@ -83,7 +83,8 @@ export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 export PATH=${PATH}:/usr/local/go/bin
 
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-timeout -k 15m 55m "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="55"
+timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
 if [[ ${rc} -ne 0 ]]; then
   if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
     echo "Dumping logs for any remaining nodes"
