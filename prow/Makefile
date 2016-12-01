@@ -82,7 +82,7 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
 get-cluster-credentials:
-	gcloud container clusters get-credentials ciongke --project="$(PROJECT)" --zone="$(ZONE)"
+	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 clean:
 	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck cmd/splice/splice
