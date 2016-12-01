@@ -129,11 +129,20 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 }
 
 func buildAll(c client, pr github.PullRequest) error {
+	var ref string
 	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
 		if !job.AlwaysRun {
 			continue
 		}
-		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr); err != nil {
+		// Only get master ref once.
+		if ref == "" {
+			r, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
+			if err != nil {
+				return err
+			}
+			ref = r
+		}
+		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr, ref); err != nil {
 			return err
 		}
 	}

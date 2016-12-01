@@ -315,6 +315,33 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	return nil
 }
 
+// GetRef returns the SHA of the given ref, such as "heads/master".
+func (c *Client) GetRef(org, repo, ref string) (string, error) {
+	c.log("GetRef", org, repo, ref)
+	if c.fake {
+		return "", nil
+	}
+	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s/repos/%s/%s/git/refs/%s", c.base, org, repo, ref), nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("response not 200: %s", resp.Status)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var res struct {
+		Object map[string]string `json:"object"`
+	}
+	if err := json.Unmarshal(b, &res); err != nil {
+		return "", err
+	}
+	return res.Object["sha"], nil
+}
+
 // FindIssues uses the github search API to find issues which match a particular query.
 // TODO(foxish): we should accept map[string][]string and use net/url properly.
 func (c *Client) FindIssues(query string) ([]Issue, error) {

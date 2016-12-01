@@ -129,6 +129,26 @@ func TestGetPullRequest(t *testing.T) {
 	}
 }
 
+func TestGetRef(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/mastah" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, bytes.NewBufferString(`{"object": {"sha":"abcde"}}`))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	sha, err := c.GetRef("k8s", "kuber", "heads/mastah")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if sha != "abcde" {
+		t.Errorf("Wrong sha: %s", sha)
+	}
+}
+
 func TestCreateStatus(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
