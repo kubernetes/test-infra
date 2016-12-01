@@ -3,10 +3,20 @@ var jobs = {};
 
 var maxLength = 500;
 
+function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
+    var match = RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
 window.onload = function() {
     for (var i = 0; i < allBuilds.length; i++) {
         repos[allBuilds[i].repo] = true;
         jobs[allBuilds[i].job] = true;
+    }
+
+    var refs = getParameterByName("refs");
+    if (refs) {
+        document.getElementById("refs").value = refs;
     }
 
     var rs = Array.from(Object.keys(repos)).sort();
@@ -130,39 +140,45 @@ function redraw() {
 
     var author = document.getElementById("author").value;
     var pr = document.getElementById("pr").value;
+    var refs = document.getElementById("refs").value;
+    var refFilter = function() { return true; };
+    if (refs) {
+        var regex = new RegExp(refs.replace(/,/g, '.*,'));
+        refFilter = regex.test.bind(regex);
+    }
 
     for (var i = 0; i < allBuilds.length && i < 500; i++) {
-        if (!repos[allBuilds[i].repo])
+        var build = allBuilds[i];
+        if (!repos[build.repo])
             continue;
-        if (!jobs[allBuilds[i].job])
+        if (!jobs[build.job])
             continue;
-        if (!String(allBuilds[i].author).includes(author)) {
+        if (!String(build.author).includes(author))
             continue;
-        }
-        if (!String(allBuilds[i].number).includes(pr)) {
+        if (!refFilter(build.refs))
             continue;
-        }
 
         var r = document.createElement("tr");
-        r.appendChild(stateCell(allBuilds[i].state));
-        r.appendChild(createLinkCell(allBuilds[i].repo, "https://github.com/" + allBuilds[i].repo));
-        // TODO(spxtr): Display batches in a more helpful manner.
-        if (allBuilds[i].type == "batch") {
-            r.appendChild(createTextCell("Batch"));
-            r.appendChild(createTextCell(""));
+        r.appendChild(stateCell(build.state));
+        r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
+        if (build.type == "batch") {
+            var batchText = createTextCell("Batch");
+            batchText.setAttribute("title", build.refs.replace(/,/g, ' '));
+            r.appendChild(batchText);
+            r.appendChild(createTextCell(''));
         } else {
-            r.appendChild(createLinkCell(allBuilds[i].number, "https://github.com/" + allBuilds[i].repo + "/pull/" + allBuilds[i].number));
-            r.appendChild(createLinkCell(allBuilds[i].author, "https://github.com/" + allBuilds[i].author));
+            r.appendChild(createLinkCell(build.number, "https://github.com/" + build.repo + "/pull/" + build.number));
+            r.appendChild(createLinkCell(build.author, "https://github.com/" + build.author));
         }
-        r.appendChild(createTextCell(allBuilds[i].job));
-        if (allBuilds[i].url === "") {
-            r.appendChild(createTextCell(allBuilds[i].description));
+        r.appendChild(createTextCell(build.job));
+        if (build.url === "") {
+            r.appendChild(createTextCell(build.description));
         } else {
-            r.appendChild(createLinkCell(allBuilds[i].description, allBuilds[i].url));
+            r.appendChild(createLinkCell(build.description, build.url));
         }
-        r.appendChild(createTextCell(allBuilds[i].started));
-        r.appendChild(createTextCell(allBuilds[i].finished));
-        r.appendChild(createTextCell(allBuilds[i].duration));
+        r.appendChild(createTextCell(build.started));
+        r.appendChild(createTextCell(build.finished));
+        r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
 }
