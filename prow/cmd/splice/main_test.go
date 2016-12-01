@@ -41,8 +41,9 @@ func (h stringHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func TestGetQueuedPRs(t *testing.T) {
 	body := `{"E2EQueue":[
 		{"Number":3, "Title": "blah"},
-		{"Number":4},
-		{"Number":1}
+		{"Number":4, "BaseRef": "master"},
+		{"Number":1},
+		{"Number":5, "BaseRef": "release-1.5"}
 	]}`
 	serv := httptest.NewServer(stringHandler(body))
 	defer serv.Close()

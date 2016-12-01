@@ -68,7 +68,8 @@ func getQueuedPRs(url string) ([]int, error) {
 
 	queue := struct {
 		E2EQueue []struct {
-			Number int
+			Number  int
+			BaseRef string
 		}
 	}{}
 	err = json.Unmarshal(body, &queue)
@@ -78,7 +79,9 @@ func getQueuedPRs(url string) ([]int, error) {
 
 	ret := []int{}
 	for _, e := range queue.E2EQueue {
-		ret = append(ret, e.Number)
+		if e.BaseRef == "" || e.BaseRef == "master" {
+			ret = append(ret, e.Number)
+		}
 	}
 	return ret, nil
 }
