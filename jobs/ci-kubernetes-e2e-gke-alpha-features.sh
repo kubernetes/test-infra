@@ -49,6 +49,8 @@ export E2E_NAME='bootstrap-e2e'
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # Use default component update behavior
 export CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false
+# Use gcloud credentials for authentication
+export CLOUDSDK_CONTAINER_USE_APPLICATION_DEFAULT_CREDENTIALS=false
 
 # AWS variables
 export KUBE_AWS_INSTANCE_PREFIX="${E2E_NAME}"
