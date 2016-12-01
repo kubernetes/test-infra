@@ -3,8 +3,8 @@
 Mungegithub provides a number of tools intended to automate github processes. While mainly for the kubernetes community, some thought is put into making it generic. Mungegithub is built as a single binary, but is run in 3 different ways for 3 different purposes.
 
 1. submit-queue: This looks at open PRs and attempts to help automate the process getting PRs from open to merged.
-2. cherrypick: This looks at open and closed PRs with the `cherry-pick-candidate` label and attempts to help the branch managers deal with the cherry-pick process.
-3. shame-mailer: This looks at open issues and e-mails assignees who have not closed their issues rapidly.
+1. cherrypick: This looks at open and closed PRs with the `cherry-pick-candidate` label and attempts to help the branch managers deal with the cherry-pick process.
+1. shame-mailer: This looks at open issues and e-mails assignees who have not closed their issues rapidly.
 
 One can see the specifics of how the `submit-queue` and `cherrypick` options are executed by looking at the deployment definition in their respective subdirectories.
 
@@ -14,7 +14,7 @@ One may also look in the `example-one-off` directory for a small skeleton progra
 
 Executing `make help` inside the `mungegithub` directory should inform you about the functions provided by the Makefile. A common pattern when developing is to run something like:
 ```sh
-make mungegithub && ./mungegithub --dry-run --token-file=/path/to/token --once --www=submit-queue/www --kube-dir=$GOPATH/src/k8s.io/kubernetes --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500 --organization=kubernetes --project=kubernetes --repo-dir=/tmp
+make mungegithub && ./mungegithub --dry-run --token-file=/path/to/token --once --www=submit-queue/www --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500 --organization=kubernetes --project=kubernetes --repo-dir=/tmp --stderrthreshold=0
 ```
 
 A Github oauth token is required, even in readonly/test mode. For production, we use a token with write access to the repo in question. https://help.github.com/articles/creating-an-access-token-for-command-line-use/ discusses the procedure to get a personal oauth token. These tokens will need to be loaded into kubernetes `secret`s for use by the submit and/or cherry-pick queue. It is extremely easy to use up the 5,000 API calls per hour so the production token should not be re-used for tests.
