@@ -107,11 +107,20 @@ func (c *Client) request(method, path string, body interface{}) (*http.Response,
 				resp.Body.Close()
 				var t int
 				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
-					timeSleep(time.Unix(int64(t), 0).Sub(time.Now()) + time.Second)
+					// Sleep an extra second plus how long GitHub wants us to
+					// sleep. If it's going to take too long, then break.
+					sleepTime := time.Unix(int64(t), 0).Sub(time.Now()) + time.Second
+					if sleepTime > 0 && sleepTime < 2*time.Minute {
+						timeSleep(sleepTime)
+					} else {
+						break
+					}
 				}
 			} else if resp.StatusCode < 500 {
+				// Normal, happy case.
 				break
 			} else {
+				// Retry 500 after a break.
 				resp.Body.Close()
 				timeSleep(backoff)
 				backoff *= 2
