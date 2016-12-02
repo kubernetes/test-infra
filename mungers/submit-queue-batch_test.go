@@ -112,7 +112,10 @@ func TestBatchMatchesCommits(t *testing.T) {
 			refs := s[:i]
 			msg := s[i+1:]
 			split := strings.Split(refs, ":")
-			commit := githubapi.RepositoryCommit{SHA: &split[0], Message: &msg}
+			commit := githubapi.RepositoryCommit{
+				SHA:    &split[0],
+				Commit: &githubapi.Commit{Message: &msg},
+			}
 			for _, parent := range strings.Split(split[1], ",") {
 				p := string(parent) // thanks, Go!
 				commit.Parents = append(commit.Parents, githubapi.Commit{SHA: &p})

@@ -218,8 +218,12 @@ func (b *Batch) matchesCommits(commits []*githubapi.RepositoryCommit) (int, erro
 		if !ok {
 			return 0, errors.New("ran out of commits (missing ref " + ref + ")")
 		}
-		if len(commit.Parents) == 2 && commit.Message != nil &&
-			strings.HasPrefix(*commit.Message, "Merge") {
+		message := ""
+		if commit.Commit != nil && commit.Commit.Message != nil {
+			// The actual commit message is buried a little oddly.
+			message = *commit.Commit.Message
+		}
+		if len(commit.Parents) == 2 && strings.HasPrefix(message, "Merge") {
 			// looks like a merge commit!
 
 			// first parent is the normal branch
