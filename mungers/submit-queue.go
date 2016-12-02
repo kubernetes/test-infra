@@ -92,8 +92,9 @@ type statusPullRequest struct {
 }
 
 type e2eQueueStatus struct {
-	E2ERunning *statusPullRequest
-	E2EQueue   []*statusPullRequest
+	E2ERunning  *statusPullRequest
+	E2EQueue    []*statusPullRequest
+	BatchStatus *submitQueueBatchStatus
 }
 
 type submitQueueStatus struct {
@@ -155,7 +156,8 @@ type submitQueueMetadata struct {
 }
 
 type submitQueueBatchStatus struct {
-	Error map[string]string
+	Error   map[string]string
+	Running *prowJob
 }
 
 type prometheusMetrics struct {
@@ -820,8 +822,9 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 	sq.Lock()
 	defer sq.Unlock()
 	status := e2eQueueStatus{
-		E2EQueue:   sq.getE2EQueueStatus(),
-		E2ERunning: objToStatusPullRequest(sq.githubE2ERunning),
+		E2EQueue:    sq.getE2EQueueStatus(),
+		E2ERunning:  objToStatusPullRequest(sq.githubE2ERunning),
+		BatchStatus: &sq.batchStatus,
 	}
 	return sq.marshal(status)
 }

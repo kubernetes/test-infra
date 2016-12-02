@@ -82,6 +82,15 @@ func (j prowJobs) successful() prowJobs {
 	return j.filter(func(job prowJob) bool { return job.State == "success" })
 }
 
+func (j prowJobs) firstUnfinished() *prowJob {
+	for _, job := range j {
+		if job.State == "triggered" || job.State == "pending" {
+			return &job
+		}
+	}
+	return nil
+}
+
 type batchPull struct {
 	Number int
 	Sha    string
@@ -274,6 +283,7 @@ func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 			sq.doBatchMerge(batch)
 		}
 		sq.batchStatus.Error = batchErrors
+		sq.batchStatus.Running = batchJobs.firstUnfinished()
 	}
 }
 

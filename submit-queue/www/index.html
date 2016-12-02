@@ -83,13 +83,23 @@
                     <h3 class="md-body-1">
                       <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                     </h3>
-                    <h4 class="md-body2">
+                    <h4 class="md-body-2">
                       {{pr.ExtraInfo}}
                     </h4>
                   </md-content>
                 </md-list-item>
               </md-list>
             </section>
+
+            <section ng-if="cntl.batch.Running">
+              <md-subheader class="md-primary">CURRENTLY RUNNING BATCH</md-subheader>
+              <md-content layout-padding>
+                <div class="md-body-1" layout-padding>
+                  <a href="http://prow.k8s.io/?refs={{(cntl.batch.Running.Refs | refToShortRef)}}">{{(cntl.batch.Running.Refs | refToPRs).join(" ")}}</a>
+                </div>
+              </md-content>
+            </section>
+
             <section>
               <md-subheader class="md-primary">QUEUE</md-subheader>
               <md-list layout-padding>
@@ -101,7 +111,7 @@
                     <h3 class="md-body-1">
                       <a ng-href="{{pr.URL}}">#{{pr.Number}}: {{pr.Title}}</a> (<span style="color: green">+{{pr.Additions}}</span>/<span style="color: red">-{{pr.Deletions}}</span>)
                     </h3>
-                    <h4 class="md-body2">
+                    <h4 class="md-body-2">
                       {{pr.ExtraInfo}}
                     </h4>
                   </md-content>
