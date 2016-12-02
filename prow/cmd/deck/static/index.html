@@ -23,9 +23,12 @@
             <span>Pull Requests</span><br>
             <label><input type="number" id="pr" oninput="redraw();"> Number</label><br>
             <label><input type="text" id="author" oninput="redraw();"> Author</label><br>
+            <input type="hidden" id="refs" oninput="redraw();">
+            <label><input type="checkbox" class="wide" id="batch" onchange="redraw();">Batch</label><br>
         </div>
         </aside>
         <article>
+        <div id="batch-desc"></div>
         <table id="builds">
             <thead>
                 <tr>

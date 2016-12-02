@@ -45,6 +45,10 @@ article {
     margin: 8px;
 }
 
+article > * {
+    margin: 8px;
+}
+
 label {
     font-size: 0.9em;
 }
@@ -60,7 +64,6 @@ table {
     border-radius: 2px;
     box-shadow: 0 0 4px #e0e0e0;
     border-collapse: collapse;
-    margin: 8px;
     width: 100%;
 }
 
@@ -110,6 +113,6 @@ a:link {
     color: blue;
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], input.wide {
     width: 80px;
 }

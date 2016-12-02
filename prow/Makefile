@@ -18,7 +18,7 @@ all: build fmt vet test
 HOOK_VERSION   = 0.61
 LINE_VERSION   = 0.34
 SINKER_VERSION = 0.4
-DECK_VERSION   = 0.6
+DECK_VERSION   = 0.7
 SPLICE_VERSION   = 0.4
 
 # These are the usual GKE variables.
