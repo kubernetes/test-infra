@@ -71,18 +71,4 @@ export GINKGO_PARALLEL="y"
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 export KUBEKINS_TIMEOUT="240m"
-timeout -k 20m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
-
-### Reporting
-if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
-    # If we timed out, make sure we collect logs anyways.
-    if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
-        echo "Dumping logs for any remaining nodes"
-        ./cluster/log-dump.sh _artifacts
-    fi
-    echo "Build timed out" >&2
-elif [[ ${rc} -ne 0 ]]; then
-    echo "Build failed" >&2
-fi
-echo "Exiting with code: ${rc}"
-exit ${rc}
+"${runner}"
