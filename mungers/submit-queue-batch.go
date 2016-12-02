@@ -41,9 +41,10 @@ type prowJob struct {
 	Context string `json:"context"`
 }
 
-// getSuccessfulBatchJobs reads test results from Prow and returns
-// all batch jobs that succeeded for the current repo.
-func getSuccessfulBatchJobs(repo, url string) ([]prowJob, error) {
+type prowJobs []prowJob
+
+// getJobs reads job information as JSON from a given URL.
+func getJobs(url string) (prowJobs, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -51,19 +52,43 @@ func getSuccessfulBatchJobs(repo, url string) ([]prowJob, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	allJobs := []prowJob{}
-	err = json.Unmarshal(body, &allJobs)
+	jobs := prowJobs{}
+	err = json.Unmarshal(body, &jobs)
 	if err != nil {
 		return nil, err
 	}
+	return jobs, nil
+}
 
-	jobs := []prowJob{}
-	for _, job := range allJobs {
-		if job.Repo == repo && job.Type == "batch" && job.State == "success" {
-			jobs = append(jobs, job)
+func (j prowJobs) filter(pred func(prowJob) bool) prowJobs {
+	out := prowJobs{}
+	for _, job := range j {
+		if pred(job) {
+			out = append(out, job)
 		}
 	}
-	return jobs, nil
+	return out
+}
+
+func (j prowJobs) repo(repo string) prowJobs {
+	return j.filter(func(job prowJob) bool { return job.Repo == repo })
+}
+
+func (j prowJobs) batch() prowJobs {
+	return j.filter(func(job prowJob) bool { return job.Type == "batch" })
+}
+
+func (j prowJobs) successful() prowJobs {
+	return j.filter(func(job prowJob) bool { return job.State == "success" })
+}
+
+func (j prowJobs) firstUnfinished() *prowJob {
+	for _, job := range j {
+		if job.State == "triggered" || job.State == "pending" {
+			return &job
+		}
+	}
+	return nil
 }
 
 type batchPull struct {
@@ -113,7 +138,7 @@ func batchRefToBatch(batchRef string) (Batch, error) {
 
 // getCompleteBatches returns a list of Batches that passed all
 // required tests.
-func (sq *SubmitQueue) getCompleteBatches(jobs []prowJob) []Batch {
+func (sq *SubmitQueue) getCompleteBatches(jobs prowJobs) []Batch {
 	// for each batch specifier, a set of successful contexts
 	batchContexts := make(map[string]map[string]interface{})
 	for _, job := range jobs {
@@ -240,11 +265,13 @@ func (sq *SubmitQueue) batchIsApplicable(batch Batch) (int, error) {
 func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 	repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
 	for range time.Tick(1 * time.Minute) {
-		jobs, err := getSuccessfulBatchJobs(repo, sq.BatchURL)
+		allJobs, err := getJobs(sq.BatchURL)
 		if err != nil {
 			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.BatchURL, err)
 			continue
 		}
+		batchJobs := allJobs.batch().repo(repo)
+		jobs := batchJobs.successful()
 		batches := sq.getCompleteBatches(jobs)
 		batchErrors := make(map[string]string)
 		for _, batch := range batches {
@@ -256,6 +283,7 @@ func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 			sq.doBatchMerge(batch)
 		}
 		sq.batchStatus.Error = batchErrors
+		sq.batchStatus.Running = batchJobs.firstUnfinished()
 	}
 }
 
@@ -297,9 +325,17 @@ func (sq *SubmitQueue) doBatchMerge(batch Batch) {
 		}
 		prs = append(prs, obj)
 	}
+
+	// Make the merge less confusing: describe the overall batch.
+	prStrings := []string{}
+	for _, pull := range batch.Pulls {
+		prStrings = append(prStrings, strconv.Itoa(pull.Number))
+	}
+	extra := fmt.Sprintf(" (batch tested with PRs %s)", strings.Join(prStrings, ", "))
+
 	// then merge each
 	for _, pr := range prs {
-		err := sq.mergePullRequest(pr, mergedBatch)
+		err := sq.mergePullRequest(pr, mergedBatch, extra)
 		if err != nil {
 			return
 		}
