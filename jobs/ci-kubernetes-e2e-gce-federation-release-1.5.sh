@@ -74,7 +74,9 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export KUBEKINS_TIMEOUT="300m"
+# See the discussion here - https://github.com/kubernetes/test-infra/pull/1280
+# for the motivation behind the choice of this value.
+export KUBEKINS_TIMEOUT="690m"
 timeout -k 20m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
