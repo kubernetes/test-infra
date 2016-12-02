@@ -14,10 +14,17 @@ window.onload = function() {
         jobs[allBuilds[i].job] = true;
     }
 
-    var refs = getParameterByName("refs");
-    if (refs) {
-        document.getElementById("refs").value = refs;
+    setValueFromParameter = function(name) {
+        var value = getParameterByName(name);
+        if (value) {
+            document.getElementById(name)[name === "batch" ? 'checked' : 'value'] = value;
+        }
     }
+
+    setValueFromParameter("pr");
+    setValueFromParameter("author");
+    setValueFromParameter("refs");
+    setValueFromParameter("batch");
 
     var rs = Array.from(Object.keys(repos)).sort();
     for (var i = 0; i < rs.length; i++) {
@@ -143,6 +150,19 @@ function redraw() {
     var refs = document.getElementById("refs").value;
     var batch = document.getElementById("batch").checked;
 
+    if (history && history.replaceState !== undefined) {
+        var args = [];
+        if (author) args.push('author=' + author);
+        if (pr)     args.push('pr=' + pr);
+        if (refs)   args.push('refs=' + refs);
+        if (batch)  args.push('batch=' + batch);
+        if (args.length > 0) {
+            history.replaceState(null, "", "/?" + args.join('&'));
+        } else {
+            history.replaceState(null, "", "/")
+        }
+    }
+
     var refFilter = function() { return true; };
     if (refs) {
         var regex = new RegExp(refs.replace(/,/g, '.*,'));
@@ -159,6 +179,8 @@ function redraw() {
         if (!jobs[build.job])
             continue;
         if (batch && build.type !== "batch")
+            continue;
+        if (!String(build.number).includes(pr))
             continue;
         if (!String(build.author).includes(author))
             continue;
