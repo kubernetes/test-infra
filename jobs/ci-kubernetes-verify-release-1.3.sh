@@ -33,8 +33,8 @@ export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
-export KUBEKINS_TIMEOUT="60"
-timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="60m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

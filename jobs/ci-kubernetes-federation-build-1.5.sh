@@ -30,8 +30,8 @@ export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release-1-5
 
 ### Runner
 readonly runner="./hack/jenkins/build.sh"
-export KUBEKINS_TIMEOUT="50"
-timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="50m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
