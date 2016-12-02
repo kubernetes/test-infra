@@ -234,7 +234,13 @@ def distill_events(events):
     Given a sequence of events, return a series of user-action tuples
     relevant to determining user state.
     '''
-    skip_comments = get_skip_comments(events, ['k8s-bot', 'k8s-ci-robot', 'k8s-oncall'])
+    bots = [
+        'k8s-bot',
+        'k8s-ci-robot',
+        'k8s-oncall',
+        'k8s-reviewable',
+    ]
+    skip_comments = get_skip_comments(events, bots)
 
     output = []
     for event, body in events:
