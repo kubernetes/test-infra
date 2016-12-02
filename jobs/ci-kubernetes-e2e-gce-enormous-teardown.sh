@@ -95,8 +95,8 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export KUBEKINS_TIMEOUT="180"
-timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="180m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

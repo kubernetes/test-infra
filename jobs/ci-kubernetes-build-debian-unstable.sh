@@ -25,8 +25,8 @@ export DEB_CHANNEL="unstable"
 
 ### Runner
 readonly runner="./hack/jenkins/build.sh"
-export KUBEKINS_TIMEOUT="300"
-timeout -k 15m "${KUBEKINS_TIMEOUT}m" "${runner}" && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="300m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

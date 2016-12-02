@@ -24,8 +24,8 @@ readonly testinfra="$(dirname "${0}")/.."
 export GCS_LOCATION="gs://kops-ci/bin"
 
 ### Runner
-export KUBEKINS_TIMEOUT="20"
-timeout -k 15m "${KUBEKINS_TIMEOUT}m" make gcs-publish-ci && rc=$? || rc=$?
+export KUBEKINS_TIMEOUT="20m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" make gcs-publish-ci && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
