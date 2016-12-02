@@ -325,9 +325,17 @@ func (sq *SubmitQueue) doBatchMerge(batch Batch) {
 		}
 		prs = append(prs, obj)
 	}
+
+	// Make the merge less confusing: describe the overall batch.
+	prStrings := []string{}
+	for _, pull := range batch.Pulls {
+		prStrings = append(prStrings, strconv.Itoa(pull.Number))
+	}
+	extra := fmt.Sprintf(" (batch tested with PRs %s)", strings.Join(prStrings, ", "))
+
 	// then merge each
 	for _, pr := range prs {
-		err := sq.mergePullRequest(pr, mergedBatch)
+		err := sq.mergePullRequest(pr, mergedBatch, extra)
 		if err != nil {
 			return
 		}

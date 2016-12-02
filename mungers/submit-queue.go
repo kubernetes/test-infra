@@ -1167,8 +1167,8 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 	}
 }
 
-func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg string) error {
-	err := obj.MergePR("submit-queue")
+func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra string) error {
+	err := obj.MergePR("submit-queue" + extra)
 	if err != nil {
 		return err
 	}
@@ -1237,7 +1237,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
 		atomic.AddInt32(&sq.instantMerges, 1)
-		sq.mergePullRequest(obj, mergedSkippedRetest)
+		sq.mergePullRequest(obj, mergedSkippedRetest, "")
 		return true
 	}
 
@@ -1295,7 +1295,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return true
 	}
 
-	sq.mergePullRequest(obj, merged)
+	sq.mergePullRequest(obj, merged, "")
 	return true
 }
 
