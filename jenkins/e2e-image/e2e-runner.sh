@@ -474,6 +474,10 @@ if [[ "${USE_KUBEMARK:-}" == "true" ]]; then
   e2e_go_args+=("--kubemark=true")
 fi
 
+if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
+  e2e_go_args+=("--timeout=${KUBEKINS_TIMEOUT}")
+fi
+
 e2e_go="$(dirname "${0}")/e2e.go"
 if [[ ! -f "${e2e_go}" || -e "./hack/jenkins/.use_head_e2e" ]]; then
   echo "Using HEAD version of e2e.go."
