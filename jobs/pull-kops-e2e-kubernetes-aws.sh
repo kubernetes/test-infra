@@ -71,18 +71,6 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 export PATH=${PATH}:/usr/local/go/bin
 
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
 export KUBEKINS_TIMEOUT="55m"
-timeout -k 20m "${KUBEKINS_TIMEOUT}" "${testinfra}/jenkins/dockerized-e2e-runner.sh" && rc=$? || rc=$?
-if [[ ${rc} -ne 0 ]]; then
-  if [[ -x cluster/log-dump.sh && -d _artifacts ]]; then
-    echo "Dumping logs for any remaining nodes"
-    ./cluster/log-dump.sh _artifacts
-  fi
-fi
-if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
-  echo "Build timed out" >&2
-elif [[ ${rc} -ne 0 ]]; then
-  echo "Build failed" >&2
-fi
-echo "Exiting with code: ${rc}"
-exit ${rc}
+"${runner}"
