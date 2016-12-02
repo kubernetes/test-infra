@@ -75,8 +75,9 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-readonly timeoutTime="900m"
-timeout -k 20m "${timeoutTime}" "${runner}" && rc=$? || rc=$?
+export DOCKER_TIMEOUT="915m"
+export KUBEKINS_TIMEOUT="900m"
+timeout -k 20m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
@@ -85,7 +86,7 @@ if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
         echo "Dumping logs for any remaining nodes"
         ./cluster/log-dump.sh _artifacts
     fi
-    echo "Build timed out after ${timeoutTime}" >&2
+    echo "Build timed out after ${KUBEKINS_TIMEOUT}" >&2
 elif [[ ${rc} -ne 0 ]]; then
     echo "Build failed" >&2
 fi

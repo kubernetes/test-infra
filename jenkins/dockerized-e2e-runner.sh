@@ -73,22 +73,8 @@ fi
 # which will happen during a timeout.
 CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
 
-kill-leaked-container() {
-  local container="$1"
-  # docker runs containers with session id being the same as the pid
-  local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
-  echo "Processes running under container ${container}:"
-  ps wwuf --forest --sid "${pid}"
-  docker stop "${container}" || true
-  # Make sure artifacts are readable, since we may not have run that code
-  # in e2e-runner.sh if we were killed by timeout.
-  sudo chmod a+rX -R "${WORKSPACE}/_artifacts/" || true
-}
-
-trap "kill-leaked-container ${CONTAINER_NAME}" EXIT
-
 echo "Starting..."
-docker run --rm \
+timeout -s KILL ${DOCKER_TIMEOUT:-615m} docker run --rm \
   --name="${CONTAINER_NAME}" \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
@@ -105,5 +91,13 @@ docker run --rm \
   "${docker_extra_args[@]:+${docker_extra_args[@]}}" \
   "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}" && rc=$? || rc=$?
 
-trap '' EXIT  # container exited
+echo "Exiting with code: ${rc}"
+if [[ ${rc} -eq 137 ]]; then
+  local container="${CONTAINER_NAME}"
+  # docker runs containers with session id being the same as the pid
+  local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
+  echo "Processes running under container ${container}:"
+  ps wwuf --forest --sid "${pid}"
+  docker stop "${container}" || true
+fi
 exit ${rc}
