@@ -64,6 +64,11 @@ var (
 	fixesIssueRE       = regexp.MustCompile(`(?i)(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[\s]+#([\d]+)`)
 	reviewableFooterRE = regexp.MustCompile(`(?s)<!-- Reviewable:start -->.*<!-- Reviewable:end -->`)
 	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
+
+	// How long we locally cache the combined status of an object. We will not
+	// hit the github API more than this often (per mungeObject) no matter how
+	// often a caller asks for the status. Ca be much much faster for testing
+	combinedStatusLifetime = 5 * time.Second
 )
 
 type callLimitRoundTripper struct {
@@ -276,6 +281,11 @@ type MungeObject struct {
 	comments    []*github.IssueComment
 	prComments  []*github.PullRequestComment
 	commitFiles []*github.CommitFile
+
+	// we cache the combinedStatus for `combinedStatusLifetime` seconds.
+	combinedStatus     *github.CombinedStatus
+	combinedStatusTime time.Time
+
 	Annotations map[string]string //annotations are things you can set yourself.
 }
 
@@ -308,6 +318,15 @@ func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, com
 		events:      events,
 		Annotations: map[string]string{},
 	}
+}
+
+// SetCombinedStatusLifetime will set the lifetime of CombinedStatus responses.
+// Even though we would likely use conditional API calls hitting the CombinedStatus API
+// every time we want to get a specific value is just too mean to github. This defaults
+// to `combinedStatusLifetime` seconds. If you are doing local testing you may want to make
+// this (much) shorter
+func SetCombinedStatusLifetime(lifetime time.Duration) {
+	combinedStatusLifetime = lifetime
 }
 
 // AddRootFlags will add all of the flags needed for the github config to the cobra command
@@ -1098,6 +1117,11 @@ func computeStatus(combinedStatus *github.CombinedStatus, requiredContexts []str
 }
 
 func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus) {
+	now := time.Now()
+	if now.Before(obj.combinedStatusTime.Add(combinedStatusLifetime)) {
+		return obj.combinedStatus
+	}
+
 	config := obj.config
 	pr, err := obj.GetPR()
 	if err != nil {
@@ -1114,6 +1138,8 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus) {
 		glog.Errorf("Failed to get combined status: %v", err)
 		return nil
 	}
+	obj.combinedStatus = combinedStatus
+	obj.combinedStatusTime = now
 	return combinedStatus
 }
 

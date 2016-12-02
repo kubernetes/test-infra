@@ -762,7 +762,7 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	// If we are currently retesting E2E the normal munge loop might find
 	// that the ci tests are not green. That's normal and expected and we
 	// should just ignore that status update entirely.
-	if sq.githubE2ERunning != nil && *sq.githubE2ERunning.Issue.Number == *obj.Issue.Number && reason == ciFailure {
+	if sq.githubE2ERunning != nil && *sq.githubE2ERunning.Issue.Number == *obj.Issue.Number && strings.HasPrefix(reason, ciFailure) {
 		return
 	}
 
@@ -774,6 +774,22 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	}
 	sq.prStatus[strconv.Itoa(*obj.Issue.Number)] = submitStatus
 	sq.cleanupOldE2E(obj, reason)
+}
+
+// setContextFailedStatus calls SetMergeStatus after determining a particular github status
+// which is failed.
+func (sq *SubmitQueue) setContextFailedStatus(obj *github.MungeObject, contexts []string) {
+	sort.Strings(contexts)
+	for i, context := range contexts {
+		contextSlice := contexts[i : i+1]
+		if !obj.IsStatusSuccess(contextSlice) {
+			failMsg := fmt.Sprintf(ciFailureFmt, context)
+			sq.SetMergeStatus(obj, failMsg)
+			return
+		}
+	}
+	glog.Errorf("Inside setContextFailedStatus() but none of the status's failed! %d: %v", obj.Number(), contexts)
+	sq.SetMergeStatus(obj, ciFailure)
 }
 
 // sq.Lock() MUST be held!
@@ -855,7 +871,8 @@ const (
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
 	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
-	ciFailure               = "Github CI tests are not green."
+	ciFailure               = "Required Github CI test is not green"
+	ciFailureFmt            = ciFailure + ": %s"
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
 	e2eRecover              = "The e2e tests started passing. The submit queue is unblocked."
 	merged                  = "MERGED!"
@@ -942,13 +959,13 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	if checkStatus {
 		if len(sq.RequiredStatusContexts) > 0 {
 			if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
-				sq.SetMergeStatus(obj, ciFailure)
+				sq.setContextFailedStatus(obj, sq.RequiredStatusContexts)
 				return false
 			}
 		}
 		if len(sq.RequiredRetestContexts) > 0 {
 			if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
-				sq.SetMergeStatus(obj, ciFailure)
+				sq.setContextFailedStatus(obj, sq.RequiredRetestContexts)
 				return false
 			}
 		}
@@ -1026,13 +1043,13 @@ func (sq *SubmitQueue) deleteQueueItem(obj *github.MungeObject) {
 // think it should be in the e2e queue, remove it. MUST be called with sq.Lock()
 // held.
 func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
-	switch reason {
-	case e2eFailure:
-	case ghE2EQueued:
-	case ghE2EWaitingStart:
-	case ghE2ERunning:
+	switch {
+	case reason == e2eFailure:
+	case reason == ghE2EQueued:
+	case reason == ghE2EWaitingStart:
+	case reason == ghE2ERunning:
 		// Do nothing
-	case ciFailure:
+	case strings.HasPrefix(reason, ciFailure):
 		// ciFailure is intersting. If the PR is being actively retested and then the
 		// time based loop finds the same PR it will try to set ciFailure. We should in fact
 		// not ever call this function in this case, but if we do call here, log it.

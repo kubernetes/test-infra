@@ -453,6 +453,9 @@ func fakeRunGithubE2ESuccess(ciStatus *github.CombinedStatus, context1Pass, cont
 func TestSubmitQueue(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// Since we testing, don't rateLimit api calls. Go hog wild
+	github_util.SetCombinedStatusLifetime(1)
+
 	tests := []struct {
 		name             string // because when the fail, counting is hard
 		pr               *github.PullRequest
@@ -610,7 +613,7 @@ func TestSubmitQueue(t *testing.T) {
 			name:   "Test8",
 			pr:     ValidPR(),
 			issue:  LGTMIssue(),
-			reason: ciFailure,
+			reason: fmt.Sprintf(ciFailureFmt, notRequiredReTestContext1),
 			state:  "pending",
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
@@ -786,7 +789,7 @@ func TestSubmitQueue(t *testing.T) {
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
-			reason:          ciFailure,
+			reason:          fmt.Sprintf(ciFailureFmt, requiredReTestContext2),
 			state:           "pending",
 		},
 		{
@@ -801,7 +804,7 @@ func TestSubmitQueue(t *testing.T) {
 			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
-			reason:          ciFailure,
+			reason:          fmt.Sprintf(ciFailureFmt, notRequiredReTestContext2),
 			state:           "pending",
 		},
 
@@ -1078,7 +1081,7 @@ func TestSubmitQueue(t *testing.T) {
 		}(done)
 		select {
 		case <-done:
-		case <-time.After(10 * time.Second):
+		case <-time.After(2 * time.Second):
 			t.Errorf("%d:%q timed out waiting expected reason=%q but got prStatus:%q history:%v", testNum, test.name, test.reason, sq.prStatus[issueNumStr].Reason, sq.statusHistory)
 		}
 		close(done)

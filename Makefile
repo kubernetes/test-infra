@@ -34,11 +34,12 @@ token64=$(shell base64 $(TOKEN))
 READONLY ?= true
 
 # just build the binary
-mungegithub:
+mungegithub build:
 	GOBIN=$(PWD) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
 
 test: mungegithub
-	CGO_ENABLED=0 GOOS=linux go test ./...
+	# in case of error ignore all lines of 'getsockopt: connection refused' these are background go threads that don't matter
+	CGO_ENABLED=0 GOOS=linux go test --run TestSubmitQueue $(shell go list ./... | grep -v 'vendor/') | grep -v 'getsockopt: connection refused'
 
 # build the container with the binary
 container: mungegithub
