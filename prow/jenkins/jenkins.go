@@ -202,6 +202,34 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	return false, nil
 }
 
+// QueueSize returns how much is in the queue.
+func (c *Client) QueueSize() (int, error) {
+	if c.dry {
+		return 0, nil
+	}
+	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
+	resp, err := c.request(http.MethodGet, u)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return 0, fmt.Errorf("response not 2XX: %s", resp.Status)
+	}
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	queue := struct {
+		Items []struct{} `json:"items"`
+	}{}
+	err = json.Unmarshal(buf, &queue)
+	if err != nil {
+		return 0, err
+	}
+	return len(queue.Items), nil
+}
+
 // Status returns the current status of the build.
 func (c *Client) Status(b *Build) (*Status, error) {
 	if c.dry {
