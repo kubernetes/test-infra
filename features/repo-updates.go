@@ -320,8 +320,9 @@ func (o *RepoInfo) LeafApprovers(path string) sets.String {
 	return peopleForPath(path, o.approvers, true, o.EnableMdYaml)
 }
 
-// Approvers returns a set of users who are the closest approvers to the
-// requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
+// Approvers returns ALL of the users who are approvers for the
+// requested file (including approvers in parent dirs' OWNERS).
+// If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Approvers(path string) sets.String {
 	return peopleForPath(path, o.approvers, false, o.EnableMdYaml)
@@ -334,8 +335,9 @@ func (o *RepoInfo) LeafReviewers(path string) sets.String {
 	return peopleForPath(path, o.reviewers, true, o.EnableMdYaml)
 }
 
-// Reviewers returns a set of users who are the closest reviewers to the
-// requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
+// Reviewers returns ALL of the users who are reviewers for the
+// requested file (including reviewers in parent dirs' OWNERS).
+// If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Reviewers(path string) sets.String {
 	return peopleForPath(path, o.reviewers, false, o.EnableMdYaml)

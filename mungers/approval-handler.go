@@ -79,8 +79,8 @@ func (*ApprovalHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
 //     - Someone listed as an "approver" in an OWNERS file in the files directory OR
 //     - in one of the file's parent directorie
 // - Iff all files have been approved, the bot will add the "approved" label.
-// - Iff the approved label has been added and a cancel command is found, that reviewer will be removed from the approverSet
-// 	and the munger will remove the approved label
+// - Iff a cancel command is found, that reviewer will be removed from the approverSet
+// 	and the munger will remove the approved label if it has been applied
 func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
@@ -217,6 +217,8 @@ func (h *ApprovalHandler) createMessage(obj *github.MungeObject, ownersMap map[s
 			context.WriteString("@" + person + " ")
 		}
 	}
+	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment")
+	context.WriteString("\n You can cancel your approval by writing `/approve cancel`in a comment")
 	return c.Notification{approvalNotificationName, "The Following OWNERS Files Need Approval:\n", context.String()}.Post(obj)
 }
 
