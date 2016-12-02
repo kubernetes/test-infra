@@ -62,7 +62,10 @@ var (
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 )
 
-const guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
+const (
+	guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
+	testInfra = "https://github.com/kubernetes/test-infra/issues"
+)
 
 type testClient struct {
 	Job jobs.JenkinsJob
@@ -227,7 +230,7 @@ func (c *testClient) TestPRKubernetes() error {
 	}
 	actual, err := c.KubeClient.CreatePod(p)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error creating build pod.", "")
+		c.tryCreateStatus(github.StatusError, "Error creating build pod.", testInfra)
 		return err
 	}
 	resultURL := c.guberURL(buildID)
@@ -235,7 +238,7 @@ func (c *testClient) TestPRKubernetes() error {
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error waiting for pod to complete.", "")
+			c.tryCreateStatus(github.StatusError, "Error waiting for pod to complete.", testInfra)
 			return err
 		}
 		if po.Status.Phase == kube.PodSucceeded {
@@ -257,7 +260,14 @@ func (c *testClient) TestPRKubernetes() error {
 // TestPRJenkins starts a Jenkins build and watches it, updating the GitHub
 // status as necessary.
 func (c *testClient) TestPRJenkins() error {
+	if size, err := c.JenkinsClient.QueueSize(); err != nil {
+		return err
+	} else if size > 200 {
+		c.tryCreateStatus(github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
+		return nil
+	}
 	logrus.WithFields(fields(c)).Info("Starting build.")
+	c.tryCreateStatus(github.StatusPending, "Build triggered.", "")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Job.Name,
 		Number:  c.PRNumber,
@@ -267,26 +277,26 @@ func (c *testClient) TestPRJenkins() error {
 		PullSHA: c.PullSHA,
 	})
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error starting build.", "")
+		c.tryCreateStatus(github.StatusError, "Error starting build.", testInfra)
 		return err
 	}
 	eq, err := c.JenkinsClient.Enqueued(b)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error queueing build.", "")
+		c.tryCreateStatus(github.StatusError, "Error queueing build.", testInfra)
 		return err
 	}
 	for eq {
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error in queue.", "")
+			c.tryCreateStatus(github.StatusError, "Error in queue.", testInfra)
 			return err
 		}
 	}
 
 	result, err := c.JenkinsClient.Status(b)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")
+		c.tryCreateStatus(github.StatusError, "Error waiting for build.", testInfra)
 		return err
 	}
 
@@ -294,7 +304,7 @@ func (c *testClient) TestPRJenkins() error {
 	c.tryCreateStatus(github.StatusPending, "Build started.", resultURL)
 	for {
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error waiting for build.", "")
+			c.tryCreateStatus(github.StatusError, "Error waiting for build.", testInfra)
 			return err
 		}
 		if result.Building {
