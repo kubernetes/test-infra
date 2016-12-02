@@ -261,6 +261,7 @@ func (c *testClient) TestPRKubernetes() error {
 // status as necessary.
 func (c *testClient) TestPRJenkins() error {
 	if size, err := c.JenkinsClient.QueueSize(); err != nil {
+		c.tryCreateStatus(github.StatusError, "Error checking Jenkins queue.", testInfra)
 		return err
 	} else if size > 200 {
 		c.tryCreateStatus(github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
