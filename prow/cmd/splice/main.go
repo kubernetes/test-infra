@@ -159,15 +159,22 @@ func (s *splicer) findMergeable(remote string, prs []int) ([]int, error) {
 		return nil, err
 	}
 
-	for i, pr := range prs {
+	out := []int{}
+	for _, pr := range prs {
 		err := s.gitCall("merge", "--no-ff", "--no-stat",
 			"-m", fmt.Sprintf("merge #%d", pr),
 			fmt.Sprintf("pr/%d", pr))
 		if err != nil {
-			return prs[:i], nil
+			// merge conflict: cleanup and move on
+			err = s.gitCall("merge", "--abort")
+			if err != nil {
+				return nil, err
+			}
+			continue
 		}
+		out = append(out, pr)
 	}
-	return prs, nil
+	return out, nil
 }
 
 // gitRef returns the SHA for the given git object-- a branch, generally.
@@ -264,6 +271,10 @@ func main() {
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
+			if job.Name == "pull-kubernetes-e2e-kops-aws" {
+				// TODO(rmmh): read required contexts from submit queue
+				continue
+			}
 			if job.AlwaysRun {
 				if err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
 					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")

@@ -145,6 +145,10 @@ func TestFindMergeable(t *testing.T) {
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2, 1})
 
+	// PRs that cause merge conflicts should be skipped
+	mergeable, err = s.findMergeable(up.dir, []int{1, 4, 2, 3})
+	expectEqual(t, "mergeable PRs", mergeable, []int{1, 2, 3})
+
 	// doing a force push should work as well!
 	err = up.addBranches(branchesSpec{
 		"pull/2/head": {"b": "2", "e": "2"}, // now conflicts with 1
