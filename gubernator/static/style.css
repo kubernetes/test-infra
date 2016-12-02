@@ -2,6 +2,7 @@ body {
     font-family: sans-serif;
     padding: 0;
     margin: 0;
+    scroll-behavior: smooth;
 }
 #header {
     background-color: #3f51b5;
@@ -151,3 +152,23 @@ h3.pr-section {
 .ansi-13 { color: #f935f8; }  /* Magenta */
 .ansi-14 { color: #14f0f0; }  /* Cyan */
 .ansi-15 { color: #e9ebeb; }  /* White */
+ul.nav {
+    list-style-type:none;
+}
+li.nav {
+    padding: 5px 20px 5px 20px;
+    display: inline-block;
+    background-color: #eee;
+}
+div#log {
+    padding: 0 0 0 10px;
+}
+ul.log {
+    list-style-type:none;
+    margin: 0px;
+    padding: 0px;
+}
+li.log {
+    padding: 5px;
+    display: inline-block;
+}

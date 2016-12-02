@@ -19,7 +19,7 @@
 % block content
 <div id="summary">
 	<table border=0 align="center" style="text-align: left;">
-	<style>tr:nth-child(even){background:#ddd}</style>
+	<style>tr:nth-child(even){background:#ddd} td{padding:2px 5px 2px 5px}</style>
 	% if pr and pr_digest
 		% set pl = pr_digest.payload
 		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
@@ -47,8 +47,10 @@
 		% endif
 	% endif
 	</table>
-	<p><a href="{{build_dir | gcs_browse_url}}">artifacts</a>
-	<a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">build-log.txt</a>
+	<ul class="nav">
+		<li class="nav"><a href="{{build_dir | gcs_browse_url}}">artifacts</a></li>
+		<li class="nav"><a href="?log#log">build log</a></li>
+	</ul>
 	</div>
 	<div id="failures">
 	% if issues
@@ -86,13 +88,17 @@
 	% else
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 	% endif
-	<hr>
-	% if not build_log
-		<a href="?log"><button>Load build log</button></a>
-	% else
-		<button onclick="javascript:expand_all(this)">Expand Skipped Lines</button>
-		<h3>Error lines from build-log.txt</h3>
+	</div>
+	% if build_log
+	<div id="log">
+		<a name="log"></a>
+		<hr>
+		<h2 id="log">Error lines from build-log.txt</h2>
+		<ul class="log">
+			<li class="log"><button onclick="javascript:expand_all(this.parentElement)">Expand Skipped Lines</button></li>
+			<li class="log"><a href="https://storage.googleapis.com{{build_dir}}/build-log.txt">Raw build-log.txt</a></li>
+		</ul>
 		<pre data-src="{{build_dir}}/build-log.txt">{{build_log | safe}}</pre>
+	</div>
 	% endif
-</div>
 % endblock
