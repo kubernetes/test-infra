@@ -16,7 +16,7 @@
                     curl -fsS --retry 3 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh" > ./_tmp/upload-to-gcs.sh
                     chmod +x ./_tmp/upload-to-gcs.sh
                     # Artifacts might be readable only by root if there was a timeout
-                    sudo chmod +rX -R "${WORKSPACE}/_artifacts/" || true
+                    sudo chmod a+rX -R "${WORKSPACE}/_artifacts/" || true
                     curl -fsS --retry 3 "http://jenkins-master:8080/job/${JOB_NAME}/${BUILD_NUMBER}/consoleText" > "${WORKSPACE}/build-log.txt"
                 - conditional-step:
                     condition-kind: current-status

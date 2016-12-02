@@ -343,6 +343,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
 
     if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
         try:
+            call(['sudo', 'chmod', 'a+rX', '-R', artifacts])
             gsutil.upload_artifacts(paths.artifacts, artifacts)
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
