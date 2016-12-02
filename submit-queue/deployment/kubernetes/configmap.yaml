@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: kubernetes
-  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
+  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
   config.state: open
   config.token-file: /etc/secret-volume/token
 
@@ -144,7 +144,8 @@ data:
     kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew,\
     kubernetes-e2e-gce-1.4-1.5-upgrade-cluster,\
     kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new,\
-    kubernetes-e2e-gce-1.4-1.5-upgrade-master"
+    kubernetes-e2e-gce-1.4-1.5-upgrade-master,\
+    ci-kubernetes-e2e-kops-aws"
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
@@ -152,7 +153,6 @@ data:
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gke,\
     ci-kubernetes-e2e-gci-gke-slow,\
-    ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
     ci-kubernetes-test-go,\
