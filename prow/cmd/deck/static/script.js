@@ -147,6 +147,8 @@ function redraw() {
         refFilter = regex.test.bind(regex);
     }
 
+    var firstBuild = undefined;
+
     for (var i = 0; i < allBuilds.length && i < 500; i++) {
         var build = allBuilds[i];
         if (!repos[build.repo])
@@ -157,6 +159,9 @@ function redraw() {
             continue;
         if (!refFilter(build.refs))
             continue;
+
+        if (!firstBuild)
+            firstBuild = build;
 
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
@@ -180,6 +185,19 @@ function redraw() {
         r.appendChild(createTextCell(build.finished));
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
+    }
+
+    var batch_desc = document.getElementById("batch-desc");
+    if (refs && firstBuild) {
+        batch_desc.innerHTML = 'Batch PRs:';  // clear
+        batch_desc.style = ''
+        var prs = refs.replace(/(?:(\d+)|[^:]+):[^,]*,?/g, '$1 ').trim().split(' ');
+        for (var i = 0; i < prs.length; i++) {
+            var pr = prs[i];
+            batch_desc.appendChild(createLinkCell(pr, "https://github.com/" + firstBuild.repo + "/pull/" + pr))
+        }
+    } else {
+        batch_desc.style = "display: none";
     }
 }
 
