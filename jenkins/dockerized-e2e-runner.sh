@@ -79,7 +79,10 @@ kill-leaked-container() {
   local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
   echo "Processes running under container ${container}:"
   ps wwuf --forest --sid "${pid}"
-  docker stop "${container}"
+  docker stop "${container}" || true
+  # Make sure artifacts are readable, since we may not have run that code
+  # in e2e-runner.sh if we were killed by timeout.
+  sudo chmod a+rX -R "${WORKSPACE}/_artifacts/" || true
 }
 
 trap "kill-leaked-container ${CONTAINER_NAME}" EXIT
