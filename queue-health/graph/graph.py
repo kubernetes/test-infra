@@ -66,11 +66,20 @@ def fresh_color(tick):
     return 'r'
 
 
-def backlog_color(merges):
+def merge_color(rate):
+    """Return pyplot color for merge rate."""
+    if rate < 15:
+        return 'r'
+    if rate < 30:
+        return 'y'
+    return 'g'
+
+
+def backlog_color(backlog):
     """Return pyplot color for queue backlog."""
-    if merges < 5:
+    if backlog < 5:
         return 'g'
-    if merges > 24:
+    if backlog > 24:
         return 'r'
     return 'y'
 
@@ -132,7 +141,14 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
             1: [],
             14: [],
         }
-        self.merge_rate = []  # Merge rate including when queue is empty
+        self.active_merge_rate = {  # Merge rate when queue is active
+            1: [],
+            14: [],
+        }
+        self.merge_rate = {  # Merge rate including when queue is empty
+            1: [],
+            14: [],
+        }
         self.merges = []
         self.backlog = {  # Queue time in hours during the past N days
             1: [],
@@ -142,8 +158,8 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
         self.blocked_intervals = []
         self.offline_intervals = []
 
-
-    def append(self, tick, did_merge, pulls, queue, real_merges, happy_moments):
+    def append(self, tick, did_merge, pulls, queue,
+               real_merges, active_merges, happy_moments):
         """Append a sample of results.
 
         Args:
@@ -151,9 +167,11 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
           did_merge: number of prs merged
           pulls: number of open prs
           queue: number of approved prs waiting for merge
-          real_merges: count of merged prs since last sample
+          real_merges: merge rate over various time periods
+          active_merges: merge rate when queue is active (full or merging)
           happy_moments: window of when the queue has been unblocked.
         """
+        # pylint: disable=too-many-locals
         # Make them steps instead of slopes.
         if self.dts:
             self.dts.append(tick)
@@ -166,7 +184,10 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
             self.prs.append(self.prs[-1])
             self.queued.append(self.queued[-1])
             self.queue_avg.append(self.queue_avg[-1])
-            self.merge_rate.append(self.merge_rate[-1])
+            for val in self.merge_rate.values():
+                val.append(val[-1])
+            for val in self.active_merge_rate.values():
+                val.append(val[-1])
         self.dts.append(tick)
         for days, happy in self.happiness.items():
             happy.append(happy_moments[days].mean)
@@ -176,7 +197,10 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
         weeks2 = 14*24*60
         avg = mean(self.queued[-weeks2:])
         self.queue_avg.append(avg)
-        self.merge_rate.append(real_merges.total)
+        for days in self.merge_rate:
+            self.merge_rate[days].append(real_merges[days].total / float(days))
+        for days in self.active_merge_rate:
+            self.active_merge_rate[days].append(active_merges[days].total / float(days))
         for dur, items in self.backlog.items():
             dur = 60*24*dur
             if items:
@@ -193,7 +217,14 @@ class Results(object):  # pylint: disable=too-few-public-methods,too-many-instan
 
 def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-branches
     """Read historical data and return processed info."""
-    real_merges = Sampler()
+    real_merges = {
+        1: Sampler(),
+        14: Sampler(14*60*24),
+    }
+    active_merges = {
+        1: Sampler(),
+        14: Sampler(14*60*24),
+    }
     happy_moments = {d: Sampler(d*60*24) for d in results.happiness}
 
     tick = None
@@ -223,7 +254,12 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
         for moments in happy_moments.values():
             moments.append(int(bool(online and not blocked)))
 
-        real_merges += did_merge
+
+        for val in real_merges.values():
+            val += did_merge
+        if queue or did_merge:
+            for val in active_merges.values():
+                val += did_merge
 
         if not start_offline and not online:
             start_offline = tick
@@ -235,7 +271,7 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
             continue
 
         results.append(
-            tick, did_merge, pulls, queue, real_merges, happy_moments)
+            tick, did_merge, pulls, queue, real_merges, active_merges, happy_moments)
 
         if not start_blocked and blocked:
             start_blocked = tick
@@ -249,47 +285,58 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
     return results
 
 
-def render_backlog(results, ax_merged, text):
+def render_backlog(results, ax_backlog):
     """Render how long items spend in the queue."""
     dts = results.dts
     backlog = results.backlog
-    ax_merged.yaxis.tick_right()
-    ax_merged.yaxis.set_label_position('right')
+    ax_backlog.yaxis.tick_right()
     cur = backlog[1][-1]
-    merge_color = backlog_color(cur)
-    p_day, = ax_merged.plot(dts, backlog[1], '%s-' % merge_color)
-    p_week, = ax_merged.plot(dts, backlog[14], 'k:')
-    ax_merged.set_ylim([0, 100])
-    ax_merged.set_ylabel(
-        'Backlog: %.1f hrs' % cur, color=merge_color)
-    ax_merged.legend(
+    color = backlog_color(cur)
+    p_day, = ax_backlog.plot(dts, backlog[1], '%s-' % color)
+    p_week, = ax_backlog.plot(dts, backlog[14], 'k:')
+    if max(backlog[1]) > 100 or max(backlog[14]) > 100:
+        ax_backlog.set_ylim([0, 100])
+    ax_backlog.set_ylabel('Backlog')
+    ax_backlog.legend(
         [p_day, p_week],
-        ['1d avg: %.1f hrs' % cur, '14d avg: %.1f hrs' % backlog[14][-1]],
+        ['1d avg: %.1f hr wait' % cur, '14d avg: %.1f hr wait' % backlog[14][-1]],
         'lower left',
         fontsize='x-small',
     )
-    text(
-        'Queue backlog: %.1f hours' % backlog[1][-1],
-        color=backlog_color(backlog[1][-1]),
+
+def render_merges(results, ax_merged):
+    """Render information about the merge rate."""
+    dts = results.dts
+    ax_merged.yaxis.tick_right()
+    merge_rate = results.merge_rate
+    color = merge_color(results.active_merge_rate[1][-1])
+    p_day, = ax_merged.plot(dts, merge_rate[1], '%s-' % color)
+    p_active, = ax_merged.plot(dts, results.active_merge_rate[1], '%s:' % color)
+    p_week, = ax_merged.plot(dts, merge_rate[14], 'k:')
+    ax_merged.set_ylabel('Merge rate')
+    ax_merged.legend(
+        [p_active, p_day, p_week],
+        ['active rate: %.1f PRs/day' % results.active_merge_rate[1][-1],
+         'real rate: %.1f PRs/day' % merge_rate[1][-1],
+         'real 14d avg: %.1f PRs/day' % merge_rate[14][-1]],
+        'lower left',
+        fontsize='x-small',
     )
 
 
-def render_health(results, ax_health, text):
+def render_health(results, ax_health):
     """Render the percentage of time the queue is healthy/online."""
     # pylint: disable=too-many-locals
     dts = results.dts
     happiness = results.happiness
     ax_health.yaxis.tick_right()
-    ax_health.yaxis.set_label_position('right')
 
     health_color = '%s-' % happy_color(happiness[1][-1])
     p_1dhealth, = ax_health.plot(dts, happiness[1], health_color)
     p_14dhealth, = ax_health.plot(dts, happiness[14], 'k:')
     cur = 100 * happiness[1][-1]
     cur14 = 100 * happiness[14][-1]
-    ax_health.set_ylabel(
-        'Unblocked: %.1f%%' % cur,
-        color=health_color[0])
+    ax_health.set_ylabel('Unblocked %')
 
     ax_health.set_ylim([0.0, 1.0])
     ax_health.set_xlim(
@@ -307,17 +354,9 @@ def render_health(results, ax_health, text):
         mpatches.Patch(color='black', label='offline', alpha=0.2),
     ]
 
-    last_week = datetime.datetime.now() - datetime.timedelta(days=6)
-    week_happiness = mean(
-        [h for (d, h) in zip(dts, happiness[1]) if d >= last_week])
-    text(
-        'Unblocked %.1f%% of this week' % (100 * week_happiness),
-        color=happy_color(week_happiness),
-    )
-
     ax_health.legend(
         patches,
-        ['1d avg: %.1f%%' % cur, '14d avg: %.1f%%' % cur14, 'offline', 'blocked'],
+        ['1d avg: %.1f%%' % cur, '14d avg: %.1f%%' % cur14, 'blocked', 'offline'],
         'lower left',
         fontsize='x-small',
     )
@@ -334,13 +373,13 @@ def render_queue(results, ax_open):
     color_depth = depth_color(queued[-1])
     p_queue, = ax_queued.plot(dts, queued, color_depth)
     p_14dqueue, = ax_queued.plot(dts, queue_avg, 'k:')
-    ax_open.set_ylabel('Open: %d PRs' % prs[-1], color='b')
-    ax_queued.set_ylabel(
-        'Queued: %d PRs' % queued[-1],
-        color=color_depth)
     ax_queued.legend(
         [p_open, p_queue, p_14dqueue],
-        ['open', 'queued', '14d avg: %.1f' % queue_avg[-1]],
+        [
+            'open: %d PRs' % prs[-1],
+            'approved: %d PRs' % queued[-1],
+            '14d avg: %.1f PRs' % queue_avg[-1],
+        ],
         'lower left',
         fontsize='x-small',
     )
@@ -349,22 +388,17 @@ def render_queue(results, ax_open):
 
 def render(results, out_file):
     """Render three graphs to outfile from results."""
-    fig, (ax_open, ax_merged, ax_health) = plt.subplots(
-        3, sharex=True, figsize=(16, 8), dpi=100)
-
-    halign = 'center'
-
-    text = lambda y, txt, **kw: fig.text(
-        0.5, y, txt, horizontalalignment=halign, **kw)
-    text(0.08, 'Weekly statistics')
+    fig, (ax_backlog, ax_merges, ax_open, ax_health) = plt.subplots(
+        4, sharex=True, figsize=(16, 10), dpi=100)
 
     fig.autofmt_xdate()
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
     if results.dts:
         render_queue(results, ax_open)
-        render_backlog(results, ax_merged, lambda *a, **kw: text(0, *a, **kw))
-        render_health(results, ax_health, lambda *a, **kw: text(.04, *a, **kw))
+        render_merges(results, ax_merges)
+        render_backlog(results, ax_backlog)
+        render_health(results, ax_health)
         fig.text(
             0.1, 0.00,
             'image: %s, sample: %s' % (
