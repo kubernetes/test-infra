@@ -618,7 +618,9 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
-        frequency: '0 17 * * *'
+        # TODO: Reenable one omg is over.
+        # frequency: '0 17 * * *'
+        frequency: ''
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
