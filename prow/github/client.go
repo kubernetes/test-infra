@@ -46,6 +46,7 @@ type Client struct {
 const (
 	githubBase   = "https://api.github.com"
 	maxRetries   = 8
+	maxSleepTime = 2 * time.Minute
 	initialDelay = 2 * time.Second
 )
 
@@ -110,7 +111,7 @@ func (c *Client) request(method, path string, body interface{}) (*http.Response,
 					// Sleep an extra second plus how long GitHub wants us to
 					// sleep. If it's going to take too long, then break.
 					sleepTime := time.Unix(int64(t), 0).Sub(time.Now()) + time.Second
-					if sleepTime > 0 && sleepTime < 2*time.Minute {
+					if sleepTime > 0 && sleepTime < maxSleepTime {
 						timeSleep(sleepTime)
 					} else {
 						break
