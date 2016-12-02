@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
+VERSION = 0.0
 
-cd "${GOPATH}/src/k8s.io/test-infra/prow"
-make -k
+image:
+	docker build -t "gcr.io/k8s-testimages/test-infra-go-test:$(VERSION)" .
+
+push:
+	gcloud docker -- push "gcr.io/k8s-testimages/test-infra-go-test:$(VERSION)"
+
+.PHONY: image push
