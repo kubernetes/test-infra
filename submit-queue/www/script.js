@@ -25,6 +25,7 @@ function SQCntl(dataService, $interval, $location) {
   self.selected = 1;
   self.OverallHealth = "";
   self.StatOrder = "-Count";
+  self.batch = {};
   self.location = $location;
 
   // http://submit-queue.k8s.io/#?prDisplay=eparis&historyDisplay=15999
