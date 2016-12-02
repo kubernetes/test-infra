@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -43,9 +44,10 @@ type Client struct {
 }
 
 const (
-	githubBase = "https://api.github.com"
-	maxRetries = 8
-	retryDelay = 2 * time.Second
+	githubBase   = "https://api.github.com"
+	maxRetries   = 8
+	maxSleepTime = 2 * time.Minute
+	initialDelay = 2 * time.Second
 )
 
 // NewClient creates a new fully operational GitHub client.
@@ -89,19 +91,45 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-// Retry on transport failures. Does not retry on 500s.
+var timeSleep = time.Sleep
+
+// Retry on transport failures. Retries on 500s and retries after sleep on
+// ratelimit exceeded.
 func (c *Client) request(method, path string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
-	backoff := retryDelay
+	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path, body)
 		if err == nil {
-			break
+			// If we are out of API tokens, sleep first. The X-RateLimit-Reset
+			// header tells us the time at which we can request again.
+			if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+				resp.Body.Close()
+				var t int
+				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
+					// Sleep an extra second plus how long GitHub wants us to
+					// sleep. If it's going to take too long, then break.
+					sleepTime := time.Unix(int64(t), 0).Sub(time.Now()) + time.Second
+					if sleepTime > 0 && sleepTime < maxSleepTime {
+						timeSleep(sleepTime)
+					} else {
+						break
+					}
+				}
+			} else if resp.StatusCode < 500 {
+				// Normal, happy case.
+				break
+			} else {
+				// Retry 500 after a break.
+				resp.Body.Close()
+				timeSleep(backoff)
+				backoff *= 2
+			}
+		} else {
+			timeSleep(backoff)
+			backoff *= 2
 		}
-
-		time.Sleep(backoff)
-		backoff *= 2
 	}
 	return resp, err
 }
