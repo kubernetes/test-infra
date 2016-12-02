@@ -876,7 +876,7 @@ test_groups:
   gcs_prefix: kube_azure_log/kubernetes.azure.nightly
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
-  gcs_prefix: canonical-kubernetes-tests/logs/gce-e2e-node
+  gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
