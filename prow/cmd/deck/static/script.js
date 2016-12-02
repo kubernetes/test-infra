@@ -141,6 +141,8 @@ function redraw() {
     var author = document.getElementById("author").value;
     var pr = document.getElementById("pr").value;
     var refs = document.getElementById("refs").value;
+    var batch = document.getElementById("batch").checked;
+
     var refFilter = function() { return true; };
     if (refs) {
         var regex = new RegExp(refs.replace(/,/g, '.*,'));
@@ -148,17 +150,22 @@ function redraw() {
     }
 
     var firstBuild = undefined;
+    var emitted = 0;
 
-    for (var i = 0; i < allBuilds.length && i < 500; i++) {
+    for (var i = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
         if (!repos[build.repo])
             continue;
         if (!jobs[build.job])
             continue;
+        if (batch && build.type !== "batch")
+            continue;
         if (!String(build.author).includes(author))
             continue;
         if (!refFilter(build.refs))
             continue;
+
+        emitted++;
 
         if (!firstBuild)
             firstBuild = build;

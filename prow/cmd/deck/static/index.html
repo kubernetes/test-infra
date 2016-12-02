@@ -20,10 +20,11 @@
             <label><input type="checkbox" id="allJobs" onclick="toggleJobs(this);" checked><span>Jenkins Jobs</span></label><br>
         </div>
         <div>
-            <span>Pull Requests</span><br>
+            <span>Filter</span><br>
             <label><input type="number" id="pr" oninput="redraw();"> Number</label><br>
             <label><input type="text" id="author" oninput="redraw();"> Author</label><br>
             <label><input type="text" id="refs" oninput="redraw();"> Refs</label><br>
+            <label><input type="checkbox" class="wide" id="batch"  onchange="redraw();"> Batch</label><br>
         </div>
         </aside>
         <article>

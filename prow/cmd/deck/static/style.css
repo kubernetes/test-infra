@@ -113,6 +113,6 @@ a:link {
     color: blue;
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], input.wide {
     width: 80px;
 }
