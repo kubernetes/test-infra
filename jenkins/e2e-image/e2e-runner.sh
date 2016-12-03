@@ -270,6 +270,12 @@ if [[ -n "${CLOUDSDK_BUCKET:-}" ]]; then
     mv ~/$(basename "${CLOUDSDK_BUCKET}") ~/repo
     export CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL=file://${HOME}/repo/components-2.json
     install_google_cloud_sdk_tarball ~/repo/google-cloud-sdk.tar.gz ~/cloudsdk
+
+    # Just in case the new gcloud stores credentials differently, re-activate
+    # credentials.
+    if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+      gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+    fi
 fi
 
 # Specific settings for tests that use GCI HEAD images. I.e., if your test is
