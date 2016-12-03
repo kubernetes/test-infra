@@ -136,3 +136,7 @@
         max-total: 12
         job-name: pull-kubernetes-unit
         repo-name: 'k8s.io/kubernetes'
+    - test-infra-go-test:
+        job-name: pull-test-infra-go-test
+        max-total: 5
+        repo-name: 'k8s.io/test-infra'

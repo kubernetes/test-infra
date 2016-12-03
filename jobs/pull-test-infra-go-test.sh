@@ -18,5 +18,7 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-cd "${GOPATH}/src/k8s.io/test-infra/prow"
-make -k
+docker run --rm \
+    -w "/go/src/k8s.io/test-infra/prow" \
+    -v "${GOPATH}/src/k8s.io/test-infra:/go/src/k8s.io/test-infra" \
+    golang:1.7.4 make -k
