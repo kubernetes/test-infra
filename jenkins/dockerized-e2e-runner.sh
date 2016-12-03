@@ -92,12 +92,13 @@ timeout -s KILL ${DOCKER_TIMEOUT:-615m} docker run --rm \
   "gcr.io/google-containers/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}" && rc=$? || rc=$?
 
 echo "Exiting with code: ${rc}"
-if [[ ${rc} -eq 137 ]]; then
+if [[ ${rc} -eq 137 ]]; then  # 137 == SIGKILL, see man timeout
   local container="${CONTAINER_NAME}"
   # docker runs containers with session id being the same as the pid
   local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
   echo "Processes running under container ${container}:"
   ps wwuf --forest --sid "${pid}"
   docker stop "${container}" || true
+  sudo chmod a+rX -R "${WORKSPACE}/_artifacts/" || true
 fi
 exit ${rc}
