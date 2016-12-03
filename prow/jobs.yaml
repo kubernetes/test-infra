@@ -185,3 +185,23 @@ kubernetes/test-infra:
   context: Jenkins go test
   rerun_command: "@k8s-bot go test this"
   trigger: "@k8s-bot (go )?test this"
+  spec:
+    nodeSelector:
+      role: build
+    containers:
+    - name: builder
+      image: gcr.io/k8s-testimages/test-infra-go-test:0.0
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+    restartPolicy: Never
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
+
