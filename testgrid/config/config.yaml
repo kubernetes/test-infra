@@ -232,10 +232,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.4
 - name: kubernetes-e2e-gci-gce-ingress-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.5
-- name: kubernetes-e2e-gce-kubenet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubenet
-- name: kubernetes-e2e-gci-gce-kubenet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kubenet
 - name: kubernetes-e2e-gce-master-on-cvm
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-on-cvm
 - name: kubernetes-e2e-gce-multizone
@@ -1062,10 +1058,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.4
   - name: gci-gce-ingress-release-1.5
     test_group_name: kubernetes-e2e-gci-gce-ingress-release-1.5
-  - name: gce-kubenet
-    test_group_name: kubernetes-e2e-gce-kubenet
-  - name: gci-gce-kubenet
-    test_group_name: kubernetes-e2e-gci-gce-kubenet
   - name: gce-master-on-cvm
     test_group_name: kubernetes-e2e-gce-master-on-cvm
   - name: gce-multizone
