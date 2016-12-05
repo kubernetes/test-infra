@@ -143,7 +143,8 @@ if __name__ == '__main__':
         help='Filter down to these instances')
     parser.add_argument(
         '--dryrun',
-        default=True,
+        default=False,
+        action='store_true',
         help='list but not delete resources')
     args = parser.parse_args()
 
