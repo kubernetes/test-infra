@@ -35,13 +35,15 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # From _inside_ a container that has the host's docker mapped in, the $PATH
 # provided must be resolvable on the *HOST*, not the container.
 
-# default to go version 1.5 image tag
-KUBEKINS_TAG="1.5-v20161205-d664d14"
+# default to go version 1.6 image tag
+KUBEKINS_TAG="1.6-v20161205-ad918bc"
 
 if [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.2" ]] || \
    [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.3" ]] || \
    [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.4" ]]; then
   KUBEKINS_TAG="1.4-v20161130-8958f82"
+elif [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.5" ]]; then
+  KUBEKINS_TAG="1.5-v20161205-d664d14"
 fi
 
 docker run --rm=true \
