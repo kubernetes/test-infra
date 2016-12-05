@@ -40,6 +40,8 @@ type JenkinsJob struct {
 	Trigger string `json:"trigger"`
 	// Valid rerun command to give users. Must match Trigger.
 	RerunCommand string `json:"rerun_command"`
+	// Whether or not to skip commenting and setting status on GitHub.
+	SkipReport bool `json:"skip_report"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 
