@@ -284,7 +284,7 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 		s, ok := people[d]
 		if ok {
 			out = out.Union(s)
-			if leafOnly {
+			if leafOnly && out.Len() > 0 {
 				break
 			}
 		}
