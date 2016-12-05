@@ -39,7 +39,7 @@ mungegithub build:
 
 test: mungegithub
 	# in case of error ignore all lines of 'getsockopt: connection refused' these are background go threads that don't matter
-	CGO_ENABLED=0 GOOS=linux go test --run TestSubmitQueue $(shell go list ./... | grep -v 'vendor/') | grep -v 'getsockopt: connection refused'
+	CGO_ENABLED=0 GOOS=linux go test $(shell go list ./... | grep -v 'vendor/') | grep -v 'getsockopt: connection refused'
 
 # build the container with the binary
 container: mungegithub
