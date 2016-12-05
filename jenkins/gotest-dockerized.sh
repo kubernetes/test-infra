@@ -36,7 +36,7 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # provided must be resolvable on the *HOST*, not the container.
 
 # default to go version 1.5 image tag
-KUBEKINS_TAG="1.5-v20161202-0387b79"
+KUBEKINS_TAG="1.5-v20161109-d9a98f2"
 
 if [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.2" ]] || \
    [[ "${KUBE_VERIFY_GIT_BRANCH}" == *"1.3" ]] || \
