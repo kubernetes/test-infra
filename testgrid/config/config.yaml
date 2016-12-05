@@ -120,8 +120,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: kubernetes-e2e-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-examples
+- name: kubernetes-federation-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
+- name: kubernetes-federation-build-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
+- name: kubernetes-federation-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
+- name: kubernetes-e2e-gci-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-federation-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1.4
 - name: kubernetes-e2e-gce-federation-release-1.5
@@ -168,8 +176,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5
 - name: kubernetes-e2e-gci-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-examples
-- name: kubernetes-e2e-gci-gce-federation
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-gci-qa-m52
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m52
 - name: kubernetes-e2e-gce-gci-qa-m53
@@ -835,8 +841,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.4
 - name: ci-kubernetes-node-kubelet-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.5
-- name: kubernetes-federation-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-parallel-release-1.2
 - name: kops-build
@@ -859,10 +863,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-staging-parallel-release-1.2
-- name: kubernetes-federation-build-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
-- name: kubernetes-federation-build-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
 - name: kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
@@ -1781,6 +1781,12 @@ dashboards:
 
 - name: google-federation
   dashboard_tab:
+  - name: federation-build
+    test_group_name: kubernetes-federation-build
+  - name: federation-build-1.4
+    test_group_name: kubernetes-federation-build-1.4
+  - name: federation-build-1.5
+    test_group_name: kubernetes-federation-build-1.5
   - name: gce-federation
     test_group_name: kubernetes-e2e-gce-federation
   - name: gci-federation
@@ -2097,8 +2103,6 @@ dashboards:
     test_group_name: kubernetes-cross-build
   - name: gke-gci-staging-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-staging-release-1.2
-  - name: federation-build
-    test_group_name: kubernetes-federation-build
   - name: gke-gci-prod-parallel-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-prod-parallel-release-1.2
   - name: kops-build
@@ -2111,10 +2115,6 @@ dashboards:
     test_group_name: kubernetes-build-debian-unstable
   - name: gke-gci-staging-parallel-release-1.2
     test_group_name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
-  - name: federation-build-1.4
-    test_group_name: kubernetes-federation-build-1.4
-  - name: federation-build-1.5
-    test_group_name: kubernetes-federation-build-1.5
   - name: gke-large-teardown
     test_group_name: kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs
