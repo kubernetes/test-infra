@@ -131,10 +131,6 @@
         job-name: ci-kubernetes-e2e-gce-federation
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-kubenet:
-        job-name: ci-kubernetes-e2e-gce-kubenet
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-ha-master:
         job-name: ci-kubernetes-e2e-gce-ha-master
         frequency: 'H/5 * * * *' # At least every 30m
@@ -205,10 +201,6 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-federation:
         job-name: ci-kubernetes-e2e-gci-gce-federation
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gci-gce-kubenet:
-        job-name: ci-kubernetes-e2e-gci-gce-kubenet
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 
