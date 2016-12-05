@@ -9,6 +9,7 @@
 #   rerun_command: How should users trigger just this job, as a string, not a
 #                  regex. For example, if the trigger regex is "(e2e )?test",
 #                  then a rerun command might be "e2e test".
+#   skip_report:   If true, then do not set status or comment on GitHub.
 #   spec:          If this exists then run a kubernetes pod with this spec.
 #                  Otherwise, run a Jenkins job.
 # The unit tests in cmd/hook/jobs_test.go ensure that the job definitions are
@@ -135,6 +136,7 @@ kubernetes/kubernetes:
   context: Jenkins kops AWS e2e
   rerun_command: "@k8s-bot kops aws e2e test this"
   trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
+  skip_report: true
 
 - name: pull-kubernetes-federation-e2e-gce
   context: Jenkins Federation GCE e2e

@@ -156,7 +156,7 @@ func main() {
 		Refs:      *refs,
 
 		DryRun: *dryRun,
-		Report: *report,
+		Report: *report && !jenkinsJob.SkipReport,
 
 		KubeJob:       kubeJob,
 		KubeClient:    kc,
