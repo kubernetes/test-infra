@@ -39,7 +39,7 @@ export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] \
                          --ginkgo.skip=\[Flaky\]"
 export NUM_NODES=3
-export PROJECT="k8s-e2e-cri-gke-autoscaling"
+export PROJECT="k8s-jkns-cri-gke-autoscaling"
 export KUBE_GKE_IMAGE_TYPE="gci"
 
 ### post-env

@@ -34,7 +34,7 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 export KUBELET_TEST_ARGS="--experimental-cri=true"
 export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
-export PROJECT="kubernetes-cri-es-logging"
+export PROJECT="k8s-jkns-cri-es-logging"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Elasticsearch\]"
 export KUBE_LOGGING_DESTINATION="elasticsearch"
 export KUBE_NODE_OS_DISTRIBUTION="gci"

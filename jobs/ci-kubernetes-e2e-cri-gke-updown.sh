@@ -38,7 +38,7 @@ export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 export GINKGO_PARALLEL="y"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
-export PROJECT="kubernetes-e2e-cri-gke-updown"
+export PROJECT="k8s-jkns-e2e-cri-gke-updown"
 export KUBE_GKE_IMAGE_TYPE="gci"
 
 ### post-env

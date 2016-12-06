@@ -41,7 +41,7 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
                          --gather-logs-sizes=true \
                          --output-print-type=json"
 # Create a project k8s-jenkins-scalability-head and move this test there
-export PROJECT="k8s-jenkins-cri-scalability"
+export PROJECT="k8s-jkns-cri-scalability"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override GCE defaults.
 export MASTER_SIZE="n1-standard-4"

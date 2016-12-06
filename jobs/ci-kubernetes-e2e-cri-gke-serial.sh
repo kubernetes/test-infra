@@ -39,7 +39,7 @@ export ENABLE_GARBAGE_COLLECTOR="true"
 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-export PROJECT="jenkins-gke-cri-e2e-serial"
+export PROJECT="k8s-jkns-gke-cri-e2e-serial"
 export KUBE_GKE_IMAGE_TYPE="gci"
 
 ### post-env

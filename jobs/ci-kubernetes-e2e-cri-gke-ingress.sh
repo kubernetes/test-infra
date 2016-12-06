@@ -36,7 +36,7 @@ export KUBELET_TEST_ARGS="--experimental-cri=true"
 export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
-export PROJECT="kubernetes-cri-gke-ingress"
+export PROJECT="k8s-jkns-cri-gke-ingress"
 # TODO: Enable this when we've split 1.2 tests into another project.
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export KUBE_GKE_IMAGE_TYPE="gci"
