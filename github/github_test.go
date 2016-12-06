@@ -29,7 +29,6 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func stringPtr(val string) *string     { return &val }
 func timePtr(val time.Time) *time.Time { return &val }
 func intPtr(val int) *int              { return &val }
 

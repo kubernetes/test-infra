@@ -71,6 +71,9 @@ var (
 	combinedStatusLifetime = 5 * time.Second
 )
 
+func stringPtr(val string) *string { return &val }
+func boolPtr(val bool) *bool       { return &val }
+
 type callLimitRoundTripper struct {
 	sync.Mutex
 	delegate  http.RoundTripper
@@ -231,6 +234,8 @@ type analytics struct {
 	GetUser              analytic
 	SetMilestone         analytic
 	ListMilestones       analytic
+	GetBranch            analytic
+	EditBranch           analytic
 }
 
 func (a analytics) print() {
@@ -267,6 +272,8 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "GetUser\t%d\t\n", a.GetUser.Count)
 	fmt.Fprintf(w, "SetMilestone\t%d\t\n", a.SetMilestone.Count)
 	fmt.Fprintf(w, "ListMilestones\t%d\t\n", a.ListMilestones.Count)
+	fmt.Fprintf(w, "GetBranch\t%d\t\n", a.GetBranch.Count)
+	fmt.Fprintf(w, "EditBranch\t%d\t\n", a.EditBranch.Count)
 	w.Flush()
 	glog.V(2).Infof("\n%v", buf)
 }
@@ -531,6 +538,85 @@ func (config *Config) deleteCache(resp *github.Response) {
 	cacheKey := req.URL.String()
 	glog.Infof("Deleting cache entry for %q", cacheKey)
 	cache.Delete(cacheKey)
+}
+
+// protects a branch and sets the required contexts
+func (config *Config) setBranchProtection(name string, contexts []string) error {
+	config.analytics.EditBranch.Call(config, nil)
+	glog.Infof("Setting protections for branch: %s", name)
+	if config.DryRun {
+		return nil
+	}
+	branch := &github.Branch{
+		Name: &name,
+		Protection: &github.Protection{
+			Enabled: boolPtr(true),
+			RequiredStatusChecks: &github.RequiredStatusChecks{
+				EnforcementLevel: stringPtr("non_admins"),
+				Contexts:         &contexts,
+			},
+		},
+	}
+	_, _, err := config.client.Repositories.EditBranch(config.Org, config.Project, name, branch)
+	if err != nil {
+		glog.Errorf("Unable to edit branch protections for %s: %v", name, err)
+	}
+	return err
+}
+
+// needsBranchProtection returns true if the branch is protected by exactly the set of
+// contexts in the argument
+func (config *Config) needsBranchProtection(branch *github.Branch, contexts []string) bool {
+	if branch == nil {
+		glog.Errorf("got a nil branch in needsBranchProtection()")
+		return true
+	}
+
+	if branch.Protection == nil {
+		glog.Infof("Setting branch protections because branch.Protection is nil")
+		return true
+	}
+	if branch.Protection.Enabled == nil || *branch.Protection.Enabled == false {
+		glog.Infof("Setting branch protections because branch.Protection.Enabled is wrong")
+		return true
+	}
+	if branch.Protection.RequiredStatusChecks == nil {
+		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks is nil")
+		return true
+	}
+	if branch.Protection.RequiredStatusChecks.EnforcementLevel == nil || *branch.Protection.RequiredStatusChecks.EnforcementLevel != "non_admins" {
+		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks.EnforcementLevel is wrong")
+		return true
+	}
+	if branch.Protection.RequiredStatusChecks.Contexts == nil {
+		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks.Contexts is wrong")
+		return true
+	}
+	branchContexts := *branch.Protection.RequiredStatusChecks.Contexts
+
+	oldSet := sets.NewString(branchContexts...)
+	newSet := sets.NewString(contexts...)
+	if !oldSet.Equal(newSet) {
+		glog.Infof("Updating branch protections old: %v new:%v", oldSet.List(), newSet.List())
+		return true
+	}
+	return false
+}
+
+// SetBranchProtection protects a branch and sets the required contexts
+func (config *Config) SetBranchProtection(name string, contexts []string) error {
+	branch, resp, err := config.client.Repositories.GetBranch(config.Org, config.Project, name)
+	config.analytics.GetBranch.Call(config, resp)
+	if err != nil {
+		glog.Errorf("Got error getting branch %s: %v", name, err)
+		return err
+	}
+
+	if !config.needsBranchProtection(branch, contexts) {
+		return nil
+	}
+
+	return config.setBranchProtection(name, contexts)
 }
 
 // Refresh will refresh the Issue (and PR if this is a PR)

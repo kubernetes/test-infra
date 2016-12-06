@@ -14,8 +14,11 @@ data:
   # test-options feature options.
   test-options.required-retest-contexts: "\"Jenkins GCE e2e\",\"Jenkins unit/integration\",\"Jenkins verification\",\"Jenkins GCE Node e2e\",\"Jenkins Kubemark GCE e2e\",\"Jenkins GCE etcd3 e2e\""
 
+  submit-queue.protected-branches: "master"
+  submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
+
   # submit-queue options. Keep job lists sorted!
-  submit-queue.required-contexts: "Jenkins GCE Node e2e"
+  submit-queue.required-contexts: "\"\""
   submit-queue.nonblocking-jenkins-jobs: "\
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-aws,\
