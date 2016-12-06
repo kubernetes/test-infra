@@ -15,7 +15,7 @@ spec:
         role: prow
       containers:
       - name: splice
-        image: gcr.io/k8s-prow/splice:0.6
+        image: gcr.io/k8s-prow/splice:0.7
         volumeMounts:
         - name: job-configs
           mountPath: /etc/jobs
