@@ -71,6 +71,8 @@ func main() {
 func generate(root string) error {
 	args := []string{
 		"certonly",
+		"--agree-tos",
+		"--non-interactive",
 		"--webroot",
 		"-w", root,
 		"-d", "prow.k8s.io",
@@ -95,11 +97,11 @@ func renew() error {
 func replaceSecret(c *kube.Client) error {
 	key, err := ioutil.ReadFile("/etc/letsencrypt/live/prow.k8s.io/privkey.pem")
 	if err != nil {
-		return fmt.Errorf("could not real privkey: %v", err)
+		return fmt.Errorf("could not read privkey: %v", err)
 	}
 	cert, err := ioutil.ReadFile("/etc/letsencrypt/live/prow.k8s.io/fullchain.pem")
 	if err != nil {
-		return fmt.Errorf("could not real fullchain: %v", err)
+		return fmt.Errorf("could not read fullchain: %v", err)
 	}
 
 	s := kube.Secret{
