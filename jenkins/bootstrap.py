@@ -88,6 +88,9 @@ def call(cmd, stdin=None, check=True, output=None):
                     reads.remove(fdesc)
                     continue
                 logging.warning(line[:-1])
+        if not ret[0]:
+            if proc.poll() is not None:
+                break  # process exited without closing pipes (timeout?)
 
     code = proc.wait()
     logging.info('process %d exited with code %d', proc.pid, code)
