@@ -38,8 +38,9 @@ export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flak
 export PROJECT="kubernetes-e2e-cri-validation"
 export GINKGO_PARALLEL="y"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
-export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
+
+# Set variables for CRI.
+source "${testinfra}/jobs/cri-config.sh"
 
 ### post-env
 
