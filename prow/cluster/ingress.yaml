@@ -19,9 +19,10 @@ metadata:
   annotations:
     "kubernetes.io/ingress.global-static-ip-name": prow
 spec:
+  tls:
+  - secretName: prow-k8s-cert
   rules:
-  - host: prow.k8s.io
-    http:
+  - http:
       paths:
       - path: /*
         backend:
