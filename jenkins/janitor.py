@@ -110,9 +110,11 @@ def clear_resources(project, col, resource):
             base.append('--%s=%s' % (resource.condition, col))
 
         print "Try to kill %s - %s" % (col, list(items))
-        if subprocess.call(base + list(items)) != 0:
+        try:
+            subprocess.call(base + list(items))
+        except subprocess.CalledProcessError, e:
             err = 1
-            print "Error try to delete %s - %s" % (col, list(items))
+            print "Error try to delete resources: %s" % e.output
     return err
 
 
@@ -143,7 +145,8 @@ if __name__ == '__main__':
         help='Filter down to these instances')
     parser.add_argument(
         '--dryrun',
-        default=True,
+        default=False,
+        action='store_true',
         help='list but not delete resources')
     args = parser.parse_args()
 
