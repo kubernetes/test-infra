@@ -74,7 +74,7 @@ fi
 CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
 
 echo "Starting..."
-timeout -s KILL ${DOCKER_TIMEOUT:-120m} docker run --rm \
+timeout -s KILL ${DOCKER_TIMEOUT:-60m} docker run --rm \
   --name="${CONTAINER_NAME}" \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
