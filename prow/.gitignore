@@ -3,3 +3,4 @@ cmd/line/line
 cmd/sinker/sinker
 cmd/deck/deck
 cmd/splice/splice
+cmd/marque/marque

@@ -19,7 +19,8 @@ HOOK_VERSION   = 0.62
 LINE_VERSION   = 0.35
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.7
-SPLICE_VERSION   = 0.7
+SPLICE_VERSION = 0.7
+MARQUE_VERSION = 0.0
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow
@@ -144,7 +145,18 @@ splice-image:
 splice-deployment:
 	kubectl apply -f cluster/splice_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment
+marque-image:
+	CGO_ENABLED=0 go build -o cmd/marque/marque k8s.io/test-infra/prow/cmd/marque
+	docker build -t "gcr.io/$(PROJECT)/marque:$(MARQUE_VERSION)" cmd/marque
+	gcloud docker -- push "gcr.io/$(PROJECT)/marque:$(MARQUE_VERSION)"
+
+marque-deployment:
+	kubectl apply -f cluster/marque_deployment.yaml
+
+marque-service:
+	kubectl apply -f cluster/marque_deployment.yaml
+
+.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service
 
 update-godeps:
 	rm -rf vendor Godeps
