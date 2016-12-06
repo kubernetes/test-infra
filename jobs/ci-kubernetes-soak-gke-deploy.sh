@@ -72,5 +72,6 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+export DOCKER_TIMEOUT="110m"
 export KUBEKINS_TIMEOUT="90m"
 "${runner}"
