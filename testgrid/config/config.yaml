@@ -126,6 +126,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
 - name: kubernetes-federation-build-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
+- name: kubernetes-federation-build-soak
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-soak
 - name: kubernetes-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
 - name: kubernetes-e2e-gci-gce-federation
@@ -1779,6 +1781,8 @@ dashboards:
     test_group_name: kubernetes-federation-build-1.4
   - name: federation-build-1.5
     test_group_name: kubernetes-federation-build-1.5
+  - name: federation-build-soak
+    test_group_name: kubernetes-federation-build-soak
   - name: gce-federation
     test_group_name: kubernetes-e2e-gce-federation
   - name: gci-federation

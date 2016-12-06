@@ -1135,6 +1135,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-federation-release-1.5.sh': 'ci-kubernetes-federation-1.5-*',
             'ci-kubernetes-federation-build-1.4.sh': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-e2e-gce-federation-release-1.4.sh': 'ci-kubernetes-federation-1.4-*',
+            'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
+            'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
