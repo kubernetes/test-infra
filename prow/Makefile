@@ -20,7 +20,7 @@ LINE_VERSION   = 0.35
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.7
 SPLICE_VERSION = 0.7
-MARQUE_VERSION = 0.0
+MARQUE_VERSION = 0.1
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow
@@ -154,7 +154,7 @@ marque-deployment:
 	kubectl apply -f cluster/marque_deployment.yaml
 
 marque-service:
-	kubectl apply -f cluster/marque_deployment.yaml
+	kubectl apply -f cluster/marque_service.yaml
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service
 

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -33,6 +34,8 @@ const (
 	sleepTime = time.Minute
 	// Time between renewals.
 	renewTime = 12 * time.Hour
+
+	secretName = "prow-k8s-cert"
 )
 
 func main() {
@@ -45,8 +48,9 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not create temp dir.")
 	}
-	http.Handle("/", http.FileServer(http.Dir(root)))
-	go http.ListenAndServe(":http", nil)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	http.Handle("/.well-known/", http.FileServer(http.Dir(root)))
+	go func() { logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("Server returned.") }()
 
 	logrus.Infof("Sleeping for %v before generating cert.", sleepTime)
 	time.Sleep(sleepTime)
@@ -77,6 +81,7 @@ func generate(root string) error {
 		"--webroot",
 		"-w", root,
 		"-d", "prow.k8s.io",
+		"-d", "prow.kubernetes.io",
 	}
 	cmd := exec.Command("certbot", args...)
 	output, err := cmd.CombinedOutput()
@@ -106,12 +111,15 @@ func replaceSecret(c *kube.Client) error {
 	}
 
 	s := kube.Secret{
+		Metadata: kube.ObjectMeta{
+			Name: secretName,
+		},
 		Data: map[string]string{
-			"tls.crt": string(cert),
-			"tls.key": string(key),
+			"tls.crt": base64.StdEncoding.EncodeToString(cert),
+			"tls.key": base64.StdEncoding.EncodeToString(key),
 		},
 	}
-	if err := c.ReplaceSecret("prow-k8s-cert", s); err != nil {
+	if err := c.ReplaceSecret(secretName, s); err != nil {
 		return fmt.Errorf("could not replace secret: %v", err)
 	}
 	return nil
