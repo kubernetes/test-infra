@@ -1156,6 +1156,15 @@ class JobTest(unittest.TestCase):
             self.fail('Jobs duplicate projects:\n  %s' % (
                 '\n  '.join('%s: %s' % t for t in duplicates)))
 
+    def testJobsDoNotSourceShell(self):
+        for job, job_path in self.jobs:
+            if job.startswith('pull-'):
+                continue  # No clean way to determine version
+            with open(job_path) as fp:
+                script = fp.read()
+            self.assertNotIn('source ', script, job)
+            self.assertNotIn('\n. ', script, job)
+
     def testAllJobsHaveErrExit(self):
         options = {
             'errexit',
