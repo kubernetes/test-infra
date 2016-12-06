@@ -254,7 +254,7 @@ func main() {
 		queue, err := getQueuedPRs(*submitQueueURL)
 		log.Info("PRs in queue:", queue)
 		if err != nil {
-			log.WithError(err).Error("Error getting queued PRs.")
+			log.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
 			continue
 		}
 		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
