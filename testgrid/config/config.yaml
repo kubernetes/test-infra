@@ -80,6 +80,60 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-release-1.4
 - name: kubernetes-e2e-aws-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-release-1.5
+- name: ci-kubernetes-e2e-cri-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce
+- name: ci-kubernetes-e2e-cri-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-alpha-features
+- name: ci-kubernetes-e2e-cri-gce-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-autoscaling
+- name: ci-kubernetes-e2e-cri-gce-autoscaling-migs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-autoscaling-migs
+- name: ci-kubernetes-e2e-cri-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-es-logging
+- name: ci-kubernetes-e2e-cri-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-etcd3
+- name: ci-kubernetes-e2e-cri-gce-examples
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-examples
+- name: ci-kubernetes-e2e-cri-gce-federation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-federation
+- name: ci-kubernetes-e2e-cri-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-flaky
+- name: ci-kubernetes-e2e-cri-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-ingress
+- name: ci-kubernetes-e2e-cri-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-proto
+- name: ci-kubernetes-e2e-cri-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-reboot
+- name: ci-kubernetes-e2e-cri-gce-scalability
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-scalability
+- name: ci-kubernetes-e2e-cri-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-serial
+- name: ci-kubernetes-e2e-cri-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-slow
+- name: ci-kubernetes-e2e-cri-gce-statefulset
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-statefulset
+- name: ci-kubernetes-e2e-cri-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke
+- name: ci-kubernetes-e2e-cri-gke-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-alpha-features
+- name: ci-kubernetes-e2e-cri-gke-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-autoscaling
+- name: ci-kubernetes-e2e-cri-gke-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-flaky
+- name: ci-kubernetes-e2e-cri-gke-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-ingress
+- name: ci-kubernetes-e2e-cri-gke-multizone
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-multizone
+- name: ci-kubernetes-e2e-cri-gke-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-reboot
+- name: ci-kubernetes-e2e-cri-gke-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-serial
+- name: ci-kubernetes-e2e-cri-gke-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-slow
+- name: ci-kubernetes-e2e-cri-gke-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-updown
+- name: ci-kubernetes-e2e-garbage-cri
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage-cri
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: kubernetes-e2e-kops-aws-updown
@@ -248,10 +302,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-statefulset
 - name: kubernetes-e2e-gci-gce-statefulset
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-statefulset
-- name: kubernetes-e2e-cri-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce
-- name: kubernetes-e2e-cri-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-serial
 - name: kubernetes-e2e-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-proto
 - name: kubernetes-e2e-gci-gce-proto
@@ -1076,10 +1126,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-statefulset
   - name: gci-gce-statefulset
     test_group_name: kubernetes-e2e-gci-gce-statefulset
-  - name: gci-gce-cri
-    test_group_name: kubernetes-e2e-gci-gce-cri
-  - name: gci-gce-cri-serial
-    test_group_name: kubernetes-e2e-gci-gce-cri-serial
   - name: gce-proto
     test_group_name: kubernetes-e2e-gce-proto
   - name: gci-gce-proto
@@ -2148,3 +2194,60 @@ dashboards:
     test_group_name: test-infra-test-history
   - name: aws-janitor
     test_group_name: maintenance-ci-aws-janitor
+
+- name: google-cri
+  dashboard_tab:
+  - name: cri-gce
+    test_group_name: ci-kubernetes-e2e-cri-gce
+  - name: cri-gce-alpha-features
+    test_group_name: ci-kubernetes-e2e-cri-gce-alpha-features
+  - name: cri-gce-autoscaling
+    test_group_name: ci-kubernetes-e2e-cri-gce-autoscaling
+  - name: cri-gce-autoscaling-migs
+    test_group_name: ci-kubernetes-e2e-cri-gce-autoscaling-migs
+  - name: cri-gce-es-logging
+    test_group_name: ci-kubernetes-e2e-cri-gce-es-logging
+  - name: cri-gce-etcd3
+    test_group_name: ci-kubernetes-e2e-cri-gce-etcd3
+  - name: cri-gce-examples
+    test_group_name: ci-kubernetes-e2e-cri-gce-examples
+  - name: cri-gce-federation
+    test_group_name: ci-kubernetes-e2e-cri-gce-federation
+  - name: cri-gce-flaky
+    test_group_name: ci-kubernetes-e2e-cri-gce-flaky
+  - name: cri-gce-ingress
+    test_group_name: ci-kubernetes-e2e-cri-gce-ingress
+  - name: cri-gce-proto
+    test_group_name: ci-kubernetes-e2e-cri-gce-proto
+  - name: cri-gce-reboot
+    test_group_name: ci-kubernetes-e2e-cri-gce-reboot
+  - name: cri-gce-scalability
+    test_group_name: ci-kubernetes-e2e-cri-gce-scalability
+  - name: cri-gce-serial
+    test_group_name: ci-kubernetes-e2e-cri-gce-serial
+  - name: cri-gce-slow
+    test_group_name: ci-kubernetes-e2e-cri-gce-slow
+  - name: cri-gce-statefulset
+    test_group_name: ci-kubernetes-e2e-cri-gce-statefulset
+  - name: cri-gke
+    test_group_name: ci-kubernetes-e2e-cri-gke
+  - name: cri-gke-alpha-features
+    test_group_name: ci-kubernetes-e2e-cri-gke-alpha-features
+  - name: cri-gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-cri-gke-autoscaling
+  - name: cri-gke-flaky
+    test_group_name: ci-kubernetes-e2e-cri-gke-flaky
+  - name: cri-gke-ingress
+    test_group_name: ci-kubernetes-e2e-cri-gke-ingress
+  - name: cri-gke-multizone
+    test_group_name: ci-kubernetes-e2e-cri-gke-multizone
+  - name: cri-gke-reboot
+    test_group_name: ci-kubernetes-e2e-cri-gke-reboot
+  - name: cri-gke-serial
+    test_group_name: ci-kubernetes-e2e-cri-gke-serial
+  - name: cri-gke-slow
+    test_group_name: ci-kubernetes-e2e-cri-gke-slow
+  - name: cri-gke-updown
+    test_group_name: ci-kubernetes-e2e-cri-gke-updown
+  - name: garbage-cri
+    test_group_name: ci-kubernetes-e2e-garbage-cri
