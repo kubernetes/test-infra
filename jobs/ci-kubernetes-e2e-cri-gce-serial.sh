@@ -37,7 +37,7 @@ export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 export ENABLE_GARBAGE_COLLECTOR="true"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-export PROJECT="k8s-jkns-e2e-gce-cri-serial"
+export PROJECT="jkns-e2e-cri-serial-validation"
 export KUBE_OS_DISTRIBUTION="gci"
 
 ### post-env

@@ -248,10 +248,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-statefulset
 - name: kubernetes-e2e-gci-gce-statefulset
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-statefulset
-- name: kubernetes-e2e-gci-gce-cri
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-cri
-- name: kubernetes-e2e-gci-gce-cri-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-cri-serial
+- name: kubernetes-e2e-cri-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce
+- name: kubernetes-e2e-cri-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-serial
 - name: kubernetes-e2e-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-proto
 - name: kubernetes-e2e-gci-gce-proto

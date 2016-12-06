@@ -35,10 +35,14 @@ export KUBELET_TEST_ARGS="--experimental-cri=true"
 export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
-export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+# Temporarily skip the test "Network should set TCP CLOSE_WAIT timeout"
+# because it relies on host port, which is not implemented in CRI integration
+# yet.
+# TODO(random-liu): Re-enable the test.
+export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout"
 export GINKGO_PARALLEL="y"
 export KUBE_OS_DISTRIBUTION="gci"
-export PROJECT="k8s-jkns-e2e-gce-cri"
+export PROJECT="kubernetes-e2e-cri-validation"
 
 ### post-env
 
@@ -71,6 +75,6 @@ export PATH="${PATH}:/usr/local/go/bin"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="70m"
-export KUBEKINS_TIMEOUT="50m"
+export DOCKER_TIMEOUT="110m"
+export KUBEKINS_TIMEOUT="90m"
 "${runner}"
