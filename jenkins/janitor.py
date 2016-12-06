@@ -25,7 +25,7 @@ from collections import namedtuple
 
 
 # A resource that need to be cleared.
-Resource = namedtuple('Resource', 'name condition status')
+Resource = namedtuple("Resource", "name condition status")
 DEMOLISH_ORDER = [
     # Beaware of insertion order
     Resource("instances", "zone", None),
@@ -55,13 +55,13 @@ def collect(project, age, resource, filt):
     col = collections.defaultdict(list)
 
     for item in json.loads(subprocess.check_output([
-            'gcloud', 'compute', '-q',
-            resource.name, 'list',
-            '--format=json(name,creationTimestamp.date(tz=UTC),zone,region)',
-            '--filter=%s' % filt,
-            '--project=%s' % project])):
+            "gcloud", "compute", "-q",
+            resource.name, "list",
+            "--format=json(name,creationTimestamp.date(tz=UTC),zone,region)",
+            "--filter=%s" % filt,
+            "--project=%s" % project])):
 
-        if not item['name'] or not item['creationTimestamp']:
+        if not item["name"] or not item["creationTimestamp"]:
             print "[Warning] - Skip item without name or timestamp"
             print "%s" % item
             continue
@@ -75,11 +75,11 @@ def collect(project, age, resource, filt):
             colname = ""
 
         # Unify datetime to use utc timezone.
-        created = datetime.datetime.strptime(item['creationTimestamp'],"%Y-%m-%dT%H:%M:%S")
-        print "Found %s, %s in %s, created time = %s" % (resource.name, item['name'], colname, item['creationTimestamp'])
+        created = datetime.datetime.strptime(item["creationTimestamp"],"%Y-%m-%dT%H:%M:%S")
+        print "Found %s, %s in %s, created time = %s" % (resource.name, item["name"], colname, item["creationTimestamp"])
         if created < age:
-            print "Added to janitor list: %s, %s" % (resource.name, item['name'])
-            col[colname].append(item['name'])
+            print "Added to janitor list: %s, %s" % (resource.name, item["name"])
+            col[colname].append(item["name"])
     return col
 
 
@@ -101,18 +101,20 @@ def clear_resources(project, col, resource):
             continue
 
         # construct the customized gcloud commend
-        base = ['gcloud', 'compute', '-q', resource.name]
+        base = ["gcloud", "compute", "-q", resource.name]
         if resource.status is not None:
             base.append(resource.status)
-        base.append('delete')
-        base.append('--project=%s' % project)
+        base.append("delete")
+        base.append("--project=%s" % project)
         if resource.condition:
-            base.append('--%s=%s' % (resource.condition, col))
+            base.append("--%s=%s" % (resource.condition, col))
 
         print "Try to kill %s - %s" % (col, list(items))
-        if subprocess.call(base + list(items)) != 0:
+        try:
+            subprocess.call(base + list(items))
+        except subprocess.CalledProcessError, e:
             err = 1
-            print "Error try to delete %s - %s" % (col, list(items))
+            print >>sys.stderr, "Error try to delete resources: %s" % e.output
     return err
 
 
@@ -127,30 +129,30 @@ def main(project, days, hours, filt):
     sys.exit(err)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Clean up resources from an expired project')
-    parser.add_argument('--project', help='Project to clean', required=True)
+        description="Clean up resources from an expired project")
+    parser.add_argument("--project", help="Project to clean", required=True)
     parser.add_argument(
-        '--days', type=int,
-        help='Clean items more than --days old (added to --hours)')
+        "--days", type=int,
+        help="Clean items more than --days old (added to --hours)")
     parser.add_argument(
-        '--hours', type=float,
-        help='Clean items more than --hours old (added to --days)')
+        "--hours", type=float,
+        help="Clean items more than --hours old (added to --days)")
     parser.add_argument(
-        '--filter',
+        "--filter",
         default="NOT tags.items:do-not-delete AND NOT name ~ ^default-route",
-        help='Filter down to these instances')
+        help="Filter down to these instances")
     parser.add_argument(
-        '--dryrun',
+        "--dryrun",
         default=False,
-        action='store_true',
-        help='list but not delete resources')
+        action="store_true",
+        help="list but not delete resources")
     args = parser.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
     if args.days is None and args.hours is None:
-        print >>sys.stderr, 'must specify --days and/or --hours'
+        print >>sys.stderr, "must specify --days and/or --hours"
         sys.exit(1)
 
     main(args.project, args.days or 0, args.hours or 0, args.filter)
