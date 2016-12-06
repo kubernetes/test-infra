@@ -227,7 +227,7 @@ func main() {
 	}
 
 	cooldown := 0
-	// Loop endless, sleeping a minute between iterations
+	// Loop endlessly, sleeping a minute between iterations
 	for range time.Tick(1 * time.Minute) {
 		// List batch jobs, only start a new one if none are active.
 		currentJobs, err := kc.ListJobs(map[string]string{"type": "batch"})
@@ -235,8 +235,17 @@ func main() {
 			log.WithError(err).Error("Error listing batch jobs.")
 			continue
 		}
+
+		// Track successful batch runs -- we don't need to repeat them.
+		succeeded := make(map[string]bool)
+
 		running := []string{}
 		for _, job := range currentJobs {
+			if job.Status.Succeeded == 1 {
+				ref := job.Metadata.Annotations["refs"]
+				context := job.Metadata.Annotations["context"]
+				succeeded[ref+context] = true
+			}
 			if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
 				running = append(running, job.Metadata.Labels["jenkins-job-name"])
 			}
@@ -276,6 +285,10 @@ func main() {
 				continue
 			}
 			if job.AlwaysRun {
+				if succeeded[buildReq.GetRefs()+job.Context] {
+					log.Infof("not triggering job %v (already succeeded previously)", job.Name)
+					continue
+				}
 				if err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
 					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
 				}
