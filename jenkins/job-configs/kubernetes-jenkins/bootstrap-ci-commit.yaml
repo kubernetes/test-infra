@@ -121,6 +121,13 @@
         repo-name: k8s.io/kubernetes
         commit-frequency: 'H/5 * * * *'
 
+    - kubernetes-federation-build-soak:
+        branch: master
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        job-name: ci-kubernetes-federation-build-soak
+        repo-name: k8s.io/kubernetes
+        commit-frequency: 'H 23 * * *'
+
     - kubernetes-build-debian-unstable:
         branch: master
         giturl: 'https://github.com/kubernetes/release'
