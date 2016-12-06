@@ -325,3 +325,16 @@ func (c *Client) PatchJobStatus(name string, job Job) (Job, error) {
 	}
 	return retJob, nil
 }
+
+func (c *Client) ReplaceSecret(name string, s Secret) error {
+	// Ommission of the secret from the logs is purposeful.
+	c.log("ReplaceSecret", name)
+	b, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	buf := bytes.NewBuffer(b)
+	path := fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", c.namespace, name)
+	_, err = c.request(http.MethodPut, path, nil, buf)
+	return err
+}

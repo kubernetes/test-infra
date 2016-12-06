@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors All rights reserved.
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: ing
-  annotations:
-    "kubernetes.io/ingress.global-static-ip-name": prow
-spec:
-  rules:
-  - host: prow.k8s.io
-    http:
-      paths:
-      - path: /*
-        backend:
-          serviceName: deck
-          servicePort: 80
-      - path: /hook
-        backend:
-          serviceName: hook
-          servicePort: 8888
-      - path: /.well-known/*
-        backend:
-          serviceName: marque
-          servicePort: 80
+FROM alpine:3.4
+MAINTAINER spxtr@google.com
+
+RUN apk update && apk add --no-cache certbot
+
+COPY marque /marque
+ENTRYPOINT ["/marque"]
