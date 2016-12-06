@@ -122,6 +122,13 @@ class SubprocessTest(unittest.TestCase):
         self.assertEquals(
             'hello world\n', bootstrap.call(cmd, output=True))
 
+    def testZombie(self):
+        with self.assertRaises(subprocess.CalledProcessError) as cpe:
+            # make a zombie
+            bootstrap.call(['/bin/bash', '-c', 'A=$BASHPID && ( kill -STOP $A ) & exit 1'])
+
+
+
 class CheckoutTest(unittest.TestCase):
     """Tests for checkout()."""
 
