@@ -71,6 +71,14 @@ type BuildRequest struct {
 	Pulls []Pull
 }
 
+func (b BuildRequest) GetRefs() string {
+	rs := []string{fmt.Sprintf("%s:%s", b.BaseRef, b.BaseSHA)}
+	for _, pull := range b.Pulls {
+		rs = append(rs, fmt.Sprintf("%d:%s", pull.Number, pull.SHA))
+	}
+	return strings.Join(rs, ",")
+}
+
 func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, baseSHA string) error {
 	br := BuildRequest{
 		Org:  pr.Base.Repo.Owner.Login,
@@ -95,11 +103,7 @@ func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
 }
 
 func startJob(k startClient, jobName, context string, br BuildRequest) error {
-	rs := []string{fmt.Sprintf("%s:%s", br.BaseRef, br.BaseSHA)}
-	for _, pull := range br.Pulls {
-		rs = append(rs, fmt.Sprintf("%d:%s", pull.Number, pull.SHA))
-	}
-	refs := strings.Join(rs, ",")
+	refs := br.GetRefs()
 
 	labels := map[string]string{
 		"owner":            br.Org,
