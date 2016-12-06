@@ -84,10 +84,6 @@
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-cri
         repo-name: 'k8s.io/kubernetes'
-    - kubernetes-e2e-gce-gci:
-        max-total: 12
-        job-name: pull-kubernetes-e2e-gce-gci
-        repo-name: 'k8s.io/kubernetes'
     - kubernetes-e2e-gce-etcd3:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-etcd3
