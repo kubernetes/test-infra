@@ -1067,6 +1067,44 @@ class JobTest(unittest.TestCase):
             self.assertTrue(job_name)
             self.assertEquals(job_name, real_job.get('job-name'))
 
+    def testValidTimeout(self):
+        """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
+        default_timeout = int(re.search(r'\$\{DOCKER_TIMEOUT:-(\d+)m', open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()).group(1))
+        bad_jobs = set()
+        for job, job_path in self.jobs:
+            valids = [
+                'kubernetes-e2e-',
+                'kubernetes-kubemark-',
+                'kubernetes-soak-',
+                'kops-e2e-',
+            ]
+
+            if not re.search('|'.join(valids), job):
+                continue
+            found_timeout = False
+            with open(job_path) as fp:
+                lines = list(l for l in fp if not l.startswith('#'))
+            docker_timeout = default_timeout - 15
+            for line in lines:
+                if line.startswith('### Reporting'):
+                    bad_jobs.add(job)
+                if '{rc}' in line:
+                    bad_jobs.add(job)
+                if line.startswith('export DOCKER_TIMEOUT='):
+                    docker_timeout = int(re.match(
+                        r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
+                    docker_timeout -= 15
+
+                if 'KUBEKINS_TIMEOUT=' not in line:
+                    continue
+                found_timeout = True
+                mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
+                self.assertTrue(mat, line)
+                if int(mat.group(1)) > docker_timeout:
+                    bad_jobs.add(job)
+            self.assertTrue(found_timeout, job)
+        self.assertFalse(bad_jobs)
+
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
