@@ -12,26 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
-kind: Ingress
+apiVersion: v1
+kind: Service
 metadata:
-  name: ing
-  annotations:
-    "kubernetes.io/ingress.global-static-ip-name": prow
+  name: marque
 spec:
-  rules:
-  - host: prow.k8s.io
-    http:
-      paths:
-      - path: /*
-        backend:
-          serviceName: deck
-          servicePort: 80
-      - path: /hook
-        backend:
-          serviceName: hook
-          servicePort: 8888
-      - path: /.well-known/*
-        backend:
-          serviceName: marque
-          servicePort: 80
+  selector:
+    app: marque
+  ports:
+  - port: 80
+  type: NodePort

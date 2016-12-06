@@ -30,6 +30,11 @@ type ObjectMeta struct {
 	UID             string `json:"uid,omitempty"`
 }
 
+type Secret struct {
+	Metadata ObjectMeta        `json:"metadata,omitempty"`
+	Data     map[string]string `json:"data,omitempty"`
+}
+
 type Job struct {
 	Metadata ObjectMeta `json:"metadata,omitempty"`
 	Spec     JobSpec    `json:"spec,omitempty"`
