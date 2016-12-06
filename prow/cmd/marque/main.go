@@ -72,6 +72,7 @@ func generate(root string) error {
 	args := []string{
 		"certonly",
 		"--agree-tos",
+		"--email", "spxtr@google.com",
 		"--non-interactive",
 		"--webroot",
 		"-w", root,
