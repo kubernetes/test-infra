@@ -120,14 +120,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: kubernetes-e2e-gce-examples
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-examples
-- name: kubernetes-federation-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
-- name: kubernetes-federation-build-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
-- name: kubernetes-federation-build-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
-- name: kubernetes-federation-build-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-soak
 - name: kubernetes-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
 - name: kubernetes-e2e-gci-gce-federation
@@ -140,6 +132,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-deploy
 - name: kubernetes-soak-gce-federation-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
+- name: kubernetes-federation-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
+- name: kubernetes-federation-build-1.4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
+- name: kubernetes-federation-build-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
+- name: kubernetes-federation-build-soak
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-soak
 - name: kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 - name: kubernetes-e2e-gci-gce-flaky
@@ -1775,14 +1775,6 @@ dashboards:
 
 - name: google-federation
   dashboard_tab:
-  - name: federation-build
-    test_group_name: kubernetes-federation-build
-  - name: federation-build-1.4
-    test_group_name: kubernetes-federation-build-1.4
-  - name: federation-build-1.5
-    test_group_name: kubernetes-federation-build-1.5
-  - name: federation-build-soak
-    test_group_name: kubernetes-federation-build-soak
   - name: gce-federation
     test_group_name: kubernetes-e2e-gce-federation
   - name: gci-federation
@@ -1795,6 +1787,14 @@ dashboards:
     test_group_name: kubernetes-soak-gce-federation-deploy
   - name: soak-gce-federation-test
     test_group_name: kubernetes-soak-gce-federation-test
+  - name: federation-build
+    test_group_name: kubernetes-federation-build
+  - name: federation-build-1.4
+    test_group_name: kubernetes-federation-build-1.4
+  - name: federation-build-1.5
+    test_group_name: kubernetes-federation-build-1.5
+  - name: federation-build-soak
+    test_group_name: kubernetes-federation-build-soak
 
 - name: release-1.5-all
   dashboard_tab:
