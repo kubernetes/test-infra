@@ -1116,7 +1116,7 @@ class JobTest(unittest.TestCase):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.sh', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
@@ -1130,18 +1130,18 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-cluster.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-deploy.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-teardown.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-cluster.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-deploy.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.5.env': 'ci-kubernetes-federation-1.5-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
-            'ci-kubernetes-e2e-gce-federation.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.5.sh': 'ci-kubernetes-federation-1.5-*',
             'ci-kubernetes-federation-build-1.4.sh': 'ci-kubernetes-federation-1.4-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.4.sh': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
         }

@@ -633,6 +633,8 @@ def setup_magic_environment(job):
 
 def job_script(job):
     """Return path to script for job."""
+    if job.startswith('ci-kubernetes-e2e-'):
+        return test_infra('jobs/%s.env' % job)
     return test_infra('jobs/%s.sh' % job)
 
 
