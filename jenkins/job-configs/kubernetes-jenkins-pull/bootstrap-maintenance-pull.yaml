@@ -44,7 +44,11 @@
         repo-name: 'k8s.io/test-infra'
     - janitor:
         branch: master
-        frequency: '0 */3 * * *'
+        frequency: 'H */3 * * *'
         job-name: maintenance-pull-janitor
         repo-name: 'k8s.io/test-infra'
-
+    - aws-janitor:
+        branch: master
+        frequency: 'H * * * *'
+        job-name: maintenance-aws-janitor
+        repo-name: 'k8s.io/test-infra'

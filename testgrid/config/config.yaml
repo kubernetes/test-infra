@@ -863,6 +863,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-all-hourly
 - name: maintenance-ci-clean-projects
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-clean-projects
+- name: maintenance-pull-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
+- name: maintenance-aws-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-aws-janitor
 - name: kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-gci-staging-parallel-release-1.2
@@ -2144,3 +2148,7 @@ dashboards:
     test_group_name: testgrid-config-upload
   - name: test-history
     test_group_name: test-infra-test-history
+  - name: gce-janitor
+    test_group_name: maintenance-pull-janitor
+  - name: aws-janitor
+    test_group_name: maintenance-aws-janitor
