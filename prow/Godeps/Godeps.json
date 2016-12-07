@@ -7,6 +7,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/NYTimes/gziphandler",
+			"Rev": "172fbbbb329cf7e031dd3ab35766186fc2081eab"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.10.0-28-ga283a10",
 			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
