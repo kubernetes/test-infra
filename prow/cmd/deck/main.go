@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
@@ -45,23 +46,25 @@ func main() {
 	}
 	ja.Start()
 
-	http.Handle("/", http.FileServer(http.Dir("/static")))
-	http.HandleFunc("/data.js", func(w http.ResponseWriter, r *http.Request) {
-		jobs := ja.Jobs()
-		jd, err := json.Marshal(jobs)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling jobs.")
-			jd = []byte("[]")
-		}
-		// If we have a "var" query, then write out "var value = {...};".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
-		} else {
-			fmt.Fprintf(w, string(jd))
-		}
-		w.Header().Set("Cache-Control", "no-cache")
-	})
+	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
+	http.Handle("/data.js", gziphandler.GzipHandler(http.HandlerFunc(handleData)))
 
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
+}
+
+func handleData(w http.ResponseWriter, r *http.Request) {
+	jobs := ja.Jobs()
+	jd, err := json.Marshal(jobs)
+	if err != nil {
+		logrus.WithError(err).Error("Error marshaling jobs.")
+		jd = []byte("[]")
+	}
+	// If we have a "var" query, then write out "var value = {...};".
+	// Otherwise, just write out the JSON.
+	if v := r.URL.Query().Get("var"); v != "" {
+		fmt.Fprintf(w, "var %s = %s;", v, string(jd))
+	} else {
+		fmt.Fprintf(w, string(jd))
+	}
+	w.Header().Set("Cache-Control", "no-cache")
 }
