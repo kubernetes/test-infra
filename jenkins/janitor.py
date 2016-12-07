@@ -28,15 +28,15 @@ from collections import namedtuple
 Resource = namedtuple('Resource', 'name condition status')
 DEMOLISH_ORDER = [
     # Beaware of insertion order
-    Resource("instances", "zone", None),
-    Resource("addresses", "region", None),
-    Resource("disks", "zone", None),
-    Resource("firewall-rules", None, None),
-    Resource("routes", None, None),
-    Resource("forwarding-rules", "region", None),
-    Resource("target-pools", "region", None),
-    Resource("instance-groups", "zone", "managed"),
-    Resource("instance-templates", None, None),
+    Resource('instances', 'zone', None),
+    Resource('addresses', 'region', None),
+    Resource('disks', 'zone', None),
+    Resource('firewall-rules', None, None),
+    Resource('routes', None, None),
+    Resource('forwarding-rules', 'region', None),
+    Resource('target-pools', 'region', None),
+    Resource('instance-groups', 'zone', 'managed'),
+    Resource('instance-templates', None, None),
 ]
 
 
@@ -62,23 +62,23 @@ def collect(project, age, resource, filt):
             '--project=%s' % project])):
 
         if not item['name'] or not item['creationTimestamp']:
-            print "[Warning] - Skip item without name or timestamp"
-            print "%s" % item
+            print '[Warning] - Skip item without name or timestamp'
+            print '%s' % item
             continue
         if resource.condition and not item[resource.condition]:
-            print "[Warning] - condition specified but not found"
+            print '[Warning] - condition specified but not found'
             continue
 
         if resource.condition:
             colname = item[resource.condition]
         else:
-            colname = ""
+            colname = ''
 
         # Unify datetime to use utc timezone.
-        created = datetime.datetime.strptime(item['creationTimestamp'],"%Y-%m-%dT%H:%M:%S")
-        print "Found %s, %s in %s, created time = %s" % (resource.name, item['name'], colname, item['creationTimestamp'])
+        created = datetime.datetime.strptime(item['creationTimestamp'],'%Y-%m-%dT%H:%M:%S')
+        print 'Found %s, %s in %s, created time = %s' % (resource.name, item['name'], colname, item['creationTimestamp'])
         if created < age:
-            print "Added to janitor list: %s, %s" % (resource.name, item['name'])
+            print 'Added to janitor list: %s, %s' % (resource.name, item['name'])
             col[colname].append(item['name'])
     return col
 
@@ -97,7 +97,7 @@ def clear_resources(project, col, resource):
     err = 0
     for col, items in col.items():
         if args.dryrun:
-            print "Resource type %s to be deleted: %s" % (resource.name, list(items))
+            print 'Resource type %s to be deleted: %s' % (resource.name, list(items))
             continue
 
         # construct the customized gcloud commend
@@ -109,10 +109,12 @@ def clear_resources(project, col, resource):
         if resource.condition:
             base.append('--%s=%s' % (resource.condition, col))
 
-        print "Try to kill %s - %s" % (col, list(items))
-        if subprocess.call(base + list(items)) != 0:
+        print 'Try to kill %s - %s' % (col, list(items))
+        try:
+            subprocess.check_call(base + list(items))
+        except subprocess.CalledProcessError as e:
             err = 1
-            print "Error try to delete %s - %s" % (col, list(items))
+            print >>sys.stderr, 'Error try to delete resources: %s' % e
     return err
 
 
@@ -120,7 +122,7 @@ def main(project, days, hours, filt):
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     for r in DEMOLISH_ORDER:
-        print "Try to search for %s with condition %s" % (r.name, r.condition)
+        print 'Try to search for %s with condition %s' % (r.name, r.condition)
         col = collect(project, age, r, filt)
         if col:
             err |= clear_resources(project, col, r)
@@ -139,7 +141,7 @@ if __name__ == '__main__':
         help='Clean items more than --hours old (added to --days)')
     parser.add_argument(
         '--filter',
-        default="NOT tags.items:do-not-delete AND NOT name ~ ^default-route",
+        default='NOT tags.items:do-not-delete AND NOT name ~ ^default-route',
         help='Filter down to these instances')
     parser.add_argument(
         '--dryrun',
