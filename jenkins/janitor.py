@@ -34,6 +34,7 @@ DEMOLISH_ORDER = [
     Resource('firewall-rules', None, None),
     Resource('routes', None, None),
     Resource('forwarding-rules', 'region', None),
+    Resource('backend-services', None, None),
     Resource('target-pools', 'region', None),
     Resource('instance-groups', 'zone', 'managed'),
     Resource('instance-templates', None, None),
