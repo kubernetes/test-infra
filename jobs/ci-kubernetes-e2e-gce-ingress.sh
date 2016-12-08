@@ -33,7 +33,7 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 ### job-env
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
 export PROJECT="kubernetes-ingress"
-# TODO: Enable this when we've split 1.2 tests into another project.
+# TODO: Enable this when we"ve split 1.2 tests into another project.
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export KUBE_NODE_OS_DISTRIBUTION="debian"
 
@@ -44,7 +44,7 @@ export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
 
-export E2E_NAME='bootstrap-e2e'
+export E2E_NAME="bootstrap-e2e"
 
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true

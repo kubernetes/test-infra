@@ -20,8 +20,8 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
-export KUBE_FORCE_VERIFY_CHECKS='y'
-export KUBE_VERIFY_GIT_BRANCH='release-1.5'
+export KUBE_FORCE_VERIFY_CHECKS="y"
+export KUBE_VERIFY_GIT_BRANCH="release-1.5"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"

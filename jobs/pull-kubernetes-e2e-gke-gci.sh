@@ -44,7 +44,7 @@ else
   exit 1
 fi
 gsutil -m rsync -r "gs://kubernetes-release-pull/ci/${JOB_NAME}/${version}" "gs://kubernetes-release-dev/ci/${version}-pull-gke-gci"
-# Strip off the leading 'v' from the cluster version.
+# Strip off the leading "v" from the cluster version.
 export CLUSTER_API_VERSION="${version:1}-pull-gke-gci"
 
 export KUBERNETES_PROVIDER="gke"

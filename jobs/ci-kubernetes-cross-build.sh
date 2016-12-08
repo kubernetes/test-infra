@@ -22,7 +22,7 @@ readonly testinfra="$(dirname "${0}")/.."
 
 ### job-env
 export KUBE_FASTBUILD=false
-export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with 'kubernetes-build'
+export KUBE_GCS_RELEASE_SUFFIX=-cross  # to avoid colliding with "kubernetes-build"
 
 ### Runner
 readonly runner="./hack/jenkins/build.sh"

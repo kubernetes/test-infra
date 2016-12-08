@@ -20,7 +20,7 @@ set -o pipefail
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-#bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
+#bazel test --test_output=errors --test_tag_filters "-skip" //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
 bazel build //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
 case "${rc}" in
     0) echo "Success" ;;

@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-export OWNER='pszczesniak@google.com'
+export OWNER="pszczesniak@google.com"
 # PROJECT="ci-heapster-does-not-use-a-project"
 TARGET="kubernetes/heapster:canary"
 FILE="deploy/docker/canary/Dockerfile"

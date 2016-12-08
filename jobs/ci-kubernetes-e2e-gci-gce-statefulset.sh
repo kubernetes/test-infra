@@ -33,7 +33,7 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 ### job-env
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:StatefulSet\]"
 export PROJECT="kubernetes-gci-petset"
-export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we've fixed #23032
+export FAIL_ON_GCP_RESOURCE_LEAK="false"  # TODO: Enable once we"ve fixed #23032
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### post-env
@@ -43,7 +43,7 @@ export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
 
-export E2E_NAME='bootstrap-e2e'
+export E2E_NAME="bootstrap-e2e"
 
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
