@@ -87,6 +87,14 @@ func TestReleaseNoteComment(t *testing.T) {
 
 			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteNone},
 		},
+		{
+			name:       "no label present",
+			action:     "created",
+			isReviewer: true,
+			body:       "/release-note-none",
+
+			addedLabel: releaseNoteNone,
+		},
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
