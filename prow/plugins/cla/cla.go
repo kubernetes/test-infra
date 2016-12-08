@@ -19,6 +19,7 @@ package cla
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 
@@ -48,6 +49,7 @@ Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  T
 %s
 </details>
 	`
+	maxRetries = 5
 )
 
 func init() {
@@ -89,9 +91,18 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	org := se.Repo.Owner.Login
 	repo := se.Repo.Name
 	log.Info("Searching for PRs matching the commit.")
-	issues, err := gc.FindIssues(url.QueryEscape(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo)))
-	if err != nil {
-		return fmt.Errorf("error searching for issues matching commit: %v", err)
+
+	var issues []github.Issue
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		issues, err = gc.FindIssues(url.QueryEscape(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo)))
+		if err != nil {
+			return fmt.Errorf("error searching for issues matching commit: %v", err)
+		}
+		if len(issues) > 0 {
+			break
+		}
+		time.Sleep(10 * time.Second)
 	}
 	log.Infof("Found %d PRs matching commit.", len(issues))
 
