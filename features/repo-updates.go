@@ -304,7 +304,7 @@ func (o *RepoInfo) LeafAssignees(path string) sets.String {
 	return peopleForPath(path, o.assignees, true, o.EnableMdYaml)
 }
 
-// Assignees returns a set of users who are the closest assignees to the
+// Assignees returns a set of all users who are assignees to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Assignees(path string) sets.String {
