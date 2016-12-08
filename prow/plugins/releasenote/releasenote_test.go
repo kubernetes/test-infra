@@ -72,6 +72,21 @@ func TestReleaseNoteComment(t *testing.T) {
 
 			shouldComment: true,
 		},
+		{
+			name:          "already has release-note",
+			action:        "created",
+			body:          "/release-note",
+			currentLabels: []string{releaseNote, "other"},
+		},
+		{
+			name:          "delete multiple labels",
+			action:        "created",
+			isReviewer:    true,
+			body:          "/release-note",
+			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteNone, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteNone},
+		},
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
