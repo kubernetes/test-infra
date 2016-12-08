@@ -48,7 +48,7 @@ create-cluster:
 	kubectl create secret generic hmac-token --from-file=hmac=$(HOOK_SECRET_FILE)
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
-	kubectl create secret generic service-account --from-file=service-account.json=$(JENKINS_SECRET_FILE)
+	kubectl create secret generic service-account --from-file=service-account.json=$(SERVICE_ACCOUNT_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
 	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml
