@@ -1,0 +1,10 @@
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+readonly testinfra="$(dirname "${0}")/.."
+                         --ginkgo.skip=\[Feature:.+\]"
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+export DOCKER_TIMEOUT="320m"
+export KUBEKINS_TIMEOUT="300m"
+"${runner}"
