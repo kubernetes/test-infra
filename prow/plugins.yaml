@@ -16,6 +16,7 @@ kubernetes/kops:
 
 kubernetes/kubernetes:
 - trigger
+- release-note
 
 kubernetes/test-infra:
 - trigger
