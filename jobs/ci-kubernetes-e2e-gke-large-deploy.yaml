@@ -1,0 +1,11 @@
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+readonly testinfra="$(dirname "${0}")/.."
+                         --allowed-not-ready-nodes=20 \
+                         --system-pods-startup-timeout=600m"
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+export DOCKER_TIMEOUT="620m"
+export KUBEKINS_TIMEOUT="600m"
+"${runner}"

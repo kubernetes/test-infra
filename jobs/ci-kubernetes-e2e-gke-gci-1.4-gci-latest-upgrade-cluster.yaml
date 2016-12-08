@@ -1,0 +1,16 @@
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+readonly testinfra="$(dirname "${0}")/.."
+readonly version_old='1.4'
+readonly version_new='latest'
+readonly version_infix='g1-4-glat'
+readonly image_old='gci'
+readonly image_new='gci'
+[ "${version_new}" = "latest" ] && JENKINS_PUBLISHED_SKEW_VERSION="ci/latest"
+[ "${version_old}" = "latest" ] && JENKINS_PUBLISHED_VERSION="ci/latest"
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+export DOCKER_TIMEOUT="620m"
+export KUBEKINS_TIMEOUT="600m"
+"${runner}"

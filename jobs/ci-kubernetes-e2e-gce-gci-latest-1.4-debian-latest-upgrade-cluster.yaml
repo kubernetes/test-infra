@@ -1,0 +1,14 @@
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+readonly testinfra="$(dirname "${0}")/.."
+readonly version_old="latest-1.4"
+readonly version_new="latest"
+readonly version_infix="g1-4-clat"
+readonly image_old="gci"
+readonly image_new="debian"
+readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+export DOCKER_TIMEOUT="620m"
+export KUBEKINS_TIMEOUT="600m"
+"${runner}"
