@@ -46,6 +46,7 @@ Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  T
 <!-- need_sender_cla -->
 
 <details>
+
 %s
 </details>
 	`
