@@ -70,6 +70,6 @@ export GINKGO_PARALLEL="y"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="260m"
-export KUBEKINS_TIMEOUT="240m"
+export DOCKER_TIMEOUT="140m"
+export KUBEKINS_TIMEOUT="120m"
 "${runner}"
