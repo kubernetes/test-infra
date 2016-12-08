@@ -36,6 +36,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/cla"
 	_ "k8s.io/test-infra/prow/plugins/close"
 	_ "k8s.io/test-infra/prow/plugins/lgtm"
+	_ "k8s.io/test-infra/prow/plugins/releasenote"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 )
 
