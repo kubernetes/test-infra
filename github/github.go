@@ -63,6 +63,7 @@ var (
 	priorityLabelRE    = regexp.MustCompile(`priority/[pP]([\d]+)`)
 	fixesIssueRE       = regexp.MustCompile(`(?i)(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[\s]+#([\d]+)`)
 	reviewableFooterRE = regexp.MustCompile(`(?s)<!-- Reviewable:start -->.*<!-- Reviewable:end -->`)
+	htmlCommentRE      = regexp.MustCompile(`(?s)<!--[^<>]*?-->\n?`)
 	maxTime            = time.Unix(1<<63-62135596801, 999999999) // http://stackoverflow.com/questions/25065055/what-is-the-maximum-time-time-in-go
 
 	// How long we locally cache the combined status of an object. We will not
@@ -1635,6 +1636,7 @@ func (obj *MungeObject) MergeCommit() *string {
 // including Reviewable footers and extra whitespace.
 func cleanIssueBody(issueBody string) string {
 	issueBody = reviewableFooterRE.ReplaceAllString(issueBody, "")
+	issueBody = htmlCommentRE.ReplaceAllString(issueBody, "")
 	return strings.TrimSpace(issueBody)
 }
 
