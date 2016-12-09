@@ -18,6 +18,7 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -86,6 +87,14 @@ func TestHandleLog(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 		if rr.Code != tc.code {
 			t.Errorf("Wrong error code. Got %v, want %v", rr.Code, tc.code)
+		} else if rr.Code == http.StatusOK {
+			resp := rr.Result()
+			defer resp.Body.Close()
+			if body, err := ioutil.ReadAll(resp.Body); err != nil {
+				t.Errorf("Error reading response body: %v", err)
+			} else if string(body) != "hello" {
+				t.Errorf("Unexpected body: got %s.", string(body))
+			}
 		}
 	}
 }

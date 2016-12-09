@@ -57,6 +57,7 @@ func main() {
 
 func handleData(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
 		jobs := ja.Jobs()
 		jd, err := json.Marshal(jobs)
 		if err != nil {
@@ -70,7 +71,6 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 		} else {
 			fmt.Fprintf(w, string(jd))
 		}
-		w.Header().Set("Cache-Control", "no-cache")
 	}
 }
 
@@ -81,6 +81,7 @@ type logClient interface {
 // TODO(spxtr): Cache, rate limit, and limit which pods can be logged.
 func handleLog(kc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
 		pod := r.URL.Query().Get("pod")
 		if !podReg.MatchString(pod) {
 			http.Error(w, "Invalid pod query", http.StatusBadRequest)
@@ -92,7 +93,8 @@ func handleLog(kc logClient) http.HandlerFunc {
 			logrus.WithError(err).Warning("Error returned.")
 			return
 		}
-		fmt.Fprint(w, log)
-		w.Header().Set("Cache-Control", "no-cache")
+		if _, err = w.Write(log); err != nil {
+			logrus.WithError(err).Warning("Error writing log.")
+		}
 	}
 }
