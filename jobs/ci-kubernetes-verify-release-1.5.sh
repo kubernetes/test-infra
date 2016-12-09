@@ -23,12 +23,12 @@ readonly remote="bootstrap-upstream"
 
 rm -rf .gsutil  # This causes verify flags to fail...
 git remote remove "${remote}" || true
-git remote add "${remote}" 'https://github.com/kubernetes/kubernetes.git'
+git remote add "${remote}" "https://github.com/kubernetes/kubernetes.git"
 git remote set-url --push "${remote}" no_push
 # If .git is cached between runs this data may be stale
 git fetch "${remote}"  # fetch branches
-export KUBE_FORCE_VERIFY_CHECKS='y'
-export KUBE_VERIFY_GIT_BRANCH='release-1.5'
+export KUBE_FORCE_VERIFY_CHECKS="y"
+export KUBE_VERIFY_GIT_BRANCH="release-1.5"
 export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
 
 ### Runner

@@ -31,11 +31,11 @@ export KUBERNETES_PROVIDER="gke"
 # expected empty
 
 ### job-env
-readonly version_old='1.2'
-readonly version_new='1.3'
-readonly version_infix='g1-2-c1-3'
-readonly image_old='gci'
-readonly image_new='container_vm'
+readonly version_old="1.2"
+readonly version_new="1.3"
+readonly version_infix="g1-2-c1-3"
+readonly image_old="gci"
+readonly image_new="container_vm"
 
 
 export E2E_OPT="--check_version_skew=false"
@@ -60,7 +60,7 @@ export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
 
-export E2E_NAME='bootstrap-e2e'
+export E2E_NAME="bootstrap-e2e"
 
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
