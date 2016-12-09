@@ -11,7 +11,7 @@ spec:
     spec:  # Override with production targets
       containers:
       - name: grapher
-        image: gcr.io/google-containers/queue-health-graph:v20161201
+        image: gcr.io/google-containers/queue-health-graph:v20161209
         command:
         - python
         - /graph.py
