@@ -338,3 +338,9 @@ func (c *Client) ReplaceSecret(name string, s Secret) error {
 	_, err = c.request(http.MethodPut, path, nil, buf)
 	return err
 }
+
+func (c *Client) GetLog(pod string) ([]byte, error) {
+	c.log("GetLog", pod)
+	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod)
+	return c.request(http.MethodGet, path, nil, nil)
+}

@@ -49,6 +49,7 @@ type Job struct {
 	State       string `json:"state"`
 	Description string `json:"description"`
 	URL         string `json:"url"`
+	PodName     string `json:"pod_name"`
 
 	st time.Time
 	ft time.Time
@@ -111,6 +112,7 @@ func (ja *JobAgent) update() error {
 			State:       j.Metadata.Annotations["state"],
 			Description: j.Metadata.Annotations["description"],
 			URL:         j.Metadata.Annotations["url"],
+			PodName:     j.Metadata.Annotations["pod-name"],
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,

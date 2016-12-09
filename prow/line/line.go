@@ -321,7 +321,7 @@ func deleteKubeJob(k deleteClient, job kube.Job) error {
 	return nil
 }
 
-func SetJobStatus(k *kube.Client, jobName, state, desc, url string) error {
+func SetJobStatus(k *kube.Client, podName, jobName, state, desc, url string) error {
 	j, err := k.GetJob(jobName)
 	if err != nil {
 		return err
@@ -330,6 +330,7 @@ func SetJobStatus(k *kube.Client, jobName, state, desc, url string) error {
 	if newAnnotations == nil {
 		newAnnotations = make(map[string]string)
 	}
+	newAnnotations["pod-name"] = podName
 	newAnnotations["state"] = state
 	newAnnotations["description"] = desc
 	newAnnotations["url"] = url
