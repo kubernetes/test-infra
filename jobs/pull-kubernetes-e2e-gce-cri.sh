@@ -60,8 +60,8 @@ export NUM_NODES="3"
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
-# Enable experimental CRI integration
-export KUBELET_TEST_ARGS="--experimental-cri=true"
+# Set variables for CRI.
+source "${testinfra}/jobs/cri-config.sh"
 
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"

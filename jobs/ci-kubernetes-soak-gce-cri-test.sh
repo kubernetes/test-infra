@@ -45,8 +45,9 @@ export DOCKER_TEST_LOG_LEVEL="--log-level=warn"
 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
 
 ### job-env
-export PROJECT="k8s-jkns-gce-cri-soak"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
+
+# Set variables for CRI.
+source "${testinfra}/jobs/cri-config.sh"
 
 ### post-env
 

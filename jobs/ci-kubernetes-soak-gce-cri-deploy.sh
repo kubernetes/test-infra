@@ -36,8 +36,9 @@ export E2E_TEST="false"
 export E2E_DOWN="false"
 
 ### job-env
-export PROJECT="k8s-jkns-gce-cri-soak"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
+
+# Set variables for CRI.
+source "${testinfra}/jobs/cri-config.sh"
 
 ### post-env
 

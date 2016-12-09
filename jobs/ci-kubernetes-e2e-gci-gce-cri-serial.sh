@@ -36,8 +36,9 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
 export PROJECT="jkns-e2e-cri-serial-validation" # kubernetes-e2e-cri-serial-validation exceeds the length limit.
 export KUBE_NODE_OS_DISTRIBUTION="gci"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
-export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
+
+# Set variables for CRI.
+source "${testinfra}/jobs/cri-config.sh"
 
 ### post-env
 
