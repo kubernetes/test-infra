@@ -249,7 +249,7 @@ func TestGetReleaseNote(t *testing.T) {
 			expectedReleaseNoteVariable: releaseNoteNone,
 		},
 		{
-			body:                        "**Release note**:\n\n ```NONE```",
+			body:                        "**Release note**:\n\n ```\nNONE\n```",
 			expectedReleaseNote:         "NONE",
 			expectedReleaseNoteVariable: releaseNoteNone,
 		},
@@ -262,6 +262,16 @@ func TestGetReleaseNote(t *testing.T) {
 			body:                        "**Release note**: ```This is my feature. There is some action required for my feature.```",
 			expectedReleaseNote:         "This is my feature. There is some action required for my feature.",
 			expectedReleaseNoteVariable: releaseNoteActionRequired,
+		},
+		{
+			body:                        "```release-note\nsomething great.\n```",
+			expectedReleaseNote:         "something great.",
+			expectedReleaseNoteVariable: releaseNote,
+		},
+		{
+			body:                        "```release-note\nNONE\n```",
+			expectedReleaseNote:         "NONE",
+			expectedReleaseNoteVariable: releaseNoteNone,
 		},
 		{
 			body:                        "",
