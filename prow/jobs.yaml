@@ -199,7 +199,7 @@ kubernetes/test-infra:
       role: build
     containers:
     - name: builder
-      image: gcr.io/k8s-testimages/test-infra-go-test:0.1
+      image: gcr.io/k8s-testimages/test-infra-go-test:0.3
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
