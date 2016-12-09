@@ -254,7 +254,6 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
         for moments in happy_moments.values():
             moments.append(int(bool(online and not blocked)))
 
-
         for val in real_merges.values():
             val += did_merge
         if queue or did_merge:
@@ -278,6 +277,10 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
         if start_blocked and not blocked:
             results.blocked_intervals.append((start_blocked, tick))
             start_blocked = None
+    if tick and not online:
+        tick = datetime.datetime.utcnow()
+        results.append(
+            tick, 0, pulls, queue, real_merges, active_merges, happy_moments)
     if start_blocked:
         results.blocked_intervals.append((start_blocked, tick))
     if start_offline:
