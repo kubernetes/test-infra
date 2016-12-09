@@ -195,9 +195,9 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name !== "") {
-            r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name)
+            r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name));
         } else {
-            r.appendChild(createTextCell("")
+            r.appendChild(createTextCell(""));
         }
         r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
         if (build.type == "batch") {
