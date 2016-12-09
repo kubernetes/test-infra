@@ -223,6 +223,7 @@ type analytics struct {
 	SetStatus            analytic
 	GetPR                analytic
 	AssignPR             analytic
+	UnassignPR           analytic
 	ClosePR              analytic
 	OpenPR               analytic
 	GetContents          analytic
@@ -1496,6 +1497,22 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, error) {
 	}
 	obj.pr = pr
 	return pr, nil
+}
+
+// UnassignPR removes the passed-in assignees from the github PR's assignees list
+func (obj *MungeObject) UnassignPR(assignees ...string) error {
+	config := obj.config
+	prNum := *obj.Issue.Number
+	config.analytics.UnassignPR.Call(config, nil)
+	glog.Infof("Unassigning %v from PR# %d  to %v", assignees, prNum)
+	if config.DryRun {
+		return nil
+	}
+	if _, _, err := config.client.Issues.RemoveAssignees(config.Org, config.Project, prNum, assignees); err != nil {
+		glog.Errorf("Error unassigning %v from PR# %d  to %v", assignees, prNum)
+		return err
+	}
+	return nil
 }
 
 // AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
