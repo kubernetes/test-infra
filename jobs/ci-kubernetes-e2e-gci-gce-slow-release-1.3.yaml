@@ -1,10 +1,4 @@
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-readonly testinfra="$(dirname "${0}")/.."
-                         --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="170m"
-export KUBEKINS_TIMEOUT="150m"
-"${runner}"
+runner: ${testinfra}/jenkins/dockerized-e2e-runner.sh
+docker_timeout: 170
+kubekins_timeout: 0
+env: ci-kubernetes-e2e-gci-gce-slow-release-1.3.env

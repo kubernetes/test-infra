@@ -1,16 +1,4 @@
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-readonly testinfra="$(dirname "${0}")/.."
-readonly version_old='1.2'
-readonly version_new='1.4'
-readonly version_infix='c1-2-g1-4'
-readonly image_old='container_vm'
-readonly image_new='gci'
-[ "${version_new}" = "latest" ] && JENKINS_PUBLISHED_SKEW_VERSION="ci/latest"
-[ "${version_old}" = "latest" ] && JENKINS_PUBLISHED_VERSION="ci/latest"
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="620m"
-export KUBEKINS_TIMEOUT="600m"
-"${runner}"
+runner: ${testinfra}/jenkins/dockerized-e2e-runner.sh
+docker_timeout: 620
+kubekins_timeout: 0
+env: ci-kubernetes-e2e-gke-container_vm-1.2-gci-1.4-upgrade-cluster.env

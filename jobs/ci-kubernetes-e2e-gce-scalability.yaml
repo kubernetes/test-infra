@@ -1,15 +1,4 @@
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-readonly testinfra="$(dirname "${0}")/.."
-                         --kube-api-content-type=application/vnd.kubernetes.protobuf \
-                         --allowed-not-ready-nodes=1 \
-                         --gather-resource-usage=true \
-                         --gather-metrics-at-teardown=true \
-                         --gather-logs-sizes=true \
-                         --output-print-type=json"
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="140m"
-export KUBEKINS_TIMEOUT="120m"
-"${runner}"
+runner: ${testinfra}/jenkins/dockerized-e2e-runner.sh
+docker_timeout: 140
+kubekins_timeout: 0
+env: ci-kubernetes-e2e-gce-scalability.env

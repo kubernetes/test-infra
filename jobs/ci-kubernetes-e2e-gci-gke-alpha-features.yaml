@@ -1,9 +1,4 @@
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-readonly testinfra="$(dirname "${0}")/.."
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="200m"
-export KUBEKINS_TIMEOUT="180m"
-"${runner}"
+runner: ${testinfra}/jenkins/dockerized-e2e-runner.sh
+docker_timeout: 200
+kubekins_timeout: 0
+env: ci-kubernetes-e2e-gci-gke-alpha-features.env
