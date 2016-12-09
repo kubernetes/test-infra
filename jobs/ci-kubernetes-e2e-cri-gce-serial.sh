@@ -31,13 +31,14 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
+export KUBELET_TEST_ARGS="--experimental-cri=true"
+export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
+
 export ENABLE_GARBAGE_COLLECTOR="true"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Serial\]|\[Disruptive\] \
                          --ginkgo.skip=\[Flaky\]|\[Feature:.+\]"
-export PROJECT="jkns-e2e-cri-serial-validation" # kubernetes-e2e-cri-serial-validation exceeds the length limit.
-export KUBE_NODE_OS_DISTRIBUTION="gci"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
-export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
+export PROJECT="jkns-e2e-cri-serial-validation"
+export KUBE_OS_DISTRIBUTION="gci"
 
 ### post-env
 

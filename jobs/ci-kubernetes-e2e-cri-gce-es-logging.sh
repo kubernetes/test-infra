@@ -31,15 +31,13 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
-# Temporarily skip the test "Network should set TCP CLOSE_WAIT timeout" because it relies
-# on host port, which is not implemented in CRI integration yet.
-# TODO(random-liu): Re-enable the test.
-export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout"
-export PROJECT="kubernetes-e2e-cri-validation"
-export GINKGO_PARALLEL="y"
-export KUBE_NODE_OS_DISTRIBUTION="gci"
 export KUBELET_TEST_ARGS="--experimental-cri=true"
 export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
+
+export PROJECT="k8s-jkns-cri-es-logging"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Elasticsearch\]"
+export KUBE_LOGGING_DESTINATION="elasticsearch"
+export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 ### post-env
 
