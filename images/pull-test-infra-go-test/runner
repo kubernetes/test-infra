@@ -19,4 +19,4 @@ set -o nounset
 set -o pipefail
 
 git clone https://github.com/kubernetes/test-infra
-./test-infra/jenkins/bootstrap.py --repo=k8s.io/test-infra --pull="${PULL_NUMBER}" --job=pull-test-infra-prow-test
+./test-infra/jenkins/bootstrap.py --repo=k8s.io/test-infra --pull="${PULL_NUMBER}" --job=pull-test-infra-prow-test --root="${GOPATH}/src"
