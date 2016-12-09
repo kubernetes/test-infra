@@ -166,9 +166,10 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot (node )?(e2e )?test this"
 
 - name: pull-kubernetes-e2e-gce-cri
-  trigger: "@k8s-bot cri (e2e )?test this"
+  always_run: true
   context: Jenkins CRI GCE e2e
   rerun_command: "@k8s-bot cri e2e test this"
+  trigger: "@k8s-bot (cri e2e )?test this"
 
 - name: pull-kubernetes-node-e2e-cri
   always_run: true
