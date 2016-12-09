@@ -35,5 +35,5 @@ ENV GOROOT=/go GOPATH=/workspace PATH="${PATH}:${GOROOT}/bin:${GOPATH}/bin:/goog
 
 RUN mkdir -p /workspace
 WORKDIR /workspace
-ADD run /
-ENTRYPOINT ["/bin/bash", "/run"]
+ADD runner /
+ENTRYPOINT ["/bin/bash", "/runner"]

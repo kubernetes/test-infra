@@ -199,9 +199,7 @@ kubernetes/test-infra:
       role: build
     containers:
     - name: builder
-      image: gcr.io/k8s-testimages/test-infra-go-test:0.0
-      command: ["/bin/bash", "-c"]
-      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/kubernetes --pull=${PULL_REFS} --job=pull-test-infra-prow-test"]
+      image: gcr.io/k8s-testimages/test-infra-go-test:0.1
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
