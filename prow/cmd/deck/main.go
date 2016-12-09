@@ -33,7 +33,7 @@ const (
 )
 
 // Matches letters, numbers, hyphens, and underscores.
-var podReg = regexp.MustCompile(`(\w-)+`)
+var podReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -74,8 +74,12 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 	}
 }
 
+type logClient interface {
+	GetLog(name string) ([]byte, error)
+}
+
 // TODO(spxtr): Cache, rate limit, and limit which pods can be logged.
-func handleLog(kc *kube.Client) http.HandlerFunc {
+func handleLog(kc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pod := r.URL.Query().Get("pod")
 		if !podReg.MatchString(pod) {
