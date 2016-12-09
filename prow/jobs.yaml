@@ -182,24 +182,17 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot bootstrap (kubemark )?(e2e )?test this"
 
 kubernetes/test-infra:
-- name: pull-test-infra-go-test
-  always_run: true
-  context: Jenkins go test
-  rerun_command: "@k8s-bot go test this"
-  trigger: "@k8s-bot (go )?test this"
-
 - name: pull-test-infra-prow-test
   always_run: true
-  skip_report: true
-  context: prow test
-  rerun_command: "@k8s-bot prow test this"
-  trigger: "@k8s-bot (prow )?test this"
+  context: prow go test
+  rerun_command: "@k8s-bot go test this"
+  trigger: "@k8s-bot (go )?test this"
   spec:
     nodeSelector:
       role: build
     containers:
     - name: builder
-      image: gcr.io/k8s-testimages/test-infra-go-test:0.3
+      image: gcr.io/k8s-testimages/test-infra-go-test:0.4
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
