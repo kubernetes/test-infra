@@ -41,6 +41,11 @@ import yaml
 MAX_AGE = 60 * 60 * 24  # 1 day
 
 
+def pad_numbers(s):
+    """Modify a string to make its numbers suitable for natural sorting."""
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
+
+
 class GCSClient(object):
 
     def __init__(self, jobs_dir, metadata=None):
@@ -152,7 +157,7 @@ class GCSClient(object):
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
         return sorted((os.path.basename(os.path.dirname(b))
-                       for b in build_paths), key=int, reverse=True)
+                       for b in build_paths), key=pad_numbers, reverse=True)
 
     def _get_build_finish_time(self, job, build):
         data = self.get('%s%s/%s/finished.json' % (self.jobs_dir, job, build),
