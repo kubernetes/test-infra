@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/Sirupsen/logrus"
@@ -31,7 +32,8 @@ const (
 	namespace = "default"
 )
 
-var ja *JobAgent
+// Matches letters, numbers, hyphens, and underscores.
+var podReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -41,30 +43,56 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
 
-	ja = &JobAgent{
+	ja := &JobAgent{
 		kc: kc,
 	}
 	ja.Start()
 
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
-	http.Handle("/data.js", gziphandler.GzipHandler(http.HandlerFunc(handleData)))
+	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
+	http.Handle("/log", gziphandler.GzipHandler(handleLog(kc)))
 
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
 }
 
-func handleData(w http.ResponseWriter, r *http.Request) {
-	jobs := ja.Jobs()
-	jd, err := json.Marshal(jobs)
-	if err != nil {
-		logrus.WithError(err).Error("Error marshaling jobs.")
-		jd = []byte("[]")
+func handleData(ja *JobAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jobs := ja.Jobs()
+		jd, err := json.Marshal(jobs)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling jobs.")
+			jd = []byte("[]")
+		}
+		// If we have a "var" query, then write out "var value = {...};".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
+		} else {
+			fmt.Fprintf(w, string(jd))
+		}
+		w.Header().Set("Cache-Control", "no-cache")
 	}
-	// If we have a "var" query, then write out "var value = {...};".
-	// Otherwise, just write out the JSON.
-	if v := r.URL.Query().Get("var"); v != "" {
-		fmt.Fprintf(w, "var %s = %s;", v, string(jd))
-	} else {
-		fmt.Fprintf(w, string(jd))
+}
+
+type logClient interface {
+	GetLog(name string) ([]byte, error)
+}
+
+// TODO(spxtr): Cache, rate limit, and limit which pods can be logged.
+func handleLog(kc logClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pod := r.URL.Query().Get("pod")
+		if !podReg.MatchString(pod) {
+			http.Error(w, "Invalid pod query", http.StatusBadRequest)
+			return
+		}
+		log, err := kc.GetLog(pod)
+		if err != nil {
+			http.Error(w, "Log not found", http.StatusNotFound)
+			logrus.WithError(err).Warning("Error returned.")
+			return
+		}
+		fmt.Fprint(w, log)
+		w.Header().Set("Cache-Control", "no-cache")
 	}
-	w.Header().Set("Cache-Control", "no-cache")
 }

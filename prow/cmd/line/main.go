@@ -230,26 +230,27 @@ func (c *testClient) TestPRKubernetes() error {
 	}
 	actual, err := c.KubeClient.CreatePod(p)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error creating build pod.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Error creating build pod.", testInfra)
 		return err
 	}
 	resultURL := c.guberURL(buildID)
-	c.tryCreateStatus(github.StatusPending, "Build started", resultURL)
+	podName := actual.Metadata.Name
+	c.tryCreateStatus(podName, github.StatusPending, "Build started", resultURL)
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error waiting for pod to complete.", testInfra)
+			c.tryCreateStatus(podName, github.StatusError, "Error waiting for pod to complete.", testInfra)
 			return err
 		}
 		if po.Status.Phase == kube.PodSucceeded {
-			c.tryCreateStatus(github.StatusSuccess, "Build succeeded.", resultURL)
+			c.tryCreateStatus(podName, github.StatusSuccess, "Build succeeded.", resultURL)
 			break
 		} else if po.Status.Phase == kube.PodFailed {
-			c.tryCreateStatus(github.StatusFailure, "Build failed.", resultURL)
+			c.tryCreateStatus(podName, github.StatusFailure, "Build failed.", resultURL)
 			c.tryCreateFailureComment(resultURL)
 			break
 		} else if po.Status.Phase == kube.PodUnknown {
-			c.tryCreateStatus(github.StatusError, "Error watching build.", resultURL)
+			c.tryCreateStatus(podName, github.StatusError, "Error watching build.", resultURL)
 			break
 		}
 		time.Sleep(20 * time.Second)
@@ -261,14 +262,14 @@ func (c *testClient) TestPRKubernetes() error {
 // status as necessary.
 func (c *testClient) TestPRJenkins() error {
 	if size, err := c.JenkinsClient.QueueSize(); err != nil {
-		c.tryCreateStatus(github.StatusError, "Error checking Jenkins queue.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Error checking Jenkins queue.", testInfra)
 		return err
 	} else if size > 200 {
-		c.tryCreateStatus(github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
 		return nil
 	}
 	logrus.WithFields(fields(c)).Info("Starting build.")
-	c.tryCreateStatus(github.StatusPending, "Build triggered.", "")
+	c.tryCreateStatus("", github.StatusPending, "Build triggered.", "")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Job.Name,
 		Number:  c.PRNumber,
@@ -278,44 +279,44 @@ func (c *testClient) TestPRJenkins() error {
 		PullSHA: c.PullSHA,
 	})
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error starting build.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Error starting build.", testInfra)
 		return err
 	}
 	eq, err := c.JenkinsClient.Enqueued(b)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error queueing build.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Error queueing build.", testInfra)
 		return err
 	}
 	for eq {
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error in queue.", testInfra)
+			c.tryCreateStatus("", github.StatusError, "Error in queue.", testInfra)
 			return err
 		}
 	}
 
 	result, err := c.JenkinsClient.Status(b)
 	if err != nil {
-		c.tryCreateStatus(github.StatusError, "Error waiting for build.", testInfra)
+		c.tryCreateStatus("", github.StatusError, "Error waiting for build.", testInfra)
 		return err
 	}
 
 	resultURL := c.guberURL(strconv.Itoa(result.Number))
-	c.tryCreateStatus(github.StatusPending, "Build started.", resultURL)
+	c.tryCreateStatus("", github.StatusPending, "Build started.", resultURL)
 	for {
 		if err != nil {
-			c.tryCreateStatus(github.StatusError, "Error waiting for build.", testInfra)
+			c.tryCreateStatus("", github.StatusError, "Error waiting for build.", testInfra)
 			return err
 		}
 		if result.Building {
 			time.Sleep(30 * time.Second)
 		} else {
 			if result.Success {
-				c.tryCreateStatus(github.StatusSuccess, "Build succeeded.", resultURL)
+				c.tryCreateStatus("", github.StatusSuccess, "Build succeeded.", resultURL)
 				break
 			} else {
-				c.tryCreateStatus(github.StatusFailure, "Build failed.", resultURL)
+				c.tryCreateStatus("", github.StatusFailure, "Build failed.", resultURL)
 				c.tryCreateFailureComment(resultURL)
 				break
 			}
@@ -339,7 +340,7 @@ func (c *testClient) guberURL(build string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Job.Name, build)
 }
 
-func (c *testClient) tryCreateStatus(state, desc, url string) {
+func (c *testClient) tryCreateStatus(podName, state, desc, url string) {
 	logrus.WithFields(fields(c)).WithFields(logrus.Fields{
 		"state":       state,
 		"description": desc,
@@ -355,7 +356,7 @@ func (c *testClient) tryCreateStatus(state, desc, url string) {
 			logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
 		}
 	}
-	if err := line.SetJobStatus(c.KubeClient, c.KubeJob, state, desc, url); err != nil {
+	if err := line.SetJobStatus(c.KubeClient, podName, c.KubeJob, state, desc, url); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting Kube Job status.")
 	}
 }
