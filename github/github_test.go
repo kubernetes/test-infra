@@ -549,6 +549,46 @@ gratuitous href
 <!-- Reviewable:end -->`,
 			"Some message",
 		},
+		{
+			`Merge pull request #1234 from user/master
+
+Automatic merge from submit-queue (batch tested with PRs 1, 2, 1234, 57)
+
+[Part 2] Adding s390x cross-compilation support for gcr.io images in this repo
+
+<!--  Thanks for sending a pull request!  Here are some tips for you:
+1. If this is your first time, read our contributor guidelines https://github.com/kubernetes/kubernetes/blob/master/CONTRIBUTING.md and developer guide https://github.com/kubernetes/kubernetes/blob/master/docs/devel/development.md
+2. If you want *faster* PR reviews, read how: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/faster_reviews.md
+3. Follow the instructions for writing a release note: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes
+-->
+
+**What this PR does / why we need it**: This PR enables s390x support.
+
+**Which issue this PR fixes #34328
+
+**Special notes for your reviewer**:  I am enabling cross compilation for s390x.
+
+**Release note**:
+<!--  Steps to write your release note:
+1. Use the release-note-* labels to set the release note state (if you have access)
+2. Enter your extended release note in the below block; leaving it blank means using the PR title as the release note. If no release note is required, just write` +
+				" `NONE`.\n-->\n```\nAllows cross compilation of Kubernetes on x86 host for s390x also enables s390x support to kube-dns , pause, addon-manager, etcd, hyperkube, kube-discovery etc\n```\n",
+			`Merge pull request #1234 from user/master
+
+Automatic merge from submit-queue (batch tested with PRs 1, 2, 1234, 57)
+
+[Part 2] Adding s390x cross-compilation support for gcr.io images in this repo
+
+
+**What this PR does / why we need it**: This PR enables s390x support.
+
+**Which issue this PR fixes #34328
+
+**Special notes for your reviewer**:  I am enabling cross compilation for s390x.
+
+**Release note**:
+` + "```\nAllows cross compilation of Kubernetes on x86 host for s390x also enables s390x support to kube-dns , pause, addon-manager, etcd, hyperkube, kube-discovery etc\n```",
+		},
 	}
 	for testNum, test := range tests {
 		body := cleanIssueBody(test.body)

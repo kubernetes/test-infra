@@ -51,6 +51,7 @@ Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull
 var (
 	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteActionRequired, releaseNoteExperimental, releaseNoteNone)
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
+	noteMatcherRE         = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*` + "```|```release-note)(.+?)```")
 )
 
 // ReleaseNoteLabel will add the doNotMergeLabel to a PR which has not
@@ -170,16 +171,15 @@ func determineReleaseNoteLabel(obj *github.MungeObject) string {
 // getReleaseNote returns the release note from a PR body
 // assumes that the PR body followed the PR template
 func getReleaseNote(body string) string {
-	noteMatcher := regexp.MustCompile(`Release note\*\*:\s*` + "```" + `(.+?)` + "```")
-	potentialMatch := noteMatcher.FindStringSubmatch(body)
+	potentialMatch := noteMatcherRE.FindStringSubmatch(body)
 	if potentialMatch == nil {
 		return ""
 	}
-	return potentialMatch[1]
+	return strings.TrimSpace(potentialMatch[1])
 }
 
 func chooseLabel(composedReleaseNote string) string {
-	composedReleaseNote = strings.ToLower(strings.Trim(composedReleaseNote, " "))
+	composedReleaseNote = strings.ToLower(strings.TrimSpace(composedReleaseNote))
 
 	if composedReleaseNote == "" {
 		return releaseNoteLabelNeeded
