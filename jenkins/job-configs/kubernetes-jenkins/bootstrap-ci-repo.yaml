@@ -103,6 +103,11 @@
         job-name: ci-kubernetes-node-kubelet
         repo-name: k8s.io/kubernetes
         frequency: 'H/30 * * * *'
+    - kubernetes-node-kubelet-dockerized:  # senlu, temporary
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-dockerized
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/30 * * * *'
     - kubernetes-node-kubelet-serial:  # lantaol
         branch: master
         job-name: ci-kubernetes-node-kubelet-serial
