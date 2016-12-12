@@ -38,7 +38,7 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Empty\] \
                          --allowed-not-ready-nodes=20 \
                          --system-pods-startup-timeout=600m"
 export ZONE="us-east1-a"
-export NUM_NODES=3500
+export NUM_NODES=4000
 export MACHINE_TYPE="g1-small"
 export HEAPSTER_MACHINE_TYPE="n1-standard-8"
 export ALLOWED_NOTREADY_NODES="20"
