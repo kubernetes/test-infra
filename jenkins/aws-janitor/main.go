@@ -22,6 +22,7 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -35,7 +36,8 @@ import (
 	"github.com/golang/glog"
 )
 
-var regionsRaw = flag.String("regions", "us-west-2", "Comma separated list of regions to query for resources")
+const defaultRegion = "us-east-1"
+
 var maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
 var path = flag.String("path", "", "S3 path to store mark data in (required)")
 
@@ -63,6 +65,7 @@ var awsResourceTypes = []awsResourceType{
 	vpcs{},
 	dhcpOptions{},
 	volumes{},
+	addresses{},
 }
 
 type awsResource interface {
@@ -79,6 +82,7 @@ type awsResource interface {
 type awsResourceSet struct {
 	firstSeen map[string]time.Time // ARN -> first time we saw
 	marked    map[string]bool      // ARN -> seen this run
+	swept     []string             // Count of resources we attempted to sweep (to summarize)
 	ttl       time.Duration
 }
 
@@ -100,7 +104,6 @@ func LoadResourceSet(sess *session.Session, p *s3path, ttl time.Duration) (*awsR
 }
 
 func (s *awsResourceSet) Save(sess *session.Session, p *s3path) error {
-	s.markComplete()
 	b, err := json.MarshalIndent(s.firstSeen, "", "  ")
 	if err != nil {
 		return err
@@ -126,6 +129,7 @@ func (s *awsResourceSet) Mark(r awsResource) bool {
 	if t, ok := s.firstSeen[arn]; ok {
 		since := now.Sub(t)
 		if since > s.ttl {
+			s.swept = append(s.swept, arn)
 			return true
 		}
 		glog.V(1).Infof("%s: seen for %v", r.ARN(), since)
@@ -133,13 +137,18 @@ func (s *awsResourceSet) Mark(r awsResource) bool {
 	}
 	s.firstSeen[arn] = now
 	glog.V(1).Infof("%s: first seen", r.ARN())
-	return s.ttl == 0 // If the TTL is 0, it should be deleted now.
+	if s.ttl == 0 {
+		// If the TTL is 0, it should be deleted now.
+		s.swept = append(s.swept, arn)
+		return true
+	}
+	return false
 }
 
-// markComplete figures out which ARNs were in previous passes but not
+// MarkComplete figures out which ARNs were in previous passes but not
 // this one, and eliminates them. It should only be run after all
 // resources have been marked.
-func (s *awsResourceSet) markComplete() {
+func (s *awsResourceSet) MarkComplete() int {
 	var gone []string
 	for arn, _ := range s.firstSeen {
 		if !s.marked[arn] {
@@ -150,6 +159,10 @@ func (s *awsResourceSet) markComplete() {
 		glog.V(1).Infof("%s: deleted since last run", arn)
 		delete(s.firstSeen, arn)
 	}
+	if len(s.swept) > 0 {
+		glog.Errorf("%d resources swept: %v", len(s.swept), s.swept)
+	}
+	return len(s.swept)
 }
 
 // Instances: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInstances
@@ -675,6 +688,50 @@ func (vol volume) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:volume/%s", vol.Region, vol.Account, vol.ID)
 }
 
+// Elastic IPs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeAddresses
+
+type addresses struct{}
+
+func (addresses) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+
+	resp, err := svc.DescribeAddresses(nil)
+	if err != nil {
+		return err
+	}
+
+	for _, addr := range resp.Addresses {
+		a := &address{Account: acct, Region: region, ID: *addr.AllocationId}
+		if set.Mark(a) {
+			glog.Warningf("%s: deleting %T: %v", a.ARN(), addr, addr)
+			if addr.AssociationId != nil {
+				glog.Warningf("%s: disassociating %T from active instance", a.ARN(), addr)
+				_, err := svc.DisassociateAddress(&ec2.DisassociateAddressInput{AssociationId: addr.AssociationId})
+				if err != nil {
+					glog.Warningf("%s: disassociating %T failed: %v", a.ARN(), addr, err)
+				}
+			}
+			_, err := svc.ReleaseAddress(&ec2.ReleaseAddressInput{AllocationId: addr.AllocationId})
+			if err != nil {
+				glog.Warningf("%v: delete failed: %v", a.ARN(), err)
+			}
+		}
+	}
+	return nil
+}
+
+type address struct {
+	Account string
+	Region  string
+	ID      string
+}
+
+func (addr address) ARN() string {
+	// This ARN is a complete hallucination - there doesn't seem to be
+	// an ARN for elastic IPs.
+	return fmt.Sprintf("arn:aws:ec2:%s:%s:address/%s", addr.Region, addr.Account, addr.ID)
+}
+
 // ARNs (used for uniquifying within our previous mark file)
 
 type arn struct {
@@ -737,7 +794,7 @@ func getS3Path(sess *session.Session, s string) (*s3path, error) {
 	if url.Scheme != "s3" {
 		return nil, fmt.Errorf("Scheme %q != 's3'", url.Scheme)
 	}
-	svc := s3.New(sess, &aws.Config{Region: aws.String("us-east-1")})
+	svc := s3.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
 	resp, err := svc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: aws.String(url.Host)})
 	if err != nil {
 		return nil, err
@@ -749,10 +806,22 @@ func getS3Path(sess *session.Session, s string) (*s3path, error) {
 	return &s3path{region: region, bucket: url.Host, key: url.Path}, nil
 }
 
+func getRegions(sess *session.Session) ([]string, error) {
+	var regions []string
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+	resp, err := svc.DescribeRegions(nil)
+	if err != nil {
+		return nil, err
+	}
+	for _, region := range resp.Regions {
+		regions = append(regions, *region.RegionName)
+	}
+	return regions, nil
+}
+
 func main() {
 	flag.Lookup("logtostderr").Value.Set("true")
 	flag.Parse()
-	regions := strings.Split(*regionsRaw, ",")
 
 	// Retry aggressively (with default back-off). If the account is
 	// in a really bad state, we may be contending with API rate
@@ -764,11 +833,16 @@ func main() {
 	if err != nil {
 		glog.Fatalf("--path %q isn't a valid S3 path: %v", *path, err)
 	}
-	acct, err := getAccount(sess, regions[0])
+	acct, err := getAccount(sess, defaultRegion)
 	if err != nil {
 		glog.Fatalf("error getting current user: %v", err)
 	}
-	glog.V(1).Infof("Account: %s", acct)
+	glog.V(1).Infof("account: %s", acct)
+	regions, err := getRegions(sess)
+	if err != nil {
+		glog.Fatalf("error getting available regions: %v", err)
+	}
+	glog.V(1).Infof("regions: %v", regions)
 
 	res, err := LoadResourceSet(sess, s3p, *maxTTL)
 	if err != nil {
@@ -782,7 +856,11 @@ func main() {
 			}
 		}
 	}
+	swept := res.MarkComplete()
 	if err := res.Save(sess, s3p); err != nil {
 		glog.Fatalf("error saving %q: %v", *path, err)
+	}
+	if swept > 0 {
+		os.Exit(1)
 	}
 }
