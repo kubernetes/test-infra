@@ -62,6 +62,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-cri-benchmark
 - name: ci-kubernetes-node-kubelet
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
+- name: ci-kubernetes-node-kubelet-dockerized
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-dockerized
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
 - name: kubernetes-build
@@ -1464,6 +1466,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-benchmark
   - name: kubelet
     test_group_name: ci-kubernetes-node-kubelet
+  - name: kubelet-dockerized
+    test_group_name: ci-kubernetes-node-kubelet-dockerized
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-cri-gce-e2e
