@@ -155,6 +155,10 @@
         job-name: ci-kubernetes-e2e-gci-gce
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gci-tip-gce:
+        job-name: ci-kubernetes-e2e-gci-tip-gce
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-slow:
         job-name: ci-kubernetes-e2e-gci-gce-slow
         frequency: 'H/5 * * * *' # At least every 30m

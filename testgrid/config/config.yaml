@@ -200,6 +200,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
+- name: kubernetes-e2e-gci-tip-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-tip-gce
 - name: kubernetes-e2e-gce-gci-ci-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-master
 - name: kubernetes-e2e-gce-gci-ci-release-1.2
@@ -1070,6 +1072,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce
   - name: gci-gce
     test_group_name: kubernetes-e2e-gci-gce
+  - name: gci-tip-gce
+    test_group_name: kubernetes-e2e-gci-tip-gce
   - name: gce-alpha-features
     test_group_name: kubernetes-e2e-gce-alpha-features
   - name: gci-gce-alpha-features
