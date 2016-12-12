@@ -36,10 +36,11 @@ export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
 # This list should match the list in kubernetes-pull-build-test-e2e-gce.
 # Temporarily skip the test "Network should set TCP CLOSE_WAIT timeout"
-# because it relies on host port, which is not implemented in CRI integration
+# and "[k8s.io] Loadbalancing: L7 [k8s.io] Nginx should conform to Ingress spec"
+# because it relies on host port, which is not implemented in CRI integration yet.
 # yet.
 # TODO(random-liu): Re-enable the test.
-export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout"
+export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Nginx\sshould\sconform\sto\sIngress\sspec"
 export GINKGO_PARALLEL="y"
 export KUBE_OS_DISTRIBUTION="gci"
 export PROJECT="kubernetes-e2e-cri-validation"
