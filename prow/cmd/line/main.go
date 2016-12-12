@@ -189,12 +189,21 @@ func fields(c *testClient) logrus.Fields {
 
 // TestPRKubernetes starts a pod and watches it, updating GitHub status as
 // necessary.
+// We modify the pod's spec to have the build parameters such as PR number
+// passed in as environment variables. We also include the service account
+// secret.
 func (c *testClient) TestPRKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
 	// TODO(spxtr): Sequential build numbers.
 	buildID := strconv.Itoa(rand.Int())
 	spec := *c.Job.Spec
+	spec.NodeSelector = map[string]string{
+		"role": "build",
+	}
+	spec.RestartPolicy = "Never"
+
 	for i := range spec.Containers {
+		spec.Containers[i].Name = fmt.Sprintf("%s-%d", buildID, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "PULL_REFS",
@@ -219,6 +228,25 @@ func (c *testClient) TestPRKubernetes() error {
 			kube.EnvVar{
 				Name:  "BUILD_NUMBER",
 				Value: buildID,
+			},
+			kube.EnvVar{
+				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
+				Value: "/etc/service-account/service-account.json",
+			},
+		)
+		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts,
+			kube.VolumeMount{
+				Name:      "service",
+				MountPath: "/etc/service-account",
+				ReadOnly:  true,
+			},
+		)
+		spec.Volumes = append(spec.Volumes,
+			kube.Volume{
+				Name: "service",
+				Secret: &kube.SecretSource{
+					Name: "service-account",
+				},
 			},
 		)
 	}
