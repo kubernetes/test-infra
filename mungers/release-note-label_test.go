@@ -254,6 +254,11 @@ func TestGetReleaseNote(t *testing.T) {
 			expectedReleaseNoteVariable: releaseNoteNone,
 		},
 		{
+			body:                        "**Release note**:\n<!--  Steps to write your release note:\n...\n-->\n```NONE\n```",
+			expectedReleaseNote:         "NONE",
+			expectedReleaseNoteVariable: releaseNoteNone,
+		},
+		{
 			body:                        "**Release note**:\n\n  ```This is a description of my feature```",
 			expectedReleaseNote:         "This is a description of my feature",
 			expectedReleaseNoteVariable: releaseNote,
