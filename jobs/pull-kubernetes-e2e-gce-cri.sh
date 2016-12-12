@@ -52,7 +52,7 @@ export GINKGO_PARALLEL="y"
 # because it relies on host port, which is not implemented in CRI integration yet.
 # TODO(random-liu): Re-enable the test.
 # This list should match the list in kubernetes-e2e-gce.
-export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network should set TCP CLOSE_WAIT timeout|Nginx.*should conform to Ingress spec'
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Nginx\sshould\sconform\sto\sIngress\sspec'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="kubernetes-pr-cri-validation"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
