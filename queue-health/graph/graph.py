@@ -39,6 +39,8 @@ import matplotlib.pyplot as plt
 import numpy
 # pylint: enable=wrong-import-position,import-error
 
+DAYS = 21  # Graph this many days of history.
+
 def mean(*a):
     """Calculate the mean for items."""
     return numpy.mean(*a)  # pylint: disable=no-member
@@ -238,7 +240,7 @@ def output(history_lines, results):  # pylint: disable=too-many-locals,too-many-
                 *line.strip().split(' '))
         except TypeError:  # line does not fit expected criteria
             continue
-        if tick < datetime.datetime.now() - datetime.timedelta(days=30):
+        if tick < datetime.datetime.now() - datetime.timedelta(days=DAYS+14):
             continue
         if not pulls and not queue and not merged:  # Bad sample
             continue
@@ -343,7 +345,7 @@ def render_health(results, ax_health):
 
     ax_health.set_ylim([0.0, 1.0])
     ax_health.set_xlim(
-        left=datetime.datetime.now() - datetime.timedelta(days=21))
+        left=datetime.datetime.now() - datetime.timedelta(days=DAYS))
 
     for start, end in results.blocked_intervals:
         ax_health.axvspan(start, end, alpha=0.2, color='brown', linewidth=0)
@@ -446,7 +448,7 @@ def render_forever(history_uri, img_uri, service_account=None):
         with gzip.GzipFile(
             os.path.basename(img_uri), mode='wb', fileobj=buf) as compressed:
             results = Results()
-            output(history.split('\n')[-60*24*21:], results)  # Last 21 days
+            output(history.split('\n')[-60*24*DAYS:], results)  # Last 21 days
             render(results, compressed)
 
         print >>sys.stderr, 'Copy buffer to %s...' % img_uri
