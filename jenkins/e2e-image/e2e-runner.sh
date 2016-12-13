@@ -243,15 +243,11 @@ function setup_gci_vars() {
 
 ### Pre Set Up ###
 if running_in_docker; then
-    record_command "${STAGE_PRE}" "download_gcloud" curl -fsSL --retry 3 --keepalive-time 2 -o "${WORKSPACE}/google-cloud-sdk.tar.gz" 'https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz'
-    install_google_cloud_sdk_tarball "${WORKSPACE}/google-cloud-sdk.tar.gz" /
+    record_command "${STAGE_PRE}" "download & install & auth gcloud" $(dirname "${0}")/gcloud-common.sh --download "${WORKSPACE}/google-cloud-sdk.tar.gz" /
+    export PATH=/google-cloud-sdk/bin:${PATH}
     if [[ "${KUBERNETES_PROVIDER}" == 'aws' ]]; then
         pip install awscli
     fi
-fi
-
-if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
 # Install gcloud from a custom path if provided. Used to test GKE with gcloud
@@ -269,13 +265,8 @@ if [[ -n "${CLOUDSDK_BUCKET:-}" ]]; then
     rm -rf ~/repo ~/cloudsdk
     mv ~/$(basename "${CLOUDSDK_BUCKET}") ~/repo
     export CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL=file://${HOME}/repo/components-2.json
-    install_google_cloud_sdk_tarball ~/repo/google-cloud-sdk.tar.gz ~/cloudsdk
-
-    # Just in case the new gcloud stores credentials differently, re-activate
-    # credentials.
-    if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-      gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-    fi
+    record_command "${STAGE_PRE}" "install & auth gcloud" $(dirname "${0}")/gcloud-common.sh ~/repo/google-cloud-sdk.tar.gz ~/cloudsdk
+    export PATH=~/cloudsdk/google-cloud-sdk/bin:${PATH}
 fi
 
 # Specific settings for tests that use GCI HEAD images. I.e., if your test is
