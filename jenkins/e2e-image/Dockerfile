@@ -45,6 +45,7 @@ ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
+    "gcloud-common.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/e2e.go", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
