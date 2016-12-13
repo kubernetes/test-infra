@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/google-containers/kubekins-e2e
+IMG = gcr.io/k8s-testimages/kubekins-e2e
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 all: build
