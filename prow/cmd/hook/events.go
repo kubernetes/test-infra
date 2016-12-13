@@ -20,40 +20,9 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/plugins"
 )
 
-// EventAgent pulls events off of the queues and dispatches to the relevant
-// plugins.
-type EventAgent struct {
-	Plugins *plugins.PluginAgent
-
-	PullRequestEvents  <-chan github.PullRequestEvent
-	IssueCommentEvents <-chan github.IssueCommentEvent
-	StatusEvents       <-chan github.StatusEvent
-}
-
-// Start starts listening for events. It does not block.
-func (ea *EventAgent) Start() {
-	go func() {
-		for pr := range ea.PullRequestEvents {
-			go ea.handlePullRequestEvent(pr)
-		}
-	}()
-	go func() {
-		for ic := range ea.IssueCommentEvents {
-			go ea.handleIssueCommentEvent(ic)
-		}
-	}()
-	go func() {
-		for se := range ea.StatusEvents {
-			go ea.handleStatusEvents(se)
-		}
-	}()
-
-}
-
-func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
+func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	l := logrus.WithFields(logrus.Fields{
 		"org":    pr.PullRequest.Base.Repo.Owner.Login,
 		"repo":   pr.PullRequest.Base.Repo.Name,
@@ -62,8 +31,8 @@ func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
 		"url":    pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
-	for p, h := range ea.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
-		pc := ea.Plugins.PluginClient
+	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
+		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, pr); err != nil {
 			pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
@@ -71,7 +40,7 @@ func (ea *EventAgent) handlePullRequestEvent(pr github.PullRequestEvent) {
 	}
 }
 
-func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
+func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	l := logrus.WithFields(logrus.Fields{
 		"org":    ic.Repo.Owner.Login,
 		"repo":   ic.Repo.Name,
@@ -80,8 +49,8 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 		"url":    ic.Comment.HTMLURL,
 	})
 	l.Infof("Issue comment %s.", ic.Action)
-	for p, h := range ea.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
-		pc := ea.Plugins.PluginClient
+	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
+		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, ic); err != nil {
 			pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
@@ -89,7 +58,7 @@ func (ea *EventAgent) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	}
 }
 
-func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
+func (s *Server) handleStatusEvent(se github.StatusEvent) {
 	l := logrus.WithFields(logrus.Fields{
 		"org":     se.Repo.Owner.Login,
 		"repo":    se.Repo.Name,
@@ -99,8 +68,8 @@ func (ea *EventAgent) handleStatusEvents(se github.StatusEvent) {
 		"id":      se.ID,
 	})
 	l.Infof("Status description %s.", se.Description)
-	for p, h := range ea.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
-		pc := ea.Plugins.PluginClient
+	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
+		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, se); err != nil {
 			pc.Logger.WithError(err).Error("Error handling StatusEvent.")
