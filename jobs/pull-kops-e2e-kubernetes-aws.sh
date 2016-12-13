@@ -43,14 +43,6 @@ export E2E_OPT="${E2E_OPT:-}\
   --kops-state ${KOPS_STATE_STORE}"
 export E2E_MIN_STARTUP_PODS="1"
 
-# TODO(zmerlynn): Delete when kops-e2e-runner.sh is pushed
-EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
-if [[ -z "${EXTERNAL_IP}" ]]; then
-  # Running outside GCE
-  EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
-fi
-export E2E_OPT="${E2E_OPT} --admin-access ${EXTERNAL_IP}/32"
-
 export AWS_CONFIG_FILE="/workspace/.aws/credentials"
 export AWS_SHARED_CREDENTIALS_FILE="/workspace/.aws/credentials"
 export KUBE_SSH_USER=admin
