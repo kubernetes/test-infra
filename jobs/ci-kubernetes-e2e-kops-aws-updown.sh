@@ -57,16 +57,9 @@ export PATH="${PATH}:/usr/local/go/bin"
 # After post-env
 export KOPS_DEPLOY_LATEST_KUBE=y
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
-export E2E_OPT="--kops-cluster ${E2E_NAME}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
+# TODO(zmerlynn): Take out --kops-ssh-key after fixing kops-e2e-runner again.
+export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${E2E_NAME}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
 export GINKGO_PARALLEL="y"
-
-# TODO(zmerlynn): Delete when kops-e2e-runner.sh is pushed
-EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
-if [[ -z "${EXTERNAL_IP}" ]]; then
-  # Running outside GCE
-  EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
-fi
-export E2E_OPT="${E2E_OPT} --admin-access ${EXTERNAL_IP}/32"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
