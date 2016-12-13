@@ -178,3 +178,13 @@ kubernetes/test-infra:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/test-infra-go-test:0.4
+
+- name: pull-test-infra-py-test
+  always_run: true
+  skip_report: true
+  context: py test
+  rerun_command: "@k8s-bot py test this"
+  trigger: "@k8s-bot (py )?test this"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/test-infra-py-test:0.0
