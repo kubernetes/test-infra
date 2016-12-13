@@ -33,8 +33,9 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 ### job-env
 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
 export GINKGO_PARALLEL="y"
+export KUBE_OS_DISTRIBUTION="gci"
 export PROJECT="k8s-docker-validation-gci"
-export JENKINS_GCI_IMAGE_FAMILY="gci-canary-test"
+export JENKINS_GCI_HEAD_IMAGE_FAMILY="gci-canary-test"
 
 ### post-env
 
