@@ -23,7 +23,7 @@ readonly testinfra="$(dirname "${0}")/.."
 ### provider-env
 export KUBERNETES_PROVIDER="aws"
 export E2E_MIN_STARTUP_PODS="8"
-export KUBE_AWS_ZONE="us-west-2c"
+export KUBE_AWS_ZONE="us-west-1c"
 export MASTER_SIZE="m3.medium"
 export NODE_SIZE="m3.medium"
 export NUM_NODES="3"
