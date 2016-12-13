@@ -19,7 +19,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly KUBEKINS_IMAGE="gcr.io/google-containers/kubekins-e2e"
+readonly KUBEKINS_IMAGE="gcr.io/k8s-testimages/kubekins-e2e"
 
 REPO_ROOT=$(cd $(dirname "${BASH_SOURCE}")/.. && pwd)
 
