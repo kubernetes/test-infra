@@ -78,8 +78,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.5
 - name: kubernetes-e2e-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws
-- name: kubernetes-e2e-aws-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-release-1.4
 - name: kubernetes-e2e-aws-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-release-1.5
 - name: ci-kubernetes-e2e-cri-gce
@@ -1046,16 +1044,14 @@ dashboards:
 
 - name: google-aws
   dashboard_tab:
-  - name: aws
-    test_group_name: kubernetes-e2e-aws
-  - name: aws-release-1.4
-    test_group_name: kubernetes-e2e-aws-release-1.4
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
-  - name: aws-release-1.5
-    test_group_name: kubernetes-e2e-aws-release-1.5
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
+  - name: aws
+    test_group_name: kubernetes-e2e-aws
+  - name: aws-release-1.5
+    test_group_name: kubernetes-e2e-aws-release-1.5
 
 - name: google-docker
   dashboard_tab:
@@ -2040,8 +2036,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-serial-release-1.4
   - name: gci-ci-release-1.4
     test_group_name: kubernetes-e2e-gce-gci-ci-release-1.4
-  - name: aws-release-1.4
-    test_group_name: kubernetes-e2e-aws-release-1.4
   - name: soak-gce-1.4-deploy
     test_group_name: kubernetes-soak-gce-1.4-deploy
   - name: soak-gci-gce-1.4-deploy
