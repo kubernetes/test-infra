@@ -46,27 +46,17 @@ kubernetes/kops:
 
 kubernetes/kubernetes:
 - name: pull-kubernetes-bazel
-  #always_run: true
   context: Jenkins Bazel Build
   rerun_command: "@k8s-bot bazel test this"
   trigger: "@k8s-bot bazel test this"
   spec:
-    nodeSelector:
-      role: build
     containers:
-    - name: builder
-      image: gcr.io/k8s-testimages/bazelbuild:0.0
+    - image: gcr.io/k8s-testimages/bazelbuild:0.0
       command: ["/bin/bash", "-c"]
       args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/kubernetes --pull=${PULL_REFS} --job=pull-kubernetes-bazel"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       # We only want one of these to run per node. Once pod affinity is GA, use
       # that. Until then, use a hostPort.
       ports:
@@ -75,14 +65,10 @@ kubernetes/kubernetes:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-    restartPolicy: Never
     volumes:
     - name: cache-ssd
       hostPath:
         path: /mnt/disks/ssd0
-    - name: service
-      secret:
-        secretName: service-account
 
 - name: pull-kubernetes-cross
   context: Jenkins Cross Build
@@ -190,22 +176,5 @@ kubernetes/test-infra:
   rerun_command: "@k8s-bot go test this"
   trigger: "@k8s-bot (go )?test this"
   spec:
-    nodeSelector:
-      role: build
     containers:
-    - name: builder
-      image: gcr.io/k8s-testimages/test-infra-go-test:0.4
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-    restartPolicy: Never
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-
-
+    - image: gcr.io/k8s-testimages/test-infra-go-test:0.4
