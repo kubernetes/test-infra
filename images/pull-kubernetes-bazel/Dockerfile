@@ -29,9 +29,10 @@ RUN apt-get update && apt-get install -y \
     python && \
     apt-get clean
 
-RUN wget https://github.com/bazelbuild/bazel/releases/download/0.3.2/bazel_0.3.2-linux-x86_64.deb && \
-    dpkg -i bazel_0.3.2-linux-x86_64.deb && \
-    rm bazel_0.3.2-linux-x86_64.deb
+ENV BAZEL_VERSION 0.4.2
+RUN wget "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
+    dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
+    rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
 
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-131.0.0-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-131.0.0-linux-x86_64.tar.gz && \
