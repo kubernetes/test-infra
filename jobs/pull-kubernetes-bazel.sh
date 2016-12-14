@@ -20,6 +20,14 @@ set -o pipefail
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
+# TODO(fejta): remove this
+case "${PULL_BASE_REF:-}" in
+release-1.0|release-1.1|release-1.2|release-1.3|release-1.4|release-1.5)
+  echo "PR Kubemark e2e GCE job disabled for legacy branches."
+  exit 0
+  ;;
+esac
+
 #bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
 bazel build //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
 case "${rc}" in
