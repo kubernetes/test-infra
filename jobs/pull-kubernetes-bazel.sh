@@ -28,8 +28,13 @@ release-1.0|release-1.1|release-1.2|release-1.3|release-1.4|release-1.5)
   ;;
 esac
 
+build_dir=build
+if [[ -d build-tools/ ]]; then
+  build_dir=build-tools
+fi
+
 #bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
-bazel build //cmd/... //pkg/... //federation/... //plugin/... //build-tools/... //test/... && rc=$? || rc=$?
+bazel build //cmd/... //pkg/... //federation/... //plugin/... //${build_dir}/... //test/... && rc=$? || rc=$?
 case "${rc}" in
     0) echo "Success" ;;
     1) echo "Build failed" ;;
