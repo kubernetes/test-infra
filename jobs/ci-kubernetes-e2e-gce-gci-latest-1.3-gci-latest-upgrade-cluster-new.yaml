@@ -1,0 +1,4 @@
+runner: ${testinfra}/jenkins/dockerized-e2e-runner.sh
+docker_timeout: 620
+kubekins_timeout: 0
+env: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new.sh
