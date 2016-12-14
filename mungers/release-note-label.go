@@ -51,7 +51,7 @@ Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull
 var (
 	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteActionRequired, releaseNoteExperimental, releaseNoteNone)
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
-	noteMatcherRE         = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```|```release-note)(.+?)```")
+	noteMatcherRE         = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 )
 
 // ReleaseNoteLabel will add the doNotMergeLabel to a PR which has not
