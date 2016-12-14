@@ -123,6 +123,11 @@
         job-name: ci-kubernetes-node-kubelet-flaky
         repo-name: k8s.io/kubernetes
         frequency: 'H H/1 * * *'
+    - kubernetes-node-kubelet-conformance:  # lantaol
+        branch: master
+        job-name: ci-kubernetes-node-kubelet-conformance
+        repo-name: k8s.io/kubernetes
+        frequency: 'H/30 * * * *'
     - kubernetes-node-kubelet-cri:  # yjhong
         branch: master
         job-name: ci-kubernetes-node-kubelet-cri
