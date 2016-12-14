@@ -16,25 +16,17 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -o xtrace
 
-# PROJECT="k8s-jkns-ci-node-e2e"
+# A wrapper script for running node-e2e tests
 
-readonly testinfra="$(dirname "${0}")/.."
+# Update gcloud
+gcloud components update
 
-export NODE_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh"
-export NODE_PROPERTIES="test/e2e_node/jenkins/jenkins-ci.properties"
-
-### Runner
-readonly runner="${testinfra}/jenkins/node-dockerized.sh"
-export KUBEKINS_TIMEOUT="90m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
-
-### Reporting
-if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
-    echo "Build timed out" >&2
-elif [[ ${rc} -ne 0 ]]; then
-    echo "Build failed" >&2
+# Authenticate gcloud
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
-echo "Exiting with code: ${rc}"
-exit ${rc}
+
+
+# Run script
+${NODE_SCRIPT} ${NODE_PROPERTY}
