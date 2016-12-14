@@ -20,6 +20,21 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
+if [[ -z "${JENKINS_AWS_SSH_PRIVATE_KEY_FILE:-}" ]]; then
+  echo "JENKINS_AWS_SSH_PRIVATE_KEY_FILE not set, assuming ${HOME}/.ssh/kube_aws_rsa"
+  export JENKINS_AWS_SSH_PRIVATE_KEY_FILE="${HOME}/.ssh/kube_aws_rsa"
+fi
+
+if [[ -z "${JENKINS_AWS_SSH_PUBLIC_KEY_FILE:-}" ]]; then
+  echo "JENKINS_AWS_SSH_PUBLIC_KEY_FILE not set, assuming ${HOME}/.ssh/kube_aws_rsa.pub"
+  export JENKINS_AWS_SSH_PUBLIC_KEY_FILE="${HOME}/.ssh/kube_aws_rsa.pub"
+fi
+
+if [[ -z "${JENKINS_AWS_CREDENTIALS_FILE:-}" ]]; then
+  echo "JENKINS_AWS_CREDENTIALS_FILE not set, assuming ${HOME}/.aws/credentials"
+  export JENKINS_AWS_CREDENTIALS_FILE="${HOME}/.aws/credentials"
+fi
+
 ### builder
 
 # Fake provider to trick e2e-runner.sh
@@ -41,10 +56,28 @@ export LOG_DUMP_SAVE_LOGS=cloud-init-output
 # See https://github.com/kubernetes/kops/issues/774 for why the Dashboard is disabled
 # See https://github.com/kubernetes/kops/issues/775 for why NodePort is disabled
 
-export E2E_NAME="e2e-kops-aws"
 export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
-export KOPS_LATEST="latest-ci-updown-green.txt"
-export KOPS_PUBLISH_GREEN_PATH="gs://kops-ci/bin/latest-ci-green.txt"
+if [[ -n "${JOB_NAME:-}" ]]; then
+  # Running on Jenkins
+  export KOPS_E2E_CLUSTER_NAME="e2e-kops-aws.test-aws.k8s.io"
+  export KOPS_E2E_STATE_STORE="s3://k8s-kops-jenkins/"
+  export KOPS_LATEST="latest-ci-updown-green.txt"
+  export KOPS_PUBLISH_GREEN_PATH="gs://kops-ci/bin/latest-ci-green.txt"
+else
+  if [[ -z "${KOPS_E2E_CLUSTER_NAME:-}" ]]; then
+    echo "KOPS_E2E_CLUSTER_NAME not set!" >&2
+    exit 1
+  fi
+  if [[ -z "${KOPS_E2E_STATE_STORE:-}" ]]; then
+    echo "KOPS_E2E_STATE_STORE not set!" >&2
+    exit 1
+  fi
+  export WORKSPACE="${WORKSPACE:-$PWD}"
+  echo "E2Es results will be output to ${WORKSPACE}/_artifacts"
+
+  export JOB_NAME="${USER}"
+  export BUILD_NUMBER=$(date +%s)
+fi
 
 ### post-env
 
@@ -64,8 +97,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 # After post-env
 export KOPS_DEPLOY_LATEST_KUBE=y
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
-# TODO(zmerlynn): Take out --kops-ssh-key after fixing kops-e2e-runner again.
-export E2E_OPT="--kops-ssh-key /workspace/.ssh/kube_aws_rsa --kops-cluster ${E2E_NAME}.test-aws.k8s.io --kops-state s3://k8s-kops-jenkins/ --kops-nodes=4"
+export E2E_OPT="--kops-cluster ${KOPS_E2E_CLUSTER_NAME} --kops-state ${KOPS_E2E_STATE_STORE} --kops-nodes=4"
 export GINKGO_PARALLEL="y"
 
 ### Runner
