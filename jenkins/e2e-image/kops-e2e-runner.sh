@@ -53,9 +53,12 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
   export E2E_OPT="${E2E_OPT} --kops-kubernetes-version ${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}"
 fi
 
-EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
+EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip' || true)
 if [[ -z "${EXTERNAL_IP}" ]]; then
   # Running outside GCE
+  echo
+  echo "WARNING: Getting external IP from instance metadata failed, assuming not running on GCE."
+  echo
   EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
 fi
 export E2E_OPT="${E2E_OPT} --kops-admin-access ${EXTERNAL_IP}/32"
