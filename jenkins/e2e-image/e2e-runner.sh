@@ -109,7 +109,7 @@ function set_release_vars_from_gcs() {
     else
       local -r bucket="${KUBE_GCS_DEV_RELEASE_BUCKET}"
     fi
-    KUBERNETES_RELEASE=$(gsutil cat "gs://${bucket}/${published_version}.txt")
+    KUBERNETES_RELEASE=$(curl -fSsL "https://storage.googleapis.com/${bucket}/${published_version}.txt")
     KUBERNETES_RELEASE_URL="https://storage.googleapis.com/${bucket}/${path}"
 }
 
@@ -243,8 +243,10 @@ function setup_gci_vars() {
 
 ### Pre Set Up ###
 if running_in_docker; then
-    record_command "${STAGE_PRE}" "download_gcloud" curl -fsSL --retry 3 --keepalive-time 2 -o "${WORKSPACE}/google-cloud-sdk.tar.gz" 'https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz'
-    install_google_cloud_sdk_tarball "${WORKSPACE}/google-cloud-sdk.tar.gz" /
+    if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+        record_command "${STAGE_PRE}" "download_gcloud" curl -fsSL --retry 3 --keepalive-time 2 -o "${WORKSPACE}/google-cloud-sdk.tar.gz" 'https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz'
+        install_google_cloud_sdk_tarball "${WORKSPACE}/google-cloud-sdk.tar.gz" /
+    fi
     if [[ "${KUBERNETES_PROVIDER}" == 'aws' ]]; then
         pip install awscli
     fi
@@ -257,7 +259,7 @@ fi
 # Install gcloud from a custom path if provided. Used to test GKE with gcloud
 # at HEAD, release candidate.
 # TODO: figure out how to avoid installing the cloud sdk twice if run inside Docker.
-if [[ -n "${CLOUDSDK_BUCKET:-}" ]]; then
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] && [[ -n "${CLOUDSDK_BUCKET:-}" ]]; then
     # Retry the download a few times to mitigate transient server errors and
     # race conditions where the bucket contents change under us as we download.
     for n in {1..3}; do
