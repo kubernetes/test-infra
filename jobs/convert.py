@@ -107,6 +107,8 @@ if __name__ == '__main__':
             print "%s - %s" % (root,f)
             if "ci-kubernetes-e2e" not in f:
                 continue
+            if "kops" in f:
+                continue
             if ".sh" not in f:
                 continue
 
