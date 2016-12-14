@@ -23,7 +23,7 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 export KUBE_VERIFY_GIT_BRANCH='master'
-export KUBE_TEST_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties"
+export KUBE_TEST_SCRIPT="${testinfra}/jenkins/node-runner.sh ${testinfra}/jenkins/e2e-image/gcloud-common.sh test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
