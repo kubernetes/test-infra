@@ -916,6 +916,20 @@ class JobTest(unittest.TestCase):
         for path, _, filenames in os.walk(
             os.path.dirname(bootstrap.job_script(JOB))):
             for job in filenames:
+                if not '.sh' in job and not '.env' in job:
+                    continue
+                job_path = os.path.join(path, job)
+                # print "yield %s - %s" % (job, job_path)
+                yield job, job_path
+
+    @property
+    def yamls(self):
+        """[(job, job_path)] sequence"""
+        for path, _, filenames in os.walk(
+            os.path.dirname(bootstrap.job_script(JOB))):
+            for job in filenames:
+                if not '.yaml' in job:
+                    continue
                 job_path = os.path.join(path, job)
                 yield job, job_path
 
@@ -1116,12 +1130,13 @@ class JobTest(unittest.TestCase):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.sh', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
             self.assertFalse(os.path.islink(job_path), job_path)
-            self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
+            if job_path.endswith('.sh'):
+                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
 
     def testAllProjectAreUnique(self):
         allowed_list = {
@@ -1130,18 +1145,18 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-cluster.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-deploy.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-enormous-teardown.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-cluster.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-deploy.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.5.env': 'ci-kubernetes-federation-1.5-*',
+            'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
-            'ci-kubernetes-e2e-gce-federation.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.5.sh': 'ci-kubernetes-federation-1.5-*',
             'ci-kubernetes-federation-build-1.4.sh': 'ci-kubernetes-federation-1.4-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.4.sh': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
         }
@@ -1157,7 +1172,10 @@ class JobTest(unittest.TestCase):
                 if job.startswith('ci-kubernetes-node-'):
                     job = 'ci-kubernetes-node-*'
                 if not line.startswith('#'):
-                    self.assertIn('export', line, line)
+                    if job_path.endswith('.sh'):
+                        self.assertIn('export', line, line)
+                    else:
+                        self.assertNotIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
@@ -1181,6 +1199,8 @@ class JobTest(unittest.TestCase):
             'pipefail',
         }
         for job, job_path in self.jobs:
+            if not job_path.endswith('.sh'):
+                continue
             with open(job_path) as fp:
                 lines = list(fp)
             for option in options:
@@ -1198,6 +1218,39 @@ class JobTest(unittest.TestCase):
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
 
+    def testValidEnv(self):
+        """Validate .env files format"""
+        for job, job_path in self.jobs:
+            if not job_path.endswith('.env'):
+                continue
+            with open(job_path) as fp:
+                lines = list(fp)
+            for line in lines:
+                if line.startswith('#'):
+                    continue
+                # Not start with export
+                self.assertFalse(line.startswith('export'))
+                # No pattern like foo="${bar}"
+                self.assertIsNone(re.search(r'\"\${[^}]+}\"', line))
+
+    def testValidYaml(self):
+        """Validate .yaml files format"""
+        keywords = {
+            'errexit',
+            'nounset',
+            'pipefail',
+        }
+        for job, job_path in self.yamls:
+            self.assertTrue(job_path.endswith('.yaml'))
+            with open(job_path) as fp:
+                script = fp.read()
+            for line in lines:
+                if line.startswith('#'):
+                    continue
+                # Not start with export
+                self.assertFalse(line.startswith('export'))
+                # No pattern like foo="${bar}"
+                self.assertIsNone(re.search(r'\"\${[^}]+}\"', line))
 
 if __name__ == '__main__':
     unittest.main()
