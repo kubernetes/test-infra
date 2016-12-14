@@ -23,10 +23,11 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 export KUBE_VERIFY_GIT_BRANCH='master'
-export KUBE_TEST_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh test/e2e_node/jenkins/jenkins-ci.properties"
+export NODE_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh"
+export NODE_PROPERTIES "test/e2e_node/jenkins/jenkins-ci.properties"
 
 ### Runner
-readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
+readonly runner="${testinfra}/jenkins/node-dockerized.sh"
 export KUBEKINS_TIMEOUT="90m"
 timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
