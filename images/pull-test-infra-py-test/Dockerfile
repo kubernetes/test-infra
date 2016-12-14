@@ -28,6 +28,7 @@ RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     tar xf google-cloud-sdk-136.0.0-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-136.0.0-linux-x86_64.tar.gz && \
     ./google-cloud-sdk/install.sh
+ENV PATH="${PATH}:/google-cloud-sdk/bin"
 
 RUN mkdir -p /workspace
 WORKDIR /workspace
