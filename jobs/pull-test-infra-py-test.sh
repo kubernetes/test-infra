@@ -18,6 +18,14 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+# Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
+readonly GAE_ZIP=google_appengine_1.9.40.zip
+readonly GAE_ROOT=${HOME}/google_appengine
+wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
+unzip -q ${GAE_ZIP} -d ${HOME}
+pip install -r gubernator/test_requirements.txt
+pip install -r jenkins/test-history/requirements.txt
+
 ./verify/verify-boilerplate.py
 python -m unittest discover -s jenkins/test-history -p "*_test.py"
 pylint jenkins/bootstrap.py
