@@ -20,16 +20,31 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     python \
-    python-pip && \
+    python-pip \
+    unzip && \
     apt-get clean
 
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-136.0.0-linux-x86_64.tar.gz && \
-    tar xf google-cloud-sdk-136.0.0-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-136.0.0-linux-x86_64.tar.gz && \
-    ./google-cloud-sdk/install.sh
-ENV PATH="/google-cloud-sdk/bin:${PATH}"
+ENV GCLOUD_TAR="google-cloud-sdk-136.0.0-linux-x86_64.tar.gz" \
+    GAE_ZIP="google_appengine_1.9.40.zip" \
+    GAE_ROOT="/workspace/google_appengine" \
+    PATH="/google-cloud-sdk/bin:${PATH}"
 
 RUN mkdir -p /workspace
+
+RUN wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_TAR}" && \
+    tar xf "${GCLOUD_TAR}" && \
+    rm "${GCLOUD_TAR}" && \
+    ./google-cloud-sdk/install.sh
+
+RUN wget -nv "https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}" && \
+    unzip -q "${GAE_ZIP}" -d /workspace
+
+RUN pip install webtest nosegae pylint==1.6.4 coverage requests jinja2 pyyaml
+
+# We need these set for a few test cases.
+RUN git config --global user.email "you@example.com" && \
+    git config --global user.name "Your Name"
+
 WORKDIR /workspace
 ADD runner /
 ENTRYPOINT ["/bin/bash", "/runner"]
