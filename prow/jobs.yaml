@@ -188,4 +188,4 @@ kubernetes/test-infra:
   trigger: "@k8s-bot (py )?test this"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/test-infra-py-test:0.0
+    - image: gcr.io/k8s-testimages/test-infra-py-test:0.5
