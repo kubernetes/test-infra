@@ -35,13 +35,13 @@ export PROJECT="kubernetes-scale"
 # TODO: Remove FAIL_ON_GCP_RESOURCE_LEAK when PROJECT changes back to gke-large-cluster-jenkins.
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Empty\] \
-                         --allowed-not-ready-nodes=20 \
+                         --allowed-not-ready-nodes=50 \
                          --system-pods-startup-timeout=600m"
 export ZONE="us-east1-a"
-export NUM_NODES=4500
+export NUM_NODES=5000
 export MACHINE_TYPE="g1-small"
 export HEAPSTER_MACHINE_TYPE="n1-standard-8"
-export ALLOWED_NOTREADY_NODES="20"
+export ALLOWED_NOTREADY_NODES="50"
 # We were asked (by MIG team) to not create more than 5 MIGs per zone.
 # We also paged SREs with max-nodes-per-pool=400 (5 concurrent MIGs)
 # So setting max-nodes-per-pool=1000, to check if that helps.
@@ -53,10 +53,8 @@ export E2E_DOWN="false"
 
 ### post-env
 
-# Assume we're upping, testing, and downing a cluster
 export E2E_UP="${E2E_UP:-true}"
 export E2E_TEST="${E2E_TEST:-true}"
-export E2E_DOWN="${E2E_DOWN:-true}"
 
 export E2E_NAME='bootstrap-e2e'
 
