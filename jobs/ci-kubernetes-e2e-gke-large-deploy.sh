@@ -36,6 +36,7 @@ export PROJECT="kubernetes-scale"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Empty\] \
                          --allowed-not-ready-nodes=50 \
+                         --node-schedulable-timeout=600m \
                          --system-pods-startup-timeout=600m"
 export ZONE="us-east1-a"
 export NUM_NODES=5000
