@@ -36,6 +36,10 @@ export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flak
 export GINKGO_PARALLEL="y"
 export KUBE_OS_DISTRIBUTION="gci"
 export PROJECT="k8s-jkns-e2e-gce-gci"
+export NUM_NODES="4"
+export GINKGO_PARALLEL_NODES="30"
+# For now explicitly test etcd v3 mode in this suite.
+export STORAGE_BACKEND="etcd2"
 
 ### post-env
 

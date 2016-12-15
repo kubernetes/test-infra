@@ -40,6 +40,8 @@ export KUBE_NODE_OS_DISTRIBUTION="debian"
 export PROJECT="k8s-jkns-e2e-gce"
 export NUM_NODES="4"
 export GINKGO_PARALLEL_NODES="30"
+# For now explicitly test etcd v3 mode in this suite.
+export STORAGE_BACKEND="etcd2"
 
 ### post-env
 
