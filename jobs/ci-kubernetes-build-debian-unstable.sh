@@ -24,7 +24,7 @@ readonly testinfra="$(dirname "${0}")/.."
 export DEB_CHANNEL="unstable"
 
 ### Runner
-readonly runner="./hack/jenkins/build.sh"
+readonly runner="./debian/jenkins.sh"
 export KUBEKINS_TIMEOUT="300m"
 timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
 
