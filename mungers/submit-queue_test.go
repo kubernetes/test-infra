@@ -87,8 +87,16 @@ func LGTMIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 }
 
+func LGTMApprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel}, true)
+}
+
+func OnlyApprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, approvedLabel}, true)
+}
+
 func DoNotMergeIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
 }
 
 func DoNotMergeMilestoneIssue() *github.Issue {
@@ -109,7 +117,7 @@ func NoLGTMIssue() *github.Issue {
 }
 
 func NoRetestIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, retestNotRequiredLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, retestNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []*github.IssueEvent {
@@ -181,6 +189,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
 	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
+	sq.GateApproved = true
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
 	sq.BlockingJobNames = []string{"foo"}
@@ -485,7 +494,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test1",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -498,11 +507,27 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "success",
 			isMerged:        true,
 		},
+		{
+			name:            "Test1+NoLgtm",
+			pr:              ValidPR(),
+			issue:           OnlyApprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noLGTM,
+			state:           "pending",
+			isMerged:        false,
+		},
 		// Entire thing was run and good, but emergency merge stop in progress
 		{
 			name:               "Test1+emergencyStop",
 			pr:                 ValidPR(),
-			issue:              LGTMIssue(),
+			issue:              LGTMApprovedIssue(),
 			events:             NewLGTMEvents(),
 			commits:            Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:           SuccessStatus(),
@@ -521,7 +546,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test1+prevsuccess",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -543,7 +568,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test2",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
 			ciStatus:        SuccessStatus(),
@@ -576,7 +601,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:   "Test5",
 			pr:     UnMergeablePR(),
-			issue:  LGTMIssue(),
+			issue:  LGTMApprovedIssue(),
 			reason: unmergeable,
 			state:  "pending",
 			// To avoid false errors in logs
@@ -588,7 +613,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:   "Test6",
 			pr:     UndeterminedMergeablePR(),
-			issue:  LGTMIssue(),
+			issue:  LGTMApprovedIssue(),
 			reason: undeterminedMergability,
 			state:  "pending",
 			// To avoid false errors in logs
@@ -612,7 +637,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:   "Test8",
 			pr:     ValidPR(),
-			issue:  LGTMIssue(),
+			issue:  LGTMApprovedIssue(),
 			reason: fmt.Sprintf(ciFailureFmt, notRequiredReTestContext1),
 			state:  "pending",
 			// To avoid false errors in logs
@@ -637,7 +662,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:     "Test11",
 			pr:       ValidPR(),
-			issue:    LGTMIssue(),
+			issue:    LGTMApprovedIssue(),
 			ciStatus: SuccessStatus(),
 			reason:   unknown,
 			state:    "failure",
@@ -650,7 +675,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:     "Test12",
 			pr:       ValidPR(),
-			issue:    LGTMIssue(),
+			issue:    LGTMApprovedIssue(),
 			ciStatus: SuccessStatus(),
 			events:   OldLGTMEvents(),
 			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
@@ -661,7 +686,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test13",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -675,7 +700,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test14",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(),
@@ -689,7 +714,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test15",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -706,7 +731,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Test16",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			ciStatus:        SuccessStatus(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
@@ -719,7 +744,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because E2E pass, but unit test fail",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -734,7 +759,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because E2E fail, but unit test pass",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -780,7 +805,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because retest status fail",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        RetestFailStatus(),
@@ -795,7 +820,7 @@ func TestSubmitQueue(t *testing.T) {
 		{
 			name:            "Fail because noretest status fail",
 			pr:              ValidPR(),
-			issue:           LGTMIssue(),
+			issue:           LGTMApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        NoRetestFailStatus(),

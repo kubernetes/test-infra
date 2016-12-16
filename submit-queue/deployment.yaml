@@ -50,6 +50,8 @@ spec:
         - --cla-status-context=$(CLA_STATUS_CONTEXT)
         - --alias-file=$(ALIAS_FILE_PATH)
         - --batch-url=$(BATCH_URL)
+        - --use-reviewers=$(APPROVAL_ACTIVATED)
+        - --gate-approved=$(APPROVAL_ACTIVATED)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -222,6 +224,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: alias.alias-file
+          - name: APPROVAL_ACTIVATED
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: approval-activated
         ports:
         - name: status
           containerPort: 8080

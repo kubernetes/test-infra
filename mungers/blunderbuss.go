@@ -90,7 +90,7 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 	potentialOwners := weightMap{}
 	weightSum := int64(0)
 	aliases := feats.Aliases
-
+	var fileOwners sets.String
 	for _, file := range files {
 		if file == nil {
 			continue
@@ -103,12 +103,12 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 		// makes three buckets, we shouldn't have many 10k+
 		// line changes.
 		fileWeight = int64(math.Log10(float64(fileWeight))) + 1
-		fileOwners := sets.String{}
 		if leafOnly {
-			fileOwners = feats.Repos.LeafAssignees(*file.Filename)
+			fileOwners = feats.Repos.LeafReviewers(*file.Filename)
 		} else {
-			fileOwners = feats.Repos.Assignees(*file.Filename)
+			fileOwners = feats.Repos.Reviewers(*file.Filename)
 		}
+
 		if fileOwners.Len() == 0 {
 			glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 		}

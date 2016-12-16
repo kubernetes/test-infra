@@ -44,3 +44,6 @@ data:
   size.generated-files-config: ""
   check-labels.label-file: "/gitrepos/test-infra/labels.yaml"
   alias.alias-file: "/gitrepos/test-infra/OWNERS_ALIASES"
+
+  # Temporary gate approval process
+  approval-activated: "false"

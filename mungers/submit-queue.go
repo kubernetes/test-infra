@@ -204,6 +204,8 @@ type SubmitQueue struct {
 	PresubmitJobNames   []string
 	WeakStableJobNames  []string
 
+	GateApproved bool
+
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
 
@@ -557,6 +559,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	cmd.Flags().StringVar(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	cmd.Flags().StringVar(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
+	cmd.Flags().BoolVar(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
 }
 
 // Hold the lock
@@ -866,7 +869,8 @@ func (sq *SubmitQueue) getMetaData() []byte {
 const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
-	noLGTM                  = "PR does not have " + lgtmLabel + " label or " + approvedLabel + " label (needs at least one)."
+	noLGTM                  = "PR does not have " + lgtmLabel + " label."
+	noApproved              = "PR does not have " + approvedLabel + " label."
 	lgtmEarly               = "The PR was changed after the LGTM label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
@@ -971,9 +975,12 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		}
 	}
 
-	// Clearly
-	if !(obj.HasLabel(lgtmLabel) || obj.HasLabel(approvedLabel)) {
+	if !obj.HasLabel(lgtmLabel) {
 		sq.SetMergeStatus(obj, noLGTM)
+		return false
+	}
+	if sq.GateApproved && !obj.HasLabel(approvedLabel) {
+		sq.SetMergeStatus(obj, noApproved)
 		return false
 	}
 
