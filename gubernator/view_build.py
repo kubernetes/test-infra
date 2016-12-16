@@ -81,7 +81,7 @@ def build_details(build_dir):
 
     failures = []
     junit_paths = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
-                   if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
+                   if os.path.basename(f.filename).endswith('.xml')]
 
     junit_futures = {}
     for f in junit_paths:
