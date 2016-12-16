@@ -34,7 +34,7 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 export KUBELET_TEST_ARGS="--experimental-cri=true"
 export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature: Ingress\]"
 export PROJECT="k8s-jkns-cri-ingress"
 # TODO: Enable this when we've split 1.2 tests into another project.
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
