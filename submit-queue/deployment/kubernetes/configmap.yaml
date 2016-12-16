@@ -14,8 +14,8 @@ data:
   # test-options feature options.
   test-options.required-retest-contexts: "\"Jenkins GCE e2e\",\"Jenkins unit/integration\",\"Jenkins verification\",\"Jenkins GCE Node e2e\",\"Jenkins Kubemark GCE e2e\",\"Jenkins GCE etcd3 e2e\",\"Jenkins Bazel Build\""
 
-  submit-queue.protected-branches: "master"
-  submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
+  submit-queue.protected-branches: \"\"
+  submit-queue.protected-branches-extra-contexts: \"\"
 
   # submit-queue options. Keep job lists sorted!
   submit-queue.required-contexts: "\"\""
