@@ -28,14 +28,16 @@ release-1.0|release-1.1|release-1.2|release-1.3|release-1.4|release-1.5)
   ;;
 esac
 
-# TODO(ixdy): remove once all branches are back to build/
-build_dir=build
-if [[ -d build-tools/ ]]; then
-  build_dir=build-tools
+bazel build //cmd/... //pkg/... //federation/... //plugin/... //build/... //test/... && rc=$? || rc=$?
+
+if [[ "${rc}" != 0 ]]; then
+  bazel test --test_output=errors --test_tag_filters '-skip' //pkg/... //cmd/... //plugin/... && rc=$? || rc=$?
 fi
 
-#bazel test --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //plugin/... && rc=$? || rc=$?
-bazel build //cmd/... //pkg/... //federation/... //plugin/... //${build_dir}/... //test/... && rc=$? || rc=$?
+if [[ "${rc}" != 0 ]]; then
+  bazel run //:ci-artifacts -- "gs://kubernetes-releases-dev/bazel/$(git rev-parse HEAD)" && rc=$? || rc=$?
+fi
+
 case "${rc}" in
     0) echo "Success" ;;
     1) echo "Build failed" ;;
