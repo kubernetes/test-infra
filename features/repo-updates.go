@@ -265,7 +265,7 @@ func (o *RepoInfo) FindOwnersForPath(path string) string {
 
 	for {
 		// special case the root
-		if d == "" {
+		if d == "." || d == "" {
 			d = "/"
 		}
 		_, ok := o.approvers[d]
