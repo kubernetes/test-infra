@@ -36,8 +36,15 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # provided must be resolvable on the *HOST*, not the container.
 
 # default to go version 1.6 image tag
-# TODO (krzyzacy) Make one image per kubekins-image version.
-NODEIMAGE_TAG="v20161220-ead6a19"
+NODEIMAGE_TAG="1.6-latest"
+
+if [[ "${NODE_IMG_VERSION}" == *"1.2" ]] || \
+   [[ "${NODE_IMG_VERSION}" == *"1.3" ]] || \
+   [[ "${NODE_IMG_VERSION}" == *"1.4" ]]; then
+  NODEIMAGE_TAG="1.4-latest"
+elif [[ "${NODE_IMG_VERSION}" == *"1.5" ]]; then
+  NODEIMAGE_TAG="1.5-latest"
+fi
 
 docker run --rm=true \
   --privileged=true \
