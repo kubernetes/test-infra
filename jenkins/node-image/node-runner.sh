@@ -27,6 +27,5 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
-
 # Run script
-${NODE_SCRIPT} ${NODE_PROPERTY}
+"${NODE_SCRIPT:-test/e2e_node/jenkins/e2e-node-jenkins.sh} ${NODE_PROPERTY:-test/e2e_node/jenkins/jenkins-ci.properties}"
