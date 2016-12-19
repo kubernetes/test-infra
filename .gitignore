@@ -8,3 +8,4 @@ bazel-genfiles
 bazel-out
 bazel-test-infra
 bazel-testlogs
+_artifacts
