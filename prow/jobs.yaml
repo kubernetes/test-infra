@@ -59,7 +59,7 @@ kubernetes/kubernetes:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
       # We only want one of these to run per node. Once pod affinity is GA, use
-      # that. Until then, use a hostPort.
+      # that. Until then, use a hostPort. This must match other bazel jobs.
       ports:
       - containerPort: 9999
         hostPort: 9999
@@ -179,3 +179,30 @@ kubernetes/test-infra:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/test-infra-go-test:0.4
+
+- name: pull-test-infra-bazel
+  context: Bazel test
+  always_run: true
+  skip_report: true
+  rerun_command: "@k8s-bot bazel test this"
+  trigger: "@k8s-bot (bazel )?test this"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:0.1
+      command: ["/bin/bash", "-c"]
+      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/test-infra --pull=${PULL_REFS} --job=pull-test-infra-bazel"]
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache/bazel
+      # We only want one of these to run per node. Once pod affinity is GA, use
+      # that. Until then, use a hostPort. This must match other bazel jobs.
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
