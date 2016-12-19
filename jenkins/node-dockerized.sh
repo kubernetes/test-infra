@@ -37,7 +37,7 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 
 # default to go version 1.6 image tag
 # TODO (krzyzacy) Make one image per kubekins-image version.
-NODEIMAGE_TAG="v20161219-40a194e"
+NODEIMAGE_TAG="v20161219-8f8c5c0"
 
 docker run --rm=true \
   --privileged=true \
@@ -47,8 +47,8 @@ docker run --rm=true \
   -v /etc/localtime:/etc/localtime:ro \
   -e "REPO_DIR=${REPO_DIR}" \
   -e "HOST_ARTIFACTS_DIR=${HOST_ARTIFACTS_DIR}" \
-  -e "NODE_SCRIPT=${NODE_SCRIPT}" \
-  -e "NODE_PROPERTIES=${NODE_PROPERTIES}" \
+  -e "NODE_TEST_SCRIPT=${NODE_SCRIPT}" \
+  -e "NODE_TEST_PROPERTIES=${NODE_PROPERTIES}" \
   -i "gcr.io/k8s-testimages/kubekins-node:${NODEIMAGE_TAG}" \
   bash -c "cd kubernetes && ${WORKSPACE}/node-runner.sh"
 

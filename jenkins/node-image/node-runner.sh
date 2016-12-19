@@ -28,4 +28,4 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
 fi
 
 # Run script
-"${NODE_SCRIPT:-test/e2e_node/jenkins/e2e-node-jenkins.sh} ${NODE_PROPERTY:-test/e2e_node/jenkins/jenkins-ci.properties}"
+"${NODE_TEST_SCRIPT} ${NODE_TEST_PROPERTIES}"
