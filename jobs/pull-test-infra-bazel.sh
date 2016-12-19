@@ -36,10 +36,8 @@ case "${rc}" in
     *) echo "Unknown exit code: ${rc}" ;;
 esac
 
-# Copy bazel-testlogs/foo/bar/go_default_test/test.xml into _artifacts/foo_bar.xml.
-mkdir -p _artifacts
-for file in $(find -L bazel-testlogs -name "test.xml" -o -name "test.log"); do
-    cp "${file}" "_artifacts/$(echo "${file}" | sed -e "s/bazel-testlogs\///g; s/\/go_default_test\/test//g; s/\//_/g")"
-done
+pushd "$(dirname "$0")/..."
+./images/pull-kubernetes-bazel/coalesce.py
+popd
 
 exit "${rc}"
