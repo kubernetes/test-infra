@@ -38,14 +38,9 @@ if [[ -z "${SKIP_BUILD:-}" ]]; then
   ./hack/jenkins/build.sh
 fi
 
-# TODO(spxtr): Revert back to build/
-if [[ -e build/util.sh ]]; then
-  readonly version=$(source build/util.sh && echo $(kube::release::semantic_version))
-elif [[ -e build-tools/util.sh ]]; then
-  readonly version=$(source build-tools/util.sh && echo $(kube::release::semantic_version))
-fi
+readonly version=$(source build/util.sh && echo $(kube::release::semantic_version))
 if [[ -z "${version:-}" ]]; then
-  echo "Could not find build/util.sh or build-tools/util.sh, or kube::release::semantic_version failed." >&2
+  echo "Could not find build/util.sh, or kube::release::semantic_version failed." >&2
   exit 1
 fi
 export KUBERNETES_PROVIDER="kops-aws"
