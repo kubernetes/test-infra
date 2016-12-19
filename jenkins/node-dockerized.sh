@@ -37,7 +37,7 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 
 # default to go version 1.6 image tag
 # TODO (krzyzacy) Make one image per kubekins-image version.
-NODEIMAGE_TAG="v20161216-fedaf05"
+NODEIMAGE_TAG="v20161219-40a194e"
 
 docker run --rm=true \
   --privileged=true \
