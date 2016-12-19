@@ -30,6 +30,7 @@ install:
     - npm install mocha
 script:
     - ./verify/verify-boilerplate.py
+    - ./verify/verify-bazel.sh
     - python -m unittest discover -s jenkins/test-history -p "*_test.py"
     - pylint jenkins/bootstrap.py  # TODO(fejta): all python files
     - pylint queue-health/graph/graph.py  # TODO(fejta): all python files
