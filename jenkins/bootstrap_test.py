@@ -915,7 +915,7 @@ class JobTest(unittest.TestCase):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(
             os.path.dirname(bootstrap.job_script(JOB))):
-            for job in filenames:
+            for job in [f for f in filenames if f != 'BUILD']:
                 job_path = os.path.join(path, job)
                 yield job, job_path
 
