@@ -17,4 +17,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-"$(dirname "$0")"/bazel-build-common.sh gs://kubernetes-release-dev/bazel
+"$(dirname "$0")"/bazel-build-common.sh gs://kubernetes-release-dev/ci-bazel
