@@ -27,5 +27,8 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
+# Go to kubernetes repo
+cd kubernetes
+
 # Run script
 "${NODE_TEST_SCRIPT}" "${NODE_TEST_PROPERTIES}"
