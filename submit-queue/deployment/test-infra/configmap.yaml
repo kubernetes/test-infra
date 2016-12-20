@@ -17,6 +17,9 @@ data:
   test-options.required-retest-contexts: "\"\""
 
   # submit-queue options.
+  submit-queue.protected-branches: "\"\""
+  submit-queue.protected-branches-extra-contexts: "\"\""
+
   submit-queue.required-contexts: "continuous-integration/travis-ci/pr"
   submit-queue.nonblocking-jenkins-jobs: "\"\""
   submit-queue.jenkins-jobs: "\"\""
