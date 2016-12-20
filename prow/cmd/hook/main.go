@@ -123,23 +123,10 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	prc := make(chan github.PullRequestEvent)
-	icc := make(chan github.IssueCommentEvent)
-	sec := make(chan github.StatusEvent)
 	server := &Server{
-		HMACSecret:         webhookSecret,
-		PullRequestEvents:  prc,
-		IssueCommentEvents: icc,
-		StatusEvents:       sec,
+		HMACSecret: webhookSecret,
+		Plugins:    pluginAgent,
 	}
-
-	events := &EventAgent{
-		Plugins:            pluginAgent,
-		PullRequestEvents:  prc,
-		IssueCommentEvents: icc,
-		StatusEvents:       sec,
-	}
-	events.Start()
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})

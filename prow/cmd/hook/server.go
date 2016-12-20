@@ -24,15 +24,13 @@ import (
 	"net/http"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
-// then places them into the appropriate event channels.
+// then dispatches them to the appropriate plugins.
 type Server struct {
-	PullRequestEvents  chan<- github.PullRequestEvent
-	IssueCommentEvents chan<- github.IssueCommentEvent
-	StatusEvents       chan<- github.StatusEvent
-
+	Plugins    *plugins.PluginAgent
 	HMACSecret []byte
 }
 
@@ -81,25 +79,19 @@ func (s *Server) demuxEvent(eventType string, payload []byte) error {
 		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
-		go func() {
-			s.PullRequestEvents <- pr
-		}()
+		go s.handlePullRequestEvent(pr)
 	case "issue_comment":
 		var ic github.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
-		go func() {
-			s.IssueCommentEvents <- ic
-		}()
+		go s.handleIssueCommentEvent(ic)
 	case "status":
 		var se github.StatusEvent
 		if err := json.Unmarshal(payload, &se); err != nil {
 			return err
 		}
-		go func() {
-			s.StatusEvents <- se
-		}()
+		go s.handleStatusEvent(se)
 	}
 
 	return nil
