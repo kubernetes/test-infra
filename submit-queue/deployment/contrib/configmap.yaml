@@ -50,4 +50,4 @@ data:
   alias.alias-file: "/gitrepos/contrib/OWNERS_ALIASES"
 
   # Temporary gate approval process
-  approval-activated: "true"
+  approval-activated: "false"
