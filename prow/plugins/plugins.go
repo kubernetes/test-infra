@@ -52,6 +52,7 @@ func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
 	pullRequestHandlers[name] = fn
 }
 
+// PluginClient may be used concurrently, so each entry must be thread-safe.
 type PluginClient struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
