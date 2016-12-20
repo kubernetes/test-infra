@@ -19,6 +19,7 @@ package sync
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"k8s.io/contrib/mungegithub/github"
@@ -88,6 +89,11 @@ type IssueSource interface {
 	// newIssue will be true if we are starting a new issue, otherwise we
 	// are adding a comment to an existing issue.
 	Body(newIssue bool) string
+
+	// AddTo attempts to merge Body into the output of another IssueSource's Body.
+	// If this is sensible and valid, it returns the new body. An empty string indicates
+	// a failure to merge the two.
+	AddTo(previous string) string
 
 	// If an issue is filed, these labels will be applied.
 	Labels() []string
@@ -224,7 +230,7 @@ func (s *IssueSyncer) isRecorded(obj *github.MungeObject, source IssueSource) (b
 	return false, nil
 }
 
-// updateIssue adds a comment about the item to the github object.
+// updateIssue adds a comment about the item to the github issue, or updates a comment.
 func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) error {
 	body := source.Body(false)
 	id := source.ID()
@@ -232,7 +238,34 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 		// prevent making tons of duplicate comments
 		panic(fmt.Errorf("Programmer error: %v does not contain %v!", body, id))
 	}
-	glog.Infof("Updating issue %v with item %v", *obj.Issue.Number, source.ID())
+
+	// Try to update an existing comment.
+	// It will only update the last comment for this failure.
+	// It will not update a comment if someone else has commented after it.
+	// It will not update a comment more than 2 weeks old.
+	comments, err := obj.ListComments()
+	if err != nil {
+		return fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
+	}
+	for i := len(comments) - 1; i >= 0; i++ {
+		c := comments[i]
+		if c.User == nil || c.User.Login == nil || *c.User.Login != BotName {
+			break
+		}
+		if c.CreatedAt != nil && c.CreatedAt.Before(time.Now().AddDate(0, 0, -14)) {
+			break
+		}
+		if c.Body == nil {
+			continue
+		}
+		combined := source.AddTo(*c.Body)
+		if combined != "" {
+			glog.Infof("Updating comment in issue %v to add item %v", *obj.Issue.Number, source.ID())
+			return obj.UpdateComment(c, combined)
+		}
+	}
+
+	glog.Infof("Writing comment on issue %v with item %v", *obj.Issue.Number, source.ID())
 	if err := obj.WriteComment(body); err != nil {
 		return err
 	}
@@ -241,6 +274,9 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 		return err
 	}
 	return s.syncPriority(obj, p)
+}
+
+func combineIssueComments(current, extra string) {
 
 }
 
