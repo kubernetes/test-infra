@@ -945,6 +945,23 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	return nil
 }
 
+// ModifiedAfterLabeled returns true if the PR was updated after the last time the
+// label was applied.
+func (obj *MungeObject) ModifiedAfterLabeled(label string) (after bool, ok bool) {
+	labelTime := obj.LabelTime(label)
+	if labelTime == nil {
+		glog.Errorf("Unable to find label time for: %q on %d", label, obj.Number())
+		return false, false
+	}
+	lastModifiedTime := obj.LastModifiedTime()
+	if lastModifiedTime == nil {
+		glog.Errorf("Unable to find last modification time for %d", obj.Number())
+		return false, false
+	}
+	after = lastModifiedTime.After(*labelTime)
+	return after, true
+}
+
 // GetHeadAndBase returns the head SHA and the base ref, so that you can get
 // the base's sha in a second step. Purpose: if head and base SHA are the same
 // across two merge attempts, we don't need to rerun tests.
