@@ -3,9 +3,5 @@
 *.sublime-project
 *.sublime-workspace
 *~
-bazel-bin
-bazel-genfiles
-bazel-out
-bazel-test-infra
-bazel-testlogs
-_artifacts
+/bazel-*
+/_artifacts

@@ -17,6 +17,5 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# TODO(spxtr): Pin to gazel version once mikedanese/gazel#14 is in.
-go get -u github.com/mikedanese/gazel/gazel
+go get -u gopkg.in/mikedanese/gazel.v6/gazel
 gazel --root "${PWD}"
