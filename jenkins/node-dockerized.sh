@@ -51,6 +51,5 @@ docker run --rm=true \
   -e "NODE_TEST_SCRIPT=${NODE_TEST_SCRIPT}" \
   -e "NODE_TEST_PROPERTIES=${NODE_TEST_PROPERTIES}" \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \
-  -i "gcr.io/k8s-testimages/kubekins-node:${NODEIMAGE_TAG}" \
-  bash -c "cd kubernetes && ${WORKSPACE}/node-runner.sh"
+  -i "gcr.io/k8s-testimages/kubekins-node:${NODEIMAGE_TAG}"
 
