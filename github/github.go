@@ -232,6 +232,7 @@ type analytics struct {
 	ListReviewComments   analytic
 	CreateComment        analytic
 	DeleteComment        analytic
+	UpdateComment        analytic
 	Merge                analytic
 	GetUser              analytic
 	SetMilestone         analytic
@@ -1899,7 +1900,7 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 		copy(temp[which:], obj.comments[which+1:])
 		obj.comments = temp
 	}
-	body := "UNKOWN"
+	body := "UNKNOWN"
 	if comment.Body != nil {
 		body = *comment.Body
 	}
@@ -1915,6 +1916,34 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 		glog.Errorf("Error removing comment: %v", err)
 		return err
 	}
+	return nil
+}
+
+// UpdateComment will change the specified comment's body.
+func (obj *MungeObject) UpdateComment(comment *github.IssueComment, body string) error {
+	config := obj.config
+	prNum := *obj.Issue.Number
+	config.analytics.UpdateComment.Call(config, nil)
+	if comment.ID == nil {
+		err := fmt.Errorf("Found a comment with nil id for Issue %d", prNum)
+		glog.Errorf("Found a comment with nil id for Issue %d", prNum)
+		return err
+	}
+	author := "UNKNOWN"
+	if comment.User != nil && comment.User.Login != nil {
+		author = *comment.User.Login
+	}
+	glog.Infof("Updating comment %d from Issue %d. Author:%s New Body:%q", *comment.ID, prNum, author, body)
+	if config.DryRun {
+		return nil
+	}
+	patch := github.RepositoryComment{Body: &body}
+	resp, _, err := config.client.Repositories.UpdateComment(config.Org, config.Project, *comment.ID, &patch)
+	if err != nil {
+		glog.Errorf("Error updating comment: %v", err)
+		return err
+	}
+	comment.Body = resp.Body
 	return nil
 }
 

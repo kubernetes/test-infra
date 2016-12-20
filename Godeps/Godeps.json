@@ -31,6 +31,10 @@
 			"Rev": "63027b26b87e2ae2ce3810393d4b81021cfd3a35"
 		},
 		{
+			"ImportPath": "github.com/arbovm/levenshtein",
+			"Rev": "48b4e1c0c4d0b8b1864f1bd2cd31bb20147e4636"
+		},
+		{
 			"ImportPath": "github.com/beorn7/perks/quantile",
 			"Rev": "3ac7bf7a47d159a033b107610db8a1b6575507a4"
 		},

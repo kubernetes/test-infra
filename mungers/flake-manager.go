@@ -19,6 +19,7 @@ package mungers
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"k8s.io/contrib/mungegithub/features"
@@ -30,6 +31,7 @@ import (
 
 	"time"
 
+	"github.com/arbovm/levenshtein"
 	"github.com/golang/glog"
 	libgithub "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
@@ -41,7 +43,17 @@ const failedStr = "Failed: "
 var (
 	// pullRE is a regexp that will extract the PR# from a path to a flake
 	// that happened on a PR.
-	pullRE = regexp.MustCompile("pull/([0-9]+)/")
+	pullRE           = regexp.MustCompile("pull/([0-9]+)/")
+	failureInnerRE   = regexp.MustCompile("(?s)(.*)\n" + failedStr + "([^\n]*)\n\n```\n(.*)\n```\\s*$")
+	gubernatorLinkRE = regexp.MustCompile(`https://k8s-gubernator.appspot.com/build([^])\s]+)`)
+
+	// Find things that looks like dates "Dec 20 10:34:56" or "2016-12-20T10:34:56", to remove them.
+	flakeReasonDateRE = regexp.MustCompile(`\w{3} \d{1,2} \d+:\d+:\d+(\.\d+)?|\d{4}-\d\d-\d\d.\d\d:\d\d:\d\d`)
+	// Find random noisy strings that should be replaced with renumbered strings, for more similar messages.
+	flakeReasonOrdinalRE = regexp.MustCompile(
+		`0x[0-9a-fA-F]+` + // hex constants
+			`|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}` + // IPs
+			`|[0-9a-f]{8}-\S{4}-\S{4}-\S{4}-\S{12}`) // UUIDs
 )
 
 // issueFinder finds an issue for a given key.
@@ -203,7 +215,7 @@ func (p *individualFlakeSource) ID() string {
 	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
 		string(p.flake.Job),
 		int(p.flake.Number),
-	) + "\n"
+	)
 }
 
 // Body implements IssueSource
@@ -224,6 +236,80 @@ func (p *individualFlakeSource) Body(newIssue bool) string {
 		body = body + fmt.Sprintf("\nPrevious issues for this test: %v\n", strings.Join(s, " "))
 	}
 	return body
+}
+
+// flakeReasonsAreEquivalent attempts to determine if two failure strings are close enough to represent
+// the same failure. It does limited stripping of dates and sanitization of IPs, UUIDs, etc, before
+// determining if reasons are fuzzily close enough.
+func flakeReasonsAreEquivalent(a, b string) bool {
+	a = flakeReasonDateRE.ReplaceAllString(a, "")
+	b = flakeReasonDateRE.ReplaceAllString(b, "")
+
+	// do alpha conversion-- rename random garbage strings (hex pointer values, node names, etc)
+	// into "UNIQ1", "UNIQ2", etc.
+	var matches map[string]string
+	repl := func(s string) string {
+		if matches[s] == "" {
+			matches[s] = fmt.Sprintf("UNIQ%d", len(matches)+1)
+		}
+		return matches[s]
+	}
+
+	matches = make(map[string]string)
+	a = flakeReasonOrdinalRE.ReplaceAllStringFunc(a, repl)
+
+	matches = make(map[string]string) // reset mapping
+	b = flakeReasonOrdinalRE.ReplaceAllStringFunc(b, repl)
+
+	if len(a) < 100 {
+		return a == b
+	}
+
+	return levenshtein.Distance(a, b) < (len(a)+len(b))/20 // ~5% differences allowed
+	return a == b
+}
+
+// AddTo implements IssueSource
+func (p *individualFlakeSource) AddTo(previous string) string {
+	parsedBody := failureInnerRE.FindStringSubmatch(previous)
+	if parsedBody == nil {
+		return ""
+	}
+	if parsedBody[2] != p.Title() || !flakeReasonsAreEquivalent(parsedBody[3], p.flake.Reason) {
+		return ""
+	}
+
+	idMatches := gubernatorLinkRE.FindAllStringSubmatch(parsedBody[1], -1)
+	ids := []string{}
+	for _, m := range idMatches {
+		ids = append(ids, m[1])
+	}
+	ids = append(ids, p.ID())
+	sort.Strings(ids)
+
+	parts := []string{"Builds:\n"}
+	lastJob := ""
+	lastNum := ""
+	for _, id := range ids {
+		s := strings.Split(id, "/")
+		num := s[len(s)-2]
+		job := s[len(s)-3]
+		if job == lastJob && num == lastNum {
+			continue // skip duplicates
+		}
+		if job != lastJob {
+			if lastJob != "" {
+				parts = append(parts, "\n")
+			}
+			parts = append(parts, job+" ")
+			lastJob = job
+		}
+		parts = append(parts, fmt.Sprintf("[%s](%s) ", num, makeGubernatorLink(id)))
+		lastNum = num
+	}
+
+	parts = append(parts, "\n\n", previous[len(parsedBody[1]):])
+	return strings.Join(parts, "")
 }
 
 // Labels implements IssueSource
@@ -260,7 +346,7 @@ func (p *brokenJobSource) ID() string {
 	return p.fm.googleGCSBucketUtils.GetPathToJenkinsGoogleBucket(
 		string(p.result.Job),
 		int(p.result.Number),
-	) + "\n"
+	)
 }
 
 // Body implements IssueSource
@@ -297,6 +383,11 @@ func (p *brokenJobSource) Body(newIssue bool) string {
 		body = body + fmt.Sprintf("\nPrevious issues for this suite: %v\n", strings.Join(s, " "))
 	}
 	return body
+}
+
+// AddTo implements IssueSource
+func (p *brokenJobSource) AddTo(previous string) string {
+	return ""
 }
 
 // Labels implements IssueSource
