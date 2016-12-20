@@ -22,8 +22,8 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
-export NODE_TEST_SCRIPT="kubernetes/test/e2e_node/jenkins/e2e-node-jenkins.sh"
-export NODE_TEST_PROPERTIES="kubernetes/test/e2e_node/jenkins/jenkins-ci.properties"
+export NODE_TEST_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh"
+export NODE_TEST_PROPERTIES="test/e2e_node/jenkins/jenkins-ci.properties"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/node-dockerized.sh"
