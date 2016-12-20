@@ -9,6 +9,13 @@ Travis. You will need to be a member of
 [kubernetes/test-infra-maintainers](https://github.com/orgs/kubernetes/teams/test-infra-maintainers)
 to merge.
 
+## Building and testing the test-infra
+
+We use [Bazel](https://www.bazel.io/) to build and test the code in this repo.
+The commands `bazel build //...` and `bazel test //...` should be all you need
+for most cases. If you modify Go code, run `./verify/update-bazel.sh` to keep
+`BUILD` files up-to-date.
+
 ## Testing Kubernetes
 
 The YAML files under `jenkins/job-configs` define our Jenkins jobs via [Jenkins
