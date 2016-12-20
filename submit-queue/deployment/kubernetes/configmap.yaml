@@ -159,6 +159,7 @@ data:
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
     ci-kubernetes-test-go,\
+    ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-verify-master"
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
