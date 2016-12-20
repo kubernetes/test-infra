@@ -260,8 +260,8 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 		}
 		combined := source.AddTo(*c.Body)
 		if combined != "" {
-			glog.Infof("Updating comment in issue %v to add item %v", *obj.Issue.Number, source.ID())
-			return obj.UpdateComment(c, combined)
+			glog.Infof("Editing comment in issue %v to add item %v", *obj.Issue.Number, source.ID())
+			return obj.EditComment(c, combined)
 		}
 	}
 

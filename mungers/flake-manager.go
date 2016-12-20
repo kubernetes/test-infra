@@ -47,7 +47,7 @@ var (
 	failureInnerRE   = regexp.MustCompile("(?s)(.*)\n" + failedStr + "([^\n]*)\n\n```\n(.*)\n```\\s*$")
 	gubernatorLinkRE = regexp.MustCompile(`https://k8s-gubernator.appspot.com/build([^])\s]+)`)
 
-	// Find things that looks like dates "Dec 20 10:34:56" or "2016-12-20T10:34:56", to remove them.
+	// Find things that look like dates "Dec 20 10:34:56" or "2016-12-20T10:34:56", to remove them.
 	flakeReasonDateRE = regexp.MustCompile(`\w{3} \d{1,2} \d+:\d+:\d+(\.\d+)?|\d{4}-\d\d-\d\d.\d\d:\d\d:\d\d`)
 	// Find random noisy strings that should be replaced with renumbered strings, for more similar messages.
 	flakeReasonOrdinalRE = regexp.MustCompile(

@@ -232,7 +232,7 @@ type analytics struct {
 	ListReviewComments   analytic
 	CreateComment        analytic
 	DeleteComment        analytic
-	UpdateComment        analytic
+	EditComment          analytic
 	Merge                analytic
 	GetUser              analytic
 	SetMilestone         analytic
@@ -1919,11 +1919,11 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 	return nil
 }
 
-// UpdateComment will change the specified comment's body.
-func (obj *MungeObject) UpdateComment(comment *github.IssueComment, body string) error {
+// EditComment will change the specified comment's body.
+func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
-	config.analytics.UpdateComment.Call(config, nil)
+	config.analytics.EditComment.Call(config, nil)
 	if comment.ID == nil {
 		err := fmt.Errorf("Found a comment with nil id for Issue %d", prNum)
 		glog.Errorf("Found a comment with nil id for Issue %d", prNum)
@@ -1937,8 +1937,8 @@ func (obj *MungeObject) UpdateComment(comment *github.IssueComment, body string)
 	if config.DryRun {
 		return nil
 	}
-	patch := github.RepositoryComment{Body: &body}
-	resp, _, err := config.client.Repositories.UpdateComment(config.Org, config.Project, *comment.ID, &patch)
+	patch := github.IssueComment{Body: &body}
+	resp, _, err := config.client.Issues.EditComment(config.Org, config.Project, *comment.ID, &patch)
 	if err != nil {
 		glog.Errorf("Error updating comment: %v", err)
 		return err
