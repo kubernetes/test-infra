@@ -1933,14 +1933,22 @@ func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) e
 	if comment.User != nil && comment.User.Login != nil {
 		author = *comment.User.Login
 	}
-	glog.Infof("Updating comment %d from Issue %d. Author:%s New Body:%q", *comment.ID, prNum, author, body)
+	shortBody := body
+	if len(shortBody) > 512 {
+		shortBody = shortBody[:512]
+	}
+	glog.Infof("Editing comment %d from Issue %d. Author:%s New Body:%q", *comment.ID, prNum, author, shortBody)
 	if config.DryRun {
 		return nil
+	}
+	if len(body) > maxCommentLen {
+		glog.Info("Comment in %d was larger than %d and was truncated", prNum, maxCommentLen)
+		body = body[:maxCommentLen]
 	}
 	patch := github.IssueComment{Body: &body}
 	resp, _, err := config.client.Issues.EditComment(config.Org, config.Project, *comment.ID, &patch)
 	if err != nil {
-		glog.Errorf("Error updating comment: %v", err)
+		glog.Errorf("Error editing comment: %v", err)
 		return err
 	}
 	comment.Body = resp.Body
