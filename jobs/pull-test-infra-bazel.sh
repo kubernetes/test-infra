@@ -36,8 +36,6 @@ case "${rc}" in
     *) echo "Unknown exit code: ${rc}" ;;
 esac
 
-pushd "$(dirname "$0")/..."
 ./images/pull-kubernetes-bazel/coalesce.py
-popd
 
 exit "${rc}"

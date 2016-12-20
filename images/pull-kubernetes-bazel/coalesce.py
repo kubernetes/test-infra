@@ -17,6 +17,7 @@
 """Coalesces bazel test results into one file."""
 
 
+import argparse
 import os
 import xml.etree.ElementTree as ET
 
@@ -58,4 +59,8 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Coalesce JUnit results.')
+    parser.add_argument('--repo_root', default='.')
+    args = parser.parse_args()
+    os.chdir(args.repo_root)
     main()
