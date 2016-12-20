@@ -247,7 +247,7 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 	if err != nil {
 		return fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
 	}
-	for i := len(comments) - 1; i >= 0; i++ {
+	for i := len(comments) - 1; i >= 0; i-- {
 		c := comments[i]
 		if c.User == nil || c.User.Login == nil || *c.User.Login != BotName {
 			break
