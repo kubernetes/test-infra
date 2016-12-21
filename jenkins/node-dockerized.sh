@@ -39,14 +39,18 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # TODO (krzyzacy) Make one image per kubekins-image version.
 NODEIMAGE_TAG="v20161220-ead6a19"
 
+# run node test as jenkins
+GCE_USER="jenkins"
+
 docker run --rm=true \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${REPO_DIR}":/go/src/k8s.io/kubernetes \
   -v "${WORKSPACE}/_artifacts":/workspace/artifacts \
   -v /etc/localtime:/etc/localtime:ro \
-  ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}:/jenkins/.ssh/google_compute_engine:ro"} \
-  ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:+-v "${JENKINS_GCE_SSH_PUBLIC_KEY_FILE}:/jenkins/.ssh/google_compute_engine.pub:ro"} \
+  ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}:/root/.ssh/google_compute_engine:ro"} \
+  ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:+-v "${JENKINS_GCE_SSH_PUBLIC_KEY_FILE}:/root/.ssh/google_compute_engine.pub:ro"} \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-v "${GOOGLE_APPLICATION_CREDENTIALS}:/service-account.json:ro"} \
+  -e "GCE_USER=${GCE_USER}" \
   -e "REPO_DIR=${REPO_DIR}" \
   -e "HOST_ARTIFACTS_DIR=${HOST_ARTIFACTS_DIR}" \
   -e "NODE_TEST_SCRIPT=${NODE_TEST_SCRIPT}" \
