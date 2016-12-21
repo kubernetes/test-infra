@@ -23,7 +23,7 @@ export TEST_TMPDIR="/root/.cache/bazel"
 bazel build //... && rc=$? || rc=$?
 
 if [[ "${rc}" == 0 ]]; then
-  bazel test //... && rc=$? || rc=$?
+  bazel test --test_output=errors //... && rc=$? || rc=$?
 fi
 
 case "${rc}" in
