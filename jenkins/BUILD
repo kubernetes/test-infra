@@ -10,4 +10,5 @@ py_test(
         "//jenkins/job-configs:configs",
         "dockerized-e2e-runner.sh",
     ],
+    tags = ["manual"],
 )

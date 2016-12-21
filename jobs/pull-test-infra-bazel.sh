@@ -22,6 +22,9 @@ export TEST_TMPDIR="/root/.cache/bazel"
 
 bazel build //... && rc=$? || rc=$?
 
+# Clear test.xml so that we don't pick up old results.
+find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+
 if [[ "${rc}" == 0 ]]; then
   bazel test --test_output=errors //... && rc=$? || rc=$?
 fi
