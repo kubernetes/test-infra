@@ -34,6 +34,7 @@ def result(pkg):
     el = ET.Element('testcase')
     el.set('classname', 'go_test')
     el.set('name', '_'.join(pkg.split('/')[1:-1]))
+    el.set('time', '0')
     suites = ET.parse(pkg + '/test.xml').getroot()
     for suite in suites:
         for case in suite:
@@ -48,6 +49,7 @@ def result(pkg):
 
 def main():
     root = ET.Element('testsuite')
+    root.set('time', '0')
     for package in test_packages('bazel-testlogs'):
         root.append(result(package))
     try:
