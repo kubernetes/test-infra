@@ -24,7 +24,6 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
-	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
@@ -73,15 +72,13 @@ func (h AssignUnassignHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	comments, err := obj.ListComments()
-	if err != nil {
-		glog.Errorf("unexpected error getting comments: %v", err)
+	comments, ok := obj.ListComments()
+	if !ok {
 		return
 	}
 
-	fileList, err := obj.ListFiles()
-	if err != nil {
-		glog.Errorf("Could not list the files for PR %v: %v", obj.Issue.Number, err)
+	fileList, ok := obj.ListFiles()
+	if !ok {
 		return
 	}
 

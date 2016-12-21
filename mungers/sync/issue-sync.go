@@ -99,7 +99,7 @@ type IssueSource interface {
 	Labels() []string
 
 	// Priority calculates and returns the priority of an flake issue
-	Priority(obj *github.MungeObject) (Priority, error)
+	Priority(obj *github.MungeObject) (Priority, bool)
 }
 
 // IssueSyncer implements robust issue syncing logic and won't file duplicates etc.
@@ -127,9 +127,9 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 		return nil
 	}
 
-	found, updatableIssues, err := s.findPreviousIssues(source)
-	if err != nil {
-		return err
+	found, updatableIssues, ok := s.findPreviousIssues(source)
+	if !ok {
+		return fmt.Errorf("Unable to find PreviousIssues for %v", source)
 	}
 
 	// Close dups if there are multiple open issues
@@ -151,7 +151,7 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 	if len(updatableIssues) > 0 {
 		obj = updatableIssues[0]
 		// Update the chosen issue
-		if err = s.updateIssue(obj, source); err != nil {
+		if err := s.updateIssue(obj, source); err != nil {
 			return fmt.Errorf("error updating issue %v for %v: %v", *obj.Issue.Number, source.ID(), err)
 		}
 		s.synced.Insert(source.ID())
@@ -159,7 +159,7 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 	}
 
 	// No issue could be updated, create a new issue.
-	obj, err = s.createIssue(source)
+	obj, err := s.createIssue(source)
 	if err != nil {
 		return fmt.Errorf("error making issue for %v: %v", source.ID, err)
 	}
@@ -172,16 +172,16 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 // Look through all issues filed about this item.
 // If foundIn is > 0, then the particular item was found in that issue.
 // All open issues for this item are returned in updatableIssues.
-func (s *IssueSyncer) findPreviousIssues(source IssueSource) (found bool, updatableIssues []*github.MungeObject, err error) {
+func (s *IssueSyncer) findPreviousIssues(source IssueSource) (found bool, updatableIssues []*github.MungeObject, ok bool) {
 	possibleIssues := s.finder.AllIssuesForKey(source.Title())
 	for _, previousIssue := range possibleIssues {
 		obj, err := s.config.GetObject(previousIssue)
 		if err != nil {
-			return false, nil, fmt.Errorf("error getting object for %v: %v", previousIssue, err)
+			return false, nil, false
 		}
-		isRecorded, err := s.isRecorded(obj, source)
-		if err != nil {
-			return false, nil, fmt.Errorf("error checking whether item %v is recorded in issue %v: %v", source.ID(), previousIssue, err)
+		isRecorded, ok := s.isRecorded(obj, source)
+		if !ok {
+			return false, nil, false
 		}
 		if isRecorded {
 			found = true
@@ -191,7 +191,7 @@ func (s *IssueSyncer) findPreviousIssues(source IssueSource) (found bool, updata
 			updatableIssues = append(updatableIssues, obj)
 		}
 	}
-	return found, updatableIssues, nil
+	return found, updatableIssues, true
 }
 
 // Close all of the dups.
@@ -208,15 +208,15 @@ func (s *IssueSyncer) markAsDups(dups []*github.MungeObject, of int) error {
 
 // Search through the body and comments to see if the given item is already
 // mentioned in the given github issue.
-func (s *IssueSyncer) isRecorded(obj *github.MungeObject, source IssueSource) (bool, error) {
+func (s *IssueSyncer) isRecorded(obj *github.MungeObject, source IssueSource) (bool, bool) {
 	id := source.ID()
 	if obj.Issue.Body != nil && strings.Contains(*obj.Issue.Body, id) {
 		// We already wrote this item
-		return true, nil
+		return true, true
 	}
-	comments, err := obj.ListComments()
-	if err != nil {
-		return false, fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
+	comments, ok := obj.ListComments()
+	if !ok {
+		return false, false
 	}
 	for _, c := range comments {
 		if c.Body == nil {
@@ -224,10 +224,10 @@ func (s *IssueSyncer) isRecorded(obj *github.MungeObject, source IssueSource) (b
 		}
 		if strings.Contains(*c.Body, id) {
 			// We already wrote this item
-			return true, nil
+			return true, true
 		}
 	}
-	return false, nil
+	return false, true
 }
 
 // updateIssue adds a comment about the item to the github issue, or updates a comment.
@@ -243,9 +243,9 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 	// It will only update the last comment for this failure.
 	// It will not update a comment if someone else has commented after it.
 	// It will not update a comment more than 2 weeks old.
-	comments, err := obj.ListComments()
-	if err != nil {
-		return fmt.Errorf("error getting comments for %v: %v", *obj.Issue.Number, err)
+	comments, ok := obj.ListComments()
+	if !ok {
+		return fmt.Errorf("error getting comments for %v", *obj.Issue.Number)
 	}
 	for i := len(comments) - 1; i >= 0; i-- {
 		c := comments[i]
@@ -273,9 +273,9 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 	if err := obj.WriteComment(body); err != nil {
 		return err
 	}
-	p, err := source.Priority(obj)
-	if err != nil {
-		return err
+	p, ok := source.Priority(obj)
+	if !ok {
+		return fmt.Errorf("Unable to get priority")
 	}
 	return s.syncPriority(obj, p)
 }

@@ -339,8 +339,8 @@ func (sq *SubmitQueue) doBatchMerge(batch Batch) {
 
 	// then merge each
 	for _, pr := range prs {
-		err := sq.mergePullRequest(pr, mergedBatch, extra)
-		if err != nil {
+		ok := sq.mergePullRequest(pr, mergedBatch, extra)
+		if !ok {
 			return
 		}
 		atomic.AddInt32(&sq.batchMerges, 1)

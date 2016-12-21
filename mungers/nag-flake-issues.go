@@ -19,7 +19,6 @@ package mungers
 import (
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	"k8s.io/contrib/mungegithub/features"
@@ -95,9 +94,8 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 		return
 	}
 
-	comments, err := obj.ListComments()
-	if err != nil {
-		glog.Error(err)
+	comments, ok := obj.ListComments()
+	if !ok {
 		return
 	}
 

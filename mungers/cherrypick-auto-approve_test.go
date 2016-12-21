@@ -181,13 +181,17 @@ func TestCherrypickAuthApprove(t *testing.T) {
 		if test.shouldHaveLabel != "" && !obj.HasLabel(test.shouldHaveLabel) {
 			t.Errorf("%d:%q: missing label %q", testNum, test.name, test.shouldHaveLabel)
 		}
-		if test.shouldHaveMilestone != "" && obj.ReleaseMilestone() != test.shouldHaveMilestone {
+		milestone, ok := obj.ReleaseMilestone()
+		if !ok {
+			t.Errorf("%d:%q: error getting obj.ReleaseMilestone", testNum, test.name)
+		}
+		if test.shouldHaveMilestone != "" && milestone != test.shouldHaveMilestone {
 			t.Errorf("%d:%q: missing milestone %q", testNum, test.name, test.shouldHaveMilestone)
 		}
 		if test.shouldNotHaveLabel != "" && obj.HasLabel(test.shouldNotHaveLabel) {
 			t.Errorf("%d:%q: extra label %q", testNum, test.name, test.shouldNotHaveLabel)
 		}
-		if test.shouldNotHaveMile != "" && obj.ReleaseMilestone() == test.shouldNotHaveMile {
+		if test.shouldNotHaveMile != "" && milestone == test.shouldNotHaveMile {
 			t.Errorf("%d:%q: extra milestone %q", testNum, test.name, test.shouldNotHaveMile)
 		}
 

@@ -148,8 +148,8 @@ func (c *CherrypickQueue) Munge(obj *github.MungeObject) {
 }
 
 func mergeTime(obj *github.MungeObject) time.Time {
-	t := obj.MergedAt()
-	if t == nil {
+	t, ok := obj.MergedAt()
+	if !ok || t == nil {
 		t = &maxTime
 	}
 	return *t
@@ -166,8 +166,9 @@ func (s cpQueueSorter) Less(i, j int) bool {
 	b := s[j]
 
 	// Sort first based on release milestone
-	aDue := a.ReleaseMilestoneDue()
-	bDue := b.ReleaseMilestoneDue()
+	// ignore errors because ReleaseMilestoneDue returns a time WAY in the future on errors
+	aDue, _ := a.ReleaseMilestoneDue()
+	bDue, _ := b.ReleaseMilestoneDue()
 	if aDue.Before(bDue) {
 		return true
 	} else if aDue.After(bDue) {
@@ -243,8 +244,8 @@ func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
 	sortedQueue := []rawReadyInfo{}
 	for _, key := range keyOrder {
 		obj := queue[key]
-		sha := obj.MergeCommit()
-		if sha == nil {
+		sha, ok := obj.MergeCommit()
+		if !ok || sha == nil {
 			empty := "UnknownSHA"
 			sha = &empty
 		}
@@ -279,8 +280,8 @@ func (c *CherrypickQueue) getQueueData(last, current map[int]*github.MungeObject
 		if obj.HasLabel(cpApprovedLabel) {
 			cps.ExtraInfo = append(cps.ExtraInfo, cpApprovedLabel)
 		}
-		milestone := obj.ReleaseMilestone()
-		if milestone != "" {
+		milestone, ok := obj.ReleaseMilestone()
+		if ok && milestone != "" {
 			cps.ExtraInfo = append(cps.ExtraInfo, milestone)
 		}
 		merged, _ := obj.IsMerged()

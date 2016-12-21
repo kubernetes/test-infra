@@ -105,7 +105,10 @@ func (cla *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 		return
 	}
 
-	status := obj.GetStatusState([]string{cla.CLAStatusContext})
+	status, ok := obj.GetStatusState([]string{cla.CLAStatusContext})
+	if !ok {
+		return
+	}
 
 	// Check for pending status and exit.
 	if status == contextPending {
@@ -126,9 +129,8 @@ func (cla *ClaMunger) Munge(obj *githubhelper.MungeObject) {
 	}
 
 	// If we are here, that means that the context is failure/error.
-	comments, err := obj.ListComments()
-	if err != nil {
-		glog.Error(err)
+	comments, ok := obj.ListComments()
+	if !ok {
 		return
 	}
 	who := mungerutil.GetIssueUsers(obj.Issue).Author.Mention().Join()

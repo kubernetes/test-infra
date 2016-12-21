@@ -64,8 +64,8 @@ func (a *AssignFixesMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 	// we need the PR for the "User" (creator of the PR not the assignee)
-	pr, err := obj.GetPR()
-	if err != nil {
+	pr, ok := obj.GetPR()
+	if !ok {
 		glog.Infof("Couldn't get PR %v", obj.Issue.Number)
 		return
 	}

@@ -104,10 +104,15 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	if obj.IsForBranch("master") {
+	forBranch, ok := obj.IsForBranch("master")
+	if !ok || forBranch {
 		return
 	}
-	if obj.HasLabel(cpApprovedLabel) && obj.ReleaseMilestone() != "" {
+	milestone, ok := obj.ReleaseMilestone()
+	if !ok {
+		return
+	}
+	if obj.HasLabel(cpApprovedLabel) && milestone != "" {
 		return
 	}
 
@@ -118,13 +123,15 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 
 	major := 0
 	minor := 0
-	branch := obj.Branch()
+	branch, ok := obj.Branch()
+	if !ok {
+		return
+	}
 	if l, err := fmt.Sscanf(branch, "release-%d.%d", &major, &minor); err != nil || l != 2 {
 		return
 	}
 	branchImpliedMilestone := fmt.Sprintf("v%d.%d", major, minor)
 
-	milestone := obj.ReleaseMilestone()
 	if milestone != "" && milestone != branchImpliedMilestone {
 		glog.Errorf("Found PR %d on branch %q but have milestone %q", *obj.Issue.Number, branch, milestone)
 		return
@@ -138,9 +145,10 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 		// If the parent was for milestone v1.2 but this PR has
 		// comments saying it was 'on branch release-1.1' we should
 		// not auto approve
-		parentMilestone := parent.ReleaseMilestone()
-		if parentMilestone != branchImpliedMilestone {
-			glog.Errorf("%d: parentReleaseMilestone=%q but branch is %q", *obj.Issue.Number, parentMilestone, obj.Branch())
+		parentMilestone, ok := parent.ReleaseMilestone()
+		if parentMilestone != branchImpliedMilestone || !ok {
+			branch, _ := obj.Branch()
+			glog.Errorf("%d: parentReleaseMilestone=%q but branch is %q", *obj.Issue.Number, parentMilestone, branch)
 			return
 		}
 	}

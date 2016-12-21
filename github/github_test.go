@@ -413,8 +413,8 @@ func TestGetLastModified(t *testing.T) {
 			config: config,
 			Issue:  github_test.Issue("bob", 1, nil, true),
 		}
-		ts := obj.LastModifiedTime()
-		if !ts.Equal(*test.expectedTime) {
+		ts, ok := obj.LastModifiedTime()
+		if !ok || !ts.Equal(*test.expectedTime) {
 			t.Errorf("expected: %v, saw: %v for: %v", test.expectedTime, ts, test)
 		}
 		server.Close()

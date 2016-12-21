@@ -124,8 +124,8 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	files, err := obj.ListFiles()
-	if err != nil {
+	files, ok := obj.ListFiles()
+	if !ok {
 		return
 	}
 
@@ -148,8 +148,8 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 
 	extraLabels := hasLabels.Difference(needsLabels)
 	for _, label := range extraLabels.List() {
-		creator := obj.LabelCreator(label)
-		if creator == botName {
+		creator, ok := obj.LabelCreator(label)
+		if ok && creator == botName {
 			obj.RemoveLabel(label)
 		}
 	}

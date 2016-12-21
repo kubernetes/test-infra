@@ -71,7 +71,10 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	releaseMilestone := obj.ReleaseMilestone()
+	releaseMilestone, ok := obj.ReleaseMilestone()
+	if !ok {
+		return
+	}
 	hasLabel := obj.HasLabel(cpCandidateLabel)
 
 	if hasLabel && releaseMilestone == "" {
@@ -87,7 +90,11 @@ func (PickMustHaveMilestone) isStaleComment(obj *github.MungeObject, comment *gi
 	if *comment.Body != pickMustHaveMilestoneBody {
 		return false
 	}
-	stale := obj.ReleaseMilestone() != ""
+	milestone, ok := obj.ReleaseMilestone()
+	if !ok {
+		return false
+	}
+	stale := milestone != ""
 	if stale {
 		glog.V(6).Infof("Found stale PickMustHaveMilestone comment")
 	}

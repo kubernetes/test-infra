@@ -396,18 +396,18 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 
 		obj := github_util.TestObject(config, BareIssue(), nil, nil, nil)
 
-		if _, err := obj.GetCommits(); err != nil {
-			t.Errorf("Unexpected error getting filled commits: %v", err)
+		if _, ok := obj.GetCommits(); !ok {
+			t.Errorf("Unexpected error getting filled commits")
 		}
 
-		if _, err := obj.GetEvents(); err != nil {
-			t.Errorf("Unexpected error getting events commits: %v", err)
+		if _, ok := obj.GetEvents(); !ok {
+			t.Errorf("Unexpected error getting events commits")
 		}
 
-		lastModifiedTime := obj.LastModifiedTime()
-		lgtmTime := obj.LabelTime(lgtmLabel)
+		lastModifiedTime, ok1 := obj.LastModifiedTime()
+		lgtmTime, ok2 := obj.LabelTime(lgtmLabel)
 
-		if lastModifiedTime == nil || lgtmTime == nil {
+		if !ok1 || !ok2 || lastModifiedTime == nil || lgtmTime == nil {
 			t.Errorf("unexpected lastModifiedTime or lgtmTime == nil")
 		}
 

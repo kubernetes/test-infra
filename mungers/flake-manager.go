@@ -318,13 +318,13 @@ func (p *individualFlakeSource) Labels() []string {
 }
 
 // Priority implements IssueSource
-func (p *individualFlakeSource) Priority(obj *github.MungeObject) (sync.Priority, error) {
-	comments, err := obj.ListComments()
-	if err != nil {
-		return sync.PriorityP2, fmt.Errorf("Failed to list comment of issue: %v", err)
+func (p *individualFlakeSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
+	comments, ok := obj.ListComments()
+	if !ok {
+		return sync.PriorityP2, false
 	}
 	// Different IssueSource's Priority calculation may differ
-	return autoPrioritize(comments, obj.Issue.CreatedAt), nil
+	return autoPrioritize(comments, obj.Issue.CreatedAt), true
 }
 
 type brokenJobSource struct {
@@ -396,13 +396,13 @@ func (p *brokenJobSource) Labels() []string {
 }
 
 // Priority implements IssueSource
-func (p *brokenJobSource) Priority(obj *github.MungeObject) (sync.Priority, error) {
-	comments, err := obj.ListComments()
-	if err != nil {
-		return sync.PriorityP2, fmt.Errorf("Failed to list comment of issue: %v", err)
+func (p *brokenJobSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
+	comments, ok := obj.ListComments()
+	if !ok {
+		return sync.PriorityP2, false
 	}
 	// Different IssueSource's Priority calculation may differ
-	return autoPrioritize(comments, obj.Issue.CreatedAt), nil
+	return autoPrioritize(comments, obj.Issue.CreatedAt), true
 }
 
 // autoPrioritize prioritize flake issue based on the number of flakes

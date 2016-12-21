@@ -139,10 +139,8 @@ func getRoutingLabels(triagerUrl string, title, body *string) []string {
 }
 
 func getHumanCorrectedLabel(obj *github.MungeObject, s string) *string {
-	myEvents, err := obj.GetEvents()
-
-	if err != nil {
-		glog.Errorf("Could not get the events associated with Issue %d", obj.Issue.Number)
+	myEvents, ok := obj.GetEvents()
+	if !ok {
 		return nil
 	}
 

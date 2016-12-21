@@ -19,7 +19,6 @@ package mungers
 import (
 	"regexp"
 
-	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	"k8s.io/contrib/mungegithub/features"
@@ -76,9 +75,9 @@ func (DocsNeedNoRetest) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	files, err := obj.ListFiles()
-	if err != nil {
-		glog.Errorf("Failed to list files for PR %d: %s", obj.Issue.Number, err)
+	files, ok := obj.ListFiles()
+	if !ok {
+		return
 	}
 
 	docsOnly := areFilesDocOnly(files)

@@ -71,8 +71,8 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	mergeable, err := obj.IsMergeable()
-	if err != nil {
+	mergeable, ok := obj.IsMergeable()
+	if !ok {
 		glog.V(2).Infof("Skipping %d - problem determining mergeable", *obj.Issue.Number)
 		return
 	}

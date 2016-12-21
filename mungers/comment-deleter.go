@@ -88,8 +88,8 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	comments, err := obj.ListComments()
-	if err != nil {
+	comments, ok := obj.ListComments()
+	if !ok {
 		return
 	}
 

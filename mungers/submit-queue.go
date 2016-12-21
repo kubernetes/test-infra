@@ -686,8 +686,8 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 		Login:     *obj.Issue.User.Login,
 		AvatarURL: *obj.Issue.User.AvatarURL,
 	}
-	pr, err := obj.GetPR()
-	if err != nil {
+	pr, ok := obj.GetPR()
+	if !ok {
 		return &res
 	}
 	if pr.Additions != nil {
@@ -717,7 +717,7 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 
 	milestone, ok := obj.Annotations["milestone"]
 	if !ok {
-		milestone = obj.ReleaseMilestone()
+		milestone, ok = obj.ReleaseMilestone()
 		obj.Annotations["milestone"] = milestone
 	}
 	if milestone != "" {
@@ -752,8 +752,8 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 		Reason:            reason,
 	}
 
-	status := obj.GetStatus(sqContext)
-	if status == nil || *status.Description != reason {
+	status, ok := obj.GetStatus(sqContext)
+	if !ok || status == nil || *status.Description != reason {
 		state := reasonToState(reason)
 		url := fmt.Sprintf("http://submit-queue.k8s.io/#/prs/?prDisplay=%d&historyDisplay=%d", *obj.Issue.Number, *obj.Issue.Number)
 		_ = obj.SetStatus(state, url, reason, sqContext)
@@ -785,11 +785,13 @@ func (sq *SubmitQueue) setContextFailedStatus(obj *github.MungeObject, contexts 
 	sort.Strings(contexts)
 	for i, context := range contexts {
 		contextSlice := contexts[i : i+1]
-		if !obj.IsStatusSuccess(contextSlice) {
-			failMsg := fmt.Sprintf(ciFailureFmt, context)
-			sq.SetMergeStatus(obj, failMsg)
-			return
+		success, ok := obj.IsStatusSuccess(contextSlice)
+		if ok && success {
+			continue
 		}
+		failMsg := fmt.Sprintf(ciFailureFmt, context)
+		sq.SetMergeStatus(obj, failMsg)
+		return
 	}
 	glog.Errorf("Inside setContextFailedStatus() but none of the status's failed! %d: %v", obj.Number(), contexts)
 	sq.SetMergeStatus(obj, ciFailure)
@@ -908,8 +910,8 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// Can't merge something already merged.
-	if m, err := obj.IsMerged(); err != nil {
-		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+	if m, ok := obj.IsMerged(); !ok {
+		glog.Errorf("%d: unknown err", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unknown)
 		return false
 	} else if m {
@@ -938,7 +940,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// Obviously must be mergeable
-	if mergeable, err := obj.IsMergeable(); err != nil {
+	if mergeable, ok := obj.IsMergeable(); !ok {
 		sq.SetMergeStatus(obj, undeterminedMergability)
 		return false
 	} else if !mergeable {
@@ -949,13 +951,13 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	// Validate the status information for this PR
 	if checkStatus {
 		if len(sq.RequiredStatusContexts) > 0 {
-			if ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok {
+			if success, ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok || !success {
 				sq.setContextFailedStatus(obj, sq.RequiredStatusContexts)
 				return false
 			}
 		}
 		if len(sq.RequiredRetestContexts) > 0 {
-			if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
+			if success, ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok || !success {
 				sq.setContextFailedStatus(obj, sq.RequiredRetestContexts)
 				return false
 			}
@@ -1100,8 +1102,8 @@ func (s queueSorter) Less(i, j int) bool {
 		return false
 	}
 
-	aDue := a.ReleaseMilestoneDue()
-	bDue := b.ReleaseMilestoneDue()
+	aDue, _ := a.ReleaseMilestoneDue()
+	bDue, _ := b.ReleaseMilestoneDue()
 
 	if aDue.Before(bDue) {
 		return true
@@ -1181,14 +1183,14 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 	}
 }
 
-func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra string) error {
-	err := obj.MergePR("submit-queue" + extra)
-	if err != nil {
-		return err
+func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra string) bool {
+	ok := obj.MergePR("submit-queue" + extra)
+	if !ok {
+		return ok
 	}
 	sq.SetMergeStatus(obj, msg)
 	sq.updateMergeRate()
-	return nil
+	return true
 }
 
 func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
@@ -1238,9 +1240,9 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	interruptedObj := sq.interruptedObj
 	sq.interruptedObj = nil
 
-	err := obj.Refresh()
-	if err != nil {
-		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+	ok := obj.Refresh()
+	if !ok {
+		glog.Errorf("%d: unknown err", *obj.Issue.Number)
 		sq.SetMergeStatus(obj, unknown)
 		return true
 	}
@@ -1274,9 +1276,8 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 			return true
 		}
 
-		err := obj.Refresh()
-		if err != nil {
-			glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
+		ok := obj.Refresh()
+		if !ok {
 			sq.SetMergeStatus(obj, unknown)
 			return true
 		}
@@ -1328,22 +1329,22 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 	// Wait for the retest to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart)
 	atomic.AddInt32(&sq.prsTested, 1)
-	err := obj.WaitForPending(sq.RequiredRetestContexts)
-	if err != nil {
-		sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to start testing: %v", err))
+	done := obj.WaitForPending(sq.RequiredRetestContexts)
+	if !done {
+		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to start testing", obj.Number()))
 		return true
 	}
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning)
-	err = obj.WaitForNotPending(sq.RequiredRetestContexts)
-	if err != nil {
-		sq.SetMergeStatus(obj, fmt.Sprintf("Failed waiting for PR to finish testing: %v", err))
+	done = obj.WaitForNotPending(sq.RequiredRetestContexts)
+	if !done {
+		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to finish testing", obj.Number()))
 		return true
 	}
 
 	// Check if the thing we care about is success
-	if ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok {
+	if success, ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !success || !ok {
 		sq.SetMergeStatus(obj, ghE2EFailed)
 		return true
 	}

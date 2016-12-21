@@ -17,6 +17,7 @@ limitations under the License.
 package fsm
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/contrib/mungegithub/github"
@@ -48,9 +49,9 @@ func (nr *NeedsReview) Process(obj *github.MungeObject) (State, error) {
 		return &End{}, nil
 	}
 
-	reviewerActionNeeded, err := isReviewerActionNeeded(obj)
-	if err != nil {
-		return &End{}, err
+	reviewerActionNeeded, ok := isReviewerActionNeeded(obj)
+	if !ok {
+		return &End{}, fmt.Errorf("Unable to determine reviewer action needed for %d", obj.Number())
 	}
 
 	if !reviewerActionNeeded {
@@ -72,10 +73,10 @@ func (nr *NeedsReview) checkLGTM(obj *github.MungeObject) bool {
 }
 
 // assigneeActionNeeded returns true if we are waiting on an action from the reviewer.
-func isReviewerActionNeeded(obj *github.MungeObject) (bool, error) {
-	comments, err := obj.ListComments()
-	if err != nil {
-		return false, err
+func isReviewerActionNeeded(obj *github.MungeObject) (needsAction bool, ok bool) {
+	comments, ok := obj.ListComments()
+	if !ok {
+		return false, ok
 	}
 
 	lastAuthorCommentTime := comment.LastComment(comments, comment.Author(*obj.Issue.User), nil)
@@ -83,18 +84,22 @@ func isReviewerActionNeeded(obj *github.MungeObject) (bool, error) {
 
 	if lastReviewerCommentTime == nil {
 		// this implies that no reviewer has commented on the PR yet.
-		return true, nil
+		return true, true
 	}
 
-	if obj.LastModifiedTime().After(*lastReviewerCommentTime) {
-		return true, nil
+	modifiedTime, ok := obj.LastModifiedTime()
+	if !ok {
+		return false, ok
+	}
+	if modifiedTime.After(*lastReviewerCommentTime) {
+		return true, true
 	}
 
 	if lastAuthorCommentTime == nil {
-		return false, nil
+		return false, true
 	}
 
-	return lastReviewerCommentTime.Before(*lastAuthorCommentTime), nil
+	return lastReviewerCommentTime.Before(*lastAuthorCommentTime), true
 }
 
 func getLastReviewerComment(obj *github.MungeObject, comments []*githubapi.IssueComment) *time.Time {

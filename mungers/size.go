@@ -170,8 +170,8 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 
 	s.getGeneratedFiles(obj)
 
-	files, err := obj.ListFiles()
-	if err != nil {
+	files, ok := obj.ListFiles()
+	if !ok {
 		return
 	}
 

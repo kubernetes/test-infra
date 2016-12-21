@@ -104,7 +104,10 @@ func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, s
 
 // Can we find a commit in the changelog that looks like it was done using git cherry-pick -m1 -x ?
 func (c *ClearPickAfterMerge) foundByPickDashX(obj *github.MungeObject, branch string) bool {
-	sha := obj.MergeCommit()
+	sha, ok := obj.MergeCommit()
+	if !ok {
+		return false
+	}
 	if sha == nil {
 		glog.Errorf("Unable to get SHA of merged PR %d", *obj.Issue.Number)
 		return false
@@ -138,8 +141,8 @@ func (c *ClearPickAfterMerge) foundByPickWithoutDashX(obj *github.MungeObject, b
 
 // Check that the commit messages for all commits in the PR are on the branch
 func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch string) bool {
-	commits, err := obj.GetCommits()
-	if err != nil {
+	commits, ok := obj.GetCommits()
+	if !ok {
 		glog.Infof("unable to get commits")
 		return false
 	}
@@ -178,12 +181,12 @@ func (c *ClearPickAfterMerge) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if merged, err := obj.IsMerged(); !merged || err != nil {
+	if merged, ok := obj.IsMerged(); !ok || !merged {
 		return
 	}
 
-	releaseMilestone := obj.ReleaseMilestone()
-	if releaseMilestone == "" || len(releaseMilestone) != 4 {
+	releaseMilestone, ok := obj.ReleaseMilestone()
+	if !ok || releaseMilestone == "" || len(releaseMilestone) != 4 {
 		glog.Errorf("Found invalid milestone: %q", releaseMilestone)
 		return
 	}

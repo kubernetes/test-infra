@@ -17,20 +17,19 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
+	"fmt"
+	"sort"
 	"strings"
+	"time"
+
+	githubapi "github.com/google/go-github/github"
+	"github.com/spf13/cobra"
 
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
 	"k8s.io/kubernetes/pkg/util/sets"
-
-	"bytes"
-	"fmt"
-	"sort"
-
-	"github.com/golang/glog"
-	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -85,15 +84,13 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	files, err := obj.ListFiles()
-	if err != nil {
-		glog.Errorf("failed to list files in this PR: %v", err)
+	files, ok := obj.ListFiles()
+	if !ok {
 		return
 	}
 
-	comments, err := getCommentsAfterLastModified(obj)
-	if err != nil {
-		glog.Errorf("failed to get comments in this PR: %v", err)
+	comments, ok := getCommentsAfterLastModified(obj)
+	if !ok {
 		return
 	}
 
@@ -119,10 +116,9 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String) error {
 	notificationMatcher := c.MungerNotificationName(approvalNotificationName)
-	comments, err := obj.ListComments()
-	if err != nil {
-		glog.Error("Could not list the comments for PR%v", obj.Issue.Number)
-		return err
+	comments, ok := obj.ListComments()
+	if !ok {
+		return fmt.Errorf("Unable to ListComments for %d", obj.Number())
 	}
 	notifications := c.FilterComments(comments, notificationMatcher)
 	latestNotification := notifications.GetLast()
@@ -140,7 +136,10 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		obj.DeleteComment(latestNotification)
 		return h.createMessage(obj, ownersMap)
 	}
-	lastModified := obj.LastModifiedTime()
+	lastModified, ok := obj.LastModifiedTime()
+	if !ok {
+		return fmt.Errorf("Unable to get LastModifiedTime for %d", obj.Number())
+	}
 	if latestNotification.CreatedAt.Before(*lastModified) {
 		obj.DeleteComment(latestNotification)
 		return h.createMessage(obj, ownersMap)
@@ -252,13 +251,17 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 	return ownersApprovers
 }
 
-func getCommentsAfterLastModified(obj *github.MungeObject) ([]*githubapi.IssueComment, error) {
+func getCommentsAfterLastModified(obj *github.MungeObject) ([]*githubapi.IssueComment, bool) {
 	afterLastModified := func(opt *githubapi.IssueListCommentsOptions) *githubapi.IssueListCommentsOptions {
 		// Only comments updated at or after this time are returned.
 		// One possible case is that reviewer might "/lgtm" first, contributor updated PR, and reviewer updated "/lgtm".
 		// This is still valid. We don't recommend user to update it.
-		lastModified := *obj.LastModifiedTime()
-		opt.Since = lastModified
+		lastModified, ok := obj.LastModifiedTime()
+		if !ok {
+			opt.Since = time.Time{}
+		} else {
+			opt.Since = *lastModified
+		}
 		return opt
 	}
 	return obj.ListComments(afterLastModified)

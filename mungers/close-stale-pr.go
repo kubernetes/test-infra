@@ -25,7 +25,6 @@ import (
 	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/contrib/mungegithub/mungers/mungerutil"
 
-	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
@@ -81,15 +80,15 @@ func (CloseStalePR) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (CloseStalePR) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
-func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, error) {
-	pr, err := obj.GetPR()
-	if err != nil {
-		return nil, err
+func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
+	pr, ok := obj.GetPR()
+	if !ok {
+		return nil, ok
 	}
 
-	comments, err := obj.ListReviewComments()
-	if err != nil {
-		return nil, err
+	comments, ok := obj.ListReviewComments()
+	if !ok {
+		return nil, ok
 	}
 
 	lastHuman := pr.CreatedAt
@@ -106,15 +105,15 @@ func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, error)
 		}
 	}
 
-	return lastHuman, nil
+	return lastHuman, true
 }
 
-func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, error) {
+func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, bool) {
 	lastHuman := obj.Issue.CreatedAt
 
-	comments, err := obj.ListComments()
-	if err != nil {
-		return nil, err
+	comments, ok := obj.ListComments()
+	if !ok {
+		return nil, ok
 	}
 
 	for i := range comments {
@@ -130,15 +129,15 @@ func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, error) {
 		}
 	}
 
-	return lastHuman, nil
+	return lastHuman, true
 }
 
-func findLastInterestingEventUpdate(obj *github.MungeObject) (*time.Time, error) {
+func findLastInterestingEventUpdate(obj *github.MungeObject) (*time.Time, bool) {
 	lastInteresting := obj.Issue.CreatedAt
 
-	events, err := obj.GetEvents()
-	if err != nil {
-		return nil, err
+	events, ok := obj.GetEvents()
+	if !ok {
+		return nil, ok
 	}
 
 	for i := range events {
@@ -152,21 +151,21 @@ func findLastInterestingEventUpdate(obj *github.MungeObject) (*time.Time, error)
 		}
 	}
 
-	return lastInteresting, nil
+	return lastInteresting, true
 }
 
-func findLastModificationTime(obj *github.MungeObject) (*time.Time, error) {
-	lastHumanIssue, err := findLastHumanIssueUpdate(obj)
-	if err != nil {
-		return nil, err
+func findLastModificationTime(obj *github.MungeObject) (*time.Time, bool) {
+	lastHumanIssue, ok := findLastHumanIssueUpdate(obj)
+	if !ok {
+		return nil, ok
 	}
-	lastHumanPR, err := findLastHumanPullRequestUpdate(obj)
-	if err != nil {
-		return nil, err
+	lastHumanPR, ok := findLastHumanPullRequestUpdate(obj)
+	if !ok {
+		return nil, ok
 	}
-	lastInterestingEvent, err := findLastInterestingEventUpdate(obj)
-	if err != nil {
-		return nil, err
+	lastInterestingEvent, ok := findLastInterestingEventUpdate(obj)
+	if !ok {
+		return nil, ok
 	}
 
 	lastModif := lastHumanPR
@@ -177,17 +176,17 @@ func findLastModificationTime(obj *github.MungeObject) (*time.Time, error) {
 		lastModif = lastInterestingEvent
 	}
 
-	return lastModif, nil
+	return lastModif, true
 }
 
 // Find the last warning comment that the bot has posted.
 // It can return an empty comment if it fails to find one, even if there are no errors.
-func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment, error) {
+func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment, bool) {
 	var lastFoundComment *githubapi.IssueComment
 
-	comments, err := obj.ListComments()
-	if err != nil {
-		return nil, err
+	comments, ok := obj.ListComments()
+	if !ok {
+		return nil, ok
 	}
 
 	for i := range comments {
@@ -211,7 +210,7 @@ func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment,
 		}
 	}
 
-	return lastFoundComment, nil
+	return lastFoundComment, true
 }
 
 func durationToDays(duration time.Duration) string {
@@ -229,9 +228,8 @@ func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
 		mention = "cc " + mention + "\n"
 	}
 
-	comment, err := findLatestWarningComment(obj)
-	if err != nil {
-		glog.Error("Failed to findLatestWarningComment: ", err)
+	comment, ok := findLatestWarningComment(obj)
+	if !ok {
 		return
 	}
 	if comment != nil {
@@ -264,9 +262,8 @@ func checkAndWarn(obj *github.MungeObject, inactiveFor time.Duration, closeIn ti
 		// We are going to close the PR in less than a day. Too late to warn
 		return
 	}
-	comment, err := findLatestWarningComment(obj)
-	if err != nil {
-		glog.Error("Failed to findLatestWarningComment: ", err)
+	comment, ok := findLatestWarningComment(obj)
+	if !ok {
 		return
 	}
 	if comment == nil {
@@ -291,9 +288,8 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	lastModif, err := findLastModificationTime(obj)
-	if err != nil {
-		glog.Errorf("Failed to find last modification: %v", err)
+	lastModif, ok := findLastModificationTime(obj)
+	if !ok {
 		return
 	}
 
@@ -305,9 +301,8 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 		checkAndWarn(obj, inactiveFor, closeIn)
 	} else {
 		// Pull-request is active. Remove previous potential warning
-		// Ignore potential errors, we just want to remove old comments ...
-		comment, _ := findLatestWarningComment(obj)
-		if comment != nil {
+		comment, ok := findLatestWarningComment(obj)
+		if comment != nil && ok {
 			obj.DeleteComment(comment)
 		}
 	}
