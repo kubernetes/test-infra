@@ -3,3 +3,5 @@
 *.sublime-project
 *.sublime-workspace
 *~
+/bazel-*
+/_artifacts
