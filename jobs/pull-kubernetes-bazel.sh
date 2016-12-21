@@ -31,7 +31,7 @@ esac
 bazel build //cmd/... //pkg/... //federation/... //plugin/... //build/... //examples/... //test/... //third_party/... && rc=$? || rc=$?
 
 if [[ "${rc}" == 0 ]]; then
-  bazel test --test_tag_filters '-skip' //cmd/... //pkg/... //federation/... //plugin/... //build/... //third_party/... && rc=$? || rc=$?
+  bazel test  --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //federation/... //plugin/... //build/... //third_party/... && rc=$? || rc=$?
 fi
 
 if [[ "${rc}" == 0 ]]; then
