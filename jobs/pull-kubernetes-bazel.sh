@@ -30,6 +30,9 @@ esac
 
 bazel build //cmd/... //pkg/... //federation/... //plugin/... //build/... //examples/... //test/... //third_party/... && rc=$? || rc=$?
 
+# Clear test.xml so that we don't pick up old results.
+find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+
 if [[ "${rc}" == 0 ]]; then
   bazel test  --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //federation/... //plugin/... //build/... //third_party/... && rc=$? || rc=$?
 fi
@@ -48,10 +51,7 @@ case "${rc}" in
     *) echo "Unknown exit code: ${rc}" ;;
 esac
 
-# Copy bazel-testlogs/foo/bar/go_default_test/test.xml into _artifacts/foo_bar.xml.
-mkdir -p _artifacts
-for file in $(find -L bazel-testlogs -name "test.xml" -o -name "test.log"); do
-    cp "${file}" "_artifacts/$(echo "${file}" | sed -e "s/bazel-testlogs\///g; s/\/go_default_test\/test//g; s/\//_/g")"
-done
+# Coalesce test results into one file for upload.
+"$(dirname "${0}")/../images/pull-kubernetes/bazel/coalesce.py"
 
 exit "${rc}"
