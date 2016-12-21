@@ -138,16 +138,6 @@
         job-name: ci-kubernetes-soak-gce-1.3-test
         frequency: 'H/30 * * * *'
         scan: ALL
-    - kubernetes-soak-gce-1.2-deploy:
-        blocker: ci-kubernetes-soak-gce-1.2-test
-        job-name: ci-kubernetes-soak-gce-1.2-deploy
-        frequency: 'H 0 * * 2'
-        scan: DISABLED
-    - kubernetes-soak-gce-1.2-test:
-        blocker: ci-kubernetes-soak-gce-1.2-deploy
-        job-name: ci-kubernetes-soak-gce-1.2-test
-        frequency: 'H/30 * * * *'
-        scan: ALL
     - kubernetes-soak-gke-deploy:
         blocker: ci-kubernetes-soak-gke-test
         job-name: ci-kubernetes-soak-gke-deploy
