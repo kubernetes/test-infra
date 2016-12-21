@@ -39,6 +39,8 @@ const (
 	ownerFilename = "OWNERS" // file which contains approvers and reviewers
 	// RepoFeatureName is how mungers should indicate this is required
 	RepoFeatureName = "gitrepos"
+	// Github's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
+	baseDirConvention = ""
 )
 
 type assignmentConfig struct {
@@ -67,6 +69,16 @@ func init() {
 // Name is just going to return the name mungers use to request this feature
 func (o *RepoInfo) Name() string {
 	return RepoFeatureName
+}
+
+// by default, github's api doesn't root the project directory at "/" and instead uses the empty string for the base dir
+// of the project. And the built-in dir function returns "." for empty strings, so for consistency, we use this
+// canonicalize to get the directories of files in a consistent format with NO "/" at the root (a/b/c/ -> a/b/c)
+func canonicalize(path string) string {
+	if path == "." {
+		return baseDirConvention
+	}
+	return strings.TrimSuffix(path, "/")
 }
 
 func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
@@ -127,15 +139,12 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 
 	path, err = filepath.Rel(o.projectDir, path)
+	path = filepath.Dir(path)
 	if err != nil {
 		glog.Errorf("Unable to find relative path between %q and %q: %v", o.projectDir, path, err)
 		return err
 	}
-	path = filepath.Dir(path)
-	// Make the root explicitly / so its easy to distinguish. Nothing else is `/` anchored
-	if path == "." {
-		path = "/"
-	}
+	path = canonicalize(path)
 	o.approvers[path] = sets.NewString(c.Approvers...)
 	o.approvers[path].Insert(c.Assignees...)
 	o.reviewers[path] = sets.NewString(c.Reviewers...)
@@ -259,24 +268,20 @@ func (o *RepoInfo) gitCommandDir(args []string, cmdDir string) ([]byte, error) {
 	return cmd.CombinedOutput()
 }
 
-// FindOwnersForPath returns the OWNERS file further down the tree for a file
+// FindOwnersForPath returns the OWNERS file path further down the tree for a file
 func (o *RepoInfo) FindOwnersForPath(path string) string {
 	d := path
 
 	for {
-		// special case the root
-		if d == "." || d == "" {
-			d = "/"
-		}
 		_, ok := o.approvers[d]
 		if ok {
 			return d
 		}
-		if d == "/" {
+		if d == baseDirConvention {
 			break
 		}
 		d = filepath.Dir(d)
-		d = strings.TrimSuffix(d, "/")
+		d = canonicalize(d)
 	}
 	return ""
 }
@@ -289,16 +294,13 @@ func (o *RepoInfo) FindOwnersForPath(path string) string {
 func peopleForPath(path string, people map[string]sets.String, leafOnly bool, enableMdYaml bool) sets.String {
 	d := path
 	if !enableMdYaml {
-		// if path is a directory, this will remove the leaf directory
-		d = filepath.Dir(path)
+		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
+		d = filepath.Dir(d)
+		d = canonicalize(path)
 	}
 
 	out := sets.NewString()
 	for {
-		// special case the root
-		if d == "" {
-			d = "/"
-		}
 		s, ok := people[d]
 		if ok {
 			out = out.Union(s)
@@ -306,11 +308,11 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 				break
 			}
 		}
-		if d == "/" {
+		if d == baseDirConvention {
 			break
 		}
-		d, _ = filepath.Split(d)
-		d = strings.TrimSuffix(d, "/")
+		d = filepath.Dir(d)
+		d = canonicalize(d)
 	}
 	return out
 }

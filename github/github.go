@@ -305,6 +305,16 @@ func (obj *MungeObject) Number() int {
 	return *obj.Issue.Number
 }
 
+// Project is getter for obj.config.Project
+func (obj *MungeObject) Project() string {
+	return obj.config.Project
+}
+
+// Org is getter for obj.config.Org
+func (obj *MungeObject) Org() string {
+	return obj.config.Org
+}
+
 // DebugStats is a structure that tells information about how we have interacted
 // with github
 type DebugStats struct {
