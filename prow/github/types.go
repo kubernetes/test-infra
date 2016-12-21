@@ -145,3 +145,19 @@ type IssuesSearchResult struct {
 	Total  int     `json:"total_count,omitempty"`
 	Issues []Issue `json:"items,omitempty"`
 }
+
+type PushEvent struct {
+	Ref     string   `json:"ref"`
+	Before  string   `json:"before"`
+	After   string   `json:"after"`
+	Commits []Commit `json:"commits"`
+	Repo    Repo     `json:"repository"`
+}
+
+type Commit struct {
+	ID       string   `json:"id"`
+	Message  string   `json:"message"`
+	Added    []string `json:"added"`
+	Removed  []string `json:"removed"`
+	Modified []string `json:"modified"`
+}

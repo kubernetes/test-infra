@@ -92,6 +92,12 @@ func (s *Server) demuxEvent(eventType string, payload []byte) error {
 			return err
 		}
 		go s.handleStatusEvent(se)
+	case "push":
+		var pe github.PushEvent
+		if err := json.Unmarshal(payload, &pe); err != nil {
+			return err
+		}
+		go s.handlePushEvent(pe)
 	}
 
 	return nil
