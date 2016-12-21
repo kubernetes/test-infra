@@ -889,6 +889,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-prod-release-1.2
 - name: kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
+- name: kubernetes-bazel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel
 - name: kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
 - name: kubernetes-e2e-gke-gci-staging-release-1.2
@@ -966,6 +968,8 @@ dashboards:
   # Blocking
   - name: kubelet
     test_group_name: ci-kubernetes-node-kubelet
+  - name: bazel
+    test_group_name: kubernetes-bazel
   - name: build
     test_group_name: kubernetes-build
   - name: gce

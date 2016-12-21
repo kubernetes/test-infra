@@ -65,6 +65,13 @@
         repo-name: k8s.io/kubernetes
         commit-frequency: 'H/2 * * * *'
 
+    - kubernetes-bazel:
+        branch: master
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        job-name: ci-kubernetes-bazel
+        repo-name: k8s.io/kubernetes
+        commit-frequency: 'H/2 * * * *'
+
     - kubernetes-cross-build:
         branch: master
         giturl: 'https://github.com/kubernetes/kubernetes'
