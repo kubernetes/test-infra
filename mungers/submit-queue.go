@@ -871,7 +871,8 @@ const (
 	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have " + lgtmLabel + " label."
 	noApproved              = "PR does not have " + approvedLabel + " label."
-	lgtmEarly               = "The PR was changed after the LGTM label was added."
+	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
+	approvedEarly           = "The PR was changed after the " + approvedLabel + " label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
 	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
@@ -890,20 +891,6 @@ const (
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 	headCommitChanged       = "This PR has changed since we ran the tests"
 )
-
-func getEarliestApprovedTime(obj *github.MungeObject) *time.Time {
-	lgtmTime := obj.LabelTime(lgtmLabel)
-	approvedTime := obj.LabelTime(approvedLabel)
-	// if both lgtmTime and approvedTime are nil, this func will return nil pointer
-	if lgtmTime == nil {
-		return approvedTime
-	} else if approvedTime == nil {
-		return lgtmTime
-	} else if lgtmTime.Before(*approvedTime) {
-		return lgtmTime
-	}
-	return approvedTime
-}
 
 // validForMergeExt is the base logic about what PR can be automatically merged.
 // PRs must pass this logic to be placed on the queue and they must pass this
@@ -979,26 +966,29 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		sq.SetMergeStatus(obj, noLGTM)
 		return false
 	}
-	if sq.GateApproved && !obj.HasLabel(approvedLabel) {
-		sq.SetMergeStatus(obj, noApproved)
-		return false
-	}
 
 	// PR cannot change since LGTM was added
-	lastModifiedTime := obj.LastModifiedTime()
-
-	// lgtmTime and approvedTime cannot both be nil at this point (see check above)
-	earliestApproved := getEarliestApprovedTime(obj)
-
-	if lastModifiedTime == nil || earliestApproved == nil {
-		glog.Errorf("PR %d was unable to determine when LGTM was added or when last modified", *obj.Issue.Number)
+	if after, ok := obj.ModifiedAfterLabeled(lgtmLabel); !ok {
 		sq.SetMergeStatus(obj, unknown)
+		return false
+	} else if after {
+		sq.SetMergeStatus(obj, lgtmEarly)
 		return false
 	}
 
-	if lastModifiedTime.After(*earliestApproved) {
-		sq.SetMergeStatus(obj, lgtmEarly)
-		return false
+	if sq.GateApproved {
+		if !obj.HasLabel(approvedLabel) {
+			sq.SetMergeStatus(obj, noApproved)
+			return false
+		}
+		// PR cannot change since approvedLabel was added
+		if after, ok := obj.ModifiedAfterLabeled(approvedLabel); !ok {
+			sq.SetMergeStatus(obj, unknown)
+			return false
+		} else if after {
+			sq.SetMergeStatus(obj, approvedEarly)
+			return false
+		}
 	}
 
 	// PR cannot have the label which prevents merging.
@@ -1452,6 +1442,10 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.DoNotMergeMilestones))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
+	if sq.GateApproved {
+		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
+		out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", approvedLabel))
+	}
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
