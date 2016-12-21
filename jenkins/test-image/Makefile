@@ -19,7 +19,7 @@ VERSIONS := $(wildcard ./Dockerfile-*)
 do_build = \
 	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
 	docker build -f ./Dockerfile-$(VERSION) -t $(IMG):$(VERSION)-$(TAG) . ;\
-	docker tag -f $(IMG):$(VERSION)-$(TAG) $(IMG):$(VERSION)-latest ;\
+	docker tag $(IMG):$(VERSION)-$(TAG) $(IMG):$(VERSION)-latest ;\
 	echo Built $(IMG):$(VERSION)-$(TAG) and tagged with $(IMG):$(VERSION)-latest ;
 
 do_push = \
