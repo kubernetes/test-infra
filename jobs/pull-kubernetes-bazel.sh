@@ -52,6 +52,6 @@ case "${rc}" in
 esac
 
 # Coalesce test results into one file for upload.
-"$(dirname "${0}")/../images/pull-kubernetes/bazel/coalesce.py"
+"$(dirname "${0}")/../images/pull-kubernetes-bazel/coalesce.py"
 
 exit "${rc}"
