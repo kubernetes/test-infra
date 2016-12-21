@@ -46,6 +46,5 @@ script:
     - ../node_modules/.bin/mocha static/build_test.js
     - cd ..
     - gofmt -l .
-    - go test k8s.io/test-infra/testgrid/config/...
     - chmod +x testgrid/jenkins_verify/verify.sh
     - ./testgrid/jenkins_verify/verify.sh
