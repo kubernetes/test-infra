@@ -26,6 +26,46 @@ To add a new test:
   
 3. Run `config_test.go` to make sure the config is valid.
 
+You can also add notifications to a testgroup (which displays on any dashboardtab backed
+
+by that testgroup) or dashboard (which displays on each tab in that dashboard).
+
+To add a notification:
+
+1. Append 'notifications' under the testgroup or dashboard.
+
+  * Each notification has a required 'summary' field (short text description of the 
+  
+  notice or issue), and an optional 'context_link' field (fully-qualified URL
+  
+  to more information).
+
+2. Run `config_test.go` to make sure the config is valid.
+
+Ex:
+
+```
+test_groups:
+- name: kubernetes-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  notifications:
+  - summary: I am a test group notification.
+  - summary: Tests are failing to start.
+    context_link: https://github.com/kubernetes/kubernetes/issues/123
+```
+
+```
+dashboards:
+- name: k8s
+  dashboard_tab:
+  - name: build
+    test_group_name: kubernetes-build
+  notifications:
+  - summary: I am a dashboard notification.
+  - summary: Tests are failing to start.
+    context_link: https://github.com/kubernetes/kubernetes/issues/123
+```
+
 
 Contact us before you make changes to config.proto
 
