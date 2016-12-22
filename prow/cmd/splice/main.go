@@ -40,7 +40,7 @@ var (
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	logJson        = flag.Bool("log-json", false, "output log in JSON format")
-	jobConfigs     = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
+	jobConfigs     = flag.String("job-config", "/etc/jobs/presubmit", "Where the job-config configmap is mounted.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 

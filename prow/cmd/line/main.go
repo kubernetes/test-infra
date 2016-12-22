@@ -54,7 +54,7 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 	report    = flag.Bool("report", true, "Whether or not to report the status on GitHub.")
 
-	jobConfigs       = flag.String("job-config", "/etc/jobs/jobs", "Where the job-config configmap is mounted.")
+	jobConfigs       = flag.String("job-config", "/etc/jobs/presubmit", "Where the job-config configmap is mounted.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")

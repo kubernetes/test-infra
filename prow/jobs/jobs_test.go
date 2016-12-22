@@ -28,11 +28,11 @@ const testThis = "@k8s-bot test this"
 // Make sure that our rerun commands match our triggers.
 func TestJobTriggers(t *testing.T) {
 	ja := &JobAgent{}
-	if err := ja.load("../jobs.yaml"); err != nil {
+	if err := ja.load("../presubmit.yaml"); err != nil {
 		t.Fatalf("Could not load job configs: %v", err)
 	}
 	if len(ja.jobs) == 0 {
-		t.Fatalf("No jobs found in jobs.yaml.")
+		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
 	for _, jobs := range ja.jobs {
 		for i, job := range jobs {
