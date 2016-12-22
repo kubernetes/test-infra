@@ -2,6 +2,14 @@ syntax = "proto3";
 
 // Protocol buffer for configuring testgrid.k8s.io
 
+// A single notification.
+message Notification {
+  // Required: Text summary of the issue or notice.
+  string summary = 1;
+  // Optional: Link to further information, such as a bug, email, document, etc.
+  string context_link = 2;
+}
+
 // Specifies a group of tests to gather.
 message TestGroup {
   reserved 4, 5, 7, 8, 10, 12 to 23, 26;
@@ -43,6 +51,10 @@ message TestGroup {
 
   // deprecated - always set to true
   bool is_external = 25;
+
+  // A list of notifications attached to this test group.
+  // This is displayed on any dashboard tab backed by this test group.
+  repeated Notification notifications = 27;
 }
 
 
@@ -52,6 +64,9 @@ message Dashboard {
   repeated DashboardTab dashboard_tab = 1;
   // A name for the Dashboard.
   string name = 2;
+  // A list of notifications attached to this dashboard.
+  // This is displayed on any dashboard tab in this dashboard.
+  repeated Notification notifications = 3;
 }
 
 message LinkTemplate {
