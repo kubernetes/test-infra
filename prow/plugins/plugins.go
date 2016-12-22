@@ -36,6 +36,7 @@ var (
 	issueCommentHandlers = map[string]IssueCommentHandler{}
 	pullRequestHandlers  = map[string]PullRequestHandler{}
 	statusEventHandlers  = map[string]StatusEventHandler{}
+	pushEventHandlers    = map[string]PushEventHandler{}
 )
 
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
@@ -65,6 +66,13 @@ type StatusEventHandler func(PluginClient, github.StatusEvent) error
 func RegisterStatusEventHandler(name string, fn StatusEventHandler) {
 	allPlugins[name] = struct{}{}
 	statusEventHandlers[name] = fn
+}
+
+type PushEventHandler func(PluginClient, github.PushEvent) error
+
+func RegisterPushEventHandler(name string, fn PushEventHandler) {
+	allPlugins[name] = struct{}{}
+	pushEventHandlers[name] = fn
 }
 
 type PluginAgent struct {
@@ -168,6 +176,21 @@ func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]Status
 	hs := map[string]StatusEventHandler{}
 	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := statusEventHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
+	return hs
+}
+
+// PushEventHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEventHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]PushEventHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := pushEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
