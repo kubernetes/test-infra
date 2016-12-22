@@ -44,7 +44,7 @@ export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
 export LOAD_TEST_THROUGHPUT=25
 # Override defaults to be independent from GCE defaults and set kubemark parameters
 # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
-export NUM_NODES="51"
+export NUM_NODES="59"
 export MASTER_SIZE="n1-standard-4"
 # Note: can fit about 17 hollow nodes per core so NUM_NODES x
 # cores_per_node should be set accordingly.
