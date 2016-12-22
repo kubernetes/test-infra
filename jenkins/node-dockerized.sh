@@ -45,7 +45,7 @@ GCE_USER="jenkins"
 docker run --rm=true \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${REPO_DIR}":/go/src/k8s.io/kubernetes \
-  -v "${WORKSPACE}/_artifacts":/workspace/artifacts \
+  -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
   ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:+-v "${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}:/root/.ssh/google_compute_engine:ro"} \
   ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:+-v "${JENKINS_GCE_SSH_PUBLIC_KEY_FILE}:/root/.ssh/google_compute_engine.pub:ro"} \
