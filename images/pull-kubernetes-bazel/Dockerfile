@@ -35,9 +35,10 @@ RUN wget "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}
     dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
 
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-131.0.0-linux-x86_64.tar.gz && \
-    tar xf google-cloud-sdk-131.0.0-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-131.0.0-linux-x86_64.tar.gz && \
+ENV GCLOUD_VERSION 138.0.0
+RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
+    tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
+    rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     ./google-cloud-sdk/install.sh
 ENV PATH "/google-cloud-sdk/bin:${PATH}"
 
