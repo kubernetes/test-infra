@@ -49,13 +49,8 @@
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
-        './test-infra/jenkins/bootstrap.py' \
-            --job='{job-name}' \
-            --pull="${{PULL_REFS}}" \
-            --repo='{repo-name}' \
-            --root="${{GOPATH}}/src" \
-            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
-            --upload='gs://kubernetes-jenkins/pr-logs'
+        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --pull="${{PULL_REFS}}" --root="${{GOPATH}}/src"
+
 - project:
     name: bootstrap-pull-jobs
     jobs:
