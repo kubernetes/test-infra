@@ -112,7 +112,7 @@ func TestHandleIssueComment(t *testing.T) {
 			JobAgent:     &jobs.JobAgent{},
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
-		c.JobAgent.SetJobs(map[string][]jobs.JenkinsJob{
+		c.JobAgent.SetJobs(map[string][]jobs.Presubmit{
 			"org/repo": {
 				{
 					Name:      "job",

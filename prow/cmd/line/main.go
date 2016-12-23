@@ -68,7 +68,7 @@ const (
 )
 
 type testClient struct {
-	Job jobs.JenkinsJob
+	Job jobs.Presubmit
 
 	RepoOwner string
 	RepoName  string

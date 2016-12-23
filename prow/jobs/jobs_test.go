@@ -126,7 +126,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	ja := &JobAgent{
-		jobs: map[string][]JenkinsJob{
+		jobs: map[string][]Presubmit{
 			"org/repo": {
 				{
 					Name:      "gce",
