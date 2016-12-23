@@ -133,7 +133,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 func buildAll(c client, pr github.PullRequest) error {
 	var ref string
 	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
-		if !job.AlwaysRun {
+		if !job.AlwaysRun || !job.RunsAgainstBranch(pr.Base.Ref) {
 			continue
 		}
 		// Only get master ref once.

@@ -74,6 +74,9 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	for _, job := range requestedJobs {
+		if !job.RunsAgainstBranch(pr.Base.Ref) {
+			continue
+		}
 		c.Logger.Infof("Starting %s build.", job.Name)
 		if err := lineDeletePRJob(c.KubeClient, job.Name, *pr); err != nil {
 			c.Logger.WithError(err).Error("Could not delete old PR job.")

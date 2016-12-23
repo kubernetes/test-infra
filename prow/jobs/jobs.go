@@ -42,6 +42,8 @@ type Presubmit struct {
 	RerunCommand string `json:"rerun_command"`
 	// Whether or not to skip commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
+	// Only run against these branches. Default is all branches.
+	Branches []string `json:"branches"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 
@@ -49,10 +51,22 @@ type Presubmit struct {
 	re *regexp.Regexp
 }
 
+func (ps Presubmit) RunsAgainstBranch(branch string) bool {
+	if len(ps.Branches) == 0 {
+		return true
+	}
+	for _, b := range ps.Branches {
+		if b == branch {
+			return true
+		}
+	}
+	return false
+}
+
 type JobAgent struct {
 	mut sync.Mutex
 	// Repo FullName (eg "kubernetes/kubernetes") -> []Presubmit
-	jobs map[string][]Presubmit
+	presubmits map[string][]Presubmit
 }
 
 func (ja *JobAgent) Start(path string) error {
@@ -83,7 +97,7 @@ func (ja *JobAgent) SetJobs(jobs map[string][]Presubmit) error {
 			}
 		}
 	}
-	ja.jobs = nj
+	ja.presubmits = nj
 	return nil
 }
 
@@ -98,7 +112,7 @@ func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Rege
 	defer ja.mut.Unlock()
 	var result []Presubmit
 	ott := testAll.MatchString(body)
-	if jobs, ok := ja.jobs[fullRepoName]; ok {
+	if jobs, ok := ja.presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
 			if job.re.MatchString(body) || (ott && job.AlwaysRun) {
 				result = append(result, job)
@@ -111,15 +125,15 @@ func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Rege
 func (ja *JobAgent) AllJobs(fullRepoName string) []Presubmit {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	res := make([]Presubmit, len(ja.jobs[fullRepoName]))
-	copy(res, ja.jobs[fullRepoName])
+	res := make([]Presubmit, len(ja.presubmits[fullRepoName]))
+	copy(res, ja.presubmits[fullRepoName])
 	return res
 }
 
 func (ja *JobAgent) GetJob(repo, job string) (bool, Presubmit) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	for _, j := range ja.jobs[repo] {
+	for _, j := range ja.presubmits[repo] {
 		if j.Name == job {
 			return true, j
 		}
@@ -146,7 +160,7 @@ func (ja *JobAgent) load(path string) error {
 			}
 		}
 	}
-	ja.jobs = nj
+	ja.presubmits = nj
 	return nil
 }
 

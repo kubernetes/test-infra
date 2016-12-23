@@ -33,6 +33,7 @@ func TestHandleIssueComment(t *testing.T) {
 		Body        string
 		State       string
 		IsPR        bool
+		Branch      string
 		ShouldBuild bool
 	}{
 		// Not a PR.
@@ -91,8 +92,20 @@ func TestHandleIssueComment(t *testing.T) {
 			IsPR:        true,
 			ShouldBuild: true,
 		},
+		// Wrong branch.
+		{
+			Author:      "t",
+			Body:        "@k8s-bot test this",
+			State:       "open",
+			IsPR:        true,
+			Branch:      "other",
+			ShouldBuild: false,
+		},
 	}
 	for _, tc := range testcases {
+		if tc.Branch == "" {
+			tc.Branch = "master"
+		}
 		g := &fakegithub.FakeClient{
 			IssueComments: map[int][]github.IssueComment{},
 			OrgMembers:    []string{"t"},
@@ -100,6 +113,7 @@ func TestHandleIssueComment(t *testing.T) {
 				0: {
 					Number: 0,
 					Base: github.PullRequestBranch{
+						Ref: tc.Branch,
 						Repo: github.Repo{
 							Name: "repo",
 						},
@@ -119,6 +133,7 @@ func TestHandleIssueComment(t *testing.T) {
 					AlwaysRun: true,
 					Context:   "job job",
 					Trigger:   "@k8s-bot test this",
+					Branches:  []string{"master"},
 				},
 			},
 		})
