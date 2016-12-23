@@ -50,7 +50,7 @@ create-cluster:
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create secret generic service-account --from-file=service-account.json=$(SERVICE_ACCOUNT_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
-	kubectl create configmap job-configs --from-file=jobs=presubmit.yaml --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml
+	kubectl create configmap job-configs --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml
 	@make line-image --no-print-directory
 	@make hook-image --no-print-directory
@@ -77,7 +77,7 @@ update-cluster: get-cluster-credentials
 	@make splice-deployment --no-print-directory
 
 update-jobs: get-cluster-credentials
-	kubectl create configmap job-configs --from-file=jobs=presubmit.yaml --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
+	kubectl create configmap job-configs --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
