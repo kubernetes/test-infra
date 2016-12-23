@@ -20,7 +20,7 @@ infra checked out under `$GOPATH/src/k8s.io`.
 
 You can run `cmd/hook` in a local mode for testing, and hit it with arbitrary
 fake webhooks. To do this, run `make build` to install the necessary pieces.
-Now, in one shell run `hook --local --job-config jobs.yaml --plugin-config
+Now, in one shell run `hook --local --job-config presubmit.yaml --plugin-config
 plugins.yaml`. This will listen on `localhost:8888` for webhooks. Send one with
 `phony --event issue_comment --payload cmd/phony/examples/test_comment.json`.
 
@@ -55,9 +55,9 @@ redeploying the binaries, and will take effect within a minute.
 
 ## How to add new jobs
 
-To add a new job you'll need to add an entry into `jobs.yaml`. Then run `make
-update-jobs`. This does not require redeploying any binaries, and will take
-effect within a minute.
+To add a new job you'll need to add an entry into `presubmit.yaml`. Then run
+`make update-jobs`. This does not require redeploying any binaries, and will
+take effect within a minute.
 
 The Jenkins job itself should have no trigger. It will be called with string
 parameters `PULL_NUMBER` and `PULL_BASE_REF` which it can use to checkout the
@@ -68,4 +68,4 @@ appropriate revision. It needs to accept the `buildId` parameter which the
 
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
-messages defined in [jobs.yaml](jobs.yaml).
+messages defined in [presubmit.yaml](presubmit.yaml).

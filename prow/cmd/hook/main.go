@@ -43,7 +43,7 @@ import (
 var (
 	port = flag.Int("port", 8888, "Port to listen on.")
 
-	jobConfig    = flag.String("job-config", "/etc/jobs/jobs", "Path to job config file.")
+	jobConfig    = flag.String("job-config", "/etc/jobs/presubmit", "Path to job config file.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")

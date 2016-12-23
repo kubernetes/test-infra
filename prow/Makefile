@@ -15,11 +15,11 @@
 all: build fmt vet test
 
 
-HOOK_VERSION   = 0.64
-LINE_VERSION   = 0.37
+HOOK_VERSION   = 0.65
+LINE_VERSION   = 0.38
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.11
-SPLICE_VERSION = 0.7
+SPLICE_VERSION = 0.8
 MARQUE_VERSION = 0.1
 
 # These are the usual GKE variables.
@@ -50,7 +50,7 @@ create-cluster:
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create secret generic service-account --from-file=service-account.json=$(SERVICE_ACCOUNT_FILE)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
-	kubectl create configmap job-configs --from-file=jobs=jobs.yaml
+	kubectl create configmap job-configs --from-file=jobs=presubmit.yaml --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml
 	@make line-image --no-print-directory
 	@make hook-image --no-print-directory
@@ -77,7 +77,7 @@ update-cluster: get-cluster-credentials
 	@make splice-deployment --no-print-directory
 
 update-jobs: get-cluster-credentials
-	kubectl create configmap job-configs --from-file=jobs=jobs.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
+	kubectl create configmap job-configs --from-file=jobs=presubmit.yaml --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
