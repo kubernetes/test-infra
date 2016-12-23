@@ -561,8 +561,11 @@ def setup_credentials(robot, upload):
         'activate-service-account',
         '--key-file=%s' % os.environ[SERVICE_ACCOUNT_ENV],
     ])
-    account = call(
-        ['gcloud', 'config', 'get-value', 'account'], output=True).strip()
+    try:  # Old versions of gcloud may not support this value
+        account = call(
+            ['gcloud', 'config', 'get-value', 'account'], output=True).strip()
+    except subprocess.CalledProcessError:
+        account = 'unknown'
     logging.info('Will upload results to %s using %s', upload, account)
 
 
