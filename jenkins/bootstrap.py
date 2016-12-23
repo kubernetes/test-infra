@@ -454,8 +454,9 @@ class Paths(object):  # pylint: disable=too-many-instance-attributes,too-few-pub
 
 
 
-def ci_paths(base, job, build):
+def ci_paths(job, build):
     """Return a Paths() instance for a continuous build."""
+    base = 'gs://kubernetes-jenkins/logs'
     latest = os.path.join(base, job, 'latest-build.txt')
     return Paths(
         artifacts=os.path.join(base, job, build, 'artifacts'),
@@ -472,7 +473,7 @@ def ci_paths(base, job, build):
 
 
 
-def pr_paths(base, repo, job, build, pull):
+def pr_paths(repo, job, build, pull):
     """Return a Paths() instance for a PR."""
     pull = str(pull)
     if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
@@ -485,6 +486,7 @@ def pr_paths(base, repo, job, build, pull):
         prefix = repo[len('github.com/'):].replace('/', '_')
     else:
         prefix = repo.replace('/', '_')
+    base = 'gs://kubernetes-jenkins/pr-logs'
     # Batch merges are those with more than one PR specified.
     pr_nums = pull_numbers(pull)
     if len(pr_nums) > 1:
@@ -515,7 +517,6 @@ BUILD_ENV = 'BUILD_NUMBER'
 BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
 CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
 GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
-GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
@@ -536,18 +537,10 @@ def build_name(started):
     return os.environ[BUILD_ENV]
 
 
-def setup_credentials(robot, upload):
-    """Activate the service account unless robot is none."""
+def setup_credentials():
+    """Run some sanity checks and activate gcloud."""
     # TODO(fejta): stop activating inside the image
     # TODO(fejta): allow use of existing gcloud auth
-    if robot:
-        os.environ[SERVICE_ACCOUNT_ENV] = robot
-    if not os.getenv(SERVICE_ACCOUNT_ENV) and upload:
-        logging.warning('Cannot --upload=%s, no active gcloud account.', upload)
-        raise ValueError('--upload requires --service-account')
-    if not os.getenv(SERVICE_ACCOUNT_ENV) and not upload:
-        logging.info('Will not upload results.')
-        return
     if not os.path.isfile(os.environ[SERVICE_ACCOUNT_ENV]):
         raise IOError(
             'Cannot find service account credentials',
@@ -555,15 +548,13 @@ def setup_credentials(robot, upload):
             'Create service account and then create key at '
             'https://console.developers.google.com/iam-admin/serviceaccounts/project',  # pylint: disable=line-too-long
         )
+
     call([
         'gcloud',
         'auth',
         'activate-service-account',
         '--key-file=%s' % os.environ[SERVICE_ACCOUNT_ENV],
     ])
-    account = call(
-        ['gcloud', 'config', 'get-value', 'account'], output=True).strip()
-    logging.info('Will upload results to %s using %s', upload, account)
 
 
 def setup_logging(path):
@@ -607,7 +598,16 @@ def setup_magic_environment(job):
         'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
-
+    # SERVICE_ACCOUNT_ENV is a magic gcloud/gcp environment variable that
+    # controls the location of service credentials. The e2e go test code depends
+    # on this variable, and we also read this value when activating a serivce
+    # account
+    # TODO(fejta): consider allowing people to pass in their user credentials
+    #              when running from a workstation.
+    os.environ.setdefault(
+        SERVICE_ACCOUNT_ENV,
+        os.path.join(home, 'service-account.json'),
+    )
     cwd = os.getcwd()
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
@@ -636,6 +636,9 @@ def job_script(job):
     return test_infra('jobs/%s.sh' % job)
 
 
+GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
+
+
 def gubernator_uri(paths):
     """Return a gubernator link for this build."""
     job = os.path.dirname(paths.build_log)
@@ -644,8 +647,13 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(root, repo, branch, pull):
-    """Create root dir, checkout repo and cd into resulting dir."""
+def bootstrap(job, repo, branch, pull, root):
+    """Clone repo at pull/branch into root and run job script."""
+    build_log_path = os.path.abspath('build-log.txt')
+    build_log = setup_logging(build_log_path)
+    started = time.time()
+    logging.info('Bootstrap %s...', job)
+    build = build_name(started)
     logging.info(
         'Check out %s at %s...',
         os.path.join(root, repo or ''),
@@ -657,51 +665,38 @@ def setup_root(root, repo, branch, pull):
         checkout(repo, branch, pull)
     elif branch or pull:
         raise ValueError('--branch and --pull require --repo', branch, pull)
-
-
-def bootstrap(job, repo, branch, pull, root, upload, robot):
-    """Clone repo at pull/branch into root and run job script."""
-    build_log_path = os.path.abspath('build-log.txt')
-    build_log = setup_logging(build_log_path)
-    started = time.time()
-    logging.info('Bootstrap %s...', job)
-    build = build_name(started)
-    setup_root(root, repo, branch, pull)
     logging.info('Configure environment...')
     if repo:
         version = find_version()
     else:
         version = ''
     setup_magic_environment(job)
-    setup_credentials(robot, upload)
-    if upload:
-        if pull:
-            paths = pr_paths(upload, repo, job, build, pull)
-        else:
-            paths = ci_paths(upload, job, build)
-        logging.info('Gubernator results at %s', gubernator_uri(paths))
+    setup_credentials()
+    if pull:
+        paths = pr_paths(repo, job, build, pull)
+    else:
+        paths = ci_paths(job, build)
+    logging.info('Gubernator results at %s', gubernator_uri(paths))
     gsutil = GSUtil()
     logging.info('Start %s at %s...', build, version)
-    if upload:
-        start(gsutil, paths, started, node(), version, pull)
+    start(gsutil, paths, started, node(), version, pull)
     success = False
     try:
-        call([job_script(job)])
+        cmd = [job_script(job)]
+        call(cmd)
         logging.info('PASS: %s', job)
         success = True
     except subprocess.CalledProcessError:
         logging.error('FAIL: %s', job)
-    if upload:
-        logging.info('Upload result and artifacts...')
-        logging.info('Gubernator results at %s', gubernator_uri(paths))
-        try:
-            finish(gsutil, paths, success, '_artifacts', build, version, repo)
-        except subprocess.CalledProcessError:  # Still try to upload build log
-            success = False
+    logging.info('Upload result and artifacts...')
+    logging.info('Gubernator results at %s', gubernator_uri(paths))
+    try:
+        finish(gsutil, paths, success, '_artifacts', build, version, repo)
+    except subprocess.CalledProcessError:  # Still try to upload build log
+        success = False
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
-    if upload:
-        gsutil.copy_file(paths.build_log, build_log_path)
+    gsutil.copy_file(paths.build_log, build_log_path)
     if not success:
         # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
         # by exit code and automatically retrigger after an infra-problem.
@@ -713,28 +708,13 @@ if __name__ == '__main__':
         'Checks out a github PR/branch to <basedir>/<repo>/')
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
     PARSER.add_argument('--pull',
-        help='PR, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
+        help='PR number, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
     PARSER.add_argument('--branch', help='Checkout the following branch')
     PARSER.add_argument('--repo', help='The repository to fetch from')
-    PARSER.add_argument(
-        '--bare',
-        action='store_true',
-        help='Do not check out a repository')
+    PARSER.add_argument('--bare', action='store_true', help='Do not check out a repository')
     PARSER.add_argument('--job', required=True, help='Name of the job to run')
-    PARSER.add_argument(
-        '--upload', help='Upload results if set, requires --service-account')
-    PARSER.add_argument(
-        '--service-account',
-        help='Activate and use path/to/service-account.json if set.')
     ARGS = PARSER.parse_args()
     if bool(ARGS.repo) == bool(ARGS.bare):
         raise argparse.ArgumentTypeError(
             'Expected --repo xor --bare:', ARGS.repo, ARGS.bare)
-    bootstrap(
-        ARGS.job,
-        ARGS.repo,
-        ARGS.branch,
-        ARGS.pull,
-        ARGS.root,
-        ARGS.upload,
-        ARGS.service_account)
+    bootstrap(ARGS.job, ARGS.repo, ARGS.branch, ARGS.pull, ARGS.root)
