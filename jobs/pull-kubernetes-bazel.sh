@@ -20,28 +20,18 @@ set -o pipefail
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-bazel build //cmd/... //pkg/... //federation/... //plugin/... //build/... //examples/... //test/... //third_party/... && rc=$? || rc=$?
+make bazel-build && rc=$? || rc=$?
 
 # Clear test.xml so that we don't pick up old results.
 find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
 if [[ "${rc}" == 0 ]]; then
-  bazel test  --test_output=errors --test_tag_filters '-skip' //cmd/... //pkg/... //federation/... //plugin/... //build/... //third_party/... && rc=$? || rc=$?
+  make bazel-test && rc=$? || rc=$?
 fi
 
 if [[ "${rc}" == 0 ]]; then
   bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/$(git rev-parse HEAD)" && rc=$? || rc=$?
 fi
-
-case "${rc}" in
-    0) echo "Success" ;;
-    1) echo "Build failed" ;;
-    2) echo "Bad environment or flags" ;;
-    3) echo "Build passed, tests failed or timed out" ;;
-    4) echo "Build passed, no tests found" ;;
-    5) echo "Interrupted" ;;
-    *) echo "Unknown exit code: ${rc}" ;;
-esac
 
 # Coalesce test results into one file for upload.
 "$(dirname "${0}")/../images/pull-kubernetes-bazel/coalesce.py"
