@@ -53,19 +53,25 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
+	pr, err := c.GitHubClient.GetPullRequest(org, repo, number)
+	if err != nil {
+		return err
+	}
+
 	// Skip untrusted users.
 	orgMember, err := c.GitHubClient.IsMember(trustedOrg, author)
 	if err != nil {
 		return err
 	} else if !orgMember {
-		resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/%s/people) member", trustedOrg, trustedOrg)
-		c.Logger.Infof("Commenting \"%s\".", resp)
-		return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
-	}
-
-	pr, err := c.GitHubClient.GetPullRequest(org, repo, number)
-	if err != nil {
-		return err
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr)
+		if err != nil {
+			return err
+		}
+		if !trusted {
+			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/%s/people) member", trustedOrg, trustedOrg)
+			c.Logger.Infof("Commenting \"%s\".", resp)
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+		}
 	}
 
 	ref, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
