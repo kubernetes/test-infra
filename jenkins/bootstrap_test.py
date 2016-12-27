@@ -37,7 +37,9 @@ JOB = 'random_job'
 PASS = ['/bin/bash', '-c', 'exit 0']
 PULL = 12345
 REPO = 'github.com/random_org/random_repo'
+ROBOT = 'fake-service-account.json'
 ROOT = '/random/root'
+UPLOAD = 'fake-gs://fake-bucket'
 
 
 class Stub(object):
@@ -559,6 +561,19 @@ class SetupCredentialsTest(unittest.TestCase):
         }
         self.env = FakeEnviron(**keys)
 
+    def testNoRobotNoUploadNoEnv(self):
+        """Can avoid setting up credentials."""
+        del self.env[bootstrap.SERVICE_ACCOUNT_ENV]
+        with Stub(os, 'environ', self.env) as fake:
+            with Stub(bootstrap, 'call', Bomb):
+                bootstrap.setup_credentials(None, None)
+
+    def testUploadNoRobotRaises(self):
+        del self.env[bootstrap.SERVICE_ACCOUNT_ENV]
+        with Stub(os, 'environ', self.env) as fake:
+            with self.assertRaises(ValueError):
+                bootstrap.setup_credentials(None, 'gs://fake')
+
 
     def testRequireGoogleApplicationCredentials(self):
         """Raise if GOOGLE_APPLICATION_CREDENTIALS does not exist."""
@@ -566,14 +581,21 @@ class SetupCredentialsTest(unittest.TestCase):
         with Stub(os, 'environ', self.env) as fake:
             gac = 'FAKE_CREDS.json'
             fake['HOME'] = 'kansas'
-            fake[bootstrap.SERVICE_ACCOUNT_ENV] = gac
             with Stub(os.path, 'isfile', lambda p: p != gac):
                 with self.assertRaises(IOError):
-                    bootstrap.setup_credentials()
+                    bootstrap.setup_credentials(gac, UPLOAD)
 
             with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'call', Pass):
-                    bootstrap.setup_credentials()
+                with Stub(bootstrap, 'call', lambda *a, **kw: 'robot'):
+                    bootstrap.setup_credentials(gac, UPLOAD)
+            # setup_creds should set SERVICE_ACCOUNT_ENV
+            self.assertEquals(gac, fake.get(bootstrap.SERVICE_ACCOUNT_ENV))
+            # now that SERVICE_ACCOUNT_ENV is set, it should try to activate
+            # this
+            with Stub(os.path, 'isfile', lambda p: p != gac):
+                with self.assertRaises(IOError):
+                    bootstrap.setup_credentials(None, UPLOAD)
+
 
 class SetupMagicEnvironmentTest(unittest.TestCase):
     def testWorkspace(self):
@@ -610,7 +632,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         Check(bootstrap.CLOUDSDK_ENV)
         Check(bootstrap.BOOTSTRAP_ENV)
         Check(bootstrap.WORKSPACE_ENV)
-        Check(bootstrap.SERVICE_ACCOUNT_ENV)
+        self.assertNotIn(bootstrap.SERVICE_ACCOUNT_ENV, env)
 
     def testNode_Present(self):
         expected = 'whatever'
@@ -672,13 +694,13 @@ class FakeFinish(object):
 class PRPathsTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         """Test the kubernetes/kubernetes prefix."""
-        path = bootstrap.pr_paths('kubernetes/kubernetes', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/kubernetes', JOB, BUILD, PULL)
         self.assertTrue(any(
             str(PULL) == p for p in path.build_log.split('/')))
 
     def testKubernetes(self):
         """Test the kubernetes/something prefix."""
-        path = bootstrap.pr_paths('kubernetes/prefix', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/prefix', JOB, BUILD, PULL)
         self.assertTrue(any(
             'prefix' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
@@ -686,7 +708,7 @@ class PRPathsTest(unittest.TestCase):
 
     def testOther(self):
         """Test the none kubernetes prefixes."""
-        path = bootstrap.pr_paths('github.com/random/repo', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, 'github.com/random/repo', JOB, BUILD, PULL)
         self.assertTrue(any(
             'random_repo' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
@@ -718,23 +740,25 @@ class BootstrapTest(unittest.TestCase):
     def testEmptyRepo(self):
         repo = None
         with Stub(bootstrap, 'checkout', Bomb):
-            bootstrap.bootstrap(JOB, repo, None, None, ROOT)
+            bootstrap.bootstrap(JOB, repo, None, None, ROOT, UPLOAD, ROBOT)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, None, PULL, ROOT)
+            bootstrap.bootstrap(JOB, repo, None, PULL, ROOT, UPLOAD, ROBOT)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, BRANCH, None, ROOT)
+            bootstrap.bootstrap(JOB, repo, BRANCH, None, ROOT, UPLOAD, ROBOT)
 
     def testRoot_NotExists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
             with Stub(os.path, 'exists', lambda p: False):
                 with Stub(os, 'makedirs', FakeCall()) as fake_makedirs:
-                    bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
+                    bootstrap.bootstrap(
+                        JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls), fake_chdir.calls)
         self.assertTrue(any(ROOT in c[0] for c in fake_makedirs.calls), fake_makedirs.calls)
 
     def testRoot_Exists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
-            bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
+            bootstrap.bootstrap(
+                JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls))
 
     def testPRPaths(self):
@@ -742,7 +766,8 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'ci_paths', Bomb):
             with Stub(bootstrap, 'pr_paths', FakePath()) as path:
-                bootstrap.bootstrap(JOB, REPO, None, PULL, ROOT)
+                bootstrap.bootstrap(
+                    JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
             self.assertTrue(PULL in path.a or PULL in path.kw)
 
     def testCIPaths(self):
@@ -750,7 +775,8 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'pr_paths', Bomb):
             with Stub(bootstrap, 'ci_paths', FakePath()) as path:
-                bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
+                bootstrap.bootstrap(
+                    JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
@@ -758,7 +784,8 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'start', Bomb):
                 with self.assertRaises(AssertionError):
-                    bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
+                    bootstrap.bootstrap(
+                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
         self.assertFalse(fake.called)
 
 
@@ -768,20 +795,22 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'call', CallError):
                 with self.assertRaises(SystemExit):
-                    bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
+                    bootstrap.bootstrap(
+                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testHappy(self):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
-            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
+            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result)  # Distinguish from None
 
     def testJobEnv(self):
         """bootstrap sets JOB_NAME."""
         with Stub(os, 'environ', FakeEnviron()) as env:
-            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT)
+            bootstrap.bootstrap(
+                JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
         self.assertIn(bootstrap.JOB_ENV, env)
 
 
@@ -853,7 +882,8 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
         os.chdir('/tmp')
-        bootstrap.bootstrap('fake-pr', self.REPO, None, self.PR, self.root_workspace)
+        bootstrap.bootstrap(
+            'fake-pr', self.REPO, None, self.PR, self.root_workspace, UPLOAD, ROBOT)
 
     def testBranch(self):
         subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
@@ -863,7 +893,8 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
 
         os.chdir('/tmp')
-        bootstrap.bootstrap('fake-branch', self.REPO, self.BRANCH, None, self.root_workspace)
+        bootstrap.bootstrap(
+            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
 
     def testBatch(self):
         def head_sha():
@@ -883,29 +914,34 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         pull = ','.join(refs)
         print '--pull', pull
-        bootstrap.bootstrap('fake-pr', self.REPO, None, pull, self.root_workspace)
+        bootstrap.bootstrap(
+            'fake-pr', self.REPO, None, pull, self.root_workspace, UPLOAD, ROBOT)
 
     def testPr_Bad(self):
         random_pr = 111
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap('fake-pr', self.REPO, None, random_pr, self.root_workspace)
+                    bootstrap.bootstrap(
+                        'fake-pr', self.REPO, None, random_pr, self.root_workspace, UPLOAD, ROBOT)
 
     def testBranch_Bad(self):
         random_branch = 'something'
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap('fake-branch', self.REPO, random_branch, None, self.root_workspace)
+                    bootstrap.bootstrap(
+                        'fake-branch', self.REPO, random_branch, None, self.root_workspace, UPLOAD, ROBOT)
 
     def testJobMissing(self):
         with self.assertRaises(OSError):
-            bootstrap.bootstrap('this-job-no-exists', self.REPO, 'master', None, self.root_workspace)
+            bootstrap.bootstrap(
+                'this-job-no-exists', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
 
     def testJobFails(self):
         with self.assertRaises(SystemExit):
-            bootstrap.bootstrap('fake-failure', self.REPO, 'master', None, self.root_workspace)
+            bootstrap.bootstrap(
+                'fake-failure', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
 
 
 class JobTest(unittest.TestCase):
@@ -1020,6 +1056,29 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
             Check, suffix='dockerpush-suffix')
 
+    def CheckJobTemplate(self, tmpl):
+        builders = tmpl.get('builders')
+        if not isinstance(builders, list):
+            self.fail(tmpl)
+        self.assertEquals(1, len(builders), builders)
+        shell = builders[0]
+        if not isinstance(shell, dict):
+            self.fail(tmpl)
+        self.assertEquals(1, len(shell), tmpl)
+        if 'raw' in shell:
+            self.assertEquals('maintenance-all-{suffix}', tmpl['name'])
+            return
+        cmd = shell.get('shell')
+        if not isinstance(cmd, basestring):
+            self.fail(tmpl)
+        self.assertIn('--service-account=', cmd)
+        self.assertIn('--upload=', cmd)
+        if '--pull=' in cmd:
+            self.assertIn('--upload=\'gs://kubernetes-jenkins/pr-logs\'', cmd)
+        else:
+            self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
+
+
 
     def CheckBootstrapYaml(self, path, check, suffix='suffix'):
         with open(os.path.join(
@@ -1033,6 +1092,7 @@ class JobTest(unittest.TestCase):
                 continue
             if isinstance(item.get('job-template'), dict):
                 defined_templates.add(item['job-template']['name'])
+                self.CheckJobTemplate(item['job-template'])
             if not isinstance(item.get('project'), dict):
                 continue
             project = item['project']

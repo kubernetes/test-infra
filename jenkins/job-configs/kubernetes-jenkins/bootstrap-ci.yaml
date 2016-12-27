@@ -3,7 +3,12 @@
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
-        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --bare --root="${{GOPATH}}/src/k8s.io"
+        './test-infra/jenkins/bootstrap.py' \
+            --bare \
+            --job='{job-name}' \
+            --root="${{GOPATH}}/src/k8s.io" \
+            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --upload='gs://kubernetes-jenkins/logs'
     disabled: false
     name: 'ci-{suffix}'
     node: 'e2e'

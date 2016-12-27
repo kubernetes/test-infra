@@ -4,7 +4,13 @@
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
-        './test-infra/jenkins/bootstrap.py' --job='{job-name}' --repo='{repo-name}' --branch='{branch}' --root="${{GOPATH}}/src"
+        './test-infra/jenkins/bootstrap.py' \
+            --branch='{branch}' \
+            --job='{job-name}' \
+            --repo='{repo-name}' \
+            --root="${{GOPATH}}/src" \
+            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --upload='gs://kubernetes-jenkins/logs'
     concurrent: true
     properties:
     - build-discarder:
