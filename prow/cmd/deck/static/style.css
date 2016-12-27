@@ -10,21 +10,15 @@ body {
 header {
     background-color: #3f51b5;
     color: white;
-    text-align: center;
-    padding: 4px;
+    padding: 2px;
+    padding-left: 20px;
     box-shadow: 0px 0px 10px #666;
-}
-
-#logo {
-    width: 80px;
-    height: 80px;
-    float: left;
-    padding-left: 16px;
 }
 
 h1 {
     font-weight: normal;
     font-size: 2em;
+    margin: 2px;
 }
 
 div {
@@ -36,27 +30,30 @@ div {
 }
 
 aside {
-    float: left;
     margin: 8px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin: 0 8px;
+    display: inline-block;
+}
+
+select {
+    height: 1.4em;
+    border: none;
+    border-bottom: 1px solid #e3e3e3;
+    background: transparent;
 }
 
 article {
     overflow: hidden;
     margin: 8px;
-}
-
-article > * {
-    margin: 8px;
-}
-
-label {
-    font-size: 0.9em;
-}
-
-span {
-    color: #333;
-    line-height: 1.8;
-    font-weight: bold;
 }
 
 table {
@@ -111,8 +108,4 @@ th {
 a:link {
     text-decoration: none;
     color: blue;
-}
-
-input[type="text"], input[type="number"], input.wide {
-    width: 80px;
 }

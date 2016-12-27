@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Kubernetes Presubmits</title>
+        <title>Kubernetes CI Jobs</title>
         <link rel="stylesheet" type="text/css" href="style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <script type="text/javascript" src="script.js"></script>
@@ -9,38 +9,30 @@
     </head>
     <body>
         <header>
-        <img id="logo" src="logo.svg">
-        <h1>Kubernetes Presubmits</h1>
+            <h1>Kubernetes Presubmits</h1>
         </header>
         <aside>
-        <div id="repos">
-            <label><input type="checkbox" id="allRepos" onclick="toggleRepos(this);" checked><span>Repositories</span></label><br>
-        </div>
-        <div id="jobs">
-            <label><input type="checkbox" id="allJobs" onclick="toggleJobs(this);" checked><span>Jenkins Jobs</span></label><br>
-        </div>
         <div>
-            <span>Pull Requests</span><br>
-            <label><input type="number" id="pr" oninput="redraw();"> Number</label><br>
-            <label><input type="text" id="author" oninput="redraw();"> Author</label><br>
-            <input type="hidden" id="refs" oninput="redraw();">
-            <label><input type="checkbox" class="wide" id="batch" onchange="redraw();">Batch</label><br>
+            <ul>
+                <li>Filter</li>
+                <li><select id="type" onchange="redraw();"></select></li>
+                <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
+                <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
+                <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
+                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
+            </ul>
         </div>
         </aside>
         <article>
-        <div id="batch-desc"></div>
         <table id="builds">
             <thead>
                 <tr>
                     <th></th>
                     <th></th>
                     <th>Repository</th>
-                    <th>#</th>
-                    <th>Author</th>
-                    <th>Jenkins Job</th>
-                    <th>State</th>
+                    <th>Revision</th>
+                    <th>Job</th>
                     <th>Started</th>
-                    <th>Finished</th>
                     <th>Duration</th>
                 </tr>
             </thead>
