@@ -56,7 +56,7 @@ kubernetes/kubernetes:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.2
       command: ["/bin/bash", "-c"]
-      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/kubernetes --pull=${PULL_REFS} --job=pull-kubernetes-bazel"]
+      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --upload --repo=k8s.io/kubernetes --pull=${PULL_REFS} --job=pull-kubernetes-bazel"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
@@ -182,7 +182,7 @@ kubernetes/test-infra:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.2
       command: ["/bin/bash", "-c"]
-      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/test-infra --pull=${PULL_REFS} --job=pull-test-infra-bazel"]
+      args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --upload --repo=k8s.io/test-infra --pull=${PULL_REFS} --job=pull-test-infra-bazel"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
