@@ -52,7 +52,7 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot (bazel )?test this"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.1
+    - image: gcr.io/k8s-testimages/bazelbuild:0.2
       command: ["/bin/bash", "-c"]
       args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/kubernetes --pull=${PULL_REFS} --job=pull-kubernetes-bazel"]
       volumeMounts:
@@ -178,7 +178,7 @@ kubernetes/test-infra:
   trigger: "@k8s-bot (bazel )?test this"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.1
+    - image: gcr.io/k8s-testimages/bazelbuild:0.2
       command: ["/bin/bash", "-c"]
       args: ["git clone https://github.com/kubernetes/test-infra && ./test-infra/jenkins/bootstrap.py --repo=k8s.io/test-infra --pull=${PULL_REFS} --job=pull-test-infra-bazel"]
       volumeMounts:

@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     bash-completion \
     git \
     wget \
-    python && \
+    python \
+    python-pip && \
     apt-get clean
 
 ENV BAZEL_VERSION 0.4.2
