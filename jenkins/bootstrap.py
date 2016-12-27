@@ -725,7 +725,8 @@ if __name__ == '__main__':
         help='Do not check out a repository')
     PARSER.add_argument('--job', required=True, help='Name of the job to run')
     PARSER.add_argument(
-        '--upload', help='Upload results if set, requires --service-account')
+        '--upload',
+        help='Upload results here if set, requires --service-account')
     PARSER.add_argument(
         '--service-account',
         help='Activate and use path/to/service-account.json if set.')
