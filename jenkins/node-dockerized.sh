@@ -49,6 +49,9 @@ fi
 # run node test as jenkins
 GCE_USER="jenkins"
 
+# force pull the image since we are using latest tag
+docker pull "gcr.io/k8s-testimages/kubekins-node:${NODEIMAGE_TAG}"
+
 docker run --rm=true \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${REPO_DIR}":/go/src/k8s.io/kubernetes \
