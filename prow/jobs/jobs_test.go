@@ -31,10 +31,10 @@ func TestJobTriggers(t *testing.T) {
 	if err := ja.load("../presubmit.yaml"); err != nil {
 		t.Fatalf("Could not load job configs: %v", err)
 	}
-	if len(ja.jobs) == 0 {
+	if len(ja.presubmits) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
-	for _, jobs := range ja.jobs {
+	for _, jobs := range ja.presubmits {
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -126,7 +126,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	ja := &JobAgent{
-		jobs: map[string][]JenkinsJob{
+		presubmits: map[string][]Presubmit{
 			"org/repo": {
 				{
 					Name:      "gce",

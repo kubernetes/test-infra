@@ -28,8 +28,8 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// JenkinsJob is the job-specific trigger info.
-type JenkinsJob struct {
+// Presubmit is the job-specific trigger info.
+type Presubmit struct {
 	// eg kubernetes-pull-build-test-e2e-gce
 	Name string `json:"name"`
 	// Run for every PR, or only when a comment triggers it.
@@ -42,6 +42,8 @@ type JenkinsJob struct {
 	RerunCommand string `json:"rerun_command"`
 	// Whether or not to skip commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
+	// Only run against these branches. Default is all branches.
+	Branches []string `json:"branches"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 
@@ -49,10 +51,22 @@ type JenkinsJob struct {
 	re *regexp.Regexp
 }
 
+func (ps Presubmit) RunsAgainstBranch(branch string) bool {
+	if len(ps.Branches) == 0 {
+		return true
+	}
+	for _, b := range ps.Branches {
+		if b == branch {
+			return true
+		}
+	}
+	return false
+}
+
 type JobAgent struct {
 	mut sync.Mutex
-	// Repo FullName (eg "kubernetes/kubernetes") -> []JenkinsJob
-	jobs map[string][]JenkinsJob
+	// Repo FullName (eg "kubernetes/kubernetes") -> []Presubmit
+	presubmits map[string][]Presubmit
 }
 
 func (ja *JobAgent) Start(path string) error {
@@ -68,12 +82,12 @@ func (ja *JobAgent) Start(path string) error {
 	return nil
 }
 
-func (ja *JobAgent) SetJobs(jobs map[string][]JenkinsJob) error {
+func (ja *JobAgent) SetJobs(jobs map[string][]Presubmit) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	nj := map[string][]JenkinsJob{}
+	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
-		nj[k] = make([]JenkinsJob, len(v))
+		nj[k] = make([]Presubmit, len(v))
 		copy(nj[k], v)
 		for i := range v {
 			if re, err := regexp.Compile(v[i].Trigger); err != nil {
@@ -83,7 +97,7 @@ func (ja *JobAgent) SetJobs(jobs map[string][]JenkinsJob) error {
 			}
 		}
 	}
-	ja.jobs = nj
+	ja.presubmits = nj
 	return nil
 }
 
@@ -93,12 +107,12 @@ func (ja *JobAgent) LoadOnce(path string) error {
 	return ja.load(path)
 }
 
-func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Regexp) []JenkinsJob {
+func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	var result []JenkinsJob
+	var result []Presubmit
 	ott := testAll.MatchString(body)
-	if jobs, ok := ja.jobs[fullRepoName]; ok {
+	if jobs, ok := ja.presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
 			if job.re.MatchString(body) || (ott && job.AlwaysRun) {
 				result = append(result, job)
@@ -108,23 +122,23 @@ func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Rege
 	return result
 }
 
-func (ja *JobAgent) AllJobs(fullRepoName string) []JenkinsJob {
+func (ja *JobAgent) AllJobs(fullRepoName string) []Presubmit {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	res := make([]JenkinsJob, len(ja.jobs[fullRepoName]))
-	copy(res, ja.jobs[fullRepoName])
+	res := make([]Presubmit, len(ja.presubmits[fullRepoName]))
+	copy(res, ja.presubmits[fullRepoName])
 	return res
 }
 
-func (ja *JobAgent) GetJob(repo, job string) (bool, JenkinsJob) {
+func (ja *JobAgent) GetJob(repo, job string) (bool, Presubmit) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	for _, j := range ja.jobs[repo] {
+	for _, j := range ja.presubmits[repo] {
 		if j.Name == job {
 			return true, j
 		}
 	}
-	return false, JenkinsJob{}
+	return false, Presubmit{}
 }
 
 // Hold the lock.
@@ -133,7 +147,7 @@ func (ja *JobAgent) load(path string) error {
 	if err != nil {
 		return err
 	}
-	nj := map[string][]JenkinsJob{}
+	nj := map[string][]Presubmit{}
 	if err := yaml.Unmarshal(b, &nj); err != nil {
 		return err
 	}
@@ -146,7 +160,7 @@ func (ja *JobAgent) load(path string) error {
 			}
 		}
 	}
-	ja.jobs = nj
+	ja.presubmits = nj
 	return nil
 }
 
