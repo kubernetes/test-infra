@@ -43,7 +43,7 @@ export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
 # Override defaults to be independent from GCE defaults and set kubemark parameters
-# We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
+# TODO: Can we compute it instead of hard-coding?
 export NUM_NODES="60"
 export MASTER_SIZE="n1-standard-4"
 # Note: can fit about ~10 hollow nodes per core so NUM_NODES x
@@ -66,8 +66,6 @@ export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 # TODO: revert after running experiments.
 export EVENT_PD="true"
-# TODO remove after #19188 is fixed
-export CUSTOM_ADMISSION_PLUGINS="NamespaceLifecycle,LimitRanger,ResourceQuota"
 # TODO: Reduce this once we have log rotation in Kubemark.
 export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
 
@@ -75,7 +73,6 @@ export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
 
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="${E2E_UP:-true}"
-export E2E_TEST="${E2E_TEST:-true}"
 export E2E_DOWN="${E2E_DOWN:-true}"
 
 # Skip gcloud update checking
