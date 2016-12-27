@@ -432,6 +432,10 @@ elif [[ ! "${JOB_NAME}" =~ -pull- ]]; then
   fi
 fi
 
+if [[ -n "${PRIORITY_PATH:-}" ]]; then
+  export PATH="${PRIORITY_PATH}:${PATH}"
+fi
+
 # When run inside Docker, we need to make sure all files are world-readable
 # (since they will be owned by root on the host).
 trap "chmod -R o+r '${ARTIFACTS}'" EXIT SIGINT SIGTERM
