@@ -101,30 +101,12 @@ def call(cmd, stdin=None, check=True, output=None):
 
 
 def pull_has_shas(pull):
-    """Determine if a pull reference specifies shas (contains ':')
-
-    >>> pull_has_shas('master:abcd')
-    True
-    >>> pull_has_shas('123')
-    False
-    >>> pull_has_shas(123)
-    False
-    >>> pull_has_shas(None)
-    False
-    """
+    """Determine if a pull reference specifies shas (contains ':')"""
     return isinstance(pull, basestring) and ':' in pull
 
 
 def pull_numbers(pull):
-    """Turn a pull reference list into a list of PR numbers to merge.
-
-    >>> pull_numbers(123)
-    ['123']
-    >>> pull_numbers('master:abcd')
-    []
-    >>> pull_numbers('master:abcd,123:qwer,124:zxcv')
-    ['123', '124']
-    """
+    """Turn a pull reference list into a list of PR numbers to merge."""
     if pull_has_shas(pull):
         return [r.split(':')[0] for r in pull.split(',')][1:]
     else:
@@ -132,13 +114,7 @@ def pull_numbers(pull):
 
 
 def pull_ref(pull):
-    """Turn a PR number of list of refs into specific refs to fetch and check out.
-
-    >>> pull_ref('123')
-    (['+refs/pull/123/merge'], ['FETCH_HEAD'])
-    >>> pull_ref('master:abcd,123:effe')
-    (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe'])
-    """
+    """Turn a PR number of list of refs into specific refs to fetch and check out."""
     if pull_has_shas(pull):
         refs = []
         checkouts = []
