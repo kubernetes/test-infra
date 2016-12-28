@@ -16,7 +16,6 @@ services:
 sudo: required
 before_install:
     - docker pull gcr.io/google_containers/kubekins-job-builder:5
-    - docker pull golang:1.7.1
 install:
 # Create and move build under the go path
     - mkdir -p $HOME/gopath/src/k8s.io
@@ -25,17 +24,13 @@ install:
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
     - unzip -q ${GAE_ZIP} -d ${HOME}
-    - pip install -r gubernator/test_requirements.txt
-    - pip install -r jenkins/test_history/requirements.txt
     - npm install mocha
 script:
     - ./verify/verify-boilerplate.py
     - ./verify/verify-bazel.sh
-    - python -m unittest discover -s jenkins/test_history -p "*_test.py"
     - pylint jenkins/bootstrap.py  # TODO(fejta): all python files
     - pylint queue-health/graph/graph.py  # TODO(fejta): all python files
     - pylint queue-health/weekly_commit_stats.py  # TODO(fejta): all python files
-    - ./jenkins/bootstrap_test.py
     - nosetests --with-doctest jenkins/bootstrap.py
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
@@ -45,6 +40,5 @@ script:
     - ./lint.sh
     - ../node_modules/.bin/mocha static/build_test.js
     - cd ..
-    - gofmt -l .
     - chmod +x testgrid/jenkins_verify/verify.sh
     - ./testgrid/jenkins_verify/verify.sh
