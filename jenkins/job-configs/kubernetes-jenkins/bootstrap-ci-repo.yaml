@@ -98,11 +98,6 @@
         job-name: ci-kubernetes-test-go-release-1.3
         repo-name: k8s.io/kubernetes
         frequency: 'H H/3 * * *'
-    - kubernetes-test-go-release-1.2:
-        branch: release-1.2
-        job-name: ci-kubernetes-test-go-release-1.2
-        repo-name: k8s.io/kubernetes
-        frequency: 'H H/3 * * *'
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master
