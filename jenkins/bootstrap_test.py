@@ -860,6 +860,8 @@ class IntegrationTest(unittest.TestCase):
         repo = self.FakeRepo(self.REPO)
         subprocess.check_call(['git', 'init', repo])
         os.chdir(repo)
+        subprocess.check_call(['git', 'config', 'user.name', 'foo'])
+        subprocess.check_call(['git', 'config', 'user.email', 'foo@bar.baz'])
         subprocess.check_call(['touch', self.MASTER])
         subprocess.check_call(['git', 'add', self.MASTER])
         subprocess.check_call(['git', 'commit', '-m', 'Initial commit'])
