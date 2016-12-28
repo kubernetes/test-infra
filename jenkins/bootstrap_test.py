@@ -130,6 +130,28 @@ class SubprocessTest(unittest.TestCase):
             bootstrap.call(['/bin/bash', '-c', 'A=$BASHPID && ( kill -STOP $A ) & exit 1'])
 
 
+class PullRefsTest(unittest.TestCase):
+    """Tests for pull_ref, pull_has_shas, and pull_numbers."""
+
+    def testPullHasShas(self):
+        self.assertTrue(bootstrap.pull_has_shas('master:abcd'))
+        self.assertFalse(bootstrap.pull_has_shas('123'))
+        self.assertFalse(bootstrap.pull_has_shas(123))
+        self.assertFalse(bootstrap.pull_has_shas(None))
+
+    def testPullNumbers(self):
+        self.assertListEqual(bootstrap.pull_numbers(123), ['123'])
+        self.assertListEqual(bootstrap.pull_numbers('master:abcd'), [])
+        self.assertListEqual(
+            bootstrap.pull_numbers('master:abcd,123:qwer,124:zxcv'),
+            ['123', '124'])
+
+    def testPullRef(self):
+        self.assertEqual(bootstrap.pull_ref('master:abcd,123:effe'),
+            (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe']))
+        self.assertEqual(bootstrap.pull_ref('123'),
+            (['+refs/pull/123/merge'], ['FETCH_HEAD']))
+
 
 class CheckoutTest(unittest.TestCase):
     """Tests for checkout()."""
@@ -860,6 +882,8 @@ class IntegrationTest(unittest.TestCase):
         repo = self.FakeRepo(self.REPO)
         subprocess.check_call(['git', 'init', repo])
         os.chdir(repo)
+        subprocess.check_call(['git', 'config', 'user.name', 'foo'])
+        subprocess.check_call(['git', 'config', 'user.email', 'foo@bar.baz'])
         subprocess.check_call(['touch', self.MASTER])
         subprocess.check_call(['git', 'add', self.MASTER])
         subprocess.check_call(['git', 'commit', '-m', 'Initial commit'])

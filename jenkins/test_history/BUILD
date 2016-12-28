@@ -4,7 +4,6 @@ py_test(
         "gen_html_test.py",
         "gen_html.py",
     ],
-    tags = ["manual"],
 )
 
 py_test(
@@ -17,5 +16,4 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/1973
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
-    tags = ["manual"],
 )
