@@ -35,6 +35,7 @@ func TestHandleIssueComment(t *testing.T) {
 		IsPR        bool
 		Branch      string
 		ShouldBuild bool
+		HasOkToTest bool
 	}{
 		// Not a PR.
 		{
@@ -67,6 +68,15 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
+		},
+		// Non-trusted member after "ok to test".
+		{
+			Author:      "u",
+			Body:        "@k8s-bot test this",
+			State:       "open",
+			IsPR:        true,
+			HasOkToTest: true,
+			ShouldBuild: true,
 		},
 		// Trusted member's ok to test.
 		{
@@ -141,6 +151,12 @@ func TestHandleIssueComment(t *testing.T) {
 		var pr *struct{}
 		if tc.IsPR {
 			pr = &struct{}{}
+		}
+		if tc.HasOkToTest {
+			g.IssueComments[0] = []github.IssueComment{{
+				Body: "ok to test",
+				User: github.User{Login: "t"},
+			}}
 		}
 		event := github.IssueCommentEvent{
 			Action: "created",
