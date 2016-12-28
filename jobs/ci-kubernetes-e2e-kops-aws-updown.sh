@@ -47,7 +47,8 @@ export KUBE_SSH_USER=admin
 export LOG_DUMP_USE_KUBECTL=yes
 export LOG_DUMP_SSH_KEY=/workspace/.ssh/kube_aws_rsa
 export LOG_DUMP_SSH_USER=admin
-export LOG_DUMP_SAVE_LOGS=cloud-init-output
+export LOG_DUMP_SAVE_LOGS="cloud-init-output"
+export LOG_DUMP_SAVE_SERVICES="protokube"
 
 ### job-env
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
