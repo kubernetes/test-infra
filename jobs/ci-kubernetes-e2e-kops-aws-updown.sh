@@ -50,7 +50,8 @@ export LOG_DUMP_SSH_USER=admin
 export LOG_DUMP_SAVE_LOGS=cloud-init-output
 
 ### job-env
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+DEFAULT_GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]"
+export GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-${DEFAULT_GINKGO_TEST_ARGS}}"
 if [[ -n "${JOB_NAME:-}" ]]; then
   # Running on Jenkins
   export KOPS_E2E_CLUSTER_NAME="e2e-kops-aws-updown.test-aws.k8s.io"
