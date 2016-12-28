@@ -24,6 +24,7 @@ install:
 # Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
     - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
     - unzip -q ${GAE_ZIP} -d ${HOME}
+    - pip install -r gubernator/test_requirements.txt
     - npm install mocha
 script:
     - ./verify/verify-boilerplate.py

@@ -147,14 +147,10 @@ class PullRefsTest(unittest.TestCase):
             ['123', '124'])
 
     def testPullRef(self):
-        def test_tuplist_equal(a, b):
-            self.assertEqual(len(a), 2)
-            self.assertListEqual(a[0], b[0])
-            self.assertListEqual(a[1], b[1])
-        test_tuplist_equal(bootstrap.pull_ref('123'),
-            (['+refs/pull/123/merge'], ['FETCH_HEAD']))
-        test_tuplist_equal(bootstrap.pull_ref('master:abcd,123:effe'),
+        self.assertEqual(bootstrap.pull_ref('master:abcd,123:effe'),
             (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe']))
+        self.assertEqual(bootstrap.pull_ref('123'),
+            (['+refs/pull/123/merge'], ['FETCH_HEAD']))
 
 
 class CheckoutTest(unittest.TestCase):
