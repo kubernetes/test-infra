@@ -84,18 +84,23 @@ func ValidateDashboardtab(currentTab *config.DashboardTab, defaultTab *config.Da
 	}
 }
 
+func Unmarshal(yamlData []byte, out interface{}) error {
+	// A Wrapper for yaml.Unmarshal
+	return yaml.Unmarshal(yamlData, out)
+}
+
 func Yaml2Proto(yamlData []byte) ([]byte, error) {
 
 	// Unmarshal yaml to config
 	curConfig := &config.Configuration{}
 	defaultConfig := &config.DefaultConfiguration{}
-	err := yaml.Unmarshal(yamlData, &curConfig)
+	err := Unmarshal(yamlData, &curConfig)
 	if err != nil {
 		fmt.Printf("Unmarshal Error for config : %v\n", err)
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(yamlData, &defaultConfig)
+	err = Unmarshal(yamlData, &defaultConfig)
 	if err != nil {
 		fmt.Printf("Unmarshal Error for defaultconfig : %v\n", err)
 		return nil, err

@@ -1949,6 +1949,33 @@ dashboards:
   - name: testgrid-config-upload
     test_group_name: testgrid-config-upload
 
+- name: sq-blocking
+  dashboard_tab:
+  - name: build
+    test_group_name: kubernetes-build
+  - name: gce-etcd3
+    test_group_name: kubernetes-e2e-gce-etcd3
+  - name: gci-gce
+    test_group_name: kubernetes-e2e-gci-gce
+  - name: gci-gce-slow
+    test_group_name: kubernetes-e2e-gci-gce-slow
+  - name: gci-gke
+    test_group_name: kubernetes-e2e-gci-gke
+  - name: gci-gke-slow
+    test_group_name: kubernetes-e2e-gci-gke-slow
+  - name: kops-aws
+    test_group_name: kubernetes-e2e-kops-aws
+  - name: kubemark-500-gce
+    test_group_name: kubernetes-kubemark-500-gce
+  - name: node-kubelet
+    test_group_name: ci-kubernetes-node-kubelet
+  - name: test-go
+    test_group_name: kubernetes-test-go
+  - name: ingress
+    test_group_name: kubernetes-e2e-gci-gce-ingress
+  - name: verify 
+    test_group_name: kubernetes-verify-master
+
 - name: google-cri
   dashboard_tab:
   - name: gce
