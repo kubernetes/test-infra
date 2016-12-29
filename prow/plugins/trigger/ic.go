@@ -81,6 +81,13 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 
 	for _, job := range requestedJobs {
 		if !job.RunsAgainstBranch(pr.Base.Ref) {
+			if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+				State:       github.StatusSuccess,
+				Context:     job.Context,
+				Description: "Skipped",
+			}); err != nil {
+				return err
+			}
 			continue
 		}
 		c.Logger.Infof("Starting %s build.", job.Name)
