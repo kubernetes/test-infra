@@ -42,7 +42,8 @@ types in `plugins`. In that package's `init` function, call
 empty import so that your plugin is included. If you forget this step then a
 unit test will fail when you try to add it to `plugins.yaml`. Don't add a brand
 new plugin to the main `kubernetes/kubernetes` repo right away, start with
-somewhere smaller and make sure it is well-behaved.
+somewhere smaller and make sure it is well-behaved. If you add a command,
+document it in [commands.md](./commands.md).
 
 The LGTM plugin is a good place to start if you're looking for an example
 plugin to mimic.
