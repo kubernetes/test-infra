@@ -15,7 +15,7 @@
 all: build fmt vet test
 
 
-HOOK_VERSION   = 0.68
+HOOK_VERSION   = 0.69
 LINE_VERSION   = 0.38
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.11

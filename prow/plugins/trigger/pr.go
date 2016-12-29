@@ -131,14 +131,26 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 }
 
 func buildAll(c client, pr github.PullRequest) error {
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
 	var ref string
 	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
-		if !job.AlwaysRun || !job.RunsAgainstBranch(pr.Base.Ref) {
+		if !job.AlwaysRun {
+			continue
+		}
+		if !job.RunsAgainstBranch(pr.Base.Ref) {
+			if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+				State:       github.StatusSuccess,
+				Context:     job.Context,
+				Description: "Skipped",
+			}); err != nil {
+				return err
+			}
 			continue
 		}
 		// Only get master ref once.
 		if ref == "" {
-			r, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
+			r, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
 			if err != nil {
 				return err
 			}

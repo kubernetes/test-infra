@@ -43,6 +43,7 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
+	CreateStatus(owner, repo, ref string, status github.Status) error
 }
 
 type client struct {
