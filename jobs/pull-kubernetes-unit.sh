@@ -19,6 +19,21 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
+readonly scenario='kubernetes_verify.py'
+readonly scenario_args=(
+  --branch="${PULL_BASE_REF}"
+)
 
-export KUBE_VERIFY_GIT_BRANCH="${PULL_BASE_REF}"
-${testinfra}/jenkins/gotest-dockerized.sh
+### Runner
+readonly runner="${testinfra}/scenarios/${scenario}"
+export KUBEKINS_TIMEOUT="60m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
+
+### Reporting
+if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
+    echo "Build timed out" >&2
+elif [[ ${rc} -ne 0 ]]; then
+    echo "Build failed" >&2
+fi
+echo "Exiting with code: ${rc}"
+exit ${rc}

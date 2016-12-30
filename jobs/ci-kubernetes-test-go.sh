@@ -19,14 +19,16 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-
-export KUBE_FORCE_VERIFY_CHECKS='y'
-export KUBE_VERIFY_GIT_BRANCH='master'
+readonly scenario='kubernetes_verify.py'
+readonly scenario_args=(
+  --branch=master
+  --force
+)
 
 ### Runner
-readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
+readonly runner="${testinfra}/scenarios/${scenario}"
 export KUBEKINS_TIMEOUT="100m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
