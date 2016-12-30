@@ -54,7 +54,7 @@ kubernetes/kubernetes:
   - master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.4
+    - image: gcr.io/k8s-testimages/bazelbuild:0.5
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
@@ -178,7 +178,7 @@ kubernetes/test-infra:
   trigger: "@k8s-bot (bazel )?test this"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.4
+    - image: gcr.io/k8s-testimages/bazelbuild:0.5
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
