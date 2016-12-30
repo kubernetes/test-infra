@@ -20,7 +20,7 @@ set -o pipefail
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
     --upload='gs://kubernetes-jenkins/pr-logs' \
-    --repo=k8s.io/kubernetes \
+    --repo=k8s.io/${REPO_NAME} \
     --pull=${PULL_REFS} \
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS}
