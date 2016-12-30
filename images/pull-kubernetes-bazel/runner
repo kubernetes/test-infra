@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.4
+set -o errexit
+set -o nounset
+set -o pipefail
 
-image:
-	docker build -t "gcr.io/k8s-testimages/bazelbuild:$(VERSION)" .
-
-push:
-	gcloud docker -- push "gcr.io/k8s-testimages/bazelbuild:$(VERSION)"
-
-.PHONY: image push
+git clone https://github.com/kubernetes/test-infra
+./test-infra/jenkins/bootstrap.py \
+    --upload='gs://kubernetes-jenkins/pr-logs' \
+    --repo=k8s.io/kubernetes \
+    --pull=${PULL_REFS} \
+    --job=${JOB_NAME} \
+    --service-account=${GOOGLE_APPLICATION_CREDENTIALS}

@@ -206,6 +206,10 @@ func (c *testClient) TestPRKubernetes() error {
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", buildID, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
+				Name:  "JOB_NAME",
+				Value: c.Job.Name,
+			},
+			kube.EnvVar{
 				Name:  "REPO_OWNER",
 				Value: c.RepoOwner,
 			},
