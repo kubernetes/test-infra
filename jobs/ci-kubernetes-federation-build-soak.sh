@@ -19,19 +19,17 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-
-### job-env
-export PROJECT="k8s-jkns-gce-federation-soak"
-export FEDERATION=true
-export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-gce-federation-soak"
-export KUBE_FASTBUILD=true
-export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
-export KUBE_GCS_RELEASE_BUCKET_MIRROR=kubernetes-federation-release
+readonly scenario='kubernetes_build.py'
+readonly scenario_args=(
+  --federation=k8s-jkns-gce-federation-soak
+  --fast
+  --release=kubernetes-federation-release
+)
 
 ### Runner
-readonly runner="./hack/jenkins/build.sh"
+readonly runner="${testinfra}/scenarios/${scenario}"
 export KUBEKINS_TIMEOUT="50m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
