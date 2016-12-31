@@ -19,13 +19,16 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-
-### job-env
-export GCS_LOCATION="gs://kops-ci/bin"
+readonly scenario='kubernetes_build.py'
+readonly scenario_args=(
+  --script='make gcs-publish-ci'
+  --kops='gs://kops-ci/bin'
+)
 
 ### Runner
+readonly runner="${testinfra}/scenarios/${scenario}"
 export KUBEKINS_TIMEOUT="20m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" make gcs-publish-ci && rc=$? || rc=$?
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

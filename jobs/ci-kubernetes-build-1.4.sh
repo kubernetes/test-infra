@@ -19,13 +19,14 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-
-### job-env
+readonly scenario='kubernetes_build.py'
+readonly scenario_args=(
+)
 
 ### Runner
-readonly runner="./hack/jenkins/build.sh"
+readonly runner="${testinfra}/scenarios/${scenario}"
 export KUBEKINS_TIMEOUT="50m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
