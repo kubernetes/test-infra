@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"path"
 	"regexp"
 
 	githubapi "github.com/google/go-github/github"
@@ -30,7 +31,8 @@ const (
 )
 
 var (
-	ignoreFilesRegex = regexp.MustCompile(".*\\.(md|png|svg|dia)$")
+	docFilesRegex    = regexp.MustCompile("^.*\\.(md|png|svg|dia)$")
+	ownersFilesRegex = regexp.MustCompile("^OWNERS$")
 )
 
 // DocsNeedNoRetest automatically labels documentation only pull-requests as retest-not-required
@@ -61,11 +63,15 @@ func (DocsNeedNoRetest) AddFlags(cmd *cobra.Command, config *github.Config) {
 
 func areFilesDocOnly(files []*githubapi.CommitFile) bool {
 	for _, file := range files {
-		if !ignoreFilesRegex.MatchString(*file.Filename) {
-			return false
+		_, basename := path.Split(*file.Filename)
+		if docFilesRegex.MatchString(basename) {
+			continue
 		}
+		if ownersFilesRegex.MatchString(basename) {
+			continue
+		}
+		return false
 	}
-
 	return true
 }
 
