@@ -57,7 +57,9 @@ export LOG_DUMP_SAVE_SERVICES="protokube"
 # See https://github.com/kubernetes/kops/issues/774 for why the Dashboard is disabled
 # See https://github.com/kubernetes/kops/issues/775 for why NodePort is disabled
 
-export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
+DEFAULT_GINKGO_TEST_ARGS=\
+  "--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
+export GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-${DEFAULT_GINKGO_TEST_ARGS}}"
 if [[ -n "${JOB_NAME:-}" ]]; then
   # Running on Jenkins
   export KOPS_E2E_CLUSTER_NAME="e2e-kops-aws.test-aws.k8s.io"
