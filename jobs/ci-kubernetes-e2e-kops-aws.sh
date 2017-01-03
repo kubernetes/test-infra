@@ -57,8 +57,7 @@ export LOG_DUMP_SAVE_SERVICES="protokube"
 # See https://github.com/kubernetes/kops/issues/774 for why the Dashboard is disabled
 # See https://github.com/kubernetes/kops/issues/775 for why NodePort is disabled
 
-DEFAULT_GINKGO_TEST_ARGS=\
-  "--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
+DEFAULT_GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort"
 export GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-${DEFAULT_GINKGO_TEST_ARGS}}"
 if [[ -n "${JOB_NAME:-}" ]]; then
   # Running on Jenkins
