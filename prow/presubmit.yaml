@@ -123,7 +123,6 @@ kubernetes/kubernetes:
   context: Jenkins kops AWS e2e
   rerun_command: "@k8s-bot kops aws e2e test this"
   trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
-  skip_report: true
 
 - name: pull-kubernetes-federation-e2e-gce
   context: Jenkins Federation GCE e2e
