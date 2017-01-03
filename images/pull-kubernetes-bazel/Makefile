@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.5
+VERSION = 0.6
 
 image:
 	docker build -t "gcr.io/k8s-testimages/bazelbuild:$(VERSION)" .
