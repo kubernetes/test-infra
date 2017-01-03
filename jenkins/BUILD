@@ -8,6 +8,7 @@ py_test(
         "//jenkins/job-configs/kubernetes-jenkins:configs",
         "//jenkins/job-configs/kubernetes-jenkins-pull:configs",
         "//jenkins/job-configs:configs",
+        "//jobs",
         "dockerized-e2e-runner.sh",
     ],
 )
