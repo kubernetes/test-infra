@@ -37,6 +37,7 @@ go_library(
         "//prow/jobs:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/line:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )

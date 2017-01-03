@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 var (
@@ -424,8 +425,14 @@ func (c *testClient) tryCreateFailureComment(url string) {
 	// TODO: Fix pr-test link for non-kubernetes repos.
 	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d).
 
-The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/%s/%s/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.`
-	body := fmt.Sprintf(bodyFormat, c.Job.Context, url, c.PullSHA, c.PRNumber, c.Job.RerunCommand, c.RepoOwner, c.RepoName)
+The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/%s/%s/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.
+
+<details>
+
+%s
+</details>
+`
+	body := fmt.Sprintf(bodyFormat, c.Job.Context, url, c.PullSHA, c.PRNumber, c.Job.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
