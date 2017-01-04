@@ -694,7 +694,10 @@ def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
     started = time.time()
-    end = started + timeout * 60
+    if timeout:
+        end = started + timeout * 60
+    else:
+        end = 0
     call = lambda *a, **kw: _call(end, *a, **kw)
     logging.info('Bootstrap %s...', job)
     build = build_name(started)
@@ -745,7 +748,7 @@ if __name__ == '__main__':
         'Checks out a github PR/branch to <basedir>/<repo>/')
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
     PARSER.add_argument(
-        '--timeout', type=float, help='Timeout in minutes if set')
+        '--timeout', type=float, default=0, help='Timeout in minutes if set')
     PARSER.add_argument('--pull',
         help='PR, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
     PARSER.add_argument('--branch', help='Checkout the following branch')
