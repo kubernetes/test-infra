@@ -157,6 +157,9 @@ data:
     ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster,\
     ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new,\
     ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master"
+  # SQ-Blocking Jobs
+  # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
+  # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
