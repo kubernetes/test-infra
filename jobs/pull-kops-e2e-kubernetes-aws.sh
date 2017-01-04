@@ -36,16 +36,19 @@ export KUBERNETES_PROVIDER="kops-aws"
 if [[ -z "${KOPS_ZONES:-}" ]]; then
   # Pick a random US AZ. (We have high regional quotas in
   # us-{east,west}-{1,2})
-  case $((RANDOM % 8)) in
-    0) export KOPS_ZONES=us-east-1a ;;
-    1) export KOPS_ZONES=us-east-1d ;;
-    2) export KOPS_ZONES=us-east-2a ;;
-    3) export KOPS_ZONES=us-east-2b ;;
-    4) export KOPS_ZONES=us-west-1a ;;
-    5) export KOPS_ZONES=us-west-1c ;;
-    6) export KOPS_ZONES=us-west-2a ;;
-    7) export KOPS_ZONES=us-west-2b ;;
+  #
+  # TODO(zmerlynn): Re-add us-east-2
+  case $((RANDOM % 6)) in
+    0) export KOPS_ZONES=us-west-1a ;;
+    1) export KOPS_ZONES=us-west-1c ;;
+    2) export KOPS_ZONES=us-west-2a ;;
+    3) export KOPS_ZONES=us-west-2b ;;
+    4) export KOPS_ZONES=us-east-1a ;;
+    5) export KOPS_ZONES=us-east-1d ;;
+    6) export KOPS_ZONES=us-east-2a ;;
+    7) export KOPS_ZONES=us-east-2b ;;
   esac
+  export KOPS_REGIONS=${KOPS_ZONES::-1}
 fi
 
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
