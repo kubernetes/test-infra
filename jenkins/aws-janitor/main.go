@@ -563,7 +563,7 @@ func (vpcs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 		v := &vpc{Account: acct, Region: region, ID: *vp.VpcId}
 		if set.Mark(v) {
 			glog.Warningf("%s: deleting %T: %v", v.ARN(), vp, vp)
-			if *vp.DhcpOptionsId != "default" {
+			if vp.DhcpOptionsId != nil && *vp.DhcpOptionsId != "default" {
 				_, err := svc.AssociateDhcpOptions(&ec2.AssociateDhcpOptionsInput{
 					VpcId:         vp.VpcId,
 					DhcpOptionsId: aws.String("default"),
@@ -623,8 +623,14 @@ func (dhcpOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		return err
 	}
 
+	var defaults []string
 	for _, dhcp := range resp.DhcpOptions {
 		if defaultRefs[*dhcp.DhcpOptionsId] {
+			continue
+		}
+		// Separately, skip any "default looking" DHCP Option Sets. See comment below.
+		if defaultLookingDHCPOptions(dhcp, region) {
+			defaults = append(defaults, *dhcp.DhcpOptionsId)
 			continue
 		}
 		dh := &dhcpOption{Account: acct, Region: region, ID: *dhcp.DhcpOptionsId}
@@ -636,7 +642,47 @@ func (dhcpOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 			}
 		}
 	}
+	if len(defaults) > 1 {
+		glog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
+	}
 	return nil
+}
+
+// defaultLookingDHCPOptions: This part is a little annoying. If
+// you're running in a region with where there is no default-looking
+// DHCP option set, when you create any VPC, AWS will create a
+// default-looking DHCP option set for you. If you then re-associate
+// or delete the VPC, the option set will hang around. However, if you
+// have a default-looking DHCP option set (even with no default VPC)
+// and create a VPC, AWS will associate the VPC with the DHCP option
+// set of the default VPC. There's no signal as to whether the option
+// set returned is the default or was created along with the
+// VPC. Because of this, we just skip these during cleanup - there
+// will only ever be one default set per region.
+func defaultLookingDHCPOptions(dhcp *ec2.DhcpOptions, region string) bool {
+	if len(dhcp.Tags) != 0 {
+		return false
+	}
+	for _, conf := range dhcp.DhcpConfigurations {
+		if *conf.Key == "domain-name" {
+			var domain string
+			if region == "us-east-1" {
+				domain = "ec2.internal"
+			} else {
+				domain = region + ".compute.internal"
+			}
+			if len(conf.Values) != 1 || *conf.Values[0].Value != domain {
+				return false
+			}
+		} else if *conf.Key == "domain-name-servers" {
+			if len(conf.Values) != 1 || *conf.Values[0].Value != "AmazonProvidedDNS" {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
 }
 
 type dhcpOption struct {
