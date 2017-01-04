@@ -17,5 +17,5 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v6/gazel
-gazel --root "${PWD}"
+go get -u gopkg.in/mikedanese/gazel.v10/gazel
+gazel
