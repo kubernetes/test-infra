@@ -45,11 +45,27 @@ if [[ -z "${version:-}" ]]; then
 fi
 export KUBERNETES_PROVIDER="kops-aws"
 
+if [[ -z "${KOPS_ZONES:-}" ]]; then
+  # Pick a random US AZ. (We have high regional quotas in
+  # us-{east,west}-{1,2})
+  case $((RANDOM % 8)) in
+    0) export KOPS_ZONES=us-east-1a ;;
+    1) export KOPS_ZONES=us-east-1d ;;
+    2) export KOPS_ZONES=us-east-2a ;;
+    3) export KOPS_ZONES=us-east-2b ;;
+    4) export KOPS_ZONES=us-west-1a ;;
+    5) export KOPS_ZONES=us-west-1c ;;
+    6) export KOPS_ZONES=us-west-2a ;;
+    7) export KOPS_ZONES=us-west-2b ;;
+  esac
+fi
+
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
 export KOPS_CLUSTER_DOMAIN="${KOPS_CLUSTER_DOMAIN:-test-aws.k8s.io}"
 export E2E_NAME="aws-kops-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export E2E_OPT="${E2E_OPT:-}\
   --kops-cluster ${E2E_NAME}.${KOPS_CLUSTER_DOMAIN}\
+  --kops-zones ${KOPS_ZONES}\
   --kops-kubernetes-version https://storage.googleapis.com/${KUBE_GCS_RELEASE_BUCKET}/ci${KUBE_GCS_RELEASE_SUFFIX}/${version}\
   --kops-nodes 4\
   --kops-state ${KOPS_STATE_STORE}"
