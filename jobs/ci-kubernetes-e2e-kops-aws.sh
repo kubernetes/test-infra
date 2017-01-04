@@ -116,6 +116,7 @@ export KOPS_DEPLOY_LATEST_KUBE=y
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
 export E2E_OPT="--kops-cluster ${KOPS_E2E_CLUSTER_NAME} --kops-zones ${KOPS_ZONES} --kops-state ${KOPS_E2E_STATE_STORE} --kops-nodes=4"
 export GINKGO_PARALLEL="y"
+export GINKGO_TOLERATE_FLAKES="y"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
