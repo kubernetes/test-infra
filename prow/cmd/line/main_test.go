@@ -54,7 +54,7 @@ func TestFailureComment(t *testing.T) {
 		IssueCommentID: 9,
 	}
 	cl := testClient{
-		Job: jobs.Presubmit{
+		Presubmit: jobs.Presubmit{
 			Name:    "test-job",
 			Context: "Jenkins test",
 		},
@@ -115,7 +115,7 @@ func TestGuberURL(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		c := &testClient{
-			Job:       jobs.Presubmit{Name: "j"},
+			Presubmit: jobs.Presubmit{Name: "j"},
 			PRNumber:  tc.PRNumber,
 			RepoOwner: tc.RepoOwner,
 			RepoName:  tc.RepoName,

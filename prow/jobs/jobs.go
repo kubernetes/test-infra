@@ -63,26 +63,33 @@ func (ps Presubmit) RunsAgainstBranch(branch string) bool {
 	return false
 }
 
-type JobAgent struct {
-	mut sync.Mutex
-	// Repo FullName (eg "kubernetes/kubernetes") -> []Presubmit
-	presubmits map[string][]Presubmit
+// Postsubmit runs on push events.
+type Postsubmit struct {
+	Name string        `json:"name"`
+	Spec *kube.PodSpec `json:"spec,omitempty"`
 }
 
-func (ja *JobAgent) Start(path string) error {
-	if err := ja.LoadOnce(path); err != nil {
+type JobAgent struct {
+	mut sync.Mutex
+	// Repo FullName (eg "kubernetes/kubernetes") -> []Job
+	presubmits  map[string][]Presubmit
+	postsubmits map[string][]Postsubmit
+}
+
+func (ja *JobAgent) Start(pre, post string) error {
+	if err := ja.LoadOnce(pre, post); err != nil {
 		return err
 	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
-			ja.tryLoad(path)
+			ja.tryLoad(pre, post)
 		}
 	}()
 	return nil
 }
 
-func (ja *JobAgent) SetJobs(jobs map[string][]Presubmit) error {
+func (ja *JobAgent) SetPresubmits(jobs map[string][]Presubmit) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	nj := map[string][]Presubmit{}
@@ -101,13 +108,16 @@ func (ja *JobAgent) SetJobs(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (ja *JobAgent) LoadOnce(path string) error {
+func (ja *JobAgent) LoadOnce(pre, post string) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	return ja.load(path)
+	if err := ja.loadPresubmits(pre); err != nil {
+		return err
+	}
+	return ja.loadPostsubmits(post)
 }
 
-func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
+func (ja *JobAgent) MatchingPresubmits(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	var result []Presubmit
@@ -122,7 +132,7 @@ func (ja *JobAgent) MatchingJobs(fullRepoName, body string, testAll *regexp.Rege
 	return result
 }
 
-func (ja *JobAgent) AllJobs(fullRepoName string) []Presubmit {
+func (ja *JobAgent) AllPresubmits(fullRepoName string) []Presubmit {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	res := make([]Presubmit, len(ja.presubmits[fullRepoName]))
@@ -130,7 +140,7 @@ func (ja *JobAgent) AllJobs(fullRepoName string) []Presubmit {
 	return res
 }
 
-func (ja *JobAgent) GetJob(repo, job string) (bool, Presubmit) {
+func (ja *JobAgent) GetPresubmit(repo, job string) (bool, Presubmit) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	for _, j := range ja.presubmits[repo] {
@@ -141,8 +151,27 @@ func (ja *JobAgent) GetJob(repo, job string) (bool, Presubmit) {
 	return false, Presubmit{}
 }
 
+func (ja *JobAgent) AllPostsubmits(fullRepoName string) []Postsubmit {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	res := make([]Postsubmit, len(ja.postsubmits[fullRepoName]))
+	copy(res, ja.postsubmits[fullRepoName])
+	return res
+}
+
+func (ja *JobAgent) GetPostsubmit(repo, job string) (bool, Postsubmit) {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	for _, j := range ja.postsubmits[repo] {
+		if j.Name == job {
+			return true, j
+		}
+	}
+	return false, Postsubmit{}
+}
+
 // Hold the lock.
-func (ja *JobAgent) load(path string) error {
+func (ja *JobAgent) loadPresubmits(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -164,10 +193,27 @@ func (ja *JobAgent) load(path string) error {
 	return nil
 }
 
-func (ja *JobAgent) tryLoad(path string) {
+// Hold the lock.
+func (ja *JobAgent) loadPostsubmits(path string) error {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	nj := map[string][]Postsubmit{}
+	if err := yaml.Unmarshal(b, &nj); err != nil {
+		return err
+	}
+	ja.postsubmits = nj
+	return nil
+}
+
+func (ja *JobAgent) tryLoad(pre, post string) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	if err := ja.load(path); err != nil {
-		logrus.WithField("path", path).WithError(err).Error("Error loading config.")
+	if err := ja.loadPresubmits(pre); err != nil {
+		logrus.WithField("path", pre).WithError(err).Error("Error loading presubmits.")
+	}
+	if err := ja.loadPostsubmits(post); err != nil {
+		logrus.WithField("path", post).WithError(err).Error("Error loading postsubmits.")
 	}
 }

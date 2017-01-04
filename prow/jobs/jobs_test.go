@@ -26,9 +26,9 @@ import (
 const testThis = "@k8s-bot test this"
 
 // Make sure that our rerun commands match our triggers.
-func TestJobTriggers(t *testing.T) {
+func TestPresubmits(t *testing.T) {
 	ja := &JobAgent{}
-	if err := ja.load("../presubmit.yaml"); err != nil {
+	if err := ja.loadPresubmits("../presubmit.yaml"); err != nil {
 		t.Fatalf("Could not load job configs: %v", err)
 	}
 	if len(ja.presubmits) == 0 {
@@ -159,7 +159,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actualJobs := ja.MatchingJobs(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
+		actualJobs := ja.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
 		match := true
 		if len(actualJobs) != len(tc.expectedJobs) {
 			match = false
@@ -181,5 +181,15 @@ func TestCommentBodyMatches(t *testing.T) {
 		if !match {
 			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
 		}
+	}
+}
+
+func TestPostsubmits(t *testing.T) {
+	ja := &JobAgent{}
+	if err := ja.loadPostsubmits("../postsubmit.yaml"); err != nil {
+		t.Fatalf("Could not load job configs: %v", err)
+	}
+	if len(ja.postsubmits) == 0 {
+		t.Fatalf("No jobs found in postsubmit.yaml.")
 	}
 }

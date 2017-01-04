@@ -136,7 +136,7 @@ func TestGetPullRequest(t *testing.T) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		pr := PullRequest{
-			User: User{"bla"},
+			User: User{Login: "bla"},
 		}
 		b, err := json.Marshal(&pr)
 		if err != nil {

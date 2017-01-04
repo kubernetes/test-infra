@@ -134,7 +134,7 @@ func buildAll(c client, pr github.PullRequest) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	var ref string
-	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
+	for _, job := range c.JobAgent.AllPresubmits(pr.Base.Repo.FullName) {
 		if !job.AlwaysRun {
 			continue
 		}
@@ -164,7 +164,7 @@ func buildAll(c client, pr github.PullRequest) error {
 }
 
 func deleteAll(c client, pr github.PullRequest) error {
-	for _, job := range c.JobAgent.AllJobs(pr.Base.Repo.FullName) {
+	for _, job := range c.JobAgent.AllPresubmits(pr.Base.Repo.FullName) {
 		if err := lineDeletePRJob(c.KubeClient, job.Name, pr); err != nil {
 			return err
 		}
