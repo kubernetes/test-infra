@@ -47,6 +47,7 @@ import pipes
 import random
 import re
 import select
+import signal
 import socket
 import subprocess
 import sys
@@ -55,45 +56,91 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 
-def call(cmd, stdin=None, check=True, output=None):
+def read_all(end, stream, append):
+    """Read all buffered lines from a stream."""
+    while not end or time.time() < end:
+        line = stream.readline()
+        if not line:
+            return True  # Read everything
+        append(line[:-1])  # Ignore the \n at the end
+        # Is there more on the buffer?
+        ret = select.select([stream.fileno()], [], [], 0.1)
+        if not ret[0]:
+            return False  # Cleared buffer but not at the end
+    return False  # Time expired
+
+
+def elapsed(since):
+    """Return the number of minutes elapsed since a time."""
+    return (time.time() - since) / 60
+
+
+def terminate(end, proc, kill):
+    """Terminate or kill the process after end."""
+    if not end or time.time() <= end:
+        return False
+    if kill:  # Process will not die, kill everything
+        pgid = os.getpgid(proc.pid)
+        logging.info(
+            'Kill %d and process group %d', proc.pid, pgid)
+        os.killpg(pgid, signal.SIGKILL)
+        proc.kill()
+        return True
+    logging.info(
+        'Terminate %d on timeout', proc.pid)
+    proc.terminate()
+    return True
+
+
+def _call(end, cmd, stdin=None, check=True, output=None):
     """Start a subprocess."""
     logging.info('Call:  %s', ' '.join(pipes.quote(c) for c in cmd))
+    begin = time.time()
+    if end:
+        end = max(end, time.time() + 60)  # Allow at least 60s per command
+        logging.info('Limiting call to %.1f minutes', (end - begin) / 60)
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE if stdin is not None else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        preexec_fn=os.setsid,
     )
     if stdin:
         proc.stdin.write(stdin)
         proc.stdin.close()
     out = []
     code = None
-    reads = [proc.stdout.fileno(), proc.stderr.fileno()]
+    timeout = False
+    reads = {
+        proc.stderr.fileno(): (proc.stderr, logging.warning),
+        proc.stdout.fileno(): (
+            proc.stdout, (out.append if output else logging.info)),
+    }
     while reads:
+        if terminate(end, proc, timeout):
+            if timeout:  # We killed everything
+                break
+            # Give subprocess some cleanup time before killing.
+            end = time.time() + 15 * 60
+            timeout = True
         ret = select.select(reads, [], [], 0.1)
         for fdesc in ret[0]:
-            if fdesc == proc.stdout.fileno():
-                line = proc.stdout.readline()
-                if not line:
-                    reads.remove(fdesc)
-                    continue
-                if output:
-                    out.append(line)
-                else:
-                    logging.info(line[:-1])
-            if fdesc == proc.stderr.fileno():
-                line = proc.stderr.readline()
-                if not line:
-                    reads.remove(fdesc)
-                    continue
-                logging.warning(line[:-1])
-        if not ret[0]:
-            if proc.poll() is not None:
-                break  # process exited without closing pipes (timeout?)
+            if read_all(end, *reads[fdesc]):
+                reads.pop(fdesc)
+        if not ret[0] and proc.poll() is not None:
+            break  # process exited without closing pipes (timeout?)
 
     code = proc.wait()
-    logging.info('process %d exited with code %d', proc.pid, code)
+    if timeout:
+        code = code or 124
+        logging.error('Build timed out')
+    if code:
+        logging.error('Build failed')
+    logging.info(
+        'process %d exited with code %d after %.1fm',
+        proc.pid, code, elapsed(begin))
+    out.append('')
     lines = output and '\n'.join(out)
     if check and code:
         raise subprocess.CalledProcessError(code, cmd, lines)
@@ -143,7 +190,7 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(repo, branch, pull):
+def checkout(call, repo, branch, pull):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -200,10 +247,13 @@ class GSUtil(object):
     """A helper class for making gsutil commands."""
     gsutil = 'gsutil'
 
+    def __init__(self, call):
+        self.call = call
+
     def stat(self, path):
         """Return metadata about the object, such as generation."""
         cmd = [self.gsutil, 'stat', path]
-        return call(cmd, output=True)
+        return self.call(cmd, output=True)
 
     def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
@@ -215,12 +265,12 @@ class GSUtil(object):
             self.gsutil, '-q',
             '-h', 'Content-Type:application/json'] + gen + [
             'cp', '-', path]
-        call(cmd, stdin=json.dumps(jdict, indent=2))
+        self.call(cmd, stdin=json.dumps(jdict, indent=2))
 
     def copy_file(self, dest, orig):
         """Copy the file to the specified path using compressed encoding."""
         cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
-        call(cmd)
+        self.call(cmd)
 
     def upload_text(self, path, txt, cached=True):
         """Copy the text to path, optionally disabling caching."""
@@ -228,12 +278,12 @@ class GSUtil(object):
         if not cached:
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
         cmd = [self.gsutil, '-q'] + headers + ['cp', '-', path]
-        call(cmd, stdin=txt)
+        self.call(cmd, stdin=txt)
 
     def cat(self, path, generation):
         """Return contents of path#generation"""
         cmd = [self.gsutil, '-q', 'cat', '%s#%s' % (path, generation)]
-        return call(cmd, output=True)
+        return self.call(cmd, output=True)
 
 
     def upload_artifacts(self, path, artifacts):
@@ -246,7 +296,7 @@ class GSUtil(object):
                 'cp', '-r', '-c', '-z', 'log,txt,xml',
                 artifacts, path,
             ]
-            call(cmd)
+            self.call(cmd)
 
 
 def append_result(gsutil, path, build, version, passed):
@@ -374,7 +424,7 @@ def node():
     return os.environ[NODE_ENV]
 
 
-def find_version():
+def find_version(call):
     """Determine and return the version of the build."""
     # TODO(fejta): once job-version is functional switch this to
     # git rev-parse [--short=N] HEAD^{commit}
@@ -512,7 +562,7 @@ def build_name(started):
     return os.environ[BUILD_ENV]
 
 
-def setup_credentials(robot, upload):
+def setup_credentials(call, robot, upload):
     """Activate the service account unless robot is none."""
     # TODO(fejta): stop activating inside the image
     # TODO(fejta): allow use of existing gcloud auth
@@ -623,7 +673,7 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(root, repo, branch, pull):
+def setup_root(call, root, repo, branch, pull):
     """Create root dir, checkout repo and cd into resulting dir."""
     logging.info(
         'Check out %s at %s...',
@@ -633,33 +683,36 @@ def setup_root(root, repo, branch, pull):
         os.makedirs(root)
     os.chdir(root)
     if repo:
-        checkout(repo, branch, pull)
+        checkout(call, repo, branch, pull)
     elif branch or pull:
         raise ValueError('--branch and --pull require --repo', branch, pull)
 
 
-def bootstrap(job, repo, branch, pull, root, upload, robot):
+def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
     """Clone repo at pull/branch into root and run job script."""
+    # pylint: disable=too-many-locals
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
     started = time.time()
+    end = started + timeout * 60
+    call = lambda *a, **kw: _call(end, *a, **kw)
     logging.info('Bootstrap %s...', job)
     build = build_name(started)
-    setup_root(root, repo, branch, pull)
+    setup_root(call, root, repo, branch, pull)
     logging.info('Configure environment...')
     if repo:
-        version = find_version()
+        version = find_version(call)
     else:
         version = ''
     setup_magic_environment(job)
-    setup_credentials(robot, upload)
+    setup_credentials(call, robot, upload)
     if upload:
         if pull:
             paths = pr_paths(upload, repo, job, build, pull)
         else:
             paths = ci_paths(upload, job, build)
         logging.info('Gubernator results at %s', gubernator_uri(paths))
-    gsutil = GSUtil()
+    gsutil = GSUtil(call)
     logging.info('Start %s at %s...', build, version)
     if upload:
         start(gsutil, paths, started, node(), version, pull)
@@ -691,6 +744,8 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Checks out a github PR/branch to <basedir>/<repo>/')
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
+    PARSER.add_argument(
+        '--timeout', type=float, help='Timeout in minutes if set')
     PARSER.add_argument('--pull',
         help='PR, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
     PARSER.add_argument('--branch', help='Checkout the following branch')
@@ -717,4 +772,6 @@ if __name__ == '__main__':
         ARGS.pull,
         ARGS.root,
         ARGS.upload,
-        ARGS.service_account)
+        ARGS.service_account,
+        ARGS.timeout,
+    )

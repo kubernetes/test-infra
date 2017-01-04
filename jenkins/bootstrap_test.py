@@ -20,6 +20,8 @@ import collections
 import json
 import os
 import re
+import select
+import signal
 import subprocess
 import tempfile
 import time
@@ -90,44 +92,140 @@ def Bomb(*a, **kw):
     raise AssertionError('Should not happen', a, kw)
 
 
+class ReadAllTest(unittest.TestCase):
+    endless = 0
+    ended = time.time() - 50
+    number = 0
+
+    def fileno(self):
+        return -1
+
+    def readline(self):
+        line = 'line %d\n' % self.number
+        self.number += 1
+        return line
+
+    def testRead_More(self):
+        """Read lines until we clear the buffer, noting there may be more."""
+        lines = []
+        total = 10
+        def MoreLines(*a, **kw):
+            if len(lines) < total:
+                return [self], [], []
+            return [], [], []
+        with Stub(select, 'select', MoreLines):
+            done = bootstrap.read_all(self.endless, self, lines.append)
+
+        self.assertFalse(done)
+        self.assertEquals(total, len(lines))
+        expected = ['line %d' % d for d in range(total)]
+        self.assertEquals(expected, lines)
+
+    def testRead_Expired(self):
+        """Read nothing as we are expired, noting there may be more."""
+        lines = []
+        with Stub(select, 'select', lambda *a, **kw: ([],[],[])):
+            done = bootstrap.read_all(self.ended, self, lines.append)
+
+        self.assertFalse(done)
+        self.assertFalse(lines)
+
+    def testRead_End(self):
+        """Note we reached the end of the stream."""
+        lines = []
+        self.readline = lambda: ''
+        with Stub(select, 'select', lambda *a, **kw: ([self],[],[])):
+            done = bootstrap.read_all(self.endless, self, lines.append)
+
+        self.assertTrue(done)
+
+
+class TerminateTest(unittest.TestCase):
+    """Tests for termiante()."""
+    pid = 1234
+    pgid = 5555
+    terminated = False
+    killed = False
+
+    def terminate(self):
+        self.terminated = True
+
+    def kill(self):
+        self.killed = True
+
+    def getpgid(self, pid):
+        self.got = pid
+        return self.pgid
+
+    def killpg(self, pgig, signal):
+        self.killed_pg = (pgig, signal)
+
+    def testTerminate_Later(self):
+        """Do nothing if end is in the future."""
+        timeout = bootstrap.terminate(time.time() + 50, self, False)
+        self.assertFalse(timeout)
+
+    def testTerminate_Never(self):
+        """Do nothing if end is zero."""
+        timeout = bootstrap.terminate(0, self, False)
+        self.assertFalse(timeout)
+
+    def testTerminate_Terminate(self):
+        """Terminate pid if after end and kill is false."""
+        timeout = bootstrap.terminate(time.time() - 50, self, False)
+        self.assertTrue(timeout)
+        self.assertFalse(self.killed)
+        self.assertTrue(self.terminated)
+
+    def testTerminate_Kill(self):
+        """Kill process group if after end and kill is true."""
+        with Stub(os, 'getpgid', self.getpgid), Stub(os, 'killpg', self.killpg):
+            timeout = bootstrap.terminate(time.time() - 50, self, True)
+        self.assertTrue(timeout)
+        self.assertFalse(self.terminated)
+        self.assertTrue(self.killed)
+        self.assertEquals(self.pid, self.got)
+        self.assertEquals(self.killed_pg, (self.pgid, signal.SIGKILL))
+
+
 class SubprocessTest(unittest.TestCase):
     """Tests for call()."""
 
     def testStdin(self):
         """Will write to subprocess.stdin."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.call(['/bin/bash'], stdin='exit 92')
+            bootstrap._call(0, ['/bin/bash'], stdin='exit 92')
         self.assertEquals(92, cpe.exception.returncode)
 
     def testCheckTrue(self):
         """Raise on non-zero exit codes if check is set."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.call(FAIL, check=True)
+            bootstrap._call(0, FAIL, check=True)
 
-        bootstrap.call(PASS, check=True)
+        bootstrap._call(0, PASS, check=True)
 
     def testCheckDefault(self):
         """Default to check=True."""
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
-            bootstrap.call(FAIL)
+            bootstrap._call(0, FAIL)
 
-        bootstrap.call(PASS)
+        bootstrap._call(0, PASS)
 
     def testCheckFalse(self):
         """Never raise when check is not set."""
-        bootstrap.call(FAIL, check=False)
-        bootstrap.call(PASS, check=False)
+        bootstrap._call(0, FAIL, check=False)
+        bootstrap._call(0, PASS, check=False)
 
     def testOutput(self):
         """Output is returned when requested."""
         cmd = ['/bin/bash', '-c', 'echo hello world']
         self.assertEquals(
-            'hello world\n', bootstrap.call(cmd, output=True))
+            'hello world\n', bootstrap._call(0, cmd, output=True))
 
     def testZombie(self):
         with self.assertRaises(subprocess.CalledProcessError) as cpe:
             # make a zombie
-            bootstrap.call(['/bin/bash', '-c', 'A=$BASHPID && ( kill -STOP $A ) & exit 1'])
+            bootstrap._call(0, ['/bin/bash', '-c', 'A=$BASHPID && ( kill -STOP $A ) & exit 1'])
 
 
 class PullRefsTest(unittest.TestCase):
@@ -165,17 +263,16 @@ class CheckoutTest(unittest.TestCase):
             self.tries += 1
             if self.tries != expected_attempts:
                 raise subprocess.CalledProcessError(128, cmd, None)
-        with Stub(bootstrap, 'call', ThirdTimeCharm):
-            with Stub(os, 'chdir', Pass):
-                with Stub(time, 'sleep', Pass):
-                    bootstrap.checkout(REPO, None, PULL)
+        with Stub(os, 'chdir', Pass):
+            with Stub(time, 'sleep', Pass):
+                bootstrap.checkout(ThirdTimeCharm, REPO, None, PULL)
         self.assertEquals(expected_attempts, self.tries)
 
     def testPull(self):
         """checkout fetches the right ref for a pull."""
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            with Stub(os, 'chdir', Pass):
-                bootstrap.checkout(REPO, None, PULL)
+        fake = FakeSubprocess()
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, None, PULL)
 
         expected_ref = bootstrap.pull_ref(PULL)[0][0]
         self.assertTrue(any(
@@ -183,9 +280,9 @@ class CheckoutTest(unittest.TestCase):
 
     def testBranch(self):
         """checkout fetches the right ref for a branch."""
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            with Stub(os, 'chdir', Pass):
-                bootstrap.checkout(REPO, BRANCH, None)
+        fake = FakeSubprocess()
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, BRANCH, None)
 
         expected_ref = BRANCH
         self.assertTrue(any(
@@ -193,9 +290,9 @@ class CheckoutTest(unittest.TestCase):
 
     def testRepo(self):
         """checkout initializes and fetches the right repo."""
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            with Stub(os, 'chdir', Pass):
-                bootstrap.checkout(REPO, BRANCH, None)
+        fake = FakeSubprocess()
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, BRANCH, None)
 
         expected_uri = 'https://%s' % REPO
         self.assertTrue(any(
@@ -203,17 +300,17 @@ class CheckoutTest(unittest.TestCase):
 
     def testBranchXorPull(self):
         """Either branch or pull specified, not both."""
-        with Stub(bootstrap, 'call', Bomb), Stub(os, 'chdir', Bomb):
+        with Stub(os, 'chdir', Bomb):
             with self.assertRaises(ValueError):
-              bootstrap.checkout(REPO, None, None)
+              bootstrap.checkout(Bomb, REPO, None, None)
             with self.assertRaises(ValueError):
-              bootstrap.checkout(REPO, BRANCH, PULL)
+              bootstrap.checkout(Bomb, REPO, BRANCH, PULL)
 
     def testHappy(self):
         """checkout sanity check."""
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            with Stub(os, 'chdir', Pass):
-                bootstrap.checkout(REPO, BRANCH, None)
+        fake = FakeSubprocess()
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, BRANCH, None)
 
         self.assertTrue(any(
             '--tags' in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
@@ -225,35 +322,35 @@ class CheckoutTest(unittest.TestCase):
 class GSUtilTest(unittest.TestCase):
     """Tests for GSUtil."""
     def testUploadJson(self):
-        gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            gsutil.upload_json('fake_path', {'wee': 'fun'})
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_json('fake_path', {'wee': 'fun'})
         self.assertTrue(any(
             'application/json' in a for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
     def testUploadText_Cached(self):
-        gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            gsutil.upload_text('fake_path', 'hello world', cached=True)
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_text('fake_path', 'hello world', cached=True)
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
     def testUploadText_Default(self):
-        gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            gsutil.upload_text('fake_path', 'hello world')
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_text('fake_path', 'hello world')
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
     def testUploadText_Uncached(self):
-        gsutil = bootstrap.GSUtil()
-        with Stub(bootstrap, 'call', FakeSubprocess()) as fake:
-            gsutil.upload_text('fake_path', 'hello world', cached=False)
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_text('fake_path', 'hello world', cached=False)
         self.assertTrue(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
@@ -363,24 +460,24 @@ class AppendResultTest(unittest.TestCase):
         def fake_stat(*a, **kw):
             gsutil.generation = generations.pop()
             return orig_stat(*a, **kw)
-        def fake_call(*a, **kw):
+        def fake_cat(*a, **kw):
             return '[{"hello": 111}]'
+        gsutil.stat = fake_stat
+        gsutil.upload_json = fake_upload
+        gsutil.cat = fake_cat
         with Stub(bootstrap, 'random_sleep', Pass):
-            with Stub(gsutil, 'stat', fake_stat):
-                with Stub(gsutil, 'upload_json', fake_upload):
-                    with Stub(bootstrap, 'call', fake_call):
-                        bootstrap.append_result(
-                            gsutil, 'fake_path', build, version, success)
+            bootstrap.append_result(
+                gsutil, 'fake_path', build, version, success)
         self.assertIn('generation', gsutil.jsons[-1][1], gsutil.jsons)
         self.assertEquals('555', gsutil.jsons[-1][1]['generation'], gsutil.jsons)
 
     def testHandleJunk(self):
         gsutil = FakeGSUtil()
+        gsutil.cat = lambda *a, **kw: '!@!$!@$@!$'
         build = 123
         version = 'v.interesting'
         success = True
-        with Stub(bootstrap, 'call', lambda *a, **kw: '!@!$!@$@!$'):
-            bootstrap.append_result(gsutil, 'fake_path', build, version, success)
+        bootstrap.append_result(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertEquals(1, len(cache))
         self.assertIn(build, cache[0].values())
@@ -391,8 +488,7 @@ class AppendResultTest(unittest.TestCase):
         version = 'v.interesting'
         def Try(success):
             gsutil = FakeGSUtil()
-            with Stub(bootstrap, 'call', lambda *a, **kw: ''):
-                bootstrap.append_result(gsutil, 'fake_path', build, version, success)
+            bootstrap.append_result(gsutil, 'fake_path', build, version, success)
             cache = gsutil.jsons[0][0][1]
             self.assertTrue(isinstance(cache[0]['passed'], bool))
 
@@ -409,8 +505,7 @@ class AppendResultTest(unittest.TestCase):
         build = 123
         version = 'v.interesting'
         success = True
-        with Stub(bootstrap, 'call', lambda *a, **kw: old):
-            bootstrap.append_result(gsutil, 'fake_path', build, version, success)
+        bootstrap.append_result(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertLess(len(cache), len(old))
 
@@ -587,14 +682,13 @@ class SetupCredentialsTest(unittest.TestCase):
         """Can avoid setting up credentials."""
         del self.env[bootstrap.SERVICE_ACCOUNT_ENV]
         with Stub(os, 'environ', self.env) as fake:
-            with Stub(bootstrap, 'call', Bomb):
-                bootstrap.setup_credentials(None, None)
+            bootstrap.setup_credentials(Bomb, None, None)
 
     def testUploadNoRobotRaises(self):
         del self.env[bootstrap.SERVICE_ACCOUNT_ENV]
         with Stub(os, 'environ', self.env) as fake:
             with self.assertRaises(ValueError):
-                bootstrap.setup_credentials(None, 'gs://fake')
+                bootstrap.setup_credentials(Pass, None, 'gs://fake')
 
 
     def testRequireGoogleApplicationCredentials(self):
@@ -605,18 +699,18 @@ class SetupCredentialsTest(unittest.TestCase):
             fake['HOME'] = 'kansas'
             with Stub(os.path, 'isfile', lambda p: p != gac):
                 with self.assertRaises(IOError):
-                    bootstrap.setup_credentials(gac, UPLOAD)
+                    bootstrap.setup_credentials(Pass, gac, UPLOAD)
 
             with Stub(os.path, 'isfile', Truth):
-                with Stub(bootstrap, 'call', lambda *a, **kw: 'robot'):
-                    bootstrap.setup_credentials(gac, UPLOAD)
+                call = lambda *a, **kw: 'robot'
+                bootstrap.setup_credentials(call, gac, UPLOAD)
             # setup_creds should set SERVICE_ACCOUNT_ENV
             self.assertEquals(gac, fake.get(bootstrap.SERVICE_ACCOUNT_ENV))
             # now that SERVICE_ACCOUNT_ENV is set, it should try to activate
             # this
             with Stub(os.path, 'isfile', lambda p: p != gac):
                 with self.assertRaises(IOError):
-                    bootstrap.setup_credentials(None, UPLOAD)
+                    bootstrap.setup_credentials(Pass, None, UPLOAD)
 
 
 class SetupMagicEnvironmentTest(unittest.TestCase):
@@ -748,7 +842,7 @@ class BootstrapTest(unittest.TestCase):
             Stub(bootstrap, 'setup_credentials', Pass),
             Stub(bootstrap, 'setup_logging', FakeLogging()),
             Stub(bootstrap, 'start', Pass),
-            Stub(bootstrap, 'call', Pass),
+            Stub(bootstrap, '_call', Pass),
             Stub(os, 'environ', FakeEnviron()),
             Stub(os, 'chdir', Pass),
             Stub(os, 'makedirs', Pass),
@@ -815,7 +909,7 @@ class BootstrapTest(unittest.TestCase):
         def CallError(*a, **kw):
             raise subprocess.CalledProcessError(1, [], '')
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
-            with Stub(bootstrap, 'call', CallError):
+            with Stub(bootstrap, '_call', CallError):
                 with self.assertRaises(SystemExit):
                     bootstrap.bootstrap(
                         JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
