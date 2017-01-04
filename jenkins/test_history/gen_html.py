@@ -33,17 +33,18 @@ import yaml
 
 
 BLOCKING_JOBS = [
+    'ci-kubernetes-build',
     'ci-kubernetes-e2e-gce-etcd3',
     'ci-kubernetes-e2e-gci-gce',
     'ci-kubernetes-e2e-gci-gce-slow',
+    'ci-kubernetes-e2e-gci-gce-ingress',
     'ci-kubernetes-e2e-gci-gke',
     'ci-kubernetes-e2e-gci-gke-slow',
+    'ci-kubernetes-e2e-kops-aws',
     'ci-kubernetes-kubemark-500-gce',
     'ci-kubernetes-node-kubelet',
     'ci-kubernetes-test-go',
     'ci-kubernetes-verify-master',
-    'kubernetes-build',
-    'kubernetes-e2e-kops-aws',
 ]
 
 JobSummary = collections.namedtuple('JobSummary', [
