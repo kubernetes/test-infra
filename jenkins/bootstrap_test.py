@@ -1109,6 +1109,9 @@ class JobTest(unittest.TestCase):
             self.assertIn('max-total', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            if 'unit' in name or 'verify' in name:
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml', Check)
@@ -1145,6 +1148,9 @@ class JobTest(unittest.TestCase):
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
+            self.assertIn('timeout', job)
+            if 'unit' in name or 'verify' in name or 'test-go' in name:
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml(
