@@ -19,12 +19,11 @@ set -o pipefail
 set -o xtrace
 
 # PROJECT="k8s-jkns-ci-node-e2e"
-
 readonly testinfra="$(dirname "${0}")/.."
 
 export NODE_IMG_VERSION="master"
-export NODE_TEST_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh"
-export NODE_TEST_PROPERTIES="test/e2e_node/jenkins/jenkins-ci.properties"
+export NODE_TEST_SCRIPT="test/e2e_node/jenkins/conformance/conformance-jenkins.sh"
+export NODE_TEST_PROPERTIES="test/e2e_node/jenkins/conformance/jenkins-conformance.properties"
 
 ### Runner
 readonly runner="${testinfra}/jenkins/node-dockerized.sh"

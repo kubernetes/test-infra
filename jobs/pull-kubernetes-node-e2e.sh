@@ -24,4 +24,23 @@ release-1.0|release-1.1|release-1.2)
   exit 0
   ;;
 esac
-./test/e2e_node/jenkins/e2e-node-jenkins.sh ./test/e2e_node/jenkins/jenkins-pull.properties
+
+readonly testinfra="$(dirname "${0}")/.."
+
+export NODE_IMG_VERSION=${PULL_BASE_REF:-"master"}
+export NODE_TEST_SCRIPT="test/e2e_node/jenkins/e2e-node-jenkins.sh"
+export NODE_TEST_PROPERTIES="test/e2e_node/jenkins/jenkins-pull.properties"
+
+### Runner
+readonly runner="${testinfra}/jenkins/node-dockerized.sh"
+export KUBEKINS_TIMEOUT="90m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
+
+### Reporting
+if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
+    echo "Build timed out" >&2
+elif [[ ${rc} -ne 0 ]]; then
+    echo "Build failed" >&2
+fi
+echo "Exiting with code: ${rc}"
+exit ${rc}
