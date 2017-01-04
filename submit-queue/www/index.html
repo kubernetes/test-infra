@@ -95,7 +95,7 @@
               <md-subheader class="md-primary">CURRENTLY RUNNING BATCH</md-subheader>
               <md-content layout-padding>
                 <div class="md-body-1" layout-padding>
-                  <a href="http://prow.k8s.io/?refs={{cntl.batch.Running.refs | refToShortRef}}">{{(cntl.batch.Running.refs | refToPRs).join(" ")}}</a>
+                  <a href="https://prow.k8s.io/?type=batch">{{(cntl.batch.Running.refs | refToPRs).join(" ")}}</a>
                 </div>
               </md-content>
             </section>
