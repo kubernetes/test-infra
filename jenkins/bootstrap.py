@@ -690,7 +690,7 @@ def setup_root(call, root, repo, branch, pull):
 
 def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
     """Clone repo at pull/branch into root and run job script."""
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-branches
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
     started = time.time()
