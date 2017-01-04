@@ -20,19 +20,23 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-if [[ -z "${KOPS_URL:-}" ]]; then
+# TODO(zmerlynn): Remove this after all jobs are using KOPS_BASE_URL
+export KOPS_BASE_URL="${KOPS_BASE_URL:-${KOPS_URL:-}}"
+
+if [[ -z "${KOPS_BASE_URL:-}" ]]; then
   readonly KOPS_LATEST=${KOPS_LATEST:-"latest-ci.txt"}
   readonly LATEST_URL="https://storage.googleapis.com/kops-ci/bin/${KOPS_LATEST}"
-  readonly KOPS_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
-  if [[ -z "${KOPS_URL}" ]]; then
+  export KOPS_BASE_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
+  if [[ -z "${KOPS_BASE_URL}" ]]; then
     echo "Can't fetch kops latest URL" >&2
     exit 1
   fi
 fi
 
-curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_URL}/linux/amd64/kops"
+curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_BASE_URL}/linux/amd64/kops"
 chmod +x "${WORKSPACE}/kops"
-export NODEUP_URL="${KOPS_URL}/linux/amd64/nodeup"
+# TODO(zmerlynn): Remove this when kubernetes/kops#1318 goes back in
+export NODEUP_URL="${KOPS_BASE_URL}/linux/amd64/nodeup"
 
 # Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
 export PRIORITY_PATH="/workspace/kubernetes/platforms/linux/amd64"
@@ -94,6 +98,6 @@ if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
       exit 1
     fi
   fi
-  echo "Publish version to ${KOPS_PUBLISH_GREEN_PATH}: ${KOPS_URL}"
-  echo "${KOPS_URL}" | gsutil cp - "${KOPS_PUBLISH_GREEN_PATH}"
+  echo "Publish version to ${KOPS_PUBLISH_GREEN_PATH}: ${KOPS_BASE_URL}"
+  echo "${KOPS_BASE_URL}" | gsutil cp - "${KOPS_PUBLISH_GREEN_PATH}"
 fi
