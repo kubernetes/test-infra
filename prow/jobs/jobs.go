@@ -63,7 +63,7 @@ func (ps Presubmit) RunsAgainstBranch(branch string) bool {
 	return false
 }
 
-// Postsubmit runs on a timer.
+// Postsubmit runs on push events.
 type Postsubmit struct {
 	Name string        `json:"name"`
 	Spec *kube.PodSpec `json:"spec,omitempty"`

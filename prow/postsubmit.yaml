@@ -3,7 +3,7 @@ kubernetes/test-infra:
 - name: ci-test-infra-bazel
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.5
+    - image: gcr.io/k8s-testimages/bazelbuild:0.6
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
