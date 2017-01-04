@@ -11,6 +11,7 @@
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
     name: 'ci-{commit-suffix}'
@@ -55,63 +56,72 @@
     jobs:
     - 'ci-{commit-suffix}'
     name: bootstrap-ci-commit
+
     commit-suffix:
 
     - kops-build:
         branch: master
+        commit-frequency: 'H/2 * * * *'
         giturl: 'https://github.com/kubernetes/kops'
         job-name: ci-kops-build
         repo-name: k8s.io/kops
-        commit-frequency: 'H/2 * * * *'
+        timeout: 20
 
     - kubernetes-build:
         branch: master
+        commit-frequency: 'H/2 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/2 * * * *'
+        timeout: 30
 
     - kubernetes-cross-build:
         branch: master
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-cross-build
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-build-1.3:
         branch: release-1.3
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build-1.3
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-build-1.4:
         branch: release-1.4
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build-1.4
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-build-1.5:
         branch: release-1.5
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build-1.5
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-federation-build:
         branch: master
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-federation-build
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-federation-build-1.4:
         branch: release-1.4
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-federation-build-1.4
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-federation-build-1.5:
         branch: release-1.5
@@ -119,17 +129,20 @@
         job-name: ci-kubernetes-federation-build-1.5
         repo-name: k8s.io/kubernetes
         commit-frequency: 'H/5 * * * *'
+        timeout: 50
 
     - kubernetes-federation-build-soak:
         branch: master
+        commit-frequency: 'H 23 * * *'
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-federation-build-soak
         repo-name: k8s.io/kubernetes
-        commit-frequency: 'H 23 * * *'
+        timeout: 50
 
     - kubernetes-build-debian-unstable:
         branch: master
+        commit-frequency: 'H/5 * * * *'
         giturl: 'https://github.com/kubernetes/release'
         job-name: ci-kubernetes-build-debian-unstable
         repo-name: k8s.io/release
-        commit-frequency: 'H/5 * * * *'
+        timeout: 300
