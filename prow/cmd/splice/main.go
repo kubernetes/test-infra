@@ -280,10 +280,6 @@ func main() {
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
 		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
-			if job.Name == "pull-kubernetes-e2e-kops-aws" {
-				// TODO(rmmh): read required contexts from submit queue
-				continue
-			}
 			if job.AlwaysRun {
 				if succeeded[buildReq.GetRefs()+job.Context] {
 					log.Infof("not triggering job %v (already succeeded previously)", job.Name)
