@@ -79,11 +79,11 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 	} else if !isAuthor {
 		if !isAssignee && wantLGTM {
-			resp := "you can't LGTM a PR unless you are assigned as a reviewer"
+			resp := "you can't LGTM a PR unless you are an assignee"
 			log.Infof("Commenting with \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		} else if !isAssignee && !wantLGTM {
-			resp := "you can't remove LGTM from a PR unless you are assigned as a reviewer"
+			resp := "you can't remove LGTM from a PR unless you are an assignee"
 			log.Infof("Commenting with \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		}
