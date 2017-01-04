@@ -8,6 +8,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \

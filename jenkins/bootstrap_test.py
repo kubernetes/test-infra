@@ -1064,12 +1064,17 @@ class IntegrationTest(unittest.TestCase):
 
 class JobTest(unittest.TestCase):
 
+    excludes = [
+        'BUILD',  # For bazel
+        'config.json',  # For --json mode
+    ]
+
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(
-            os.path.dirname(bootstrap.job_script(JOB))):
-            for job in [f for f in filenames if f != 'BUILD']:
+            os.path.dirname(bootstrap.job_script(JOB, False)[0])):
+            for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
 
@@ -1137,7 +1142,7 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            Check, suffix='commit-suffix')
+            Check, suffix='commit-suffix', use_json=True)
 
     def testBootstrapCIRepoYaml(self):
         def Check(job, name):
@@ -1201,7 +1206,7 @@ class JobTest(unittest.TestCase):
 
 
 
-    def CheckBootstrapYaml(self, path, check, suffix='suffix'):
+    def CheckBootstrapYaml(self, path, check, suffix='suffix', use_json=False):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
             doc = yaml.safe_load(fp)
@@ -1241,8 +1246,14 @@ class JobTest(unittest.TestCase):
             name = job.keys()[0]
             real_job = job[name]
 
-            path = bootstrap.job_script(real_job.get('job-name'))
+            cmd = bootstrap.job_script(real_job.get('job-name'), use_json)
+            path = cmd[0]
+            args = cmd[1:]
             self.assertTrue(os.path.isfile(path), name)
+            if use_json:
+                self.assertTrue(all(isinstance(a, basestring) for a in args), args)
+            else:
+                self.assertEquals(1, len(cmd))
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (

@@ -660,9 +660,17 @@ def setup_magic_environment(job):
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
 
 
-def job_script(job):
+def job_script(job, use_json):
     """Return path to script for job."""
-    return test_infra('jobs/%s.sh' % job)
+    if not use_json:
+        return [test_infra('jobs/%s.sh' % job)]
+    with open(test_infra('jobs/config.json')) as fp:
+        config = json.loads(fp.read())
+    job_config = config[job]
+    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
+    return [cmd] + job_config.get('args', [])
+
+
 
 
 def gubernator_uri(paths):
@@ -688,7 +696,8 @@ def setup_root(call, root, repo, branch, pull):
         raise ValueError('--branch and --pull require --repo', branch, pull)
 
 
-def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
+def bootstrap(
+    job, repo, branch, pull, root, upload, robot, timeout=0, use_json=False):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches
     build_log_path = os.path.abspath('build-log.txt')
@@ -721,7 +730,7 @@ def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
         start(gsutil, paths, started, node(), version, pull)
     success = False
     try:
-        call([job_script(job)])
+        call(job_script(job, use_json))
         logging.info('PASS: %s', job)
         success = True
     except subprocess.CalledProcessError:
@@ -746,6 +755,8 @@ def bootstrap(job, repo, branch, pull, root, upload, robot, timeout=0):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Checks out a github PR/branch to <basedir>/<repo>/')
+    PARSER.add_argument(
+        '--json', action='store_true', help='--job is a json key, not a .sh')
     PARSER.add_argument('--root', default='.', help='Root dir to work with')
     PARSER.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
@@ -777,4 +788,5 @@ if __name__ == '__main__':
         ARGS.upload,
         ARGS.service_account,
         ARGS.timeout,
+        ARGS.json,
     )

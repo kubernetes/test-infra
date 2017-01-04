@@ -1,0 +1,81 @@
+{
+
+"ci-kops-build": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--script=make gcs-publish-ci",
+    "--kops=gs://kops-ci/bin"
+  ]
+},
+
+"ci-kubernetes-build": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast"
+  ]
+},
+
+"ci-kubernetes-build-1.3": {
+  "scenario": "kubernetes_build"
+},
+
+"ci-kubernetes-build-1.4": {
+  "scenario": "kubernetes_build"
+},
+
+"ci-kubernetes-build-1.5": {
+  "scenario": "kubernetes_build"
+},
+
+"ci-kubernetes-cross-build": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--suffix=-cross"
+  ]
+},
+
+"ci-kubernetes-federation-build": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast",
+    "--federation=k8s-jkns-e2e-gce-federation",
+    "--release=kubernetes-federation-release"
+  ]
+},
+
+"ci-kubernetes-federation-build-1.4": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast",
+    "--federation=k8s-jkns-e2e-gce-f8n-1-4",
+    "--release=kubernetes-federation-release-1-4"
+  ]
+},
+
+"ci-kubernetes-federation-build-1.5": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast",
+    "--federation=k8s-e2e-gce-f8n-1-5",
+    "--release=kubernetes-federation-release-1-5"
+  ]
+},
+
+"ci-kubernetes-federation-build-soak": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast",
+    "--federation=k8s-jkns-gce-federation-soak",
+    "--release=kubernetes-federation-release"
+  ]
+},
+
+"ci-kubernetes-build-debian-unstable": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--script=./debian/jenkins.sh",
+    "--unstable"
+  ]
+}
+
+}
