@@ -19,23 +19,17 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-readonly remote="bootstrap-upstream"
-
-rm -rf .gsutil  # This causes verify flags to fail...
-git remote remove "${remote}" || true
-git remote add "${remote}" 'https://github.com/kubernetes/kubernetes.git'
-git remote set-url --push "${remote}" no_push
-# If .git is cached between runs this data may be stale
-git fetch "${remote}"  # fetch branches
-
-export KUBE_FORCE_VERIFY_CHECKS='y'
-export KUBE_VERIFY_GIT_BRANCH='release-1.4'
-export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
+readonly scenario='kubernetes_verify.py'
+readonly scenario_args=(
+  --branch=release-1.4
+  --force
+  --script=./hack/jenkins/verify-dockerized.sh
+)
 
 ### Runner
-readonly runner="${testinfra}/jenkins/gotest-dockerized.sh"
+readonly runner="${testinfra}/scenarios/${scenario}"
 export KUBEKINS_TIMEOUT="80m"
-timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" && rc=$? || rc=$?
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
 
 ### Reporting
 if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then

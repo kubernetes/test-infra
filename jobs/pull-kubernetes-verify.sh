@@ -19,14 +19,22 @@ set -o pipefail
 set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
-readonly remote="bootstrap-upstream"
+readonly scenario='kubernetes_verify.py'
+readonly scenario_args=(
+  --branch="${PULL_BASE_REF}"
+  --script=./hack/jenkins/verify-dockerized.sh
+)
 
-rm -rf .gsutil  # This causes verify flags to fail...
-git remote remove "${remote}" 2>/dev/null || true
-git remote add "${remote}" 'https://github.com/kubernetes/kubernetes.git'
-git remote set-url --push "${remote}" no_push
-# If .git is cached between runs this data may be stale
-git fetch "${remote}"  # fetch branches
-export KUBE_VERIFY_GIT_BRANCH="${PULL_BASE_REF}"
-export KUBE_TEST_SCRIPT="./hack/jenkins/verify-dockerized.sh"
-${testinfra}/jenkins/gotest-dockerized.sh
+### Runner
+readonly runner="${testinfra}/scenarios/${scenario}"
+export KUBEKINS_TIMEOUT="60m"
+timeout -k 15m "${KUBEKINS_TIMEOUT}" "${runner}" "${scenario_args[@]}" && rc=$? || rc=$?
+
+### Reporting
+if [[ ${rc} -eq 124 || ${rc} -eq 137 ]]; then
+    echo "Build timed out" >&2
+elif [[ ${rc} -ne 0 ]]; then
+    echo "Build failed" >&2
+fi
+echo "Exiting with code: ${rc}"
+exit ${rc}
