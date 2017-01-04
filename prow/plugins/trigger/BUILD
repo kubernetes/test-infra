@@ -30,6 +30,7 @@ go_library(
     srcs = [
         "ic.go",
         "pr.go",
+        "push.go",
         "trigger.go",
     ],
     tags = ["automanaged"],

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO(spxtr): Refactor and test this properly.
+// TODO(spxtr): Refactor and test this properly. It's getting out of hand.
 
 package main
 
@@ -55,7 +55,8 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
 	report    = flag.Bool("report", true, "Whether or not to report the status on GitHub.")
 
-	jobConfigs       = flag.String("job-config", "/etc/jobs/presubmit", "Where the job-config configmap is mounted.")
+	presubmit        = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
+	postsubmit       = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
@@ -69,8 +70,10 @@ const (
 )
 
 type testClient struct {
-	Job jobs.Presubmit
+	Presubmit  jobs.Presubmit
+	Postsubmit jobs.Postsubmit
 
+	JobName   string
 	RepoOwner string
 	RepoName  string
 	PRNumber  int
@@ -138,16 +141,21 @@ func main() {
 	}
 
 	ja := jobs.JobAgent{}
-	if err := ja.LoadOnce(*jobConfigs); err != nil {
+	if err := ja.LoadOnce(*presubmit, *postsubmit); err != nil {
 		logrus.WithError(err).Fatal("Error loading job config.")
 	}
-	found, jenkinsJob := ja.GetJob(fmt.Sprintf("%s/%s", *repoOwner, *repoName), *job)
-	if !found {
+	fullRepoName := fmt.Sprintf("%s/%s", *repoOwner, *repoName)
+	foundPresubmit, presubmit := ja.GetPresubmit(fullRepoName, *job)
+	foundPostsubmit, postsubmit := ja.GetPostsubmit(fullRepoName, *job)
+	if !foundPresubmit && !foundPostsubmit {
 		logrus.Fatalf("Could not find job %s in job config.", *job)
 	}
 
 	client := &testClient{
-		Job:       jenkinsJob,
+		Presubmit:  presubmit,
+		Postsubmit: postsubmit,
+
+		JobName:   *job,
 		RepoOwner: *repoOwner,
 		RepoName:  *repoName,
 		PRNumber:  *pr,
@@ -157,27 +165,27 @@ func main() {
 		Refs:      *refs,
 
 		DryRun: *dryRun,
-		Report: *report && !jenkinsJob.SkipReport,
+		Report: *report && !presubmit.SkipReport,
 
 		KubeJob:       kubeJob,
 		KubeClient:    kc,
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
 	}
-	if jenkinsJob.Spec == nil {
+	if presubmit.Spec == nil {
 		if err := client.TestPRJenkins(); err != nil {
-			logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR on Jenkins.")
+			logrus.WithFields(fields(client)).WithError(err).Error("Error testing PR on Jenkins.")
 		}
 	} else {
-		if err := client.TestPRKubernetes(); err != nil {
-			logrus.WithFields(fields(client)).WithError(err).Errorf("Error testing PR on Kubernetes.")
+		if err := client.TestKubernetes(); err != nil {
+			logrus.WithFields(fields(client)).WithError(err).Error("Error testing PR on Kubernetes.")
 		}
 	}
 }
 
 func fields(c *testClient) logrus.Fields {
 	return logrus.Fields{
-		"job":      c.Job.Name,
+		"job":      c.JobName,
 		"org":      c.RepoOwner,
 		"repo":     c.RepoName,
 		"pr":       c.PRNumber,
@@ -188,16 +196,19 @@ func fields(c *testClient) logrus.Fields {
 	}
 }
 
-// TestPRKubernetes starts a pod and watches it, updating GitHub status as
+// TestKubernetes starts a pod and watches it, updating GitHub status as
 // necessary.
 // We modify the pod's spec to have the build parameters such as PR number
 // passed in as environment variables. We also include the service account
 // secret.
-func (c *testClient) TestPRKubernetes() error {
+func (c *testClient) TestKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
 	// TODO(spxtr): Sequential build numbers.
 	buildID := strconv.Itoa(rand.Int())
-	spec := *c.Job.Spec
+	spec := c.Presubmit.Spec
+	if spec == nil {
+		spec = c.Postsubmit.Spec
+	}
 	spec.NodeSelector = map[string]string{
 		"role": "build",
 	}
@@ -208,7 +219,7 @@ func (c *testClient) TestPRKubernetes() error {
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "JOB_NAME",
-				Value: c.Job.Name,
+				Value: c.Presubmit.Name,
 			},
 			kube.EnvVar{
 				Name:  "REPO_OWNER",
@@ -267,7 +278,7 @@ func (c *testClient) TestPRKubernetes() error {
 		Metadata: kube.ObjectMeta{
 			Name: buildID,
 		},
-		Spec: spec,
+		Spec: *spec,
 	}
 	actual, err := c.KubeClient.CreatePod(p)
 	if err != nil {
@@ -312,7 +323,7 @@ func (c *testClient) TestPRJenkins() error {
 	logrus.WithFields(fields(c)).Info("Starting build.")
 	c.tryCreateStatus("", github.StatusPending, "Build triggered.", "")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
-		JobName: c.Job.Name,
+		JobName: c.Presubmit.Name,
 		Number:  c.PRNumber,
 		Refs:    c.Refs,
 		BaseRef: c.BaseRef,
@@ -378,7 +389,7 @@ func (c *testClient) guberURL(build string) string {
 	if prName == "0" {
 		prName = "batch"
 	}
-	return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Job.Name, build)
+	return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
 }
 
 func (c *testClient) tryCreateStatus(podName, state, desc, url string) {
@@ -391,7 +402,7 @@ func (c *testClient) tryCreateStatus(podName, state, desc, url string) {
 		if err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
 			State:       state,
 			Description: desc,
-			Context:     c.Job.Context,
+			Context:     c.Presubmit.Context,
 			TargetURL:   url,
 		}); err != nil {
 			logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
@@ -415,7 +426,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 		if ic.User.Login != "k8s-ci-robot" {
 			continue
 		}
-		if strings.HasPrefix(ic.Body, c.Job.Context) {
+		if strings.HasPrefix(ic.Body, c.Presubmit.Context) {
 			if err := c.GitHubClient.DeleteComment(c.RepoOwner, c.RepoName, ic.ID); err != nil {
 				logrus.WithFields(fields(c)).WithError(err).Error("Error deleting comment.")
 			}
@@ -432,7 +443,7 @@ The magic incantation to run this job again is ` + "`%s`" + `. Please help us cu
 %s
 </details>
 `
-	body := fmt.Sprintf(bodyFormat, c.Job.Context, url, c.PullSHA, c.PRNumber, c.Job.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
+	body := fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, c.PRNumber, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}

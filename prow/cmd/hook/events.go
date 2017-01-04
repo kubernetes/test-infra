@@ -42,13 +42,13 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 
 func (s *Server) handlePushEvent(pe github.PushEvent) {
 	l := logrus.WithFields(logrus.Fields{
-		"org":  pe.Repo.Owner.Login,
+		"org":  pe.Repo.Owner.Name,
 		"repo": pe.Repo.Name,
 		"ref":  pe.Ref,
 		"head": pe.After,
 	})
 	l.Info("Push event.")
-	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Login, pe.Repo.Name) {
+	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
 		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
 		if err := h(pc, pe); err != nil {

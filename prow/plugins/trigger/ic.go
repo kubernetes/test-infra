@@ -48,7 +48,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	// Which jobs does the comment want us to run?
-	requestedJobs := c.JobAgent.MatchingJobs(ic.Repo.FullName, ic.Comment.Body, okToTest)
+	requestedJobs := c.JobAgent.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
 	if len(requestedJobs) == 0 {
 		return nil
 	}

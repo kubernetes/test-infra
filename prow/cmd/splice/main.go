@@ -40,7 +40,8 @@ var (
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	logJson        = flag.Bool("log-json", false, "output log in JSON format")
-	jobConfigs     = flag.String("job-config", "/etc/jobs/presubmit", "Where the job-config configmap is mounted.")
+	presubmit      = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
+	postsubmit     = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 
@@ -217,7 +218,7 @@ func main() {
 	defer splicer.cleanup()
 
 	ja := &jobs.JobAgent{}
-	if err := ja.Start(*jobConfigs); err != nil {
+	if err := ja.Start(*presubmit, *postsubmit); err != nil {
 		log.WithError(err).Fatal("Could not start job agent.")
 	}
 
@@ -279,7 +280,7 @@ func main() {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
-		for _, job := range ja.AllJobs(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
+		for _, job := range ja.AllPresubmits(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
 			if job.AlwaysRun {
 				if succeeded[buildReq.GetRefs()+job.Context] {
 					log.Infof("not triggering job %v (already succeeded previously)", job.Name)

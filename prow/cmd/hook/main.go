@@ -43,7 +43,8 @@ import (
 var (
 	port = flag.Int("port", 8888, "Port to listen on.")
 
-	jobConfig    = flag.String("job-config", "/etc/jobs/presubmit", "Path to job config file.")
+	presubmit    = flag.String("presubmits", "/etc/jobs/presubmit", "Path to presubmit.yaml.")
+	postsubmit   = flag.String("postsubmits", "/etc/jobs/postsubmit", "Path to postsubmit.yaml.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
@@ -107,7 +108,7 @@ func main() {
 	}
 
 	jobAgent := &jobs.JobAgent{}
-	if err := jobAgent.Start(*jobConfig); err != nil {
+	if err := jobAgent.Start(*presubmit, *postsubmit); err != nil {
 		logrus.WithError(err).Fatal("Error starting job agent.")
 	}
 

@@ -102,6 +102,17 @@ func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
 	return startJob(k, jobName, context, br)
 }
 
+func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {
+	refs := strings.Split(pe.Ref, "/")
+	br := BuildRequest{
+		Org:     pe.Repo.Owner.Login,
+		Repo:    pe.Repo.Name,
+		BaseRef: refs[len(refs)-1],
+		BaseSHA: pe.After,
+	}
+	return startJob(k, jobName, "", br)
+}
+
 func startJob(k startClient, jobName, context string, br BuildRequest) error {
 	refs := br.GetRefs()
 
@@ -117,7 +128,6 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 		"refs":        refs,
 		"base-ref":    br.BaseRef,
 		"base-sha":    br.BaseSHA,
-		"context":     context,
 	}
 	args := []string{
 		"--job-name=" + jobName,
@@ -129,9 +139,13 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 		"--dry-run=" + strconv.FormatBool(dryRun),
 		"--jenkins-url=$(JENKINS_URL)",
 	}
-	if len(br.Pulls) == 1 {
+	if len(br.Pulls) == 0 {
+		labels["type"] = "push"
+		args = append(args, "--report=false")
+	} else if len(br.Pulls) == 1 {
 		labels["type"] = "pr"
 		labels["pr"] = strconv.Itoa(br.Pulls[0].Number)
+		annotations["context"] = context
 		annotations["author"] = br.Pulls[0].Author
 		annotations["pull-sha"] = br.Pulls[0].SHA
 		args = append(args, "--pr="+strconv.Itoa(br.Pulls[0].Number))
@@ -139,6 +153,7 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 		args = append(args, "--report=true")
 	} else if len(br.Pulls) > 1 {
 		labels["type"] = "batch"
+		annotations["context"] = context
 		args = append(args, "--report=false")
 	}
 

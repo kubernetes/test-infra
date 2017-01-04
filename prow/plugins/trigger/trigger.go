@@ -35,6 +35,7 @@ const (
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterPushEventHandler(pluginName, handlePush)
 }
 
 type githubClient interface {
@@ -54,6 +55,7 @@ type client struct {
 }
 
 var lineStartPRJob = line.StartPRJob
+var lineStartPushJob = line.StartPushJob
 var lineDeletePRJob = line.DeletePRJob
 
 func getClient(pc plugins.PluginClient) client {
@@ -71,4 +73,8 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	return handleIC(getClient(pc), ic)
+}
+
+func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+	return handlePE(getClient(pc), pe)
 }
