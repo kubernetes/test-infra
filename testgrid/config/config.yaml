@@ -857,6 +857,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage
 - name: kubernetes-gci-garbage-collector
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage-gci
+# kubeadm tests
+- name: kubernetes-e2e-kubeadm-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+
 # Add New Testgroups Here
 
 #
@@ -1905,6 +1909,8 @@ dashboards:
     test_group_name: kubernetes-build-debian-unstable
   - name: gke-large-teardown
     test_group_name: kubernetes-e2e-gke-large-teardown
+  - name: kubeadm-gce
+    test_group_name: kubernetes-e2e-kubeadm-gce
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
   - name: garbage-collector
