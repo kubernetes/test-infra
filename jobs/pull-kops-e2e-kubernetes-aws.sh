@@ -22,7 +22,7 @@ readonly testinfra="$(dirname "${0}")/.."
 
 export GCS_LOCATION="${GCS_LOCATION:-gs://kops-ci/pulls/${JOB_NAME}}"
 export KOPS_VERSION="pull-$(git describe --always)"
-export KOPS_URL="${GCS_LOCATION/gs:\/\//https:\/\/storage.googleapis.com\/}/${KOPS_VERSION}"
+export KOPS_BASE_URL="${GCS_LOCATION/gs:\/\//https:\/\/storage.googleapis.com\/}/${KOPS_VERSION}"
 make gcs-publish-ci "VERSION=${KOPS_VERSION}"
 
 # TODO(zmerlynn): Change this to stable.txt (which is kops default
@@ -33,11 +33,27 @@ export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/${JENKINS_PUBLIS
 
 export KUBERNETES_PROVIDER="kops-aws"
 
+if [[ -z "${KOPS_ZONES:-}" ]]; then
+  # Pick a random US AZ. (We have high regional quotas in
+  # us-{east,west}-{1,2})
+  case $((RANDOM % 8)) in
+    0) export KOPS_ZONES=us-east-1a ;;
+    1) export KOPS_ZONES=us-east-1d ;;
+    2) export KOPS_ZONES=us-east-2a ;;
+    3) export KOPS_ZONES=us-east-2b ;;
+    4) export KOPS_ZONES=us-west-1a ;;
+    5) export KOPS_ZONES=us-west-1c ;;
+    6) export KOPS_ZONES=us-west-2a ;;
+    7) export KOPS_ZONES=us-west-2b ;;
+  esac
+fi
+
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
 export KOPS_CLUSTER_DOMAIN="${KOPS_CLUSTER_DOMAIN:-test-aws.k8s.io}"
 export E2E_NAME="aws-kops-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export E2E_OPT="${E2E_OPT:-}\
   --kops-cluster ${E2E_NAME}.${KOPS_CLUSTER_DOMAIN}\
+  --kops-zones ${KOPS_ZONES}\
   --kops-kubernetes-version ${KUBERNETES_RELEASE}\
   --kops-nodes 4\
   --kops-state ${KOPS_STATE_STORE}"

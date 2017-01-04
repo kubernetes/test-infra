@@ -81,6 +81,21 @@ else
   export BUILD_NUMBER=$(date +%s)
 fi
 
+if [[ -z "${KOPS_ZONES:-}" ]]; then
+  # Pick a random US AZ. (We have high regional quotas in
+  # us-{east,west}-{1,2})
+  case $((RANDOM % 8)) in
+    0) export KOPS_ZONES=us-east-1a ;;
+    1) export KOPS_ZONES=us-east-1d ;;
+    2) export KOPS_ZONES=us-east-2a ;;
+    3) export KOPS_ZONES=us-east-2b ;;
+    4) export KOPS_ZONES=us-west-1a ;;
+    5) export KOPS_ZONES=us-west-1c ;;
+    6) export KOPS_ZONES=us-west-2a ;;
+    7) export KOPS_ZONES=us-west-2b ;;
+  esac
+fi
+
 ### post-env
 
 # Assume we're upping, testing, and downing a cluster
@@ -99,7 +114,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 # After post-env
 export KOPS_DEPLOY_LATEST_KUBE=y
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
-export E2E_OPT="--kops-cluster ${KOPS_E2E_CLUSTER_NAME} --kops-state ${KOPS_E2E_STATE_STORE} --kops-nodes=4"
+export E2E_OPT="--kops-cluster ${KOPS_E2E_CLUSTER_NAME} --kops-zones ${KOPS_ZONES} --kops-state ${KOPS_E2E_STATE_STORE} --kops-nodes=4"
 export GINKGO_PARALLEL="y"
 
 ### Runner
