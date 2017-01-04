@@ -55,6 +55,7 @@
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/pr-logs'
 - project:
     name: bootstrap-pull-jobs
@@ -65,79 +66,99 @@
         job-name: pull-cadvisor-e2e
         max-total: 5
         repo-name: 'github.com/google/cadvisor'
+        timeout: 0
     - charts-e2e:
         job-name: pull-charts-e2e
         max-total: 5
         repo-name: 'k8s.io/charts'
+        timeout: 0
     - heapster-e2e:  # owner: pszczesniak@google.com
         job-name: pull-heapster-e2e
         max-total: 5
         repo-name: 'k8s.io/heapster'
+        timeout: 0
     - kops-e2e-kubernetes-aws:  # owner: zml@google.com
         job-name: pull-kops-e2e-kubernetes-aws
         max-total: 5
         repo-name: 'k8s.io/kops'
+        timeout: 0
     - kubernetes-cross:
         max-total: 12
         job-name: pull-kubernetes-cross
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gce-cri:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-cri
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-gci
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gce-etcd3:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-etcd3
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gke:
         max-total: 12
         job-name: pull-kubernetes-e2e-gke
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-gke-gci:
         max-total: 12
         job-name: pull-kubernetes-e2e-gke-gci
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-e2e-kops-aws:
         max-total: 12
         job-name: pull-kubernetes-e2e-kops-aws
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-federation-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-federation-e2e-gce
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-federation-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-federation-e2e-gce-gci
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-kubemark-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-kubemark-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce-gci
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-node-e2e-cri:
         max-total: 12
         job-name: pull-kubernetes-node-e2e-cri
         repo-name: 'k8s.io/kubernetes'
+        timeout: 0
     - kubernetes-verify:
         max-total: 12
         job-name: pull-kubernetes-verify
         repo-name: 'k8s.io/kubernetes'
+        timeout: 60
     - kubernetes-unit:
         max-total: 12
         job-name: pull-kubernetes-unit
         repo-name: 'k8s.io/kubernetes'
+        timeout: 60
