@@ -126,8 +126,8 @@ function redraw() {
             r.appendChild(prRevisionCell(build));
         } else if (build.type === "batch") {
             r.appendChild(batchRevisionCell(build));
-        } else if (build.type === "post") {
-            r.appendChild(postRevisionCell(build));
+        } else if (build.type === "push") {
+            r.appendChild(pushRevisionCell(build));
         }
         if (build.url === "") {
             r.appendChild(createTextCell(build.job));
@@ -183,9 +183,12 @@ function batchRevisionCell(build) {
     return c;
 }
 
-// TODO(spxtr)
-function postRevisionCell(build) {
+function pushRevisionCell(build) {
     var c = document.createElement("td");
+    var bl = document.createElement("a");
+    bl.href = "https://github.com/" + build.repo + "/tree/" + build.base_sha;
+    bl.text = build.base_ref + " (" + build.base_sha.slice(0, 7) + ")";
+    c.appendChild(bl);
     return c;
 }
 
