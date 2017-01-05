@@ -24,7 +24,7 @@ spec:
         - -log-json
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.43"
+          value: "gcr.io/k8s-prow/line:0.44"
         - name: DRY_RUN
           value: "false"
       volumes:
