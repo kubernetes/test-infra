@@ -426,12 +426,6 @@ app.filter('loginOrPR', function() {
   };
 });
 
-app.filter('refToShortRef', function() {
-  return function(ref) {
-    return ref.replace(/:(...)[^,]*/g, ':$1');
-  }
-})
-
 app.filter('refToPRs', function() {
   return function(ref) {
     return ref.replace(/(?:(\d+)|[^:]+):[^,]*,?/g, '$1 ').trim().split(' ');
