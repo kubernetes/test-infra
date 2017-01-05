@@ -105,7 +105,7 @@ func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
 func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {
 	refs := strings.Split(pe.Ref, "/")
 	br := BuildRequest{
-		Org:     pe.Repo.Owner.Login,
+		Org:     pe.Repo.Owner.Name,
 		Repo:    pe.Repo.Name,
 		BaseRef: refs[len(refs)-1],
 		BaseSHA: pe.After,
