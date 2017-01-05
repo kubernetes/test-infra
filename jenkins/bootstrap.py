@@ -178,10 +178,15 @@ def pull_ref(pull):
         return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
 
 
-def repository(repo):
+def repository(repo, ssh=False):
     """Return the url associated with the repo."""
     if repo.startswith('k8s.io/'):
-        return 'https://github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
+        repo = 'github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
+    if ssh is True:
+        if ":" not in repo:
+            parts = repo.split('/', 1)
+            repo = '%s:%s' % (parts[0], parts[1])
+        return 'git@%s' % repo
     return 'https://%s' % repo
 
 
@@ -190,7 +195,7 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(call, repo, branch, pull):
+def checkout(call, repo, branch, pull, ssh=False):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -211,7 +216,7 @@ def checkout(call, repo, branch, pull):
     retries = 3
     for attempt in range(retries):
         try:
-            call([git, 'fetch', '--tags', repository(repo)] + refs)
+            call([git, 'fetch', '--tags', repository(repo, ssh)] + refs)
             break
         except subprocess.CalledProcessError as cpe:
             if attempt >= retries - 1:
@@ -686,7 +691,7 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(call, root, repo, branch, pull):
+def setup_root(call, root, repo, branch, pull, ssh):
     """Create root dir, checkout repo and cd into resulting dir."""
     logging.info(
         'Check out %s at %s...',
@@ -696,13 +701,13 @@ def setup_root(call, root, repo, branch, pull):
         os.makedirs(root)
     os.chdir(root)
     if repo:
-        checkout(call, repo, branch, pull)
+        checkout(call, repo, branch, pull, ssh)
     elif branch or pull:
         raise ValueError('--branch and --pull require --repo', branch, pull)
 
 
 def bootstrap(
-    job, repo, branch, pull, root, upload, robot, timeout=0, use_json=False):
+    job, repo, branch, pull, root, upload, robot, timeout=0, use_json=False, ssh=False):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches
     build_log_path = os.path.abspath('build-log.txt')
@@ -715,7 +720,7 @@ def bootstrap(
     call = lambda *a, **kw: _call(end, *a, **kw)
     logging.info('Bootstrap %s...', job)
     build = build_name(started)
-    setup_root(call, root, repo, branch, pull)
+    setup_root(call, root, repo, branch, pull, ssh)
     logging.info('Configure environment...')
     if repo:
         version = find_version(call)
@@ -782,6 +787,10 @@ def parse_args(arguments=None):
     parser.add_argument(
         '--service-account',
         help='Activate and use path/to/service-account.json if set.')
+    parser.add_argument(
+        '--ssh',
+        action='store_true',
+        help='Use ssh to fetch the repository instead of https.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
@@ -801,4 +810,5 @@ if __name__ == '__main__':
         ARGS.service_account,
         ARGS.timeout,
         ARGS.json,
+        ARGS.ssh,
     )
