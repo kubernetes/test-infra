@@ -172,7 +172,7 @@ func main() {
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
 	}
-	if presubmit.Spec == nil {
+	if foundPresubmit && presubmit.Spec == nil {
 		if err := client.TestPRJenkins(); err != nil {
 			logrus.WithFields(fields(client)).WithError(err).Error("Error testing PR on Jenkins.")
 		}
