@@ -105,7 +105,7 @@ func (c *Client) request(method, path string) (*http.Response, error) {
 }
 
 func (c *Client) doRequest(method, path string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, path, nil)
+	req, err := http.NewRequest(method, path, nil)
 	if err != nil {
 		return nil, err
 	}
