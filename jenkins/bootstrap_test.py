@@ -1049,9 +1049,14 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Delete %s' % self.BRANCH])
 
         os.chdir('/tmp')
+        # Supplying the commit exactly works.
         bootstrap.bootstrap(
             'fake-branch', self.REPO, '%s:%s' % (self.BRANCH, sha), None,
             self.root_workspace, UPLOAD, ROBOT)
+        # Using branch head fails.
+        with self.assertRaises(SystemExit):
+            bootstrap.bootstrap(
+                'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
 
     def testBatch(self):
         def head_sha():
