@@ -230,13 +230,13 @@ class SubprocessTest(unittest.TestCase):
 
 
 class PullRefsTest(unittest.TestCase):
-    """Tests for pull_ref, pull_has_shas, and pull_numbers."""
+    """Tests for pull_ref, branch_ref, ref_has_shas, and pull_numbers."""
 
     def testPullHasShas(self):
-        self.assertTrue(bootstrap.pull_has_shas('master:abcd'))
-        self.assertFalse(bootstrap.pull_has_shas('123'))
-        self.assertFalse(bootstrap.pull_has_shas(123))
-        self.assertFalse(bootstrap.pull_has_shas(None))
+        self.assertTrue(bootstrap.ref_has_shas('master:abcd'))
+        self.assertFalse(bootstrap.ref_has_shas('123'))
+        self.assertFalse(bootstrap.ref_has_shas(123))
+        self.assertFalse(bootstrap.ref_has_shas(None))
 
     def testPullNumbers(self):
         self.assertListEqual(bootstrap.pull_numbers(123), ['123'])
@@ -250,6 +250,12 @@ class PullRefsTest(unittest.TestCase):
             (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe']))
         self.assertEqual(bootstrap.pull_ref('123'),
             (['+refs/pull/123/merge'], ['FETCH_HEAD']))
+
+    def testBranchRef(self):
+        self.assertEqual(bootstrap.branch_ref('branch:abcd'),
+            (['branch'], ['abcd']))
+        self.assertEqual(bootstrap.branch_ref('master'),
+            (['master'], ['FETCH_HEAD']))
 
 
 class CheckoutTest(unittest.TestCase):
@@ -1029,6 +1035,28 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         bootstrap.bootstrap(
             'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
+
+    def testBranchRef(self):
+        """Make sure we check out a specific commit."""
+        subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
+        subprocess.check_call(['git', 'rm', self.MASTER])
+        subprocess.check_call(['touch', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
+        sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+        subprocess.check_call(['rm', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Delete %s' % self.BRANCH])
+
+        os.chdir('/tmp')
+        # Supplying the commit exactly works.
+        bootstrap.bootstrap(
+            'fake-branch', self.REPO, '%s:%s' % (self.BRANCH, sha), None,
+            self.root_workspace, UPLOAD, ROBOT)
+        # Using branch head fails.
+        with self.assertRaises(SystemExit):
+            bootstrap.bootstrap(
+                'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
 
     def testBatch(self):
         def head_sha():
