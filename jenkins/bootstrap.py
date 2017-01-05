@@ -181,8 +181,8 @@ def pull_ref(pull):
 def branch_ref(branch):
     """Split branch:sha if necessary."""
     if ref_has_shas(branch):
-        s = branch.split(':')
-        return [s[0]], [s[1]]
+        split_refs = branch.split(':')
+        return [split_refs[0]], [split_refs[1]]
     else:
         return [branch], ['FETCH_HEAD']
 
