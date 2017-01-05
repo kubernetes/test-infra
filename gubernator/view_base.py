@@ -15,7 +15,6 @@
 import functools
 import logging
 import os
-import re
 
 import cloudstorage as gcs
 import jinja2
@@ -144,8 +143,3 @@ def gcs_ls(path):
     if path[-1] != '/':
         path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
-
-
-def pad_numbers(s):
-    """Modify a string to make its numbers suitable for natural sorting."""
-    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)

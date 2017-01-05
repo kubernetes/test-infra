@@ -23,6 +23,7 @@ import gcs_async
 from github import models
 import log_parser
 import testgrid
+import pull_request
 import view_base
 
 
@@ -170,7 +171,7 @@ def get_build_numbers(job_dir, before, indirect):
         return range(latest_build, max(0, latest_build - 40), -1)
     except (ValueError, TypeError):
         fstats = view_base.gcs_ls(job_dir)
-        fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
+        fstats.sort(key=lambda f: pull_request.pad_numbers(f.filename),
                     reverse=True)
         if indirect:
             # find numbered builds

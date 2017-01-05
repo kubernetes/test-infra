@@ -14,6 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
+
+def pad_numbers(s):
+    """Modify a string to make its numbers suitable for natural sorting."""
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
+
 
 def builds_to_table(jobs):
     """
@@ -33,6 +40,13 @@ def builds_to_table(jobs):
             return started['pull'].split(':')[-1]
         return started['version'].split('+')[-1]
 
+    def get_version_index(build, version_indexes):
+        started = build[1]
+        if not started:
+            return len(version_indexes)
+        version = commit(started)
+        return version_indexes.setdefault(version, len(version_indexes))
+
     # Compute the headings first -- versions and their maximum build counts.
 
     versions = {}       # {version: {job: build_count}}
@@ -51,6 +65,7 @@ def builds_to_table(jobs):
 
     version_widths = {version: max(jobs.values()) for version, jobs in versions.iteritems()}
     versions_ordered = sorted(versions, key=lambda v: version_start[v], reverse=True)
+    version_indexes = dict(zip(versions_ordered, range(len(versions_ordered))))
     version_colstart = {}
     cur = 0
     for version in versions_ordered:
@@ -65,7 +80,14 @@ def builds_to_table(jobs):
     for job, builds in sorted(jobs.iteritems()):
         row = []
         n = 0
-        for build, started, finished in builds:
+
+        # Sort by heading first, and then by decreasing build
+        builds_sorted = sorted(builds,
+                               key=lambda b: (-get_version_index(b, version_indexes),
+                                              pad_numbers(str(b[0]))),
+                               reverse=True)
+
+        for build, started, finished in builds_sorted:
             if not started or not commit(started):
                 minspan = 0
             else:

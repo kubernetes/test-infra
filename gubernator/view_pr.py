@@ -55,7 +55,8 @@ def pr_builds(path, pr):
                 gcs_async.read('/%sstarted.json' % build),
                 gcs_async.read('/%sfinished.json' % build)])
 
-    futures.sort(key=lambda (job, build, s, f): (job, view_base.pad_numbers(build)), reverse=True)
+    futures.sort(key=lambda (job, build, s, f): (job, pull_request.pad_numbers(build)),
+                 reverse=True)
 
     jobs = {}
     for job, build, started_fut, finished_fut in futures:

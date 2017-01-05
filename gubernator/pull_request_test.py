@@ -19,6 +19,12 @@ import unittest
 import pull_request
 
 
+class HelperTest(unittest.TestCase):
+    def test_pad_numbers(self):
+        self.assertEqual(pull_request.pad_numbers('a3b45'),
+                         'a' + '0' * 15 + '3b' + '0' * 14 + '45')
+
+
 def make(number, version, result, start_time=1000):
     started = None if version is None else {
         'timestamp': start_time, 'version': version}
@@ -37,6 +43,20 @@ class TableTest(unittest.TestCase):
         self.assertEqual(headings, [('v2', 2, 9), ('v1', 2, 6)])
         self.assertEqual(rows, [('J1', [(4, 'A'), (3, 'B')]),
                                 ('J2', [None, None, (5, 'C'), (4, 'D')])])
+
+    def test_builds_to_table_versions(self):
+        jobs = {'J1': [make("3", 'v2', 'A', 10), make("5", 'v4', 'B', 13),
+                       make("46", 'v4', 'C', 12), make("4", 'v3', 'D', 11)],
+                'J2': [make("7", 'v5', 'E', 20)]}
+        max_builds, headings, rows = pull_request.builds_to_table(jobs)
+
+        self.assertEqual(max_builds, 5)
+        self.assertEqual(headings, [('v5', 1, 20), ('v4', 2, 12),
+                                    ('v3', 1, 11), ('v2', 1, 10)])
+        self.assertEqual(rows, [('J1', [None,
+                                        ("46", 'C'), ("5", 'B'),
+                                        ("4", 'D'), ("3", 'A')]),
+                                ('J2', [("7", 'E')])])
 
     def test_builds_to_table_no_header(self):
         jobs = {'J': [make(5, None, 'A', 3), make(4, '', 'B', 2)]}
