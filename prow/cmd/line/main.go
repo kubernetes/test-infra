@@ -219,7 +219,7 @@ func (c *testClient) TestKubernetes() error {
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "JOB_NAME",
-				Value: c.Presubmit.Name,
+				Value: c.JobName,
 			},
 			kube.EnvVar{
 				Name:  "REPO_OWNER",
