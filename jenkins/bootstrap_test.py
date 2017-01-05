@@ -947,6 +947,21 @@ class RepositoryTest(unittest.TestCase):
         actual = bootstrap.repository('foo.com/bar')
         self.assertEquals(expected, actual)
 
+    def testKubernetesKubernetesSSH(self):
+        expected = 'git@github.com:kubernetes/kubernetes'
+        actual = bootstrap.repository('k8s.io/kubernetes', True)
+        self.assertEquals(expected, actual)
+
+    def testKubernetesKubernetesSSHWithColon(self):
+        expected = 'git@github.com:kubernetes/kubernetes'
+        actual = bootstrap.repository('github.com:kubernetes/kubernetes', True)
+        self.assertEquals(expected, actual)
+
+    def testWhateverSSH(self):
+        expected = 'git@foo.com:bar'
+        actual = bootstrap.repository('foo.com/bar', True)
+        self.assertEquals(expected, actual)
+
 
 
 class IntegrationTest(unittest.TestCase):
@@ -958,7 +973,7 @@ class IntegrationTest(unittest.TestCase):
     PR = 42
     PR_TAG = bootstrap.pull_ref(PR)[0][0].strip('+')
 
-    def FakeRepo(self, repo):
+    def FakeRepo(self, repo, ssh=False):
         return os.path.join(self.root_github, repo)
 
     def setUp(self):
