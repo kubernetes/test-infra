@@ -17,5 +17,5 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v10/gazel
-gazel
+go get -u gopkg.in/mikedanese/gazel.v11/gazel
+"${GOPATH}/bin/gazel" -root="$(dirname ${BASH_SOURCE})/.."
