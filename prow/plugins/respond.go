@@ -23,7 +23,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-const AboutThisBot = "If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/prow/commands.md)."
+const AboutThisBot = "Instructions for interacting with me using PR comments are available [here](https://github.com/kubernetes/community/blob/master/contributors/devel/pull-request-commands.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/prow/commands.md)."
 
 // FormatResponse nicely formats a response to an issue comment.
 func FormatResponse(ic github.IssueComment, s string) string {
