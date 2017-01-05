@@ -74,7 +74,7 @@ fi
 CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
 
 echo "Starting..."
-timeout -s KILL ${DOCKER_TIMEOUT:-60m} docker run --rm \
+docker run --rm \
   --name="${CONTAINER_NAME}" \
   -v "${WORKSPACE}/_artifacts":/workspace/_artifacts \
   -v /etc/localtime:/etc/localtime:ro \
@@ -89,16 +89,5 @@ timeout -s KILL ${DOCKER_TIMEOUT:-60m} docker run --rm \
   -e "WORKSPACE=/workspace" \
   ${GOOGLE_APPLICATION_CREDENTIALS:+-e "GOOGLE_APPLICATION_CREDENTIALS=/service-account.json"} \
   "${docker_extra_args[@]:+${docker_extra_args[@]}}" \
-  "gcr.io/k8s-testimages/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}" && rc=$? || rc=$?
+  "gcr.io/k8s-testimages/kubekins-e2e:${KUBEKINS_E2E_IMAGE_TAG}"
 
-echo "Exiting with code: ${rc}"
-if [[ ${rc} -eq 137 ]]; then  # 137 == SIGKILL, see man timeout
-  local container="${CONTAINER_NAME}"
-  # docker runs containers with session id being the same as the pid
-  local pid=$(docker inspect --format '{{.State.Pid}}' "${container}")
-  echo "Processes running under container ${container}:"
-  ps wwuf --forest --sid "${pid}"
-  docker stop "${container}" || true
-  sudo chmod a+rX -R "${WORKSPACE}/_artifacts/" || true
-fi
-exit ${rc}

@@ -125,10 +125,10 @@
     - kubernetes-e2e-kubeadm-gce:
         branch: master
         job-name: ci-kubernetes-e2e-kubeadm-gce
-        json: 0
+        json: 1
         repo-name: k8s.io/kubernetes-anywhere
         frequency: 'H/5 * * * *'
-        timeout: 0
+        timeout: 120
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master
