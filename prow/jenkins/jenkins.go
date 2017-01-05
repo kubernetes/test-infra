@@ -105,7 +105,7 @@ func (c *Client) request(method, path string) (*http.Response, error) {
 }
 
 func (c *Client) doRequest(method, path string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, path, nil)
+	req, err := http.NewRequest(method, path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -163,43 +163,37 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	if c.dry {
 		return false, nil
 	}
-	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
+	u := fmt.Sprintf("%sapi/json", b.queueURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return false, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return false, fmt.Errorf("response not 2XX: %s", resp.Status)
+		return false, fmt.Errorf("response not 2XX??: %s", resp.Status)
 	}
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return false, err
 	}
-	queue := struct {
-		Items []struct {
-			Actions []struct {
-				Parameters []struct {
-					Name  string `json:"name"`
-					Value string `json:"value"`
-				} `json:"parameters"`
-			} `json:"actions"`
-		} `json:"items"`
+	item := struct {
+		Cancelled  bool   `json:"cancelled"`
+		Why        string `json:"why"`
+		Executable struct {
+			Number int `json:"number"`
+		} `json:"executable"`
 	}{}
-	err = json.Unmarshal(buf, &queue)
+	err = json.Unmarshal(buf, &item)
 	if err != nil {
 		return false, err
 	}
-	for _, item := range queue.Items {
-		for _, action := range item.Actions {
-			for _, p := range action.Parameters {
-				if p.Name == "buildId" && p.Value == b.id {
-					return true, nil
-				}
-			}
-		}
+	if item.Cancelled {
+		return false, fmt.Errorf("job was cancelled: %s", item.Why)
 	}
-	return false, nil
+	if item.Executable.Number != 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 // QueueSize returns how much is in the queue.
@@ -207,7 +201,7 @@ func (c *Client) QueueSize() (int, error) {
 	if c.dry {
 		return 0, nil
 	}
-	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
+	u := fmt.Sprintf("%s/queue/api/json?tree=items", c.baseURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return 0, err
