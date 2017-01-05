@@ -1,11 +1,7 @@
-package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "jobs",
-    srcs = glob([
-        "*.sh",
-        "config.json",
-    ]),
+py_test(
+    name = "verify-boilerplate",
+    srcs = ["verify-boilerplate.py"],
+    data = ["//:all-srcs"],
 )
 
 filegroup(
@@ -19,4 +15,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

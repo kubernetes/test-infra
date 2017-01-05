@@ -30,3 +30,19 @@ go_library(
         "//vendor:github.com/spf13/cobra",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//velodrome/sql/testing:all-srcs",
+    ],
+    tags = ["automanaged"],
+)
