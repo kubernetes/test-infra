@@ -116,6 +116,7 @@
         job-name: ci-kubernetes-e2e-kubeadm-gce
         repo-name: k8s.io/kubernetes-anywhere
         frequency: 'H/5 * * * *'
+        timeout: 0
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master
