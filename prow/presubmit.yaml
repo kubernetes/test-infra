@@ -55,7 +55,7 @@ kubernetes/kubernetes:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.7
-      args: ["--pull=${PULL_REFS}"]
+      args: ["--pull=$(PULL_REFS)"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
@@ -179,7 +179,7 @@ kubernetes/test-infra:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.7
-      args: ["--pull=${PULL_REFS}"]
+      args: ["--pull=$(PULL_REFS)"]
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
