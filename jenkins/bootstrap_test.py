@@ -230,13 +230,13 @@ class SubprocessTest(unittest.TestCase):
 
 
 class PullRefsTest(unittest.TestCase):
-    """Tests for pull_ref, pull_has_shas, and pull_numbers."""
+    """Tests for pull_ref, branch_ref, ref_has_shas, and pull_numbers."""
 
     def testPullHasShas(self):
-        self.assertTrue(bootstrap.pull_has_shas('master:abcd'))
-        self.assertFalse(bootstrap.pull_has_shas('123'))
-        self.assertFalse(bootstrap.pull_has_shas(123))
-        self.assertFalse(bootstrap.pull_has_shas(None))
+        self.assertTrue(bootstrap.ref_has_shas('master:abcd'))
+        self.assertFalse(bootstrap.ref_has_shas('123'))
+        self.assertFalse(bootstrap.ref_has_shas(123))
+        self.assertFalse(bootstrap.ref_has_shas(None))
 
     def testPullNumbers(self):
         self.assertListEqual(bootstrap.pull_numbers(123), ['123'])
@@ -250,6 +250,12 @@ class PullRefsTest(unittest.TestCase):
             (['master', '+refs/pull/123/head:refs/pr/123'], ['abcd', 'effe']))
         self.assertEqual(bootstrap.pull_ref('123'),
             (['+refs/pull/123/merge'], ['FETCH_HEAD']))
+
+    def testBranchRef(self):
+        self.assertEqual(bootstrap.branch_ref('branch:abcd'),
+            (['branch'], ['abcd']))
+        self.assertEqual(bootstrap.branch_ref('master'),
+            (['master'], ['FETCH_HEAD']))
 
 
 class CheckoutTest(unittest.TestCase):

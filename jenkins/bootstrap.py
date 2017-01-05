@@ -147,14 +147,14 @@ def _call(end, cmd, stdin=None, check=True, output=None):
     return lines
 
 
-def pull_has_shas(pull):
-    """Determine if a pull reference specifies shas (contains ':')"""
+def ref_has_shas(pull):
+    """Determine if a reference specifies shas (contains ':')"""
     return isinstance(pull, basestring) and ':' in pull
 
 
 def pull_numbers(pull):
     """Turn a pull reference list into a list of PR numbers to merge."""
-    if pull_has_shas(pull):
+    if ref_has_shas(pull):
         return [r.split(':')[0] for r in pull.split(',')][1:]
     else:
         return [str(pull)]
@@ -162,7 +162,7 @@ def pull_numbers(pull):
 
 def pull_ref(pull):
     """Turn a PR number of list of refs into specific refs to fetch and check out."""
-    if pull_has_shas(pull):
+    if ref_has_shas(pull):
         refs = []
         checkouts = []
         for name, sha in (x.split(':') for x in pull.split(',')):
@@ -176,6 +176,15 @@ def pull_ref(pull):
         return refs, checkouts
     else:
         return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+
+
+def branch_ref(branch):
+    """Split branch:sha if necessary."""
+    if ref_has_shas(branch):
+        s = branch.split(':')
+        return [s[0]], [s[1]]
+    else:
+        return [branch], ['FETCH_HEAD']
 
 
 def repository(repo, ssh=False):
@@ -203,7 +212,7 @@ def checkout(call, repo, branch, pull, ssh=False):
     if pull:
         refs, checkouts = pull_ref(pull)
     else:
-        refs, checkouts = [branch], ['FETCH_HEAD']
+        refs, checkouts = branch_ref(branch)
 
     git = 'git'
     call([git, 'init', repo])
@@ -240,7 +249,7 @@ def start(gsutil, paths, stamp, node_name, version, pull):
     if version:
         data['repo-version'] = version
         data['version'] = version  # TODO(fejta): retire
-    if pull_has_shas(pull):
+    if ref_has_shas(pull):
         data['pull'] = pull
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
