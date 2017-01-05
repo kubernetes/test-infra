@@ -1036,6 +1036,23 @@ class IntegrationTest(unittest.TestCase):
         bootstrap.bootstrap(
             'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
 
+    def testBranchRef(self):
+        """Make sure we check out a specific commit."""
+        subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
+        subprocess.check_call(['git', 'rm', self.MASTER])
+        subprocess.check_call(['touch', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
+        sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+        subprocess.check_call(['rm', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Delete %s' % self.BRANCH])
+
+        os.chdir('/tmp')
+        bootstrap.bootstrap(
+            'fake-branch', self.REPO, '%s:%s' % (self.BRANCH, sha), None,
+            self.root_workspace, UPLOAD, ROBOT)
+
     def testBatch(self):
         def head_sha():
             # We can't hardcode the SHAs for the test, so we need to determine

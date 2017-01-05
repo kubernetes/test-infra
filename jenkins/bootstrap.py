@@ -147,9 +147,9 @@ def _call(end, cmd, stdin=None, check=True, output=None):
     return lines
 
 
-def ref_has_shas(pull):
+def ref_has_shas(ref):
     """Determine if a reference specifies shas (contains ':')"""
-    return isinstance(pull, basestring) and ':' in pull
+    return isinstance(ref, basestring) and ':' in ref
 
 
 def pull_numbers(pull):
