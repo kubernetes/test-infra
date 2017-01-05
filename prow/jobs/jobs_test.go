@@ -21,9 +21,16 @@ import (
 	"os"
 	"regexp"
 	"testing"
+	"encoding/json"
+	"io/ioutil"
 )
 
 const testThis = "@k8s-bot test this"
+
+type JsonJob struct {
+	Scenario string `json:"scenario"`
+	Args []string `json:"args"`
+}
 
 // Make sure that our rerun commands match our triggers.
 func TestPresubmits(t *testing.T) {
@@ -34,6 +41,12 @@ func TestPresubmits(t *testing.T) {
 	if len(ja.presubmits) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
+	b, err := ioutil.ReadFile("../../jobs/config.json")
+	if err != nil {
+		t.Fatalf("Could not load jobs/config.json: %v", err)
+	}
+	var bootstrapConfig map[string]JsonJob
+	json.Unmarshal(b, &bootstrapConfig)
 	for _, jobs := range ja.presubmits {
 		for i, job := range jobs {
 			if job.Name == "" {
@@ -68,15 +81,21 @@ func TestPresubmits(t *testing.T) {
 					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
 			}
+			var scenario string
+			if j, present := bootstrapConfig[job.Name]; present {
+				scenario = fmt.Sprintf("scenarios/%s.py", j.Scenario)
+			} else {
+				scenario = fmt.Sprintf("jobs/%s.sh", job.Name)
+			}
 			// Ensure that jobs have a shell script of the same name.
-			if s, err := os.Stat(fmt.Sprintf("../../jobs/%s.sh", job.Name)); err != nil {
-				t.Errorf("Cannot find test-infra/jobs/%s.sh", job.Name)
+			if s, err := os.Stat(fmt.Sprintf("../../%s", scenario)); err != nil {
+				t.Errorf("Cannot find test-infra/%s for %s", scenario, job.Name)
 			} else {
 				if s.Mode()&0111 == 0 {
-					t.Errorf("Not executable: %s.sh (%o)", job.Name, s.Mode()&0777)
+					t.Errorf("Not executable: test-infra/%s (%o)", scenario, s.Mode()&0777)
 				}
 				if s.Mode()&0444 == 0 {
-					t.Errorf("Not readable: %s.sh (%o)", job.Name, s.Mode()&0777)
+					t.Errorf("Not readable: test-infra/%s (%o)", scenario, s.Mode()&0777)
 				}
 			}
 		}

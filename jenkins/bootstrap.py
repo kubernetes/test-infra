@@ -660,6 +660,11 @@ def setup_magic_environment(job):
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
 
 
+def job_args(args):
+    """Converts 'a ${FOO} $bar' into 'a wildly different string'."""
+    return [os.path.expandvars(a) for a in args]
+
+
 def job_script(job, use_json):
     """Return path to script for job."""
     if not use_json:
@@ -668,7 +673,7 @@ def job_script(job, use_json):
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
-    return [cmd] + job_config.get('args', [])
+    return [cmd] + job_args(job_config.get('args', []))
 
 
 
@@ -751,34 +756,41 @@ def bootstrap(
         # by exit code and automatically retrigger after an infra-problem.
         sys.exit(1)
 
-
-if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(
+def parse_args(arguments=None):
+    """Parse arguments or sys.argv[1:]."""
+    parser = argparse.ArgumentParser(
         'Checks out a github PR/branch to <basedir>/<repo>/')
-    PARSER.add_argument(
-        '--json', action='store_true', help='--job is a json key, not a .sh')
-    PARSER.add_argument('--root', default='.', help='Root dir to work with')
-    PARSER.add_argument(
+    parser.add_argument(
+        '--json',
+        nargs='?', const=1, default=0,
+        type=int, help='--job is a json key, not a .sh')
+    parser.add_argument('--root', default='.', help='Root dir to work with')
+    parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
-    PARSER.add_argument('--pull',
+    parser.add_argument('--pull',
         help='PR, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
-    PARSER.add_argument('--branch', help='Checkout the following branch')
-    PARSER.add_argument('--repo', help='The repository to fetch from')
-    PARSER.add_argument(
+    parser.add_argument('--branch', help='Checkout the following branch')
+    parser.add_argument('--repo', help='The repository to fetch from')
+    parser.add_argument(
         '--bare',
         action='store_true',
         help='Do not check out a repository')
-    PARSER.add_argument('--job', required=True, help='Name of the job to run')
-    PARSER.add_argument(
+    parser.add_argument('--job', required=True, help='Name of the job to run')
+    parser.add_argument(
         '--upload',
         help='Upload results here if set, requires --service-account')
-    PARSER.add_argument(
+    parser.add_argument(
         '--service-account',
         help='Activate and use path/to/service-account.json if set.')
-    ARGS = PARSER.parse_args()
-    if bool(ARGS.repo) == bool(ARGS.bare):
+    args = parser.parse_args(arguments)
+    if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
-            'Expected --repo xor --bare:', ARGS.repo, ARGS.bare)
+            'Expected --repo xor --bare:', args.repo, args.bare)
+    return args
+
+
+if __name__ == '__main__':
+    ARGS = parse_args()
     bootstrap(
         ARGS.job,
         ARGS.repo,
