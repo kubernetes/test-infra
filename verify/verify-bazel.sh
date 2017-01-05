@@ -17,10 +17,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v10/gazel
-if [[ $(gazel --dry-run --print-diff 2>&1 | tee /dev/stderr | wc -l | tr -d '[:space:]') != 0 ]]; then
+go get -u gopkg.in/mikedanese/gazel.v11/gazel
+if ! "${GOPATH}/bin/gazel" -validate -print-diff -root="$(dirname ${BASH_SOURCE})/.." ; then
   echo
-  echo "BUILD files are not up to date"
   echo "Run ./verify/update-bazel.sh"
   exit 1
 fi
