@@ -27,6 +27,15 @@
   "scenario": "kubernetes_build"
 },
 
+"ci-kubernetes-build-debian-unstable": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--script=./debian/jenkins.sh",
+    "--unstable"
+  ]
+},
+
+
 "ci-kubernetes-cross-build": {
   "scenario": "kubernetes_build",
   "args": [
@@ -70,11 +79,86 @@
   ]
 },
 
-"ci-kubernetes-build-debian-unstable": {
-  "scenario": "kubernetes_build",
+"ci-kubernetes-test-go": {
+  "scenario": "kubernetes_verify",
   "args": [
-    "--script=./debian/jenkins.sh",
-    "--unstable"
+    "--branch=master",
+    "--force"
+  ]
+},
+
+"ci-kubernetes-test-go-release-1.3": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.3",
+    "--force"
+  ]
+},
+
+"ci-kubernetes-test-go-release-1.4": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.4",
+    "--force"
+  ]
+},
+
+"ci-kubernetes-test-go-release-1.5": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.5",
+    "--force"
+  ]
+},
+
+"ci-kubernetes-verify-master": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=master",
+    "--force",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"ci-kubernetes-verify-release-1.3": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.3",
+    "--force",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"ci-kubernetes-verify-release-1.4": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.4",
+    "--force",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"ci-kubernetes-verify-release-1.5": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.5",
+    "--force",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"pull-kubernetes-verify": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=${PULL_BASE_REF}",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"pull-kubernetes-unit": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=${PULL_BASE_REF}"
   ]
 }
 

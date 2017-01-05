@@ -16,6 +16,7 @@
 
 """Tests for bootstrap."""
 
+import argparse
 import collections
 import json
 import os
@@ -1062,12 +1063,59 @@ class IntegrationTest(unittest.TestCase):
                 'fake-failure', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
 
 
+class ParseArgsTest(unittest.TestCase):
+    def testJson_Missing(self):
+        args = bootstrap.parse_args(['--bare', '--job=j'])
+        self.assertFalse(args.json, args)
+
+    def testJson_OnlyFlag(self):
+        args = bootstrap.parse_args(['--json', '--bare', '--job=j'])
+        self.assertTrue(args.json, args)
+
+    def testJson_NonZero(self):
+        args = bootstrap.parse_args(['--json=1', '--bare', '--job=j'])
+        self.assertTrue(args.json, args)
+
+    def testJson_Zero(self):
+        args = bootstrap.parse_args(['--json=0', '--bare', '--job=j'])
+        self.assertFalse(args.json, args)
+
+    def testBareRepo_Both(self):
+        with self.assertRaises(argparse.ArgumentTypeError):
+            bootstrap.parse_args(['--bare', '--repo=hello', '--job=j'])
+
+    def testBareRepo_Neither(self):
+        with self.assertRaises(argparse.ArgumentTypeError):
+            bootstrap.parse_args(['--job=j'])
+
+    def testBareRepo_BareOnly(self):
+        args = bootstrap.parse_args(['--bare', '--job=j'])
+        self.assertFalse(args.repo, args)
+        self.assertTrue(args.bare, args)
+
+    def testBareRepo_RepoOnly(self):
+        args = bootstrap.parse_args(['--repo=R', '--job=j'])
+        self.assertFalse(args.bare, args)
+        self.assertTrue(args.repo, args)
+
+
 class JobTest(unittest.TestCase):
 
     excludes = [
         'BUILD',  # For bazel
         'config.json',  # For --json mode
     ]
+
+    def testJobScriptExpandsVars(self):
+        fake = {
+            'HELLO': 'awesome',
+            'WORLD': 'sauce',
+        }
+        with Stub(os, 'environ', fake):
+            actual = bootstrap.job_args(
+                ['$HELLO ${WORLD}', 'happy', '${MISSING}'])
+        self.assertEquals(['awesome sauce', 'happy', '${MISSING}'], actual)
+
 
     @property
     def jobs(self):
@@ -1109,17 +1157,23 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
 
     def testBootstrapPullYaml(self):
+        is_modern = lambda name: 'unit' in name or 'verify' in name
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
-            if 'unit' in name or 'verify' in name:
+            self.assertIn('json', job)
+            modern = is_modern(name)
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
                 self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml', Check)
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml',
+            Check, use_json=is_modern)
 
     def testBootstrapCIYaml(self):
         def Check(job, name):
@@ -1148,19 +1202,23 @@ class JobTest(unittest.TestCase):
             Check, suffix='commit-suffix', use_json=True)
 
     def testBootstrapCIRepoYaml(self):
+        is_modern = lambda n: any(p in n for p in ['unit', 'verify', 'test-go'])
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
-            if 'unit' in name or 'verify' in name or 'test-go' in name:
+            self.assertIn('json', job)
+            modern = is_modern(name)  # TODO(fejta): migrate all jobs
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):  # TODO(fejta): do this for all jobs
                 self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            Check, suffix='repo-suffix')
+            Check, suffix='repo-suffix', use_json=is_modern)
 
     def testBootstrapCISoakYaml(self):
         def Check(job, name):
@@ -1252,11 +1310,15 @@ class JobTest(unittest.TestCase):
             name = job.keys()[0]
             real_job = job[name]
 
-            cmd = bootstrap.job_script(real_job.get('job-name'), use_json)
+            if callable(use_json):  # TODO(fejta): gross, but temporary?
+                modern = use_json(name)
+            else:
+                modern = use_json
+            cmd = bootstrap.job_script(real_job.get('job-name'), modern)
             path = cmd[0]
             args = cmd[1:]
             self.assertTrue(os.path.isfile(path), name)
-            if use_json:
+            if modern:
                 self.assertTrue(all(isinstance(a, basestring) for a in args), args)
             else:
                 self.assertEquals(1, len(cmd))

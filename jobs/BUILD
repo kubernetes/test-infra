@@ -2,5 +2,8 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "jobs",
-    srcs = glob(["*.sh"]),
+    srcs = glob([
+        "*.sh",
+        "config.json",
+    ]),
 )

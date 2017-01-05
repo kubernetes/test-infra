@@ -14,6 +14,7 @@ go_test(
     data = [
         "//jobs",
         "//prow:configs",
+        "//scenarios",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
