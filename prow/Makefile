@@ -21,6 +21,7 @@ SINKER_VERSION = 0.4
 DECK_VERSION   = 0.13
 SPLICE_VERSION = 0.11
 MARQUE_VERSION = 0.1
+TOT_VERSION    = 0.0
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow
@@ -146,5 +147,17 @@ marque-deployment:
 
 marque-service:
 	kubectl apply -f cluster/marque_service.yaml
+
+tot-image:
+	CGO_ENABLED=0 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
+	docker build -t "gcr.io/$(PROJECT)/tot:$(TOT_VERSION)" cmd/tot
+	gcloud docker -- push "gcr.io/$(PROJECT)/tot:$(TOT_VERSION)"
+
+tot-deployment:
+	kubectl apply -f cluster/tot_deployment.yaml
+
+tot-service:
+	kubectl apply -f cluster/tot_service.yaml
+
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service
