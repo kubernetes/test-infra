@@ -8,6 +8,24 @@ py_test(
     data = ["//:all-srcs"],
 )
 
+sh_test(
+    name = "verify-gofmt",
+    srcs = ["verify-gofmt.sh"],
+    data = [
+        "@io_bazel_rules_go_toolchain//:toolchain",
+        "//:all-srcs",
+    ],
+)
+
+sh_test(
+    name = "verify-govet",
+    srcs = ["verify-govet.sh"],
+    data = [
+        "@io_bazel_rules_go_toolchain//:toolchain",
+        "//:all-srcs",
+    ],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),

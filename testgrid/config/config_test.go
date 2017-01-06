@@ -91,14 +91,14 @@ func TestConfig(t *testing.T) {
 
 		// dashboardtab name set, to check duplicated tabs within each dashboard
 		dashboardtabmap := make(map[string]bool)
-			
+
 		// All notifications in dashboard must have a summary
 		if len(dashboard.Notifications) != 0 {
-		  for notificationindex, notification := range dashboard.Notifications {
-		    if notification.Summary == "" {
-		      t.Errorf("Notification %v in dashboard %v: - Must have a summary\n", notificationindex, dashboard.Name)
-		    }
-		  }
+			for notificationindex, notification := range dashboard.Notifications {
+				if notification.Summary == "" {
+					t.Errorf("Notification %v in dashboard %v: - Must have a summary\n", notificationindex, dashboard.Name)
+				}
+			}
 		}
 
 		for tabindex, dashboardtab := range dashboard.DashboardTab {

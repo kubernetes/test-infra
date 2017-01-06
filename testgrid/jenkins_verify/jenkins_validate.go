@@ -36,7 +36,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) != 2 {
-		fmt.Printf("Missing args - usage: go run jenkins_validate.go <path/to/job_collection> <path/to/testgrid_config>\n")
+		fmt.Println("Missing args - usage: go run jenkins_validate.go <path/to/job_collection> <path/to/testgrid_config>")
 		os.Exit(1)
 	}
 
@@ -46,7 +46,7 @@ func main() {
 	jenkinsjobs := make(map[string]bool)
 	files, err := filepath.Glob(jobpath + "/*")
 	if err != nil {
-		fmt.Errorf("Failed to collect outputs\n")
+		fmt.Println("Failed to collect outputs.")
 		os.Exit(1)
 	}
 
@@ -60,7 +60,7 @@ func main() {
 
 	config := &config.Configuration{}
 	if err := proto.Unmarshal(protobufData, config); err != nil {
-		fmt.Errorf("Failed to parse config: %v\n", err)
+		fmt.Printf("Failed to parse config: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -100,11 +100,11 @@ func main() {
 	}
 
 	if len(badconfigs) > 0 {
-		fmt.Errorf("Total bad config - %v\n", len(badconfigs))
+		fmt.Printf("Total bad config - %v\n", len(badconfigs))
 	}
 
 	if len(badjobs) > 0 {
-		fmt.Errorf("Total bad jenkins job - %v\n", len(badjobs))
+		fmt.Printf("Total bad jenkins job - %v\n", len(badjobs))
 	}
 
 	if len(badconfigs) > 0 || len(badjobs) > 0 {

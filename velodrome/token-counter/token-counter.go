@@ -124,7 +124,7 @@ func (t TokenHandler) getCoreRate() (*github.Rate, error) {
 func (t TokenHandler) Process() {
 	lastRate, err := t.getCoreRate()
 	if err != nil {
-		glog.Fatalf("%s: Couldn't get rate limits:", t.login, err)
+		glog.Fatalf("%s: Couldn't get rate limits: %v", t.login, err)
 	}
 
 	for {
@@ -189,8 +189,6 @@ func runProgram(flags *tokenCounterFlags) error {
 	}
 
 	select {}
-
-	return nil
 }
 
 func main() {

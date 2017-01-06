@@ -46,7 +46,7 @@ func TestFetchIssues(t *testing.T) {
 		t.Fatal("Failed to fetch recent issues:", err)
 	}
 	if last != time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC) {
-		t.Error(
+		t.Errorf(
 			"Last issue should be %s, not %s",
 			time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC),
 			last,
@@ -147,7 +147,7 @@ func TestFetchEventsAndComments(t *testing.T) {
 				t.Error("Received item of unknown type:", item)
 			}
 			if date.Before(lastDate) {
-				t.Error("Dates are not properly sorted: %v < %v", date, lastDate)
+				t.Errorf("Dates are not properly sorted: %v < %v", date, lastDate)
 			}
 		}
 		os.Remove("test.db")
