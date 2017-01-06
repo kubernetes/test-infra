@@ -340,7 +340,7 @@ func (c *testClient) TestPRJenkins() error {
 		return err
 	}
 	for eq {
-		time.Sleep(30 * time.Second)
+		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
 		if err != nil {
 			c.tryCreateStatus("", github.StatusError, "Error in queue.", testInfra)
