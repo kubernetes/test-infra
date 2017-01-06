@@ -29,10 +29,6 @@ install:
     - npm install mocha
 script:
     - ./verify/verify-bazel.sh
-    - pylint scenarios/*.py
-    - pylint jenkins/bootstrap.py  # TODO(fejta): all python files
-    - pylint queue-health/graph/graph.py  # TODO(fejta): all python files
-    - pylint queue-health/weekly_commit_stats.py  # TODO(fejta): all python files
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
     - cd gubernator
