@@ -29,3 +29,19 @@ go_library(
     ],
     tags = ["automanaged"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/github/fakegithub:all-srcs",
+    ],
+    tags = ["automanaged"],
+)

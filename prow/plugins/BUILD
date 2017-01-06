@@ -34,3 +34,23 @@ go_library(
         "//vendor:github.com/ghodss/yaml",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/plugins/cla:all-srcs",
+        "//prow/plugins/close:all-srcs",
+        "//prow/plugins/lgtm:all-srcs",
+        "//prow/plugins/releasenote:all-srcs",
+        "//prow/plugins/trigger:all-srcs",
+    ],
+    tags = ["automanaged"],
+)

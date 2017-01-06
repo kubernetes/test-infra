@@ -36,3 +36,20 @@ go_library(
     tags = ["automanaged"],
     deps = ["//testgrid/config/yaml2proto:go_default_library"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//testgrid/config/pb:all-srcs",
+        "//testgrid/config/yaml2proto:all-srcs",
+    ],
+    tags = ["automanaged"],
+)
