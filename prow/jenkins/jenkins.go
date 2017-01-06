@@ -163,7 +163,7 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	if c.dry {
 		return false, nil
 	}
-	u := fmt.Sprintf("%s/%sapi/json", c.baseURL, b.queueURL)
+	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return false, err
@@ -176,22 +176,28 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	item := struct {
-		Cancelled  bool   `json:"cancelled"`
-		Why        string `json:"why"`
-		Executable struct {
-			Number int `json:"number"`
-		} `json:"executable"`
+	queue := struct {
+		Items []struct {
+			Actions []struct {
+				Parameters []struct {
+					Name  string `json:"name"`
+					Value string `json:"value"`
+				} `json:"parameters"`
+			} `json:"actions"`
+		} `json:"items"`
 	}{}
-	err = json.Unmarshal(buf, &item)
+	err = json.Unmarshal(buf, &queue)
 	if err != nil {
 		return false, err
 	}
-	if item.Cancelled {
-		return false, fmt.Errorf("job was cancelled: %s", item.Why)
-	}
-	if item.Executable.Number != 0 {
-		return true, nil
+	for _, item := range queue.Items {
+		for _, action := range item.Actions {
+			for _, p := range action.Parameters {
+				if p.Name == "buildId" && p.Value == b.id {
+					return true, nil
+				}
+			}
+		}
 	}
 	return false, nil
 }
@@ -201,7 +207,7 @@ func (c *Client) QueueSize() (int, error) {
 	if c.dry {
 		return 0, nil
 	}
-	u := fmt.Sprintf("%s/queue/api/json?tree=items[]", c.baseURL)
+	u := fmt.Sprintf("%s/queue/api/json", c.baseURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return 0, err

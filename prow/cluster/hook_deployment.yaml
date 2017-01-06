@@ -39,7 +39,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.48"
+          value: "gcr.io/k8s-prow/line:0.45"
         - name: DRY_RUN
           value: "false"
         ports:
