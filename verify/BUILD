@@ -6,6 +6,7 @@ py_test(
     name = "verify-boilerplate",
     srcs = ["verify-boilerplate.py"],
     data = ["//:all-srcs"],
+    tags = ["manual"],
 )
 
 sh_test(
@@ -15,6 +16,7 @@ sh_test(
         "//:all-srcs",
         "@io_bazel_rules_go_toolchain//:toolchain",
     ],
+    tags = ["manual"],
 )
 
 sh_test(
@@ -23,6 +25,25 @@ sh_test(
     data = [
         "//:all-srcs",
         "@io_bazel_rules_go_toolchain//:toolchain",
+    ],
+    tags = ["manual"],
+)
+
+sh_test(
+    name = "verify-pylint",
+    srcs = ["verify-pylint.sh"],
+    data = ["//:all-srcs"],
+    tags = ["manual"],
+)
+
+test_suite(
+    name = "verify-all",
+    tags = ["manual"],
+    tests = [
+        "verify-boilerplate",
+        "verify-gofmt",
+        "verify-govet",
+        "verify-pylint",
     ],
 )
 
