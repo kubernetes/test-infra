@@ -67,10 +67,23 @@ func (ps Presubmit) RunsAgainstBranch(branch string) bool {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name string        `json:"name"`
-	Spec *kube.PodSpec `json:"spec,omitempty"`
+	Name     string        `json:"name"`
+	Spec     *kube.PodSpec `json:"spec,omitempty"`
+	Branches []string      `json:"branches"`
 
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
+}
+
+func (ps Postsubmit) RunsAgainstBranch(branch string) bool {
+	if len(ps.Branches) == 0 {
+		return true
+	}
+	for _, b := range ps.Branches {
+		if b == branch {
+			return true
+		}
+	}
+	return false
 }
 
 type JobAgent struct {

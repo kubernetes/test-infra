@@ -1,10 +1,14 @@
 ---
 kubernetes/kubernetes:
 - name: ci-kubernetes-bazel
+  branches:
+  - master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.7
-      args: ["--branch=$(PULL_REFS)"]
+    - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      args:
+      - "--branch=$(PULL_REFS)"
+      - "--upload=gs://kubernetes-jenkins/logs"
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel
@@ -24,10 +28,14 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - name: ci-test-infra-bazel
+  branches:
+  - master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.7
-      args: ["--branch=$(PULL_REFS)"]
+    - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      args:
+      - "--branch=$(PULL_REFS)"
+      - "--upload=gs://kubernetes-jenkins/logs"
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache/bazel

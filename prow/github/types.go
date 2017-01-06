@@ -16,6 +16,10 @@ limitations under the License.
 
 package github
 
+import (
+	"strings"
+)
+
 // These are possible State entries for a Status.
 const (
 	StatusPending = "pending"
@@ -153,6 +157,11 @@ type PushEvent struct {
 	After   string   `json:"after"`
 	Commits []Commit `json:"commits"`
 	Repo    Repo     `json:"repository"`
+}
+
+func (pe PushEvent) Branch() string {
+	refs := strings.Split(pe.Ref, "/")
+	return refs[len(refs)-1]
 }
 
 type Commit struct {
