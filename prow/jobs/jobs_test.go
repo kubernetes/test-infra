@@ -17,19 +17,19 @@ limitations under the License.
 package jobs
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"testing"
-	"encoding/json"
-	"io/ioutil"
 )
 
 const testThis = "@k8s-bot test this"
 
 type JsonJob struct {
-	Scenario string `json:"scenario"`
-	Args []string `json:"args"`
+	Scenario string   `json:"scenario"`
+	Args     []string `json:"args"`
 }
 
 // Make sure that our rerun commands match our triggers.
