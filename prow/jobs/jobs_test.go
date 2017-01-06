@@ -27,9 +27,20 @@ import (
 
 const testThis = "@k8s-bot test this"
 
-type JsonJob struct {
+type JSONJob struct {
 	Scenario string   `json:"scenario"`
 	Args     []string `json:"args"`
+}
+
+// Consistent but meaningless order.
+func flattenJobs(jobs []Presubmit) []Presubmit {
+	ret := jobs
+	for _, job := range jobs {
+		if len(job.RunAfterSuccess) > 0 {
+			ret = append(ret, flattenJobs(job.RunAfterSuccess)...)
+		}
+	}
+	return ret
 }
 
 // Make sure that our rerun commands match our triggers.
@@ -45,9 +56,10 @@ func TestPresubmits(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not load jobs/config.json: %v", err)
 	}
-	var bootstrapConfig map[string]JsonJob
+	var bootstrapConfig map[string]JSONJob
 	json.Unmarshal(b, &bootstrapConfig)
-	for _, jobs := range ja.presubmits {
+	for _, rootJobs := range ja.presubmits {
+		jobs := flattenJobs(rootJobs)
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -210,5 +222,27 @@ func TestPostsubmits(t *testing.T) {
 	}
 	if len(ja.postsubmits) == 0 {
 		t.Fatalf("No jobs found in postsubmit.yaml.")
+	}
+}
+
+func TestGetPresubmits(t *testing.T) {
+	pres := []Presubmit{
+		{
+			Name: "a",
+			RunAfterSuccess: []Presubmit{
+				{Name: "aa"},
+				{Name: "ab"},
+			},
+		},
+		{Name: "b"},
+	}
+	if found, _ := getPresubmit(pres, "b"); !found {
+		t.Error("Missed root level presubmit.")
+	}
+	if found, _ := getPresubmit(pres, "ab"); !found {
+		t.Error("Missed child presubmit.")
+	}
+	if found, _ := getPresubmit(pres, "c"); found {
+		t.Error("Whaa!? Found a presubmit that shouldn't exist.")
 	}
 }

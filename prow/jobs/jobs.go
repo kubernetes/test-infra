@@ -46,6 +46,8 @@ type Presubmit struct {
 	Branches []string `json:"branches"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
+	// Run these jobs after successfully running this one.
+	RunAfterSuccess []Presubmit `json:"run_after_success"`
 
 	// We'll set this when we load it.
 	re *regexp.Regexp
@@ -67,6 +69,8 @@ func (ps Presubmit) RunsAgainstBranch(branch string) bool {
 type Postsubmit struct {
 	Name string        `json:"name"`
 	Spec *kube.PodSpec `json:"spec,omitempty"`
+
+	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
 type JobAgent struct {
@@ -143,9 +147,16 @@ func (ja *JobAgent) AllPresubmits(fullRepoName string) []Presubmit {
 func (ja *JobAgent) GetPresubmit(repo, job string) (bool, Presubmit) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	for _, j := range ja.presubmits[repo] {
+	return getPresubmit(ja.presubmits[repo], job)
+}
+
+func getPresubmit(jobs []Presubmit, job string) (bool, Presubmit) {
+	for _, j := range jobs {
 		if j.Name == job {
 			return true, j
+		}
+		if found, p := getPresubmit(j.RunAfterSuccess, job); found {
+			return true, p
 		}
 	}
 	return false, Presubmit{}
@@ -162,9 +173,16 @@ func (ja *JobAgent) AllPostsubmits(fullRepoName string) []Postsubmit {
 func (ja *JobAgent) GetPostsubmit(repo, job string) (bool, Postsubmit) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	for _, j := range ja.postsubmits[repo] {
+	return getPostsubmit(ja.postsubmits[repo], job)
+}
+
+func getPostsubmit(jobs []Postsubmit, job string) (bool, Postsubmit) {
+	for _, j := range jobs {
 		if j.Name == job {
 			return true, j
+		}
+		if found, p := getPostsubmit(j.RunAfterSuccess, job); found {
+			return true, p
 		}
 	}
 	return false, Postsubmit{}
@@ -180,16 +198,26 @@ func (ja *JobAgent) loadPresubmits(path string) error {
 	if err := yaml.Unmarshal(b, &nj); err != nil {
 		return err
 	}
-	for k, v := range nj {
-		for i, j := range v {
-			if re, err := regexp.Compile(j.Trigger); err == nil {
-				nj[k][i].re = re
-			} else {
-				return err
-			}
+	for _, v := range nj {
+		if err := setRegexes(v); err != nil {
+			return err
 		}
 	}
 	ja.presubmits = nj
+	return nil
+}
+
+func setRegexes(js []Presubmit) error {
+	for i, j := range js {
+		if re, err := regexp.Compile(j.Trigger); err == nil {
+			js[i].re = re
+		} else {
+			return err
+		}
+		if err := setRegexes(j.RunAfterSuccess); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
