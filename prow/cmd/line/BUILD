@@ -24,6 +24,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/jobs:go_default_library",
+        "//prow/line:go_default_library",
     ],
 )
 

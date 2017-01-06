@@ -46,6 +46,7 @@ var (
 	repoOwner = flag.String("repo-owner", "", "Owner of the repo.")
 	repoName  = flag.String("repo-name", "", "Name of the repo to test.")
 	pr        = flag.Int("pr", 0, "Pull request to test.")
+	author    = flag.String("author", "", "Author of the PR.")
 	baseRef   = flag.String("base-ref", "", "Target branch.")
 	baseSHA   = flag.String("base-sha", "", "Base SHA of the PR.")
 	pullSHA   = flag.String("pull-sha", "", "Head SHA of the PR.")
@@ -77,6 +78,7 @@ type testClient struct {
 	RepoOwner string
 	RepoName  string
 	PRNumber  int
+	Author    string
 	BaseRef   string
 	BaseSHA   string
 	PullSHA   string
@@ -159,6 +161,7 @@ func main() {
 		RepoOwner: *repoOwner,
 		RepoName:  *repoName,
 		PRNumber:  *pr,
+		Author:    *author,
 		BaseRef:   *baseRef,
 		BaseSHA:   *baseSHA,
 		PullSHA:   *pullSHA,
@@ -172,15 +175,59 @@ func main() {
 		JenkinsClient: jenkinsClient,
 		GitHubClient:  ghc,
 	}
+	l := logrus.WithFields(fields(client))
 	if foundPresubmit && presubmit.Spec == nil {
 		if err := client.TestPRJenkins(); err != nil {
-			logrus.WithFields(fields(client)).WithError(err).Error("Error testing PR on Jenkins.")
+			l.WithError(err).Error("Error testing PR on Jenkins.")
+			return
 		}
 	} else {
 		if err := client.TestKubernetes(); err != nil {
-			logrus.WithFields(fields(client)).WithError(err).Error("Error testing PR on Kubernetes.")
+			l.WithError(err).Error("Error testing PR on Kubernetes.")
+			return
 		}
 	}
+	br, err := buildReq(*repoOwner, *repoName, *author, *refs)
+	if err != nil {
+		l.WithError(err).Error("Error parsing refs.")
+		return
+	}
+	for _, job := range presubmit.RunAfterSuccess {
+		if err := line.StartJob(kc, job.Name, job.Context, br); err != nil {
+			l.WithError(err).Error("Error starting child job.")
+			return
+		}
+	}
+	for _, job := range postsubmit.RunAfterSuccess {
+		if err := line.StartJob(kc, job.Name, "", br); err != nil {
+			l.WithError(err).Error("Error starting child job.")
+			return
+		}
+	}
+}
+
+func buildReq(org, repo, author, refs string) (line.BuildRequest, error) {
+	allRefs := strings.Split(refs, ",")
+	branchRef := strings.Split(allRefs[0], ":")
+	br := line.BuildRequest{
+		Org:     org,
+		Repo:    repo,
+		BaseRef: branchRef[0],
+		BaseSHA: branchRef[1],
+	}
+	for _, r := range allRefs[1:] {
+		pullRef := strings.Split(r, ":")
+		n, err := strconv.Atoi(pullRef[0])
+		if err != nil {
+			return br, err
+		}
+		br.Pulls = append(br.Pulls, line.Pull{
+			Number: n,
+			Author: author,
+			SHA:    pullRef[1],
+		})
+	}
+	return br, nil
 }
 
 func fields(c *testClient) logrus.Fields {
