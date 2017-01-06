@@ -201,7 +201,7 @@ func (c *Client) QueueSize() (int, error) {
 	if c.dry {
 		return 0, nil
 	}
-	u := fmt.Sprintf("%s/queue/api/json?tree=items", c.baseURL)
+	u := fmt.Sprintf("%s/queue/api/json?tree=items[]", c.baseURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return 0, err
