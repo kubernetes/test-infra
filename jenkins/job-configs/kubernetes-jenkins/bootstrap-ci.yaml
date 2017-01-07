@@ -959,7 +959,7 @@
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
         frequency: '' # disabled temporarily 'H H/12 * * *'
-        trigger-job: 'ci-kubernetes-build'
+        trigger-job: ''
     # END KUBEMARK
 
     # START UPGRADE
