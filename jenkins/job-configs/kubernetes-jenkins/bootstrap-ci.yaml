@@ -958,7 +958,7 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
-        frequency: 'H H/12 * * *'
+        frequency: '' # disabled temporarily 'H H/12 * * *'
         trigger-job: 'ci-kubernetes-build'
     # END KUBEMARK
 
