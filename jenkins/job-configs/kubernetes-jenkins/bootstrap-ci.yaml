@@ -641,7 +641,7 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
-        frequency: '0 17 * * *'
+        frequency: '' # Temporary disabled '0 17 * * *'
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
@@ -958,7 +958,7 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
-        frequency: '' # disabled temporarily 'H H/12 * * *'
+        frequency: 'H H/12 * * *'
         trigger-job: ''
     # END KUBEMARK
 
