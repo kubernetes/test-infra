@@ -26,9 +26,7 @@ go_library(
     name = "go_default_library",
     srcs = ["main.go"],
     tags = ["automanaged"],
-    deps = [
-        "//vendor:github.com/Sirupsen/logrus",
-    ],
+    deps = ["//vendor:github.com/Sirupsen/logrus"],
 )
 
 filegroup(

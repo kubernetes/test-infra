@@ -24,7 +24,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"regexp"
 	"strconv"
@@ -63,6 +62,7 @@ var (
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+	totURL           = flag.String("tot-url", "http://tot", "Tot URL")
 )
 
 const (
@@ -105,8 +105,6 @@ type githubClient interface {
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
@@ -253,8 +251,7 @@ func fields(c *testClient) logrus.Fields {
 // secret.
 func (c *testClient) TestKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
-	// TODO(spxtr): Sequential build numbers.
-	buildID := strconv.Itoa(rand.Int())
+	buildID := getBuildID(*totURL, c.JobName)
 	spec := c.Presubmit.Spec
 	if spec == nil {
 		spec = c.Postsubmit.Spec

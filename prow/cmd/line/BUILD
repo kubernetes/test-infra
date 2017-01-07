@@ -17,7 +17,10 @@ go_binary(
 
 go_test(
     name = "go_default_test",
-    srcs = ["main_test.go"],
+    srcs = [
+        "main_test.go",
+        "tot_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -30,7 +33,10 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = [
+        "main.go",
+        "tot.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
