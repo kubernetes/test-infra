@@ -79,6 +79,88 @@
   ]
 },
 
+"ci-kubernetes-node-docker": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--script=test/e2e_node/jenkins/docker_validation/jenkins-validation.properties"
+  ]
+},
+
+"ci-kubernetes-node-docker-benchmark": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--script=test/e2e_node/jenkins/docker_validation/jenkins-perf.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet": {
+  "scenario": "kubernetes_kubelet"
+},
+
+"ci-kubernetes-node-kubelet-1.4": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.4"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-1.5": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.5"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-benchmark": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/benchmark/jenkins-benchmark.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-conformance-dockerized": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/conformance/jenkins-conformance.properties",
+    "--script=test/e2e_node/jenkins/conformance/conformance-jenkins.sh"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-cri-benchmark": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/cri_validation/jenkins-benchmark.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-cri-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/cri_validation/jenkins-serial.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-cri": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/cri_validation/jenkins-validation.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-flaky": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-flaky.properties"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-serial.properties"
+  ]
+},
+
 "ci-kubernetes-test-go": {
   "scenario": "kubernetes_verify",
   "args": [
@@ -144,6 +226,20 @@
     "--branch=release-1.5",
     "--force",
     "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"pull-kubernetes-node-e2e": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--scenario=test/e2e_node/jenkins/jenkins-pull.properties"
+  ]
+},
+
+"pull-kubernetes-node-e2e-cri": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--scenario=test/e2e_node/jenkins/cri_validation/jenkins-pull.properties"
   ]
 },
 

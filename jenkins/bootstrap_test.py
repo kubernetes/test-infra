@@ -1200,7 +1200,7 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
 
     def testBootstrapPullYaml(self):
-        is_modern = lambda name: 'unit' in name or 'verify' in name
+        is_modern = lambda n: any(w in n for w in ['unit', 'verify', 'node'])
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1208,7 +1208,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
             self.assertIn('json', job)
-            modern = is_modern(name)
+            modern = is_modern(name) and 1 or 0
             self.assertEquals(modern, job['json'])
             if is_modern(name):
                 self.assertGreater(job['timeout'], 0)
@@ -1245,7 +1245,9 @@ class JobTest(unittest.TestCase):
             Check, suffix='commit-suffix', use_json=True)
 
     def testBootstrapCIRepoYaml(self):
-        is_modern = lambda n: any(p in n for p in ['unit', 'verify', 'test-go'])
+        white = r'-unit|-verify|-test-go|-node'
+        black = r'kubelet-conformance$|cadvisor'
+        is_modern = lambda n: re.search(white, n) and not re.search(black, n)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
@@ -1253,8 +1255,8 @@ class JobTest(unittest.TestCase):
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
             self.assertIn('json', job)
-            modern = is_modern(name)  # TODO(fejta): migrate all jobs
-            self.assertEquals(modern, job['json'])
+            modern = bool(is_modern(name)) and 1 or 0  # TODO(fejta): migrate all jobs
+            self.assertEquals(modern, job['json'], name)
             if is_modern(name):  # TODO(fejta): do this for all jobs
                 self.assertGreater(job['timeout'], 0)
             return job_name
@@ -1363,8 +1365,15 @@ class JobTest(unittest.TestCase):
             self.assertTrue(os.path.isfile(path), name)
             if modern:
                 self.assertTrue(all(isinstance(a, basestring) for a in args), args)
+                # Ensure the .sh script isn't there
+                other = bootstrap.job_script(real_job.get('job-name'), False)
+                self.assertFalse(os.path.isfile(other[0]), name)
             else:
                 self.assertEquals(1, len(cmd))
+                # Ensure the job isn't in the json
+                with self.assertRaises(KeyError):
+                    bootstrap.job_script(real_job.get('job-name'), True)
+                    self.fail(name)
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (

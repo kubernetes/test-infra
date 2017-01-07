@@ -9,3 +9,6 @@ good-names=fp
 
 [DESIGN]
 max-args=12
+
+[SIMILARITIES]
+ignore-imports=yes

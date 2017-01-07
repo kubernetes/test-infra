@@ -162,15 +162,15 @@
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e
-        json: 0
+        json: 1
         repo-name: 'k8s.io/kubernetes'
-        timeout: 0
+        timeout: 90
     - kubernetes-node-e2e-cri:
         max-total: 12
         job-name: pull-kubernetes-node-e2e-cri
-        json: 0
+        json: 1
         repo-name: 'k8s.io/kubernetes'
-        timeout: 0
+        timeout: 90
     - kubernetes-verify:
         max-total: 12
         job-name: pull-kubernetes-verify
