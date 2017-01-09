@@ -11,6 +11,9 @@ load(
 
 go_binary(
     name = "hook",
+    data = [
+        "//prow:configs",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
 )
