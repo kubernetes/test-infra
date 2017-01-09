@@ -85,22 +85,13 @@ update-plugins: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-clean:
-	rm cmd/hook/hook cmd/line/line cmd/sinker/sinker cmd/deck/deck cmd/splice/splice
-
 build:
 	go install ./cmd/...
-
-fmt:
-	(diff=$$(find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -d -s 2>&1); if [[ -n "$${diff}" ]]; then echo "$${diff}"; false; fi)
-
-vet:
-	go vet $$(go list ./... | grep -v "\/vendor\/")
 
 test:
 	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster update-jobs update-plugins clean build fmt vet test get-cluster-credentials
+.PHONY: create-cluster update-cluster update-jobs update-plugins clean build test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
@@ -157,9 +148,3 @@ marque-service:
 	kubectl apply -f cluster/marque_service.yaml
 
 .PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service
-
-update-godeps:
-	rm -rf vendor Godeps
-	godep save ./...
-
-.PHONY: update-godeps
