@@ -292,6 +292,7 @@ cgo_genrule(
     copts = [
         "-I",
         "vendor/github.com/mattn/go-sqlite3",
+        "-O",
     ],
     tags = ["automanaged"],
 )
