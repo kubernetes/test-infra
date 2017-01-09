@@ -10,19 +10,19 @@ currently comprises several related pieces that live in a GKE cluster.
 * `cmd/sinker` cleans up old jobs and pods.
 * `cmd/splice` regularly schedules batch jobs.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.
-* `cmd/phony` makes testing plugins easier.
+* `cmd/phony` sends fake webhooks.
+* `cmd/marque` is a production-ready letsencrypt certificate manager.
 
 ## How to test prow
 
-First, build, verify, and run unit tests with `make`. You will need your
-`GOPATH` [configured properly](https://golang.org/doc/code.html) with test-
-infra checked out under `$GOPATH/src/k8s.io`.
+Build with `bazel build //prow/...`, test with `bazel test //prow/...`.
 
 You can run `cmd/hook` in a local mode for testing, and hit it with arbitrary
-fake webhooks. To do this, run `make build` to install the necessary pieces.
-Now, in one shell run `hook --local --job-config presubmit.yaml --plugin-config
-plugins.yaml`. This will listen on `localhost:8888` for webhooks. Send one with
-`phony --event issue_comment --payload cmd/phony/examples/test_comment.json`.
+fake webhooks. To do this, run `./bazel-bin/prow/cmd/hook/hook --local
+--presubmits prow/presubmit.yaml --postsubmits prow/postsubmit.yaml
+--plugin-config prow/plugins.yaml` in one shell. This will listen on
+`localhost:8888` for webhooks. Send one with `./bazel-bin/prow/cmd/phony/phony
+--event issue_comment --payload prow/cmd/phony/examples/test_comment.json`.
 
 ## How to update the cluster
 

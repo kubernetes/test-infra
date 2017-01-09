@@ -13,6 +13,9 @@ go_binary(
     name = "hook",
     library = ":go_default_library",
     tags = ["automanaged"],
+    data = [
+        "//prow:configs",
+    ],
 )
 
 go_test(
