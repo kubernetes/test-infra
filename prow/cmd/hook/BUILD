@@ -11,11 +11,11 @@ load(
 
 go_binary(
     name = "hook",
-    library = ":go_default_library",
-    tags = ["automanaged"],
     data = [
         "//prow:configs",
     ],
+    library = ":go_default_library",
+    tags = ["automanaged"],
 )
 
 go_test(
