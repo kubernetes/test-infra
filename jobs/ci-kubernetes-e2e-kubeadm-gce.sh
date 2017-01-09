@@ -26,7 +26,7 @@ readonly testinfra="$(dirname "${0}")/.."
 
 export PROJECT="k8s-jkns-e2e-kubeadm-gce-ci"
 export E2E_NAME="e2e-kubeadm-gce"
-export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path ${GOPATH}/k8s.io/kubernetes-anywhere"
+export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path ${GOPATH}/src/k8s.io/kubernetes-anywhere"
 export E2E_OPT+=" --kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${E2E_NAME}.test-kubeadm.k8s.io"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
 
