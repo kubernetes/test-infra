@@ -22,6 +22,9 @@ import (
 
 func handlePE(c client, pe github.PushEvent) error {
 	for _, j := range c.JobAgent.AllPostsubmits(pe.Repo.FullName) {
+		if !j.RunsAgainstBranch(pe.Branch()) {
+			continue
+		}
 		if err := lineStartPushJob(c.KubeClient, j.Name, pe); err != nil {
 			return err
 		}

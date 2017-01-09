@@ -78,50 +78,72 @@ func TestFailureComment(t *testing.T) {
 
 func TestGuberURL(t *testing.T) {
 	var testcases = []struct {
+		IsPresubmit bool
 		PRNumber    int
 		RepoOwner   string
 		RepoName    string
 		ExpectedURL string
 	}{
 		{
+			true,
 			5,
 			"kubernetes",
 			"kubernetes",
-			"/5/j/1/",
+			guberBasePR + "/5/j/1/",
 		},
 		{
+			true,
 			5,
 			"kubernetes",
 			"charts",
-			"/charts/5/j/1/",
+			guberBasePR + "/charts/5/j/1/",
 		},
 		{
+			true,
 			5,
 			"other",
 			"kubernetes",
-			"/other_kubernetes/5/j/1/",
+			guberBasePR + "/other_kubernetes/5/j/1/",
 		},
 		{
+			true,
 			5,
 			"other",
 			"other",
-			"/other_other/5/j/1/",
+			guberBasePR + "/other_other/5/j/1/",
 		},
 		{
+			true,
 			0,
 			"kubernetes",
 			"kubernetes",
-			"/batch/j/1/",
+			guberBasePR + "/batch/j/1/",
+		},
+		{
+			false,
+			0,
+			"kubernetes",
+			"kubernetes",
+			guberBasePush + "/j/1/",
+		},
+		{
+			false,
+			0,
+			"o",
+			"o",
+			guberBasePush + "/o_o/j/1/",
 		},
 	}
 	for _, tc := range testcases {
 		c := &testClient{
-			Presubmit: jobs.Presubmit{Name: "j"},
-			PRNumber:  tc.PRNumber,
-			RepoOwner: tc.RepoOwner,
-			RepoName:  tc.RepoName,
+			IsPresubmit: tc.IsPresubmit,
+			Presubmit:   jobs.Presubmit{Name: "j"},
+			Postsubmit:  jobs.Postsubmit{Name: "j"},
+			PRNumber:    tc.PRNumber,
+			RepoOwner:   tc.RepoOwner,
+			RepoName:    tc.RepoName,
 		}
-		actual := c.guberURL("1")[len(guberBase):]
+		actual := c.guberURL("1")
 		if actual != tc.ExpectedURL {
 			t.Errorf("Gubernator URL wrong. Got %s, expected %s", actual, tc.ExpectedURL)
 		}

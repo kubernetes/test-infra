@@ -66,13 +66,15 @@ var (
 )
 
 const (
-	guberBase = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
-	testInfra = "https://github.com/kubernetes/test-infra/issues"
+	guberBasePR   = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
+	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
+	testInfra     = "https://github.com/kubernetes/test-infra/issues"
 )
 
 type testClient struct {
-	Presubmit  jobs.Presubmit
-	Postsubmit jobs.Postsubmit
+	IsPresubmit bool
+	Presubmit   jobs.Presubmit
+	Postsubmit  jobs.Postsubmit
 
 	JobName   string
 	RepoOwner string
@@ -154,8 +156,9 @@ func main() {
 	}
 
 	client := &testClient{
-		Presubmit:  presubmit,
-		Postsubmit: postsubmit,
+		IsPresubmit: foundPresubmit,
+		Presubmit:   presubmit,
+		Postsubmit:  postsubmit,
 
 		JobName:   *job,
 		RepoOwner: *repoOwner,
@@ -426,7 +429,12 @@ func (c *testClient) TestPRJenkins() error {
 }
 
 func (c *testClient) guberURL(build string) string {
-	url := guberBase
+	var url string
+	if c.IsPresubmit {
+		url = guberBasePR
+	} else {
+		url = guberBasePush
+	}
 	if c.RepoOwner != "kubernetes" {
 		url = fmt.Sprintf("%s/%s_%s", url, c.RepoOwner, c.RepoName)
 	} else if c.RepoName != "kubernetes" {
@@ -436,7 +444,11 @@ func (c *testClient) guberURL(build string) string {
 	if prName == "0" {
 		prName = "batch"
 	}
-	return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
+	if c.IsPresubmit {
+		return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
+	} else {
+		return fmt.Sprintf("%s/%s/%s/", url, c.Postsubmit.Name, build)
+	}
 }
 
 func (c *testClient) tryCreateStatus(podName, state, desc, url string) {
