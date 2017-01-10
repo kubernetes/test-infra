@@ -128,8 +128,10 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	notifications := c.FilterComments(comments, notificationMatcher)
 	latestNotification := notifications.GetLast()
 	if latestNotification == nil {
-		return h.createMessage(obj, ownersMap)
+		body := h.getMessage(obj, ownersMap)
+		obj.WriteComment(body)
 	}
+
 	latestApprove := c.FilterComments(comments, c.CommandName(approveCommand)).GetLast()
 	if latestApprove == nil || latestApprove.CreatedAt == nil {
 		// there was already a bot notification and nothing has changed since
@@ -137,19 +139,21 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		return nil
 	}
 	if latestApprove.CreatedAt.After(*latestNotification.CreatedAt) {
-		// if we can't tell when latestApprove happened, we should make a new one
-		obj.DeleteComment(latestNotification)
+		// if someone approved since the last comment, we should update the comment
 		glog.Infof("Latest approve was after last time notified")
-		return h.createMessage(obj, ownersMap)
+		body := h.getMessage(obj, ownersMap)
+		return obj.EditComment(latestApprove, body)
 	}
 	lastModified, ok := obj.LastModifiedTime()
 	if !ok {
 		return fmt.Errorf("Unable to get LastModifiedTime for %d", obj.Number())
 	}
 	if latestNotification.CreatedAt.Before(*lastModified) {
-		obj.DeleteComment(latestNotification)
+		// the PR was modified After our last notification, so we should update the approvers notification
+		// i.e. People that have formerly approved haven't necessarily approved of new changes
 		glog.Infof("PR Modified After Last Notification")
-		return h.createMessage(obj, ownersMap)
+		body := h.getMessage(obj, ownersMap)
+		return obj.EditComment(latestApprove, body)
 	}
 	return nil
 }
@@ -228,7 +232,14 @@ func removeSubdirs(dirList []string) sets.String {
 	return finalSet
 }
 
-func (h *ApprovalHandler) createMessage(obj *github.MungeObject, ownersMap map[string]sets.String) error {
+// getMessage returns the comment body that we want the approval-handler to display on PRs
+// The comment shows:
+// 	- a list of approvers files (and links) needed to get the PR approved
+// 	- a list of approvers files with strikethroughs that already have an approver's approval
+// 	- a suggested list of people from each OWNERS files that can fully approve the PR
+// 	- how an approver can indicate their approval
+// 	- how an approver can cancel their approval
+func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String) string {
 	// sort the keys so we always display OWNERS files in same order
 	sliceOfKeys := make([]string, len(ownersMap))
 	i := 0
@@ -262,7 +273,8 @@ func (h *ApprovalHandler) createMessage(obj *github.MungeObject, ownersMap map[s
 	}
 	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment")
 	context.WriteString("\n You can cancel your approval by writing `/approve cancel` in a comment")
-	return c.Notification{approvalNotificationName, "Needs approval from an approver in each of these OWNERS Files:\n", context.String()}.Post(obj)
+	notif := c.Notification{approvalNotificationName, "Needs approval from an approver in each of these OWNERS Files:\n", context.String()}
+	return notif.String()
 }
 
 // createApproverSet iterates through the list of comments on a PR
