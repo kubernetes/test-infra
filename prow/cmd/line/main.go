@@ -261,7 +261,7 @@ func (c *testClient) TestKubernetes() error {
 	}
 	spec.RestartPolicy = "Never"
 
-	podName := fmt.Sprintf("%s-%d", c.JobName, buildID)
+	podName := fmt.Sprintf("%s-%s", c.JobName, buildID)
 	if len(podName) > 60 {
 		podName = podName[len(podName)-60:]
 	}
