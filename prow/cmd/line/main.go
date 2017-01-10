@@ -261,8 +261,13 @@ func (c *testClient) TestKubernetes() error {
 	}
 	spec.RestartPolicy = "Never"
 
+	podName := fmt.Sprintf("%s-%d", c.JobName, buildID)
+	if len(podName) > 60 {
+		podName = podName[len(podName)-60:]
+	}
+
 	for i := range spec.Containers {
-		spec.Containers[i].Name = fmt.Sprintf("%s-%d", buildID, i)
+		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "JOB_NAME",
@@ -323,7 +328,11 @@ func (c *testClient) TestKubernetes() error {
 	}
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
-			Name: buildID,
+			Name: podName,
+			Labels: map[string]string{
+				"job":  c.JobName,
+				"repo": c.RepoName,
+			},
 		},
 		Spec: *spec,
 	}
@@ -333,7 +342,7 @@ func (c *testClient) TestKubernetes() error {
 		return err
 	}
 	resultURL := c.guberURL(buildID)
-	podName := actual.Metadata.Name
+	podName = actual.Metadata.Name
 	c.tryCreateStatus(podName, github.StatusPending, "Build started", resultURL)
 	for {
 		po, err := c.KubeClient.GetPod(actual.Metadata.Name)
