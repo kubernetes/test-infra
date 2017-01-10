@@ -23,6 +23,7 @@ filegroup(
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/splice:all-srcs",
+        "//prow/cmd/tot:all-srcs",
         "//prow/github:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/jobs:all-srcs",

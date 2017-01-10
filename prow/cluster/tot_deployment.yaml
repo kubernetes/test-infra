@@ -12,62 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    app: tot
+  name: tot-storage
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    pdName: tot-storage
+    fsType: ext4
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    app: tot
+  name: tot-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: hook
+  name: tot
   labels:
-    app: hook
+    app: tot
 spec:
-  replicas: 4
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  replicas: 1  # one canonical source of build numbers
   template:
     metadata:
       labels:
-        app: hook
+        app: tot
     spec:
       nodeSelector:
         role: prow
       terminationGracePeriodSeconds: 30
       containers:
-      - name: hook
-        image: gcr.io/k8s-prow/hook:0.74
+      - name: tot
+        image: gcr.io/k8s-prow/tot:0.0
         imagePullPolicy: Always
-        env:
-        - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.60"
-        - name: DRY_RUN
-          value: "false"
+        args:
+        - -log-json
+        - -storage=/store/tot.json
         ports:
           - name: http
             containerPort: 8888
         volumeMounts:
-        - name: hmac
-          mountPath: /etc/webhook
-          readOnly: true
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
-        - name: job-configs
-          mountPath: /etc/jobs
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
+        - mountPath: /store
+          name: tot-volume
       volumes:
-      - name: hmac
-        secret:
-          secretName: hmac-token
-      - name: oauth
-        secret:
-          secretName: oauth-token
-      - name: job-configs
-        configMap:
-          name: job-configs
-      - name: plugins
-        configMap:
-          name: plugins
+        - name: tot-volume
+          persistentVolumeClaim:
+            claimName: tot-storage
