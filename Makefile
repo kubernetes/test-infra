@@ -43,7 +43,7 @@ test: mungegithub
 
 # build the container with the binary
 container: mungegithub
-	docker build -t $(CONTAINER) -f Dockerfile-$(APP) .
+	docker build --pull -t $(CONTAINER) -f Dockerfile-$(APP) .
 
 # push the container
 push: container

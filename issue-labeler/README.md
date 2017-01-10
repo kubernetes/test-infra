@@ -13,7 +13,7 @@ models return a team/<> label and a component/<> label.
 
 In order to run the webapp, build the container using the following command.
 
-$sudo docker build -no-cache -t <choose-image-name> . 
+$sudo docker build --pull -no-cache -t <choose-image-name> . 
 
 Then, run the container making sure to forward traffic to port 5000.
 

@@ -6,7 +6,7 @@ all: push
 
 build:
 	CGO_ENABLED=0 go build .
-	docker build -t $(IMG):$(TAG) .
+	docker build --pull -t $(IMG):$(TAG) .
 	@echo Built $(IMG):$(TAG)
 
 push: build
