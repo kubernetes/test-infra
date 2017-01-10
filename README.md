@@ -38,6 +38,9 @@ It can finally deployed as:
 TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig make deploy
 ```
 
+**Note** The submit-queue should always be deployed from master so that look at
+the master branch (configmap, etc) reflects what is currently running.
+
 After this has successfully deployed to the test cluster in read-only mode, running in production involves running any required `kubectl config` commands to point to the production cluster, pushing a configmap if necessary, and then running:
 ```sh
 TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig READONLY=false make deploy
@@ -48,12 +51,16 @@ TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/
 A small amount of information about some of the individual mungers inside each of the 3 varieties are listed below:
 
 ### submit-queue
+* approval-handler - reads approvers from OWNERs files and decides if a PR
+  should get the approved label based on who has written `/approve`
 * block-paths - add `do-not-merge` label to PRs which change files which should not be changed (mainly old docs moved to kubernetes.github.io)
 * blunderbuss - assigned PRs to individuals based on the contents of OWNERS files in the main repo
 * cherrypick-auto-approve - adds `cherrypick-approved` to PRs in a release branch if the 'parent' pr in master was approved
 * cherrypick-label-unapproved - adds `do-not-merge` label to PRs against a release-\* branch which do not have `cherrypick-approved`
 * comment-deleter - deletes comments created by the k8s-merge-robot which are no longer relevant. Such as comments about a rebase being required if it has been rebased.
 * comment-deleter-jenkins - deleted comments create by the k8s-bot jenkins bot which are no longer relevant. Such as old test results.
+* issue-triager - takes the title and body of an issue and asks another web
+  service to guess the appropriate routing label
 * lgtm-after-commit - removes `lgtm` label if a PR is changed after the label was added
 * needs-rebase - adds and removes a `needs-rebase` label if a PR needs to be rebased before it can be applied.
 * path-label - adds labels, such as `kind/new-api` based on if ANY file which matches changed
