@@ -7,7 +7,7 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: contrib
-  config.pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,needs-rebase,approval-handler
+  config.pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
   config.state: open
   config.token-file: /etc/secret-volume/token
   gitrepo.repo-dir: /gitrepos
@@ -50,4 +50,4 @@ data:
   alias.alias-file: "/gitrepos/contrib/OWNERS_ALIASES"
 
   # Temporary gate approval process
-  approval-activated: "true"
+  approval-activated: "false"
