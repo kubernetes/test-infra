@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func expectEqual(t *testing.T, msg string, have interface{}, want interface{}) {
@@ -57,7 +58,7 @@ func TestTotVend(t *testing.T) {
 	expectEqual(t, "basic vending", getBuildID(serv.URL, "test"), "12345")
 	expectEqual(t, "basic vending", getBuildID(serv.URL, "other"), "56789")
 
-	retryDelay = 10
+	retryDelay = 10 * time.Nanosecond
 	fake.errorCount = 3
 	expectEqual(t, "basic vending", getBuildID(serv.URL, "test"), "12345")
 	expectEqual(t, "errors cleared", fake.errorCount, 0)

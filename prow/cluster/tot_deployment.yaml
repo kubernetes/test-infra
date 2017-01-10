@@ -48,7 +48,7 @@ metadata:
   labels:
     app: tot
 spec:
-  replicas: 1
+  replicas: 1  # one canonical source of build numbers
   template:
     metadata:
       labels:

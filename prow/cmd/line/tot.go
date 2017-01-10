@@ -36,7 +36,7 @@ func init() {
 
 func getBuildID(server, name string) string {
 	url := server + "/vend/" + name
-	for retries := 0; retries < 30; retries++ {
+	for retries := 0; retries < 60; retries++ {
 		if retries > 0 {
 			time.Sleep(retryDelay)
 		}

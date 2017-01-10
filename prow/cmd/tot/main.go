@@ -38,7 +38,7 @@ var (
 )
 
 type store struct {
-	Number      map[string]int
+	Number      map[string]int // job name -> last vended build number
 	mutex       sync.Mutex
 	storagePath string
 }
@@ -100,7 +100,7 @@ func main() {
 
 	s, err := newStore(*storagePath)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("newStore failed")
 	}
 
 	http.HandleFunc("/vend/", func(w http.ResponseWriter, r *http.Request) {

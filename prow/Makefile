@@ -16,7 +16,7 @@ all: build fmt vet test
 
 
 HOOK_VERSION   = 0.74
-LINE_VERSION   = 0.59
+LINE_VERSION   = 0.60
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.13
 SPLICE_VERSION = 0.11
@@ -159,5 +159,4 @@ tot-deployment:
 tot-service:
 	kubectl apply -f cluster/tot_service.yaml
 
-
-.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service
+.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service tot-image tot-service tot-deployment
