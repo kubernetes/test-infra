@@ -44,11 +44,6 @@
         job-name: maintenance-ci-clean-projects
         frequency: 'H H/3 * * *'
         repo-name: 'k8s.io/test-infra'
-    - testgrid-config-upload:
-        branch: master
-        job-name: maintenance-ci-testgrid-config-upload
-        frequency: '*/10 * * * *' # every 10min, till we have scm in prow
-        repo-name: 'k8s.io/test-infra'
     - aws-janitor:
         branch: master
         frequency: 'H * * * *'
