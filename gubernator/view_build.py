@@ -60,7 +60,7 @@ def get_running_build_log(job, build):
     try:
         # keep this synced with TestKubernetes in prow/cmd/line/line.go
         pod_name = ("%s-%s" % (job, build))[-60:]
-        url = "http://prow.k8s.io/log?pod=%s" % pod_name
+        url = "https://prow.k8s.io/log?pod=%s" % pod_name
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             return log_parser.digest(result.content), url
