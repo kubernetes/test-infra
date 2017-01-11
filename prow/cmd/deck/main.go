@@ -82,6 +82,7 @@ type logClient interface {
 func handleLog(kc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		pod := r.URL.Query().Get("pod")
 		if !podReg.MatchString(pod) {
 			http.Error(w, "Invalid pod query", http.StatusBadRequest)

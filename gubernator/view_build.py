@@ -19,6 +19,8 @@ import re
 
 import defusedxml.ElementTree as ET
 
+from google.appengine.api import urlfetch
+
 import gcs_async
 from github import models
 import log_parser
@@ -52,6 +54,19 @@ def get_build_log(build_dir):
     build_log = gcs_async.read(build_dir + '/build-log.txt').get_result()
     if build_log:
         return log_parser.digest(build_log)
+
+
+def get_running_build_log(job, build):
+    try:
+        # keep this synced with TestKubernetes in prow/cmd/line/line.go
+        pod_name = ("%s-%s" % (job, build))[-60:]
+        url = "http://prow.k8s.io/log?pod=%s" % pod_name
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            return log_parser.digest(result.content), url
+    except urlfetch.Error:
+        logging.exception('Caught exception fetching url')
+    return None, None
 
 
 @view_base.memcache_memoize('build-details://', expires=60)
@@ -125,9 +140,12 @@ class BuildHandler(view_base.BaseHandler):
         started, finished, failures = details
 
         build_log = ''
-        if 'log' in self.request.params or (finished and
-                finished.get('result') != 'SUCCESS' and len(failures) == 0):
+        build_log_src = None
+        if 'log' in self.request.params or (not finished) or \
+            (finished and finished.get('result') != 'SUCCESS' and len(failures) == 0):
             build_log = get_build_log(build_dir)
+            if not build_log:
+                build_log, build_log_src = get_running_build_log(job, build)
 
         # 'version' might be in either started or finished.
         # prefer finished.
@@ -147,7 +165,7 @@ class BuildHandler(view_base.BaseHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log,
+            failures=failures, build_log=build_log, build_log_src=build_log_src,
             issues=issues,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))

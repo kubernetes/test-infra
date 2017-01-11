@@ -43,24 +43,28 @@ function fix_timestamps() {
 	})
 }
 
-var gcs_cache = {};
+var get_cache = {};
 
-// Download a file from GCS, and run "callback" with its contents.
-function gcs_get(gcs_path, callback) {
-	if (gcs_cache[gcs_path]) {
-		callback(gcs_cache[gcs_path]);
+// Download a file from GCS or elsewhere, and run "callback" with its contents.
+function get(uri, callback) {
+	if (get_cache[uri]) {
+		callback(get_cache[uri]);
 		return;
 	}
-	// Matches gs://bucket/file/path -> [..., "bucket", "file/path"]
-	//         /bucket/file/path -> [..., "bucket", "file/path"]
-	var groups = gcs_path.match(/([^/:]+)\/(.*)/);
-	var bucket = groups[1], path = groups[2];
+	if (uri[0] === '/') {
+		// Matches gs://bucket/file/path -> [..., "bucket", "file/path"]
+		//         /bucket/file/path -> [..., "bucket", "file/path"]
+		var groups = uri.match(/([^/:]+)\/(.*)/);
+		var bucket = groups[1], path = groups[2];
+		var url = 'https://www.googleapis.com/storage/v1/b/' + bucket + '/o/' +
+			encodeURIComponent(path) + '?alt=media';
+	} else {
+		var url = uri;
+	}
 	var req = new XMLHttpRequest();
-	req.open('GET',
-		'https://www.googleapis.com/storage/v1/b/' + bucket + '/o/' +
-		encodeURIComponent(path) + '?alt=media');
+	req.open('GET', url);
 	req.onload = function(resp) {
-		gcs_cache[gcs_path] = req.response;
+		get_cache[uri] = req.response;
 		callback(req.response);
 	}
 	req.send();
@@ -68,7 +72,7 @@ function gcs_get(gcs_path, callback) {
 
 function expand_skipped(els) {
 	var src = els[0].parentElement.dataset['src'];
-	gcs_get(src, function(data) {
+	get(src, function(data) {
 		var lines = data.split('\n');
 		var parent = els[0].parentElement;
 		for (var i = 0; i < els.length; i++) {

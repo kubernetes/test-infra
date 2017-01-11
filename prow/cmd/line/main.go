@@ -261,6 +261,7 @@ func (c *testClient) TestKubernetes() error {
 	}
 	spec.RestartPolicy = "Never"
 
+	// keep this synchronized with get_running_build_log in Gubernator!
 	podName := fmt.Sprintf("%s-%s", c.JobName, buildID)
 	if len(podName) > 60 {
 		podName = podName[len(podName)-60:]
