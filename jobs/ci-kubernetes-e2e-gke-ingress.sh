@@ -32,7 +32,7 @@ export ZONE="us-central1-f"
 # expected empty
 
 ### job-env
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Ingress\]"
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature: Ingress\]"
 export PROJECT="kubernetes-gke-ingress"
 # TODO: Enable this when we've split 1.2 tests into another project.
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
