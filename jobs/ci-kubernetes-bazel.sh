@@ -19,6 +19,8 @@ set -o pipefail
 
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
+export VERSION="$(git rev-parse HEAD)"
+export GS_BASE="gs://kubernetes-release-dev/bazel"
 
 make bazel-build && rc=$? || rc=$?
 
@@ -30,7 +32,11 @@ if [[ "${rc}" == 0 ]]; then
 fi
 
 if [[ "${rc}" == 0 ]]; then
-  bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/$(git rev-parse HEAD)" && rc=$? || rc=$?
+  bazel run //:ci-artifacts -- "${GS_BASE}/${VERSION}" && rc=$? || rc=$?
+fi
+
+if [[ "${rc}" == 0 ]]; then
+  echo -n "${VERSION}" | gsutil cp - "${GS_BASE}/latest.txt" && rc=$? || rc=$?
 fi
 
 # Coalesce test results into one file for upload.
