@@ -24,43 +24,47 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
+	"k8s.io/test-infra/prow/jobs"
 	config "k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
-//
-// usage: go run jenkins_validate.go <path/to/job_collection> <path/to/testgrid_config>
-//
-
 func main() {
 	args := os.Args[1:]
 
-	if len(args) != 2 {
-		fmt.Println("Missing args - usage: go run jenkins_validate.go <path/to/job_collection> <path/to/testgrid_config>")
+	if len(args) != 3 {
+		fmt.Println("Missing args - usage: go run jenkins_validate.go <path/to/job_collection> <path/to/prow> <path/to/testgrid_config>")
 		os.Exit(1)
 	}
 
-	jobpath := args[0]
-	configpath := args[1]
+	jobPath := args[0]
+	prowPath := args[1]
+	configPath := args[2]
 
 	jenkinsjobs := make(map[string]bool)
-	files, err := filepath.Glob(jobpath + "/*")
+	files, err := filepath.Glob(jobPath + "/*")
 	if err != nil {
 		fmt.Println("Failed to collect outputs.")
 		os.Exit(1)
 	}
 
 	for _, file := range files {
-		file = strings.TrimPrefix(file, jobpath+"/")
+		file = strings.TrimPrefix(file, jobPath+"/")
 		jenkinsjobs[file] = false
 	}
 
-	data, err := ioutil.ReadFile(configpath)
+	data, err := ioutil.ReadFile(configPath)
 	protobufData, err := yaml2proto.Yaml2Proto(data)
 
 	config := &config.Configuration{}
 	if err := proto.Unmarshal(protobufData, config); err != nil {
 		fmt.Printf("Failed to parse config: %v\n", err)
+		os.Exit(1)
+	}
+
+	ja := jobs.JobAgent{}
+	if err := ja.LoadOnce(prowPath+"/presubmit.yaml", prowPath+"/postsubmit.yaml"); err != nil {
+		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -82,12 +86,21 @@ func main() {
 		}
 	}
 
+	// Also check prow jobs
+	// TODO(spxtr): Not just k/k
+	for _, job := range ja.AllPostsubmits("kubernetes/kubernetes") {
+		if _, ok := testgroups[job.Name]; ok {
+			testgroups[job.Name] = true
+			jenkinsjobs[job.Name] = true
+		}
+	}
+
 	// Conclusion
 	badjobs := []string{}
 	for jenkinsjob, valid := range jenkinsjobs {
 		if !valid {
 			badjobs = append(badjobs, jenkinsjob)
-			fmt.Printf("Jenkins Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
+			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
 		}
 	}
 
@@ -95,7 +108,7 @@ func main() {
 	for testgroup, valid := range testgroups {
 		if !valid {
 			badconfigs = append(badconfigs, testgroup)
-			fmt.Printf("Testgrid group %v does not have a matching jenkins job\n", testgroup)
+			fmt.Printf("Testgrid group %v does not have a matching jenkins or prow job\n", testgroup)
 		}
 	}
 

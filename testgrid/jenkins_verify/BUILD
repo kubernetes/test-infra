@@ -19,6 +19,7 @@ go_library(
     srcs = ["jenkins_validate.go"],
     tags = ["automanaged"],
     deps = [
+        "//prow/jobs:go_default_library",
         "//testgrid/config/pb:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",
         "//vendor:github.com/golang/protobuf/proto",
