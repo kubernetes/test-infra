@@ -24,6 +24,12 @@ import os
 import subprocess
 import sys
 
+ORIG_CWD = os.getcwd()  # Checkout changes cwd
+
+def test_infra(*paths):
+    """Return path relative to root of test-infra repo."""
+    return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
+
 
 def check_output(*cmd):
     """Log and run the command, return output, raising on errors."""
@@ -46,7 +52,7 @@ def continuation_lines(fin):
         yield line
 
 
-def loadenv(envpath):
+def load_env(envpath):
     """Load a env file into os.environ."""
     if not os.path.isfile(envpath):
         print >>sys.stderr, 'envfile %s does not exist' % envpath
@@ -58,6 +64,31 @@ def loadenv(envpath):
                 os.environ[tup[0].strip()] = tup[1].strip()
 
 
+def load_template(template_path, args):
+    """Load a templated env file into os.environ"""
+
+    env_map = {
+        '${version_client}' : args.version_client,
+        '${version_cluster}' : args.version_cluster,
+        '${version_old}' : args.version_old,
+        '${version_new}' : args.version_new,
+        '${image_old}' : args.image_old,
+        '${image_new}' : args.image_new
+    }
+
+    if not os.path.isfile(template_path):
+        print >>sys.stderr, 'envfile %s does not exist' % template_path
+        return
+    with open(template_path, 'r') as envfile:
+        for line in continuation_lines(envfile):
+            # Resolve vars
+            for key, val in env_map.items():
+                if key in line and val:
+                    line = line.replace(key, val)
+            tup = line.strip().split('=', 1)
+            if len(tup) == 2:
+                os.environ[tup[0].strip()] = tup[1].strip()
+
 def main(args):
     """ set up env, call docker run, clean up """
     # pylint: disable=too-many-locals
@@ -67,11 +98,24 @@ def main(args):
 
     # platform envs
     if args.platform:
-        loadenv(os.getcwd() + '/platforms/' + args.platform + '.env')
+        load_env(test_infra('platforms/' + args.platform + '.env'))
 
     # job envs
     if args.env:
-        loadenv(os.getcwd() + '/jobs/' + args.env + '.env')
+        load_env(test_infra('jobs/' + args.env + '.env'))
+
+    # job env templates
+    if args.env_template:
+        load_template(test_infra('jobs/' + args.env_template + '.env'), args)
+
+    # Other args Override
+    if args.zone:
+        os.environ['ZONE'] = args.zone
+        os.environ['KUBE_GCE_ZONE'] = args.zone
+    if args.project:
+        os.environ['PROJECT'] = args.project
+    if args.use_cert_auth:
+        os.environ['CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE'] = 'true'
 
     # Boilerplate envs
     # Assume we're upping, testing, and downing a cluster
@@ -218,6 +262,26 @@ if __name__ == '__main__':
         '--platform', help='Platform test runs on')
     PARSER.add_argument(
         '--env', help='Job specific environment variables')
+    PARSER.add_argument(
+        '--env_template', help='Job specific environment template')
+    PARSER.add_argument(
+        '--zone', default='us-central1-f', help='Zone for project runs on')
+    PARSER.add_argument(
+        '--project', help='GCP Project Override for the job')
+    PARSER.add_argument(
+        '--version_old', help='Upgrade from k8s version for an upgrade job')
+    PARSER.add_argument(
+        '--version_new', help='Upgrade to k8s version for an upgrade job')
+    PARSER.add_argument(
+        '--image_old', help='Upgrade from gke image type for an upgrade job')
+    PARSER.add_argument(
+        '--image_new', help='Upgrade to gke image type for an upgrade job')
+    PARSER.add_argument(
+        '--version_cluster', help='Cluster version for kubectl skew test')
+    PARSER.add_argument(
+        '--version_client', help='Client version for kubectl skew test')
+    PARSER.add_argument(
+        '--use_cert_auth', help='1.3 doesn\'t support IAM, so we should use cert auth')
     ARGS = PARSER.parse_args()
 
     main(ARGS)

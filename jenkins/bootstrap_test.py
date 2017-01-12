@@ -1462,22 +1462,17 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if '.env' not in job_path:
                 continue
-            #print job
             with open(job_path) as fp:
                 lines = list(fp)
             prev = ''
-            bad = False
             for line in lines:
                 m = re.match(r'[0-9A-Z_]+=', line)
                 empty = (line.strip() == '')
                 comment = line.startswith('#')
                 continuation = prev.strip().endswith('\\')
                 prev = line
-                #print 'line - %s, %s - %s - %s' % (line, m, empty, comment)
-                if not (m or empty or comment or continuation ):
-                    bad = True
-            if bad:
-                print 'bad job - %s' % job
+                if not (m or empty or comment or continuation):
+                    self.fail('Job %s contains invalid env: %s' % (job, line))
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
@@ -1487,6 +1482,19 @@ class JobTest(unittest.TestCase):
             bad_vars = re.findall(r'(\${{.+}})', script)
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
+
+    def testValidJobEnvs(self):
+        """Validate jobs/config.json."""
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            config = json.loads(fp.read())
+            for job in config:
+                self.assertTrue('scenario' in config[job], job)
+                self.assertTrue(os.path.isfile(bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])), job)
+                if 'args' in config[job]:
+                    for arg in config[job].get('args', []):
+                        m = re.match(r'(--env|--env_template)=([^\"]+)', arg)
+                        if m:
+                            self.assertTrue(os.path.isfile(bootstrap.test_infra('jobs/%s.env' % m.group(2))), job)
 
 
 if __name__ == '__main__':
