@@ -29,4 +29,5 @@ RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
 ENV PATH "/google-cloud-sdk/bin:${PATH}"
 
 WORKDIR /workspace
-ENTRYPOINT ["/bin/bash"]
+ADD runner /
+ENTRYPOINT ["/bin/bash", "/runner"]
