@@ -18,7 +18,18 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-export CONFIGDIR=testgrid/config
+# Create and duplicate build under the go path
+
+# GOPATH should point to /go here
+mkdir -p $GOPATH/src/k8s.io/test-infra
+export TEST_INFRA=$GOPATH/src/k8s.io/test-infra
+cp -r $WORKSPACE/test-infra $TEST_INFRA
+
+# Export config
+export CONFIGDIR=$TEST_INFRA/testgrid/config
 go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
 gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
 rm $CONFIGDIR/config
+
+# Remove duplicated build
+rm -rf $TEST_INFRA
