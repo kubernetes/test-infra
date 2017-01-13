@@ -5,12 +5,8 @@ language: python
 cache:
     directories:
         - node_modules
-        - .cache/pip
 python:
     - "2.7"
-env:
-    - GAE_ZIP=google_appengine_1.9.40.zip GAE_ROOT=${HOME}/google_appengine
-cache: pip
 services:
     - docker
 sudo: required
@@ -21,19 +17,12 @@ install:
     - mkdir -p $HOME/gopath/src/k8s.io
     - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/test-infra
     - cd $HOME/gopath/src/k8s.io/test-infra
-# Based on https://github.com/travis-ci/travis-ci/issues/738#issuecomment-11179888
-    - wget -nv https://storage.googleapis.com/appengine-sdks/featured/${GAE_ZIP}
-    - unzip -q ${GAE_ZIP} -d ${HOME}
-    - pip install -r gubernator/test_requirements.txt
-    - pip install -r jenkins/test_history/requirements.txt
     - npm install mocha
 script:
     - ./verify/verify-bazel.sh
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
     - cd gubernator
-    - ./test.sh --nologcapture
-    - ./lint.sh
     - ../node_modules/.bin/mocha static/build_test.js
     - cd ..
     - ./testgrid/jenkins_verify/verify.sh
