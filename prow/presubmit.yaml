@@ -207,7 +207,6 @@ kubernetes/test-infra:
   branches:
   - master
   always_run: true
-  skip_report: true
   rerun_command: "@k8s-bot gubernator test this"
   trigger: "@k8s-bot (gubernator )?test this"
   spec:
