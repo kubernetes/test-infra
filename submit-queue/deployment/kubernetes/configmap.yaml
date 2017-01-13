@@ -28,6 +28,7 @@ data:
   # submit-queue options. Keep job lists sorted!
   submit-queue.required-contexts: "\"\""
   submit-queue.nonblocking-jenkins-jobs: "\
+    ci-kubernetes-bazel,\
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-aws,\
     ci-kubernetes-e2e-garbage-gci,\
