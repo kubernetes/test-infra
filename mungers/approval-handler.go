@@ -142,7 +142,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		// if someone approved since the last comment, we should update the comment
 		glog.Infof("Latest approve was after last time notified")
 		body := h.getMessage(obj, ownersMap)
-		return obj.EditComment(latestApprove, body)
+		return obj.EditComment(latestNotification, body)
 	}
 	lastModified, ok := obj.LastModifiedTime()
 	if !ok {
@@ -153,7 +153,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		// i.e. People that have formerly approved haven't necessarily approved of new changes
 		glog.Infof("PR Modified After Last Notification")
 		body := h.getMessage(obj, ownersMap)
-		return obj.EditComment(latestApprove, body)
+		return obj.EditComment(latestNotification, body)
 	}
 	return nil
 }
@@ -285,6 +285,7 @@ func createApproverSet(comments []*githubapi.IssueComment) sets.String {
 	approverSet := sets.NewString()
 
 	approverMatcher := c.CommandName(approveCommand)
+
 	for _, comment := range c.FilterComments(comments, approverMatcher) {
 		cmd := c.ParseCommand(comment)
 		if cmd.Arguments == cancel {
