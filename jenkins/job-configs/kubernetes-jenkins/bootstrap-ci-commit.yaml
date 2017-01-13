@@ -82,7 +82,7 @@
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-cross-build
         repo-name: k8s.io/kubernetes
-        timeout: 50
+        timeout: 100
 
     - kubernetes-build-1.3:
         branch: release-1.3
