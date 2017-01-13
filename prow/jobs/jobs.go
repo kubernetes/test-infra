@@ -106,6 +106,37 @@ func (ja *JobAgent) Start(pre, post string) error {
 	return nil
 }
 
+func (ja *JobAgent) AllJobNames() []string {
+	var listPres func(ps []Presubmit) []string
+	var listPost func(ps []Postsubmit) []string
+	listPres = func(ps []Presubmit) []string {
+		res := []string{}
+		for _, p := range ps {
+			res = append(res, p.Name)
+			res = append(res, listPres(p.RunAfterSuccess)...)
+		}
+		return res
+	}
+	listPost = func(ps []Postsubmit) []string {
+		res := []string{}
+		for _, p := range ps {
+			res = append(res, p.Name)
+			res = append(res, listPost(p.RunAfterSuccess)...)
+		}
+		return res
+	}
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	res := []string{}
+	for _, v := range ja.presubmits {
+		res = append(res, listPres(v)...)
+	}
+	for _, v := range ja.postsubmits {
+		res = append(res, listPost(v)...)
+	}
+	return res
+}
+
 func (ja *JobAgent) SetPresubmits(jobs map[string][]Presubmit) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()

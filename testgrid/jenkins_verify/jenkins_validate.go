@@ -87,11 +87,10 @@ func main() {
 	}
 
 	// Also check prow jobs
-	// TODO(spxtr): Not just k/k
-	for _, job := range ja.AllPostsubmits("kubernetes/kubernetes") {
-		if _, ok := testgroups[job.Name]; ok {
-			testgroups[job.Name] = true
-			jenkinsjobs[job.Name] = true
+	for _, job := range ja.AllJobNames() {
+		if _, ok := testgroups[job]; ok {
+			testgroups[job] = true
+			jenkinsjobs[job] = true
 		}
 	}
 
