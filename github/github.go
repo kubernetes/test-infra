@@ -1857,7 +1857,7 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, bool
 type WithListOpt func(*github.IssueListCommentsOptions) *github.IssueListCommentsOptions
 
 // ListComments returns all comments for the issue/PR in question
-func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.IssueComment, bool) {
+func (obj *MungeObject) ListComments() ([]*github.IssueComment, bool) {
 	config := obj.config
 	issueNum := *obj.Issue.Number
 	allComments := []*github.IssueComment{}
@@ -1867,9 +1867,6 @@ func (obj *MungeObject) ListComments(withListOpts ...WithListOpt) ([]*github.Iss
 	}
 
 	listOpts := &github.IssueListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
-	for _, withListOpt := range withListOpts {
-		listOpts = withListOpt(listOpts)
-	}
 
 	page := 1
 	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.

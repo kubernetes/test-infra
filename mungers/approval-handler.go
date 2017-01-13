@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
@@ -94,6 +93,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	}
 
 	comments, ok := getCommentsAfterLastModified(obj)
+
 	if !ok {
 		return
 	}
@@ -322,18 +322,16 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 	return ownersApprovers
 }
 
+// gets the comments since the obj was last changed.  If we can't figure out when the object was last changed
+// return all the comments on the issue
 func getCommentsAfterLastModified(obj *github.MungeObject) ([]*githubapi.IssueComment, bool) {
-	afterLastModified := func(opt *githubapi.IssueListCommentsOptions) *githubapi.IssueListCommentsOptions {
-		// Only comments updated at or after this time are returned.
-		// One possible case is that reviewer might "/lgtm" first, contributor updated PR, and reviewer updated "/lgtm".
-		// This is still valid. We don't recommend user to update it.
-		lastModified, ok := obj.LastModifiedTime()
-		if !ok {
-			opt.Since = time.Time{}
-		} else {
-			opt.Since = *lastModified
-		}
-		return opt
+	comments, ok := obj.ListComments()
+	if !ok {
+		return comments, ok
 	}
-	return obj.ListComments(afterLastModified)
+	lastModified, ok := obj.LastModifiedTime()
+	if !ok {
+		return comments, ok
+	}
+	return c.FilterComments(comments, c.CreatedAfter(*lastModified)), true
 }
