@@ -160,6 +160,3240 @@
   "args": [
     "--branch=${PULL_BASE_REF}"
   ]
+},
+
+"pull-kubernetes-unit": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--branch=${PULL_BASE_REF}"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-autoscaling"
+  ]
+},
+
+
+"ci-kubernetes-e2e-cri-gce-autoscaling-migs": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-autoscaling-migs"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-es-logging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-es-logging"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-etcd3"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-examples": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-examples"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-federation": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-federation"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-proto": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-proto"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-scalability": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-scalability"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-statefulset": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-cri-gce-statefulset"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-autoscaling"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-multizone"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-updown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke-updown"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-cri-gke"
+  ]
+},
+
+"ci-kubernetes-e2e-garbage-cri": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-garbage-cri"
+  ]
+},
+
+"ci-kubernetes-e2e-garbage-gci": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-garbage-gci"
+  ]
+},
+
+"ci-kubernetes-e2e-garbage": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-garbage"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=kube-gce-upg-1-3-1-4-upg-clu-n",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=kube-gce-upg-1-3-1-4-upg-clu",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.3-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=kube-gce-upg-1-3-1-4-upg-mas",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=kube-kube-gce-upg-1-4-1-5-upg-clu-n",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=kube-kube-gce-upg-1-4-1-5-upg-clu",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=kube-kube-gce-upg-1-4-1-5-upg-mas",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=debian",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-alpha-features-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-alpha-features-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-alpha-features-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-alpha-features-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-autoscaling-migs": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-autoscaling-migs"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-autoscaling"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-container-vm": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-container-vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-c1-3-glat-up-clu-n",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-c1-3-glat-up-clu",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-c1-3-glat-up-mas",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-c1-4-glat-up-clu-n",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-c1-4-glat-up-clu",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-c1-4-glat-up-mas",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=debian",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-enormous-cluster"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-enormous-deploy"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-teardown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-enormous-teardown"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-es-logging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-es-logging"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-etcd3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-examples": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-examples"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-federation-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-federation-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-federation-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-federation-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-federation": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-federation"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-serial-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-slow-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-g1-3-clat-up-clu-n",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-g1-3-clat-up-clu",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-g1-3-clat-up-mas",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-g1-3-glat-up-clu-n",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-g1-3-glat-up-clu",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-g1-3-glat-up-mas",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-g1-4-clat-up-clu-n",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-g1-4-clat-up-clu",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-g1-4-clat-up-mas",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster-new",
+    "--project=gce-up-g1-4-glat-up-clu-n",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-cluster",
+    "--project=gce-up-g1-4-glat-up-clu",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-upgrade-master",
+    "--project=gce-up-g1-4-glat-up-mas",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-m52"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-m53"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-m54"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-m55"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-m56"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-m52"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-m53"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-m54"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-m55"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-m56"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-serial-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-m52"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-m53"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-m54"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-m55"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-m56"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-gci-qa-slow-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ha-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-ha-master"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-3-1-4-ctl-skew",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.4",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-3-1-4-ctl-skew",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-3-lat-ctl-skew",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-3-lat-ctl-skew",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-4-1-3-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.3",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-4-1-3-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.3",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-4-1-5-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.5",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-4-1-5-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.5",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-4-lat-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-4-lat-ctl-skew",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-1-5-1-4-ctl-skew",
+    "--version_cluster=latest-1.5",
+    "--version_client=latest-1.4",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-1-5-1-4-ctl-skew",
+    "--version_cluster=latest-1.5",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-lat-1-3-ctl-skew",
+    "--version_cluster=latest",
+    "--version_client=latest-1.3",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-lat-1-3-ctl-skew",
+    "--version_cluster=latest",
+    "--version_client=latest-1.3",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-latest-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-cvm-upg-lat-1-4-ctl-skew",
+    "--version_cluster=latest",
+    "--version_client=latest-1.4",
+    "--image_old=debian"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-latest-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env_template=template-ci-kubernetes-e2e-gce-kubectl-skew",
+    "--project=gce-gci-upg-lat-1-4-ctl-skew",
+    "--version_cluster=latest",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-master-on-cvm": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-master-on-cvm"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-multizone"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-proto": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-proto"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-reboot-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-reboot-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-reboot-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-reboot-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-reboot-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-reboot-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-scalability-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-scalability-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-scalability": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-scalability"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-serial-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-serial-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-serial-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-slow-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-slow-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-slow-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-statefulset": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce-statefulset"
+  ]
+},
+
+"ci-kubernetes-e2e-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gce"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-docker": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-docker"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-autoscaling-migs": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-autoscaling-migs"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-autoscaling"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-es-logging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-es-logging"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-etcd3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-examples": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-examples"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-federation": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-federation"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-ingress-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-ingress-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-ingress-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-ingress-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-proto": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-proto"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-reboot-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-reboot-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-reboot-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-reboot-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-reboot-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-reboot-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-scalability-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-scalability-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-scalability": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-scalability"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-serial-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-serial-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-serial-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-slow-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-slow-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-slow-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-statefulset": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce-statefulset"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-e2e-gci-gce"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-autoscaling"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-ingress-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-ingress-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-ingress-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-ingress-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-multizone"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-pre-release": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-pre-release"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-prod-parallel": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-prod-parallel"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-prod-smoke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-prod-smoke"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-prod": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-prod"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-reboot-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-reboot-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-reboot-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-reboot-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-reboot-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-reboot-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-serial-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-serial-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-serial-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-slow-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-slow-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-slow-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-staging-parallel": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-staging-parallel"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-staging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-staging"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-subnet": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-subnet"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-test"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-updown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke-updown"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gci-gke"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.2-1.3-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-2-1-3-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.2",
+    "--version_client=latest-1.3",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.2-1.3-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-2-1-3-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.2",
+    "--version_client=latest-1.3",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.2-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-3-1-2-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.2",
+    "--image_old=container_vm",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.2-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-3-1-2-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.2",
+    "--image_old=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-3-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.4",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-3-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.3",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=kube-gke-upg-1-3-1-4-upg-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=kube-gke-upg-1-3-1-4-upg-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=kube-gke-upg-1-3-1-4-upg-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-4-1-3-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.3",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-4-1-3-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.3",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-4-1-5-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.5",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-4-1-5-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest-1.5",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-4-lat-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-4-lat-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.4",
+    "--version_client=latest",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-1-5-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.5",
+    "--version_client=latest-1.4",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-1-5-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest-1.5",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-alpha-features-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-alpha-features-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-alpha-features-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-alpha-features-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-alpha-features"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-autoscaling"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-3-c1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-3-c1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-3-c1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-3-clat-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-3-clat-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-3-clat-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-3-g1-4-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-3-g1-4-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-3-g1-4-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-3-g1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-3-g1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-3-g1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-3-glat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-3-glat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-3-glat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-4-c1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-4-c1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-4-c1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-4-clat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-4-clat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-4-clat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-4-g1-5-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-4-g1-5-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-4-g1-5-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-c1-4-glat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-c1-4-glat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-c1-4-glat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=container_vm",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-flaky"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-c1-4-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-c1-4-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-c1-4-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-c1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-c1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-c1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-clat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-clat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-clat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-g1-4-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-g1-4-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-g1-4-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.4",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-g1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-g1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-g1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.3",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci",
+    "--use_cert_auth"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-3-glat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-3-glat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-3-glat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.3",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-4-c1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-4-c1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-4-c1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-4-clat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-4-clat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-4-clat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-4-g1-5-up-clu-n",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-4-g1-5-up-clu",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-4-g1-5-up-mas",
+    "--zone=us-central1-a",
+    "--version_old=latest-1.4",
+    "--version_new=latest-1.5",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster-new",
+    "--project=gke-up-g1-4-glat-up-clu-n",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-cluster",
+    "--project=gke-up-g1-4-glat-up-clu",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-upgrade-master",
+    "--project=gke-up-g1-4-glat-up-mas",
+    "--zone=us-central1-c",
+    "--version_old=latest-1.4",
+    "--version_new=latest",
+    "--image_old=gci",
+    "--image_new=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-ingress"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-large-cluster"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-large-deploy"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-teardown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-large-teardown"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=kube-gke-upg-lat-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest",
+    "--version_client=latest-1.4",
+    "--image_old=container_vm"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env_template=template-ci-kubernetes-e2e-gke-kubectl-skew",
+    "--project=gke-gci-upg-lat-1-4-ctl-skew",
+    "--zone=us-central1-c",
+    "--version_cluster=latest",
+    "--version_client=latest-1.4",
+    "--image_old=gci"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-multizone"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-pre-release": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-pre-release"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-prod-parallel": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-prod-parallel"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-prod-smoke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-prod-smoke"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-prod": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-prod"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-reboot-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-reboot-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-reboot-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-reboot-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-reboot-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-reboot-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-reboot"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-serial-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-serial-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-serial-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-serial"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-slow-release-1.3"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-slow-release-1.4"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-slow-release-1.5"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-slow"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-staging-parallel": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-staging-parallel"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-staging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-staging"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-subnet": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-subnet"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-test"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-updown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke-updown"
+  ]
+},
+
+"ci-kubernetes-e2e-gke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gke",
+    "--env=ci-kubernetes-e2e-gke"
+  ]
+},
+
+"ci-kubernetes-e2e-kubeadm-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env=ci-kubernetes-e2e-kubeadm-gce"
+  ]
+},
+
+"ci-kubernetes-kubemark-100-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-100-gce"
+  ]
+},
+
+"ci-kubernetes-kubemark-5-gce-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-5-gce-1.5"
+  ]
+},
+
+"ci-kubernetes-kubemark-5-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-5-gce"
+  ]
+},
+
+"ci-kubernetes-kubemark-500-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-500-gce"
+  ]
+},
+
+"ci-kubernetes-kubemark-gce-scale": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-gce-scale"
+  ]
+},
+
+"ci-kubernetes-kubemark-high-density-100-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--platform=gce",
+    "--env=ci-kubernetes-kubemark-high-density-100-gce"
+  ]
 }
 
 }

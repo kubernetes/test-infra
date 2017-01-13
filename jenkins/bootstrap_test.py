@@ -1219,14 +1219,20 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCIYaml(self):
+        is_modern = lambda name: 'aws' not in name and 'kops' not in name
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check, use_json=is_modern)
 
     def testBootstrapCICommitYaml(self):
         def Check(job, name):
@@ -1245,7 +1251,7 @@ class JobTest(unittest.TestCase):
             Check, suffix='commit-suffix', use_json=True)
 
     def testBootstrapCIRepoYaml(self):
-        is_modern = lambda n: any(p in n for p in ['unit', 'verify', 'test-go'])
+        is_modern = lambda n: any(p in n for p in ['unit', 'verify', 'test-go', 'kubeadm'])
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
@@ -1311,8 +1317,6 @@ class JobTest(unittest.TestCase):
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
 
-
-
     def CheckBootstrapYaml(self, path, check, suffix='suffix', use_json=False):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
@@ -1377,49 +1381,11 @@ class JobTest(unittest.TestCase):
             self.assertTrue(job_name)
             self.assertEquals(job_name, real_job.get('job-name'))
 
-    def testValidTimeout(self):
-        """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
-        default_timeout = int(re.search(r'\$\{DOCKER_TIMEOUT:-(\d+)m', open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()).group(1))
-        bad_jobs = set()
-        for job, job_path in self.jobs:
-            valids = [
-                'kubernetes-e2e-',
-                'kubernetes-kubemark-',
-                'kubernetes-soak-',
-                'kops-e2e-',
-            ]
-
-            if not re.search('|'.join(valids), job):
-                continue
-            found_timeout = False
-            with open(job_path) as fp:
-                lines = list(l for l in fp if not l.startswith('#'))
-            docker_timeout = default_timeout - 15
-            for line in lines:
-                if line.startswith('### Reporting'):
-                    bad_jobs.add(job)
-                if '{rc}' in line:
-                    bad_jobs.add(job)
-                if line.startswith('export DOCKER_TIMEOUT='):
-                    docker_timeout = int(re.match(
-                        r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
-                    docker_timeout -= 15
-
-                if 'KUBEKINS_TIMEOUT=' not in line:
-                    continue
-                found_timeout = True
-                mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
-                self.assertTrue(mat, line)
-                if int(mat.group(1)) > docker_timeout:
-                    bad_jobs.add(job)
-            self.assertTrue(found_timeout, job)
-        self.assertFalse(bad_jobs)
-
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.sh', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
@@ -1429,16 +1395,16 @@ class JobTest(unittest.TestCase):
     def testAllProjectAreUnique(self):
         allowed_list = {
             # TODO(fejta): remove these (found while migrating jobs)
-            'ci-kubernetes-kubemark-100-gce.sh': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-5-gce.sh': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-high-density-100-gce.sh': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-gce-scale.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-kubemark-100-gce.env': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-gce.env': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-high-density-100-gce.env': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-gce-scale.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-cluster.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-deploy.sh': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-enormous-teardown.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-cluster.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-deploy.sh': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gke-large-teardown.sh': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-cluster.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-deploy.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
@@ -1459,8 +1425,6 @@ class JobTest(unittest.TestCase):
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
                 if job.startswith('ci-kubernetes-node-'):
                     job = 'ci-kubernetes-node-*'
-                if not line.startswith('#'):
-                    self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
@@ -1477,13 +1441,15 @@ class JobTest(unittest.TestCase):
             self.assertNotIn('source ', script, job)
             self.assertNotIn('\n. ', script, job)
 
-    def testAllJobsHaveErrExit(self):
+    def testAllBashJobsHaveErrExit(self):
         options = {
             'errexit',
             'nounset',
             'pipefail',
         }
         for job, job_path in self.jobs:
+            if '.sh' not in job_path:
+                continue
             with open(job_path) as fp:
                 lines = list(fp)
             for option in options:
@@ -1491,6 +1457,22 @@ class JobTest(unittest.TestCase):
                 self.assertIn(
                      expected, lines,
                      '%s not found in %s' % (expected, job_path))
+
+    def testEnvsNoExport(self):
+        for job, job_path in self.jobs:
+            if '.env' not in job_path:
+                continue
+            with open(job_path) as fp:
+                lines = list(fp)
+            prev = ''
+            for line in lines:
+                m = re.match(r'[0-9A-Z_]+=', line)
+                empty = (line.strip() == '')
+                comment = line.startswith('#')
+                continuation = prev.strip().endswith('\\')
+                prev = line
+                if not (m or empty or comment or continuation):
+                    self.fail('Job %s contains invalid env: %s' % (job, line))
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
@@ -1500,6 +1482,19 @@ class JobTest(unittest.TestCase):
             bad_vars = re.findall(r'(\${{.+}})', script)
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
+
+    def testValidJobEnvs(self):
+        """Validate jobs/config.json."""
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            config = json.loads(fp.read())
+            for job in config:
+                self.assertTrue('scenario' in config[job], job)
+                self.assertTrue(os.path.isfile(bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])), job)
+                if 'args' in config[job]:
+                    for arg in config[job].get('args', []):
+                        m = re.match(r'(--env|--env_template)=([^\"]+)', arg)
+                        if m:
+                            self.assertTrue(os.path.isfile(bootstrap.test_infra('jobs/%s.env' % m.group(2))), job)
 
 
 if __name__ == '__main__':
