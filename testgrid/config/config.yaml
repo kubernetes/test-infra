@@ -1940,7 +1940,7 @@ dashboards:
   - name: aws-janitor
     test_group_name: maintenance-ci-aws-janitor
 
-name: test-infra
+- name: test-infra
   dashboard_tab:
   - name: bazel
     test_group_name: ci-test-infra-bazel
