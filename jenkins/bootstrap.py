@@ -523,7 +523,9 @@ def ci_paths(base, job, build):
 def pr_paths(base, repo, job, build, pull):
     """Return a Paths() instance for a PR."""
     pull = str(pull)
-    if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
+    if repo is None:  # test code
+        prefix = ''
+    elif repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
         prefix = ''
     elif repo.startswith('k8s.io/'):
         prefix = repo[len('k8s.io/'):]
@@ -727,7 +729,7 @@ def bootstrap(
     job, repo, branch, pull, root, upload, robot, timeout=0,
     use_json=False, ssh=False, git_cache=''):
     """Clone repo at pull/branch into root and run job script."""
-    # pylint: disable=too-many-locals,too-many-branches
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
     started = time.time()
@@ -736,33 +738,44 @@ def bootstrap(
     else:
         end = 0
     call = lambda *a, **kw: _call(end, *a, **kw)
+    gsutil = GSUtil(call)
+
     logging.info('Bootstrap %s...', job)
     build = build_name(started)
-    setup_root(call, root, repo, branch, pull, ssh, git_cache)
-    logging.info('Configure environment...')
-    if repo:
-        version = find_version(call)
-    else:
-        version = ''
-    setup_magic_environment(job)
-    setup_credentials(call, robot, upload)
+
     if upload:
         if pull:
             paths = pr_paths(upload, repo, job, build, pull)
         else:
             paths = ci_paths(upload, job, build)
         logging.info('Gubernator results at %s', gubernator_uri(paths))
-    gsutil = GSUtil(call)
-    logging.info('Start %s at %s...', build, version)
-    if upload:
-        start(gsutil, paths, started, node(), version, pull)
-    success = False
+
+    version = 'unknown'
+    exc_type = None
+
     try:
-        call(job_script(job, use_json))
-        logging.info('PASS: %s', job)
-        success = True
-    except subprocess.CalledProcessError:
-        logging.error('FAIL: %s', job)
+        setup_root(call, root, repo, branch, pull, ssh, git_cache)
+        logging.info('Configure environment...')
+        if repo:
+            version = find_version(call)
+        else:
+            version = ''
+        setup_magic_environment(job)
+        setup_credentials(call, robot, upload)
+        logging.info('Start %s at %s...', build, version)
+        if upload:
+            start(gsutil, paths, started, node(), version, pull)
+        success = False
+        try:
+            call(job_script(job, use_json))
+            logging.info('PASS: %s', job)
+            success = True
+        except subprocess.CalledProcessError:
+            logging.error('FAIL: %s', job)
+    except Exception:  # pylint: disable=broad-except
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        logging.exception('unexpected error')
+        success = False
     if upload:
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
@@ -774,6 +787,8 @@ def bootstrap(
     build_log.close()
     if upload:
         gsutil.copy_file(paths.build_log, build_log_path)
+    if exc_type:
+        raise exc_type, exc_value, exc_traceback  # pylint: disable=raising-bad-type
     if not success:
         # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
         # by exit code and automatically retrigger after an infra-problem.

@@ -903,16 +903,18 @@ class BootstrapTest(unittest.TestCase):
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
-    def testNoFinishWhenStartFails(self):
+    def testFinishWhenStartFails(self):
+        """Finish is called even if start fails."""
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'start', Bomb):
                 with self.assertRaises(AssertionError):
                     bootstrap.bootstrap(
                         JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
-        self.assertFalse(fake.called)
-
+        self.assertTrue(fake.called)
+        self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testFinishWhenBuildFails(self):
+        """Finish is called even if the build fails."""
         def CallError(*a, **kw):
             raise subprocess.CalledProcessError(1, [], '')
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
