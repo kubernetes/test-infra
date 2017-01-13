@@ -212,4 +212,4 @@ kubernetes/test-infra:
   trigger: "@k8s-bot (gubernator )?test this"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gubernator:0.0
+    - image: gcr.io/k8s-testimages/gubernator:0.1

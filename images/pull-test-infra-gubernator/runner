@@ -23,4 +23,4 @@ git clone https://github.com/kubernetes/test-infra
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     --pull=${PULL_REFS} \
-    --upload=gs://kubernetes-jenkins/logs
+    --upload=gs://kubernetes-jenkins/pr-logs
