@@ -134,8 +134,25 @@ func buildAll(c client, pr github.PullRequest) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	var ref string
+	var changes []string // lazily initialized
+
 	for _, job := range c.JobAgent.AllPresubmits(pr.Base.Repo.FullName) {
-		if !job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			if changes == nil {
+				changesFull, err := c.GitHubClient.GetPullRequestChanges(pr)
+				if err != nil {
+					return err
+				}
+				// We only care about the filenames here
+				changes := []string{}
+				for _, change := range changesFull {
+					changes = append(changes, change.Filename)
+				}
+			}
+			if !job.RunsAgainstChanges(changes) {
+				continue
+			}
+		} else if !job.AlwaysRun {
 			continue
 		}
 		if !job.RunsAgainstBranch(pr.Base.Ref) {

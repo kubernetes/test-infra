@@ -276,6 +276,39 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	return &pr, nil
 }
 
+// GetPullRequestChanges gets a list of files modified in a pull request.
+func (c *Client) GetPullRequestChanges(pr PullRequest) ([]PullRequestChange, error) {
+	c.log("GetPullRequestChanges", pr.Number)
+	if c.fake {
+		return []PullRequestChange{}, nil
+	}
+	nextURL := fmt.Sprintf("%s/repos/%s/pulls/%d/files", c.base, pr.Base.Repo.FullName, pr.Number)
+	var changes []PullRequestChange
+	for nextURL != "" {
+		resp, err := c.request(http.MethodGet, nextURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var newChanges []PullRequestChange
+		if err := json.Unmarshal(b, &newChanges); err != nil {
+			return nil, err
+		}
+		changes = append(changes, newChanges...)
+		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	}
+	return changes, nil
+}
+
 // CreateStatus creates or updates the status of a commit.
 func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	c.log("CreateStatus", org, repo, ref, s)

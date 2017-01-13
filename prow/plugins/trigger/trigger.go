@@ -45,6 +45,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
+	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
 }
 
 type client struct {
