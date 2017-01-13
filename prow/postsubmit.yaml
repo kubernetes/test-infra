@@ -51,3 +51,14 @@ kubernetes/test-infra:
     - name: cache-ssd
       hostPath:
         path: /mnt/disks/ssd0
+
+- name: maintenance-ci-testgrid-config-upload
+  branches:
+  - master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud:138.0.0
+      args:
+      - "--branch=$(PULL_REFS)"
+      - "--upload=gs://kubernetes-jenkins/logs"
+

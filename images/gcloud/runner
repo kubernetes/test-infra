@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,10 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -o xtrace
 
-export CONFIGDIR=testgrid/config
-go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
-gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
-rm $CONFIGDIR/config
+git clone https://github.com/kubernetes/test-infra
+./test-infra/jenkins/bootstrap.py \
+    --repo=k8s.io/${REPO_NAME} \
+    --job=${JOB_NAME} \
+    --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
+    "$@"

@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
+VERSION = 138.0.0
 
-export CONFIGDIR=testgrid/config
-go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
-gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
-rm $CONFIGDIR/config
+image:
+	docker build -t "gcr.io/k8s-testimages/gcloud:$(VERSION)" .
+
+push:
+	gcloud docker -- push "gcr.io/k8s-testimages/gcloud:$(VERSION)"
+
+.PHONY: image push

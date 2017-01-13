@@ -796,8 +796,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 - name: kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
-- name: testgrid-config-upload
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: kubernetes-cross-build
@@ -1935,8 +1933,6 @@ dashboards:
     test_group_name: maintenance-all-hourly
   - name: ci-clean-projects
     test_group_name: maintenance-ci-clean-projects
-  - name: testgrid-config-upload
-    test_group_name: testgrid-config-upload
   - name: test-history
     test_group_name: test-infra-test-history
   - name: aws-janitor
