@@ -21,9 +21,9 @@ set -o xtrace
 # Create and duplicate build under the go path
 
 # GOPATH should point to /go here
-mkdir -p $GOPATH/src/k8s.io/test-infra
+mkdir -p $GOPATH/src/k8s.io/
+cp -r $WORKSPACE $GOPATH/src/k8s.io/
 export TEST_INFRA=$GOPATH/src/k8s.io/test-infra
-cp -r $WORKSPACE $TEST_INFRA
 
 # Export config
 export CONFIGDIR=$TEST_INFRA/testgrid/config
