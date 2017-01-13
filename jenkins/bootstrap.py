@@ -204,7 +204,7 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(call, repo, branch, pull, ssh=False):
+def checkout(call, repo, branch, pull, ssh=False, git_cache=''):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -215,7 +215,15 @@ def checkout(call, repo, branch, pull, ssh=False):
         refs, checkouts = branch_ref(branch)
 
     git = 'git'
-    call([git, 'init', repo])
+    if git_cache:
+        cache_dir = '%s/%s' % (git_cache, repo)
+        try:
+            os.makedirs(cache_dir)
+        except OSError:
+            pass
+        call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
+    else:
+        call([git, 'init', repo])
     os.chdir(repo)
 
     # To make a merge commit, a user needs to be set. It's okay to use a dummy
@@ -700,7 +708,7 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(call, root, repo, branch, pull, ssh):
+def setup_root(call, root, repo, branch, pull, ssh, git_cache):
     """Create root dir, checkout repo and cd into resulting dir."""
     logging.info(
         'Check out %s at %s...',
@@ -710,13 +718,14 @@ def setup_root(call, root, repo, branch, pull, ssh):
         os.makedirs(root)
     os.chdir(root)
     if repo:
-        checkout(call, repo, branch, pull, ssh)
+        checkout(call, repo, branch, pull, ssh, git_cache)
     elif branch or pull:
         raise ValueError('--branch and --pull require --repo', branch, pull)
 
 
 def bootstrap(
-    job, repo, branch, pull, root, upload, robot, timeout=0, use_json=False, ssh=False):
+    job, repo, branch, pull, root, upload, robot, timeout=0,
+    use_json=False, ssh=False, git_cache=''):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches
     build_log_path = os.path.abspath('build-log.txt')
@@ -729,7 +738,7 @@ def bootstrap(
     call = lambda *a, **kw: _call(end, *a, **kw)
     logging.info('Bootstrap %s...', job)
     build = build_name(started)
-    setup_root(call, root, repo, branch, pull, ssh)
+    setup_root(call, root, repo, branch, pull, ssh, git_cache)
     logging.info('Configure environment...')
     if repo:
         version = find_version(call)
@@ -800,6 +809,9 @@ def parse_args(arguments=None):
         '--ssh',
         action='store_true',
         help='Use ssh to fetch the repository instead of https.')
+    parser.add_argument(
+        '--git-cache',
+        help='Location of the git cache.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
@@ -820,4 +832,5 @@ if __name__ == '__main__':
         ARGS.timeout,
         ARGS.json,
         ARGS.ssh,
+        ARGS.git_cache,
     )
