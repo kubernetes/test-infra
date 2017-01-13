@@ -23,7 +23,7 @@ set -o xtrace
 # GOPATH should point to /go here
 mkdir -p $GOPATH/src/k8s.io/test-infra
 export TEST_INFRA=$GOPATH/src/k8s.io/test-infra
-cp -r $WORKSPACE/test-infra $TEST_INFRA
+cp -r $WORKSPACE $TEST_INFRA
 
 # Export config
 export CONFIGDIR=$TEST_INFRA/testgrid/config
