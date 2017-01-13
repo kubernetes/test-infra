@@ -246,3 +246,50 @@ func TestGetPresubmits(t *testing.T) {
 		t.Error("Whaa!? Found a presubmit that shouldn't exist.")
 	}
 }
+
+func TestListJobNames(t *testing.T) {
+	ja := &JobAgent{
+		presubmits: map[string][]Presubmit{
+			"r1": {
+				{
+					Name: "a",
+					RunAfterSuccess: []Presubmit{
+						{Name: "aa"},
+						{Name: "ab"},
+					},
+				},
+				{Name: "b"},
+			},
+		},
+		postsubmits: map[string][]Postsubmit{
+			"r1": {
+				{
+					Name: "c",
+					RunAfterSuccess: []Postsubmit{
+						{Name: "ca"},
+						{Name: "cb"},
+					},
+				},
+				{Name: "d"},
+			},
+			"r2": {{Name: "e"}},
+		},
+	}
+	expected := []string{"a", "aa", "ab", "b", "c", "ca", "cb", "d", "e"}
+	actual := ja.AllJobNames()
+	if len(actual) != len(expected) {
+		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
+	}
+	for _, j1 := range expected {
+		found := false
+		for _, j2 := range actual {
+			if j1 == j2 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Did not find job %s in output", j1)
+		}
+	}
+}
