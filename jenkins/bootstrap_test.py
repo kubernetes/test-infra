@@ -994,6 +994,7 @@ class IntegrationTest(unittest.TestCase):
         ]
         self.root_github = tempfile.mkdtemp()
         self.root_workspace = tempfile.mkdtemp()
+        self.root_git_cache = tempfile.mkdtemp()
         self.ocwd = os.getcwd()
         repo = self.FakeRepo(self.REPO)
         subprocess.check_call(['git', 'init', repo])
@@ -1012,6 +1013,21 @@ class IntegrationTest(unittest.TestCase):
         os.chdir(self.ocwd)
         subprocess.check_call(['rm', '-rf', self.root_github])
         subprocess.check_call(['rm', '-rf', self.root_workspace])
+        subprocess.check_call(['rm', '-rf', self.root_git_cache])
+
+    def testGitCache(self):
+        subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
+        subprocess.check_call(['git', 'rm', self.MASTER])
+        subprocess.check_call(['touch', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'add', self.BRANCH_FILE])
+        subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
+        bootstrap.bootstrap(
+            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace,
+            UPLOAD, ROBOT, git_cache=self.root_git_cache)
+        # Verify that the cache was populated by running a simple git command
+        # in the git cache directory.
+        subprocess.check_call(
+            ['git', '--git-dir=%s/%s' % (self.root_git_cache, self.REPO), 'log'])
 
     def testPr(self):
         subprocess.check_call(['git', 'checkout', 'master'])
