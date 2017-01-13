@@ -500,7 +500,7 @@ func (c *testClient) tryCreateFailureComment(url string) {
 	}
 	// The deletion logic requires that it start with context.
 	// TODO: Fix pr-test link for non-kubernetes repos.
-	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d).
+	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%d). cc @%s
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/%s/%s/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.
 
@@ -509,7 +509,7 @@ The magic incantation to run this job again is ` + "`%s`" + `. Please help us cu
 %s
 </details>
 `
-	body := fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, c.PRNumber, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
+	body := fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, c.PRNumber, c.Author, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
 	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
