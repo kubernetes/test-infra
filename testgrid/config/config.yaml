@@ -808,6 +808,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
+- name: testgrid-config-upload
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: maintenance-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
@@ -830,6 +832,8 @@ test_groups:
 # bazel, run on prow
 - name: ci-kubernetes-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel
+- name: ci-test-infra-bazel
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # rktnetes
 - name: kubernetes-rktnetes
   gcs_prefix: rktnetes-jenkins/logs/kubernetes-e2e-gce
@@ -1933,10 +1937,17 @@ dashboards:
     test_group_name: maintenance-all-hourly
   - name: ci-clean-projects
     test_group_name: maintenance-ci-clean-projects
-  - name: test-history
-    test_group_name: test-infra-test-history
   - name: aws-janitor
     test_group_name: maintenance-ci-aws-janitor
+
+name: test-infra
+  dashboard_tab:
+  - name: bazel
+    test_group_name: ci-test-infra-bazel
+  - name: test-history
+    test_group_name: test-infra-test-history
+  - name: testgrid-config-upload
+    test_group_name: testgrid-config-upload
 
 - name: google-cri
   dashboard_tab:
