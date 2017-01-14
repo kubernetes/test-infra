@@ -18,6 +18,7 @@ spec:
         - -storage.local.path=/prometheus
         - -web.console.libraries=/usr/share/prometheus/console_libraries
         - -web.console.templates=/usr/share/prometheus/consoles
+        - -storage.local.retention=35064h
         resources:
           requests:
             cpu: 0m
