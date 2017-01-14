@@ -79,6 +79,13 @@ class PRHandler(view_base.BaseHandler):
             path = ''
             repo = 'kubernetes/kubernetes'
         builds = pr_builds(path, pr)
+        for bs in builds.itervalues():
+            if any(len(b) > 8 for b, _, _ in bs):
+                # Long builds indicate non sequential build numbers, sort them.
+                # These builds shouldn't be created going forwards, so this
+                # should be dead code once all the old PRs are finished.
+                # -- rmmh 2017-01-13
+                bs.sort(key=lambda (b, s, f): -(s or {}).get('timestamp', 0))
         if pr == 'batch':  # truncate batch results to last day
             cutoff = time.time() - 60 * 60 * 24
             builds = {j: [(b, s, f) for b, s, f in bs if not s or s['timestamp'] > cutoff]
