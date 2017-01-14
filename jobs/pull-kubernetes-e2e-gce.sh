@@ -72,6 +72,5 @@ export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
 export PATH=${PATH}:/usr/local/go/bin
 
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="75m"
 export KUBEKINS_TIMEOUT="55m"
 "${runner}"

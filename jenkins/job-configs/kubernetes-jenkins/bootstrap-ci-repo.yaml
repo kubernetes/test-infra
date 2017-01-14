@@ -128,7 +128,7 @@
         json: 0
         repo-name: k8s.io/kubernetes-anywhere
         frequency: 'H/5 * * * *'
-        timeout: 0
+        timeout: 140
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master
