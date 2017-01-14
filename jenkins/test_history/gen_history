@@ -22,6 +22,7 @@ set -o nounset
 readonly bucket="kubernetes-test-history"
 readonly jsonpath="gs://${bucket}/logs/$(date +%F).json"
 
+cd "$(dirname "$0")"
 # Copy buckets.yaml so the Docker container can access it
 cp ../../buckets.yaml .
 trap 'rm -f buckets.yaml' EXIT

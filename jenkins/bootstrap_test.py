@@ -1218,7 +1218,8 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
 
     def testBootstrapPullYaml(self):
-        is_modern = lambda n: any(w in n for w in ['unit', 'verify', 'node'])
+        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1226,7 +1227,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
             self.assertIn('json', job)
-            modern = is_modern(name) and 1 or 0
+            modern = is_modern(name)  # TODO(fejta): all modern
             self.assertEquals(modern, job['json'])
             if is_modern(name):
                 self.assertGreater(job['timeout'], 0)
@@ -1263,9 +1264,7 @@ class JobTest(unittest.TestCase):
             Check, suffix='commit-suffix', use_json=True)
 
     def testBootstrapCIRepoYaml(self):
-        white = r'-unit|-verify|-test-go|-node'
-        black = r'kubelet-conformance$|cadvisor'
-        is_modern = lambda n: re.search(white, n) and not re.search(black, n)
+        is_modern = lambda n: '-e2e-' not in n
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
@@ -1273,10 +1272,10 @@ class JobTest(unittest.TestCase):
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
             self.assertIn('json', job)
-            modern = bool(is_modern(name)) and 1 or 0  # TODO(fejta): migrate all jobs
+            modern = is_modern(name)  # TODO(fejta): all jobs
             self.assertEquals(modern, job['json'], name)
             if is_modern(name):  # TODO(fejta): do this for all jobs
-                self.assertGreater(job['timeout'], 0)
+                self.assertGreater(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(

@@ -52,7 +52,7 @@
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-cadvisor-node-kubelet
-        json: 0
+        json: 1
         repo-name: github.com/google/cadvisor
         timeout: 90
 
@@ -60,9 +60,9 @@
         branch: master
         frequency: 'H * * * *'
         job-name: ci-test-infra-test-history
-        json: 0
+        json: 1
         repo-name: github.com/kubernetes/test-infra
-        timeout: 0
+        timeout: 30
 
     - kubernetes-verify-master:
         branch: master
@@ -125,7 +125,7 @@
     - kubernetes-e2e-kubeadm-gce:
         branch: master
         job-name: ci-kubernetes-e2e-kubeadm-gce
-        json: 0
+        json: 0  # TODO(fejta): so sad!
         repo-name: k8s.io/kubernetes-anywhere
         frequency: 'H/5 * * * *'
         timeout: 0
@@ -162,7 +162,7 @@
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-kubernetes-node-kubelet-conformance
-        json: 0
+        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-conformance-dockerized:  # senlu, temp

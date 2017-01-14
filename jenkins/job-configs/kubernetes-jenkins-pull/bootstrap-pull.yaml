@@ -65,22 +65,22 @@
     suffix:  # pull-<repo>-<suffix> is the expected format
     - cadvisor-e2e:  # owner: stclair@google.com
         job-name: pull-cadvisor-e2e
-        json: 0
+        json: 1
         max-total: 5
         repo-name: 'github.com/google/cadvisor'
-        timeout: 0
+        timeout: 10
     - charts-e2e:
         job-name: pull-charts-e2e
-        json: 0
+        json: 1
         max-total: 5
         repo-name: 'k8s.io/charts'
-        timeout: 0
+        timeout: 10
     - heapster-e2e:  # owner: pszczesniak@google.com
         job-name: pull-heapster-e2e
-        json: 0
+        json: 1
         max-total: 5
         repo-name: 'k8s.io/heapster'
-        timeout: 0
+        timeout: 40
     - kops-e2e-kubernetes-aws:  # owner: zml@google.com
         job-name: pull-kops-e2e-kubernetes-aws
         json: 0
@@ -90,9 +90,9 @@
     - kubernetes-cross:
         max-total: 12
         job-name: pull-kubernetes-cross
-        json: 0
+        json: 1
         repo-name: 'k8s.io/kubernetes'
-        timeout: 0
+        timeout: 60
     - kubernetes-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce
