@@ -110,6 +110,26 @@ func TestCreateComment(t *testing.T) {
 	}
 }
 
+func TestCreateCommentReaction(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/comments/5/reactions" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		if r.Header.Get("Accept") != "application/vnd.github.squirrel-girl-preview" {
+			t.Errorf("Bad Accept header: %s", r.Header.Get("Accept"))
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CreateCommentReaction("k8s", "kuber", 5, "+1"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
 func TestDeleteComment(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {

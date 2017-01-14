@@ -28,6 +28,20 @@ const (
 	StatusFailure = "failure"
 )
 
+// Possible contents for reactions.
+const (
+	ReactionThumbsUp   = "+1"
+	ReactionThumbsDown = "-1"
+	ReactionLaugh      = "laugh"
+	ReactionConfused   = "confused"
+	ReactionHeart      = "heart"
+	ReactionHooray     = "hooray"
+)
+
+type Reaction struct {
+	Content string `json:"content"`
+}
+
 // Status is used to set a commit status line.
 type Status struct {
 	State       string `json:"state"`
