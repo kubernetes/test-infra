@@ -148,7 +148,11 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Token "+c.token)
-	req.Header.Add("Accept", "application/vnd.github.v3+json")
+	if strings.HasSuffix(path, "reactions") {
+		req.Header.Add("Accept", "application/vnd.github.squirrel-girl-preview")
+	} else {
+		req.Header.Add("Accept", "application/vnd.github.v3+json")
+	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
 	// https://go-review.googlesource.com/#/c/3210/ fixed it for GET, but not
@@ -213,6 +217,23 @@ func (c *Client) DeleteComment(org, repo string, ID int) error {
 	defer resp.Body.Close()
 	if resp.StatusCode != 204 {
 		return fmt.Errorf("response not 204: %s", resp.Status)
+	}
+	return nil
+}
+
+func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string) error {
+	c.log("CreateCommentReaction", org, repo, ID, reaction)
+	if c.dry {
+		return nil
+	}
+	r := Reaction{Content: reaction}
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d/reactions", c.base, org, repo, ID), r)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 201 {
+		return fmt.Errorf("response not 201: %s", resp.Status)
 	}
 	return nil
 }
