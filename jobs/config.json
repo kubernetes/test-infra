@@ -252,6 +252,39 @@
   ]
 },
 
+"pull-cadvisor-e2e": {
+  "scenario": "execute",
+  "args": [
+    "--env=BUILDER=true",
+    "./build/jenkins_e2e.sh"
+  ]
+},
+
+"pull-charts-e2e": {
+  "scenario": "execute",
+  "args": [
+    "./test/e2e.sh"
+  ]
+},
+
+"pull-heapster-e2e": {
+  "scenario": "execute",
+  "args": [
+    "make",
+    "test-unit",
+    "test-integration"
+  ]
+},
+
+"pull-kubernetes-cross": {
+  "scenario": "execute",
+  "args": [
+    "--env=KUBE_RELEASE_RUN_TESTS=n",
+    "make",
+    "release"
+  ]
+},
+
 "pull-kubernetes-node-e2e": {
   "scenario": "kubernetes_kubelet",
   "args": [

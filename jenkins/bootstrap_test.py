@@ -1218,7 +1218,8 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
 
     def testBootstrapPullYaml(self):
-        is_modern = lambda n: any(w in n for w in ['unit', 'verify', 'node'])
+        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1226,7 +1227,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
             self.assertIn('json', job)
-            modern = is_modern(name)
+            modern = is_modern(name)  # TODO(fejta): all modern
             self.assertEquals(modern, job['json'])
             if is_modern(name):
                 self.assertGreater(job['timeout'], 0)

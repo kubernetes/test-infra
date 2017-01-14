@@ -20,6 +20,7 @@
 """Executes a command."""
 
 import argparse
+import os
 import subprocess
 import sys
 
@@ -29,14 +30,21 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
-def main(cmd):
+def main(envs, cmd):
     """Run script and verify it exits 0."""
+    for env in envs:
+        key, val = env.split('=', 1)
+        print >>sys.stderr, '%s=%s' % (key, val)
+        os.environ[key] = val
     if not cmd:
         raise ValueError(cmd)
     check(*cmd)
 
 
 if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(
-        'Executes a command, verifying it returns 0')
-    main(sys.argv[1:])
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument('--env', default=[], action='append')
+    PARSER.add_argument('cmd', nargs=1)
+    PARSER.add_argument('args', nargs='*')
+    ARGS = PARSER.parse_args()
+    main(ARGS.env, ARGS.cmd + ARGS.args)
