@@ -215,7 +215,7 @@ def DeleteOldWorkspaces():
         key = os.path.basename(dirname).replace('@tmp', '')
         if key not in live_jobs:
             print 'deleting old job workspace', dirname
-            err |= subprocess.call(['rm', '-rf', dirname])
+            err |= subprocess.call(['sudo', 'rm', '-rf', dirname])
     return err
 
 
