@@ -1,5 +1,12 @@
 {
 
+"ci-cadvisor-node-kubelet": {
+  "scenario": "execute",
+  "args": [
+    "./build/jenkins_e2e.sh"
+  ]
+},
+
 "ci-kops-build": {
   "scenario": "kubernetes_build",
   "args": [
@@ -118,6 +125,15 @@
   ]
 },
 
+"ci-kubernetes-node-kubelet-conformance": {
+  "scenario": "execute",
+  "todo": "Merge with -dockerized",
+  "args": [
+    "test/e2e_node/jenkins/conformance/conformance-jenkins.sh",
+    "test/e2e_node/jenkins/conformance/jenkins-conformance.properties"
+  ]
+},
+
 "ci-kubernetes-node-kubelet-conformance-dockerized": {
   "scenario": "kubernetes_kubelet",
   "args": [
@@ -226,6 +242,13 @@
     "--branch=release-1.5",
     "--force",
     "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"ci-test-infra-test-history": {
+  "scenario": "execute",
+  "args": [
+    "./jenkins/test_history/gen_history"
   ]
 },
 
