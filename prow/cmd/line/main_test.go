@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
@@ -72,6 +73,32 @@ func TestFailureComment(t *testing.T) {
 	for _, comment := range newComments {
 		if comment.ID == 1 || comment.ID == 8 {
 			t.Errorf("Comment not deleted: %v", comment.ID)
+		}
+	}
+}
+
+func TestFormatFailureComment(t *testing.T) {
+	var testcases = []struct {
+		owner    string
+		name     string
+		expected string
+	}{
+		{"kubernetes", "kubernetes", "pr-test.k8s.io/12"},
+		{"kubernetes", "kops", "pr-test.k8s.io/kops/12"},
+		{"google", "cadvisor", "pr-test.k8s.io/google_cadvisor/12"},
+	}
+	for _, tc := range testcases {
+		c := testClient{
+			RepoOwner: tc.owner,
+			RepoName:  tc.name,
+			PRNumber:  12,
+		}
+		body := c.formatFailureComment("someurl")
+		if !strings.Contains(body, "someurl") {
+			t.Error("body doesn't contain url")
+		}
+		if !strings.Contains(body, tc.expected) {
+			t.Errorf("body missing string %v: %v", tc.expected, body)
 		}
 	}
 }
