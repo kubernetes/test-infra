@@ -253,13 +253,14 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	context := bytes.NewBufferString("")
 	for _, path := range sliceOfKeys {
 		approverSet := ownersMap[path]
+		fullOwnersPath := filepath.Join(path, ownersFileName)
+		link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", obj.Org(), obj.Project(), fullOwnersPath)
+
 		if approverSet.Len() == 0 {
-			fullOwnersPath := filepath.Join(path, ownersFileName)
-			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", obj.Org(), obj.Project(), fullOwnersPath)
 			context.WriteString(fmt.Sprintf("- **[%s](%s)** \n", fullOwnersPath, link))
 			unapprovedOwners.Insert(path)
 		} else {
-			context.WriteString(fmt.Sprintf("- ~~%s~~ [%v]\n", path, strings.Join(approverSet.List(), ",")))
+			context.WriteString(fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(approverSet.List(), ",")))
 		}
 	}
 	context.WriteString("\n")
