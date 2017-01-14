@@ -23,7 +23,9 @@ import os
 import re
 import subprocess
 import sys
+import traceback
 
+import requests
 
 def ContainerImages():
     for line in subprocess.check_output([
@@ -194,6 +196,29 @@ def DeleteCorruptGitRepos():
     return err
 
 
+def DeleteOldWorkspaces():
+    err = 0
+    live_jobs = None
+    for host in ('jenkins-master', 'pull-jenkins-master'):
+        try:
+            resp = requests.get("http://%s:8080/api/json?pretty=true&tree=jobs[name]" % host)
+            resp.raise_for_status()
+            live_jobs = {job['name'] for job in resp.json()['jobs']}
+        except requests.exceptions.ConnectionError:
+            continue
+        except requests.exceptions.RequestException:
+            traceback.print_exc()
+    if live_jobs is None:
+        print 'unable to determine live jenkins jobs, not deleting any workspaces'
+        return 1
+    for dirname in sorted(glob.glob('/var/lib/jenkins/workspace/*')):
+        key = os.path.basename(dirname).replace('@tmp', '')
+        if key not in live_jobs:
+            print 'deleting old job workspace', dirname
+            err |= subprocess.call(['rm', '-rf', dirname])
+    return err
+
+
 def main(ancient):
     # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
     err = 0
@@ -203,6 +228,7 @@ def main(ancient):
     err |= RemoveVolumes()
     err |= KillLoopingBash()
     err |= DeleteCorruptGitRepos()
+    err |= DeleteOldWorkspaces()
     sys.exit(err)
 
 
