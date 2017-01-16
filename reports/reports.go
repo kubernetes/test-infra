@@ -37,7 +37,7 @@ var reportMap = map[string]Report{}
 var reports = []Report{}
 
 // GetAllReports returns a slice of all registered reports. This list is
-// completely independant of the reports selected at runtime in --pr-reports.
+// completely independent of the reports selected at runtime in --pr-reports.
 // This is all possible reports.
 func GetAllReports() []Report {
 	out := []Report{}
