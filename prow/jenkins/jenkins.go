@@ -126,7 +126,7 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	}
 	q := u.Query()
 	q.Set("buildId", buildID)
-	// These two are provided for backwards-compatability with scripts that
+	// These two are provided for backwards-compatibility with scripts that
 	// used the ghprb plugin.
 	// TODO(spxtr): Remove these.
 	q.Set("ghprbPullId", br.Refs)
