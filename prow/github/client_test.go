@@ -17,7 +17,6 @@ limitations under the License.
 package github
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -162,7 +161,7 @@ func TestGetPullRequest(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Didn't expect error: %v", err)
 		}
-		fmt.Fprint(w, bytes.NewBuffer(b))
+		fmt.Fprint(w, string(b))
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
@@ -174,6 +173,40 @@ func TestGetPullRequest(t *testing.T) {
 	}
 }
 
+func TestGetPullRequestChanges(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/pulls/12/files" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		changes := []PullRequestChange{
+			{Filename: "foo.txt"},
+		}
+		b, err := json.Marshal(&changes)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	pr := PullRequest{
+		Number: 12,
+		Base: PullRequestBranch{
+			Repo: Repo{FullName: "k8s/kuber"},
+		},
+	}
+	cs, err := c.GetPullRequestChanges(pr)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+	if len(cs) != 1 || cs[0].Filename != "foo.txt" {
+		t.Errorf("Wrong result: %#v", cs)
+	}
+}
+
 func TestGetRef(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -182,7 +215,7 @@ func TestGetRef(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/mastah" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		fmt.Fprint(w, bytes.NewBufferString(`{"object": {"sha":"abcde"}}`))
+		fmt.Fprint(w, `{"object": {"sha":"abcde"}}`)
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
@@ -235,14 +268,14 @@ func TestListIssueComments(t *testing.T) {
 				t.Fatalf("Didn't expect error: %v", err)
 			}
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
-			fmt.Fprint(w, bytes.NewBuffer(b))
+			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/someotherpath" {
 			ics := []IssueComment{{ID: 2}}
 			b, err := json.Marshal(ics)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
 			}
-			fmt.Fprint(w, bytes.NewBuffer(b))
+			fmt.Fprint(w, string(b))
 		} else {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
@@ -351,7 +384,7 @@ func TestFindIssues(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Didn't expect error: %v", err)
 		}
-		fmt.Fprint(w, bytes.NewBuffer(b))
+		fmt.Fprint(w, string(b))
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)

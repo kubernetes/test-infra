@@ -86,6 +86,17 @@ type Label struct {
 	Color string `json:"color"`
 }
 
+// PullRequestChange contains information about what a PR changed.
+type PullRequestChange struct {
+	SHA       string `json:"sha"`
+	Filename  string `json:"filename"`
+	Status    string `json:"added"`
+	Additions int    `json:"additions"`
+	Deletions int    `json:"deletions"`
+	Changes   int    `json:"changes"`
+	Patch     string `json:"patch"`
+}
+
 // Repo contains general repository information.
 type Repo struct {
 	Owner    User   `json:"owner"`

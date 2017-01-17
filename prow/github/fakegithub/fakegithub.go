@@ -23,11 +23,12 @@ import (
 )
 
 type FakeClient struct {
-	Issues         []github.Issue
-	OrgMembers     []string
-	IssueComments  map[int][]github.IssueComment
-	IssueCommentID int
-	PullRequests   map[int]*github.PullRequest
+	Issues             []github.Issue
+	OrgMembers         []string
+	IssueComments      map[int][]github.IssueComment
+	IssueCommentID     int
+	PullRequests       map[int]*github.PullRequest
+	PullRequestChanges map[int][]github.PullRequestChange
 
 	// org/repo#number:label
 	LabelsAdded   []string
@@ -70,6 +71,10 @@ func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	return f.PullRequests[number], nil
+}
+
+func (f *FakeClient) GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error) {
+	return f.PullRequestChanges[pr.Number], nil
 }
 
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {

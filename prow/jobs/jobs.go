@@ -34,6 +34,8 @@ type Presubmit struct {
 	Name string `json:"name"`
 	// Run for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
+	// Run if the PR modifies a file that matches this regex.
+	RunIfChanged string `json:"run_if_changed"`
 	// Context line for GitHub status.
 	Context string `json:"context"`
 	// eg @k8s-bot e2e test this
@@ -49,8 +51,9 @@ type Presubmit struct {
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success"`
 
-	// We'll set this when we load it.
-	re *regexp.Regexp
+	// We'll set these when we load it.
+	re        *regexp.Regexp // from RerunCommand
+	reChanges *regexp.Regexp // from RunIfChanged
 }
 
 func (ps Presubmit) RunsAgainstBranch(branch string) bool {
@@ -59,6 +62,15 @@ func (ps Presubmit) RunsAgainstBranch(branch string) bool {
 	}
 	for _, b := range ps.Branches {
 		if b == branch {
+			return true
+		}
+	}
+	return false
+}
+
+func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
+	for _, change := range changes {
+		if ps.reChanges.MatchString(change) {
 			return true
 		}
 	}
@@ -260,6 +272,13 @@ func setRegexes(js []Presubmit) error {
 		}
 		if err := setRegexes(j.RunAfterSuccess); err != nil {
 			return err
+		}
+		if j.RunIfChanged != "" {
+			if re, err := regexp.Compile(j.RunIfChanged); err != nil {
+				return err
+			} else {
+				js[i].reChanges = re
+			}
 		}
 	}
 	return nil

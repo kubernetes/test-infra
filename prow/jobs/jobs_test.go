@@ -215,6 +215,34 @@ func TestCommentBodyMatches(t *testing.T) {
 	}
 }
 
+func TestConditionalPresubmits(t *testing.T) {
+	presubmits := []Presubmit{
+		{
+			Name:         "cross build",
+			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
+		},
+	}
+	setRegexes(presubmits)
+	ps := presubmits[0]
+	var testcases = []struct {
+		changes  []string
+		expected bool
+	}{
+		{[]string{"some random file"}, false},
+		{[]string{"./pkg/util/rlimit/rlimit_linux.go"}, true},
+		{[]string{"./pkg/util/rlimit/rlimit_unknown_test.go"}, true},
+		{[]string{"build.sh"}, true},
+		{[]string{"build.shoo"}, false},
+		{[]string{"Makefile"}, true},
+	}
+	for _, tc := range testcases {
+		actual := ps.RunsAgainstChanges(tc.changes)
+		if actual != tc.expected {
+			t.Errorf("wrong RunsAgainstChanges(%#v) result. Got %v, expected %v", tc.changes, actual, tc.expected)
+		}
+	}
+}
+
 func TestPostsubmits(t *testing.T) {
 	ja := &JobAgent{}
 	if err := ja.loadPostsubmits("../postsubmit.yaml"); err != nil {
