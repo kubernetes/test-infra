@@ -144,7 +144,6 @@ func buildAll(c client, pr github.PullRequest) error {
 					return err
 				}
 				// We only care about the filenames here
-				changes := []string{}
 				for _, change := range changesFull {
 					changes = append(changes, change.Filename)
 				}
