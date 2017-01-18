@@ -56,6 +56,8 @@ def collect(project, age, resource, filt):
         filt: Filter clause for gcloud list command.
     Returns:
         A dict of condition : list of gcloud resource object.
+    Raises:
+        ValueError if json result from gcloud is invalid.
     """
 
     col = collections.defaultdict(list)
@@ -70,11 +72,10 @@ def collect(project, age, resource, filt):
         print '%s' % item
 
         if 'name' not in item or 'creationTimestamp' not in item:
-            print '[Warning] - Skip item without name or timestamp'
-            continue
+            raise ValueError('%s' % item)
+
         if resource.condition and resource.condition not in item:
-            print '[Warning] - condition specified but not found'
-            continue
+            raise ValueError(resource.condition)
 
         if resource.condition:
             colname = item[resource.condition]
@@ -83,8 +84,7 @@ def collect(project, age, resource, filt):
 
         if resource.managed:
             if 'isManaged' not in item:
-                print '[Warning] - isManaged specified but not found'
-                continue
+                raise ValueError(resource.managed)
             else:
                 if resource.managed != item['isManaged']:
                     continue
