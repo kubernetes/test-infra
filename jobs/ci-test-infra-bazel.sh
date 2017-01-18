@@ -23,10 +23,9 @@ pip install -r jenkins/test_history/requirements.txt
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-bazel build //... && rc=$? || rc=$?
+bazel clean --expunge
 
-# Clear test.xml so that we don't pick up old results.
-find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+bazel build //... && rc=$? || rc=$?
 
 if [[ "${rc}" == 0 ]]; then
   bazel test --test_output=errors //... && rc=$? || rc=$?

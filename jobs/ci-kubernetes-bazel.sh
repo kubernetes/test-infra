@@ -20,10 +20,9 @@ set -o pipefail
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-make bazel-build && rc=$? || rc=$?
+bazel clean --expunge
 
-# Clear test.xml so that we don't pick up old results.
-find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+make bazel-build && rc=$? || rc=$?
 
 if [[ "${rc}" == 0 ]]; then
   make bazel-test && rc=$? || rc=$?
