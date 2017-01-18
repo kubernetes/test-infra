@@ -261,6 +261,17 @@ class PullRefsTest(unittest.TestCase):
 class CheckoutTest(unittest.TestCase):
     """Tests for checkout()."""
 
+    def testClean(self):
+        """checkout cleans and resets if asked to."""
+        fake = FakeSubprocess()
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, None, PULL, clean=True)
+
+        self.assertTrue(any(
+            'clean' in cmd for cmd, _, _ in fake.calls if 'git' in cmd))
+        self.assertTrue(any(
+            'reset' in cmd for cmd, _, _ in fake.calls if 'git' in cmd))
+
     def testFetchRetries(self):
         self.tries = 0
         expected_attempts = 3
