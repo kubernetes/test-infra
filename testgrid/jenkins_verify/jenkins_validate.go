@@ -59,7 +59,7 @@ func main() {
 		fmt.Printf("Failed to convert yaml to protobuf: %v\n", err)
 		os.Exit(1)
 	}
-	
+
 	config := &config.Configuration{}
 	if err := proto.Unmarshal(protobufData, config); err != nil {
 		fmt.Printf("Failed to parse config: %v\n", err)
