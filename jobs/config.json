@@ -312,6 +312,14 @@
   "args": [
     "--branch=${PULL_BASE_REF}"
   ]
+},
+
+"ci-kubernetes-e2e-cri-gce-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-flaky.env"
+  ]
 }
 
 }

@@ -326,9 +326,9 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-flaky:
         job-name: ci-kubernetes-e2e-cri-gce-flaky
-        timeout: 0
+        timeout: 200
         trigger-job: 'ci-kubernetes-build'
-        json: 0
+        json: 1
         frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-cri-gce-scalability:
         job-name: ci-kubernetes-e2e-cri-gce-scalability

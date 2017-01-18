@@ -1178,6 +1178,20 @@ class JobTest(unittest.TestCase):
         'config.json',  # For --json mode
     ]
 
+    yaml_suffix = {
+        'job-configs/bootstrap-maintenance.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml' : 'dockerpush-suffix'
+    }
+
+    realjobs = {}
+
     def testJobScriptExpandsVars(self):
         fake = {
             'HELLO': 'awesome',
@@ -1249,16 +1263,24 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCIYaml(self):
+        is_modern = lambda name: 'kubernetes-e2e-cri-gce-flaky' in name
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
-            self.assertEquals(job['json'], 0)
-            self.assertEquals(job['timeout'], 0)
+            self.assertIn('json', job)
+            modern = is_modern(name)
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
+            else:
+                self.assertEqual(job['timeout'], 0)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
+            Check, use_json=is_modern)
 
     def testBootstrapCICommitYaml(self):
         def Check(job, name):
@@ -1274,7 +1296,7 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            Check, suffix='commit-suffix', use_json=True)
+            Check, use_json=True)
 
     def testBootstrapCIRepoYaml(self):
         is_modern = lambda n: '-e2e-' not in n
@@ -1293,7 +1315,7 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            Check, suffix='repo-suffix', use_json=is_modern)
+            Check, use_json=is_modern)
 
     def testBootstrapCISoakYaml(self):
         def Check(job, name):
@@ -1305,9 +1327,7 @@ class JobTest(unittest.TestCase):
             self.assertNotIn('branch', job)
             return job_name
 
-        self.CheckBootstrapYaml(
-            'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
-            Check, suffix='soak-suffix')
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml', Check)
 
     def testBootstrapCIDockerpushYaml(self):
         def Check(job, name):
@@ -1319,7 +1339,7 @@ class JobTest(unittest.TestCase):
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            Check, suffix='dockerpush-suffix')
+            Check)
 
     def CheckJobTemplate(self, tmpl):
         builders = tmpl.get('builders')
@@ -1343,9 +1363,7 @@ class JobTest(unittest.TestCase):
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
 
-
-
-    def CheckBootstrapYaml(self, path, check, suffix='suffix', use_json=False):
+    def LoadBootstrapYaml(self, path):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
             doc = yaml.safe_load(fp)
@@ -1373,10 +1391,12 @@ class JobTest(unittest.TestCase):
             ','.join(defined_templates - used_templates))
         self.assertEquals(defined_templates, used_templates, msg)
 
-        jobs = project.get(suffix)
+        self.assertIn(path, self.yaml_suffix)
+        jobs = project.get(self.yaml_suffix[path])
         if not jobs or not isinstance(jobs, list):
             self.fail('Could not find %s list in %s' % (suffix, project))
 
+        real_jobs = {}
         for job in jobs:
             # Things to check on all bootstrap jobs
             if not isinstance(job, dict):
@@ -1384,7 +1404,15 @@ class JobTest(unittest.TestCase):
             self.assertEquals(1, len(job), job)
             name = job.keys()[0]
             real_job = job[name]
+            self.assertNotIn(name, real_jobs)
+            real_jobs[name] = real_job
+            if name not in self.realjobs:
+                self.realjobs[name] = real_job
+        return real_jobs
 
+    def CheckBootstrapYaml(self, path, check, use_json=False):
+        for name, real_job in self.LoadBootstrapYaml(path).iteritems():
+            # Things to check on all bootstrap jobs
             if callable(use_json):  # TODO(fejta): gross, but temporary?
                 modern = use_json(name)
             else:
@@ -1416,10 +1444,19 @@ class JobTest(unittest.TestCase):
             self.assertTrue(job_name)
             self.assertEquals(job_name, real_job.get('job-name'))
 
+    def GetRealBootstrapJob(self, job):
+        key = os.path.splitext(job.strip())[0][3:]
+        if not key in self.realjobs:
+            for yaml in self.yaml_suffix:
+                self.LoadBootstrapYaml(yaml)
+        self.assertIn(key, self.realjobs)
+        return self.realjobs.get(key)
+
     def testValidTimeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
         default_timeout = int(re.search(r'\$\{DOCKER_TIMEOUT:-(\d+)m', open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()).group(1))
         bad_jobs = set()
+
         for job, job_path in self.jobs:
             valids = [
                 'kubernetes-e2e-',
@@ -1447,7 +1484,14 @@ class JobTest(unittest.TestCase):
                 if 'KUBEKINS_TIMEOUT=' not in line:
                     continue
                 found_timeout = True
-                mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
+                if job.endswith('.sh'):
+                    mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
+                else:
+                    mat = re.match(r'KUBEKINS_TIMEOUT="(\d+)m".*', line)
+                    realjob = self.GetRealBootstrapJob(job)
+                    self.assertTrue(realjob)
+                    docker_timeout = realjob['timeout']
+                    self.assertGreater(docker_timeout, 0)
                 self.assertTrue(mat, line)
                 if int(mat.group(1)) > docker_timeout:
                     bad_jobs.add(job)
@@ -1458,7 +1502,7 @@ class JobTest(unittest.TestCase):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.sh', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
@@ -1498,7 +1542,7 @@ class JobTest(unittest.TestCase):
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
                 if job.startswith('ci-kubernetes-node-'):
                     job = 'ci-kubernetes-node-*'
-                if not line.startswith('#'):
+                if not line.startswith('#') and job.endswith('.sh'):
                     self.assertIn('export', line, line)
                 project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
@@ -1516,13 +1560,15 @@ class JobTest(unittest.TestCase):
             self.assertNotIn('source ', script, job)
             self.assertNotIn('\n. ', script, job)
 
-    def testAllJobsHaveErrExit(self):
+    def testAllBashJobsHaveErrExit(self):
         options = {
             'errexit',
             'nounset',
             'pipefail',
         }
         for job, job_path in self.jobs:
+            if not job.endswith('.sh'):
+                continue
             with open(job_path) as fp:
                 lines = list(fp)
             for option in options:
@@ -1530,6 +1576,22 @@ class JobTest(unittest.TestCase):
                 self.assertIn(
                      expected, lines,
                      '%s not found in %s' % (expected, job_path))
+
+    def testEnvsNoExport(self):
+        for job, job_path in self.jobs:
+            if not job.endswith('.env'):
+                continue
+            with open(job_path) as fp:
+                lines = list(fp)
+            prev = ''
+            for line in lines:
+                m = re.match(r'[0-9A-Z_]+=', line)
+                empty = (line.strip() == '')
+                comment = line.startswith('#')
+                continuation = prev.strip().endswith('\\')
+                prev = line
+                if not (m or empty or comment or continuation):
+                    self.fail('Job %s contains invalid env: %s' % (job, line))
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
@@ -1539,6 +1601,22 @@ class JobTest(unittest.TestCase):
             bad_vars = re.findall(r'(\${{.+}})', script)
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
+
+    def testValidJobEnvs(self):
+        """Validate jobs/config.json."""
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            config = json.loads(fp.read())
+            for job in config:
+                self.assertTrue('scenario' in config[job], job)
+                self.assertTrue(os.path.isfile(bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])), job)
+                hasEnv = False
+                for arg in config[job].get('args', []):
+                    m = re.match(r'--env-file=([^\"]+)', arg)
+                    if m:
+                        hasEnv = True
+                        self.assertTrue(os.path.isfile(bootstrap.test_infra(m.group(1))), job)
+                if config[job]['scenario'] == 'kubernetes_e2e':
+                    self.assertTrue(hasEnv)
 
 
 if __name__ == '__main__':
