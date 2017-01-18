@@ -222,6 +222,9 @@ def checkout(call, repo, branch, pull, ssh=False, git_cache=''):
         except OSError:
             pass
         call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
+        # Remove any changes left around from previous runs.
+        call([git, 'clean', '-dfx'])
+        call([git, 'reset', '--hard'])
     else:
         call([git, 'init', repo])
     os.chdir(repo)
