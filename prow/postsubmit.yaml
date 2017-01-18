@@ -9,9 +9,10 @@ kubernetes/kubernetes:
       args:
       - "--branch=$(PULL_REFS)"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--git-cache=/root/.cache/git"
       volumeMounts:
       - name: cache-ssd
-        mountPath: /root/.cache/bazel
+        mountPath: /root/.cache
       # We only want one of these to run per node. Once pod affinity is GA, use
       # that. Until then, use a hostPort. This must match other bazel jobs.
       ports:
@@ -36,9 +37,10 @@ kubernetes/test-infra:
       args:
       - "--branch=$(PULL_REFS)"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--git-cache=/root/.cache/git"
       volumeMounts:
       - name: cache-ssd
-        mountPath: /root/.cache/bazel
+        mountPath: /root/.cache
       # We only want one of these to run per node. Once pod affinity is GA, use
       # that. Until then, use a hostPort. This must match other bazel jobs.
       ports:
@@ -61,4 +63,3 @@ kubernetes/test-infra:
       args:
       - "--branch=$(PULL_REFS)"
       - "--upload=gs://kubernetes-jenkins/logs"
-

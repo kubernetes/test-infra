@@ -50,6 +50,6 @@ esac
 
 # TODO(spxtr): Remove this once we've purged the cache on all nodes.
 bazel clean
-rm -rf /root/.cache
+rm -rf /root/.cache/*
 
 exit "${rc}"
