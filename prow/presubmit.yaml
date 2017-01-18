@@ -76,13 +76,9 @@ kubernetes/kubernetes:
 
 - name: pull-kubernetes-cross
   context: Jenkins Cross Build
-  always_run: true
-  skip_report: true
   rerun_command: "@k8s-bot cross build this"
-  trigger: "@k8s-bot (cross[ -])?(build|test) this"
-  #  rerun_command: "@k8s-bot build this"
-  #  trigger: "@k8s-bot (cross[ -])?build this"
-  #  run_if_changed: '(Makefile|\.sh|_(windows|linux|osx|unsupported)(_test)?\.go)$'
+  trigger: "@k8s-bot (cross[ -])?build this"
+  run_if_changed: '(Makefile|\.sh|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
 - name: pull-kubernetes-unit
   always_run: true
