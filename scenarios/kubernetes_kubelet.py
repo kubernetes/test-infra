@@ -78,7 +78,7 @@ def main(script, properties, branch, ssh, ssh_pub, robot):
         '-v', '/etc/localtime:/etc/localtime:ro',
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
-        '-v', '%s:/workspace/artifacts' % artifacts,
+        '-v', '%s:/workspace/_artifacts' % artifacts,
         '-v', '%s:%s:ro' % (var(robot), service),
         '-v', '%s:%s:ro' % (var(ssh), private),
         '-v', '%s:%s:ro' % (var(ssh_pub), public),
