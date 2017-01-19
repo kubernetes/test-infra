@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	maxRetries = 8
-	retryDelay = 2 * time.Second
+	maxRetries = 5
+	retryDelay = 4 * time.Second
 )
 
 // Status is a build result from Jenkins. If it is still building then
