@@ -48,4 +48,7 @@ esac
 
 ./images/pull-kubernetes-bazel/coalesce.py
 
+#TODO(spxtr): Remove this after the purge.
+rm -rf /root/.cache/*
+
 exit "${rc}"
