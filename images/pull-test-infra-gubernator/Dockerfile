@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     python \
-    python-pip && \
+    python-pip \
+    mocha && \
     apt-get clean
 
 ENV GCLOUD_VERSION 138.0.0
