@@ -29,11 +29,7 @@ bazel build //... && rc=$? || rc=$?
 find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
 if [[ "${rc}" == 0 ]]; then
-  bazel test --test_output=errors //... && rc=$? || rc=$?
-fi
-
-if [[ "${rc}" == 0 ]]; then
-  bazel test --test_output=errors //verify:verify-all && rc=$? || rc=$?
+  bazel test --test_output=errors //... //verify:verify-all && rc=$? || rc=$?
 fi
 
 case "${rc}" in
