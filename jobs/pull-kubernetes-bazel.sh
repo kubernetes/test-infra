@@ -36,7 +36,4 @@ fi
 # Coalesce test results into one file for upload.
 "$(dirname "${0}")/../images/pull-kubernetes-bazel/coalesce.py"
 
-#TODO(spxtr): Remove this after the purge.
-rm -rf /root/.cache/*
-
 exit "${rc}"
