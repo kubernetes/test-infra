@@ -214,4 +214,4 @@ kubernetes/test-infra:
   run_if_changed: 'gubernator'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gubernator:0.1
+    - image: gcr.io/k8s-testimages/gubernator:0.2
