@@ -105,6 +105,5 @@ export PATH=${PATH}:/usr/local/go/bin
 export KOPS_LATEST="latest-ci-green.txt"
 export KUBE_E2E_RUNNER="/workspace/kops-e2e-runner.sh"
 readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
-export DOCKER_TIMEOUT="75m"
 export KUBEKINS_TIMEOUT="55m"
 "${runner}"

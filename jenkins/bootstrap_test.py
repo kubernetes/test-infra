@@ -1242,6 +1242,8 @@ class JobTest(unittest.TestCase):
             self.assertEquals(modern, job['json'])
             if is_modern(name):
                 self.assertGreater(job['timeout'], 0)
+            if 'kubernetes' in name and 'e2e' in name:
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml(
@@ -1254,6 +1256,9 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
+            self.assertIn('json', job)
+            self.assertEquals(0, job['json'])
+            self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
@@ -1415,8 +1420,7 @@ class JobTest(unittest.TestCase):
             self.assertEquals(job_name, real_job.get('job-name'))
 
     def testValidTimeout(self):
-        """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
-        default_timeout = int(re.search(r'\$\{DOCKER_TIMEOUT:-(\d+)m', open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()).group(1))
+        """All e2e job has a valid KUBEKINS_TIMEOUT"""
         bad_jobs = set()
         for job, job_path in self.jobs:
             valids = [
@@ -1431,24 +1435,17 @@ class JobTest(unittest.TestCase):
             found_timeout = False
             with open(job_path) as fp:
                 lines = list(l for l in fp if not l.startswith('#'))
-            docker_timeout = default_timeout - 15
             for line in lines:
                 if line.startswith('### Reporting'):
                     bad_jobs.add(job)
                 if '{rc}' in line:
                     bad_jobs.add(job)
-                if line.startswith('export DOCKER_TIMEOUT='):
-                    docker_timeout = int(re.match(
-                        r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
-                    docker_timeout -= 15
 
                 if 'KUBEKINS_TIMEOUT=' not in line:
                     continue
                 found_timeout = True
                 mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
                 self.assertTrue(mat, line)
-                if int(mat.group(1)) > docker_timeout:
-                    bad_jobs.add(job)
             self.assertTrue(found_timeout, job)
         self.assertFalse(bad_jobs)
 
@@ -1537,6 +1534,14 @@ class JobTest(unittest.TestCase):
             bad_vars = re.findall(r'(\${{.+}})', script)
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
+
+    def testNoDockerTimeoutInJobs(self):
+        """Searches for jobs that contain ${{VAR}}"""
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                script = fp.read()
+            if re.findall(r'DOCKER_TIMEOUT', script):
+                self.fail('Job %s contains docker timeout which should be migrated to bootstrap' % job)
 
 
 if __name__ == '__main__':
