@@ -18,12 +18,18 @@ package main
 
 import (
 	"io/ioutil"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
 	"k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
+
+type SQConfig struct {
+	Data map[string]string `yaml:"data,omitempty"`
+}
 
 func TestConfig(t *testing.T) {
 	yamlData, err := ioutil.ReadFile("config.yaml")
@@ -129,6 +135,63 @@ func TestConfig(t *testing.T) {
 	for testgroupname, occurance := range testgroupMap {
 		if occurance == 1 {
 			t.Errorf("Testgroup %v - defined but not used in any dashboards", testgroupname)
+		}
+	}
+
+	// make sure items in sq-blocking dashboard matches sq configmap
+	sqJobPool := []string{}
+	for _, d := range config.Dashboards {
+		if d.Name != "sq-blocking" {
+			continue
+		}
+
+		for _, tab := range d.DashboardTab {
+			for _, t := range config.TestGroups {
+				if t.Name == tab.TestGroupName {
+					job := strings.TrimPrefix(t.GcsPrefix, "kubernetes-jenkins/logs/")
+					sqJobPool = append(sqJobPool, job)
+					break
+				}
+			}
+		}
+	}
+
+	configURL := "https://raw.githubusercontent.com/kubernetes/contrib/master/mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
+	response, err := http.Get(configURL)
+	if err != nil {
+		t.Errorf("Fail to get SQ configmap")
+	} else {
+		defer response.Body.Close()
+
+		configData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			t.Errorf("Read Buffer Error for SQ Data : %v\n", err)
+		}
+
+		sqData := &SQConfig{}
+		err = yaml2proto.Unmarshal([]byte(configData), &sqData)
+		if err != nil {
+			t.Errorf("Unmarshal Error for SQ Data : %v\n", err)
+		}
+
+		sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
+		for _, sqJob := range sqJobs {
+			found := false
+			for i, job := range sqJobPool {
+				if sqJob == job {
+					found = true
+					sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
+					break
+				}
+			}
+
+			if !found {
+				t.Errorf("Err : %v not found in testgrid config\n", sqJob)
+			}
+		}
+
+		for _, testgridJob := range sqJobPool {
+			t.Errorf("Err : testgrid job %v not found in SQ config\n", testgridJob)
 		}
 	}
 }
