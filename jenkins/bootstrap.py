@@ -206,6 +206,7 @@ def random_sleep(attempt):
 
 def checkout(call, repo, branch, pull, ssh=False, git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull."""
+    # pylint: disable=too-many-locals
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
 
