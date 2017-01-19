@@ -20,5 +20,6 @@ set -o pipefail
 # TODO(fejta): all python files
 pylint scenarios/*.py
 pylint jenkins/bootstrap.py
+pylint jenkins/janitor.py
 pylint queue-health/graph/graph.py
 pylint queue-health/weekly_commit_stats.py
