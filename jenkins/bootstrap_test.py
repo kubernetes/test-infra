@@ -1254,6 +1254,8 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
+            self.assertEquals(job['json'], 0)
+            self.assertEquals(job['timeout'], 0)
             return job_name
 
         self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml', Check)
