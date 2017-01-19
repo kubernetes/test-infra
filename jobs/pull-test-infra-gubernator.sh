@@ -23,3 +23,4 @@ pip install -r jenkins/test_history/requirements.txt
 cd gubernator
 ./test.sh --nologcapture
 ./lint.sh
+mocha static/build_test.js

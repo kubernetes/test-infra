@@ -2,9 +2,6 @@ branches:
   only:
     - master
 language: python
-cache:
-    directories:
-        - node_modules
 python:
     - "2.7"
 services:
@@ -17,12 +14,8 @@ install:
     - mkdir -p $HOME/gopath/src/k8s.io
     - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/test-infra
     - cd $HOME/gopath/src/k8s.io/test-infra
-    - npm install mocha
 script:
     - ./verify/verify-bazel.sh
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
-    - cd gubernator
-    - ../node_modules/.bin/mocha static/build_test.js
-    - cd ..
     - ./testgrid/jenkins_verify/verify.sh
