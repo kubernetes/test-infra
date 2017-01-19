@@ -168,11 +168,6 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot cri node e2e test this"
   trigger: "@k8s-bot (cri node e2e )?test this"
 
-- name: pull-kubernetes-kubemark-e2e-gce
-  context: Bootstrap Kubemark GCE e2e
-  rerun_command: "@k8s-bot bootstrap kubemark e2e test this"
-  trigger: "@k8s-bot bootstrap (kubemark )?(e2e )?test this"
-
 kubernetes/test-infra:
 - name: pull-test-infra-bazel
   context: Bazel test
