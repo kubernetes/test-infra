@@ -397,7 +397,7 @@ func (c *testClient) TestPRJenkins() error {
 		return err
 	}
 	for eq {
-		time.Sleep(30 * time.Second)
+		time.Sleep(time.Minute)
 		eq, err = c.JenkinsClient.Enqueued(b)
 		if err != nil {
 			c.tryCreateStatus("", github.StatusError, "Error in queue.", testInfra)
@@ -419,7 +419,7 @@ func (c *testClient) TestPRJenkins() error {
 			return err
 		}
 		if result.Building {
-			time.Sleep(30 * time.Second)
+			time.Sleep(time.Minute)
 		} else {
 			if result.Success {
 				c.tryCreateStatus("", github.StatusSuccess, "Build succeeded.", resultURL)
