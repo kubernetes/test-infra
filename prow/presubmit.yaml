@@ -59,6 +59,7 @@ kubernetes/kubernetes:
       - "--pull=$(PULL_REFS)"
       - "--upload=gs://kubernetes-jenkins/pr-logs"
       - "--git-cache=/root/.cache/git"
+      - "--clean"
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache
@@ -187,6 +188,7 @@ kubernetes/test-infra:
       - "--pull=$(PULL_REFS)"
       - "--upload=gs://kubernetes-jenkins/pr-logs"
       - "--git-cache=/root/.cache/git"
+      - "--clean"
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache

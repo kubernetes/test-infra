@@ -204,7 +204,7 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(call, repo, branch, pull, ssh=False, git_cache=''):
+def checkout(call, repo, branch, pull, ssh=False, git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull."""
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -222,12 +222,13 @@ def checkout(call, repo, branch, pull, ssh=False, git_cache=''):
         except OSError:
             pass
         call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
-        # Remove any changes left around from previous runs.
-        call([git, 'clean', '-dfx'])
-        call([git, 'reset', '--hard'])
     else:
         call([git, 'init', repo])
     os.chdir(repo)
+
+    if clean:
+        call([git, 'clean', '-dfx'])
+        call([git, 'reset', '--hard'])
 
     # To make a merge commit, a user needs to be set. It's okay to use a dummy
     # user here, since we're not exporting the history.
@@ -713,7 +714,7 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(call, root, repo, branch, pull, ssh, git_cache):
+def setup_root(call, root, repo, branch, pull, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     logging.info(
         'Check out %s at %s...',
@@ -723,14 +724,14 @@ def setup_root(call, root, repo, branch, pull, ssh, git_cache):
         os.makedirs(root)
     os.chdir(root)
     if repo:
-        checkout(call, repo, branch, pull, ssh, git_cache)
+        checkout(call, repo, branch, pull, ssh, git_cache, clean)
     elif branch or pull:
         raise ValueError('--branch and --pull require --repo', branch, pull)
 
 
 def bootstrap(
     job, repo, branch, pull, root, upload, robot, timeout=0,
-    use_json=False, ssh=False, git_cache=''):
+    use_json=False, ssh=False, git_cache='', clean=False):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     build_log_path = os.path.abspath('build-log.txt')
@@ -757,7 +758,7 @@ def bootstrap(
     exc_type = None
 
     try:
-        setup_root(call, root, repo, branch, pull, ssh, git_cache)
+        setup_root(call, root, repo, branch, pull, ssh, git_cache, clean)
         logging.info('Configure environment...')
         if repo:
             version = find_version(call)
@@ -830,6 +831,10 @@ def parse_args(arguments=None):
     parser.add_argument(
         '--git-cache',
         help='Location of the git cache.')
+    parser.add_argument(
+        '--clean',
+        action='store_true',
+        help='Clean the git repo before running tests.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
@@ -851,4 +856,5 @@ if __name__ == '__main__':
         ARGS.json,
         ARGS.ssh,
         ARGS.git_cache,
+        ARGS.clean,
     )
