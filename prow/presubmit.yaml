@@ -60,9 +60,6 @@ kubernetes/kubernetes:
       - "--upload=gs://kubernetes-jenkins/pr-logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
