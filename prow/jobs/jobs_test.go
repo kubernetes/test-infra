@@ -86,6 +86,9 @@ func TestPresubmits(t *testing.T) {
 				if i == j {
 					continue
 				}
+				if job.Name == job2.Name && i > j {
+					t.Errorf("Two jobs have the same name: %s", job.Name)
+				}
 				if job.Context == job2.Context && i > j {
 					t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
 				}
