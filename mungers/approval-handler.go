@@ -30,6 +30,7 @@ import (
 	"k8s.io/contrib/mungegithub/features"
 	"k8s.io/contrib/mungegithub/github"
 	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
+	"k8s.io/contrib/mungegithub/mungers/matchers/event"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
 
@@ -106,7 +107,8 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 	for _, approverSet := range ownersMap {
 		if approverSet.Len() == 0 {
-			if obj.HasLabel(approvedLabel) {
+			// if a human explicitly added the label, allow it through
+			if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
 				obj.RemoveLabel(approvedLabel)
 			}
 			return
@@ -116,6 +118,20 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.HasLabel(approvedLabel) {
 		obj.AddLabel(approvedLabel)
 	}
+}
+
+func humanAddedApproved(obj *github.MungeObject) bool {
+	events, ok := obj.GetEvents()
+	if !ok {
+		return false
+	}
+	approveAddedMatcher := event.And([]event.Matcher{event.AddLabel{}, event.LabelName(approvedLabel)})
+	labelEvents := event.FilterEvents(events, approveAddedMatcher)
+	lastAdded := labelEvents.GetLast()
+	if lastAdded == nil || lastAdded.Actor == nil || lastAdded.Actor.Login == nil {
+		return false
+	}
+	return *lastAdded.Actor.Login != botName
 }
 
 func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String) error {
