@@ -213,7 +213,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.lastMergeTime = sq.clock.Now()
 	sq.lastE2EStable = true
 	sq.prStatus = map[string]submitStatus{}
-	sq.lastPRStatus = map[string]submitStatus{}
 	sq.lgtmTimeCache = mungerutil.NewLabelTimeCache(lgtmLabel)
 
 	sq.startTime = sq.clock.Now()
