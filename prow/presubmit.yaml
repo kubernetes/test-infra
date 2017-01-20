@@ -63,18 +63,9 @@ kubernetes/kubernetes:
       volumeMounts:
       - name: cache-ssd
         mountPath: /root/.cache
-      # We only want one of these to run per node. Once pod affinity is GA, use
-      # that. Until then, use a hostPort. This must match other bazel jobs.
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: pull-kubernetes-cross
   context: Jenkins Cross Build
@@ -184,21 +175,9 @@ kubernetes/test-infra:
       - "--upload=gs://kubernetes-jenkins/pr-logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      # We only want one of these to run per node. Once pod affinity is GA, use
-      # that. Until then, use a hostPort. This must match other bazel jobs.
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: pull-test-infra-gubernator
   context: Gubernator tests

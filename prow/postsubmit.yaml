@@ -11,22 +11,9 @@ kubernetes/kubernetes:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      # We only want one of these to run per node. Once pod affinity is GA, use
-      # that. Until then, use a hostPort. This must match other bazel jobs.
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
-
 
 kubernetes/test-infra:
 - name: ci-test-infra-bazel
@@ -40,21 +27,9 @@ kubernetes/test-infra:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      # We only want one of these to run per node. Once pod affinity is GA, use
-      # that. Until then, use a hostPort. This must match other bazel jobs.
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: maintenance-ci-testgrid-config-upload
   branches:
