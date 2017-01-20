@@ -317,16 +317,34 @@ func (c *testClient) TestKubernetes() error {
 				MountPath: "/etc/service-account",
 				ReadOnly:  true,
 			},
+			kube.VolumeMount{
+				Name:      "cache-ssd",
+				MountPath: "/root/.cache",
+			},
 		)
-		spec.Volumes = append(spec.Volumes,
-			kube.Volume{
-				Name: "service",
-				Secret: &kube.SecretSource{
-					Name: "service-account",
-				},
+		// Set the HostPort to 9999 for all build pods so that they are forced
+		// onto different nodes. Once pod affinity is GA, use that instead.
+		spec.Containers[i].Ports = append(spec.Containers[i].Ports,
+			kube.Port{
+				ContainerPort: 9999,
+				HostPort:      9999,
 			},
 		)
 	}
+	spec.Volumes = append(spec.Volumes,
+		kube.Volume{
+			Name: "service",
+			Secret: &kube.SecretSource{
+				Name: "service-account",
+			},
+		},
+		kube.Volume{
+			Name: "cache-ssd",
+			HostPath: &kube.HostPathSource{
+				Path: "/mnt/disks/ssd0",
+			},
+		},
+	)
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
 			Name: podName,
