@@ -49,6 +49,9 @@ func TestVend(t *testing.T) {
 	expectEqual(t, "second empty", store.vend("b"), 1)
 
 	store2, err := newStore(tmp.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
 	expectEqual(t, "fourth vend, different instance", store2.vend("a"), 4)
 
 }
