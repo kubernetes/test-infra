@@ -39,7 +39,8 @@ def result(pkg):
     """Given a directory, create a testcase element describing it."""
     el = ET.Element('testcase')
     el.set('classname', 'go_test')
-    el.set('name', '_'.join(pkg.split('/')[1:-1]))
+    pkg_parts = pkg.split('/')
+    el.set('name', '//%s:%s' % ('/'.join(pkg_parts[1:-1]), pkg_parts[-1]))
     el.set('time', '0')
     suites = ET.parse(pkg + '/test.xml').getroot()
     for suite in suites:
@@ -58,7 +59,7 @@ def result(pkg):
 def main():
     root = ET.Element('testsuite')
     root.set('time', '0')
-    for package in test_packages('bazel-testlogs'):
+    for package in sorted(test_packages('bazel-testlogs')):
         root.append(result(package))
     try:
         os.mkdir('_artifacts')

@@ -33,6 +33,6 @@ if [[ "${rc}" == 0 ]]; then
 fi
 
 # Coalesce test results into one file for upload.
-"$(dirname "${0}")/../images/pull-kubernetes-bazel/coalesce.py"
+"$(dirname "${0}")/../images/pull_kubernetes_bazel/coalesce.py"
 
 exit "${rc}"

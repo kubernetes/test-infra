@@ -15,6 +15,7 @@ filegroup(
         ":package-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
+        "//images/pull_kubernetes_bazel:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//prow:all-srcs",
