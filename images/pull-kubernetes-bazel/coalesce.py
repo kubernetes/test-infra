@@ -19,7 +19,13 @@
 
 import argparse
 import os
+
 import xml.etree.ElementTree as ET
+
+
+BAZEL_FAILURE_HEADER = '''exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+-----------------------------------------------------------------------------
+'''
 
 
 def test_packages(root):
@@ -42,7 +48,9 @@ def result(pkg):
                 if status.tag == 'error' or status.tag == 'failure':
                     failure = ET.Element('failure')
                     with open(pkg + '/test.log') as f:
-                        failure.text = f.read()
+                        failure.text = f.read().decode('utf8', 'ignore')
+                        if failure.text.startswith(BAZEL_FAILURE_HEADER):
+                            failure.text = failure.text[len(BAZEL_FAILURE_HEADER):]
                     el.append(failure)
     return el
 
@@ -57,7 +65,7 @@ def main():
     except OSError:
         pass
     with open('_artifacts/junit_bazel.xml', 'w') as f:
-        f.write(ET.tostring(root))
+        f.write(ET.tostring(root, 'utf8'))
 
 
 if __name__ == '__main__':
