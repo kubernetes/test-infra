@@ -79,9 +79,9 @@ def main(script, properties, branch, ssh, ssh_pub, robot):
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
         '-v', '%s:/workspace/_artifacts' % artifacts,
-        '-v', '%s:%s:ro' % (var(robot), service),
-        '-v', '%s:%s:ro' % (var(ssh), private),
-        '-v', '%s:%s:ro' % (var(ssh_pub), public),
+        '-v', '%s:%s:ro' % (robot, service),
+        '-v', '%s:%s:ro' % (ssh, private),
+        '-v', '%s:%s:ro' % (ssh_pub, public),
         '-e', 'GCE_USER=jenkins',
         '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service,
         '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % private,
@@ -97,16 +97,16 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Runs kubelet tests with the specified script, properties and creds')
     PARSER.add_argument(
-        '--ssh',
-        default='${JENKINS_GCE_SSH_PRIVATE_KEY_FILE}',
+        '--gce-ssh',
+        default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
         help='Path to .ssh/google_compute_engine keys')
     PARSER.add_argument(
-        '--ssh-pub',
-        default='${JENKINS_GCE_SSH_PUBLIC_KEY_FILE}',
+        '--gce-pub',
+        default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub gce ssh key')
     PARSER.add_argument(
         '--service-account',
-        default='${GOOGLE_APPLICATION_CREDENTIALS}',
+        default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
     PARSER.add_argument(
         '--branch', default='master', help='Branch used for testing')
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         ARGS.script,
         ARGS.properties,
         ARGS.branch,
-        ARGS.ssh,
-        ARGS.ssh_pub,
+        ARGS.gce_ssh,
+        ARGS.gce_pub,
         ARGS.service_account,
     )
