@@ -18,6 +18,7 @@ filegroup(
         "//images/pull_kubernetes_bazel:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
+        "//mungegithub:all-srcs",
         "//prow:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid/config:all-srcs",

@@ -84,6 +84,9 @@ const (
 
 	// https://developer.github.com/changes/2016-07-06-github-pages-preiew-api/
 	mediaTypePagesPreview = "application/vnd.github.mister-fantastic-preview+json"
+
+	// https://developer.github.com/v3/repos/traffic/
+	mediaTypeTrafficPreview = "application/vnd.github.spiderman-preview+json"
 )
 
 // A Client manages communication with the GitHub API.
@@ -414,7 +417,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 // checkRateLimitBeforeDo does not make any network calls, but uses existing knowledge from
 // current client state in order to quickly check if *RateLimitError can be immediately returned
-// from Client.Do, and if so, returns it so that Client.Do can skip making a network API call unneccessarily.
+// from Client.Do, and if so, returns it so that Client.Do can skip making a network API call unnecessarily.
 // Otherwise it returns nil, and Client.Do should proceed normally.
 func (c *Client) checkRateLimitBeforeDo(req *http.Request, rateLimitCategory rateLimitCategory) error {
 	c.rateMu.Lock()
@@ -608,8 +611,8 @@ type RateLimits struct {
 	Core *Rate `json:"core"`
 
 	// The rate limit for search API requests.  Unauthenticated requests
-	// are limited to 5 requests per minutes.  Authenticated requests are
-	// limited to 20 per minute.
+	// are limited to 10 requests per minutes.  Authenticated requests are
+	// limited to 30 per minute.
 	//
 	// GitHub API docs: https://developer.github.com/v3/search/#rate-limit
 	Search *Rate `json:"search"`
@@ -638,6 +641,8 @@ func category(path string) rateLimitCategory {
 	}
 }
 
+// RateLimit returns the core rate limit for the current client.
+//
 // Deprecated: RateLimit is deprecated, use RateLimits instead.
 func (c *Client) RateLimit() (*Rate, *Response, error) {
 	limits, resp, err := c.RateLimits()

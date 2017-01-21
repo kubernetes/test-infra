@@ -394,7 +394,7 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		config.Project = "r"
 		config.SetClient(client)
 
-		obj := github_util.TestObject(config, BareIssue(), nil, nil, nil)
+		obj := github_util.NewTestObject(config, BareIssue(), nil, nil, nil)
 
 		if _, ok := obj.GetCommits(); !ok {
 			t.Errorf("Unexpected error getting filled commits")
@@ -1088,7 +1088,7 @@ func TestSubmitQueue(t *testing.T) {
 		sq := getTestSQ(true, config, server)
 		sq.setEmergencyMergeStop(test.emergencyMergeStop)
 
-		obj := github_util.TestObject(config, test.issue, test.pr, test.commits, test.events)
+		obj := github_util.NewTestObject(config, test.issue, test.pr, test.commits, test.events)
 		if test.imBaseSHA != "" && test.imHeadSHA != "" {
 			sq.interruptedObj = &submitQueueInterruptedObject{obj, test.imHeadSHA, test.imBaseSHA}
 		}

@@ -327,10 +327,10 @@ type DebugStats struct {
 	LimitResetTime time.Time
 }
 
-// TestObject should NEVER be used outside of _test.go code. It creates a
+// NewTestObject should NEVER be used outside of _test.go code. It creates a
 // MungeObject with the given fields. Normally these should be filled in lazily
 // as needed
-func TestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []*github.RepositoryCommit, events []*github.IssueEvent) *MungeObject {
+func NewTestObject(config *Config, issue *github.Issue, pr *github.PullRequest, commits []*github.RepositoryCommit, events []*github.IssueEvent) *MungeObject {
 	return &MungeObject{
 		config:      config,
 		Issue:       issue,
