@@ -1,7 +1,8 @@
 {
 	"GoPrefix": "k8s.io/test-infra",
 	"SkippedPaths": [
-		"jenkins/aws-janitor"
+		"jenkins/aws-janitor",
+		"mungegithub"
 	],
 	"AddSourcesRules": true
 }
