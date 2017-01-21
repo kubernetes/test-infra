@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
-	github_util "k8s.io/contrib/mungegithub/github"
-	github_test "k8s.io/contrib/mungegithub/github/testing"
+	github_util "k8s.io/test-infra/mungegithub/github"
+	github_test "k8s.io/test-infra/mungegithub/github/testing"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"

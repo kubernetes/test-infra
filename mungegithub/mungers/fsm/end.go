@@ -17,7 +17,7 @@ limitations under the License.
 package fsm
 
 import (
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/github"
 
 	"fmt"
 )

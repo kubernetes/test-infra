@@ -21,8 +21,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/ghodss/yaml"

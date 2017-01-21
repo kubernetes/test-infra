@@ -31,13 +31,13 @@ import (
 
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
-	"k8s.io/contrib/mungegithub/admin"
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers/e2e"
-	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
-	"k8s.io/contrib/mungegithub/mungers/shield"
+	"k8s.io/test-infra/mungegithub/admin"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/e2e"
+	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/mungers/shield"
 	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/NYTimes/gziphandler"

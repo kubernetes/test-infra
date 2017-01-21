@@ -27,10 +27,10 @@ import (
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
-	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
-	"k8s.io/contrib/mungegithub/mungers/matchers/event"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
+	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
+	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
 

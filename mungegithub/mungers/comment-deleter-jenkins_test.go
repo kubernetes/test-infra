@@ -22,7 +22,7 @@ import (
 
 	githubapi "github.com/google/go-github/github"
 
-	github_test "k8s.io/contrib/mungegithub/github/testing"
+	github_test "k8s.io/test-infra/mungegithub/github/testing"
 )
 
 const (

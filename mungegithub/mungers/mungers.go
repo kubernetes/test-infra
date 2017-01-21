@@ -19,13 +19,13 @@ package mungers
 import (
 	"fmt"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
 // Munger is the interface which all mungers must implement to register

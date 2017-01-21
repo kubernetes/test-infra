@@ -21,9 +21,9 @@ import (
 	"regexp"
 	"time"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"

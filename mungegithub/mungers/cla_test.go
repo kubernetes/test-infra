@@ -23,9 +23,9 @@ import (
 	"runtime"
 	"testing"
 
-	github_util "k8s.io/contrib/mungegithub/github"
-	github_test "k8s.io/contrib/mungegithub/github/testing"
-	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
+	github_util "k8s.io/test-infra/mungegithub/github"
+	github_test "k8s.io/test-infra/mungegithub/github/testing"
+	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 
 	"github.com/google/go-github/github"
 )

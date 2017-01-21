@@ -22,16 +22,16 @@ import (
 	"path/filepath"
 	"time"
 
-	"k8s.io/contrib/mungegithub/features"
-	github_util "k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers"
-	"k8s.io/contrib/mungegithub/reports"
+	"k8s.io/test-infra/mungegithub/features"
+	github_util "k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers"
+	"k8s.io/test-infra/mungegithub/reports"
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/contrib/mungegithub/mungers/fsm"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/mungers/fsm"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
 var (

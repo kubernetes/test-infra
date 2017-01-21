@@ -29,7 +29,7 @@ import (
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/github"
 )
 
 // xref k8s.io/test-infra/prow/cmd/deck/jobs.go

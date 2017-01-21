@@ -29,12 +29,12 @@ import (
 
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
-	"k8s.io/contrib/mungegithub/admin"
-	github_util "k8s.io/contrib/mungegithub/github"
-	github_test "k8s.io/contrib/mungegithub/github/testing"
-	"k8s.io/contrib/mungegithub/mungers/e2e"
-	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/admin"
+	github_util "k8s.io/test-infra/mungegithub/github"
+	github_test "k8s.io/test-infra/mungegithub/github/testing"
+	"k8s.io/test-infra/mungegithub/mungers/e2e"
+	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/golang/glog"

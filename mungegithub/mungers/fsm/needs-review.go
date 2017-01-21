@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers/matchers/comment"
+	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"

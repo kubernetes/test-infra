@@ -22,11 +22,11 @@ import (
 	"sort"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
-	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
-	"k8s.io/contrib/mungegithub/mungers/sync"
-	"k8s.io/contrib/mungegithub/mungers/testowner"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
+	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
+	"k8s.io/test-infra/mungegithub/mungers/sync"
+	"k8s.io/test-infra/mungegithub/mungers/testowner"
 	"k8s.io/contrib/test-utils/utils"
 
 	"time"

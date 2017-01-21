@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
 
