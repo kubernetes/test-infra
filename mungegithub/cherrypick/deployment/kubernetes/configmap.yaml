@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-cp-config
+data:
+  # basic config options.
+  config.http-cache-dir: /cache/httpcache
+  config.organization: kubernetes
+  config.project: kubernetes
+  config.pr-mungers: cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue
+  config.state: all
+  config.labels: cherrypick-candidate
+  config.token-file: /etc/secret-volume/token
+  config.period: "3m"
+
+  # gitrepo feature.
+  gitrepo.repo-dir: /gitrepo
+
+  # submit-queue options.
+  submit-queue.admin-port: "9999"

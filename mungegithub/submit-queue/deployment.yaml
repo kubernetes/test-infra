@@ -1,0 +1,267 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: @@-submit-queue
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: submit-queue
+        target-repo: @@
+    spec:
+      containers:
+      - name: submit-queue
+        command:
+        - /mungegithub
+        - --dry-run=true
+        - --stderrthreshold=INFO
+        - --http-cache-dir=$(HTTP_CACHE_DIR)
+        - --organization=$(ORGANIZATION)
+        - --project=$(PROJECT)
+        - --pr-mungers=$(PR_MUNGERS)
+        - --state=$(STATE)
+        - --token-file=$(TOKEN_FILE)
+        - --protected-branches=$(PROTECTED_BRANCHES)
+        - --protected-branches-extra-contexts=$(PROTECTED_BRANCHES_EXTRA_CONTEXTS)
+        - --required-retest-contexts=$(REQUIRED_RETEST_CONTEXTS)
+        - --required-contexts=$(REQUIRED_CONTEXTS)
+        - --nonblocking-jenkins-jobs=$(NONBLOCKING_JENKINS_JOBS)
+        - --jenkins-jobs=$(JENKINS_JOBS)
+        - --presubmit-jobs=$(PRESUBMIT_JOBS)
+        - --weak-stable-jobs=$(WEAK_STABLE_JOBS)
+        - --do-not-merge-milestones=$(DO_NOT_MERGE_MILESTONES)
+        - --admin-port=$(ADMIN_PORT)
+        - --gcs-bucket=$(GCS_BUCKET)
+        - --gcs-logs-dir=$(GCS_LOGS_DIR)
+        - --pull-logs-dir=$(PULL_LOGS_DIR)
+        - --pull-key=$(PULL_KEY)
+        - --path-label-config=$(PATH_LABEL_CONFIG)
+        - --block-path-config=$(BLOCK_PATH_CONFIG)
+        - --repo-dir=$(REPO_DIR)
+        - --test-owners-csv=$(TEST_OWNERS_CSV)
+        - --number-of-old-test-results=$(NUMBER_OF_OLD_TEST_RESULTS)
+        - --fixes-issue-reassign=$(FIXES_ISSUE_REASSIGN)
+        - --blunderbuss-reassign=$(BLUNDERBUSS_REASSIGN)
+        - --generated-files-config=$(GENERATED_FILES_CONFIG)
+        - --chart-url=$(CHART_URL)
+        - --history-url=$(HISTORY_URL)
+        - --enable-md-yaml=$(ENABLE_MD_YAML)
+        - --label-file=$(LABEL_FILE)
+        - --triager-url=$(TRIAGER_URL)
+        - --cla-status-context=$(CLA_STATUS_CONTEXT)
+        - --alias-file=$(ALIAS_FILE_PATH)
+        - --batch-url=$(BATCH_URL)
+        - --use-reviewers=$(APPROVAL_ACTIVATED)
+        - --gate-approved=$(APPROVAL_ACTIVATED)
+        image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
+        env:
+          - name: HTTP_CACHE_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.http-cache-dir
+          - name: ORGANIZATION
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.organization
+          - name: PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.project
+          - name: PR_MUNGERS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.pr-mungers
+          - name: STATE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.state
+          - name: TOKEN_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.token-file
+          - name: PROTECTED_BRANCHES
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.protected-branches
+          - name: PROTECTED_BRANCHES_EXTRA_CONTEXTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.protected-branches-extra-contexts
+          - name: REQUIRED_RETEST_CONTEXTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: test-options.required-retest-contexts
+          - name: REQUIRED_CONTEXTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.required-contexts
+          - name: NONBLOCKING_JENKINS_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.nonblocking-jenkins-jobs
+          - name: JENKINS_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.jenkins-jobs
+          - name: PRESUBMIT_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.presubmit-jobs
+          - name: WEAK_STABLE_JOBS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.weak-stable-jobs
+          - name: DO_NOT_MERGE_MILESTONES
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.do-not-merge-milestones
+          - name: ADMIN_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.admin-port
+          - name: BATCH_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.batch-url
+          - name: GCS_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.gcs-bucket
+          - name: GCS_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.gcs-logs-dir
+          - name: PULL_LOGS_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.pull-logs-dir
+          - name: PULL_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gcs.pull-key
+          - name: PATH_LABEL_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: path-label.path-label-config
+          - name: BLOCK_PATH_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: block-path.block-path-config
+          - name: REPO_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gitrepo.repo-dir
+          - name: ENABLE_MD_YAML
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: gitrepo.enable-md-yaml
+          - name: TEST_OWNERS_CSV
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: flake-manager.test-owners-csv
+          - name: NUMBER_OF_OLD_TEST_RESULTS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: old-test-getter.number-of-old-test-results
+          - name: FIXES_ISSUE_REASSIGN
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: assign-fixes.fixes-issue-reassign
+          - name: BLUNDERBUSS_REASSIGN
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: blunderbuss.blunderbuss-reassign
+          - name: GENERATED_FILES_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: size.generated-files-config
+          - name: CHART_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.chart-url
+          - name: HISTORY_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.history-url
+          - name: LABEL_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: check-labels.label-file
+          - name: TRIAGER_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: issue-categorizer.triager-url
+          - name: CLA_STATUS_CONTEXT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: cla.cla-status-context
+          - name: ALIAS_FILE_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: alias.alias-file
+          - name: APPROVAL_ACTIVATED
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: approval-activated
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: secret-volume
+        - mountPath: /gitrepos
+          name: repo
+        - mountPath: /cache
+          name: cache-volume
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: @@-github-token
+      - name: repo
+        emptyDir: {}
+      - name: cache-volume
+        persistentVolumeClaim:
+          claimName: @@-cache

@@ -1,0 +1,213 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-sq-config
+data:
+  # basic config options.
+  config.http-cache-dir: /cache/httpcache
+  config.organization: kubernetes
+  config.project: kubernetes
+  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
+  config.state: open
+  config.token-file: /etc/secret-volume/token
+
+  # test-options feature options.
+  test-options.required-retest-contexts: "\
+    \"Jenkins GCE e2e\",\
+    \"Jenkins unit/integration\",\
+    \"Jenkins verification\",\
+    \"Jenkins GCE Node e2e\",\
+    \"Jenkins Kubemark GCE e2e\",\
+    \"Jenkins GCE etcd3 e2e\",\
+    \"Jenkins Bazel Build\",\
+    \"Jenkins kops AWS e2e\""
+
+  submit-queue.protected-branches: "master"
+  submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
+
+  # submit-queue options. Keep job lists sorted!
+  submit-queue.required-contexts: "\"\""
+  submit-queue.nonblocking-jenkins-jobs: "\
+    ci-kubernetes-bazel,\
+    ci-kubernetes-cross-build,\
+    ci-kubernetes-e2e-aws,\
+    ci-kubernetes-e2e-garbage-gci,\
+    ci-kubernetes-e2e-gce-examples,\
+    ci-kubernetes-e2e-gce-federation,\
+    ci-kubernetes-e2e-gce-multizone,\
+    ci-kubernetes-e2e-gce-scalability,\
+    ci-kubernetes-e2e-gce-serial,\
+    ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-autoscaling,\
+    ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
+    ci-kubernetes-e2e-gci-gce-es-logging,\
+    ci-kubernetes-e2e-gci-gce-etcd3,\
+    ci-kubernetes-e2e-gci-gce-examples,\
+    ci-kubernetes-e2e-gci-gce-federation,\
+    ci-kubernetes-e2e-gci-gce-ingress,\
+    ci-kubernetes-e2e-gci-gce-ingress-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-kubenet,\
+    ci-kubernetes-e2e-gci-gce-petset,\
+    ci-kubernetes-e2e-gci-gce-proto,\
+    ci-kubernetes-e2e-gci-gce-reboot,\
+    ci-kubernetes-e2e-gci-gce-reboot-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-scalability,\
+    ci-kubernetes-e2e-gci-gce-scalability-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-serial,\
+    ci-kubernetes-e2e-gci-gce-serial-release-1.4,\
+    ci-kubernetes-e2e-gci-gce-slow-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-alpha-features,\
+    ci-kubernetes-e2e-gci-gke-autoscaling,\
+    ci-kubernetes-e2e-gci-gke-ingress,\
+    ci-kubernetes-e2e-gci-gke-ingress-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-multizone,\
+    ci-kubernetes-e2e-gci-gke-pre-release,\
+    ci-kubernetes-e2e-gci-gke-prod,\
+    ci-kubernetes-e2e-gci-gke-prod-parallel,\
+    ci-kubernetes-e2e-gci-gke-prod-smoke,\
+    ci-kubernetes-e2e-gci-gke-reboot,\
+    ci-kubernetes-e2e-gci-gke-reboot-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-serial,\
+    ci-kubernetes-e2e-gci-gke-serial-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-slow-release-1.4,\
+    ci-kubernetes-e2e-gci-gke-staging,\
+    ci-kubernetes-e2e-gci-gke-staging-parallel,\
+    ci-kubernetes-e2e-gci-gke-subnet,\
+    ci-kubernetes-e2e-gci-gke-test,\
+    ci-kubernetes-e2e-gci-gke-updown,\
+    ci-kubernetes-e2e-gke-large-cluster,\
+    ci-kubernetes-e2e-gke-serial,\
+    ci-kubernetes-e2e-gke-staging,\
+    ci-kubernetes-e2e-gke-staging-parallel,\
+    ci-kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-kops-aws-updown,\
+    ci-kubernetes-kubemark-5-gce,\
+    ci-kubernetes-node-kubelet-serial,\
+    ci-kubernetes-soak-gce-deploy,\
+    ci-kubernetes-soak-gce-test,\
+    ci-kubernetes-soak-gke-deploy,\
+    ci-kubernetes-soak-gke-gci-deploy,\
+    ci-kubernetes-soak-gke-gci-test,\
+    ci-kubernetes-soak-gke-test,\
+    ci-kubernetes-build-1.5,\
+    ci-kubernetes-verify-release-1.5,\
+    ci-kubernetes-test-go-release-1.5,\
+    ci-kubernetes-e2e-gce-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-release-1.5,\
+    ci-kubernetes-e2e-gke-release-1.5,\
+    ci-kubernetes-e2e-gci-gke-release-1.5,\
+    ci-kubernetes-e2e-gce-slow-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-slow-release-1.5,\
+    ci-kubernetes-e2e-gke-slow-release-1.5,\
+    ci-kubernetes-e2e-gci-gke-slow-release-1.5,\
+    ci-kubernetes-e2e-gce-serial-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-serial-release-1.5,\
+    ci-kubernetes-e2e-gke-serial-release-1.5,\
+    ci-kubernetes-e2e-gci-gke-serial-release-1.5,\
+    ci-kubernetes-e2e-aws-release-1.5,\
+    ci-kubernetes-federation-build-1.5,\
+    ci-kubernetes-e2e-gce-federation-release-1.5,\
+    ci-kubernetes-e2e-gce-alpha-features-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5,\
+    ci-kubernetes-e2e-gke-alpha-features-release-1.5,\
+    ci-kubernetes-e2e-gce-scalability-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-scalability-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-ingress-release-1.5,\
+    ci-kubernetes-e2e-gci-gke-ingress-release-1.5,\
+    ci-kubernetes-e2e-gce-reboot-release-1.5,\
+    ci-kubernetes-e2e-gci-gce-reboot-release-1.5,\
+    ci-kubernetes-e2e-gke-reboot-release-1.5,\
+    ci-kubernetes-e2e-gci-gke-reboot-release-1.5,\
+    ci-kubernetes-soak-gce-1.5-deploy,\
+    ci-kubernetes-soak-gce-1.5-test,\
+    ci-kubernetes-soak-gci-gce-1.5-deploy,\
+    ci-kubernetes-soak-gci-gce-1.5-test,\
+    ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew,\
+    ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew,\
+    ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew,\
+    ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master,\
+    ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew,\
+    ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew,\
+    ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster,\
+    ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new,\
+    ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master"
+  # SQ-Blocking Jobs
+  # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
+  # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
+  submit-queue.jenkins-jobs: "\
+    ci-kubernetes-build,\
+    ci-kubernetes-e2e-gce-etcd3,\
+    ci-kubernetes-e2e-gci-gce,\
+    ci-kubernetes-e2e-gci-gce-slow,\
+    ci-kubernetes-e2e-gci-gce-ingress,\
+    ci-kubernetes-e2e-gci-gke,\
+    ci-kubernetes-e2e-gci-gke-slow,\
+    ci-kubernetes-e2e-kops-aws,\
+    ci-kubernetes-kubemark-500-gce,\
+    ci-kubernetes-node-kubelet,\
+    ci-kubernetes-test-go,\
+    ci-kubernetes-verify-master"
+  submit-queue.presubmit-jobs: "\
+    kubernetes-pull-build-test-e2e-gce,\
+    kubernetes-pull-build-test-e2e-gke,\
+    kubernetes-pull-build-test-federation-e2e-gce,\
+    node-pull-build-e2e-test,\
+    kubernetes-pull-build-test-gci-e2e-gce,\
+    kubernetes-pull-build-test-gci-e2e-gke,\
+    kubernetes-pull-build-test-gci-kubemark-e2e-gce"
+  submit-queue.weak-stable-jobs: "\"\""
+  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.admin-port: "9999"
+  submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
+  submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
+  submit-queue.batch-url: http://prow.k8s.io/data.js
+
+  # options used by the GCS feature.
+  gcs.gcs-bucket: kubernetes-jenkins
+  gcs.gcs-logs-dir: logs
+  gcs.pull-logs-dir: pr-logs
+  gcs.pull-key: pull
+
+  # munger specific options.
+  path-label.path-label-config: path-label.txt
+  block-path.block-path-config: block-path.yaml
+  gitrepo.repo-dir: /gitrepos
+  gitrepo.enable-md-yaml: "false"
+  flake-manager.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
+  old-test-getter.number-of-old-test-results: "5"
+  assign-fixes.fixes-issue-reassign: "false"
+  blunderbuss.blunderbuss-reassign: "false"
+  size.generated-files-config: .generated-files
+  check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"
+  issue-categorizer.triager-url: "http://issue-triager-service:5000"
+  cla.cla-status-context: ""
+  alias.alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
+
+  # Temporary gate approval process
+  approval-activated: "false"
