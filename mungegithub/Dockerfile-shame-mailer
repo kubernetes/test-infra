@@ -1,0 +1,47 @@
+# Copyright 2016 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The following environment variable need to be bound before executing
+# this containter:
+#
+#   GITHUB_API_TOKEN: An API token to use with Github's API.
+#   SHAME_FROM: The email address from which the mail is sent.
+#   SHAME_REPLY_TO: The email address to which replies will go.
+#   SHAME_CC: Email addresses that should be CC'd.
+#   SMTP_SERVER: SMTP server to use. Port may also be specified.
+#   SMTP_USER: SMTP server user login.
+#   SMTP_PASS: SMTP server password.
+#
+# An example invocation would be:
+#   docker run \
+#          -e GITHUB_API_TOKEN=A_GITHUB_API_TOKEN \
+#          -e SHAME_FROM=from@example.com \
+#          -e SHAME_REPLY_TO=replies@example.com \
+#          -e SHAME_CC=reports@example.com \
+#          -e SMTP_SERVER=smtp.example.com:1234 \
+#          -e SMTP_USER=smtp_example_user \
+#          -e SMTP_PASS=my_super_secret_smtp_password \
+#          -e ALLOWED_SHAME_DOMAINS=example.com,example.net \
+#          gcr.io/google_containers/shame-mailer:TAG
+
+FROM google/debian:jessie
+MAINTAINER Kris Rousey <krousey@google.com>
+RUN apt-get update
+RUN apt-get install -y -qq ca-certificates heirloom-mailx
+
+ADD mungegithub /mungegithub
+ADD shame_entrypoint.sh /shame_entrypoint.sh
+RUN chmod +x /shame_entrypoint.sh
+
+ENTRYPOINT ["/shame_entrypoint.sh"]

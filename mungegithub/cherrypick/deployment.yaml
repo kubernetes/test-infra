@@ -1,0 +1,98 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: @@-cherrypick
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cherrypick
+        target-repo: @@
+    spec:
+      containers:
+      - name: cherrypick
+        command:
+        - /mungegithub
+        - --dry-run=true
+        - --token-file=$(TOKEN_FILE)
+        - --organization=$(ORGANIZATION)
+        - --project=$(PROJECT)
+        - --pr-mungers=$(PR_MUNGERS)
+        - --state=$(STATE)
+        - --labels=$(LABELS)
+        - --http-cache-dir=$(HTTP_CACHE_DIR)
+        - --admin-port=$(ADMIN_PORT)
+        - --repo-dir=$(REPO_DIR)
+        - --period=$(PERIOD)
+        image: gcr.io/google_containers/cherrypick:2016-03-14-7fb1dae
+        env:
+          - name: TOKEN_FILE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.token-file
+          - name: ORGANIZATION
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.organization
+          - name: PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.project
+          - name: PR_MUNGERS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.pr-mungers
+          - name: STATE
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.state
+          - name: LABELS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.labels
+          - name: HTTP_CACHE_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.http-cache-dir
+          - name: ADMIN_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: submit-queue.admin-port
+          - name: REPO_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: gitrepo.repo-dir
+          - name: PERIOD
+            valueFrom:
+              configMapKeyRef:
+                name: @@-cp-config
+                key: config.period
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 600m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: cherrypick-secret-volume
+        - mountPath: /gitrepo
+          name: repo
+      volumes:
+      - name: cherrypick-secret-volume
+        secret:
+          secretName: cherrypick-secret-volume
+      - name: repo
+        emptyDir: {}
