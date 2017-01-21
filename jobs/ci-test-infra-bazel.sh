@@ -41,6 +41,6 @@ case "${rc}" in
     *) echo "Unknown exit code: ${rc}" ;;
 esac
 
-./images/pull-kubernetes-bazel/coalesce.py
+./images/pull_kubernetes_bazel/coalesce.py
 
 exit "${rc}"
