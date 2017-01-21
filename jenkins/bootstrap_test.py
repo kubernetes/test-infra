@@ -1608,7 +1608,9 @@ class JobTest(unittest.TestCase):
             config = json.loads(fp.read())
             for job in config:
                 self.assertTrue('scenario' in config[job], job)
-                self.assertTrue(os.path.isfile(bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])), job)
+                scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
+                self.assertTrue(os.path.isfile(scenario), job)
+                self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 hasEnv = False
                 for arg in config[job].get('args', []):
                     m = re.match(r'--env-file=([^\"]+)', arg)
