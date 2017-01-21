@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -30,33 +35,75 @@ import (
 var (
 	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	// TODO(fejta): change all these _ flags to -
-	build            = flag.Bool("build", false, "If true, build a new release. Otherwise, use whatever is there.")
-	checkVersionSkew = flag.Bool("check_version_skew", true, ""+
-		"By default, verify that client and server have exact version match. "+
-		"You can explicitly set to false if you're, e.g., testing client changes "+
-		"for which the server version doesn't make a difference.")
-	checkLeakedResources = flag.Bool("check_leaked_resources", false, "Ensure project ends with the same resources")
-	deployment           = flag.String("deployment", "bash", "up/down mechanism (defaults to cluster/kube-{up,down}.sh) (choices: none/bash/kops/kubernetes-anywhere)")
-	down                 = flag.Bool("down", false, "If true, tear down the cluster before exiting.")
-	dump                 = flag.String("dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
-	federation           = flag.Bool("federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
-	kubemark             = flag.Bool("kubemark", false, "If true, run kubemark tests.")
-	chartTests           = flag.Bool("charts", false, "If true, run charts tests.")
-	publish              = flag.String("publish", "", "Publish version to the specified gs:// path on success")
-	skewTests            = flag.Bool("skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
-	testArgs             = flag.String("test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
-	test                 = flag.Bool("test", false, "Run Ginkgo tests.")
-	timeout              = flag.Duration("timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
-	up                   = flag.Bool("up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
-	upgradeArgs          = flag.String("upgrade_args", "", "If set, run upgrade tests before other tests")
-	verbose              = flag.Bool("v", false, "If true, print all command output.")
-
-	// Deprecated flags.
-	deprecatedPush   = flag.Bool("push", false, "Deprecated. Does nothing.")
-	deprecatedPushup = flag.Bool("pushup", false, "Deprecated. Does nothing.")
-	deprecatedCtlCmd = flag.String("ctl", "", "Deprecated. Does nothing.")
+	verbose   = false
+	timeout   = time.Duration(0)
 )
+
+type options struct {
+	build       buildStrategy
+	charts      bool
+	checkLeaks  bool
+	checkSkew   bool
+	deployment  string
+	down        bool
+	dump        string
+	extract     extractStrategies
+	federation  bool
+	kubemark    bool
+	publish     string
+	save        string
+	skew        bool
+	stage       stageStrategy
+	testArgs    string
+	test        bool
+	up          bool
+	upgradeArgs string
+}
+
+func defineFlags() (*options, string) {
+	o := options{}
+	var deployment string
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
+	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
+	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
+	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
+	flag.StringVar(&deployment, "deployment", "bash", "Choices: bash/kops/kubernetes-anywhere")
+	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
+	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
+	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
+	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
+	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
+	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
+	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
+	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
+	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
+	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
+	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
+	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
+	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
+
+	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
+	return &o, deployment
+}
+
+type testCase struct {
+	XMLName   xml.Name `xml:"testcase"`
+	ClassName string   `xml:"classname,attr"`
+	Name      string   `xml:"name,attr"`
+	Time      float64  `xml:"time,attr"`
+	Failure   string   `xml:"failure,omitempty"`
+}
+
+type TestSuite struct {
+	XMLName  xml.Name `xml:"testsuite"`
+	Failures int      `xml:"failures,attr"`
+	Tests    int      `xml:"tests,attr"`
+	Time     float64  `xml:"time,attr"`
+	Cases    []testCase
+}
+
+var suite TestSuite
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
@@ -74,9 +121,59 @@ func validWorkingDirectory() error {
 	return nil
 }
 
+func writeXML(dump string, start time.Time) {
+	suite.Time = time.Since(start).Seconds()
+	out, err := xml.MarshalIndent(&suite, "", "    ")
+	if err != nil {
+		log.Fatalf("Could not marshal XML: %s", err)
+	}
+	path := filepath.Join(dump, "junit_runner.xml")
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatalf("Could not create file: %s", err)
+	}
+	defer f.Close()
+	if _, err := f.WriteString(xml.Header); err != nil {
+		log.Fatalf("Error writing XML header: %s", err)
+	}
+	if _, err := f.Write(out); err != nil {
+		log.Fatalf("Error writing XML data: %s", err)
+	}
+	log.Printf("Saved XML output to %s.", path)
+}
+
+type deployer interface {
+	Up() error
+	IsUp() error
+	SetupKubecfg() error
+	Down() error
+}
+
+func getDeployer(deployment string) (deployer, error) {
+	switch deployment {
+	case "bash":
+		return bash{}, nil
+	case "kops":
+		return NewKops()
+	case "kubernetes-anywhere":
+		return NewKubernetesAnywhere()
+	case "none":
+		return noneDeploy{}, nil
+	default:
+		return nil, fmt.Errorf("Unknown deployment strategy %q", deployment)
+	}
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	o, deployment := defineFlags()
 	flag.Parse()
+	if err := complete(o, deployment); err != nil {
+		log.Fatalf("Something went wrong: %s", err)
+	}
+}
+
+func complete(o *options, deployment string) error {
 
 	if !terminate.Stop() {
 		<-terminate.C // Drain the value if necessary.
@@ -85,26 +182,32 @@ func main() {
 		<-interrupt.C // Drain value
 	}
 
-	if *timeout > 0 {
-		log.Printf("Limiting testing to %s", *timeout)
-		interrupt.Reset(*timeout)
+	if timeout > 0 {
+		log.Printf("Limiting testing to %s", timeout)
+		interrupt.Reset(timeout)
+	}
+
+	if o.dump != "" {
+		defer writeMetadata(o.dump)
+		defer writeXML(o.dump, time.Now())
+	}
+	if err := prepare(); err != nil {
+		return err
+	}
+	if err := acquireKubernetes(o); err != nil {
+		return err
 	}
 
 	if err := validWorkingDirectory(); err != nil {
-		log.Fatalf("Called from invalid working directory: %v", err)
+		return fmt.Errorf("Called from invalid working directory: %v", err)
 	}
 
-	deploy, err := getDeployer()
+	deploy, err := getDeployer(deployment)
 	if err != nil {
-		log.Fatalf("Error creating deployer: %v", err)
+		return fmt.Errorf("Error creating deployer: %v", err)
 	}
 
-	fedDeploy, err := getFederationDeployer()
-	if err != nil {
-		log.Fatalf("Error creating federation deployer: %v", err)
-	}
-
-	if *down {
+	if o.down {
 		// listen for signals such as ^C and gracefully attempt to clean up
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -112,8 +215,8 @@ func main() {
 			for range c {
 				log.Print("Captured ^C, gracefully attempting to cleanup resources..")
 				var fedErr, err error
-				if *federation {
-					if fedErr = fedDeploy.Down(); fedErr != nil {
+				if o.federation {
+					if fedErr = FedDown(); fedErr != nil {
 						log.Printf("Tearing down federation failed: %v", fedErr)
 					}
 				}
@@ -127,7 +230,256 @@ func main() {
 		}()
 	}
 
-	if err := run(deploy, fedDeploy); err != nil {
-		log.Fatalf("Something went wrong: %s", err)
+	if err := run(deploy, *o); err != nil {
+		return err
 	}
+
+	if err := postpare(o.publish, o.save, os.Getenv("KUBERNETES_RELEASE_URL"), os.Getenv("KUBERNETES_RELEASE")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func acquireKubernetes(o *options) error {
+	// Potentially build kubernetes
+	if o.build.Enabled() {
+		if err := xmlWrap("Build", o.build.Build); err != nil {
+			return err
+		}
+	}
+
+	// Potentailly stage build binaries somewhere on GCS
+	if o.stage.Enabled() {
+		if err := xmlWrap("Stage", o.stage.Stage); err != nil {
+			return err
+		}
+	}
+
+	// Potentially download existing binaries and extract them.
+	if o.extract.Enabled() {
+		if err := xmlWrap("Extract", o.extract.Extract); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Returns the k8s version name
+func findVersion() string {
+	// The version may be in a version file
+	if _, err := os.Stat("version"); err == nil {
+		if b, err := ioutil.ReadFile("version"); err == nil {
+			return string(b)
+		} else {
+			log.Printf("Failed to read version: %v", err)
+		}
+	}
+
+	// We can also get it from the git repo.
+	if _, err := os.Stat("hack/lib/version.sh"); err == nil {
+		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
+		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
+		if b, err := combinedOutput(exec.Command("bash", "-c", gross)); err == nil {
+			return string(b)
+		} else {
+			log.Printf("Failed to get_version_vars: %v", err)
+		}
+	}
+
+	return "unknown" // Sad trombone
+}
+
+// Write metadata.json, including version and env arg data.
+func writeMetadata(path string) error {
+	m := make(map[string]string)
+	ver := findVersion()
+	m["version"] = ver // TODO(fejta): retire
+	m["job-version"] = ver
+	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
+	for _, e := range os.Environ() {
+		p := strings.SplitN(e, "=", 2)
+		r := re.FindStringSubmatch(p[0])
+		if r == nil {
+			continue
+		}
+		k, v := strings.ToLower(r[1]), p[1]
+		m[k] = v
+	}
+	f, err := os.Create(filepath.Join(path, "metadata.json"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	e := json.NewEncoder(f)
+	return e.Encode(m)
+}
+
+// Install cloudsdk tarball to location, updating PATH
+func installGcloud(tarball string, location string) error {
+
+	if err := finishRunning(exec.Command("tar", "xzf", tarball, "-C", location)); err != nil {
+		return err
+	}
+
+	if err := finishRunning(exec.Command(filepath.Join(location, "google-cloud-sdk", "install.sh"), "--disable-installation-options", "--bash-completion=false", "--path-update=false", "--usage-reporting=false")); err != nil {
+		return err
+	}
+
+	if err := insertPath(filepath.Join(location, "google-cloud-sdk", "bin")); err != nil {
+		return err
+	}
+
+	if err := finishRunning(exec.Command("gcloud", "components", "install", "alpha")); err != nil {
+		return err
+	}
+
+	if err := finishRunning(exec.Command("gcloud", "components", "install", "beta")); err != nil {
+		return err
+	}
+
+	if err := finishRunning(exec.Command("gcloud", "info")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func prepareGcp(kubernetesProvider string) error {
+	// Ensure project is set
+	p := os.Getenv("PROJECT")
+	if p == "" {
+		return fmt.Errorf("KUBERNETES_PROVIDER=%s requires setting PROJECT", kubernetesProvider)
+	}
+
+	// gcloud creds may have changed
+	if err := activateServiceAccount(); err != nil {
+		return err
+	}
+
+	// Ensure ssh keys exist
+	log.Print("Checking existing of GCP ssh keys...")
+	k := filepath.Join(".ssh", "google_compute_engine")
+	if _, err := os.Stat(k); err != nil {
+		return err
+	}
+	pk := k + ".pub"
+	if _, err := os.Stat(pk); err != nil {
+		return err
+	}
+
+	log.Printf("Checking presence of public key in %s", p)
+	if o, err := combinedOutput(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
+		return err
+	} else if b, err := ioutil.ReadFile(pk); err != nil {
+		return err
+	} else if !strings.Contains(string(b), string(o)) {
+		log.Print("Uploading public ssh key to project metadata...")
+		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+p, "config-ssh")); err != nil {
+			return err
+		}
+	}
+
+	// Install custom gcloud verion if necessary
+	if b := os.Getenv("CLOUDSDK_BUCKET"); b != "" {
+
+		for i := 0; i < 3; i++ {
+			if err := finishRunning(exec.Command("gsutil", "-mq", "cp", "-r", b, home())); err == nil {
+				break // Success!
+			}
+			time.Sleep(1 << uint(i) * time.Second)
+		}
+		for _, f := range []string{home(".gsutil"), home("repo"), home("cloudsdk")} {
+			if _, err := os.Stat(f); err == nil || !os.IsNotExist(err) {
+				if err = os.RemoveAll(f); err != nil {
+					return err
+				}
+			}
+		}
+		if err := os.Rename(home(filepath.Base(b)), home("repo")); err != nil {
+			return err
+		}
+		// Controls which gcloud components to install.
+		ccmsu := "CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL"
+		defer os.Setenv(ccmsu, os.Getenv(ccmsu))
+		os.Setenv(ccmsu, "file://"+home("repo", "components-2.json"))
+		if err := installGcloud(home("repo", "google-cloud-sdk.tar.gz"), home("cloudsdk")); err != nil {
+			return err
+		}
+		// gcloud creds may have changed
+		if err := activateServiceAccount(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func prepareAws() error {
+	return finishRunning(exec.Command("pip", "install", "awscli"))
+}
+
+// Activate GOOGLE_APPLICATION_CREDENTIALS if set or do nothing.
+func activateServiceAccount() error {
+	if k := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"); k != "" {
+		return finishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+k))
+	}
+	return nil
+}
+
+func prepare() error {
+	kp := os.Getenv("KUBERNETES_PROVIDER")
+	switch kp {
+	case "gce", "gke", "kubemark":
+		if err := prepareGcp(kp); err != nil {
+			return err
+		}
+	case "aws":
+		if err := prepareAws(); err != nil {
+			return err
+		}
+	}
+
+	if err := activateServiceAccount(); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll("./_artifacts", 0777); err != nil { // Create artifacts
+		return err
+	}
+
+	if p := os.Getenv("PRIORITY_PATH"); p != "" {
+		if err := insertPath(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func postpare(publish, save, url, version string) error {
+	if publish != "" {
+		if v, err := ioutil.ReadFile("version"); err != nil {
+			return err
+		} else {
+			log.Printf("Set %s version to %s", publish, string(v))
+		}
+		if err := finishRunning(exec.Command("gsutil", "cp", "version", publish)); err != nil {
+			return err
+		}
+	}
+	if save != "" {
+		if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), filepath.Join(save, "kube-config"))); err != nil {
+			return err
+		}
+		if cmd, err := inputCommand(url, "gsutil", "cp", "-", filepath.Join(save, "release-url.txt")); err != nil {
+			return err
+		} else if err = finishRunning(cmd); err != nil {
+			return err
+		}
+
+		if cmd, err := inputCommand(version, "gsutil", "cp", "-", filepath.Join(save, "release.txt")); err != nil {
+			return err
+		} else if err = finishRunning(cmd); err != nil {
+			return err
+		}
+	}
+	return nil
+	// chmod -R o+r everything
 }

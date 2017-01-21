@@ -28,25 +28,8 @@ import (
 	"time"
 )
 
-func appendError(errs []error, err error) []error {
-	if err != nil {
-		return append(errs, err)
-	}
-	return errs
-}
-
-func run(deploy deployer, fedDeploy federationDeployer) error {
-	if *dump != "" {
-		defer writeXML(time.Now())
-	}
-
-	if *build {
-		if err := xmlWrap("Build", Build); err != nil {
-			return fmt.Errorf("error building: %s", err)
-		}
-	}
-
-	if *checkVersionSkew {
+func run(deploy deployer, o options) error {
+	if o.checkSkew {
 		os.Setenv("KUBECTL", "./cluster/kubectl.sh --match-server-version")
 	} else {
 		os.Setenv("KUBECTL", "./cluster/kubectl.sh")
@@ -55,7 +38,7 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 	// force having batch/v2alpha1 always on for e2e tests
 	os.Setenv("KUBE_RUNTIME_CONFIG", "batch/v2alpha1=true")
 
-	if *up {
+	if o.up {
 		if err := xmlWrap("TearDown Previous", deploy.Down); err != nil {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
@@ -77,17 +60,17 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 		afterResources  []byte
 	)
 
-	if *checkLeakedResources {
+	if o.checkLeaks {
 		errs = appendError(errs, xmlWrap("ListResources Before", func() error {
 			beforeResources, err = ListResources()
 			return err
 		}))
 	}
 
-	if *up {
+	if o.up {
 		// If we tried to bring the cluster up, make a courtesy
 		// attempt to bring it down so we're not leaving resources around.
-		if *down {
+		if o.down {
 			defer xmlWrap("Deferred TearDown", func() error {
 				if !downDone {
 					return deploy.Down()
@@ -97,10 +80,10 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 			// Deferred statements are executed in last-in-first-out order, so
 			// federation down defer must appear after the cluster teardown in
 			// order to execute that before cluster teardown.
-			if *federation {
+			if o.federation {
 				defer xmlWrap("Deferred Federation TearDown", func() error {
 					if !federationDownDone {
-						return fedDeploy.Down()
+						return FedDown()
 					}
 					return nil
 				})
@@ -108,79 +91,85 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 		}
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
-			if *dump != "" {
+			if o.dump != "" {
 				xmlWrap("DumpClusterLogs", func() error {
-					return DumpClusterLogs(*dump)
+					return DumpClusterLogs(o.dump)
 				})
 			}
 			return fmt.Errorf("starting e2e cluster: %s", err)
 		}
-		if *federation {
-			if err := xmlWrap("Federation Up", fedDeploy.Up); err != nil {
+		if o.federation {
+			if err := xmlWrap("Federation Up", FedUp); err != nil {
 				// TODO: Dump federation related logs.
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-		if *dump != "" {
-			errs = appendError(errs, xmlWrap("list nodes", listNodes))
+		if o.dump != "" {
+			errs = appendError(errs, xmlWrap("list nodes", func() error {
+				return listNodes(o.dump)
+			}))
 		}
 	}
 
-	if *checkLeakedResources {
+	if o.checkLeaks {
 		errs = appendError(errs, xmlWrap("ListResources Up", func() error {
 			upResources, err = ListResources()
 			return err
 		}))
 	}
 
-	if *upgradeArgs != "" {
+	if o.upgradeArgs != "" {
 		errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
-			return UpgradeTest(*upgradeArgs)
+			return UpgradeTest(o.upgradeArgs, o.checkSkew)
 		}))
 	}
 
-	if *test {
+	if o.test {
 		errs = appendError(errs, xmlWrap("get kubeconfig", deploy.SetupKubecfg))
 		errs = appendError(errs, xmlWrap("kubectl version", func() error {
 			return finishRunning(exec.Command("./cluster/kubectl.sh", "version", "--match-server-version=false"))
 		}))
-		if *skewTests {
-			errs = appendError(errs, xmlWrap("SkewTest", SkewTest))
+		if o.skew {
+			errs = appendError(errs, xmlWrap("SkewTest", func() error {
+				return SkewTest(o.testArgs, o.checkSkew)
+			}))
 		} else {
 			if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
 				errs = appendError(errs, err)
 			} else {
-				errs = appendError(errs, xmlWrap("Test", Test))
+				errs = appendError(errs, xmlWrap("Test", func() error {
+					return Test(o.testArgs)
+				}))
 			}
 		}
 	}
 
-	if *kubemark {
+	if o.kubemark {
 		errs = appendError(errs, xmlWrap("Kubemark", KubemarkTest))
 	}
 
-	if *chartTests {
+	if o.charts {
 		errs = appendError(errs, xmlWrap("Helm Charts", ChartsTest))
 	}
 
-	if len(errs) > 0 && *dump != "" {
+	if len(errs) > 0 && o.dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
-			return DumpClusterLogs(*dump)
+			return DumpClusterLogs(o.dump)
 		}))
 	}
 
-	if *checkLeakedResources {
+	if o.checkLeaks {
 		errs = appendError(errs, xmlWrap("ListResources Down", func() error {
 			downResources, err = ListResources()
 			return err
 		}))
 	}
 
-	if *down {
-		if *federation {
+	if o.down {
+		if o.federation {
 			errs = appendError(errs, xmlWrap("Federation TearDown", func() error {
 				if !federationDownDone {
-					err := fedDeploy.Down()
+					err := FedDown()
 					if err != nil {
 						return err
 					}
@@ -201,7 +190,7 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 		}))
 	}
 
-	if *checkLeakedResources {
+	if o.checkLeaks {
 		log.Print("Sleeping for 30 seconds...") // Wait for eventually consistent listing
 		time.Sleep(30 * time.Second)
 		if err := xmlWrap("ListResources After", func() error {
@@ -211,19 +200,19 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 			errs = append(errs, err)
 		} else {
 			errs = appendError(errs, xmlWrap("DiffResources", func() error {
-				return DiffResources(beforeResources, upResources, downResources, afterResources, *dump)
+				return DiffResources(beforeResources, upResources, downResources, afterResources, o.dump)
 			}))
 		}
 	}
-	if len(errs) == 0 && *publish != "" {
+	if len(errs) == 0 && o.publish != "" {
 		errs = appendError(errs, xmlWrap("Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz
 			if v, err := ioutil.ReadFile("version"); err != nil {
 				return err
 			} else {
-				log.Printf("Set %s version to %s", *publish, string(v))
+				log.Printf("Set %s version to %s", o.publish, string(v))
 			}
-			return finishRunning(exec.Command("gsutil", "cp", "version", *publish))
+			return finishRunning(exec.Command("gsutil", "cp", "version", o.publish))
 		}))
 	}
 
@@ -233,16 +222,15 @@ func run(deploy deployer, fedDeploy federationDeployer) error {
 	return nil
 }
 
-func listNodes() error {
-	cmd := exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml")
-	b, err := cmd.CombinedOutput()
-	if *verbose {
+func listNodes(dump string) error {
+	b, err := combinedOutput(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+	if verbose {
 		log.Printf("kubectl get nodes:\n%s", string(b))
 	}
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(*dump, "nodes.yaml"), b, 0644)
+	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
 func DiffResources(before, clusterUp, clusterDown, after []byte, location string) error {
@@ -275,7 +263,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 	}
 
 	cmd := exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap)
-	if *verbose {
+	if verbose {
 		cmd.Stderr = os.Stderr
 	}
 	stdout, cerr := cmd.Output()
@@ -311,7 +299,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 func ListResources() ([]byte, error) {
 	log.Printf("Listing resources...")
 	cmd := exec.Command("./cluster/gce/list-resources.sh")
-	if *verbose {
+	if verbose {
 		cmd.Stderr = os.Stderr
 	}
 	stdout, err := cmd.Output()
@@ -319,43 +307,6 @@ func ListResources() ([]byte, error) {
 		return nil, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
 	}
 	return stdout, nil
-}
-
-func Build() error {
-	// The build-release script needs stdin to ask the user whether
-	// it's OK to download the docker image.
-	cmd := exec.Command("make", "quick-release")
-	cmd.Stdin = os.Stdin
-	if err := finishRunning(cmd); err != nil {
-		return fmt.Errorf("error building kubernetes: %v", err)
-	}
-	return nil
-}
-
-type deployer interface {
-	Up() error
-	IsUp() error
-	SetupKubecfg() error
-	Down() error
-}
-
-func getDeployer() (deployer, error) {
-	switch *deployment {
-	case "none":
-		return none{}, nil
-	case "bash":
-		return bash{}, nil
-	case "kops":
-		return NewKops()
-	case "kubernetes-anywhere":
-		return NewKubernetesAnywhere()
-	default:
-		return nil, fmt.Errorf("Unknown deployment strategy %q", *deployment)
-	}
-}
-
-func getFederationDeployer() (federationDeployer, error) {
-	return federationDeployer{}, nil
 }
 
 func clusterSize(deploy deployer) (int, error) {
@@ -372,20 +323,20 @@ func clusterSize(deploy deployer) (int, error) {
 	return len(strings.Split(stdout, "\n")), nil
 }
 
-// CommandError will provide stderr output (if available) from structured
+// commandError will provide stderr output (if available) from structured
 // exit errors
-type CommandError struct {
+type commandError struct {
 	err error
 }
 
-func WrapError(err error) *CommandError {
+func WrapError(err error) *commandError {
 	if err == nil {
 		return nil
 	}
-	return &CommandError{err: err}
+	return &commandError{err: err}
 }
 
-func (e *CommandError) Error() string {
+func (e *commandError) Error() string {
 	if e == nil {
 		return ""
 	}
@@ -510,7 +461,8 @@ func chdirSkew() (string, error) {
 	return old, nil
 }
 
-func UpgradeTest(args string) error {
+func UpgradeTest(args string, checkSkew bool) error {
+	// TOOD(fejta): fix this
 	old, err := chdirSkew()
 	if err != nil {
 		return err
@@ -527,11 +479,11 @@ func UpgradeTest(args string) error {
 		"go", "run", "./hack/e2e.go",
 		"--test",
 		"--test_args="+args,
-		fmt.Sprintf("--v=%t", *verbose),
-		fmt.Sprintf("--check_version_skew=%t", *checkVersionSkew)))
+		fmt.Sprintf("--v=%t", verbose),
+		fmt.Sprintf("--check-version-skew=%t", checkSkew)))
 }
 
-func SkewTest() error {
+func SkewTest(args string, checkSkew bool) error {
 	old, err := chdirSkew()
 	if err != nil {
 		return err
@@ -540,19 +492,19 @@ func SkewTest() error {
 	return finishRunning(exec.Command(
 		"go", "run", "./hack/e2e.go",
 		"--test",
-		"--test_args="+*testArgs,
-		fmt.Sprintf("--v=%t", *verbose),
-		fmt.Sprintf("--check_version_skew=%t", *checkVersionSkew)))
+		"--test_args="+args,
+		fmt.Sprintf("--v=%t", verbose),
+		fmt.Sprintf("--check_version_skew=%t", checkSkew)))
 }
 
-func Test() error {
+func Test(testArgs string) error {
 	// TODO(fejta): add a --federated or something similar
 	if os.Getenv("FEDERATION") != "true" {
-		return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(*testArgs)...))
+		return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
 	}
 
-	if *testArgs == "" {
-		*testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
+	if testArgs == "" {
+		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
 	}
-	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(*testArgs)...))
+	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(testArgs)...))
 }

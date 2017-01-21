@@ -20,12 +20,10 @@ import (
 	"os/exec"
 )
 
-type federationDeployer struct{}
-
-func (f federationDeployer) Up() error {
+func FedUp() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
 }
 
-func (f federationDeployer) Down() error {
+func FedDown() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-down.sh"))
 }
