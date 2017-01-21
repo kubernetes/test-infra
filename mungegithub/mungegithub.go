@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 	"time"
 
+	utilflag "k8s.io/kubernetes/pkg/util/flag"
 	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers"
 	"k8s.io/test-infra/mungegithub/reports"
-	utilflag "k8s.io/kubernetes/pkg/util/flag"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"

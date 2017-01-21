@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/test-infra/mungegithub/features"
 	githubhelper "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"bytes"
 	"github.com/golang/glog"

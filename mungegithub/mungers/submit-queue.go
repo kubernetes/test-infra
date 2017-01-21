@@ -31,6 +31,7 @@ import (
 
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
+	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/test-infra/mungegithub/admin"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
@@ -38,7 +39,6 @@ import (
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/mungers/shield"
-	"k8s.io/contrib/test-utils/utils"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"

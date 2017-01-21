@@ -25,9 +25,9 @@ import (
 	"strings"
 	"sync"
 
-	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
+	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 
 	"github.com/golang/glog"
 	"io/ioutil"

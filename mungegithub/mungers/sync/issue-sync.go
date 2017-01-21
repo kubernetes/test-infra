@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/mungegithub/github"
 )
 
 const (

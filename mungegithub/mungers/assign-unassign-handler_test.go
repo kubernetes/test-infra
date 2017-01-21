@@ -20,9 +20,9 @@ import (
 	"runtime"
 	"testing"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
-	"k8s.io/kubernetes/pkg/util/sets"
 
 	goGithub "github.com/google/go-github/github"
 )

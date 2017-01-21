@@ -21,9 +21,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
-	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"

@@ -23,10 +23,10 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
+	"k8s.io/contrib/test-utils/utils"
 	github_testing "k8s.io/test-infra/mungegithub/github/testing"
 	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 	"k8s.io/test-infra/mungegithub/mungers/sync"
-	"k8s.io/contrib/test-utils/utils"
 )
 
 func makeTestFlakeManager() *FlakeManager {

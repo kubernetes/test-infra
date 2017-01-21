@@ -21,8 +21,8 @@ import (
 	"runtime"
 	"testing"
 
-	github_util "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
+	github_util "k8s.io/test-infra/mungegithub/github"
 )
 
 var (

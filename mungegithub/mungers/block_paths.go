@@ -21,9 +21,9 @@ import (
 	"os"
 	"regexp"
 
+	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
-	"k8s.io/kubernetes/pkg/util/yaml"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"

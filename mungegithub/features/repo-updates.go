@@ -26,9 +26,9 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/yaml"
+	"k8s.io/test-infra/mungegithub/github"
 
 	parseYaml "github.com/ghodss/yaml"
 	"github.com/golang/glog"
