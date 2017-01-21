@@ -17,8 +17,8 @@ limitations under the License.
 package fake
 
 import (
-	"k8s.io/contrib/mungegithub/mungers/e2e"
-	cache "k8s.io/contrib/mungegithub/mungers/flakesync"
+	"k8s.io/test-infra/mungegithub/mungers/e2e"
+	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 )
 
 // FakeE2ETester always reports builds as stable.

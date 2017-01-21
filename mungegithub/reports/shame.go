@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	githubhelper "k8s.io/contrib/mungegithub/github"
+	githubhelper "k8s.io/test-infra/mungegithub/github"
 
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"

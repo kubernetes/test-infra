@@ -19,7 +19,7 @@ package reports
 import (
 	"fmt"
 
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/github"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"

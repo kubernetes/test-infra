@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/github"
-	mgh "k8s.io/contrib/mungegithub/github"
+	mgh "k8s.io/test-infra/mungegithub/github"
 )
 
 // Notification is a message sent by the bot. Easy to find and create.

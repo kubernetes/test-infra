@@ -23,8 +23,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 
-	"k8s.io/contrib/mungegithub/github"
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/test-infra/mungegithub/github"
 )
 
 // MungeIssue is the real worker. It is called for every open github Issue

@@ -20,13 +20,13 @@ import (
 	"bytes"
 	"fmt"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
 
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
-	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
+	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 )
 
 const (

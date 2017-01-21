@@ -19,10 +19,10 @@ package mungers
 import (
 	"time"
 
-	"k8s.io/contrib/mungegithub/features"
-	githubhelper "k8s.io/contrib/mungegithub/github"
-	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/features"
+	githubhelper "k8s.io/test-infra/mungegithub/github"
+	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"

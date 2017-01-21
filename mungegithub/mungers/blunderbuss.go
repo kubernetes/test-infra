@@ -20,9 +20,9 @@ import (
 	"math"
 	"math/rand"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"

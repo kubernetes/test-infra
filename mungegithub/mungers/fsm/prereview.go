@@ -17,7 +17,7 @@ limitations under the License.
 package fsm
 
 import (
-	githubhelper "k8s.io/contrib/mungegithub/github"
+	githubhelper "k8s.io/test-infra/mungegithub/github"
 )
 
 const (

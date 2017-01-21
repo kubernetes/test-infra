@@ -17,7 +17,7 @@ limitations under the License.
 package features
 
 import (
-	"k8s.io/contrib/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/github"
 
 	"github.com/spf13/cobra"
 )

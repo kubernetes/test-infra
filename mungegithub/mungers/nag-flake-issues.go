@@ -21,10 +21,10 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
-	"k8s.io/contrib/mungegithub/features"
-	mgh "k8s.io/contrib/mungegithub/github"
-	c "k8s.io/contrib/mungegithub/mungers/matchers/comment"
-	"k8s.io/contrib/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/features"
+	mgh "k8s.io/test-infra/mungegithub/github"
+	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
 const (

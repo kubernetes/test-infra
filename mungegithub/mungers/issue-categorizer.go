@@ -22,9 +22,9 @@ import (
 	"net/url"
 	"strings"
 
-	"k8s.io/contrib/mungegithub/features"
-	"k8s.io/contrib/mungegithub/github"
-	"k8s.io/contrib/mungegithub/mungers/matchers/event"
+	"k8s.io/test-infra/mungegithub/features"
+	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
