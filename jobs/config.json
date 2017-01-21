@@ -89,14 +89,14 @@
 "ci-kubernetes-node-docker": {
   "scenario": "kubernetes_kubelet",
   "args": [
-    "--script=test/e2e_node/jenkins/docker_validation/jenkins-validation.properties"
+    "--properties=test/e2e_node/jenkins/docker_validation/jenkins-validation.properties"
   ]
 },
 
 "ci-kubernetes-node-docker-benchmark": {
   "scenario": "kubernetes_kubelet",
   "args": [
-    "--script=test/e2e_node/jenkins/docker_validation/jenkins-perf.properties"
+    "--properties=test/e2e_node/jenkins/docker_validation/jenkins-perf.properties"
   ]
 },
 
