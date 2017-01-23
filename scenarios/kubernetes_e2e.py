@@ -88,7 +88,7 @@ def main(args):
 
     if args.env_file:
         for env in args.env_file:
-            cmd.extend(['--env-file', env])
+            cmd.extend(['--env-file', test_infra(env)])
 
     gce_ssh = '/workspace/.ssh/google_compute_engine'
     gce_pub = '%s.pub' % gce_ssh
