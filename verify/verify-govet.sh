@@ -25,4 +25,4 @@ else
   go=$(which go)
 fi
 
-find . -name "*.go" | grep -v "\/vendor\/" | grep -v "mungegithub" | xargs -n 1 "${go}" vet
+find . -name "*.go" | grep -v "\/vendor\/" | xargs -n 1 "${go}" vet

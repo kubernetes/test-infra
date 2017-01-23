@@ -48,7 +48,7 @@ func TestOwnerList(t *testing.T) {
 	}
 	owner = list.TestOwner("Unknown test")
 	if owner != "" {
-		t.Errorf("Unexpected return value ", owner)
+		t.Error("Unexpected return value ", owner)
 	}
 }
 
@@ -60,7 +60,7 @@ func TestOwnerGlob(t *testing.T) {
 	}
 	owner = list.TestOwner("Unknown test")
 	if owner != "" {
-		t.Errorf("Unexpected return value ", owner)
+		t.Error("Unexpected return value ", owner)
 	}
 }
 

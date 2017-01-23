@@ -66,16 +66,41 @@ func TestCommandName(t *testing.T) {
 }
 
 func TestCommandArgmuents(t *testing.T) {
-	if CommandArguments(*regexp.MustCompile(".*")).Match(&github.IssueComment{}) {
-		t.Error("Shouldn't match nil body")
+	var testcases = []struct {
+		name        string
+		re          string
+		comment     *github.IssueComment
+		shouldMatch bool
+	}{
+		{
+			name:        "shouldn't match nil body",
+			re:          ".*",
+			comment:     &github.IssueComment{},
+			shouldMatch: false,
+		},
+		{
+			name:        "shouldn't match non-command",
+			re:          ".*",
+			comment:     makeCommentWithBody("COMMAND WRONG FORMAT"),
+			shouldMatch: false,
+		},
+		{
+			name:        "should match from the beginning of arguments",
+			re:          "^carret",
+			comment:     makeCommentWithBody("/command carret is the beginning of argument"),
+			shouldMatch: true,
+		},
+		{
+			name:        "shouldn't match command name",
+			re:          "command",
+			comment:     makeCommentWithBody("/command name is not part of match"),
+			shouldMatch: false,
+		},
 	}
-	if CommandArguments(*regexp.MustCompile(".*")).Match(makeCommentWithBody("COMMAND WRONG FORMAT")) {
-		t.Error("Shouldn't match non-command")
-	}
-	if !CommandArguments(*regexp.MustCompile("^carret")).Match(makeCommentWithBody("/command carret is the beginning of argument")) {
-		t.Error("Should match from the beginning of arguments")
-	}
-	if CommandArguments(*regexp.MustCompile("command")).Match(makeCommentWithBody("/command name is not part of match")) {
-		t.Error("Shouldn't match command name")
+	for _, tc := range testcases {
+		ca := CommandArguments(*regexp.MustCompile(tc.re))
+		if tc.shouldMatch != ca.Match(tc.comment) {
+			t.Error(tc.name)
+		}
 	}
 }

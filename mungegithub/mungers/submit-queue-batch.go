@@ -317,11 +317,11 @@ func (sq *SubmitQueue) doBatchMerge(batch Batch) {
 			return
 		}
 		if sha, _, ok := obj.GetHeadAndBase(); !ok {
-			glog.Errorf("error getting pr #%d sha", pull.Number, err)
+			glog.Errorf("error getting pr #%d sha: %v", pull.Number, err)
 			return
 		} else if sha != pull.Sha {
 			glog.Errorf("error: batch PR #%d HEAD changed: %s instead of %s",
-				sha, pull.Sha)
+				pull.Number, sha, pull.Sha)
 			return
 		}
 		if !sq.validForMergeExt(obj, false) {

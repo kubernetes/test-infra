@@ -108,6 +108,6 @@ func TestIssueUsersAll(t *testing.T) {
 
 	expected := []string{"Bob", "Jane", "John"}
 	if !reflect.DeepEqual(users.AllUsers().List(), expected) {
-		t.Error("AllUsers (%s) doesn't match expected list: %s %T", users.AllUsers().List(), expected)
+		t.Errorf("AllUsers (%s) doesn't match expected list: %s", users.AllUsers().List(), expected)
 	}
 }

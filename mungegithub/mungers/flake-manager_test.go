@@ -192,7 +192,7 @@ func TestAutoPrioritize(t *testing.T) {
 		p := autoPrioritize(tc.comments, &tc.issueCreatedAt)
 		if p.Priority() != tc.expectPriority {
 			t.Errorf("Expected priority: %d, But got: %d",
-				len(tc.comments), tc.expectPriority, p.Priority())
+				tc.expectPriority, p.Priority())
 		}
 	}
 }

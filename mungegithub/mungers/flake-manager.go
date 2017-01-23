@@ -266,7 +266,6 @@ func flakeReasonsAreEquivalent(a, b string) bool {
 	}
 
 	return levenshtein.Distance(a, b) < (len(a)+len(b))/20 // ~5% differences allowed
-	return a == b
 }
 
 // AddTo implements IssueSource

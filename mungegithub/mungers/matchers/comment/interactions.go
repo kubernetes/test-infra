@@ -52,12 +52,12 @@ func (c CommandName) Match(comment *github.IssueComment) bool {
 type CommandArguments regexp.Regexp
 
 // Match if the command arguments match the regexp
-func (c CommandArguments) Match(comment *github.IssueComment) bool {
+func (c *CommandArguments) Match(comment *github.IssueComment) bool {
 	command := ParseCommand(comment)
 	if command == nil {
 		return false
 	}
-	return (*regexp.Regexp)(&c).MatchString(command.Arguments)
+	return (*regexp.Regexp)(c).MatchString(command.Arguments)
 }
 
 // MungeBotAuthor creates a matcher to find mungebot comments
