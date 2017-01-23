@@ -48,8 +48,8 @@ type configBlockPath struct {
 // BlockPath will add a label to block auto merge if a PR touches certain paths
 type BlockPath struct {
 	Path             string
-	blockRegexp      []regexp.Regexp
-	doNotBlockRegexp []regexp.Regexp
+	blockRegexp      []*regexp.Regexp
+	doNotBlockRegexp []*regexp.Regexp
 }
 
 func init() {
@@ -80,22 +80,22 @@ func (b *BlockPath) Initialize(config *github.Config, features *features.Feature
 		glog.Fatalf("Failed to decode the block-path config: %v", err)
 	}
 
-	b.blockRegexp = []regexp.Regexp{}
+	b.blockRegexp = []*regexp.Regexp{}
 	for _, str := range c.BlockRegexp {
 		reg, err := regexp.Compile(str)
 		if err != nil {
 			return err
 		}
-		b.blockRegexp = append(b.blockRegexp, *reg)
+		b.blockRegexp = append(b.blockRegexp, reg)
 	}
 
-	b.doNotBlockRegexp = []regexp.Regexp{}
+	b.doNotBlockRegexp = []*regexp.Regexp{}
 	for _, str := range c.DoNotBlockRegexp {
 		reg, err := regexp.Compile(str)
 		if err != nil {
 			return err
 		}
-		b.doNotBlockRegexp = append(b.doNotBlockRegexp, *reg)
+		b.doNotBlockRegexp = append(b.doNotBlockRegexp, reg)
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (b *BlockPath) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&b.Path, "block-path-config", "", "file containing the pathnames to block or not block")
 }
 
-func matchesAny(path string, regs []regexp.Regexp) bool {
+func matchesAny(path string, regs []*regexp.Regexp) bool {
 	for _, reg := range regs {
 		if reg.MatchString(path) {
 			return true

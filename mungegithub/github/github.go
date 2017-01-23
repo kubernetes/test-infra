@@ -1568,7 +1568,7 @@ func (obj *MungeObject) UnassignPR(assignees ...string) error {
 		return nil
 	}
 	if _, _, err := config.client.Issues.RemoveAssignees(config.Org, config.Project, prNum, assignees); err != nil {
-		glog.Errorf("Error unassigning %v from PR# %d  to %v", assignees, prNum)
+		glog.Errorf("Error unassigning %v from PR# %d: %v", assignees, prNum, err)
 		return err
 	}
 	return nil

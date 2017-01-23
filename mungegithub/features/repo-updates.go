@@ -44,9 +44,9 @@ const (
 )
 
 type assignmentConfig struct {
-	Assignees []string `json:assignees yaml:assignees`
-	Approvers []string `json:approvers yaml:approvers`
-	Reviewers []string `json:reviewers yaml:reviewers`
+	Assignees []string `json:"assignees" yaml:"assignees"`
+	Approvers []string `json:"approvers" yaml:"approvers"`
+	Reviewers []string `json:"reviewers" yaml:"reviewers"`
 }
 
 // RepoInfo provides information about users in OWNERS files in a git repo

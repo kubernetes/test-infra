@@ -161,7 +161,7 @@ func (s *IssueSyncer) Sync(source IssueSource) error {
 	// No issue could be updated, create a new issue.
 	obj, err := s.createIssue(source)
 	if err != nil {
-		return fmt.Errorf("error making issue for %v: %v", source.ID, err)
+		return fmt.Errorf("error making issue for %v: %v", source.ID(), err)
 	}
 	issueNum := *obj.Issue.Number
 	s.finder.Created(source.Title(), issueNum)

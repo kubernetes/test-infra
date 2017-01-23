@@ -1053,7 +1053,7 @@ func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
 		// time based loop finds the same PR it will try to set ciFailure. We should in fact
 		// not ever call this function in this case, but if we do call here, log it.
 		if sq.githubE2ERunning != nil && *sq.githubE2ERunning.Issue.Number == *obj.Issue.Number {
-			glog.Errorf("Trying to clean up %d due to ciFailure while it is being tested")
+			glog.Errorf("Trying to clean up %d due to ciFailure while it is being tested", *obj.Issue.Number)
 			return
 		}
 		fallthrough
