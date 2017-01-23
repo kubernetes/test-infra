@@ -177,28 +177,26 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 // findPeopleToApprove Takes the Owners Files that Are Needed for the PR and chooses a good
 // subset of Approvers that are guaranteed to cover all of them (exact cover)
 // This is a greedy approximation and not guaranteed to find the minimum number of OWNERS
-func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String, prAuthor string) sets.String {
+func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.String {
 
 	// approverCount contains a map: person -> set of relevant OWNERS file they are in
 	approverCount := make(map[string]sets.String)
+	copyOfFiles := sets.NewString()
 	for ownersFile := range ownersPaths {
 		// LeafApprovers removes the last part of a path for dirs and files, so we append owners to the path
-		for approver := range h.features.Repos.LeafApprovers(filepath.Join(ownersFile, ownersFileName)) {
-			if approver == prAuthor {
-				// don't add the author of the PR to the list of candidates that can approve
-				continue
-			}
+		leafApprovers := h.features.Repos.LeafApprovers(filepath.Join(ownersFile, ownersFileName))
+		if len(leafApprovers) == 0 {
+			glog.Warning(fmt.Sprintf("Couldn't find valid approvers for %v", filepath.Join(ownersFile, ownersFileName)))
+			continue
+		}
+		copyOfFiles.Insert(ownersFile)
+		for approver := range leafApprovers {
 			if _, ok := approverCount[approver]; ok {
 				approverCount[approver].Insert(ownersFile)
 			} else {
 				approverCount[approver] = sets.NewString(ownersFile)
 			}
 		}
-	}
-
-	copyOfFiles := sets.NewString()
-	for fn := range ownersPaths {
-		copyOfFiles.Insert(fn)
 	}
 
 	approverGroup := sets.NewString()
@@ -283,7 +281,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	if unapprovedOwners.Len() > 0 {
 		context.WriteString("We suggest the following people:\n")
 		context.WriteString("cc ")
-		toBeAssigned := h.findPeopleToApprove(unapprovedOwners, *obj.Issue.User.Login)
+		toBeAssigned := h.findPeopleToApprove(unapprovedOwners)
 		for person := range toBeAssigned {
 			context.WriteString("@" + person + " ")
 		}
