@@ -1487,7 +1487,7 @@ class JobTest(unittest.TestCase):
                 if job.endswith('.sh'):
                     mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
                 else:
-                    mat = re.match(r'KUBEKINS_TIMEOUT="(\d+)m".*', line)
+                    mat = re.match(r'KUBEKINS_TIMEOUT=(\d+)m.*', line)
                     realjob = self.GetRealBootstrapJob(job)
                     self.assertTrue(realjob)
                     docker_timeout = realjob['timeout']
@@ -1544,7 +1544,10 @@ class JobTest(unittest.TestCase):
                     job = 'ci-kubernetes-node-*'
                 if not line.startswith('#') and job.endswith('.sh'):
                     self.assertIn('export', line, line)
-                project = re.search(r'PROJECT="([^"]+)"', line).group(1)
+                if job.endswith('.sh'):
+                    project = re.search(r'PROJECT="([^"]+)"', line).group(1)
+                else:
+                    project = re.search(r'PROJECT=([^"]+)', line).group(1)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
         if duplicates:
