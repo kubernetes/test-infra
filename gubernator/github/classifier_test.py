@@ -27,7 +27,7 @@ class MergedTest(unittest.TestCase):
             {'c': 4},
             {'issue': {'n': 3, 'd': 4},
              'pull_request': {'n': 4, 'e': 5}}
-        ])), {'n': 4, 'a': 2, 'b': 3, 'd': 4, 'e': 5})
+        ], [0] * 4)), {'n': 4, 'a': 2, 'b': 3, 'd': 4, 'e': 5})
 
 
 def diffs_to_events(*diffs):
@@ -40,7 +40,7 @@ def diffs_to_events(*diffs):
             action = 'unlabeled'
         events.append(('pull_request',
                        {'action': action,
-                        'label': label}))
+                        'label': label}, 0))
     return events
 
 
@@ -50,13 +50,13 @@ class LabelsTest(unittest.TestCase):
         self.assertEqual(sorted(labels.keys()), sorted(names))
 
     def test_empty(self):
-        self.expect_labels([('comment', {'body': 'no labels here'})], [])
+        self.expect_labels([('comment', {'body': 'no labels here'}, 0)], [])
 
     def test_colors(self):
         self.assertEqual(classifier.get_labels(
                 [('c', {'issue':
                         {'labels': [{'name': 'foo', 'color': '#abc'}]}
-            })]),
+                        }, 0)]),
             {'foo': '#abc'})
 
     def test_labeled_action(self):
@@ -68,10 +68,10 @@ class LabelsTest(unittest.TestCase):
     def test_issue_overrides_action(self):
         labels = [{'name': 'x', 'color': 'y'}]
         self.expect_labels(diffs_to_events('+a') +
-            [('other_event', {'issue': {'labels': labels}})], ['x'])
+            [('other_event', {'issue': {'labels': labels}}, 0)], ['x'])
 
     def test_labeled_action_missing_label(self):
-        self.expect_labels([('pull_request', {'action': 'labeled'})], [])
+        self.expect_labels([('pull_request', {'action': 'labeled'}, 0)], [])
 
 
 def make_comment_event(num, name, msg='', event='issue_comment',
@@ -85,7 +85,7 @@ def make_comment_event(num, name, msg='', event='issue_comment',
             'body': msg,
             'created_at': ts,
         }
-    }
+    }, 0
 
 
 class CalculateTest(unittest.TestCase):
@@ -103,13 +103,13 @@ class CalculateTest(unittest.TestCase):
                         'additions': 1,
                         'deletions': 1,
                     }
-                }),
+                }, 0),
                 make_comment_event(1, 'k8s-bot',
                     'failure in https://k8s-gubernator.appspot.com/build/bucket/job/123/'),
                 ('pull_request', {
                     'action': 'labeled',
                     'label': {'name': 'release-note-none', 'color': 'orange'},
-                })
+                }, 0)
             ], {'e2e': ['failure', None, 'stuff is broken']}
         ),
         (True, True, ['a', 'b'],
@@ -134,9 +134,9 @@ class CalculateTest(unittest.TestCase):
             make_comment_event(1, 'a', action='deleted'),
             make_comment_event(3, 'c', event='pull_request_review_comment'),
             make_comment_event(4, 'k8s-bot'),
-            ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}),
+            ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}, 0),
             ('pull_request', {'action': 'labeled', 'sender': {'login': 'rev'},
-                'label': {'name': 'lgtm'}}),
+                'label': {'name': 'lgtm'}}, 0),
         ]),
         [
             ('comment', 'b'),

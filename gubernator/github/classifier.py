@@ -40,10 +40,10 @@ def classify_issue(repo, number):
     events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
     events.sort(key=lambda e: e.timestamp)
     logging.debug('classifying %s %s (%d events)', repo, number, len(events))
-    event_pairs = [(event.event, json.loads(event.body)) for event in events]
+    event_tuples = [(event.event, json.loads(event.body), event.timestamp) for event in events]
 
     last_event_timestamp = events[-1].timestamp
-    merged = get_merged(event_pairs)
+    merged = get_merged(event_tuples)
     statuses = None
     if 'head' in merged:
         statuses = {}
@@ -52,7 +52,7 @@ def classify_issue(repo, number):
             statuses[status.context] = [
                 status.state, status.target_url, status.description]
 
-    return list(classify(event_pairs, statuses)) + [last_event_timestamp]
+    return list(classify(event_tuples, statuses)) + [last_event_timestamp]
 
 
 def get_merged(events):
@@ -65,12 +65,12 @@ def get_merged(events):
     information, etc.
 
     Args:
-        events: a list of (event_type str, event_body dict) pairs.
+        events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         body: a dict representing the issue's latest state.
     '''
     merged = {}
-    for _event, body in events:
+    for _event, body, _timestamp in events:
         if 'issue' in body:
             merged.update(body['issue'])
         if 'pull_request' in body:
@@ -83,12 +83,12 @@ def get_labels(events):
     Determine the labels applied to an issue.
 
     Args:
-        events: a list of (event_type str, event_body dict) pairs.
+        events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         labels: the currently applied labels as {label_name: label_color}
     '''
     labels = []
-    for event, body in events:
+    for event, body, _timestamp in events:
         if 'issue' in body:
             # issues come with labels, so we can update here
             labels = body['issue']['labels']
@@ -120,7 +120,7 @@ def get_skip_comments(events, skip_users=None):
         deletion or because the user should be skipped.
 
     Args:
-        events: a list of (event_type str, event_body dict) pairs.
+        events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         comment_ids: a set of comment ids that were deleted or made by
             users that should be skiped.
@@ -129,7 +129,7 @@ def get_skip_comments(events, skip_users=None):
         skip_users = []
 
     skip_comments = set()
-    for event, body in events:
+    for event, body, _timestamp in events:
         action = body.get('action')
         if event in ('issue_comment', 'pull_request_review_comment'):
             comment_id = body['comment']['id']
@@ -144,7 +144,7 @@ def classify(events, statuses=None):
     the events and determine what action should be taken, if any.
 
     Args:
-        events: a list of (event_type str, event_body dict) pairs.
+        events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         is_pr: bool
         is_open: bool
@@ -205,13 +205,13 @@ def get_comments(events):
     '''
     Pick comments and pull-request review comments out of a list of events.
     Args:
-        events: a list of (event_type str, event_body dict) pairs.
+        events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         comments: a list of dict(author=..., comment=..., timestamp=...),
                   ordered with the earliest comment first.
     '''
     comments = {}  # comment_id : comment
-    for event, body in events:
+    for event, body, _timestamp in events:
         action = body.get('action')
         if event in ('issue_comment', 'pull_request_review_comment'):
             comment_id = body['comment']['id']
@@ -243,7 +243,7 @@ def distill_events(events):
     skip_comments = get_skip_comments(events, bots)
 
     output = []
-    for event, body in events:
+    for event, body, _timestamp in events:
         action = body.get('action')
         user = body.get('sender', {}).get('login')
         if event in ('issue_comment', 'pull_request_review_comment'):
