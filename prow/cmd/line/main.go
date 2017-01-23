@@ -512,7 +512,7 @@ func (c *testClient) formatFailureComment(url string) string {
 	// The deletion logic requires that it start with context.
 	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%s). 
 
-cc @%s, [your PR dashboard](https://k8s-gubernator.appspot.com/pr)
+cc @%s, [your PR dashboard](https://k8s-gubernator.appspot.com/pr/%s)
 
 The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/%s/%s/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.
 
@@ -521,7 +521,7 @@ The magic incantation to run this job again is ` + "`%s`" + `. Please help us cu
 %s
 </details>
 `
-	return fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, prLink, c.Author, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
+	return fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, prLink, c.Author, c.Author, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
 
 }
 
