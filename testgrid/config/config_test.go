@@ -18,7 +18,6 @@ package main
 
 import (
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -156,42 +155,35 @@ func TestConfig(t *testing.T) {
 		}
 	}
 
-	configURL := "https://raw.githubusercontent.com/kubernetes/contrib/master/mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
-	response, err := http.Get(configURL)
+	sqConfigURL := "../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
+	configData, err := ioutil.ReadFile(sqConfigURL)
 	if err != nil {
-		t.Errorf("Fail to get SQ configmap")
-	} else {
-		defer response.Body.Close()
+		t.Errorf("Read Buffer Error for SQ Data : %v\n", err)
+	}
 
-		configData, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			t.Errorf("Read Buffer Error for SQ Data : %v\n", err)
-		}
+	sqData := &SQConfig{}
+	err = yaml2proto.Unmarshal([]byte(configData), &sqData)
+	if err != nil {
+		t.Errorf("Unmarshal Error for SQ Data : %v\n", err)
+	}
 
-		sqData := &SQConfig{}
-		err = yaml2proto.Unmarshal([]byte(configData), &sqData)
-		if err != nil {
-			t.Errorf("Unmarshal Error for SQ Data : %v\n", err)
-		}
-
-		sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
-		for _, sqJob := range sqJobs {
-			found := false
-			for i, job := range sqJobPool {
-				if sqJob == job {
-					found = true
-					sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
-					break
-				}
-			}
-
-			if !found {
-				t.Errorf("Err : %v not found in testgrid config\n", sqJob)
+	sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
+	for _, sqJob := range sqJobs {
+		found := false
+		for i, job := range sqJobPool {
+			if sqJob == job {
+				found = true
+				sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
+				break
 			}
 		}
 
-		for _, testgridJob := range sqJobPool {
-			t.Errorf("Err : testgrid job %v not found in SQ config\n", testgridJob)
+		if !found {
+			t.Errorf("Err : %v not found in testgrid config\n", sqJob)
 		}
+	}
+
+	for _, testgridJob := range sqJobPool {
+		t.Errorf("Err : testgrid job %v not found in SQ config\n", testgridJob)
 	}
 }
