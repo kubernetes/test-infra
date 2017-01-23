@@ -165,13 +165,6 @@
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-conformance-dockerized:  # senlu, temp
-        branch: master
-        frequency: 'H/30 * * * *'
-        job-name: ci-kubernetes-node-kubelet-conformance-dockerized
-        json: 1
-        repo-name: k8s.io/kubernetes
-        timeout: 90
     - kubernetes-node-kubelet-cri:  # yjhong
         branch: master
         frequency: 'H/30 * * * *'

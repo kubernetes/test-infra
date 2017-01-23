@@ -126,15 +126,6 @@
 },
 
 "ci-kubernetes-node-kubelet-conformance": {
-  "scenario": "execute",
-  "todo": "Merge with -dockerized",
-  "args": [
-    "test/e2e_node/jenkins/conformance/conformance-jenkins.sh",
-    "test/e2e_node/jenkins/conformance/jenkins-conformance.properties"
-  ]
-},
-
-"ci-kubernetes-node-kubelet-conformance-dockerized": {
   "scenario": "kubernetes_kubelet",
   "args": [
     "--properties=test/e2e_node/jenkins/conformance/jenkins-conformance.properties",

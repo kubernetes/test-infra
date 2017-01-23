@@ -756,8 +756,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
 - name: ci-kubernetes-node-kubelet-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
-- name: ci-kubernetes-node-kubelet-conformance-dockerized
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance-dockerized
 - name: kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
 - name: kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
@@ -1301,8 +1299,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-flaky
   - name: kubelet-conformance-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-conformance
-  - name: kubelet-conformance-gce-e2e-dockerized
-    test_group_name: ci-kubernetes-node-kubelet-conformance-dockerized
   - name: kubelet-1.4
     test_group_name: ci-kubernetes-node-kubelet-1.4
   - name: kubelet-1.5
