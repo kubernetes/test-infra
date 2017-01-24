@@ -20,6 +20,7 @@ go_test(
     srcs = ["config_test.go"],
     data = [
         "config.yaml",
+        "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],

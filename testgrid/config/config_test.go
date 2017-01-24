@@ -18,7 +18,6 @@ package main
 
 import (
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -34,18 +33,18 @@ type SQConfig struct {
 func TestConfig(t *testing.T) {
 	yamlData, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
-		t.Errorf("IO Error : Cannot Open File config.yaml\n")
+		t.Errorf("IO Error : Cannot Open File config.yaml")
 	}
 
 	protobufData, err := yaml2proto.Yaml2Proto(yamlData)
 
 	if err != nil {
-		t.Errorf("Yaml2Proto - Conversion Error %v\n", err)
+		t.Errorf("Yaml2Proto - Conversion Error %v", err)
 	}
 
 	config := &config.Configuration{}
 	if err := proto.Unmarshal(protobufData, config); err != nil {
-		t.Errorf("Failed to parse config: %v\n", err)
+		t.Errorf("Failed to parse config: %v", err)
 	}
 
 	// Validate config.yaml -
@@ -56,12 +55,12 @@ func TestConfig(t *testing.T) {
 	for testgroupidx, testgroup := range config.TestGroups {
 		// All testgroup must have a name and a query
 		if testgroup.Name == "" || testgroup.GcsPrefix == "" {
-			t.Errorf("Testgroup %v: - Must have a name and query\n", testgroupidx)
+			t.Errorf("Testgroup %v: - Must have a name and query", testgroupidx)
 		}
 
 		// All testgroup must not have duplicated names
 		if testgroupMap[testgroup.Name] > 0 {
-			t.Errorf("Duplicated Testgroup: %v\n", testgroup.Name)
+			t.Errorf("Duplicated Testgroup: %v", testgroup.Name)
 		} else {
 			testgroupMap[testgroup.Name] = 1
 		}
@@ -80,19 +79,19 @@ func TestConfig(t *testing.T) {
 	for dashboardidx, dashboard := range config.Dashboards {
 		// All dashboard must have a name
 		if dashboard.Name == "" {
-			t.Errorf("Dashboard %v: - Must have a name\n", dashboardidx)
+			t.Errorf("Dashboard %v: - Must have a name", dashboardidx)
 		}
 
 		// All dashboard must not have duplicated names
 		if dashboardmap[dashboard.Name] {
-			t.Errorf("Duplicated dashboard: %v\n", dashboard.Name)
+			t.Errorf("Duplicated dashboard: %v", dashboard.Name)
 		} else {
 			dashboardmap[dashboard.Name] = true
 		}
 
 		// All dashboard must have at least one tab
 		if len(dashboard.DashboardTab) == 0 {
-			t.Errorf("Dashboard %v: - Must have more than one dashboardtab\n", dashboard.Name)
+			t.Errorf("Dashboard %v: - Must have more than one dashboardtab", dashboard.Name)
 		}
 
 		// dashboardtab name set, to check duplicated tabs within each dashboard
@@ -102,7 +101,7 @@ func TestConfig(t *testing.T) {
 		if len(dashboard.Notifications) != 0 {
 			for notificationindex, notification := range dashboard.Notifications {
 				if notification.Summary == "" {
-					t.Errorf("Notification %v in dashboard %v: - Must have a summary\n", notificationindex, dashboard.Name)
+					t.Errorf("Notification %v in dashboard %v: - Must have a summary", notificationindex, dashboard.Name)
 				}
 			}
 		}
@@ -111,19 +110,19 @@ func TestConfig(t *testing.T) {
 
 			// All dashboardtab must have a name and a testgroup
 			if dashboardtab.Name == "" || dashboardtab.TestGroupName == "" {
-				t.Errorf("Dashboard %v, tab %v: - Must have a name and a testgroup name\n", dashboard.Name, tabindex)
+				t.Errorf("Dashboard %v, tab %v: - Must have a name and a testgroup name", dashboard.Name, tabindex)
 			}
 
 			// All dashboardtab within a dashboard must not have duplicated names
 			if dashboardtabmap[dashboardtab.Name] {
-				t.Errorf("Duplicated dashboardtab: %v\n", dashboardtab.Name)
+				t.Errorf("Duplicated dashboardtab: %v", dashboardtab.Name)
 			} else {
 				dashboardtabmap[dashboardtab.Name] = true
 			}
 
 			// All testgroup in dashboard must be defined in testgroups
 			if testgroupMap[dashboardtab.TestGroupName] == 0 {
-				t.Errorf("Dashboard %v, tab %v: - Testgroup %v must be defined first\n",
+				t.Errorf("Dashboard %v, tab %v: - Testgroup %v must be defined first",
 					dashboard.Name, dashboardtab.Name, dashboardtab.TestGroupName)
 			} else {
 				testgroupMap[dashboardtab.TestGroupName] += 1
@@ -156,42 +155,35 @@ func TestConfig(t *testing.T) {
 		}
 	}
 
-	configURL := "https://raw.githubusercontent.com/kubernetes/contrib/master/mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
-	response, err := http.Get(configURL)
+	sqConfigPath := "../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
+	configData, err := ioutil.ReadFile(sqConfigPath)
 	if err != nil {
-		t.Errorf("Fail to get SQ configmap")
-	} else {
-		defer response.Body.Close()
+		t.Errorf("Read Buffer Error for SQ Data : %v", err)
+	}
 
-		configData, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			t.Errorf("Read Buffer Error for SQ Data : %v\n", err)
-		}
+	sqData := &SQConfig{}
+	err = yaml2proto.Unmarshal([]byte(configData), &sqData)
+	if err != nil {
+		t.Errorf("Unmarshal Error for SQ Data : %v", err)
+	}
 
-		sqData := &SQConfig{}
-		err = yaml2proto.Unmarshal([]byte(configData), &sqData)
-		if err != nil {
-			t.Errorf("Unmarshal Error for SQ Data : %v\n", err)
-		}
-
-		sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
-		for _, sqJob := range sqJobs {
-			found := false
-			for i, job := range sqJobPool {
-				if sqJob == job {
-					found = true
-					sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
-					break
-				}
-			}
-
-			if !found {
-				t.Errorf("Err : %v not found in testgrid config\n", sqJob)
+	sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
+	for _, sqJob := range sqJobs {
+		found := false
+		for i, job := range sqJobPool {
+			if sqJob == job {
+				found = true
+				sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
+				break
 			}
 		}
 
-		for _, testgridJob := range sqJobPool {
-			t.Errorf("Err : testgrid job %v not found in SQ config\n", testgridJob)
+		if !found {
+			t.Errorf("Err : %v not found in testgrid config", sqJob)
 		}
+	}
+
+	for _, testgridJob := range sqJobPool {
+		t.Errorf("Err : testgrid job %v not found in SQ config", testgridJob)
 	}
 }
