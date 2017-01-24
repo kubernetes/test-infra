@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMAGE ?= b.gcr.io/k8s-test-infra-aws/aws-janitor
-VERSION ?= 0.1
+VERSION ?= 0.2
 
 image:
 	CGO_ENABLED=0 go build k8s.io/test-infra/jenkins/aws-janitor
