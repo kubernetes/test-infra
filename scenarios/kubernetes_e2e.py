@@ -73,7 +73,7 @@ def main(args):
     cmd = [
       'docker', 'run', '--rm',
       '--name=%s' % CONTAINER,
-      '-v', '%s/_artifacts":/workspace/_artifacts' % workspace,
+      '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
       '-v', '/etc/localtime:/etc/localtime:ro'
     ]
 
