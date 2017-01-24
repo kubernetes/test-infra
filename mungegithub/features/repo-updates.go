@@ -325,15 +325,15 @@ func (o *RepoInfo) Initialize(config *github.Config) error {
 		return fmt.Errorf("--repo-dir is not a directory")
 	}
 
-	// check if the cloned dir already exists, if yes, cleanup.
-	if _, err := os.Stat(o.projectDir); !os.IsNotExist(err) {
+	if o.fsckRepo() != nil {
 		if err := o.cleanUp(o.projectDir); err != nil {
 			return fmt.Errorf("Unable to remove old clone directory at %v: %v", o.projectDir, err)
 		}
 	}
-
-	if cloneUrl, err := o.cloneRepo(); err != nil {
-		return fmt.Errorf("Unable to clone %v: %v", cloneUrl, err)
+	if !o.exists() {
+		if cloneUrl, err := o.cloneRepo(); err != nil {
+			return fmt.Errorf("Unable to clone %v: %v", cloneUrl, err)
+		}
 	}
 
 	o.aliasData = &aliasData{}
@@ -346,6 +346,22 @@ func (o *RepoInfo) Initialize(config *github.Config) error {
 
 func (o *RepoInfo) cleanUp(path string) error {
 	return os.RemoveAll(path)
+}
+
+func (o *RepoInfo) exists() bool {
+	_, err := os.Stat(o.projectDir)
+	return !os.IsNotExist(err)
+}
+
+func (o *RepoInfo) fsckRepo() error {
+	if !o.exists() {
+		return fmt.Errorf("fsck repo failed: %q is missing", o.projectDir)
+	}
+	output, err := o.gitCommandDir([]string{"fsck"}, o.projectDir)
+	if err != nil {
+		glog.Errorf("fsck repo failed: %s", output)
+	}
+	return err
 }
 
 func (o *RepoInfo) cloneRepo() (string, error) {
