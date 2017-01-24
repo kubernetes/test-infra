@@ -284,45 +284,45 @@
     # gce-master with cri
     - kubernetes-e2e-cri-gce:
         job-name: ci-kubernetes-e2e-cri-gce
-        timeout: 0
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-slow:
         job-name: ci-kubernetes-e2e-cri-gce-slow
-        timeout: 0
+        timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-serial:
         job-name: ci-kubernetes-e2e-cri-gce-serial
-        timeout: 0
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-reboot:
         job-name: ci-kubernetes-e2e-cri-gce-reboot
-        timeout: 0
+        timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-autoscaling:
         job-name: ci-kubernetes-e2e-cri-gce-autoscaling
-        timeout: 0
+        timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-cri-gce-autoscaling-migs
-        timeout: 0
+        timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-alpha-features:
         job-name: ci-kubernetes-e2e-cri-gce-alpha-features
-        timeout: 0
+        timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-flaky:
         job-name: ci-kubernetes-e2e-cri-gce-flaky
@@ -332,33 +332,33 @@
         frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-cri-gce-scalability:
         job-name: ci-kubernetes-e2e-cri-gce-scalability
-        timeout: 0
+        timeout: 140
         frequency: 'H H/12 * * *'
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-etcd3:
         job-name: ci-kubernetes-e2e-cri-gce-etcd3
-        timeout: 0
+        timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-proto:
         job-name: ci-kubernetes-e2e-cri-gce-proto
-        timeout: 0
+        timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-examples:
         job-name: ci-kubernetes-e2e-cri-gce-examples
-        timeout: 0
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-federation:
         job-name: ci-kubernetes-e2e-cri-gce-federation
-        timeout: 0
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
 
     # gce-1.3

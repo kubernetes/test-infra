@@ -1263,7 +1263,24 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCIYaml(self):
-        is_modern = lambda name: 'kubernetes-e2e-cri-gce-flaky' in name
+        # TODO(krzyzacy): temp until more jobs to be converted
+        whitelist = [
+            'kubernetes-e2e-cri-gce',
+            'kubernetes-e2e-cri-gce-slow',
+            'kubernetes-e2e-cri-gce-serial',
+            'kubernetes-e2e-cri-gce-scalability',
+            'kubernetes-e2e-cri-gce-reboot',
+            'kubernetes-e2e-cri-gce-proto',
+            'kubernetes-e2e-cri-gce-examples',
+            'kubernetes-e2e-cri-gce-etcd3',
+            'kubernetes-e2e-cri-gce-autoscaling',
+            'kubernetes-e2e-cri-gce-autoscaling-migs',
+            'kubernetes-e2e-cri-gce-alpha-features',
+            'kubernetes-e2e-cri-gce-federation',
+            'kubernetes-e2e-cri-gce-flaky'
+        ]
+            
+        is_modern = lambda name: any(w == name for w in whitelist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
@@ -1588,7 +1605,11 @@ class JobTest(unittest.TestCase):
                 lines = list(fp)
             prev = ''
             for line in lines:
-                m = re.match(r'[0-9A-Z_]+=', line)
+                # FOO=a -> good
+                # FOO="a, FOO=a", FOO="a" -> bad
+                # FOO=aaa"bbb"aaa -> good
+                # FOO=y -> good
+                m = re.match(r'[0-9A-Z_]+=([^\"]$|[^\"][^\n]+[^\"\n]$)', line)
                 empty = (line.strip() == '')
                 comment = line.startswith('#')
                 continuation = prev.strip().endswith('\\')

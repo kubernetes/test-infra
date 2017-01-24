@@ -305,11 +305,107 @@
   ]
 },
 
+"ci-kubernetes-e2e-cri-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-slow.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-serial.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-reboot.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-autoscaling.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-autoscaling-migs": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-autoscaling-migs.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-alpha-features.env"
+  ]
+},
+
 "ci-kubernetes-e2e-cri-gce-flaky": {
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-cri-gce-flaky.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-scalability": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-scalability.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-etcd3.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-proto": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-proto.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-examples": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-examples.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-federation": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-federation.env"
   ]
 }
 
