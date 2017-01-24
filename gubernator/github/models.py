@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import json
 
 import google.appengine.ext.ndb as ndb
 
@@ -31,6 +32,9 @@ class GithubWebhookRaw(ndb.Model):
     event = ndb.StringProperty()
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     body = ndb.TextProperty(compressed=True)
+
+    def to_tuple(self):
+        return (self.event, json.loads(self.body), int(self.timestamp.strftime('%s')))
 
 
 def from_iso8601(t):
