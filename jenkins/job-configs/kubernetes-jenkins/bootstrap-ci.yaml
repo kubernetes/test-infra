@@ -631,21 +631,21 @@
     # cri-gce-features
     - kubernetes-e2e-cri-gce-ingress:
         job-name: ci-kubernetes-e2e-cri-gce-ingress
-        timeout: 0
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-es-logging:
         job-name: ci-kubernetes-e2e-cri-gce-es-logging
-        timeout: 0
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-cri-gce-statefulset:
         job-name: ci-kubernetes-e2e-cri-gce-statefulset
-        timeout: 0
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-garbage-cri:
         job-name: ci-kubernetes-e2e-garbage-cri

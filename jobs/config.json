@@ -407,6 +407,30 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-cri-gce-federation.env"
   ]
+},
+
+"ci-kubernetes-e2e-cri-gce-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-ingress.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-es-logging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-es-logging.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gce-statefulset": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-statefulset.env"
+  ]
 }
 
 }
