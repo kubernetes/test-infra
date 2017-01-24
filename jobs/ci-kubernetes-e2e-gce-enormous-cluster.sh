@@ -34,7 +34,8 @@ export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export KUBE_ENABLE_CLUSTER_MONITORING="none"
 # TODO: Move to us-central1-c once we have permission for it.
 export KUBE_GCE_ZONE="us-east1-a"
-export MASTER_SIZE="n1-standard-32"
+# TODO: Increase it when we make cluster larger.
+export MASTER_SIZE="n1-standard-16"
 # Increase disk size to check if that helps for etcd latency.
 export MASTER_DISK_SIZE="100GB"
 export NODE_SIZE="n1-standard-1"
@@ -49,10 +50,7 @@ export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
 # Increase delete collection parallelism
 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
 # =========================================
-# Configuration we are targetting in 1.5
-export TEST_ETCD_IMAGE="3.0.14-experimental.1"
-export TEST_ETCD_VERSION="3.0.14"
-export STORAGE_BACKEND="etcd3"
+# Configuration we are targetting in 1.6
 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
@@ -64,15 +62,13 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
 # TODO: re-enable service creation after we debug problems with this suite
 # export CREATE_SERVICES="true"
 export CLUSTER_IP_RANGE="10.224.0.0/12"
-export NUM_NODES="3000"
-export ALLOWED_NOTREADY_NODES="20"
+export NUM_NODES="500"
+export ALLOWED_NOTREADY_NODES="5"
 # Increase throughput in master components.
 export CONTROLLER_MANAGER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
 export SCHEDULER_TEST_ARGS="--kube-api-qps=100 --kube-api-burst=100"
-# Increase limit for inflight requests in apiserver.
-export APISERVER_TEST_ARGS="--max-requests-inflight=1000"
 # Increase throughput in Load test.
-export LOAD_TEST_THROUGHPUT=30
+export LOAD_TEST_THROUGHPUT=50
 
 ### post-env
 
