@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMAGE ?= b.gcr.io/k8s-test-infra-aws/aws-janitor
+IMAGE ?= gcr.io/k8s-test-infra-aws/aws-janitor
 VERSION ?= 0.2
 
 image:
