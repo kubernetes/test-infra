@@ -41,6 +41,18 @@ func TestParseCommand(t *testing.T) {
 			comment:          "/COMMAND",
 		},
 		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			comment:          "/COMMAND\r",
+		},
+		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Args after tab"}},
+			comment:          "/COMMAND\tArgs after tab",
+		},
+		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Removes trailing backslash R"}},
+			comment:          "/COMMAND Removes trailing backslash R\r\n",
+		},
+		{
 			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Valid command"}},
 			comment:          "/COMMAND Valid command",
 		},
