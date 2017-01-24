@@ -201,9 +201,9 @@ class Timeline(BaseHandler):
 
         self.response.write('<h3>Distilled Events</h3>')
         self.response.write('<pre>')
-        event_pairs = [(event.event, json.loads(event.body)) for event in events]
+        event_pairs = [event.to_tuple() for event in events]
         for ev in classifier.distill_events(event_pairs):
-            self.response.write(cgi.escape('%s, %s\n' % ev))
+            self.response.write(cgi.escape('%s, %s %s\n' % ev))
         self.response.write('</pre>')
 
         self.response.write('<h3>%d Raw Events</h3>' % (len(events)))

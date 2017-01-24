@@ -27,7 +27,7 @@ class MergedTest(unittest.TestCase):
             {'c': 4},
             {'issue': {'n': 3, 'd': 4},
              'pull_request': {'n': 4, 'e': 5}}
-        ])), {'n': 4, 'a': 2, 'b': 3, 'd': 4, 'e': 5})
+        ], [0] * 4)), {'n': 4, 'a': 2, 'b': 3, 'd': 4, 'e': 5})
 
 
 def diffs_to_events(*diffs):
@@ -40,7 +40,7 @@ def diffs_to_events(*diffs):
             action = 'unlabeled'
         events.append(('pull_request',
                        {'action': action,
-                        'label': label}))
+                        'label': label}, 0))
     return events
 
 
@@ -50,13 +50,13 @@ class LabelsTest(unittest.TestCase):
         self.assertEqual(sorted(labels.keys()), sorted(names))
 
     def test_empty(self):
-        self.expect_labels([('comment', {'body': 'no labels here'})], [])
+        self.expect_labels([('comment', {'body': 'no labels here'}, 0)], [])
 
     def test_colors(self):
         self.assertEqual(classifier.get_labels(
                 [('c', {'issue':
                         {'labels': [{'name': 'foo', 'color': '#abc'}]}
-            })]),
+                        }, 0)]),
             {'foo': '#abc'})
 
     def test_labeled_action(self):
@@ -68,10 +68,10 @@ class LabelsTest(unittest.TestCase):
     def test_issue_overrides_action(self):
         labels = [{'name': 'x', 'color': 'y'}]
         self.expect_labels(diffs_to_events('+a') +
-            [('other_event', {'issue': {'labels': labels}})], ['x'])
+            [('other_event', {'issue': {'labels': labels}}, 0)], ['x'])
 
     def test_labeled_action_missing_label(self):
-        self.expect_labels([('pull_request', {'action': 'labeled'})], [])
+        self.expect_labels([('pull_request', {'action': 'labeled'}, 0)], [])
 
 
 def make_comment_event(num, name, msg='', event='issue_comment',
@@ -85,7 +85,7 @@ def make_comment_event(num, name, msg='', event='issue_comment',
             'body': msg,
             'created_at': ts,
         }
-    }
+    }, ts
 
 
 class CalculateTest(unittest.TestCase):
@@ -103,13 +103,13 @@ class CalculateTest(unittest.TestCase):
                         'additions': 1,
                         'deletions': 1,
                     }
-                }),
+                }, 1),
                 make_comment_event(1, 'k8s-bot',
-                    'failure in https://k8s-gubernator.appspot.com/build/bucket/job/123/'),
+                    'failure in https://k8s-gubernator.appspot.com/build/bucket/job/123/', ts=2),
                 ('pull_request', {
                     'action': 'labeled',
                     'label': {'name': 'release-note-none', 'color': 'orange'},
-                })
+                }, 3)
             ], {'e2e': ['failure', None, 'stuff is broken']}
         ),
         (True, True, ['a', 'b'],
@@ -118,7 +118,7 @@ class CalculateTest(unittest.TestCase):
             'assignees': ['b'],
             'additions': 1,
             'deletions': 1,
-            'attn': {'a': 'fix tests', 'b': 'needs review'},
+            'attn': {'a': 'fix tests', 'b': 'needs review#0#0'},
             'title': 'some fix',
             'labels': {'release-note-none': 'orange'},
             'head': 'abcdef',
@@ -129,20 +129,20 @@ class CalculateTest(unittest.TestCase):
 
     def test_distill(self):
         self.assertEqual(classifier.distill_events([
-            make_comment_event(1, 'a'),
-            make_comment_event(2, 'b'),
-            make_comment_event(1, 'a', action='deleted'),
-            make_comment_event(3, 'c', event='pull_request_review_comment'),
-            make_comment_event(4, 'k8s-bot'),
-            ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}),
+            make_comment_event(1, 'a', ts=1),
+            make_comment_event(2, 'b', ts=2),
+            make_comment_event(1, 'a', action='deleted', ts=3),
+            make_comment_event(3, 'c', event='pull_request_review_comment', ts=4),
+            make_comment_event(4, 'k8s-bot', ts=4),
+            ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}, 5),
             ('pull_request', {'action': 'labeled', 'sender': {'login': 'rev'},
-                'label': {'name': 'lgtm'}}),
+                'label': {'name': 'lgtm'}}, 6),
         ]),
         [
-            ('comment', 'b'),
-            ('comment', 'c'),
-            ('push', 'auth'),
-            ('label lgtm', 'rev'),
+            ('comment', 'b', 2),
+            ('comment', 'c', 4),
+            ('push', 'auth', 5),
+            ('label lgtm', 'rev', 6),
         ])
 
     def test_calculate_attention(self):
@@ -162,35 +162,38 @@ class CalculateTest(unittest.TestCase):
         expect(make_payload('gamma', status={'ci': ['failure', '', '']}), [],
             {'gamma': 'fix tests'})
         expect(make_payload('gamma', status={'ci': ['failure', '', '']}),
-            [('comment', 'other')],
-            {'gamma': 'address comments'})
+            [('comment', 'other', 1)],
+            {'gamma': 'address comments#1#1'})
         expect(make_payload('delta', ['epsilon']), [],
-            {'epsilon': 'needs review'})
+            {'epsilon': 'needs review#0#0'})
 
-        expect(make_payload('alpha', ['alpha']), [('comment', 'other')],
-            {'alpha': 'address comments'})
+        expect(make_payload('alpha', ['alpha']), [('comment', 'other', 1)],
+            {'alpha': 'address comments#1#1'})
 
     def test_author_state(self):
         def expect(events, result):
             self.assertEqual(classifier.get_author_state('author', events),
                              result)
-        expect([], 'waiting')
-        expect([('comment', 'author')], 'waiting')
-        expect([('comment', 'other')], 'address comments')
-        expect([('comment', 'other'), ('push', 'author')], 'waiting')
-        expect([('comment', 'other'), ('comment', 'author')], 'waiting')
+        expect([], ('waiting', 0, 0))
+        expect([('comment', 'author', 1)], ('waiting', 0, 0))
+        expect([('comment', 'other', 1)], ('address comments', 1, 1))
+        expect([('comment', 'other', 1), ('push', 'author', 2)], ('waiting', 2, 2))
+        expect([('comment', 'other', 1), ('comment', 'author', 2)], ('waiting', 2, 2))
+        expect([('comment', 'other', 1), ('comment', 'other', 2)], ('address comments', 1, 2))
 
     def test_assignee_state(self):
         def expect(events, result):
             self.assertEqual(classifier.get_assignee_state('me', 'author', events),
                              result)
-        expect([], 'needs review')
-        expect([('comment', 'other')], 'needs review')
-        expect([('comment', 'me')], 'waiting')
-        expect([('label lgtm', 'other')], 'needs review')
-        expect([('label lgtm', 'me')], 'waiting')
-        expect([('comment', 'me'), ('push', 'author')], 'needs review')
-        expect([('comment', 'me'), ('comment', 'author')], 'needs review')
+        expect([], ('needs review', 0, 0))
+        expect([('comment', 'other', 1)], ('needs review', 0, 0))
+        expect([('comment', 'me', 1)], ('waiting', 1, 1))
+        expect([('label lgtm', 'other', 1)], ('needs review', 0, 0))
+        expect([('label lgtm', 'me', 1)], ('waiting', 1, 1))
+        expect([('comment', 'me', 1), ('push', 'author', 2)], ('needs review', 2, 2))
+        expect([('comment', 'me', 1), ('comment', 'author', 2)], ('needs review', 2, 2))
+        expect([('comment', 'me', 1), ('comment', 'author', 2), ('comment', 'author', 3)],
+               ('needs review', 2, 3))
 
     def test_xrefs(self):
         def expect(body, comments, result):

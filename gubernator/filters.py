@@ -149,6 +149,8 @@ def do_render_status(payload, user):
         text = 'LGTM'
     elif user in payload.get('attn', {}):
         text = payload['attn'][user].title()
+        if '#' in text:  # strip start/end attn timestamps
+            text = text[:text.index('#')]
 
     for ctx, (state, _url, desc) in payload.get('status', {}).items():
         if ctx == 'Submit Queue' and state == 'pending':
