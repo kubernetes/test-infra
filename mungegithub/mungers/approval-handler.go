@@ -19,6 +19,7 @@ package mungers
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -88,6 +89,8 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
+	// keep the suggest approvers the same for this PR (unless new files added)
+	rand.Seed(int64(*obj.Issue.Number))
 	files, ok := obj.ListFiles()
 	if !ok {
 		return
@@ -198,15 +201,25 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 			}
 		}
 	}
+	// it's weird if the suggested set of Approvers changes every time the comment is updated
+	// so deterministically set order (can't just sort since that may unfairly skew selection)
+	sliceOfKeys := make([]string, len(approverCount))
+	order := rand.Perm(len(approverCount))
+	i := 0
+	for approver := range approverCount {
+		sliceOfKeys[order[i]] = approver
+		i++
+	}
 
 	approverGroup := sets.NewString()
 	var bestPerson string
 	for copyOfFiles.Len() > 0 {
 		maxCovered := 0
-		for k, v := range approverCount {
-			if v.Intersection(copyOfFiles).Len() > maxCovered {
-				maxCovered = len(v)
-				bestPerson = k
+		for _, approver := range sliceOfKeys {
+			filesCanApprove := approverCount[approver]
+			if filesCanApprove.Intersection(copyOfFiles).Len() > maxCovered {
+				maxCovered = len(filesCanApprove)
+				bestPerson = approver
 			}
 		}
 
@@ -281,7 +294,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	if unapprovedOwners.Len() > 0 {
 		context.WriteString("We suggest the following people:\n")
 		context.WriteString("cc ")
-		toBeAssigned := h.findPeopleToApprove(unapprovedOwners)
+		toBeAssigned := h.findPeopleToApprove(sets.NewString(sliceOfKeys...))
 		for person := range toBeAssigned {
 			context.WriteString("@" + person + " ")
 		}
