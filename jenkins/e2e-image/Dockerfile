@@ -67,7 +67,7 @@ RUN mkdir -p /tmp/terraform/ && \
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/e2e.go", \
+    "https://raw.githubusercontent.com/kubernetes/test-infra/master/kubetest/e2e.go", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
     "/workspace/"]
