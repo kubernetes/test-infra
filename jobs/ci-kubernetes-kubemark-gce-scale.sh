@@ -66,8 +66,6 @@ export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 # TODO: revert after running experiments.
 export EVENT_PD="true"
-# TODO remove after #19188 is fixed
-export CUSTOM_ADMISSION_PLUGINS="NamespaceLifecycle,LimitRanger,ResourceQuota"
 # TODO: Reduce this once we have log rotation in Kubemark.
 export KUBEMARK_MASTER_ROOT_DISK_SIZE="100GB"
 
