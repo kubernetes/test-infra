@@ -34,25 +34,26 @@ var (
 	// - Line that starts with slash
 	// - followed by non-space characteres,
 	// - (optional) followed by space and arguments
-	commandRegex = regexp.MustCompile(`^/([^\s]+) *?([^\n]*)`)
+	commandRegex = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
 )
 
-// ParseCommand attempts to read a command from a comment
+// ParseCommands attempts to read a command from a comment
 // Returns nil if the comment doesn't contain a command
-func ParseCommand(comment *github.IssueComment) *Command {
+func ParseCommands(comment *github.IssueComment) []*Command {
 	if comment == nil || comment.Body == nil {
 		return nil
 	}
 
-	match := commandRegex.FindStringSubmatch(*comment.Body)
-	if match == nil {
-		return nil
+	commands := []*Command{}
+	matches := commandRegex.FindAllStringSubmatch(*comment.Body, -1)
+	for _, match := range matches {
+		commands = append(commands, &Command{
+			Name:      strings.ToUpper(match[1]),
+			Arguments: strings.TrimSpace(match[2]),
+		})
 	}
 
-	return &Command{
-		Name:      strings.ToUpper(match[1]),
-		Arguments: strings.TrimSpace(match[2]),
-	}
+	return commands
 }
 
 // String displays the command

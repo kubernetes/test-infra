@@ -25,51 +25,66 @@ import (
 
 func TestParseCommand(t *testing.T) {
 	tests := []struct {
-		expectedCommand *Command
-		comment         string
+		expectedCommands []*Command
+		comment          string
 	}{
 		{
-			expectedCommand: nil,
-			comment:         "I have nothing to do with a command",
+			expectedCommands: []*Command{},
+			comment:          "I have nothing to do with a command",
 		},
 		{
-			expectedCommand: nil,
-			comment:         " /COMMAND Line can't start with spaces",
+			expectedCommands: []*Command{},
+			comment:          " /COMMAND Must be at the beginning of the line",
 		},
 		{
-			expectedCommand: nil,
-			comment:         "Command not at the beginning:\n/COMMAND\nAnd something else...",
+			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			comment:          "/COMMAND",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND"},
-			comment:         "/COMMAND",
+			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			comment:          "/COMMAND\r",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND", Arguments: "Valid command"},
-			comment:         "/COMMAND Valid command",
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Args after tab"}},
+			comment:          "/COMMAND\tArgs after tab",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND", Arguments: "Multiple Lines"},
-			comment:         "/COMMAND Multiple Lines\nAnd something else...",
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Removes trailing backslash R"}},
+			comment:          "/COMMAND Removes trailing backslash R\r\n",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND", Arguments: "Args"},
-			comment:         "/COMMAND Args\n/OTHERCOMMAND OtherArgs",
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Valid command"}},
+			comment:          "/COMMAND Valid command",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND", Arguments: "Command name is upper-cased"},
-			comment:         "/command Command name is upper-cased",
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Multiple Lines"}},
+			comment:          "/COMMAND Multiple Lines\nAnd something else...",
 		},
 		{
-			expectedCommand: &Command{Name: "COMMAND", Arguments: "Arguments is trimmed"},
-			comment:         "/COMMAND     Arguments is trimmed   ",
+			expectedCommands: []*Command{
+				&Command{Name: "COMMAND", Arguments: "Args"},
+				&Command{Name: "OTHERCOMMAND", Arguments: "OtherArgs"},
+			},
+			comment: "/COMMAND Args\n/OTHERCOMMAND OtherArgs",
+		},
+		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Command name is upper-cased"}},
+			comment:          "/command Command name is upper-cased",
+		},
+		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Arguments is trimmed"}},
+			comment:          "/COMMAND     Arguments is trimmed   ",
+		},
+		{
+			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			comment:          "Command not at the beginning:\n/COMMAND\nAnd something else...",
 		},
 	}
 
 	for _, test := range tests {
-		actualCommand := ParseCommand(&github.IssueComment{Body: &test.comment})
-		if !reflect.DeepEqual(actualCommand, test.expectedCommand) {
-			t.Error(actualCommand, "doesn't match expected command:", test.expectedCommand)
+		actualCommand := ParseCommands(&github.IssueComment{Body: &test.comment})
+		if !reflect.DeepEqual(actualCommand, test.expectedCommands) {
+			t.Error(actualCommand, "doesn't match expected commands:", test.expectedCommands)
 		}
 	}
 }
