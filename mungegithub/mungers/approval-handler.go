@@ -304,11 +304,16 @@ func createApproverSet(comments []*githubapi.IssueComment) sets.String {
 	approverMatcher := c.CommandName(approveCommand)
 
 	for _, comment := range c.FilterComments(comments, approverMatcher) {
-		cmd := c.ParseCommand(comment)
-		if cmd.Arguments == cancel {
-			approverSet.Delete(*comment.User.Login)
-		} else {
-			approverSet.Insert(*comment.User.Login)
+		commands := c.ParseCommands(comment)
+		for _, cmd := range commands {
+			if cmd.Name != approveCommand {
+				continue
+			}
+			if cmd.Arguments == cancel {
+				approverSet.Delete(*comment.User.Login)
+			} else {
+				approverSet.Insert(*comment.User.Login)
+			}
 		}
 	}
 	return approverSet

@@ -39,25 +39,29 @@ func (b NotificationName) Match(comment *github.IssueComment) bool {
 // CommandName identifies commands by name
 type CommandName string
 
-// Match will return true if the comment is a command with the given name
+// Match if the comment contains a command with the given name
 func (c CommandName) Match(comment *github.IssueComment) bool {
-	command := ParseCommand(comment)
-	if command == nil {
-		return false
+	commands := ParseCommands(comment)
+	for _, command := range commands {
+		if strings.ToUpper(command.Name) == strings.ToUpper(string(c)) {
+			return true
+		}
 	}
-	return strings.ToUpper(command.Name) == strings.ToUpper(string(c))
+	return false
 }
 
 // CommandArguments identifies commands by arguments (with regex)
 type CommandArguments regexp.Regexp
 
-// Match if the command arguments match the regexp
+// Match if the comment contains a command whose arguments match the regexp
 func (c *CommandArguments) Match(comment *github.IssueComment) bool {
-	command := ParseCommand(comment)
-	if command == nil {
-		return false
+	commands := ParseCommands(comment)
+	for _, command := range commands {
+		if (*regexp.Regexp)(c).MatchString(command.Arguments) {
+			return true
+		}
 	}
-	return (*regexp.Regexp)(c).MatchString(command.Arguments)
+	return false
 }
 
 // MungeBotAuthor creates a matcher to find mungebot comments
