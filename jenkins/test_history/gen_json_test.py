@@ -121,18 +121,6 @@ class GCSClientTest(unittest.TestCase):
     def setUp(self):
         self.client = MockedClient(self.JOBS_DIR)
 
-    def test_real_get(self):
-        client = gen_json.GCSClient(self.JOBS_DIR)
-        latest = int(client.get(self.JOBS_DIR +
-            'kubernetes-e2e-gce/latest-build.txt'))
-        self.assertGreater(latest, 1000)
-
-    def test_real_ls(self):
-        client = gen_json.GCSClient(self.JOBS_DIR)
-        build_dir = self.JOBS_DIR + 'kubernetes-build-1.2/'
-        paths = list(client.ls(build_dir))
-        self.assertIn(build_dir + 'latest-build.txt', paths)
-
     def test_get_tests(self):
         tests = list(self.client.get_tests_from_build('fake', '123'))
         self.assertEqual(tests, [
