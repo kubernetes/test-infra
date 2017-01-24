@@ -148,7 +148,8 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		return obj.WriteComment(body)
 	}
 
-	latestApprove := c.FilterComments(comments, c.CommandName(approveCommand)).GetLast()
+	latestApprove := getLastValidApprove(comments, ownersMap)
+
 	if latestApprove == nil || latestApprove.CreatedAt == nil {
 		// there was already a bot notification and nothing has changed since
 		// or we wouldn't tell when the latestApproval occurred
@@ -336,6 +337,26 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 		ownersApprovers[fn] = sets.NewString()
 	}
 	return ownersApprovers
+}
+
+// find the last approve or approve cancel comment made by a valid APPROVER (someone in a relevant owners file)
+func getLastValidApprove(comments []*githubapi.IssueComment, ownersMap map[string]sets.String) *githubapi.IssueComment {
+	validApprovers := sets.NewString()
+
+	for _, v := range ownersMap {
+		validApprovers = validApprovers.Union(v)
+	}
+
+	allApproves := c.FilterComments(comments, c.CommandName(approveCommand))
+	n := len(allApproves)
+	for i := n - 1; i > -1; i-- {
+		cmt := allApproves[i]
+		if validApprovers.Has(*cmt.User.Login) {
+			return cmt
+		}
+
+	}
+	return nil
 }
 
 // gets the comments since the obj was last changed.  If we can't figure out when the object was last changed
