@@ -145,7 +145,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	latestNotification := notifications.GetLast()
 	if latestNotification == nil {
 		body := h.getMessage(obj, ownersMap)
-		obj.WriteComment(body)
+		return obj.WriteComment(body)
 	}
 
 	latestApprove := c.FilterComments(comments, c.CommandName(approveCommand)).GetLast()
