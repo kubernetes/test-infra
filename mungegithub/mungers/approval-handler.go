@@ -37,7 +37,7 @@ import (
 
 const (
 	approvalNotificationName = "ApprovalNotifier"
-	approveCommand           = "approve"
+	approveCommand           = "APPROVE"
 	cancel                   = "cancel"
 	ownersFileName           = "OWNERS"
 )
