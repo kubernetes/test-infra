@@ -39,7 +39,8 @@ export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enab
 # Increase throughput in Kubemark master components.
 export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burst=100"
 # Increase limit for inflight requests in apiserver.
-export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500"
+# TODO: If this will help, set this for production clusters.
+export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=3000 --max-mutating-requests-inflight=500"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
 # Override defaults to be independent from GCE defaults and set kubemark parameters
