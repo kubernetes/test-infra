@@ -68,7 +68,7 @@ def main(branch, script, force):
     remote = 'bootstrap-upstream'
     uri = 'https://github.com/kubernetes/kubernetes.git'
 
-    current_remotes = check_output(['git', 'remote'])
+    current_remotes = check_output('git', 'remote')
     if re.search('^%s$' % remote, current_remotes, flags=re.MULTILINE):
         check('git', 'remote', 'remove', remote)
     check('git', 'remote', 'add', remote, uri)
