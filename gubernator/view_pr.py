@@ -20,6 +20,7 @@ import time
 
 import webapp2
 
+import filters
 import gcs_async
 import github.models as ghm
 import pull_request
@@ -96,6 +97,21 @@ class PRHandler(view_base.BaseHandler):
             max_builds=max_builds, header=headings, repo=repo, rows=rows, path=path))
 
 
+def get_acks(login, prs):
+    acks = {}
+    result = ghm.GHUserState.make_key(login).get()
+    if result:
+        acks = result.acks
+        if prs:
+            # clear acks for PRs that user is no longer involved in.
+            stale = set(acks) - set(pr.key.id() for pr in prs)
+            if stale:
+                for key in stale:
+                    result.acks.pop(key)
+                result.put()
+    return acks
+
+
 class PRDashboard(view_base.BaseHandler):
     def get(self, user=None):
         # pylint: disable=singleton-comparison
@@ -116,6 +132,10 @@ class PRDashboard(view_base.BaseHandler):
         prs = list(ghm.GHIssueDigest.query(*qs))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
 
+        acks = None
+        if login and user == login:  # user getting their own page
+            acks = get_acks(login, prs)
+
         fmt = self.request.get('format', 'html')
         if fmt == 'json':
             self.response.headers['Content-Type'] = 'application/json'
@@ -130,8 +150,12 @@ class PRDashboard(view_base.BaseHandler):
             self.response.write(json.dumps(prs, sort_keys=True, default=serial))
         elif fmt == 'html':
             if user:
+                def acked(p):
+                    if acks is None:
+                        return False
+                    return filters.do_get_latest(p.payload, user) <= acks.get(p.key.id(), 0)
                 cats = [
-                    ('Needs Attention', lambda p: user in p.payload['attn'], ''),
+                    ('Needs Attention', lambda p: user in p.payload['attn'] and not acked(p), ''),
                     ('Incoming', lambda p: user in p.payload['assignees'],
                      'is:open is:pr user:kubernetes assignee:%s' % user),
                     ('Outgoing', lambda p: user == p.payload['author'],
@@ -141,10 +165,28 @@ class PRDashboard(view_base.BaseHandler):
                 cats = [('Open Kubernetes PRs', lambda x: True,
                     'is:open is:pr user:kubernetes')]
 
-            self.render('pr_dashboard.html', dict(prs=prs,
-                cats=cats, user=user, login=login))
+            self.render('pr_dashboard.html', dict(
+                prs=prs, cats=cats, user=user, login=login, acks=acks))
         else:
             self.abort(406)
+
+    def post(self):
+        login = self.session.get('user')
+        if not login:
+            self.abort(403)
+        state = ghm.GHUserState.make_key(login).get()
+        if state is None:
+            state = ghm.GHUserState.make(login)
+        body = json.loads(self.request.body)
+        if body['command'] == 'ack':
+            delta = {'%s %s' % (body['repo'], body['number']): body['latest']}
+            state.acks.update(delta)
+            state.put()
+        elif body['command'] == 'ack-clear':
+            state.acks = {}
+            state.put()
+        else:
+            self.abort(400)
 
 
 class PRBuildLogHandler(webapp2.RequestHandler):

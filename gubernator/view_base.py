@@ -54,7 +54,7 @@ PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
-    extensions=['jinja2.ext.autoescape'],
+    extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols'],
     trim_blocks=True,
     autoescape=True)
 JINJA_ENVIRONMENT.line_statement_prefix = '%'

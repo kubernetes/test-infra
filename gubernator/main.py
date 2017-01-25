@@ -16,11 +16,13 @@
 
 import json
 import logging
+import os
 
 import webapp2
 from webapp2_extras import security
 
 from google.appengine.api import app_identity
+from google.appengine.api import modules
 
 import github_auth
 import view_base
@@ -30,7 +32,10 @@ import view_pr
 
 
 hostname = app_identity.get_default_version_hostname()
-
+if 'testbed' not in os.environ.get('SERVER_SOFTWARE', 'testbed'):
+    current_version = modules.modules.get_current_version_name()
+    if modules.modules.get_default_version() != current_version:
+        hostname = '%s-dot-%s' % (current_version, hostname)
 
 def get_secret(key):
     data = json.load(open('secrets.json'))
@@ -46,6 +51,7 @@ def get_session_secret():
                 'unable to load secret key! sessions WILL NOT persist!')
         # This fallback is enough for testing, but in production
         # will end up invalidating sessions whenever a different instance
+        # is created.
         return security.generate_random_string(entropy=256)
 
 
