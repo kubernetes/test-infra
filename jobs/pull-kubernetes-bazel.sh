@@ -30,7 +30,13 @@ if [[ "${rc}" == 0 ]]; then
 fi
 
 if [[ "${rc}" == 0 ]]; then
-  bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/$(git rev-parse HEAD)" && rc=$? || rc=$?
+  version=$(cat bazel-genfiles/version || true)
+  if [[ -z "${version}" ]]; then
+    echo "Kubernetes version missing; not uploading ci artifacts."
+    rc=1
+  else
+    bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
+  fi
 fi
 
 # Coalesce test results into one file for upload.
