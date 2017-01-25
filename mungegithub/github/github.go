@@ -2129,6 +2129,7 @@ func (config *Config) runMungeFunction(obj *MungeObject, fn MungeFunction) error
 //   * pr.Number <= maxPRNumber
 func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	page := 1
+	count := 0
 
 	extraIssues := sets.NewInt()
 	// Add issues modified by a received event
@@ -2162,6 +2163,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 				Issue:       issues[i],
 				Annotations: map[string]string{},
 			}
+			count++
 			err := config.runMungeFunction(obj, fn)
 			if err != nil {
 				return err
@@ -2186,12 +2188,15 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		if err != nil {
 			return err
 		}
+		count++
 		glog.V(2).Info("Munging extra-issue: ", id)
 		err = config.runMungeFunction(obj, fn)
 		if err != nil {
 			return err
 		}
 	}
+
+	glog.Infof("Munged %d modified issues. (%d because of status change)", count, len(extraIssues))
 
 	return nil
 }
