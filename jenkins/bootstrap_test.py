@@ -1266,7 +1266,7 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
             'kubernetes-e2e-cri-gce',
-            'kubernetes-e2e-gci-gce[0-9a-z\-]+release-1.[345]'
+            'kubernetes-e2e-gci-gce'
         ]
             
         is_modern = lambda name: any(re.match(w, name) for w in whitelist)
@@ -1594,16 +1594,15 @@ class JobTest(unittest.TestCase):
                 lines = list(fp)
             prev = ''
             for line in lines:
+                self.assertFalse(line.strip().endswith('\\'))
                 # FOO=a -> good
                 # FOO="a, FOO=a", FOO="a" -> bad
                 # FOO=aaa"bbb"aaa -> good
-                # FOO=y -> good
-                m = re.match(r'[0-9A-Z_]+=([^\"]$|[^\"][^\n]+[^\"\n]$)', line)
+                # FOO=a # BAR -> bad (no inline comments in env files)
+                m = re.match(r'[0-9A-Z_]+=([^\"]$|[^\n#]+[^\"\n#]$)', line)
                 empty = (line.strip() == '')
                 comment = line.startswith('#')
-                continuation = prev.strip().endswith('\\')
-                prev = line
-                if not (m or empty or comment or continuation):
+                if not (m or empty or comment):
                     self.fail('Job %s contains invalid env: %s' % (job, line))
 
     def testNoBadVarsInJobs(self):
