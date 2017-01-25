@@ -1265,10 +1265,11 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
-            'kubernetes-e2e-cri-gce'
+            'kubernetes-e2e-cri-gce',
+            'kubernetes-e2e-gci-gce[0-9a-z\-]+release-1.[345]'
         ]
             
-        is_modern = lambda name: any(w in name for w in whitelist)
+        is_modern = lambda name: any(re.match(w, name) for w in whitelist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
