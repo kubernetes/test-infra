@@ -101,7 +101,11 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 			return
 		}
 		if time.Since(*statusTime) > staleGreenCIHours*time.Hour {
-			obj.WriteComment(greenMsgBody)
+			err := obj.WriteComment(greenMsgBody)
+			if err != nil {
+				glog.Errorf("Failed to write retrigger old test comment")
+				return
+			}
 			ok := obj.WaitForPending(requiredContexts)
 			if !ok {
 				glog.Errorf("Failed waiting for PR to start testing")
