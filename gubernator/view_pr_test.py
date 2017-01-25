@@ -126,6 +126,13 @@ class TestDashboard(main_test.TestBase):
         resp = app.get('/pr/user')
         self.assertIn('123', resp)
 
+    @staticmethod
+    def make_session(**kwargs):
+        # set the session cookie directly (easier than the full login flow)
+        serializer = securecookie.SecureCookieSerializer(
+            app.app.config['webapp2_extras.sessions']['secret_key'])
+        return serializer.serialize('session', kwargs)
+
     def test_me(self):
         make_pr(124, ['human'], {'title': 'huge pr!'})
 
@@ -134,13 +141,8 @@ class TestDashboard(main_test.TestBase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.location, 'http://localhost/github_auth/pr')
 
-        # set the session cookie directly (easier than the full login flow)
-        serializer = securecookie.SecureCookieSerializer(
-            app.app.config['webapp2_extras.sessions']['secret_key'])
-        cookie = serializer.serialize('session', {'user': 'human'})
-
         # we have a cookie now: we should get results for 'human'
-        app.cookies['session'] = cookie
+        cookie = self.make_session(user='human')
         resp = app.get('/pr', headers={'Cookie': 'session=%s' % cookie})
         self.assertEqual(resp.status_code, 200)
         self.assertIn('huge pr!', resp)
@@ -160,3 +162,31 @@ class TestDashboard(main_test.TestBase):
         resp = app.get('/build' + build_dir)
         self.assertIn('href="/pr/human"', resp)
         self.assertIn('huge pr!', resp)
+
+    def test_acks(self):
+        make_pr(124, ['human'], {'title': 'huge pr', 'attn': {'human': 'help#123#456'}}, repo='k/k')
+        cookie = self.make_session(user='human')
+        headers = {'Cookie': 'session=%s' % cookie}
+
+        def expect_count(count):
+            resp = app.get('/pr', headers=headers)
+            self.assertEqual(resp.body.count('huge pr'), count)
+
+        # PR should appear twice
+        expect_count(2)
+
+        # Ack the PR...
+        ack_params = {'command': 'ack', 'repo': 'k/k', 'number': 124, 'latest': 456}
+        app.post_json('/pr', ack_params, headers=headers)
+        expect_count(1)
+        self.assertEqual(view_pr.get_acks('human', []), {'k/k 124': 456})
+
+        # Clear the ack
+        app.post_json('/pr', {'command': 'ack-clear'}, headers=headers)
+        expect_count(2)
+        self.assertEqual(view_pr.get_acks('human', []), {})
+
+        # Ack with an older latest
+        ack_params['latest'] = 123
+        app.post_json('/pr', ack_params, headers=headers)
+        expect_count(2)

@@ -180,6 +180,16 @@ def do_render_status(payload, user):
     return jinja2.Markup('%s%s' % (icon, text))
 
 
+def do_get_latest(payload, user):
+    text = payload.get('attn', {}).get(user)
+    if not text:
+        return None
+    if '#' not in text:
+        return None
+    _text, _start, latest = text.rsplit('#', 2)
+    return int(latest)
+
+
 def do_ltrim(s, needle):
     if s.startswith(needle):
         return s[len(needle):]

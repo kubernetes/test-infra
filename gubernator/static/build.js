@@ -167,3 +167,36 @@ if (typeof module !== 'undefined' && module.exports) {
 		ansi_to_html: ansi_to_html
 	}
 }
+
+// Acknowledge a PR to suppress it. If repo is "CLEAR", clear acks instead.
+function ack(event, repo, number, latest) {
+	event.stopPropagation();
+	var req = new XMLHttpRequest();
+	req.open('POST', '/pr');
+	req.onload = function(resp) {
+		if (req.status != 200) return;
+		var row = document.getElementById('needs-attention ' + repo + ' ' + number);
+		if (row) {
+			row.remove();
+		}
+	}
+	req.send(JSON.stringify({
+		command: 'ack',
+		repo: repo,
+		number: number,
+		latest: latest,
+	}));
+}
+
+// Reset the acknowledged PRs
+function ack_clear() {
+	var req = new XMLHttpRequest();
+	req.open('POST', '/pr');
+	req.onload = function(resp) {
+		if (req.status != 200) return;
+		document.location = document.location;  // refresh
+	}
+	req.send(JSON.stringify({
+		command: 'ack-clear',
+	}));
+}

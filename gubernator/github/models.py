@@ -140,6 +140,19 @@ class GHIssueDigest(ndb.Model):
         return GHIssueDigest.query(GHIssueDigest.xref == xref)
 
 
+class GHUserState(ndb.Model):
+    # Key: {github username}
+    acks = ndb.JsonProperty()  # dict of issue keys => ack time (seconds since epoch)
+
+    @staticmethod
+    def make_key(user):
+        return ndb.Key(GHUserState, user)
+
+    @staticmethod
+    def make(user, acks=None):
+        return GHUserState(key=GHUserState.make_key(user), acks=acks or {})
+
+
 @ndb.transactional
 def save_if_newer(obj):
     assert obj.updated_at is not None

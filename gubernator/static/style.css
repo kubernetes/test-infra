@@ -30,6 +30,9 @@ body {
 #content {
     margin: 10px;
 }
+#help {
+    margin: 30px;
+}
 h3 {
     margin: 0.67em 0 0 0;
 }
@@ -129,6 +132,9 @@ table.pr-dash tbody tr:hover {
 }
 h3.pr-section {
     margin: 1em 0 0 1em;
+}
+h4.pr-section {
+    margin-left: 3em;
 }
 .text-success { color: #55a532; }
 .text-pending { color: #cea61b; }

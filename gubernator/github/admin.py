@@ -35,7 +35,7 @@ class RecomputeOpenPRs(object):
     def query():
         return models.GHIssueDigest.query(
             models.GHIssueDigest.is_open == True,
-            # models.GHIssueDigest.is_pr == True
+            models.GHIssueDigest.is_pr == True
         )
 
     @staticmethod
@@ -47,7 +47,7 @@ class RecomputeOpenPRs(object):
 @ndb.toplevel
 def migrate(migration, cursor=None, last_parent=None, stop=False):
     entities, next_cursor, more = migration.query().fetch_page(
-        10, start_cursor=cursor, keys_only=migration.keys_only)
+        1, start_cursor=cursor, keys_only=migration.keys_only)
 
     counters = collections.Counter()
 

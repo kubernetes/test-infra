@@ -12,9 +12,10 @@
 View
 {% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
  | {% if user != login or not login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
- | <input id="userBox" name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
+ | <input id="userBox" pattern='[-\w]+' name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
 <button>Switch User</button>
 </form>
+
 % for title, pred, search in cats
 	% set sub_prs = prs | select(pred)
 	<h3 class="pr-section">
@@ -23,15 +24,19 @@ View
 	% else
 	{{title}}
 	% endif
-	({{sub_prs|length}})</h3>
+	({{sub_prs|length}})
+	% if title == 'Needs Attention' and acks
+		<button style='margin-left: 20px;' onclick='ack_clear()' alt='Reset "Needs Attention" ignores'>Clear Acks ({{acks|length}})</button>
+	% endif
+	</h3>
 	% if sub_prs
 	<table class="pr pr-dash">
 	<thead>
-		<tr><th>Repo<th>Number<th>Author<th>Status<th>Updated<th>Assignees<th>Size<th>Title</tr>
+		<tr><th>Repo<th>Number<th>Author<th>Status<th>Updated<th>Assignees<th>Size<th>Title<th></th></tr>
 	</thead>
 		% for pr in sub_prs
 			% set pl = pr.payload
-			<tr onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
+			<tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
 			<td>{{pr.repo|ltrim('kubernetes/')}}
 			<td>{{pr.number}}
 			<td>{{pl['author']}}
@@ -40,6 +45,12 @@ View
 			<td>{{pl['assignees']|join(", ")}}
 			<td>{{pl|classify_size}}
 			<td>{{pl['title']}}
+			% if title == "Needs Attention" and acks is not none
+				% set latest = pl|get_latest(user)
+				% if latest
+					<td><button onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
+				% endif
+			% endif
 		% endfor
 	</table>
 	% else
@@ -47,5 +58,8 @@ View
 	% endif
 % endfor
 
-<p><b>Needs Attention</b> is a heuristic based on a simple state machine. Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=gubernator&assignee=rmmh">File a bug!</a></p>
+<div id="help">
+<p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://github.com/kubernetes/test-infra/blob/master/gubernator/github/classifier.py#L288">simple state machine</a>. Use the "ACK" button to to remove a PR from "Needs Attention" until something new occurs.
+<p>Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=gubernator&assignee=rmmh">File a bug!</a>
+</div>
 % endblock
