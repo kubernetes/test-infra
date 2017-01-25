@@ -1265,22 +1265,10 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
-            'kubernetes-e2e-cri-gce',
-            'kubernetes-e2e-cri-gce-slow',
-            'kubernetes-e2e-cri-gce-serial',
-            'kubernetes-e2e-cri-gce-scalability',
-            'kubernetes-e2e-cri-gce-reboot',
-            'kubernetes-e2e-cri-gce-proto',
-            'kubernetes-e2e-cri-gce-examples',
-            'kubernetes-e2e-cri-gce-etcd3',
-            'kubernetes-e2e-cri-gce-autoscaling',
-            'kubernetes-e2e-cri-gce-autoscaling-migs',
-            'kubernetes-e2e-cri-gce-alpha-features',
-            'kubernetes-e2e-cri-gce-federation',
-            'kubernetes-e2e-cri-gce-flaky'
+            'kubernetes-e2e-cri-gce'
         ]
             
-        is_modern = lambda name: any(w == name for w in whitelist)
+        is_modern = lambda name: any(w in name for w in whitelist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
