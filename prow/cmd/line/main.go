@@ -32,12 +32,12 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/crier"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
-	"k8s.io/test-infra/prow/plugins"
 )
 
 var (
@@ -52,17 +52,17 @@ var (
 	refs      = flag.String("refs", "", "Refs to merge together, as expected by bootstrap.py.")
 
 	namespace = flag.String("namespace", "default", "Namespace that we live in.")
-	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating GitHub/Jenkins calls.")
+	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating Jenkins calls.")
 	report    = flag.Bool("report", true, "Whether or not to report the status on GitHub.")
 
 	presubmit        = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
 	postsubmit       = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
-	githubTokenFile  = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 	totURL           = flag.String("tot-url", "http://tot", "Tot URL")
+	crierURL         = flag.String("crier-url", "http://crier", "Crier URL")
 )
 
 const (
@@ -92,14 +92,6 @@ type testClient struct {
 	KubeJob       string
 	KubeClient    *kube.Client
 	JenkinsClient *jenkins.Client
-	GitHubClient  githubClient
-}
-
-type githubClient interface {
-	CreateStatus(owner, repo, ref string, s github.Status) error
-	ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(owner, repo string, number int, comment string) error
-	DeleteComment(owner, repo string, ID int) error
 }
 
 func main() {
@@ -117,19 +109,6 @@ func main() {
 		jenkinsClient = jenkins.NewDryRunClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
 	} else {
 		jenkinsClient = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
-	}
-
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	var ghc *github.Client
-	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret)
-	} else {
-		ghc = github.NewClient(oauthSecret)
 	}
 
 	kc, err := kube.NewClientInCluster(*namespace)
@@ -174,7 +153,6 @@ func main() {
 		KubeJob:       kubeJob,
 		KubeClient:    kc,
 		JenkinsClient: jenkinsClient,
-		GitHubClient:  ghc,
 	}
 	l := logrus.WithFields(fields(client))
 	if foundPresubmit && presubmit.Spec == nil {
@@ -374,7 +352,6 @@ func (c *testClient) TestKubernetes() error {
 			break
 		} else if po.Status.Phase == kube.PodFailed {
 			c.tryCreateStatus(podName, github.StatusFailure, "Build failed.", resultURL)
-			c.tryCreateFailureComment(resultURL)
 			break
 		} else if po.Status.Phase == kube.PodUnknown {
 			c.tryCreateStatus(podName, github.StatusError, "Error watching build.", resultURL)
@@ -444,7 +421,6 @@ func (c *testClient) TestPRJenkins() error {
 				break
 			} else {
 				c.tryCreateStatus("", github.StatusFailure, "Build failed.", resultURL)
-				c.tryCreateFailureComment(resultURL)
 				break
 			}
 		}
@@ -483,70 +459,23 @@ func (c *testClient) tryCreateStatus(podName, state, desc, url string) {
 		"url":         url,
 	}).Info("Setting GitHub and Kubernetes status.")
 	if c.Report {
-		if err := c.GitHubClient.CreateStatus(c.RepoOwner, c.RepoName, c.PullSHA, github.Status{
-			State:       state,
-			Description: desc,
-			Context:     c.Presubmit.Context,
-			TargetURL:   url,
+		if err := crier.ReportToCrier(*crierURL, crier.Report{
+			RepoOwner:    c.RepoOwner,
+			RepoName:     c.RepoName,
+			Author:       c.Author,
+			Number:       c.PRNumber,
+			Commit:       c.PullSHA,
+			Context:      c.Presubmit.Context,
+			State:        state,
+			Description:  desc,
+			RerunCommand: c.Presubmit.RerunCommand,
+			URL:          url,
 		}); err != nil {
-			logrus.WithFields(fields(c)).WithError(err).Error("Error setting GitHub status.")
+			logrus.WithFields(fields(c)).WithError(err).Error("Error reporting to crier.")
 		}
 	}
 	if err := line.SetJobStatus(c.KubeClient, podName, c.KubeJob, state, desc, url); err != nil {
 		logrus.WithFields(fields(c)).WithError(err).Error("Error setting Kube Job status.")
-	}
-}
-
-func (c *testClient) formatFailureComment(url string) string {
-	prLink := ""
-	if c.RepoOwner == "kubernetes" {
-		if c.RepoName == "kubernetes" {
-			prLink = fmt.Sprintf("%d", c.PRNumber)
-		} else {
-			prLink = fmt.Sprintf("%s/%d", c.RepoName, c.PRNumber)
-		}
-	} else {
-		prLink = fmt.Sprintf("%s_%s/%d", c.RepoOwner, c.RepoName, c.PRNumber)
-	}
-
-	// The deletion logic requires that it start with context.
-	bodyFormat := `%s [**failed**](%s) for commit %s. [Full PR test history](http://pr-test.k8s.io/%s). 
-
-cc @%s, [your PR dashboard](https://k8s-gubernator.appspot.com/pr/%s)
-
-The magic incantation to run this job again is ` + "`%s`" + `. Please help us cut down flakes by linking to an [open flake issue](https://github.com/%s/%s/issues?q=is:issue+label:kind/flake+is:open) when you hit one in your PR.
-
-<details>
-
-%s
-</details>
-`
-	return fmt.Sprintf(bodyFormat, c.Presubmit.Context, url, c.PullSHA, prLink, c.Author, c.Author, c.Presubmit.RerunCommand, c.RepoOwner, c.RepoName, plugins.AboutThisBot)
-
-}
-
-func (c *testClient) tryCreateFailureComment(url string) {
-	if !c.Report {
-		return
-	}
-	ics, err := c.GitHubClient.ListIssueComments(c.RepoOwner, c.RepoName, c.PRNumber)
-	if err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error listing issue comments.")
-		return
-	}
-	for _, ic := range ics {
-		if ic.User.Login != "k8s-ci-robot" {
-			continue
-		}
-		if strings.HasPrefix(ic.Body, c.Presubmit.Context) {
-			if err := c.GitHubClient.DeleteComment(c.RepoOwner, c.RepoName, ic.ID); err != nil {
-				logrus.WithFields(fields(c)).WithError(err).Error("Error deleting comment.")
-			}
-		}
-	}
-	body := c.formatFailureComment(url)
-	if err := c.GitHubClient.CreateComment(c.RepoOwner, c.RepoName, c.PRNumber, body); err != nil {
-		logrus.WithFields(fields(c)).WithError(err).Error("Error creating comment.")
 	}
 }
 

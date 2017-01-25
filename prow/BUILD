@@ -16,6 +16,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/cmd/crier:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/hook:all-srcs",
         "//prow/cmd/line:all-srcs",
@@ -24,6 +25,7 @@ filegroup(
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/splice:all-srcs",
         "//prow/cmd/tot:all-srcs",
+        "//prow/crier:all-srcs",
         "//prow/github:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/jobs:all-srcs",

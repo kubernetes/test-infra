@@ -180,11 +180,6 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 							Args:  args,
 							VolumeMounts: []kube.VolumeMount{
 								{
-									Name:      "oauth",
-									ReadOnly:  true,
-									MountPath: "/etc/github",
-								},
-								{
 									Name:      "jenkins",
 									ReadOnly:  true,
 									MountPath: "/etc/jenkins",
@@ -225,12 +220,6 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 										},
 									},
 								},
-							},
-						},
-						{
-							Name: "oauth",
-							Secret: &kube.SecretSource{
-								Name: "oauth-token",
 							},
 						},
 						{
