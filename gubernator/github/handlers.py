@@ -225,10 +225,16 @@ class Timeline(BaseHandler):
         return merged
 
     def get(self):
-        self.response.write(
-            '<style>td pre{max-height:200px;overflow:scroll}</style>')
         repo = self.request.get('repo')
         number = self.request.get('number')
+        if self.request.get('format') == 'json':
+            ancestor = models.GithubResource.make_key(repo, number)
+            events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
+            self.response.headers['content-type'] = 'application/json'
+            self.response.write(json.dumps([e.body for e in events], indent=True))
+            return
+        self.response.write(
+            '<style>td pre{max-height:200px;overflow:scroll}</style>')
         self.emit_classified(repo, number)
         merged = self.emit_events(repo, number)
         if 'head' in merged:

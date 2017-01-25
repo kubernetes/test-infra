@@ -47,7 +47,7 @@ class RecomputeOpenPRs(object):
 @ndb.toplevel
 def migrate(migration, cursor=None, last_parent=None, stop=False):
     entities, next_cursor, more = migration.query().fetch_page(
-        1, start_cursor=cursor, keys_only=migration.keys_only)
+        10, start_cursor=cursor, keys_only=migration.keys_only)
 
     counters = collections.Counter()
 

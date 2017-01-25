@@ -21,6 +21,31 @@ import models
 XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
 
 
+class Deduper(object):
+    ''' A memory-saving string deduplicator for Python datastructures.
+
+    This is somewhat like the built-in intern() function, but without pinning memory
+    permanently.
+
+    Tries to reduce memory usage by making equivalent strings point at the same object.
+    This reduces memory usage for large, repetitive JSON structures by >2x.
+    '''
+
+    def __init__(self):
+        self.strings = {}
+
+    def dedup(self, obj):
+        if isinstance(obj, basestring):
+            return self.strings.setdefault(obj, obj)
+        elif isinstance(obj, dict):
+            return {self.dedup(k): self.dedup(v) for k, v in obj.iteritems()}
+        elif isinstance(obj, tuple):
+            return tuple(self.dedup(x) for x in obj)
+        elif isinstance(obj, list):
+            return [self.dedup(x) for x in obj]
+        return obj
+
+
 def classify_issue(repo, number):
     '''
     Classify an issue in a repo based on events in Datastore.
@@ -36,12 +61,18 @@ def classify_issue(repo, number):
         last_event_timestamp: the timestamp of the most recent event.
     '''
     ancestor = models.GithubResource.make_key(repo, number)
+    logging.debug('finding webhooks for %s %s', repo, number)
     events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
     events.sort(key=lambda e: e.timestamp)
     logging.debug('classifying %s %s (%d events)', repo, number, len(events))
-    event_tuples = [event.to_tuple() for event in events]
-
+    deduper = Deduper()
     last_event_timestamp = events[-1].timestamp
+
+    event_tuples = [deduper.dedup(event.to_tuple()) for event in events]
+
+    del deduper  # attempt to save memory
+    del events
+
     merged = get_merged(event_tuples)
     statuses = None
     if 'head' in merged:

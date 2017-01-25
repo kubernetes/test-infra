@@ -14,9 +14,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import unittest
 
 import classifier
+
+
+class DeduperTest(unittest.TestCase):
+    @staticmethod
+    def dedup(obj):
+        return classifier.Deduper().dedup(obj)
+
+    def test_types(self):
+        a = (u'foo', 2, {'bar': ['foo', 'bar']})
+        self.assertEqual(self.dedup(a), a)
+
+    def test_dedupe(self):
+        # Python interns strings in structs, so...
+        a = ['foo', 'foo']
+        self.assertIs(a[0], a[1])
+
+        # Use json.loads to get around it
+        b = json.loads('["foo", "foo"]')
+        self.assertIsNot(b[0], b[1])
+
+        # When deduplicated, the strings are now the same object.
+        c = self.dedup(b)
+        self.assertIs(c[0], c[1])
 
 
 class MergedTest(unittest.TestCase):
