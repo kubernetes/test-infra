@@ -102,25 +102,35 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	ownersMap := h.getApprovedOwners(files, createApproverSet(comments))
+	approverSet := createApproverSet(comments)
+	ownersMap := h.getApprovedOwners(files, approverSet)
 
-	if err := h.updateNotification(obj, ownersMap); err != nil {
+	isFullyApproved := prFullyApproved(ownersMap)
+
+	if err := h.updateNotification(obj, ownersMap, approverSet, isFullyApproved); err != nil {
 		return
 	}
 
-	for _, approverSet := range ownersMap {
-		if approverSet.Len() == 0 {
-			// if a human explicitly added the label, allow it through
-			if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
-				obj.RemoveLabel(approvedLabel)
-			}
-			return
+	if !isFullyApproved {
+		if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
+			obj.RemoveLabel(approvedLabel)
+		}
+	} else {
+		//pr is fully approved
+		if !obj.HasLabel(approvedLabel) {
+			obj.AddLabel(approvedLabel)
 		}
 	}
 
-	if !obj.HasLabel(approvedLabel) {
-		obj.AddLabel(approvedLabel)
+}
+
+func prFullyApproved(ownersMap map[string]sets.String) bool {
+	for _, approverSet := range ownersMap {
+		if approverSet.Len() == 0 {
+			return false
+		}
 	}
+	return true
 }
 
 func humanAddedApproved(obj *github.MungeObject) bool {
@@ -137,7 +147,7 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	return *lastAdded.Actor.Login != botName
 }
 
-func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String) error {
+func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String, approverSet sets.String, isFullyApproved bool) error {
 	notificationMatcher := c.MungerNotificationName(approvalNotificationName)
 	comments, ok := obj.ListComments()
 	if !ok {
@@ -147,7 +157,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	notifications := c.FilterComments(comments, notificationMatcher)
 	latestNotification := notifications.GetLast()
 	if latestNotification == nil {
-		body := h.getMessage(obj, ownersMap)
+		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
 		return obj.WriteComment(body)
 	}
 
@@ -160,8 +170,9 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	if latestApprove.CreatedAt.After(*latestNotification.CreatedAt) {
 		// if someone approved since the last comment, we should update the comment
 		glog.Infof("Latest approve was after last time notified")
-		body := h.getMessage(obj, ownersMap)
-		return obj.EditComment(latestNotification, body)
+		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
+		obj.DeleteComment(latestNotification)
+		return obj.WriteComment(body)
 	}
 	lastModified, ok := obj.LastModifiedTime()
 	if !ok {
@@ -171,8 +182,9 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		// the PR was modified After our last notification, so we should update the approvers notification
 		// i.e. People that have formerly approved haven't necessarily approved of new changes
 		glog.Infof("PR Modified After Last Notification")
-		body := h.getMessage(obj, ownersMap)
-		return obj.EditComment(latestNotification, body)
+		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
+		obj.DeleteComment(latestNotification)
+		return obj.WriteComment(body)
 	}
 	return nil
 }
@@ -266,7 +278,7 @@ func removeSubdirs(dirList []string) sets.String {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String) string {
+func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String, alreadyApproved sets.String, isFullyApproved bool) string {
 	// sort the keys so we always display OWNERS files in same order
 	sliceOfKeys := make([]string, len(ownersMap))
 	i := 0
@@ -278,6 +290,12 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 
 	unapprovedOwners := sets.NewString()
 	context := bytes.NewBufferString("")
+	if len(alreadyApproved) != 0 {
+		context.WriteString("The following people have approved this PR: ")
+		context.WriteString("*" + strings.Join(alreadyApproved.List(), ", ") + "*\n\n")
+	}
+
+	context.WriteString("Needs approval from an approver in each of these OWNERS Files:\n")
 	for _, path := range sliceOfKeys {
 		approverSet := ownersMap[path]
 		fullOwnersPath := filepath.Join(path, ownersFileName)
@@ -295,13 +313,17 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 		context.WriteString("We suggest the following people:\n")
 		context.WriteString("cc ")
 		toBeAssigned := h.findPeopleToApprove(sets.NewString(sliceOfKeys...))
-		for person := range toBeAssigned {
+		for person := range toBeAssigned.Difference(alreadyApproved) {
 			context.WriteString("@" + person + " ")
 		}
 	}
 	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment")
 	context.WriteString("\n You can cancel your approval by writing `/approve cancel` in a comment")
-	notif := c.Notification{approvalNotificationName, "Needs approval from an approver in each of these OWNERS Files:\n", context.String()}
+	title := "This PR is **NOT APPROVED**"
+	if isFullyApproved {
+		title = "This PR is **APPROVED**"
+	}
+	notif := c.Notification{approvalNotificationName, title, context.String()}
 	return notif.String()
 }
 
