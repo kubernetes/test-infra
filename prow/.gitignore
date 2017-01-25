@@ -4,3 +4,5 @@ cmd/sinker/sinker
 cmd/deck/deck
 cmd/splice/splice
 cmd/marque/marque
+cmd/tot/tot
+cmd/crier/crier

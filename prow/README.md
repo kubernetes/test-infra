@@ -5,13 +5,14 @@ currently comprises several related pieces that live in a GKE cluster.
 
 * `cmd/hook` is the most important piece. It is a server that listens for
   GitHub webhooks and dispatches them to the appropriate handlers.
-* `cmd/line` is the piece that runs actual tests and reports the GitHub status
-  context line.
+* `cmd/line` is the piece that starts Jenkins jobs or k8s pods.
 * `cmd/sinker` cleans up old jobs and pods.
 * `cmd/splice` regularly schedules batch jobs.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.
 * `cmd/phony` sends fake webhooks.
 * `cmd/marque` is a production-ready letsencrypt certificate manager.
+* `cmd/tot` vends incrementing build numbers.
+* `cmd/crier` writes GitHub statuses and comments.
 
 ## How to test prow
 

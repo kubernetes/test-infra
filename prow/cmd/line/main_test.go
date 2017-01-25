@@ -17,91 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"strings"
 	"testing"
 
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/line"
 )
-
-func TestFailureComment(t *testing.T) {
-	comments := []github.IssueComment{
-		{
-			User: github.User{Login: "unrelated"},
-			Body: "looks nice",
-			ID:   0,
-		},
-		{
-			User: github.User{Login: "k8s-ci-robot"},
-			Body: "Jenkins test failed for commit abcdef",
-			ID:   1,
-		},
-		{
-			User: github.User{Login: "unrelated2"},
-			Body: "Jenkins test is strange, what's going on there?",
-			ID:   3,
-		},
-		{
-			User: github.User{Login: "k8s-ci-robot"},
-			Body: "Jenkins test failed for commit qwerty",
-			ID:   8,
-		},
-	}
-	ghc := &fakegithub.FakeClient{
-		IssueComments: map[int][]github.IssueComment{
-			5: comments,
-		},
-		IssueCommentID: 9,
-	}
-	cl := testClient{
-		Presubmit: jobs.Presubmit{
-			Name:    "test-job",
-			Context: "Jenkins test",
-		},
-		PRNumber:     5,
-		PullSHA:      "abcde",
-		Report:       true,
-		GitHubClient: ghc,
-	}
-	cl.tryCreateFailureComment("url")
-	newComments, _ := ghc.ListIssueComments("", "", 5)
-	if len(newComments) != 3 {
-		t.Errorf("Expected 3 comments after creating failed comment, got %+v", newComments)
-	}
-	for _, comment := range newComments {
-		if comment.ID == 1 || comment.ID == 8 {
-			t.Errorf("Comment not deleted: %v", comment.ID)
-		}
-	}
-}
-
-func TestFormatFailureComment(t *testing.T) {
-	var testcases = []struct {
-		owner    string
-		name     string
-		expected string
-	}{
-		{"kubernetes", "kubernetes", "pr-test.k8s.io/12"},
-		{"kubernetes", "kops", "pr-test.k8s.io/kops/12"},
-		{"google", "cadvisor", "pr-test.k8s.io/google_cadvisor/12"},
-	}
-	for _, tc := range testcases {
-		c := testClient{
-			RepoOwner: tc.owner,
-			RepoName:  tc.name,
-			PRNumber:  12,
-		}
-		body := c.formatFailureComment("someurl")
-		if !strings.Contains(body, "someurl") {
-			t.Error("body doesn't contain url")
-		}
-		if !strings.Contains(body, tc.expected) {
-			t.Errorf("body missing string %v: %v", tc.expected, body)
-		}
-	}
-}
 
 func TestGuberURL(t *testing.T) {
 	var testcases = []struct {
