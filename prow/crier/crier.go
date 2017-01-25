@@ -129,10 +129,10 @@ func parseIssueComments(r Report, ics []github.IssueComment) ([]int, []string) {
 		}
 		previousComments = append(previousComments, ic.ID)
 		var tracking bool
-		for _, line := range strings.Split(ic.Body, "\r\n") {
+		for _, line := range strings.Split(ic.Body, "\n") {
 			if strings.HasPrefix(line, "---") {
 				tracking = true
-			} else if len(line) == 0 {
+			} else if len(strings.TrimSpace(line)) == 0 {
 				tracking = false
 			} else if tracking {
 				entries = append(entries, line)
