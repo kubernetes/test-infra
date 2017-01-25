@@ -49,10 +49,7 @@ export TEST_CLUSTER_RESYNC_PERIOD="--min-resync-period=12h"
 # Increase delete collection parallelism
 export TEST_CLUSTER_DELETE_COLLECTION_WORKERS="--delete-collection-workers=16"
 # =========================================
-# Configuration we are targetting in 1.5
-export TEST_ETCD_IMAGE="3.0.14-experimental.1"
-export TEST_ETCD_VERSION="3.0.14"
-export STORAGE_BACKEND="etcd3"
+# Configuration we are targetting in 1.6
 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 

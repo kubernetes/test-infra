@@ -56,10 +56,7 @@ export MASTER_DISK_SIZE="100GB"
 export KUBEMARK_NUM_NODES="5000"
 export KUBE_GCE_ZONE="us-central1-b"
 # =========================================
-# Configuration we are targetting in 1.5
-export TEST_ETCD_IMAGE="3.0.14-experimental.1"
-export TEST_ETCD_VERSION="3.0.14"
-export STORAGE_BACKEND="etcd3"
+# Configuration we are targetting in 1.6
 export TEST_CLUSTER_STORAGE_CONTENT_TYPE="--storage-media-type=application/vnd.kubernetes.protobuf"
 # The kubemark scripts build a Docker image
 export JENKINS_ENABLE_DOCKER_IN_DOCKER="y"
