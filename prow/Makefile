@@ -16,13 +16,13 @@ all: build fmt vet test
 
 
 HOOK_VERSION   = 0.77
-LINE_VERSION   = 0.68
+LINE_VERSION   = 0.69
 SINKER_VERSION = 0.4
 DECK_VERSION   = 0.14
 SPLICE_VERSION = 0.11
 MARQUE_VERSION = 0.1
 TOT_VERSION    = 0.0
-CRIER_VERSION  = 0.0
+CRIER_VERSION  = 0.1
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow

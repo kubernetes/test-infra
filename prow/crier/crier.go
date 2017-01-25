@@ -208,6 +208,7 @@ func dashLink(r Report) string {
 func createComment(r Report, entries []string) string {
 	lines := []string{
 		fmt.Sprintf("@%s: The following test(s) **failed**:", r.Author),
+		"",
 		"Test name | Commit | Details | Rerun command",
 		"--- | --- | --- | ---",
 	}

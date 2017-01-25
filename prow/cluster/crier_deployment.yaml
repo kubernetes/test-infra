@@ -30,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:0.0
+        image: gcr.io/k8s-prow/crier:0.1
         args:
         - "--dry-run=false"
         imagePullPolicy: Always
