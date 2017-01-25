@@ -39,6 +39,12 @@ VERSION_TAG = {
 }
 
 
+def check_output(*cmd):
+    """Log and run the command, return output, raising on errors."""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
+
+
 def check(*cmd):
     """Log and run the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
@@ -61,10 +67,10 @@ def main(branch, script, force):
     check('rm', '-rf', '.gsutil')
     remote = 'bootstrap-upstream'
     uri = 'https://github.com/kubernetes/kubernetes.git'
-    try:
+
+    current_remotes = check_output(['git', 'remote'])
+    if re.search('^%s$' % remote, current_remotes, flags=re.MULTILINE):
         check('git', 'remote', 'remove', remote)
-    except subprocess.CalledProcessError:
-        pass
     check('git', 'remote', 'add', remote, uri)
     check('git', 'remote', 'set-url', '--push', remote, 'no_push')
     # If .git is cached between runs this data may be stale

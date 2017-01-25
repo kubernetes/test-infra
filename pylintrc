@@ -12,3 +12,4 @@ max-args=12
 
 [SIMILARITIES]
 ignore-imports=yes
+min-similarity-lines=100
