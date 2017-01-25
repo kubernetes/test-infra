@@ -65,6 +65,10 @@ class HelperTest(unittest.TestCase):
             "go run hack/e2e.go -v -test --test_args='--ginkgo.focus="
             "Proxy\\s\\[k8s\\.io\\]\\sworks$'")
 
+    def test_testcmd_bazel(self):
+        self.assertEqual(filters.do_testcmd('//pkg/foo/bar:go_default_test'),
+            'bazel test //pkg/foo/bar:go_default_test')
+
     def test_classify_size(self):
         self.assertEqual(filters.do_classify_size(
             {'labels': {'size/FOO': 1}}), 'FOO')

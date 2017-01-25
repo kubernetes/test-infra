@@ -91,6 +91,8 @@ def do_testcmd(name):
             logging.error('Unexpected Go unit test name %r', name)
             return name
         return 'go test -v %s -run %s$' % (pkg, name)
+    elif name.startswith('//'):
+        return 'bazel test %s' % name
     else:
         name = re.sub(r'^\[k8s\.io\] ', '', name)
         name_escaped = re.escape(name).replace('\\ ', '\\s')
