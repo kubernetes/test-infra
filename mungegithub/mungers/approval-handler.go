@@ -102,7 +102,12 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	approverSet := createApproverSet(comments)
+	var prAuthor *string = nil
+	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
+		prAuthor = obj.Issue.User.Login
+	}
+
+	approverSet := createApproverSet(comments, prAuthor)
 	ownersMap := h.getApprovedOwners(files, approverSet)
 
 	isFullyApproved := prFullyApproved(ownersMap)
@@ -340,7 +345,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 // and identifies all of the people that have said /approve and adds
 // them to the approverSet.  The function uses the latest approve or cancel comment
 // to determine the Users intention
-func createApproverSet(comments []*githubapi.IssueComment) sets.String {
+func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) sets.String {
 	approverSet := sets.NewString()
 
 	approverMatcher := c.CommandName(approveCommand)
@@ -351,6 +356,10 @@ func createApproverSet(comments []*githubapi.IssueComment) sets.String {
 			if cmd.Name != approveCommand {
 				continue
 			}
+			if comment.User == nil || comment.User.Login == nil {
+				continue
+			}
+
 			if cmd.Arguments == cancel {
 				approverSet.Delete(*comment.User.Login)
 			} else {
@@ -358,6 +367,12 @@ func createApproverSet(comments []*githubapi.IssueComment) sets.String {
 			}
 		}
 	}
+
+	//prAuthor implicitly approves their own PR
+	if prAuthor != nil {
+		approverSet.Insert(*prAuthor)
+	}
+
 	return approverSet
 }
 
