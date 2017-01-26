@@ -1,26 +1,39 @@
 # How to work with Jenkins jobs
 
-All the job scripts are in the [`test-infra/jobs/{job-name}.sh`](https://github.com/kubernetes/test-infra/tree/master/jobs) files now.
+Each job has:
 
-Note that we plan on migrating these `*.sh` jobs into yaml and env files in the near future.
+1. A Jenkins job entry, in either [kubernetes-jenkins](job-configs/kubernetes-jenkins) or [kubernetes-jenkins-pull](job-configs/kubernetes-jenkins-pull).
+
+1. A json entry in [job configs](../jobs/config.json)
+
+1. (Required for e2e jobs) a `foo.env` match job `foo` in [/jobs](../jobs)
+
+1. (Required for ci jobs) a [testgrid config entry](../testgrid/config/config.yaml)
+
+Ping @kubernetes/test-infra-maintainers if you have any questions.
 
 # Add a Jenkins job
 
 Say you want to add a new job, foo.
 
-1. For e2e ci job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml`](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml).
+1. For e2e ci job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml).
    
-   For pr job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml`](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml)
+   For PR job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml`](jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml)
 
-   For build job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml`](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml)
+   For build job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml)
 
-   For soak job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml`](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml)
+   For soak job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml)
 
-   For maintenance job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml`](https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml)
+   For maintenance job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml)
 
-2. Add `foo.sh` to [`test-infra/jobs`](https://github.com/kubernetes/test-infra/tree/master/jobs), which defines your job behavior. You can reference it from other jobs.
+   [bootstrap flags](bootstrap.py#L806-L838) will help you determine which flag you might need.
 
-3. Add your new job to [`test-infra/testgrid/config/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml)
 
-4. Make sure all presubmit tests pass. Running [`test-infra/jenkins/bootstrap_test.py`](https://github.com/kubernetes/test-infra/blob/master/jenkins/bootstrap_test.py) locally is an quick way to trigger most of the unit tests.
+1. Add an entry to [config.json](../jobs/config.json). Choose an appropriate [scenario](../scenarios) file and args. 
+
+1. If it's an e2e job, add foo.env to [jobs](../jobs), which defines environment variables your job will be using. You can reference it from other e2e jobs.
+
+1. Add your new job to [`test-infra/testgrid/config/config.yaml`](../testgrid/config/config.yaml), instruction can be found in [here](../testgrid/config/README.md).
+
+1. Make sure all presubmit tests pass. Running [`test-infra/jenkins/bootstrap_test.py`](jenkins/bootstrap_test.py) and `bazel test //...` locally is an quick way to trigger most of the unit tests.
 
