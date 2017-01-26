@@ -23,6 +23,8 @@ Job Builder](http://docs.openstack.org/infra/jenkins-job-builder/). Travis will
 run `jenkins/diff-job-config-patch.sh` to print out the XML diff between your
 change and master.
 
+The detail of [how to create new jobs can be found here](jenkins/README.md).
+
 ## Viewing Test Results
 
 * The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows the results
