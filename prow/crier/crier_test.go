@@ -122,12 +122,28 @@ func TestParseIssueComment(t *testing.T) {
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
-					Body: "--- | --- | ---\r\nfoo test | something | or other\r\n\r\n",
+					Body: "--- | --- | ---\nfoo test | something | or other\n\n",
 				},
 			},
 		},
 		{
 			name: "should delete a passing test",
+			r: Report{
+				Context: "bla test",
+				State:   github.StatusSuccess,
+			},
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "--- | --- | ---\nbla test | something | or other\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			expectedDeletes:  []int{123},
+			expectedContexts: []string{},
+		},
+		{
+			name: "should delete a passing test with \\r",
 			r: Report{
 				Context: "bla test",
 				State:   github.StatusSuccess,
@@ -142,6 +158,7 @@ func TestParseIssueComment(t *testing.T) {
 			expectedDeletes:  []int{123},
 			expectedContexts: []string{},
 		},
+
 		{
 			name: "should update a failed test",
 			r: Report{
@@ -151,7 +168,7 @@ func TestParseIssueComment(t *testing.T) {
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
-					Body: "--- | --- | ---\r\nbla test | something | or other\r\n\r\n" + commentTag,
+					Body: "--- | --- | ---\nbla test | something | or other\n\n" + commentTag,
 					ID:   123,
 				},
 			},
@@ -167,7 +184,7 @@ func TestParseIssueComment(t *testing.T) {
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
-					Body: "--- | --- | ---\r\nbla test | something | or other\r\nfoo test | wow | aye\r\n\r\n" + commentTag,
+					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow | aye\n\n" + commentTag,
 					ID:   123,
 				},
 			},
@@ -183,12 +200,12 @@ func TestParseIssueComment(t *testing.T) {
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
-					Body: "--- | --- | ---\r\nbla test | something | or other\r\nfoo test | wow such\r\n\r\n" + commentTag,
+					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow such\n\n" + commentTag,
 					ID:   123,
 				},
 				{
 					User: github.User{Login: "k8s-ci-robot"},
-					Body: "--- | --- | ---\r\nfoo test | beep | boop\r\n\r\n" + commentTag,
+					Body: "--- | --- | ---\nfoo test | beep | boop\n\n" + commentTag,
 					ID:   124,
 				},
 			},
