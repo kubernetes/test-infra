@@ -189,6 +189,14 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	return nil
 }
 
+func (h ApprovalHandler) unwrapAliases(ownerSet sets.String) sets.String {
+	aliases := h.features.Aliases
+	if aliases == nil || !aliases.IsEnabled {
+		return ownerSet
+	}
+	return aliases.Expand(ownerSet)
+}
+
 // findPeopleToApprove Takes the Owners Files that Are Needed for the PR and chooses a good
 // subset of Approvers that are guaranteed to cover all of them (exact cover)
 // This is a greedy approximation and not guaranteed to find the minimum number of OWNERS
@@ -199,7 +207,8 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 	copyOfFiles := sets.NewString()
 	for ownersFile := range ownersPaths {
 		// LeafApprovers removes the last part of a path for dirs and files, so we append owners to the path
-		leafApprovers := h.features.Repos.LeafApprovers(filepath.Join(ownersFile, ownersFileName))
+		leafApprovers := h.unwrapAliases(h.features.Repos.LeafApprovers(filepath.Join(ownersFile, ownersFileName)))
+
 		if len(leafApprovers) == 0 {
 			glog.Warning(fmt.Sprintf("Couldn't find valid approvers for %v", filepath.Join(ownersFile, ownersFileName)))
 			continue
@@ -361,8 +370,10 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 	// TODO: go through the files starting at the top of the tree
 	needsApproval := sets.NewString()
 	for _, file := range files {
-		fileOwners := h.features.Repos.Approvers(*file.Filename)
+		fileOwners := h.unwrapAliases(h.features.Repos.Approvers(*file.Filename))
+
 		ownersFile := h.features.Repos.FindOwnersForPath(*file.Filename)
+
 		hasApproved := fileOwners.Intersection(approverSet)
 		if len(hasApproved) != 0 {
 			ownersApprovers[ownersFile] = hasApproved
