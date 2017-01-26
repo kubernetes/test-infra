@@ -7,7 +7,9 @@ data:
   config.http-cache-dir: /cache/httpcache
   config.organization: kubernetes
   config.project: contrib
-  config.pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,needs-rebase,approval-handler
+  # Make sure approval-handler and blunderbuss run before submit-queue.
+  # Otherwise it's going to take an extra-cycle to detect the label change.
+  config.pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
   config.state: open
   config.token-file: /etc/secret-volume/token
   gitrepo.repo-dir: /gitrepos
