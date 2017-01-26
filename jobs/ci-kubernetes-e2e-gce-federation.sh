@@ -31,18 +31,21 @@ export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 # expected empty
 
 ### job-env
-export PROJECT="k8s-jkns-e2e-gce-federation"
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
-export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
 export FEDERATION="true"
-export DNS_ZONE_NAME="test-f8n.k8s.io."
-export FEDERATIONS_DOMAIN_MAP="federation=test-f8n.k8s.io"
-export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
-export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-e2e-gce-federation"
-export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+export USE_KUBEFED="true"
+
+export PROJECT="k8s-jkns-e2e-gce-federation"
+export KUBE_REGISTRY="gcr.io/k8s-jkns-e2e-gce-federation"
 export KUBE_GCS_RELEASE_BUCKET=kubernetes-federation-release
 export KUBE_GCS_DEV_RELEASE_BUCKET=kubernetes-federation-release
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
+export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
+
+export DNS_ZONE_NAME="test-f8n.k8s.io."
+export E2E_ZONES="us-central1-a us-central1-b us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
+export FEDERATIONS_DOMAIN_MAP="federation=test-f8n.k8s.io"
 
 ### post-env
 
