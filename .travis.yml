@@ -1,19 +1,18 @@
+# TODO(spxtr): Stop using travis. See #1342.
 branches:
   only:
     - master
-language: python
-python:
-    - "2.7"
+language: go
+go:
+    - 1.7.4
+go_import_path: k8s.io/test-infra
 services:
     - docker
-sudo: required
-before_install:
-    - docker pull gcr.io/google_containers/kubekins-job-builder:5
+# If this isn't overwritten then it will do a go get ./..., which is
+# annoying.
 install:
-# Create and move build under the go path
-    - mkdir -p $HOME/gopath/src/k8s.io
-    - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/test-infra
-    - cd $HOME/gopath/src/k8s.io/test-infra
+    - true
+# Do not add anything new here.
 script:
     - ./verify/verify-bazel.sh
     - ./jenkins/diff-job-config-patch.sh
