@@ -1266,7 +1266,8 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
             'kubernetes-e2e-cri-gce',
-            'kubernetes-e2e-gci-gce'
+            'kubernetes-e2e-gci-gce',
+            'kubernetes-e2e-gce-(?!gci)[a-z-]*release-1.[345]$'
         ]
             
         is_modern = lambda name: any(re.match(w, name) for w in whitelist)
@@ -1623,14 +1624,16 @@ class JobTest(unittest.TestCase):
                 scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
-                hasEnv = False
+                hasMatchingEnv = False
                 for arg in config[job].get('args', []):
                     m = re.match(r'--env-file=([^\"]+)', arg)
                     if m:
-                        hasEnv = True
-                        self.assertTrue(os.path.isfile(bootstrap.test_infra(m.group(1))), job)
+                        env = m.group(1)
+                        if env[5:-4] == job: # strip FOO from 'jobs/FOO.env'
+                            hasMatchingEnv = True
+                        self.assertTrue(os.path.isfile(bootstrap.test_infra(env)), job)
                 if config[job]['scenario'] == 'kubernetes_e2e':
-                    self.assertTrue(hasEnv)
+                    self.assertTrue(hasMatchingEnv)
 
 
 if __name__ == '__main__':
