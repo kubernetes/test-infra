@@ -62,7 +62,8 @@ def read_all(end, stream, append):
         line = stream.readline()
         if not line:
             return True  # Read everything
-        append(line[:-1])  # Ignore the \n at the end
+        # Strip \n at the end if any. Last line of file may not have one.
+        append(line.rstrip('\n'))
         # Is there more on the buffer?
         ret = select.select([stream.fileno()], [], [], 0.1)
         if not ret[0]:
@@ -345,7 +346,8 @@ def append_result(gsutil, path, build, version, passed):
                 cache = json.loads(gsutil.cat(path, gen))
                 if not isinstance(cache, list):
                     raise ValueError(cache)
-            except ValueError:
+            except ValueError as exc:
+                logging.warning('Failed to decode JSON: %s', exc)
                 cache = []
             except subprocess.CalledProcessError:  # gen doesn't exist
                 errors += 1
