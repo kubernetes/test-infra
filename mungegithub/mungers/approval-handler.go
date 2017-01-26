@@ -11,8 +11,7 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
-*/
+limitations under the License. */
 
 package mungers
 
@@ -109,10 +108,15 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 	approverSet := createApproverSet(comments, prAuthor)
 	ownersMap := h.getApprovedOwners(files, approverSet)
+	ownersFiles := getSortedKeys(ownersMap)
+
+	suggestedApprovers := h.findPeopleToApprove(sets.NewString(ownersFiles...))
+
+	assignApprovers(obj, suggestedApprovers)
 
 	isFullyApproved := prFullyApproved(ownersMap)
 
-	if err := h.updateNotification(obj, ownersMap, approverSet, isFullyApproved); err != nil {
+	if err := h.updateNotification(obj, ownersMap, approverSet, suggestedApprovers, isFullyApproved); err != nil {
 		return
 	}
 
@@ -127,6 +131,19 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		}
 	}
 
+}
+
+func assignApprovers(obj *github.MungeObject, suggestedApprovers sets.String) {
+	assignees := sets.NewString()
+	for _, user := range obj.Issue.Assignees {
+		assignees.Insert(*user.Login)
+	}
+
+	for approver := range suggestedApprovers {
+		if !assignees.Has(approver) {
+			obj.AssignPR(approver)
+		}
+	}
 }
 
 func prFullyApproved(ownersMap map[string]sets.String) bool {
@@ -152,7 +169,7 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	return *lastAdded.Actor.Login != botName
 }
 
-func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String, approverSet sets.String, isFullyApproved bool) error {
+func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String, approverSet, suggestedApprovers sets.String, isFullyApproved bool) error {
 	notificationMatcher := c.MungerNotificationName(approvalNotificationName)
 	comments, ok := obj.ListComments()
 	if !ok {
@@ -162,7 +179,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	notifications := c.FilterComments(comments, notificationMatcher)
 	latestNotification := notifications.GetLast()
 	if latestNotification == nil {
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
+		body := h.getMessage(obj, ownersMap, approverSet, suggestedApprovers, isFullyApproved)
 		return obj.WriteComment(body)
 	}
 
@@ -175,7 +192,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 	if latestApprove.CreatedAt.After(*latestNotification.CreatedAt) {
 		// if someone approved since the last comment, we should update the comment
 		glog.Infof("Latest approve was after last time notified")
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
+		body := h.getMessage(obj, ownersMap, approverSet, suggestedApprovers, isFullyApproved)
 		obj.DeleteComment(latestNotification)
 		return obj.WriteComment(body)
 	}
@@ -187,7 +204,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		// the PR was modified After our last notification, so we should update the approvers notification
 		// i.e. People that have formerly approved haven't necessarily approved of new changes
 		glog.Infof("PR Modified After Last Notification")
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
+		body := h.getMessage(obj, ownersMap, approverSet, suggestedApprovers, isFullyApproved)
 		obj.DeleteComment(latestNotification)
 		return obj.WriteComment(body)
 	}
@@ -227,13 +244,13 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 			}
 		}
 	}
-	// it's weird if the suggested set of Approvers changes every time the comment is updated
-	// so deterministically set order (can't just sort since that may unfairly skew selection)
-	sliceOfKeys := make([]string, len(approverCount))
+	// need to deterministically (and randomly) choose approvers
+	// can't just choose alphabetically and don't want to suggest new approvers every time we update notification
+	randomApproverPerm := make([]string, len(approverCount))
 	order := rand.Perm(len(approverCount))
 	i := 0
 	for approver := range approverCount {
-		sliceOfKeys[order[i]] = approver
+		randomApproverPerm[order[i]] = approver
 		i++
 	}
 
@@ -241,7 +258,7 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 	var bestPerson string
 	for copyOfFiles.Len() > 0 {
 		maxCovered := 0
-		for _, approver := range sliceOfKeys {
+		for _, approver := range randomApproverPerm {
 			filesCanApprove := approverCount[approver]
 			if filesCanApprove.Intersection(copyOfFiles).Len() > maxCovered {
 				maxCovered = len(filesCanApprove)
@@ -285,23 +302,33 @@ func removeSubdirs(dirList []string) sets.String {
 	return finalSet
 }
 
+func getSortedKeys(ownersMap map[string]sets.String) []string {
+	ownersFiles := make([]string, len(ownersMap))
+	i := 0
+	for path := range ownersMap {
+		ownersFiles[i] = path
+		i++
+	}
+	sort.Strings(ownersFiles)
+	return ownersFiles
+}
+
 // getMessage returns the comment body that we want the approval-handler to display on PRs
+// Params
+// 	- obj: mungeObj representing the PR
+// 	- ownersMap: map from list of files to people that have approved
+// 	- alreadyApproved: set containing ALL the people that have approved the PR
+// 	- suggestedApprovers: set containing ALL the people that we suggest to approve the PR
+// 	- isFullyApproved: bool indicating if PR fully approved or NOT
 // The comment shows:
 // 	- a list of approvers files (and links) needed to get the PR approved
 // 	- a list of approvers files with strikethroughs that already have an approver's approval
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String, alreadyApproved sets.String, isFullyApproved bool) string {
+func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String, alreadyApproved, suggestedApprovers sets.String, isFullyApproved bool) string {
 	// sort the keys so we always display OWNERS files in same order
-	sliceOfKeys := make([]string, len(ownersMap))
-	i := 0
-	for path := range ownersMap {
-		sliceOfKeys[i] = path
-		i++
-	}
-	sort.Strings(sliceOfKeys)
-
+	sortedOwnersFiles := getSortedKeys(ownersMap)
 	unapprovedOwners := sets.NewString()
 	context := bytes.NewBufferString("")
 	if len(alreadyApproved) != 0 {
@@ -310,7 +337,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	}
 
 	context.WriteString("Needs approval from an approver in each of these OWNERS Files:\n")
-	for _, path := range sliceOfKeys {
+	for _, path := range sortedOwnersFiles {
 		approverSet := ownersMap[path]
 		fullOwnersPath := filepath.Join(path, ownersFileName)
 		link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", obj.Org(), obj.Project(), fullOwnersPath)
@@ -326,8 +353,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	if unapprovedOwners.Len() > 0 {
 		context.WriteString("We suggest the following people:\n")
 		context.WriteString("cc ")
-		toBeAssigned := h.findPeopleToApprove(sets.NewString(sliceOfKeys...))
-		for person := range toBeAssigned.Difference(alreadyApproved) {
+		for person := range suggestedApprovers {
 			context.WriteString("@" + person + " ")
 		}
 	}
