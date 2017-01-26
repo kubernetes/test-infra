@@ -29,6 +29,10 @@ if [[ "${rc}" == 0 ]]; then
 fi
 
 if [[ "${rc}" == 0 ]]; then
+  make bazel-release && rc=$? || rc=$?
+fi
+
+if [[ "${rc}" == 0 ]]; then
   version=$(cat bazel-genfiles/version || true)
   if [[ -z "${version}" ]]; then
     echo "Kubernetes version missing; not uploading ci artifacts."
