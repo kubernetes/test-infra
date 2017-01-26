@@ -70,6 +70,9 @@ func OldStatus() *github.CombinedStatus {
 func TestOldUnitTestMunge(t *testing.T) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// Avoid a 5 second delay
+	github_util.SetCombinedStatusLifetime(time.Millisecond)
+
 	tests := []struct {
 		name     string
 		tested   bool
@@ -128,9 +131,11 @@ func TestOldUnitTestMunge(t *testing.T) {
 			w.Write(data)
 		})
 
-		config := &github_util.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github_util.Config{
+			Org:          "o",
+			Project:      "r",
+			BaseWaitTime: time.Nanosecond, // Avoid a 30 second delay
+		}
 		config.SetClient(client)
 
 		s := StaleGreenCI{}

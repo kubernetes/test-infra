@@ -207,7 +207,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.BlockingJobNames = []string{"foo"}
 	sq.WeakStableJobNames = []string{"bar"}
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
-	sq.githubE2EPollTime = 50 * time.Millisecond
+	sq.githubE2EPollTime = time.Millisecond
 
 	sq.clock = utilclock.NewFakeClock(time.Time{})
 	sq.lastMergeTime = sq.clock.Now()
