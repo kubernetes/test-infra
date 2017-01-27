@@ -16,6 +16,7 @@ spec:
         - /mungegithub
         - --dry-run=true
         - --stderrthreshold=INFO
+        - --period=$(LOOP_PERIOD)
         - --http-cache-dir=$(HTTP_CACHE_DIR)
         - --organization=$(ORGANIZATION)
         - --project=$(PROJECT)
@@ -87,6 +88,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: config.token-file
+          - name: LOOP_PERIOD
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.loop-period
           - name: PROTECTED_BRANCHES
             valueFrom:
               configMapKeyRef:
