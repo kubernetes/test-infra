@@ -1267,10 +1267,17 @@ class JobTest(unittest.TestCase):
         whitelist = [
             'kubernetes-e2e-cri-gce',
             'kubernetes-e2e-gci-gce',
-            'kubernetes-e2e-gce-(?!gci)[a-z-]*release-1.[345]$'
+            'kubernetes-e2e-gce'
+        ]
+
+        blacklist = [
+            'kubernetes-e2e-gce-gci',
+            'kubernetes-e2e-gce-enormous',
+            'kubernetes-e2e-gce-[0-9a-z-.]*-skew$',
+            'kubernetes-e2e-gce-[0-9a-z-.]*-upgrade-'
         ]
             
-        is_modern = lambda name: any(re.match(w, name) for w in whitelist)
+        is_modern = lambda name: any(re.match(w, name) for w in whitelist) and not any(re.match(b, name) for b in blacklist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)

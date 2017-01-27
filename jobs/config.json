@@ -831,6 +831,167 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1.5.env"
   ]
+},
+
+"ci-kubernetes-e2e-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-slow.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-serial.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-reboot.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-autoscaling-migs": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling-migs.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-flaky.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-scalability": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-scalability.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-container-vm": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-container-vm.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-master-on-cvm": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-master-on-cvm.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-proto": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-proto.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-examples": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-examples.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--cluster=bootstrap-e2e-gce-multizone",
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-multizone.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-federation": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-federation.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ha-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ha-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ingress.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-es-logging": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-es-logging.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-statefulset": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-statefulset.env"
+  ]
 }
 
 }
