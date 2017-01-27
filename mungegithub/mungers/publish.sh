@@ -18,14 +18,15 @@ set -o nounset
 set -o pipefail
 
 echo $@
-if [ ! $# -eq 4 ]; then
-    echo "usage: publish.sh destination_dir token temp_mem_dir commit_message. destination_dir and temp_mem_dir are expected to be absolute paths."
+if [ ! $# -eq 5 ]; then
+    echo "usage: publish.sh destination_dir destination_branch token netrc_dir commit_message. destination_dir and netrc_dir are expected to be absolute paths."
     exit 1
 fi
 DST="${1}"
-TOKEN="${2}"
-NETRCDIR="${3}"
-MESSAGE="${4}"
+DST_BRANCH="${2}"
+TOKEN="${3}"
+NETRCDIR="${4}"
+MESSAGE="${5}"
 # set up github token
 echo "machine github.com login ${TOKEN}" > "${NETRCDIR}"/.netrc
 rm -f ~/.netrc
@@ -42,7 +43,7 @@ if git diff --cached --exit-code &>/dev/null; then
     exit 0
 fi
 git commit -m "${MESSAGE}"
-git push origin master
+git push origin "${DST_BRANCH}"
 popd > /dev/null
 rm -f ~/.netrc
 rm -f "${NETRCDIR}"/.netrc
