@@ -11,12 +11,14 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License. */
+limitations under the License.
+*/
 
 package mungers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"path/filepath"
@@ -362,6 +364,11 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	title := "This PR is **NOT APPROVED**"
 	if isFullyApproved {
 		title = "This PR is **APPROVED**"
+	}
+	forMachine := map[string][]string{"approvers": suggestedApprovers.List()}
+	bytes, err := json.Marshal(forMachine)
+	if err == nil {
+		context.WriteString(fmt.Sprintf("\n<!-- META=%s -->", bytes))
 	}
 	notif := c.Notification{approvalNotificationName, title, context.String()}
 	return notif.String()
