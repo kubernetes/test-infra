@@ -1271,7 +1271,6 @@ class JobTest(unittest.TestCase):
         ]
 
         blacklist = [
-            'kubernetes-e2e-gce-gci',
             'kubernetes-e2e-gce-enormous',
             'kubernetes-e2e-gce-[0-9a-z-.]*-skew$',
             'kubernetes-e2e-gce-[0-9a-z-.]*-upgrade-'
