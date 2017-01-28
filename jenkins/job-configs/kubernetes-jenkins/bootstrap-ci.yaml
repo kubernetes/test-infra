@@ -985,9 +985,9 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-flaky:
         job-name: ci-kubernetes-e2e-gci-gke-flaky
-        timeout: 0
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-reboot:
         job-name: ci-kubernetes-e2e-gci-gke-reboot
