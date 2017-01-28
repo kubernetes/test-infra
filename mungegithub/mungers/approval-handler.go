@@ -368,7 +368,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	forMachine := map[string][]string{"approvers": suggestedApprovers.List()}
 	bytes, err := json.Marshal(forMachine)
 	if err == nil {
-		context.WriteString(fmt.Sprintf("\n<-- META=%s -->", bytes))
+		context.WriteString(fmt.Sprintf("\n<!-- META=%s -->", bytes))
 	}
 	notif := c.Notification{approvalNotificationName, title, context.String()}
 	return notif.String()
