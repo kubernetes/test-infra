@@ -42,7 +42,6 @@
   ]
 },
 
-
 "ci-kubernetes-cross-build": {
   "scenario": "kubernetes_build",
   "args": [
@@ -991,6 +990,270 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-statefulset.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1.3.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1.4.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1.5.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m57": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m57.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m56.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m55.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m54.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m53.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m52.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m57": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m57.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m56.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m55.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m54.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m53.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-serial-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m52.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m57": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m57.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m56": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m56.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m55": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m55.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m54": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m54.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m53": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m53.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m52": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m52.env"
   ]
 }
 

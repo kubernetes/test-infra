@@ -660,205 +660,205 @@
     - kubernetes-e2e-gce-gci-ci-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-master
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.3
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.4
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.5
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
 
     - kubernetes-e2e-gce-gci-qa-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-master
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m57
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m56
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m55
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m54
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m53:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m53
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m52:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m52
-        timeout: 0
-        json: 0
+        timeout: 70
+        json: 1
         trigger-job: 'ci-kubernetes-build'
 
     - kubernetes-e2e-gce-gci-ci-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-master
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
 
     - kubernetes-e2e-gce-gci-qa-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m57
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m56
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m53:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m53
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m52:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m52
-        timeout: 0
-        json: 0
+        timeout: 320
+        json: 1
         trigger-job: 'ci-kubernetes-build'
 
     - kubernetes-e2e-gce-gci-ci-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-master
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
 
     - kubernetes-e2e-gce-gci-qa-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-master
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m57
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m56
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m55
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m54
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m53:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m53
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m52:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m52
-        timeout: 0
-        json: 0
+        timeout: 170
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-docker:
         job-name: ci-kubernetes-e2e-gci-docker
