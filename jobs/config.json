@@ -1255,6 +1255,14 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m52.env"
   ]
+},
+
+"ci-kubernetes-e2e-gci-gke-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-flaky.env"
+  ]
 }
 
 }

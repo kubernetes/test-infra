@@ -1267,7 +1267,8 @@ class JobTest(unittest.TestCase):
         whitelist = [
             'kubernetes-e2e-cri-gce',
             'kubernetes-e2e-gci-gce',
-            'kubernetes-e2e-gce'
+            'kubernetes-e2e-gce',
+            'kubernetes-e2e-gci-gke-flaky'
         ]
 
         blacklist = [
