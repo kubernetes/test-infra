@@ -44,6 +44,8 @@ type Presubmit struct {
 	RerunCommand string `json:"rerun_command"`
 	// Whether or not to skip commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
+	// Do not run against these branches. Default is no branches.
+	SkipBranches []string `json:"skip_branches"`
 	// Only run against these branches. Default is all branches.
 	Branches []string `json:"branches"`
 	// Kubernetes pod spec.
@@ -57,6 +59,16 @@ type Presubmit struct {
 }
 
 func (ps Presubmit) RunsAgainstBranch(branch string) bool {
+	// Favor SkipBranches over Branches
+	if len(ps.SkipBranches) == 0 && len(ps.Branches) == 0 {
+		return true
+	}
+
+	for _, s := range ps.SkipBranches {
+		if s == branch {
+			return false
+		}
+	}
 	if len(ps.Branches) == 0 {
 		return true
 	}
@@ -79,14 +91,25 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name     string        `json:"name"`
-	Spec     *kube.PodSpec `json:"spec,omitempty"`
-	Branches []string      `json:"branches"`
+	Name         string        `json:"name"`
+	Spec         *kube.PodSpec `json:"spec,omitempty"`
+	SkipBranches []string      `json:"skip_branches"`
+	Branches     []string      `json:"branches"`
 
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
 func (ps Postsubmit) RunsAgainstBranch(branch string) bool {
+	// Favor Skips over Branches
+	if len(ps.SkipBranches) == 0 && len(ps.Branches) == 0 {
+		return true
+	}
+
+	for _, s := range ps.SkipBranches {
+		if s == branch {
+			return false
+		}
+	}
 	if len(ps.Branches) == 0 {
 		return true
 	}

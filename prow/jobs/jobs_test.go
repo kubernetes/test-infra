@@ -324,3 +324,43 @@ func TestListJobNames(t *testing.T) {
 		}
 	}
 }
+
+func TestRunAgainstBranch(t *testing.T) {
+	jobs := []Presubmit{
+		{
+			Name:         "a",
+			SkipBranches: []string{"s"},
+		},
+		{
+			Name:     "b",
+			Branches: []string{"r"},
+		},
+		{
+			Name:         "c",
+			SkipBranches: []string{"s"},
+			Branches:     []string{"r"},
+		},
+		{
+			Name:         "d",
+			SkipBranches: []string{"s"},
+			Branches:     []string{"s", "r"},
+		},
+		{
+			Name: "default",
+		},
+	}
+
+	for _, job := range jobs {
+		if job.Name == "default" {
+			if !job.RunsAgainstBranch("s") {
+				t.Errorf("Job %s should run branch s", job.Name)
+			}
+		} else if job.RunsAgainstBranch("s") {
+			t.Errorf("Job %s should not run branch s", job.Name)
+		}
+
+		if !job.RunsAgainstBranch("r") {
+			t.Errorf("Job %s should run branch r", job.Name)
+		}
+	}
+}
