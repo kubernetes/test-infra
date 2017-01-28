@@ -845,14 +845,24 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "pending",
 		},
 		{
-			name:     "Fail because changed after approval",
-			pr:       ValidPR(),
-			issue:    LGTMApprovedIssue(),
-			events:   OldApprovedEvents(),
-			commits:  Commits(), // Modified at time.Unix(7), 8, and 9
-			ciStatus: SuccessStatus(),
-			reason:   approvedEarly,
-			state:    "pending",
+			name:            "Approval Can Happen Before Code Changes",
+			pr:              ValidPR(),
+			issue:           LGTMApprovedIssue(),
+			events:          OldApprovedEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          merged,
+			state:           "success",
+			isMerged:        true,
+			retestsAvoided:  1,
+			imHeadSHA:       "mysha", // Set by ValidPR
+			imBaseSHA:       "mastersha",
+			masterCommit:    MasterCommit(),
 		},
 
 		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
