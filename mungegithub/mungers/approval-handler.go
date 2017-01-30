@@ -143,7 +143,7 @@ func assignApprovers(obj *github.MungeObject, suggestedApprovers sets.String) {
 
 	for approver := range suggestedApprovers {
 		if !assignees.Has(approver) {
-			obj.AssignPR(approver)
+			obj.AddAssignee(approver)
 		}
 	}
 }

@@ -87,9 +87,9 @@ func (h AssignUnassignHandler) Munge(obj *github.MungeObject) {
 
 	toAssign, toUnassign := h.getAssigneesAndUnassignees(obj, comments, fileList, potentialOwners)
 	for _, username := range toAssign.List() {
-		obj.AssignPR(username)
+		obj.AddAssignee(username)
 	}
-	obj.UnassignPR(toUnassign.List()...)
+	obj.RemoveAssignees(toUnassign.List()...)
 }
 
 // getAssigneesAndUnassignees checks to see when someone comments "/assign" or "/unassign"

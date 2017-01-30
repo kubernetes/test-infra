@@ -223,8 +223,8 @@ type analytics struct {
 	GetCombinedStatus    analytic
 	SetStatus            analytic
 	GetPR                analytic
-	AssignPR             analytic
-	UnassignPR           analytic
+	AddAssignee          analytic
+	RemoveAssignees      analytic
 	ClosePR              analytic
 	OpenPR               analytic
 	GetContents          analytic
@@ -263,7 +263,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "GetCombinedStatus\t%d\t\n", a.GetCombinedStatus.Count)
 	fmt.Fprintf(w, "SetStatus\t%d\t\n", a.SetStatus.Count)
 	fmt.Fprintf(w, "GetPR\t%d\t\n", a.GetPR.Count)
-	fmt.Fprintf(w, "AssignPR\t%d\t\n", a.AssignPR.Count)
+	fmt.Fprintf(w, "AddAssignee\t%d\t\n", a.AddAssignee.Count)
 	fmt.Fprintf(w, "ClosePR\t%d\t\n", a.ClosePR.Count)
 	fmt.Fprintf(w, "OpenPR\t%d\t\n", a.OpenPR.Count)
 	fmt.Fprintf(w, "GetContents\t%d\t\n", a.GetContents.Count)
@@ -1558,12 +1558,12 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, bool) {
 	return pr, true
 }
 
-// UnassignPR removes the passed-in assignees from the github PR's assignees list
-func (obj *MungeObject) UnassignPR(assignees ...string) error {
+// RemoveAssignees removes the passed-in assignees from the github PR's assignees list
+func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
-	config.analytics.UnassignPR.Call(config, nil)
-	glog.Infof("Unassigning %v from PR# %d  to %v", assignees, prNum)
+	config.analytics.RemoveAssignees.Call(config, nil)
+	glog.Infof("Unassigning %v from PR# %d to %v", assignees, prNum)
 	if config.DryRun {
 		return nil
 	}
@@ -1574,18 +1574,17 @@ func (obj *MungeObject) UnassignPR(assignees ...string) error {
 	return nil
 }
 
-// AssignPR will assign `prNum` to the `owner` where the `owner` is asignee's github login
-func (obj *MungeObject) AssignPR(owner string) error {
+// AddAssignee will assign `prNum` to the `owner` where the `owner` is asignee's github login
+func (obj *MungeObject) AddAssignee(owner string) error {
 	config := obj.config
 	prNum := *obj.Issue.Number
-	assignee := &github.IssueRequest{Assignee: &owner}
-	config.analytics.AssignPR.Call(config, nil)
-	glog.Infof("Assigning PR# %d  to %v", prNum, owner)
+	config.analytics.AddAssignee.Call(config, nil)
+	glog.Infof("Assigning PR# %d to %v", prNum, owner)
 	if config.DryRun {
 		return nil
 	}
-	if _, _, err := config.client.Issues.Edit(config.Org, config.Project, prNum, assignee); err != nil {
-		glog.Errorf("Error assigning issue# %d to %v: %v", prNum, owner, err)
+	if _, _, err := config.client.Issues.AddAssignees(config.Org, config.Project, prNum, []string{owner}); err != nil {
+		glog.Errorf("Error assigning issue #%d to %v: %v", prNum, owner, err)
 		return err
 	}
 	return nil
