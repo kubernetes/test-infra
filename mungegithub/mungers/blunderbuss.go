@@ -170,5 +170,5 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 	}
 	c := chance(potentialOwners[owner], weightSum)
 	glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned (previously assigned to %v)", *issue.Number, owner, c, github.DescribeUser(issue.Assignee))
-	obj.AssignPR(owner)
+	obj.AddAssignee(owner)
 }

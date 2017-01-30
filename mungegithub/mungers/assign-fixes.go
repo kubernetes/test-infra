@@ -87,9 +87,8 @@ func (a *AssignFixesMunger) Munge(obj *github.MungeObject) {
 			glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, a.AssignfixesReassign, github.DescribeUser(issue.Assignee))
 			continue
 		}
-		glog.Infof("Assigning %v to %v (previously assigned to %v)", *issue.Number, prOwner, github.DescribeUser(issue.Assignee))
-		// although it says "AssignPR" it's more generic than that and is really just an issue.
-		issueObj.AssignPR(prOwner)
+		glog.Infof("Assigning %v to %v", *issue.Number, prOwner)
+		issueObj.AddAssignee(prOwner)
 	}
 
 }
