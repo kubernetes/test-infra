@@ -55,6 +55,7 @@ go_library(
         "assign-unassign-handler.go",
         "block_paths.go",
         "blunderbuss.go",
+        "bulk-lgtm.go",
         "check-labels.go",
         "cherrypick-auto-approve.go",
         "cherrypick-clear-after-merge.go",
