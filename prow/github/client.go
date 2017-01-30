@@ -238,6 +238,23 @@ func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string
 	return nil
 }
 
+func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) error {
+	c.log("CreateIssueReaction", org, repo, ID, reaction)
+	if c.dry {
+		return nil
+	}
+	r := Reaction{Content: reaction}
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/repos/%s/%s/issues/%d/reactions", c.base, org, repo, ID), r)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return fmt.Errorf("response not 200 or 201: %s", resp.Status)
+	}
+	return nil
+}
+
 // ListIssueComments returns all comments on an issue. This may use more than
 // one API token.
 func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {

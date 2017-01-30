@@ -33,6 +33,10 @@ type FakeClient struct {
 	// org/repo#number:label
 	LabelsAdded   []string
 	LabelsRemoved []string
+
+	// org/repo#issuecommentid:reaction
+	IssueReactionsAdded   []string
+	CommentReactionsAdded []string
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
@@ -54,6 +58,16 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 		Body: comment,
 	})
 	f.IssueCommentID++
+	return nil
+}
+
+func (f *FakeClient) CreateCommentReaction(org, repo string, ID int, reaction string) error {
+	f.CommentReactionsAdded = append(f.CommentReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
+	return nil
+}
+
+func (f *FakeClient) CreateIssueReaction(org, repo string, ID int, reaction string) error {
+	f.IssueReactionsAdded = append(f.IssueReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
 	return nil
 }
 
