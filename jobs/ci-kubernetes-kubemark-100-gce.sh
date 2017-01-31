@@ -38,7 +38,6 @@ export E2E_TEST="false"
 export USE_KUBEMARK="true"
 export KUBEMARK_TESTS="\[Feature:Performance\]"
 export KUBEMARK_TEST_ARGS="--gather-resource-usage=true --garbage-collector-enabled=true"
-export CREATE_SERVICES="true"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 # Override defaults to be independent from GCE defaults and set kubemark parameters
 export NUM_NODES="3"
