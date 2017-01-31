@@ -59,8 +59,6 @@ export E2E_NAME="e2e-enormous-cluster"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\] \
     --kube-api-content-type=application/vnd.kubernetes.protobuf \
     --allowed-not-ready-nodes=20"
-# TODO: re-enable service creation after we debug problems with this suite
-# export CREATE_SERVICES="true"
 export CLUSTER_IP_RANGE="10.224.0.0/12"
 export NUM_NODES="500"
 export ALLOWED_NOTREADY_NODES="5"
