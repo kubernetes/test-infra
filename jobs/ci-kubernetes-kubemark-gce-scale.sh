@@ -49,7 +49,7 @@ export MASTER_SIZE="n1-standard-4"
 # Note: can fit about ~10 hollow nodes per core so NUM_NODES x
 # cores_per_node should be set accordingly.
 export NODE_SIZE="n1-standard-8"
-export KUBEMARK_MASTER_SIZE="n1-standard-32"
+export KUBEMARK_MASTER_SIZE="n1-standard-64"
 # Increase disk size to check if that helps for etcd latency.
 export MASTER_DISK_SIZE="100GB"
 export KUBEMARK_NUM_NODES="5000"
