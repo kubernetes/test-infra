@@ -86,9 +86,9 @@ export LOG_DUMP_SAVE_SERVICES="protokube"
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
 export GINKGO_PARALLEL="y"
-# This list should match the list in kubernetes-e2e-kops-aws.
-export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|NodeProblemDetector|Dashboard|Services.*functioning.*NodePort'
-# GINKGO_PARALLEL_NODES should match kubernetes-e2e-kops-aws.
+# This list should match the list in ci-kubernetes-e2e-kops-aws.
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort'
+# GINKGO_PARALLEL_NODES should match ci-kubernetes-e2e-kops-aws.
 export GINKGO_PARALLEL_NODES="30"
 
 # Assume we're upping, testing, and downing a cluster
