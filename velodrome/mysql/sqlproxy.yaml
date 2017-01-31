@@ -10,7 +10,7 @@ spec:
         app: github-sqlproxy
     spec:
       containers:
-      - image: b.gcr.io/cloudsql-docker/gce-proxy:1.05
+      - image: gcr.io/cloudsql-docker/gce-proxy:1.06
         name: github-sqlproxy
         command:
         - /cloud_sql_proxy
