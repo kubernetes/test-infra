@@ -28,27 +28,21 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 3 ]; then
-    echo "usage: $0 token src_branch dst_branch"
+if [ ! $# -eq 2 ]; then
+    echo "usage: $0 src_branch dst_branch"
     exit 1
 fi
 
-TOKEN="${1}"
 # src branch of k8s.io/kubernetes
-SRC_BRANCH="${2:-master}"
+SRC_BRANCH="${1:-master}"
 # dst branch of k8s.io/client-go
-DST_BRANCH="${3:-master}"
-readonly TOKEN SRC_BRANCH DST_BRANCH
+DST_BRANCH="${2:-master}"
+readonly SRC_BRANCH DST_BRANCH
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-
-git checkout "${DST_BRANCH}"
-
 source "${SCRIPT_DIR}"/util.sh
 
-set_github_token "${TOKEN}"
-trap cleanup_github_token EXIT SIGINT
-
+git checkout "${DST_BRANCH}"
 # this currently only updates commit hash of k8s.io/apimachinery
 update_godeps_json() {
     local godeps_json="./Godeps/Godeps.json"
