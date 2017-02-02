@@ -166,6 +166,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
+- name: kubernetes-e2e-gce-etcd3-release-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3-release-1.5
 - name: kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: kubernetes-e2e-gce-examples
@@ -957,6 +959,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce-es-logging
   - name: gce-etcd3
     test_group_name: kubernetes-e2e-gce-etcd3
+  - name: gce-etcd3-1.5
+    test_group_name: kubernetes-e2e-gce-etcd3-release-1.5
   - name: gci-gce-etcd3
     test_group_name: kubernetes-e2e-gci-gce-etcd3
   - name: gce-examples

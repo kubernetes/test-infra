@@ -495,6 +495,12 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
+    - kubernetes-e2e-gce-etcd3-release-1.5:
+        job-name: ci-kubernetes-e2e-gce-etcd3-release-1.5
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.5
         timeout: 200
