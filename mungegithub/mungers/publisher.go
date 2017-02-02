@@ -30,6 +30,9 @@ import (
 	"k8s.io/test-infra/mungegithub/github"
 )
 
+// the relative path from golang workspace to repos
+const goWorkspaceStructure = "src/k8s.io"
+
 // coordinate of a piece of code
 type coordinate struct {
 	repo   string
@@ -46,6 +49,10 @@ func (c coordinate) String() string {
 type repoRules struct {
 	dstRepo  string
 	srcToDst map[coordinate]coordinate
+	// if empty (e.g., for client-go), publisher will use its default publish script
+	publishScript string
+	// if publisher should abort the entire publishing cycle if a failure occurs when publishing dstRepo.
+	abortAllRepos bool
 }
 
 // PublisherMunger publishes content from one repository to another one.
@@ -78,6 +85,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	if len(p.baseDir) == 0 {
 		glog.Fatalf("--repo-dir is required with selected munger(s)")
 	}
+
 	clientGo := repoRules{
 		dstRepo: "client-go",
 		srcToDst: map[coordinate]coordinate{
@@ -87,7 +95,19 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 			coordinate{repo: config.Project, branch: "release-1.5", dir: "staging/src/k8s.io/client-go"}: coordinate{repo: "client-go", branch: "release-2.0", dir: "./"},
 		},
 	}
-	p.reposRules = []repoRules{clientGo}
+
+	apimachinery := repoRules{
+		dstRepo: "apimachinery",
+		srcToDst: map[coordinate]coordinate{
+			// rule for the apimachinery master branch
+			coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apimachinery"}: coordinate{repo: "apimachinery", branch: "master", dir: "./"},
+		},
+		publishScript: "/publish_scripts/apimachinery_sync_from_kubernetes.sh",
+		abortAllRepos: true,
+	}
+
+	// Order of the repos is sensitive. A dependent repo needs to be published first, so that other repos vendor the latest dependent repo.
+	p.reposRules = []repoRules{apimachinery, clientGo}
 	glog.Infof("pulisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
@@ -113,10 +133,11 @@ func clone(dst string, dstURL string) error {
 
 // construct checks out the source repo, copy the contents to the destination,
 // returns a commit message snippet and error.
+// this function is only used when publishing client-go.
 func construct(base, org string, src, dst coordinate) (string, error) {
 	srcRepoRoot := filepath.Join(base, src.repo)
 	srcDir := filepath.Join(base, src.repo, src.dir)
-	dstRepoRoot := filepath.Join(base, dst.repo)
+	dstRepoRoot := filepath.Join(base, goWorkspaceStructure, dst.repo)
 	curDir, err := os.Getwd()
 	if err != nil {
 		glog.Infof("Getwd failed")
@@ -180,55 +201,92 @@ find %s -depth -maxdepth 1 \( \
 	return commitMessage, nil
 }
 
+// the legacy code that publishes client-go
+func (p *PublisherMunger) publishClientGo(src, dst coordinate) error {
+	var commitMessage = "published by bot\n(https://github.com/kubernetes/test-infra/tree/master/mungegithub)\n\n"
+	if err := exec.Command("git", "checkout", dst.branch).Run(); err != nil {
+		glog.Errorf("Failed to checkout branch %s.\nError: %s", dst.branch, err)
+		return err
+	}
+	dstRepoRoot := filepath.Join(p.baseDir, goWorkspaceStructure, dst.repo)
+	snippet, err := construct(p.baseDir, p.githubConfig.Org, src, dst)
+	if err != nil {
+		glog.Errorf("Failed to construct %s.\nError: %s", dstRepoRoot, err)
+		return err
+	}
+	commitMessage += snippet
+	glog.Infof("Successfully construct %s", filepath.Join(dstRepoRoot, dst.dir))
+
+	// publish the destination branch
+	cmd := exec.Command("/publish_scripts/publish.sh", filepath.Join(dstRepoRoot, dst.dir), dst.branch, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage), p.baseDir)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)
+		return err
+	}
+	glog.Infof("Successfully publish %s: %s", dst, output)
+	return nil
+}
+
 // EachLoop is called at the start of every munge loop
 func (p *PublisherMunger) EachLoop() error {
 	var errlist []error
 Repos:
-	for _, rules := range p.reposRules {
+	for _, repoRules := range p.reposRules {
 		// clone the destination repo
-		dstDir := filepath.Join(p.baseDir, rules.dstRepo, "")
-		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, rules.dstRepo)
+		dstDir := filepath.Join(p.baseDir, goWorkspaceStructure, repoRules.dstRepo, "")
+		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, repoRules.dstRepo)
 		err := clone(dstDir, dstURL)
 		if err != nil {
 			glog.Errorf("Failed to clone %s.\nError: %s", dstURL, err)
 			errlist = append(errlist, err)
+			if repoRules.abortAllRepos {
+				glog.Errorf("abort the current publishing cycle")
+				break Repos
+			}
 			continue Repos
-		} else {
-			glog.Infof("Successfully clone %s", dstURL)
 		}
+		glog.Infof("Successfully clone %s", dstURL)
+
 		if err = os.Chdir(dstDir); err != nil {
 			glog.Errorf("Failed to chdir to %s.\nError: %s", dstDir, err)
 			errlist = append(errlist, err)
+			if repoRules.abortAllRepos {
+				glog.Errorf("abort the current publishing cycle")
+				break Repos
+			}
 			continue Repos
 		}
-		// construct the repo's branches and subdirs
-		for src, dst := range rules.srcToDst {
-			var commitMessage = "published by bot\n(https://github.com/kubernetes/test-infra/tree/master/mungegithub)\n\n"
-			if err = exec.Command("git", "checkout", dst.branch).Run(); err != nil {
-				glog.Errorf("Failed to checkout branch %s.\nError: %s", dst.branch, err)
-				errlist = append(errlist, err)
-				continue Repos
-			}
-			dstRepoRoot := filepath.Join(p.baseDir, dst.repo)
-			snippet, err := construct(p.baseDir, p.githubConfig.Org, src, dst)
-			if err != nil {
-				glog.Errorf("Failed to construct %s.\nError: %s", dstRepoRoot, err)
-				errlist = append(errlist, err)
-				continue Repos
-			} else {
-				commitMessage += snippet
-				glog.Infof("Successfully construct %s", filepath.Join(dstRepoRoot, dst.dir))
+		// work on the branches of the repo
+		for src, dst := range repoRules.srcToDst {
+			// currently apimachinery uses its own script
+			if len(repoRules.publishScript) != 0 {
+				// TODO: pass in the branches
+				cmd := exec.Command(repoRules.publishScript, p.githubConfig.Token(), p.netrcDir)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)
+					errlist = append(errlist, err)
+					if repoRules.abortAllRepos {
+						glog.Errorf("abort the current publishing cycle")
+						break Repos
+					}
+					continue
+				}
+				glog.Infof("Successfully publish %s: %s", dst, output)
+				continue
 			}
 
-			// publish the destination branch
-			cmd := exec.Command("/publish.sh", filepath.Join(dstRepoRoot, dst.dir), dst.branch, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage))
-			output, err := cmd.CombinedOutput()
+			// currently client-go takes this path.
+			// TODO: retire publishClientGo, centralize the code in client-go's publishScript.
+			err := p.publishClientGo(src, dst)
 			if err != nil {
-				glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)
 				errlist = append(errlist, err)
-				continue Repos
-			} else {
-				glog.Infof("Successfully publish %s: %s", dst, output)
+				if repoRules.abortAllRepos {
+					glog.Errorf("abort the current publishing cycle")
+					break Repos
+				}
+				continue
 			}
 		}
 	}
