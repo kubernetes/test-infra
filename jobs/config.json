@@ -784,6 +784,14 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-etcd3-release-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3-release-1.5.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-reboot-release-1.5": {
   "scenario": "kubernetes_e2e",
   "args": [
