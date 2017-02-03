@@ -39,6 +39,7 @@ import (
 const (
 	approvalNotificationName = "ApprovalNotifier"
 	approveCommand           = "APPROVE"
+	lgtmCommand              = "LGTM"
 	cancel                   = "cancel"
 	ownersFileName           = "OWNERS"
 )
@@ -152,6 +153,12 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	return *lastAdded.Actor.Login != botName
 }
 
+func getApproveComments(comments []*githubapi.IssueComment) c.FilteredComments {
+	approverMatcher := c.CommandName(approveCommand)
+	lgtmMatcher := c.CommandName(lgtmLabel)
+	return c.FilterComments(comments, c.Or{approverMatcher, lgtmMatcher})
+}
+
 func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String, approverSet sets.String, isFullyApproved bool) error {
 	notificationMatcher := c.MungerNotificationName(approvalNotificationName)
 	comments, ok := obj.ListComments()
@@ -166,7 +173,7 @@ func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap 
 		return obj.WriteComment(body)
 	}
 
-	latestApprove := c.FilterComments(comments, c.CommandName(approveCommand)).GetLast()
+	latestApprove := getApproveComments(comments).GetLast()
 	if latestApprove == nil || latestApprove.CreatedAt == nil {
 		// there was already a bot notification and nothing has changed since
 		// or we wouldn't tell when the latestApproval occurred
@@ -354,12 +361,11 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) sets.String {
 	approverSet := sets.NewString()
 
-	approverMatcher := c.CommandName(approveCommand)
-
-	for _, comment := range c.FilterComments(comments, approverMatcher) {
+	approveComments := getApproveComments(comments)
+	for _, comment := range approveComments {
 		commands := c.ParseCommands(comment)
 		for _, cmd := range commands {
-			if cmd.Name != approveCommand {
+			if cmd.Name != approveCommand && cmd.Name != lgtmCommand {
 				continue
 			}
 			if comment.User == nil || comment.User.Login == nil {
