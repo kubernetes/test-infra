@@ -1866,10 +1866,15 @@
 },
 
 "ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master": {
-  "scenario": "kubernetes_e2e",
+  "scenario": "kubernetes_upgrade",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master.env"
+    "--env=PROJECT=kube-gke-upg-1-3-1-4-upg-mas",
+    "--env=ZONE=us-central1-c",
+    "--env=KUBEKINS_TIMEOUT=600m",
+    "--old=1.3",
+    "--new=1.4",
+    "--image=container_vm"
   ]
 }
 

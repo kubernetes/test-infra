@@ -62,7 +62,7 @@ def main(args):
 
     # exec
 
-    print 'Starting %s...' % CONTAINER
+    print >>sys.stderr, 'Starting %s...' % CONTAINER
 
     cmd = [
       'docker', 'run', '--rm',
@@ -83,6 +83,20 @@ def main(args):
     if args.env_file:
         for env in args.env_file:
             cmd.extend(['--env-file', test_infra(env)])
+
+    # Handle upgrade job specific envs
+    cmd.extend([
+      '-e', 'E2E_OPT=--check_version_skew=false',
+      '-e', 'E2E_UPGRADE_TEST=true',
+      '-e', ('GINKGO_UPGRADE_TEST_ARGS=--ginkgo.focus=\\[Feature:MasterUpgrade\\]'
+             ' --upgrade-target=ci/latest-%s' % args.new),
+      '-e', 'JENKINS_PUBLISHED_SKEW_VERSION=ci/latest-%s' % args.new,
+      '-e', 'JENKINS_PUBLISHED_VERSION=ci/latest-%s' % args.old,
+      '-e', 'KUBE_GKE_IMAGE_TYPE=%s' % args.image])
+
+    for env in args.env:
+        key, val = env.split('=', 1)
+        cmd.extend(['-e', '%s=%s' % (key, val)])
 
     gce_ssh = '/workspace/.ssh/google_compute_engine'
     gce_pub = '%s.pub' % gce_ssh
@@ -146,17 +160,19 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+    PARSER.add_argument('--new', help='K8s version upgrades to')
+    PARSER.add_argument('--old', help='K8s version upgrades from')
+    PARSER.add_argument('--image', help='K8s image type')
+    PARSER.add_argument('--env', help='Job specific env vars')
 
     PARSER.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
         help='Path to .ssh/google_compute_engine keys')
-
     PARSER.add_argument(
         '--gce-pub',
         default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub gce ssh key')
-
     PARSER.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
@@ -172,6 +188,8 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     ARGS = PARSER.parse_args()
+    if not (ARGS.new and ARGS.old and ARGS.image):
+        raise argparse.ArgumentTypeError('--old, --new, --image must be set')
 
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
 

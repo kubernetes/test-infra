@@ -1635,12 +1635,22 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 hasMatchingEnv = False
                 for arg in config[job].get('args', []):
+                    # Test --env-file must exist, and e2e jobs must have an env file matches job name.
                     m = re.match(r'--env-file=([^\"]+)', arg)
                     if m:
                         env = m.group(1)
                         if env[5:-4] == job: # strip FOO from 'jobs/FOO.env'
                             hasMatchingEnv = True
                         self.assertTrue(os.path.isfile(bootstrap.test_infra(env)), job)
+
+                    # Test all --env flags are valid.
+                    jobenv = re.match(r'--env=([^\"]+)', arg)
+                    if jobenv:
+                        env = jobenv.group(1)
+                        self.assertNotIn('$', env)
+                        self.assertNotIn('"', env)
+                        self.assertEqual(len(env.split('=', 1)), 2)
+
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv)
 
