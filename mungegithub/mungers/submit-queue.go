@@ -874,7 +874,6 @@ const (
 	noLGTM                  = "PR does not have " + lgtmLabel + " label."
 	noApproved              = "PR does not have " + approvedLabel + " label."
 	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
-	approvedEarly           = "The PR was changed after the " + approvedLabel + " label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
 	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
@@ -981,14 +980,6 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	if sq.GateApproved {
 		if !obj.HasLabel(approvedLabel) {
 			sq.SetMergeStatus(obj, noApproved)
-			return false
-		}
-		// PR cannot change since approvedLabel was added
-		if after, ok := obj.ModifiedAfterLabeled(approvedLabel); !ok {
-			sq.SetMergeStatus(obj, unknown)
-			return false
-		} else if after {
-			sq.SetMergeStatus(obj, approvedEarly)
 			return false
 		}
 	}

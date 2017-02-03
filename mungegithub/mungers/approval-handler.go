@@ -97,8 +97,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	comments, ok := getCommentsAfterLastModified(obj)
-
+	comments, ok := obj.ListComments()
 	if !ok {
 		return
 	}
@@ -409,18 +408,4 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 		ownersApprovers[fn] = sets.NewString()
 	}
 	return ownersApprovers
-}
-
-// gets the comments since the obj was last changed.  If we can't figure out when the object was last changed
-// return all the comments on the issue
-func getCommentsAfterLastModified(obj *github.MungeObject) ([]*githubapi.IssueComment, bool) {
-	comments, ok := obj.ListComments()
-	if !ok {
-		return comments, ok
-	}
-	lastModified, ok := obj.LastModifiedTime()
-	if !ok {
-		return comments, ok
-	}
-	return c.FilterComments(comments, c.CreatedAfter(*lastModified)), true
 }
