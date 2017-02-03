@@ -117,6 +117,9 @@ message DashboardTab {
 
   // The URL template to visit when searching for changelists.
   LinkTemplate code_search_url_template = 12;
+
+  // A description paragraph to be displayed.
+  string description = 13;
 }
 
 // A service configuration consisting of multiple test groups and dashboards.
