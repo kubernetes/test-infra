@@ -1783,6 +1783,86 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-prod-smoke.env"
   ]
+},
+
+"ci-kubernetes-e2e-cri-gke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-slow.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-multizone": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-multizone.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-alpha-features": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-alpha-features.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-autoscaling": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-autoscaling.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-flaky": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-flaky.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-reboot": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-reboot.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-serial.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-updown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-updown.env"
+  ]
+},
+
+"ci-kubernetes-e2e-cri-gke-ingress": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gke-ingress.env"
+  ]
 }
 
 }
