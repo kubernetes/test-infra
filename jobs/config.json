@@ -1863,6 +1863,14 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-cri-gke-ingress.env"
   ]
+},
+
+"ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master.env"
+  ]
 }
 
 }

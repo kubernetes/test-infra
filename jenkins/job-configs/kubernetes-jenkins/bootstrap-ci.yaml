@@ -1417,9 +1417,9 @@
 
     - kubernetes-e2e-gke-1.3-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster
