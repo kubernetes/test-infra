@@ -41,31 +41,57 @@ func TestNormalize(t *testing.T) {
 }
 
 func TestOwnerList(t *testing.T) {
-	list := NewOwnerList(map[string]string{"Perf [performance]": "me"})
+	list := NewOwnerList(map[string]*OwnerInfo{"Perf [performance]": {
+		User: "me",
+		SIG:  "group",
+	}})
 	owner := list.TestOwner("perf [flaky]")
 	if owner != "me" {
 		t.Error("Unexpected return value ", owner)
 	}
+	sig := list.TestSIG("perf [flaky]")
+	if sig != "group" {
+		t.Error("Unexpected sig: ", sig)
+	}
 	owner = list.TestOwner("Unknown test")
 	if owner != "" {
 		t.Error("Unexpected return value ", owner)
+	}
+	sig = list.TestSIG("Unknown test")
+	if sig != "" {
+		t.Error("Unexpected sig: ", sig)
 	}
 }
 
 func TestOwnerGlob(t *testing.T) {
-	list := NewOwnerList(map[string]string{"blah * [performance] test *": "me"})
+	list := NewOwnerList(map[string]*OwnerInfo{"blah * [performance] test *": {
+		User: "me",
+		SIG:  "group",
+	}})
 	owner := list.TestOwner("blah 200 test foo")
 	if owner != "me" {
 		t.Error("Unexpected return value ", owner)
+	}
+	sig := list.TestSIG("blah 200 test foo")
+	if sig != "group" {
+		t.Error("Unexpected sig: ", sig)
 	}
 	owner = list.TestOwner("Unknown test")
 	if owner != "" {
 		t.Error("Unexpected return value ", owner)
 	}
+	sig = list.TestSIG("Unknown test")
+	if sig != "" {
+		t.Error("Unexpected sig: ", sig)
+	}
 }
 
 func TestOwnerListDefault(t *testing.T) {
-	list := NewOwnerList(map[string]string{"DEFAULT": "elves"})
+	list := NewOwnerList(map[string]*OwnerInfo{"DEFAULT": {
+		User: "elves",
+		SIG:  "group",
+	}})
+
 	owner := list.TestOwner("some random new test")
 	if owner != "elves" {
 		t.Error("Unexpected return value ", owner)
@@ -73,7 +99,9 @@ func TestOwnerListDefault(t *testing.T) {
 }
 
 func TestOwnerListRandom(t *testing.T) {
-	list := NewOwnerList(map[string]string{"testname": "a/b/c/d"})
+	list := NewOwnerList(map[string]*OwnerInfo{"testname": {
+		User: "a/b/c/d",
+	}})
 	counts := map[string]int{"a": 0, "b": 0, "c": 0, "d": 0}
 	for i := 0; i < 1000; i++ {
 		counts[list.TestOwner("testname")]++
@@ -86,10 +114,10 @@ func TestOwnerListRandom(t *testing.T) {
 }
 
 func TestOwnerListFromCsv(t *testing.T) {
-	r := bytes.NewReader([]byte(",,header nonsense,\n" +
-		",owner,suggested owner,name\n" +
-		",foo,other,Test name\n" +
-		",bar,foo,other test\n"))
+	r := bytes.NewReader([]byte(",,,header nonsense,\n" +
+		",owner,suggested owner,name,sig\n" +
+		",foo,other,Test name,Node\n" +
+		",bar,foo,other test,Windows\n"))
 	list, err := NewOwnerListFromCsv(r)
 	if err != nil {
 		t.Error(err)
@@ -97,8 +125,14 @@ func TestOwnerListFromCsv(t *testing.T) {
 	if owner := list.TestOwner("test name"); owner != "foo" {
 		t.Error("unexpected return value ", owner)
 	}
+	if sig := list.TestSIG("test name"); sig != "Node" {
+		t.Error("unexpected sig value ", sig)
+	}
 	if owner := list.TestOwner("other test"); owner != "bar" {
 		t.Error("unexpected return value ", owner)
+	}
+	if sig := list.TestSIG("other test"); sig != "Windows" {
+		t.Error("unexpected sig value ", sig)
 	}
 }
 
@@ -110,7 +144,7 @@ func TestReloadingOwnerList(t *testing.T) {
 	defer os.Remove(tempfile.Name())
 	defer tempfile.Close()
 	writer := bufio.NewWriter(tempfile)
-	_, err = writer.WriteString("owner,name\nfoo,flake\n")
+	_, err = writer.WriteString("owner,name,sig\nfoo,flake,Scheduling\n")
 	if err != nil {
 		t.Error(err)
 	}
@@ -125,14 +159,19 @@ func TestReloadingOwnerList(t *testing.T) {
 	if owner := list.TestOwner("flake"); owner != "foo" {
 		t.Error("unexpected owner for 'flake': ", owner)
 	}
+	if sig := list.TestSIG("flake"); sig != "Scheduling" {
+		t.Error("unexpected sig value ", sig)
+	}
 
 	// Assuming millisecond resolution on our FS, this sleep
 	// ensures the mtime will change with the next write.
 	time.Sleep(5 * time.Millisecond)
 
+	// Clear file and reset writing offset
+	tempfile.Truncate(0)
 	tempfile.Seek(0, os.SEEK_SET)
 	writer.Reset(tempfile)
-	_, err = writer.WriteString("owner,name\nbar,flake\n")
+	_, err = writer.WriteString("owner,name,sig\nbar,flake,AWS\n")
 	if err != nil {
 		t.Error(err)
 	}
@@ -143,5 +182,8 @@ func TestReloadingOwnerList(t *testing.T) {
 
 	if owner := list.TestOwner("flake"); owner != "bar" {
 		t.Error("unexpected owner for 'flake': ", owner)
+	}
+	if sig := list.TestSIG("flake"); sig != "AWS" {
+		t.Error("unexpected sig value ", sig)
 	}
 }

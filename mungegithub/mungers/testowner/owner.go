@@ -41,22 +41,34 @@ func normalize(name string) string {
 	return strings.ToLower(strings.TrimSpace(string(squeezed)))
 }
 
+// OwnerInfo stores the SIG and user which have responsibility for the test.
+type OwnerInfo struct {
+	// User assigned to this test.
+	User string
+	// SIG holding responsibility for this test.
+	SIG string
+}
+
+func (o OwnerInfo) String() string {
+	return "OwnerInfo{User:'" + o.User + "', SIG:'" + o.SIG + "'}"
+}
+
 // OwnerList uses a map to get owners for a given test name.
 type OwnerList struct {
-	mapping map[string]string
+	mapping map[string]*OwnerInfo
 	rng     *rand.Rand
 }
 
-// TestOwner returns the owner for a test, an owner from default if present,
-// or else the empty string if none is found.
-func (o *OwnerList) TestOwner(testName string) string {
+// get returns the Owner for the test with the exact name or the first blob match. Nil is returned
+// if none are matched.
+func (o *OwnerList) get(testName string) (owner *OwnerInfo) {
 	name := normalize(testName)
 
 	// exact mapping
-	owner, _ := o.mapping[name]
+	owner, _ = o.mapping[name]
 
 	// glob matching
-	if owner == "" {
+	if owner == nil {
 		keys := []string{}
 		for k := range o.mapping {
 			keys = append(keys, k)
@@ -65,14 +77,27 @@ func (o *OwnerList) TestOwner(testName string) string {
 		for _, k := range keys {
 			if match, _ := filepath.Match(k, name); match {
 				owner = o.mapping[k]
-				break
+				return
 			}
 		}
+	}
+	return
+}
+
+// TestOwner returns the owner for a test, an owner from default if present,
+// or else the empty string if none is found.
+func (o *OwnerList) TestOwner(testName string) (owner string) {
+	ownerInfo := o.get(testName)
+	if ownerInfo != nil {
+		owner = ownerInfo.User
 	}
 
 	// falls into default
 	if owner == "" {
-		owner, _ = o.mapping["default"]
+		ownerInfo, _ = o.mapping["default"]
+		if ownerInfo != nil {
+			owner = ownerInfo.User
+		}
 	}
 
 	if strings.Contains(owner, "/") {
@@ -82,11 +107,20 @@ func (o *OwnerList) TestOwner(testName string) string {
 	return owner
 }
 
+// TestSIG returns the SIG assigned to a test, or else the empty string if none is found.
+func (o *OwnerList) TestSIG(testName string) string {
+	ownerInfo := o.get(testName)
+	if ownerInfo == nil {
+		return ""
+	}
+	return ownerInfo.SIG
+}
+
 // NewOwnerList constructs an OwnerList given a mapping from test names to test owners.
-func NewOwnerList(mapping map[string]string) *OwnerList {
+func NewOwnerList(mapping map[string]*OwnerInfo) *OwnerList {
 	list := OwnerList{}
 	list.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
-	list.mapping = make(map[string]string)
+	list.mapping = make(map[string]*OwnerInfo)
 	for input, output := range mapping {
 		list.mapping[normalize(input)] = output
 	}
@@ -101,21 +135,28 @@ func NewOwnerListFromCsv(r io.Reader) (*OwnerList, error) {
 	if err != nil {
 		return nil, err
 	}
-	mapping := make(map[string]string)
+	mapping := make(map[string]*OwnerInfo)
 	ownerCol := -1
 	nameCol := -1
+	sigCol := -1
 	for _, record := range records {
-		if ownerCol == -1 || nameCol == -1 {
+		if ownerCol == -1 || nameCol == -1 || sigCol == -1 {
 			for col, val := range record {
 				switch strings.ToLower(val) {
 				case "owner":
 					ownerCol = col
 				case "name":
 					nameCol = col
+				case "sig":
+					sigCol = col
 				}
+
 			}
 		} else {
-			mapping[record[nameCol]] = record[ownerCol]
+			mapping[record[nameCol]] = &OwnerInfo{
+				User: record[ownerCol],
+				SIG:  record[sigCol],
+			}
 		}
 	}
 	if len(mapping) == 0 {
@@ -151,6 +192,16 @@ func (o *ReloadingOwnerList) TestOwner(testName string) string {
 		// Process using the previous data.
 	}
 	return o.ownerList.TestOwner(testName)
+}
+
+// TestSIG returns the SIG for a test, or the empty string if none is found.
+func (o *ReloadingOwnerList) TestSIG(testName string) string {
+	err := o.reload()
+	if err != nil {
+		glog.Errorf("Unable to reload test owners at %s: %v", o.path, err)
+		// Process using the previous data.
+	}
+	return o.ownerList.TestSIG(testName)
 }
 
 func (o *ReloadingOwnerList) reload() error {
