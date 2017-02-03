@@ -267,6 +267,7 @@ def distill_events(events):
     bots = [
         'k8s-bot',
         'k8s-ci-robot',
+        'k8s-merge-robot',
         'k8s-oncall',
         'k8s-reviewable',
     ]
