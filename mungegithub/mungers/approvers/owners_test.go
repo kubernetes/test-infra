@@ -35,6 +35,7 @@ const (
 type FakeRepo struct {
 	ApproversMap     map[string]sets.String
 	LeafApproversMap map[string]sets.String
+	Approverless     sets.String
 }
 
 func (f FakeRepo) Org() string {
@@ -64,6 +65,10 @@ func (f FakeRepo) FindApproverOwnersForPath(path string) string {
 	return ""
 }
 
+func (f FakeRepo) IsApproverlessFile(path string) bool {
+	return f.Approverless.Has(path)
+}
+
 type dir struct {
 	fullPath  string
 	approvers sets.String
@@ -76,7 +81,7 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func createFakeRepo(la map[string]sets.String) FakeRepo {
+func createFakeRepo(la map[string]sets.String, approverless sets.String) FakeRepo {
 	// github doesn't use / at the root
 	a := map[string]sets.String{}
 	for dir, approvers := range la {
@@ -93,7 +98,7 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 		}
 	}
 
-	return FakeRepo{ApproversMap: a, LeafApproversMap: la}
+	return FakeRepo{ApproversMap: a, LeafApproversMap: la, Approverless: approverless}
 }
 func TestCreateFakeRepo(t *testing.T) {
 	rootApprovers := sets.NewString("Alice", "Bob")
@@ -102,6 +107,7 @@ func TestCreateFakeRepo(t *testing.T) {
 	cApprovers := sets.NewString("Chris", "Carol")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -109,7 +115,7 @@ func TestCreateFakeRepo(t *testing.T) {
 		"c":       cApprovers,
 		"a/combo": edcApprovers,
 	}
-	fake_repo := createFakeRepo(FakeRepoMap)
+	fake_repo := createFakeRepo(FakeRepoMap, approverless)
 
 	tests := []struct {
 		testName              string
@@ -168,6 +174,7 @@ func TestGetLeafApprovers(t *testing.T) {
 	aApprovers := sets.NewString("Art", "Anne")
 	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":    rootApprovers,
 		"a":   aApprovers,
@@ -212,7 +219,7 @@ func TestGetLeafApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		oMap := testOwners.GetLeafApprovers()
 		if !reflect.DeepEqual(test.expectedMap, oMap) {
 			t.Errorf("Failed for test %v.  Expected Owners: %v. Actual Owners %v", test.testName, test.expectedMap, oMap)
@@ -224,6 +231,7 @@ func TestGetOwnersSet(t *testing.T) {
 	aApprovers := sets.NewString("Art", "Anne")
 	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":    rootApprovers,
 		"a":   aApprovers,
@@ -257,6 +265,11 @@ func TestGetOwnersSet(t *testing.T) {
 			expectedOwnersFiles: sets.NewString("a"),
 		},
 		{
+			testName:            "Two Leaf File PR; One Doesn't NeedApproval",
+			filenames:           []string{"a/approverless", "b/test.go"},
+			expectedOwnersFiles: sets.NewString("b"),
+		},
+		{
 			testName:            "Two Leaf File PR",
 			filenames:           []string{"a/test.go", "b/test.go"},
 			expectedOwnersFiles: sets.NewString("a", "b"),
@@ -269,7 +282,7 @@ func TestGetOwnersSet(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		oSet := testOwners.GetOwnersSet()
 		if !oSet.Equal(test.expectedOwnersFiles) {
 			t.Errorf("Failed for test %v.  Expected Owners: %v. Actual Owners %v", test.testName, test.expectedOwnersFiles, oSet)
@@ -278,12 +291,13 @@ func TestGetOwnersSet(t *testing.T) {
 }
 
 func TestGetSuggestedApprovers(t *testing.T) {
-	var rootApprovers = sets.NewString("Alice", "Bob")
-	var aApprovers = sets.NewString("Art", "Anne")
-	var bApprovers = sets.NewString("Bill", "Ben", "Barbara")
-	var dApprovers = sets.NewString("David", "Dan", "Debbie")
-	var eApprovers = sets.NewString("Eve", "Erin")
-	var edcApprovers = eApprovers.Union(dApprovers)
+	rootApprovers := sets.NewString("Alice", "Bob")
+	aApprovers := sets.NewString("Art", "Anne")
+	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
+	dApprovers := sets.NewString("David", "Dan", "Debbie")
+	eApprovers := sets.NewString("Eve", "Erin")
+	edcApprovers := eApprovers.Union(dApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	var FakeRepoMap = map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -300,6 +314,11 @@ func TestGetSuggestedApprovers(t *testing.T) {
 		{
 			testName:       "Empty PR",
 			filenames:      []string{},
+			expectedOwners: []sets.String{},
+		},
+		{
+			testName:       "No Approvers Needed",
+			filenames:      []string{"approverless", "a/approverless"},
 			expectedOwners: []sets.String{},
 		},
 		{
@@ -340,7 +359,7 @@ func TestGetSuggestedApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		suggested := testOwners.GetSuggestedApprovers(testOwners.GetShuffledApprovers())
 		for _, ownersSet := range test.expectedOwners {
 			if ownersSet.Intersection(suggested).Len() == 0 {
@@ -359,6 +378,7 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -421,7 +441,7 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		all := testOwners.GetAllPotentialApprovers()
 		if !reflect.DeepEqual(all, test.expectedApprovers) {
 			t.Errorf("Failed for test %v.  Didn't correct approvers list.  Expected: %v. Found %v", test.testName, test.expectedApprovers, all)
@@ -437,6 +457,7 @@ func TestFindMostCoveringApprover(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverlessFile")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -497,7 +518,7 @@ func TestFindMostCoveringApprover(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		bestPerson := findMostCoveringApprover(testOwners.GetAllPotentialApprovers(), testOwners.GetReverseMap(), test.unapproved)
 		if test.expectedMostCovering.Intersection(sets.NewString(bestPerson)).Len() != 1 {
 			t.Errorf("Failed for test %v.  Didn't correct approvers list.  Expected: %v. Found %v", test.testName, test.expectedMostCovering, bestPerson)
@@ -512,6 +533,7 @@ func TestGetReverseMap(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverlessFile")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -553,7 +575,7 @@ func TestGetReverseMap(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED}
 		calculatedRevMap := testOwners.GetReverseMap()
 		if !reflect.DeepEqual(calculatedRevMap, test.expectedRevMap) {
 			t.Errorf("Failed for test %v.  Didn't find correct reverse map.", test.testName)
@@ -578,6 +600,7 @@ func TestGetShuffledApprovers(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverlessFile")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -625,7 +648,7 @@ func TestGetShuffledApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.seed}
+		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: test.seed}
 		calculated := testOwners.GetShuffledApprovers()
 		if !reflect.DeepEqual(test.expectedOrder, calculated) {
 			t.Errorf("Failed for test %v.  Expected unapproved files: %v. Found %v", test.testName, test.expectedOrder, calculated)

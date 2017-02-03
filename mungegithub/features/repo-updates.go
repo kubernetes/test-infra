@@ -44,9 +44,10 @@ const (
 )
 
 type assignmentConfig struct {
-	Assignees []string `json:"assignees" yaml:"assignees"`
-	Approvers []string `json:"approvers" yaml:"approvers"`
-	Reviewers []string `json:"reviewers" yaml:"reviewers"`
+	Assignees    []string `json:"assignees" yaml:"assignees"`
+	Approvers    []string `json:"approvers" yaml:"approvers"`
+	Reviewers    []string `json:"reviewers" yaml:"reviewers"`
+	Approverless []string `json:"approverless,omitempty" yaml:"approverless,omitempty"`
 }
 
 // RepoInfo provides information about users in OWNERS files in a git repo
@@ -55,11 +56,12 @@ type RepoInfo struct {
 	EnableMdYaml bool
 	UseReviewers bool
 
-	enabled    bool
-	projectDir string
-	approvers  map[string]sets.String
-	reviewers  map[string]sets.String
-	config     *github.Config
+	enabled      bool
+	projectDir   string
+	approvers    map[string]sets.String
+	reviewers    map[string]sets.String
+	approverless map[string]sets.String
+	config       *github.Config
 }
 
 func init() {
@@ -119,6 +121,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		o.approvers[path] = sets.NewString(c.Approvers...)
 		o.approvers[path].Insert(c.Assignees...)
 		o.reviewers[path] = sets.NewString(c.Reviewers...)
+		o.approverless[path] = sets.NewString(c.Approverless...)
 		return nil
 	}
 
@@ -148,6 +151,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	o.approvers[path] = sets.NewString(c.Approvers...)
 	o.approvers[path].Insert(c.Assignees...)
 	o.reviewers[path] = sets.NewString(c.Reviewers...)
+	o.approverless[path] = sets.NewString(c.Approverless...)
 	return nil
 }
 
@@ -184,6 +188,7 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 	o.approvers = map[string]sets.String{}
 	o.reviewers = map[string]sets.String{}
+	o.approverless = map[string]sets.String{}
 	err = filepath.Walk(o.projectDir, o.walkFunc)
 	if err != nil {
 		glog.Errorf("Got error %v", err)
@@ -191,6 +196,7 @@ func (o *RepoInfo) updateRepoUsers() error {
 	glog.Infof("Loaded config from %s:%s", o.projectDir, sha)
 	glog.V(5).Infof("approvers: %v", o.approvers)
 	glog.V(5).Infof("reviewers: %v", o.reviewers)
+	glog.V(5).Infof("approverless files: %v", o.approverless)
 	return nil
 }
 
@@ -364,4 +370,14 @@ func (o *RepoInfo) Reviewers(path string) sets.String {
 		return o.Approvers(path)
 	}
 	return peopleForPath(path, o.reviewers, false, o.EnableMdYaml)
+}
+
+// IsApproverlessFile takes a path to a file as input and returns a bool
+// indicating whether the specified file does NOT require approval
+func (o *RepoInfo) IsApproverlessFile(path string) bool {
+	dir, fn := filepath.Split(path)
+	dir = canonicalize(dir)
+	noApprovalNeeded, _ := o.approverless[dir]
+	return noApprovalNeeded.Has(fn)
+
 }

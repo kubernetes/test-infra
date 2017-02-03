@@ -40,6 +40,7 @@ type RepoInterface interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForPath(path string) string
+	IsApproverlessFile(filename string) bool
 }
 
 type RepoAlias struct {
@@ -61,8 +62,13 @@ func (r *RepoAlias) Approvers(path string) sets.String {
 func (r *RepoAlias) LeafApprovers(path string) sets.String {
 	return r.alias.Expand(r.repo.LeafApprovers(path))
 }
+
 func (r *RepoAlias) FindApproverOwnersForPath(path string) string {
 	return r.repo.FindApproverOwnersForPath(path)
+}
+
+func (r *RepoAlias) IsApproverlessFile(path string) bool {
+	return r.repo.IsApproverlessFile(path)
 }
 
 type Owners struct {
@@ -186,6 +192,9 @@ func (o Owners) GetSuggestedApprovers(potentialApprovers []string) sets.String {
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
 	for _, fn := range o.filenames {
+		if o.repo.IsApproverlessFile(fn) {
+			continue
+		}
 		owners.Insert(o.repo.FindApproverOwnersForPath(fn))
 	}
 	return removeSubdirs(owners.List())
