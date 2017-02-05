@@ -488,13 +488,11 @@ if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
   e2e_go_args+=("--timeout=${KUBEKINS_TIMEOUT}")
 fi
 
-"$(dirname "${0}")/kubetest" ${E2E_OPT:-} "${e2e_go_args[@]}"
-
-if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
-  # Use plaintext version file packaged with kubernetes.tar.gz
-  echo "Publish version to ci/latest-green.txt: $(cat version)"
-  gsutil cp ./version "gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt"
+if [[ -n "${E2E_PUBLISH_PATH:-}" ]]; then
+  e2e_go_args+=(--publish="${E2E_PUBLISH_PATH}")
 fi
+
+"$(dirname "${0}")/kubetest" ${E2E_OPT:-} "${e2e_go_args[@]}"
 
 if [[ "${JENKINS_SOAK_MODE:-}" == "y" && ${E2E_UP:-} == "true" ]]; then
   # We deployed a cluster, save state to gcs

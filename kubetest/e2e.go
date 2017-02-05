@@ -44,6 +44,7 @@ var (
 	down                 = flag.Bool("down", false, "If true, tear down the cluster before exiting.")
 	dump                 = flag.String("dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	kubemark             = flag.Bool("kubemark", false, "If true, run kubemark tests.")
+	publish              = flag.String("publish", "", "Publish version to the specified gs:// path on success")
 	skewTests            = flag.Bool("skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
 	testArgs             = flag.String("test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	test                 = flag.Bool("test", false, "Run Ginkgo tests.")
@@ -256,6 +257,17 @@ func run(deploy deployer) error {
 				return DiffResources(beforeResources, upResources, downResources, afterResources, *dump)
 			}))
 		}
+	}
+	if len(errs) == 0 && *publish != "" {
+		errs = appendError(errs, xmlWrap("Publish version", func() error {
+			// Use plaintext version file packaged with kubernetes.tar.gz
+			if v, err := ioutil.ReadFile("version"); err != nil {
+				return err
+			} else {
+				log.Printf("Set %s version to %s", *publish, string(v))
+			}
+			return finishRunning(exec.Command("gsutil", "cp", "version", *publish))
+		}))
 	}
 
 	if len(errs) != 0 {
