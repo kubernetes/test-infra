@@ -36,11 +36,12 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
-	client *http.Client
-	token  string
-	base   string
-	dry    bool
-	fake   bool
+	client  *http.Client
+	botName string
+	token   string
+	base    string
+	dry     bool
+	fake    bool
 }
 
 const (
@@ -51,32 +52,35 @@ const (
 )
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(token string) *Client {
+func NewClient(botName, token string) *Client {
 	return &Client{
-		client: &http.Client{},
-		token:  token,
-		base:   githubBase,
-		dry:    false,
+		client:  &http.Client{},
+		botName: botName,
+		token:   token,
+		base:    githubBase,
+		dry:     false,
 	}
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(token string) *Client {
+func NewDryRunClient(botName, token string) *Client {
 	return &Client{
-		client: &http.Client{},
-		token:  token,
-		base:   githubBase,
-		dry:    true,
+		client:  &http.Client{},
+		botName: botName,
+		token:   token,
+		base:    githubBase,
+		dry:     true,
 	}
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
-func NewFakeClient() *Client {
+func NewFakeClient(botName string) *Client {
 	return &Client{
-		fake: true,
-		dry:  true,
+		botName: botName,
+		fake:    true,
+		dry:     true,
 	}
 }
 
@@ -159,6 +163,10 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 	// for POST.
 	req.Close = true
 	return c.client.Do(req)
+}
+
+func (c *Client) BotName() string {
+	return c.botName
 }
 
 // IsMember returns whether or not the user is a member of the org.

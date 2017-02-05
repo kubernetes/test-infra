@@ -214,7 +214,7 @@ func TestParseIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		deletes, entries := parseIssueComments(tc.r, tc.ics)
+		deletes, entries := parseIssueComments(tc.r, "k8s-ci-robot", tc.ics)
 		if len(deletes) != len(tc.expectedDeletes) {
 			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 		} else {

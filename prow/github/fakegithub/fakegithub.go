@@ -39,6 +39,10 @@ type FakeClient struct {
 	CommentReactionsAdded []string
 }
 
+func (f *FakeClient) BotName() string {
+	return "k8s-ci-robot"
+}
+
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	for _, m := range f.OrgMembers {
 		if m == user {

@@ -56,6 +56,7 @@ type Server struct {
 }
 
 type GitHubClient interface {
+	BotName() string
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -110,13 +111,13 @@ func (s *Server) Run() {
 // parseIssueComments returns a list of comments to delete along with a list
 // of table entries for the new comment. If there are no table entries then
 // don't make a new comment.
-func parseIssueComments(r Report, ics []github.IssueComment) ([]int, []string) {
+func parseIssueComments(r Report, botName string, ics []github.IssueComment) ([]int, []string) {
 	var delete []int
 	var previousComments []int
 	var entries []string
 	// First accumulate result entries and comment IDs
 	for _, ic := range ics {
-		if ic.User.Login != "k8s-ci-robot" {
+		if ic.User.Login != botName {
 			continue
 		}
 		// Old report comments started with the context. Delete them.
@@ -247,7 +248,7 @@ func (s *Server) handle(r Report) error {
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	deletes, entries := parseIssueComments(r, ics)
+	deletes, entries := parseIssueComments(r, s.ghc.BotName(), ics)
 	for _, delete := range deletes {
 		if err := s.ghc.DeleteComment(r.RepoOwner, r.RepoName, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)

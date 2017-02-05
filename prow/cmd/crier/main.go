@@ -31,6 +31,7 @@ import (
 
 var (
 	port            = flag.Int("port", 8888, "port to listen on")
+	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 )
@@ -47,9 +48,9 @@ func main() {
 
 	var ghc *github.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret)
+		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
 	} else {
-		ghc = github.NewClient(oauthSecret)
+		ghc = github.NewClient(*githubBotName, oauthSecret)
 	}
 
 	cs := crier.NewServer(ghc)
