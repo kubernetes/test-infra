@@ -488,12 +488,7 @@ if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
   e2e_go_args+=("--timeout=${KUBEKINS_TIMEOUT}")
 fi
 
-e2e_go="$(dirname "${0}")/e2e.go"
-if [[ ! -f "${e2e_go}" || -e "./hack/jenkins/.use_head_e2e" ]]; then
-  echo "Using HEAD version of e2e.go."
-  e2e_go="./hack/e2e.go"
-fi
-go run "${e2e_go}" ${E2E_OPT:-} "${e2e_go_args[@]}"
+"$(dirname "${0}")/kubetest" ${E2E_OPT:-} "${e2e_go_args[@]}"
 
 if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
   # Use plaintext version file packaged with kubernetes.tar.gz

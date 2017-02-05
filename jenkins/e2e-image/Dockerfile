@@ -51,26 +51,38 @@ RUN apt-get update && \
 
 RUN cd /tmp && \
     git clone https://github.com/google/jsonnet.git && \
-    ( cd jsonnet && \
-      make jsonnet && \
-      cp jsonnet /bin \
-    ) && \
-    rm -rf /tmp/jsonnet
-
-RUN mkdir -p /tmp/terraform/ && \
-    ( cd /tmp/terraform && \
-      wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
-      unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /bin \
-    ) && \
+    cd jsonnet && \
+    make jsonnet && \
+    cp jsonnet /bin && \
+    rm -rf /tmp/jsonnet && \
+    mkdir -p /tmp/terraform/ && \
+    cd /tmp/terraform && \
+    wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /bin && \
     rm -rf /tmp/terraform
+
+ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
+     "/workspace/"]
+ENV PATH=/google-cloud-sdk/bin:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
+RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
+    /google-cloud-sdk/install.sh \
+        --disable-installation-options \
+        --bash-completion=false \
+        --path-update=false \
+        --usage-reporting=false && \
+    gcloud components install beta && \
+    gcloud components install alpha && \
+    gcloud info | tee /workspace/gcloud-info.txt
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
+    "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "https://raw.githubusercontent.com/kubernetes/test-infra/master/kubetest/e2e.go", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/upload-to-gcs.sh", "/workspace/sh2ju.sh"]
+RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/sh2ju.sh"]
+WORKDIR "/workspace"
 
 ENTRYPOINT "/workspace/e2e-runner.sh"
