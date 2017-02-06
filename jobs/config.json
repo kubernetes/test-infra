@@ -432,6 +432,14 @@
   ]
 },
 
+"ci-kubernetes-e2e-cri-gce-garbage": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-cri-gce-garbage.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gci-gce-release-1.3": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -693,6 +701,14 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gci-gce-statefulset.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-garbage": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gce-garbage.env"
   ]
 },
 
@@ -1001,6 +1017,14 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-garbage": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-garbage.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-gci-ci-master": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -1262,6 +1286,35 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m52.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-docker": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gce-docker.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-enormous-teardown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-teardown.env"
   ]
 },
 
@@ -1606,6 +1659,30 @@
   "args": [
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-ingress.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-large-cluster.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-large-deploy.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-large-teardown": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-large-teardown.env"
   ]
 },
 

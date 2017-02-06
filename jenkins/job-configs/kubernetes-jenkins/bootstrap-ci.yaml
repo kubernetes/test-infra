@@ -184,21 +184,21 @@
     # gce-manual-jobs #gmarek
     - kubernetes-e2e-gce-enormous-cluster:
         job-name: ci-kubernetes-e2e-gce-enormous-cluster
-        timeout: 0
+        timeout: 1500
         frequency: '' #manual
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-enormous-deploy:
         job-name: ci-kubernetes-e2e-gce-enormous-deploy
-        timeout: 0
+        timeout: 320
         frequency: '' #manual
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-enormous-teardown:
         job-name: ci-kubernetes-e2e-gce-enormous-teardown
-        timeout: 0
+        timeout: 200
         frequency: '' #manual
-        json: 0
+        json: 1
         trigger-job: ''
 
     # gci-gce-master
@@ -601,6 +601,12 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gce-garbage:
+        job-name: ci-kubernetes-e2e-gce-garbage
+        timeout: 620
+        frequency: 'H H/6 * * *'
+        json: 1
+        trigger-job: ''
 
     # gci-gce-features
     - kubernetes-e2e-gci-gce-ingress:
@@ -621,17 +627,17 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-garbage:
-        job-name: ci-kubernetes-e2e-garbage
-        timeout: 0
+    - kubernetes-e2e-gci-gce-garbage:
+        job-name: ci-kubernetes-e2e-gci-gce-garbage
+        timeout: 620
         frequency: 'H H/6 * * *'
-        json: 0
+        json: 1
         trigger-job: ''
-    - kubernetes-e2e-garbage-gci:
-        job-name: ci-kubernetes-e2e-garbage-gci
-        timeout: 0
+    - kubernetes-e2e-gci-gce-docker:
+        job-name: ci-kubernetes-e2e-gci-gce-docker
+        timeout: 70
         frequency: 'H H/6 * * *'
-        json: 0
+        json: 1
         trigger-job: ''
 
     # cri-gce-features
@@ -653,13 +659,12 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-garbage-cri:
-        job-name: ci-kubernetes-e2e-garbage-cri
-        timeout: 0
+    - kubernetes-e2e-cri-gce-garbage:
+        job-name: ci-kubernetes-e2e-cri-gce-garbage
+        timeout: 620
         frequency: 'H H/6 * * *'
-        json: 0
+        json: 1
         trigger-job: ''
-
     # END GCE
 
     # START GCE-GCI
@@ -866,12 +871,6 @@
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gci-docker:
-        job-name: ci-kubernetes-e2e-gci-docker
-        timeout: 0
-        frequency: 'H H/6 * * *'
-        json: 0
-        trigger-job: ''
     # END GCE-GCI
 
 
@@ -941,21 +940,21 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
-        timeout: 0
+        timeout: 620
         frequency: '0 17 * * *'
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
-        timeout: 0
+        timeout: 1220
         frequency: '' #manual
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-large-teardown:
         job-name: ci-kubernetes-e2e-gke-large-teardown
-        timeout: 0
+        timeout: 200
         frequency: '' #manual
-        json: 0
+        json: 1
         trigger-job: ''
 
     # gci-gke-master
