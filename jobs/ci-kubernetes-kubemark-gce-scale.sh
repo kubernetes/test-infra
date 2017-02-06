@@ -42,7 +42,8 @@ export KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS="--kube-api-qps=100 --kube-api-burs
 export TEST_CLUSTER_MAX_REQUESTS_INFLIGHT="--max-requests-inflight=1500 --max-mutating-requests-inflight=500"
 # Increase throughput in Load test.
 export LOAD_TEST_THROUGHPUT=25
-export CREATE_SERVICES="true"
+# TODO: Temporarily disable services.
+export CREATE_SERVICES="false"
 # Override defaults to be independent from GCE defaults and set kubemark parameters
 # We need 11 so that we won't hit max-pods limit (set to 100). TODO: do it in a nicer way.
 export NUM_NODES="60"
