@@ -22,9 +22,13 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 ENV GOPATH=/
 RUN go get github.com/tools/godep
+WORKDIR "/src/github.com/tools/godep"
+RUN git checkout tags/v75
+RUN go install ./... 
+WORKDIR "/"
 
 CMD ["/mungegithub", "--dry-run", "--token-file=/token"]
 
 ADD mungegithub /mungegithub
-ADD mungers/publish_scripts/publish.sh /publish_scripts/publish.sh
+ADD mungers/publish_scripts/clientgo_publish.sh /publish_scripts/clientgo_publish.sh
 ADD mungers/publish_scripts/apimachinery_sync_from_kubernetes.sh /publish_scripts/apimachinery_sync_from_kubernetes.sh

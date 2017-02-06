@@ -218,7 +218,7 @@ func (p *PublisherMunger) publishClientGo(src, dst coordinate) error {
 	glog.Infof("Successfully construct %s", filepath.Join(dstRepoRoot, dst.dir))
 
 	// publish the destination branch
-	cmd := exec.Command("/publish_scripts/publish.sh", filepath.Join(dstRepoRoot, dst.dir), dst.branch, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage), p.baseDir)
+	cmd := exec.Command("/publish_scripts/clientgo_publish.sh", filepath.Join(dstRepoRoot, dst.dir), dst.branch, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage), p.baseDir)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)

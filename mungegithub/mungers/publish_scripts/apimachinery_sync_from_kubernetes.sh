@@ -42,7 +42,7 @@ ln -s "${NETRCDIR}"/.netrc ~/.netrc
 git config --global user.email "k8s-publish-robot@users.noreply.github.com"
 git config --global user.name "Kubernetes Publisher"
 
-dir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX")
+dir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
 
 git remote add upstream-kube https://github.com/kubernetes/kubernetes.git || true
 git fetch upstream-kube
