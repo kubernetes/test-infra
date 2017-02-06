@@ -50,6 +50,11 @@ def sig_handler(_signo, _frame):
     check(['docker', 'stop', CONTAINER])
 
 
+def kubekins(tag):
+    """Return full path to kubekins-e2e:tag."""
+    return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-locals
@@ -60,13 +65,10 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    e2e_image_tag = 'v20170104-9031f1d'
-    e2e_image_tag_override = '%s/hack/jenkins/.kubekins_e2e_image_tag' % workspace
-    if os.path.isfile(e2e_image_tag_override):
-        with open(e2e_image_tag_override) as tag:
-            e2e_image_tag = tag.read()
-
-    # exec
+    try:  # Pull a newer version if one exists
+        check('docker', 'pull', kubekins(args.tag))
+    except subprocess.CalledProcessError:
+        pass
 
     print 'Starting %s...' % CONTAINER
 
@@ -139,7 +141,7 @@ def main(args):
         if key not in docker_env_ignore:
             cmd.extend(['-e', '%s=%s' % (key, value)])
 
-    cmd.append('gcr.io/k8s-testimages/kubekins-e2e:%s' % e2e_image_tag)
+    cmd.append(kubekins(args.tag))
 
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGINT, sig_handler)
@@ -177,6 +179,8 @@ if __name__ == '__main__':
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
+    PARSER.add_argument(
+        '--tag', default='v20170104-9031f1d', help='Use a specific kubekins-e2e tag if set')
     ARGS = PARSER.parse_args()
 
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))

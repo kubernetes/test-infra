@@ -17,9 +17,14 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 all: build
 
-build:
+kubetest:
+	go build -o kubetest ../../kubetest
+
+
+build: kubetest
 	docker build -t $(IMG):$(TAG) .
 	docker tag $(IMG):$(TAG) $(IMG):latest
+	rm kubetest
 	@echo Built $(IMG):$(TAG) and tagged with latest
 
 push: build

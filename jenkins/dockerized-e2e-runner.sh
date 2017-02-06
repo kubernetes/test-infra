@@ -30,6 +30,9 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 : ${JENKINS_GCE_SSH_PRIVATE_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine'}
 : ${JENKINS_GCE_SSH_PUBLIC_KEY_FILE:='/var/lib/jenkins/gce_keys/google_compute_engine.pub'}
 
+# DO NOT CHANGE THIS VALUE. THIS FILE IS DEPRECATED.
+# Job changes requiring a new image require first updating the job to use the
+# kubernetes_e2e.py scenario, which requires setting --json for the job.
 KUBEKINS_E2E_IMAGE_TAG='v20170104-9031f1d'
 KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
 if [[ -r "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}" ]]; then
