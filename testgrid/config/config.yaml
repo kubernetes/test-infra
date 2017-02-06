@@ -136,6 +136,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
+- name: kubernetes-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: kubernetes-e2e-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features
 - name: kubernetes-e2e-gci-gce-alpha-features
@@ -1960,6 +1962,9 @@ dashboards:
     test_group_name: test-infra-test-history
   - name: testgrid-config-upload
     test_group_name: testgrid-config-upload
+  - name: gce-canary
+    description: Runs a smoke test using the latest e2e image
+    test_group_name: kubernetes-e2e-gce-canary
 
 - name: sq-blocking
   dashboard_tab:

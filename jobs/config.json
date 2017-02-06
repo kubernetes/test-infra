@@ -848,6 +848,17 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-canary": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-canary.env",
+    "--cluster=canary-e2e",
+    "--tag=latest"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-slow": {
   "scenario": "kubernetes_e2e",
   "args": [
