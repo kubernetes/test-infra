@@ -29,6 +29,10 @@ type fakeGitHub struct {
 	lastIC int
 }
 
+func (f *fakeGitHub) BotName() string {
+	return "k8s-ci-robot"
+}
+
 func (f *fakeGitHub) CreateStatus(org, repo, ref string, s github.Status) error {
 	f.status = s
 	return nil

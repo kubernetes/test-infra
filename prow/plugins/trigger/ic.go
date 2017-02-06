@@ -43,7 +43,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// Skip bot comments.
-	if author == "k8s-bot" || author == "k8s-ci-robot" {
+	if author == c.GitHubClient.BotName() {
 		return nil
 	}
 

@@ -50,6 +50,7 @@ var (
 
 	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
 
+	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 )
@@ -66,7 +67,10 @@ func main() {
 		logrus.Print("HMAC Secret: abcde12345")
 		webhookSecret = []byte("abcde12345")
 
-		githubClient = github.NewFakeClient()
+		if *githubBotName == "" {
+			*githubBotName = "fake-robot"
+		}
+		githubClient = github.NewFakeClient(*githubBotName)
 		githubClient.Logger = logrus.StandardLogger()
 
 		kubeClient = kube.NewFakeClient()
@@ -96,10 +100,13 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to parse DRY_RUN environment variable.")
 		}
 
+		if *githubBotName == "" {
+			logrus.Fatal("Must specify --github-bot-name.")
+		}
 		if dry {
-			githubClient = github.NewDryRunClient(oauthSecret)
+			githubClient = github.NewDryRunClient(*githubBotName, oauthSecret)
 		} else {
-			githubClient = github.NewClient(oauthSecret)
+			githubClient = github.NewClient(*githubBotName, oauthSecret)
 		}
 
 		kubeClient, err = kube.NewClientInCluster("default")
