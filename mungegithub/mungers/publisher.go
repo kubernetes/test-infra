@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/sync"
 )
 
 // the relative path from golang workspace to repos
@@ -62,10 +63,16 @@ type PublisherMunger struct {
 	// base for all repos
 	baseDir string
 	// location to write the netrc file needed for github authentication
-	netrcDir     string
+	netrcDir string
+	// location of the glog output
+	glogDir      string
 	reposRules   []repoRules
 	features     *features.Features
 	githubConfig *github.Config
+	// issueCacher and issueSyncer are used when publisher needs to open issues
+	// for errors occurred during publishing repos
+	issueCacher *IssueCacher
+	issueSyncer *sync.IssueSyncer
 }
 
 func init() {
@@ -111,6 +118,15 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	glog.Infof("pulisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
+
+	// initialize issueCacher and issueSyncer
+	for _, m := range GetAllMungers() {
+		if m.Name() == "issue-cacher" {
+			p.issueCacher = m.(*IssueCacher)
+			glog.Infof("CHAO: found issueCacher!")
+		}
+	}
+	p.issueSyncer = sync.NewIssueSyncer(config, p.issueCacher, nil)
 	return nil
 }
 
@@ -230,6 +246,12 @@ func (p *PublisherMunger) publishClientGo(src, dst coordinate) error {
 
 // EachLoop is called at the start of every munge loop
 func (p *PublisherMunger) EachLoop() error {
+	// foxish: does this mean the first loop is always skipped?
+	if !p.issueCacher.Synced() {
+		glog.Infof("issue-cache is not synced. publisher robot is skipping this run.")
+		return nil
+	}
+
 	var errlist []error
 Repos:
 	for _, repoRules := range p.reposRules {
@@ -290,12 +312,29 @@ Repos:
 			}
 		}
 	}
-	return errors.NewAggregate(errlist)
+
+	// create an issue or update an existing issue to report the failed
+	// publisher run
+	aggregated := errors.NewAggregate(errlist)
+	if len(errlist) != 0 {
+		glog.Flush()
+		// maxLogLength is the estimated number of characters of the log created
+		// in each run of the publisher
+		var maxLogLength = int64(15000)
+		log, err := readLog(p.glogDir, maxLogLength)
+		if err != nil {
+			glog.Errorf("failed to extract log: %s", err)
+			return aggregated
+		}
+		p.issueSyncer.Sync(&publisherFailure{aggregated, log})
+	}
+	return aggregated
 }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (p *PublisherMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&p.netrcDir, "netrc-dir", "", "Location to write the netrc file needed for github authentication.")
+	cmd.Flags().StringVar(&p.glogDir, "glog-dir", "", "Location of the glog output file")
 }
 
 // Munge is the workhorse the will actually make updates to the PR

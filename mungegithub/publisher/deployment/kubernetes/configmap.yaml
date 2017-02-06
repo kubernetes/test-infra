@@ -13,3 +13,4 @@ data:
   gitrepo.repo-dir: /gitrepos
   config.period: "24h"
   publisher.netrc-dir: /netrc
+  publisher.glog-dir: /publisher_log
