@@ -16,7 +16,13 @@ go_binary(
 
 go_library(
     name = "go_default_library",
-    srcs = ["e2e.go"],
+    srcs = [
+        "anywhere.go",
+        "bash.go",
+        "e2e.go",
+        "kops.go",
+        "util.go",
+    ],
     tags = ["automanaged"],
 )
 
