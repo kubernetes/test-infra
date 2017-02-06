@@ -1329,6 +1329,60 @@
   ]
 },
 
+"ci-kubernetes-kubemark-5-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-5-gce.env",
+    "--docker-in-docker"
+  ]
+},
+
+"ci-kubernetes-kubemark-5-gce-1.5": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-5-gce-1.5.env",
+    "--docker-in-docker"
+  ]
+},
+
+"ci-kubernetes-kubemark-100-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-100-gce.env",
+    "--docker-in-docker"
+  ]
+},
+
+"ci-kubernetes-kubemark-high-density-100-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-high-density-100-gce.env",
+    "--docker-in-docker"
+  ]
+},
+
+"ci-kubernetes-kubemark-500-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-500-gce.env",
+    "--docker-in-docker"
+  ]
+},
+
+"ci-kubernetes-kubemark-gce-scale": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-kubemark-gce-scale.env",
+    "--docker-in-docker"
+  ]
+},
+
 "ci-kubernetes-e2e-gci-gke": {
   "scenario": "kubernetes_e2e",
   "args": [
