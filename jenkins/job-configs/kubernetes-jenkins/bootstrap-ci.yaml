@@ -179,7 +179,13 @@
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
-        trigger-job: 'ci-kubernetes-build'
+        trigger-job: 'ci-kubernetes-federation-build'
+    - kubernetes-e2e-gce-federation-serial:
+        job-name: ci-kubernetes-e2e-gce-federation-serial
+        timeout: 920
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-federation-build'
     - kubernetes-e2e-gce-ha-master:
         job-name: ci-kubernetes-e2e-gce-ha-master
         timeout: 240

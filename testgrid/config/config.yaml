@@ -176,6 +176,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-examples
 - name: kubernetes-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
+- name: kubernetes-e2e-gce-federation-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-serial
 - name: kubernetes-e2e-gci-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-federation
 - name: kubernetes-e2e-gce-federation-release-1.4
@@ -1620,6 +1622,8 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: kubernetes-e2e-gce-federation
+  - name: gce-serial
+    test_group_name: kubernetes-e2e-gce-federation-serial
   - name: gci-gce
     test_group_name: kubernetes-e2e-gci-gce-federation
   - name: gce-1.4
