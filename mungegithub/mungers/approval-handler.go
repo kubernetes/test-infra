@@ -202,13 +202,27 @@ func (h ApprovalHandler) unwrapAliases(ownerSet sets.String) sets.String {
 	return aliases.Expand(ownerSet)
 }
 
+func getRandomizedKeys(approverOwnersfiles map[string]sets.String) []string {
+	sliceOfKeys := make([]string, 0, len(approverOwnersfiles))
+	for approver := range approverOwnersfiles {
+		sliceOfKeys = append(sliceOfKeys, approver)
+	}
+	sort.Strings(sliceOfKeys)
+	order := rand.Perm(len(approverOwnersfiles))
+	shuffledList := make([]string, 0, len(approverOwnersfiles))
+	for i := range sliceOfKeys {
+		shuffledList = append(shuffledList, sliceOfKeys[order[i]])
+	}
+	return shuffledList
+}
+
 // findPeopleToApprove Takes the Owners Files that Are Needed for the PR and chooses a good
 // subset of Approvers that are guaranteed to cover all of them (exact cover)
 // This is a greedy approximation and not guaranteed to find the minimum number of OWNERS
 func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.String {
 
 	// approverCount contains a map: person -> set of relevant OWNERS file they are in
-	approverCount := make(map[string]sets.String)
+	approverOwnersfiles := make(map[string]sets.String)
 	copyOfFiles := sets.NewString()
 	for ownersFile := range ownersPaths {
 		// LeafApprovers removes the last part of a path for dirs and files, so we append owners to the path
@@ -220,29 +234,23 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 		}
 		copyOfFiles.Insert(ownersFile)
 		for approver := range leafApprovers {
-			if _, ok := approverCount[approver]; ok {
-				approverCount[approver].Insert(ownersFile)
+			if _, ok := approverOwnersfiles[approver]; ok {
+				approverOwnersfiles[approver].Insert(ownersFile)
 			} else {
-				approverCount[approver] = sets.NewString(ownersFile)
+				approverOwnersfiles[approver] = sets.NewString(ownersFile)
 			}
 		}
 	}
 	// it's weird if the suggested set of Approvers changes every time the comment is updated
 	// so deterministically set order (can't just sort since that may unfairly skew selection)
-	sliceOfKeys := make([]string, len(approverCount))
-	order := rand.Perm(len(approverCount))
-	i := 0
-	for approver := range approverCount {
-		sliceOfKeys[order[i]] = approver
-		i++
-	}
+	randomizedApprovers := getRandomizedKeys(approverOwnersfiles)
 
 	approverGroup := sets.NewString()
 	var bestPerson string
 	for copyOfFiles.Len() > 0 {
 		maxCovered := 0
-		for _, approver := range sliceOfKeys {
-			filesCanApprove := approverCount[approver]
+		for _, approver := range randomizedApprovers {
+			filesCanApprove := approverOwnersfiles[approver]
 			if filesCanApprove.Intersection(copyOfFiles).Len() > maxCovered {
 				maxCovered = len(filesCanApprove)
 				bestPerson = approver
@@ -254,7 +262,7 @@ func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.Strin
 		// remove all files in the directories that our approver approved AND
 		// in the subdirectories that s/he approved.  HasPrefix finds subdirs
 		for fn := range copyOfFiles {
-			for approvedFile := range approverCount[bestPerson] {
+			for approvedFile := range approverOwnersfiles[bestPerson] {
 				if strings.HasPrefix(fn, approvedFile) {
 					toDelete.Insert(fn)
 				}
