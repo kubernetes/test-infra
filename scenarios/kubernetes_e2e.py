@@ -47,7 +47,7 @@ def check(*cmd):
 def sig_handler(_signo, _frame):
     """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
     print >>sys.stderr, 'signo = %s, frame = %s' % (_signo, _frame)
-    check(['docker', 'stop', CONTAINER])
+    check('docker', 'stop', CONTAINER)
 
 
 def kubekins(tag):
