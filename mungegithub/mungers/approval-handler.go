@@ -331,11 +331,11 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 		}
 	}
 	context.WriteString("\n")
-	toBeAssigned := sets.NewString()
+	suggestedApprovers := h.findPeopleToApprove(sets.NewString(sliceOfKeys...))
+	toBeAssigned := suggestedApprovers.Difference(alreadyApproved)
 	if unapprovedOwners.Len() > 0 {
 		context.WriteString("We suggest the following people:\n")
 		context.WriteString("cc ")
-		toBeAssigned = h.findPeopleToApprove(sets.NewString(sliceOfKeys...)).Difference(alreadyApproved)
 		for person := range toBeAssigned {
 			context.WriteString("@" + person + " ")
 		}
@@ -346,7 +346,7 @@ func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[stri
 	if isFullyApproved {
 		title = "This PR is **APPROVED**"
 	}
-	forMachine := map[string][]string{"approvers": unapprovedOwners.List()}
+	forMachine := map[string][]string{"approvers": toBeAssigned.List()}
 	bytes, err := json.Marshal(forMachine)
 	if err == nil {
 		context.WriteString(fmt.Sprintf("\n<!-- META=%s -->", bytes))
