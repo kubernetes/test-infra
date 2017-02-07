@@ -117,6 +117,9 @@ func main() {
 			if err := mungers.InitializeMungers(&config.Config, &config.Features); err != nil {
 				glog.Fatalf("unable to initialize mungers: %v", err)
 			}
+			if config.GithubKey != "" {
+				config.HookHandler = github_util.NewWebHookAndListen(config.GithubKey, config.Address)
+			}
 			return doMungers(config)
 		},
 	}

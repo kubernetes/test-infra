@@ -12,6 +12,7 @@ data:
   config.pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
   config.state: open
   config.token-file: /etc/secret-volume/token
+  config.loop-period: 10s
   gitrepo.repo-dir: /gitrepos
   gitrepo.enable-md-yaml: "false"
 

@@ -16,6 +16,7 @@ spec:
         - /mungegithub
         - --dry-run=true
         - --stderrthreshold=INFO
+        - --period=$(LOOP_PERIOD)
         - --http-cache-dir=$(HTTP_CACHE_DIR)
         - --organization=$(ORGANIZATION)
         - --project=$(PROJECT)
@@ -54,6 +55,7 @@ spec:
         - --batch-url=$(BATCH_URL)
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
+        - --github-key=$(GITHUB_KEY)
         image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
         env:
           - name: HTTP_CACHE_DIR
@@ -86,6 +88,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: config.token-file
+          - name: LOOP_PERIOD
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: config.loop-period
           - name: PROTECTED_BRANCHES
             valueFrom:
               configMapKeyRef:
@@ -241,6 +248,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: approval-activated
+          - name: GITHUB_KEY
+            valueFrom:
+              secretKeyRef:
+                name: @@-github-secret
+                key: secret
         ports:
         - name: status
           containerPort: 8080

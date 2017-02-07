@@ -10,6 +10,7 @@ data:
   config.pr-mungers: lgtm-after-commit,submit-queue,needs-rebase
   config.state: open
   config.token-file: /etc/secret-volume/token
+  config.loop-period: 2m
   gitrepo.repo-dir: /gitrepos
   gitrepo.enable-md-yaml: "false"
 

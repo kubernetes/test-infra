@@ -52,7 +52,6 @@ type IssueCacher struct {
 
 	lock                                sync.RWMutex
 	index                               keyToIssueList
-	prevIndex                           keyToIssueList
 	firstSyncStarted, firstSyncFinished bool
 
 	config *github.Config
@@ -72,8 +71,8 @@ func (p *IssueCacher) RequiredFeatures() []string { return []string{} }
 func (p *IssueCacher) Initialize(config *github.Config, features *features.Features) error {
 	p.labelFilter = sets.NewString("kind/flake")
 	p.index = keyToIssueList{}
-	p.prevIndex = keyToIssueList{}
 	p.config = config
+	p.findClosedIssues()
 	return nil
 }
 
@@ -82,15 +81,12 @@ func (p *IssueCacher) EachLoop() error {
 	func() {
 		p.lock.Lock()
 		defer p.lock.Unlock()
-		p.prevIndex = p.index
-		p.index = keyToIssueList{}
 		if !p.firstSyncStarted {
 			p.firstSyncStarted = true
 		} else if !p.firstSyncFinished {
 			p.firstSyncFinished = true
 		}
 	}()
-	p.findClosedIssues()
 	return nil
 }
 
@@ -152,9 +148,6 @@ func (p *IssueCacher) AllIssuesForKey(key string) []int {
 	defer p.lock.RUnlock()
 	got := sets.NewInt()
 	if n, ok := p.index[issueIndexKey(key)]; ok {
-		got.Insert([]int(*n)...)
-	}
-	if n, ok := p.prevIndex[issueIndexKey(key)]; ok {
 		got.Insert([]int(*n)...)
 	}
 	out := got.List()
