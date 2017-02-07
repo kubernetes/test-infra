@@ -129,7 +129,6 @@ func (t TokenHandler) Process() {
 
 	for {
 		halfPeriod := lastRate.Reset.Time.Sub(time.Now()) / 2
-		glog.Infof("%s: Current rate: %s. Sleeping for %s.", t.login, lastRate, halfPeriod)
 		time.Sleep(halfPeriod)
 		newRate, err := t.getCoreRate()
 		if err != nil {
@@ -138,11 +137,6 @@ func (t TokenHandler) Process() {
 		}
 		// There is a bug in Github. They seem to reset the Remaining value before reseting the Reset value.
 		if !newRate.Reset.Time.Equal(lastRate.Reset.Time) || newRate.Remaining > lastRate.Remaining {
-			glog.Infof(
-				"%s: ### TOKEN USAGE: %d",
-				t.login,
-				lastRate.Limit-lastRate.Remaining,
-			)
 			if err := t.influxdb.Push(
 				"github_token_count",
 				map[string]string{"login": t.login},
@@ -184,7 +178,6 @@ func runProgram(flags *tokenCounterFlags) error {
 	}
 
 	for _, token := range tokens {
-		glog.Infof("Processing token for '%s'", token.login)
 		go token.Process()
 	}
 
