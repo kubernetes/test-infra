@@ -27,6 +27,9 @@ type FilteredEvents []*github.IssueEvent
 
 // GetLast returns the last event in a series of events
 func (f FilteredEvents) GetLast() *github.IssueEvent {
+	if f.Empty() {
+		return nil
+	}
 	return f[len(f)-1]
 }
 
