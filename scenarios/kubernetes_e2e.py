@@ -180,7 +180,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     PARSER.add_argument(
-        '--tag', default='v20170104-9031f1d', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170206-dbc6dd2a', help='Use a specific kubekins-e2e tag if set')
     ARGS = PARSER.parse_args()
 
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
