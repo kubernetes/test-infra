@@ -22,7 +22,7 @@ DECK_VERSION   = 0.14
 SPLICE_VERSION = 0.11
 MARQUE_VERSION = 0.1
 TOT_VERSION    = 0.0
-CRIER_VERSION  = 0.3
+CRIER_VERSION  = 0.4
 
 # These are the usual GKE variables.
 PROJECT = k8s-prow
