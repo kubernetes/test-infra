@@ -119,6 +119,7 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 		return
 	}
 
+	count := 0
 	for {
 		client.limitsCheckAndWait()
 
@@ -130,8 +131,8 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 		}
 
 		for _, issue := range issues {
-			glog.Infof("Issue: %d, last updated: %s", *issue.Number, *issue.UpdatedAt)
 			c <- issue
+			count++
 		}
 
 		if resp.NextPage == 0 {
@@ -140,6 +141,7 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 		opt.ListOptions.Page = resp.NextPage
 	}
 
+	glog.Infof("Fetched %d issues updated issue since %v.", count, latest)
 	close(c)
 }
 
@@ -165,10 +167,10 @@ func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
 		return
 	}
 
+	count := 0
 	for {
 		client.limitsCheckAndWait()
 
-		glog.Info("Downloading events page: ", opt.Page)
 		events, resp, err := githubClient.Issues.ListRepositoryEvents(client.Org, client.Project, opt)
 		if err != nil {
 			glog.Error("Request failed. Wait before trying again.")
@@ -178,6 +180,7 @@ func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
 
 		for _, event := range events {
 			c <- event
+			count++
 		}
 		if resp.NextPage == 0 || (latest != nil && hasID(events, *latest)) {
 			break
@@ -185,6 +188,7 @@ func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
 		opt.Page = resp.NextPage
 	}
 
+	glog.Infof("Fetched %d events.", count)
 	close(c)
 }
 
@@ -199,10 +203,10 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 		return
 	}
 
+	count := 0
 	for {
 		client.limitsCheckAndWait()
 
-		glog.Infof("Downloading IssueComments for %d (page: %d)", issueID, opt.Page)
 		comments, resp, err := githubClient.Issues.ListComments(client.Org, client.Project, issueID, opt)
 		if err != nil {
 			close(c)
@@ -212,6 +216,7 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 
 		for _, comment := range comments {
 			c <- comment
+			count++
 		}
 		if resp.NextPage == 0 {
 			break
@@ -219,6 +224,7 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 		opt.ListOptions.Page = resp.NextPage
 	}
 
+	glog.Infof("Fetched %d issue comments updated since %v for issue #%d.", count, latest, issueID)
 	close(c)
 }
 
@@ -233,10 +239,10 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 		return
 	}
 
+	count := 0
 	for {
 		client.limitsCheckAndWait()
 
-		glog.Infof("Downloading PullRequestComments for %d (page: %d)", issueID, opt.Page)
 		comments, resp, err := githubClient.PullRequests.ListComments(client.Org, client.Project, issueID, opt)
 		if err != nil {
 			close(c)
@@ -246,6 +252,7 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 
 		for _, comment := range comments {
 			c <- comment
+			count++
 		}
 		if resp.NextPage == 0 {
 			break
@@ -253,5 +260,6 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 		opt.ListOptions.Page = resp.NextPage
 	}
 
+	glog.Infof("Fetched %d review comments updated since %v for issue #%d.", count, latest, issueID)
 	close(c)
 }
