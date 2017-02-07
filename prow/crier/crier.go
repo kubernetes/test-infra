@@ -61,6 +61,7 @@ type GitHubClient interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
+	EditComment(org, repo string, ID int, comment string) error
 }
 
 func NewServer(ghc GitHubClient) *Server {
@@ -108,12 +109,14 @@ func (s *Server) Run() {
 	}()
 }
 
-// parseIssueComments returns a list of comments to delete along with a list
-// of table entries for the new comment. If there are no table entries then
-// don't make a new comment.
-func parseIssueComments(r Report, botName string, ics []github.IssueComment) ([]int, []string) {
+// parseIssueComments returns a list of comments to delete, a list of table
+// entries, and the ID of the comment to update. If there are no table entries
+// then don't make a new comment. Otherwise, if the comment to update is 0,
+// create a new comment.
+func parseIssueComments(r Report, botName string, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
+	var latestComment int
 	var entries []string
 	// First accumulate result entries and comment IDs
 	for _, ic := range ics {
@@ -128,12 +131,16 @@ func parseIssueComments(r Report, botName string, ics []github.IssueComment) ([]
 		if !strings.Contains(ic.Body, commentTag) {
 			continue
 		}
-		previousComments = append(previousComments, ic.ID)
+		if latestComment != 0 {
+			previousComments = append(previousComments, latestComment)
+		}
+		latestComment = ic.ID
 		var tracking bool
 		for _, line := range strings.Split(ic.Body, "\n") {
+			line = strings.TrimSpace(line)
 			if strings.HasPrefix(line, "---") {
 				tracking = true
-			} else if len(strings.TrimSpace(line)) == 0 {
+			} else if len(line) == 0 {
 				tracking = false
 			} else if tracking {
 				entries = append(entries, line)
@@ -141,40 +148,39 @@ func parseIssueComments(r Report, botName string, ics []github.IssueComment) ([]
 		}
 	}
 	var newEntries []string
-	var createNewComment = len(previousComments) > 1
 	// Next decide which entries to keep.
 	for i := range entries {
 		keep := true
-		f1 := strings.Split(entries[i], "|")
+		f1 := strings.Split(entries[i], " | ")
 		for j := range entries {
 			if i == j {
 				continue
 			}
-			f2 := strings.Split(entries[j], "|")
+			f2 := strings.Split(entries[j], " | ")
 			// Use the newer results if there are multiple.
 			if j > i && f2[0] == f1[0] {
 				keep = false
-				createNewComment = true
 			}
 		}
 		// Use the current result if there is an old one.
-		if r.Context == strings.TrimSpace(f1[0]) {
+		if r.Context == f1[0] {
 			keep = false
-			createNewComment = true
 		}
 		if keep {
 			newEntries = append(newEntries, entries[i])
 		}
 	}
+	var createNewComment bool
 	if r.State == github.StatusFailure {
 		newEntries = append(newEntries, createEntry(r))
 		createNewComment = true
 	}
-	if createNewComment {
-		return append(delete, previousComments...), newEntries
-	} else {
-		return delete, nil
+	delete = append(delete, previousComments...)
+	if (createNewComment || len(newEntries) == 0) && latestComment != 0 {
+		delete = append(delete, latestComment)
+		latestComment = 0
 	}
+	return delete, newEntries, latestComment
 }
 
 func createEntry(r Report) string {
@@ -248,15 +254,19 @@ func (s *Server) handle(r Report) error {
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	deletes, entries := parseIssueComments(r, s.ghc.BotName(), ics)
+	deletes, entries, updateID := parseIssueComments(r, s.ghc.BotName(), ics)
 	for _, delete := range deletes {
 		if err := s.ghc.DeleteComment(r.RepoOwner, r.RepoName, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)
 		}
 	}
-	if len(entries) > 0 {
+	if len(entries) > 0 && updateID == 0 {
 		if err := s.ghc.CreateComment(r.RepoOwner, r.RepoName, r.Number, createComment(r, entries)); err != nil {
 			return fmt.Errorf("error creating comment: %v", err)
+		}
+	} else if len(entries) > 0 {
+		if err := s.ghc.EditComment(r.RepoOwner, r.RepoName, r.Number, createComment(r, entries)); err != nil {
+			return fmt.Errorf("error updating comment: %v", err)
 		}
 	}
 	return nil

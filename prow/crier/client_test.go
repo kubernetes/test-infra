@@ -17,6 +17,7 @@ limitations under the License.
 package crier
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"testing"
 
@@ -50,6 +51,16 @@ func (f *fakeGitHub) CreateComment(org, repo string, number int, comment string)
 		User: github.User{Login: "k8s-ci-robot"},
 	})
 	return nil
+}
+
+func (f *fakeGitHub) EditComment(org, repo string, ID int, comment string) error {
+	for _, ic := range f.ics {
+		if ic.ID == ID {
+			ic.Body = comment
+			return nil
+		}
+	}
+	return fmt.Errorf("issue comment not found: %d", ID)
 }
 
 func (f *fakeGitHub) DeleteComment(org, repo string, ID int) error {

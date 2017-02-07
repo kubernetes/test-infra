@@ -229,6 +229,26 @@ func (c *Client) DeleteComment(org, repo string, ID int) error {
 	return nil
 }
 
+func (c *Client) EditComment(org, repo string, ID int, comment string) error {
+	c.log("EditComment", org, repo, ID, comment)
+	if c.dry {
+		return nil
+	}
+
+	ic := IssueComment{
+		Body: comment,
+	}
+	resp, err := c.request(http.MethodPatch, fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", c.base, org, repo, ID), ic)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("response not 200: %s", resp.Status)
+	}
+	return nil
+}
+
 func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string) error {
 	c.log("CreateCommentReaction", org, repo, ID, reaction)
 	if c.dry {

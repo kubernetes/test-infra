@@ -74,6 +74,7 @@ func TestParseIssueComment(t *testing.T) {
 		ics              []github.IssueComment
 		expectedDeletes  []int
 		expectedContexts []string
+		expectedUpdate   int
 	}{
 		{
 			name: "should delete old style comments",
@@ -127,7 +128,7 @@ func TestParseIssueComment(t *testing.T) {
 			},
 		},
 		{
-			name: "should delete a passing test",
+			name: "should delete when all tests pass",
 			r: Report{
 				Context: "bla test",
 				State:   github.StatusSuccess,
@@ -212,9 +213,26 @@ func TestParseIssueComment(t *testing.T) {
 			expectedDeletes:  []int{123, 124},
 			expectedContexts: []string{"bla test", "foo test"},
 		},
+		{
+			name: "should update an old comment when a test passes",
+			r: Report{
+				Context: "bla test",
+				State:   github.StatusSuccess,
+			},
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow | aye\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			expectedDeletes:  []int{},
+			expectedContexts: []string{"foo test"},
+			expectedUpdate:   123,
+		},
 	}
 	for _, tc := range testcases {
-		deletes, entries := parseIssueComments(tc.r, "k8s-ci-robot", tc.ics)
+		deletes, entries, update := parseIssueComments(tc.r, "k8s-ci-robot", tc.ics)
 		if len(deletes) != len(tc.expectedDeletes) {
 			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 		} else {
@@ -246,6 +264,9 @@ func TestParseIssueComment(t *testing.T) {
 					t.Errorf("It %s: expected to find %s in %v", tc.name, econt, entries)
 				}
 			}
+		}
+		if tc.expectedUpdate != update {
+			t.Errorf("It %s: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
 		}
 	}
 }
