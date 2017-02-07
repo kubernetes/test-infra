@@ -128,8 +128,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-slow
 - name: ci-kubernetes-e2e-cri-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gke-updown
-- name: ci-kubernetes-e2e-garbage-cri
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage-cri
+- name: ci-kubernetes-e2e-cri-gce-garbage
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cri-gce-garbage
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: kubernetes-e2e-kops-aws-updown
@@ -859,17 +859,17 @@ test_groups:
 - name: kopeio-kubernetes-e2e-upup-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws
 # docker
-- name: kubernetes-e2e-gci-docker
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-docker
+- name: kubernetes-e2e-gci-gce-docker
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-docker
 - name: kubernetes-node-docker-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker-benchmark
 - name: kubernetes-node-docker
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker
 # garbage collector tests
 - name: kubernetes-garbage-collector
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-garbage
 - name: kubernetes-gci-garbage-collector
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-garbage-gci
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
 # kubeadm tests
 - name: kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
@@ -919,7 +919,7 @@ dashboards:
 - name: google-docker
   dashboard_tab:
   - name: e2e-gci
-    test_group_name: kubernetes-e2e-gci-docker
+    test_group_name: kubernetes-e2e-gci-gce-docker
   - name: benchmark
     test_group_name: kubernetes-node-docker-benchmark
   - name: kubelet
@@ -1324,7 +1324,7 @@ dashboards:
   - name: docker-kubelet
     test_group_name: kubernetes-node-docker
   - name: docker-e2e
-    test_group_name: kubernetes-e2e-gci-docker
+    test_group_name: kubernetes-e2e-gci-gce-docker
   - name: docker-kubelet-benchmark
     test_group_name: kubernetes-node-docker-benchmark
 
@@ -2027,6 +2027,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cri-gce-slow
   - name: gce-statefulset
     test_group_name: ci-kubernetes-e2e-cri-gce-statefulset
+  - name: gce-garbage
+    test_group_name: ci-kubernetes-e2e-cri-gce-garbage
   - name: gke
     test_group_name: ci-kubernetes-e2e-cri-gke
   - name: gke-alpha-features
@@ -2047,5 +2049,3 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cri-gke-slow
   - name: gke-updown
     test_group_name: ci-kubernetes-e2e-cri-gke-updown
-  - name: garbage-cri
-    test_group_name: ci-kubernetes-e2e-garbage-cri
