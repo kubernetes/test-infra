@@ -179,11 +179,9 @@ func run(deploy deployer) error {
 		if *down {
 			defer xmlWrap("Deferred TearDown", func() error {
 				if !downDone {
-					err := deploy.Down()
-					if err != nil {
-						return err
-					}
+					return deploy.Down()
 				}
+				return nil
 			})
 		}
 		// Start the cluster using this version.
@@ -253,8 +251,9 @@ func run(deploy deployer) error {
 				if err != nil {
 					return err
 				}
-				downDone := true
+				downDone = true
 			}
+			return nil
 		}))
 	}
 
