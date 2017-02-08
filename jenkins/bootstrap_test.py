@@ -1329,6 +1329,7 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCISoakYaml(self):
+        is_modern = lambda n: 'kubernetes-soak-gce-1.3' in n
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('blocker', job)
@@ -1336,9 +1337,17 @@ class JobTest(unittest.TestCase):
             self.assertIn('scan', job)
             self.assertNotIn('repo-name', job)
             self.assertNotIn('branch', job)
+            self.assertIn('timeout', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)  # TODO(krzyzacy): all jobs
+            self.assertEquals(modern, job['json'], name)
+            if is_modern(name):  # TODO(krzyzacy): do this for all jobs
+                self.assertGreater(job['timeout'], 0, name)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml', Check)
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
+            Check, use_json=is_modern)
 
     def testBootstrapCIDockerpushYaml(self):
         def Check(job, name):
