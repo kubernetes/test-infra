@@ -19,6 +19,7 @@ package crier
 import (
 	"fmt"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
@@ -54,9 +55,9 @@ func (f *fakeGitHub) CreateComment(org, repo string, number int, comment string)
 }
 
 func (f *fakeGitHub) EditComment(org, repo string, ID int, comment string) error {
-	for _, ic := range f.ics {
+	for i, ic := range f.ics {
 		if ic.ID == ID {
-			ic.Body = comment
+			f.ics[i].Body = comment
 			return nil
 		}
 	}
@@ -120,5 +121,20 @@ func TestCrier(t *testing.T) {
 	<-crierServer.notify
 	if len(fghc.ics) != 1 {
 		t.Errorf("There should be one comment here: %v", fghc.ics)
+	}
+
+	ReportToCrier(s.URL, Report{
+		Context: "foo test",
+		State:   github.StatusFailure,
+	})
+	<-crierServer.notify
+	id := fghc.ics[0].ID
+	ReportToCrier(s.URL, Report{
+		Context: "foo test",
+		State:   github.StatusSuccess,
+	})
+	<-crierServer.notify
+	if id != fghc.ics[0].ID || strings.Contains(fghc.ics[0].Body, "foo test") {
+		t.Errorf("Should have updated comment %d:\n%s\n", id, fghc.ics[0].Body)
 	}
 }
