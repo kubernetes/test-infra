@@ -39,10 +39,6 @@ fi
 
 # Fake provider to trick e2e-runner.sh
 export KUBERNETES_PROVIDER="kops-aws"
-export AWS_CONFIG_FILE="/workspace/.aws/credentials"
-# This is needed to be able to create PD from the e2e test
-export AWS_SHARED_CREDENTIALS_FILE="/workspace/.aws/credentials"
-# TODO(zmerlynn): Eliminate the other uses of this env variable
 export KUBE_SSH_USER=admin
 export LOG_DUMP_USE_KUBECTL=yes
 export LOG_DUMP_SSH_KEY=/workspace/.ssh/kube_aws_rsa
@@ -55,8 +51,9 @@ DEFAULT_GINKGO_TEST_ARGS="--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
 export GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-${DEFAULT_GINKGO_TEST_ARGS}}"
 if [[ -n "${JOB_NAME:-}" ]]; then
   # Running on Jenkins
-  export KOPS_E2E_CLUSTER_NAME="e2e-kops-aws-updown.test-aws.k8s.io"
-  export KOPS_E2E_STATE_STORE="s3://k8s-kops-jenkins/"
+  export KOPS_E2E_ROLE_ARN="arn:aws:iam::660757973107:role/job-kops-aws-updown"
+  export KOPS_E2E_CLUSTER_NAME="${BUILD_NUMBER}.kops-aws-updown.test-aws.k8s.io"
+  export KOPS_E2E_STATE_STORE="s3://kops-aws-updown-store"
   export KOPS_PUBLISH_GREEN_PATH="gs://kops-ci/bin/latest-ci-updown-green.txt"
 else
   if [[ -z "${KOPS_E2E_CLUSTER_NAME:-}" ]]; then

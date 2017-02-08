@@ -81,6 +81,18 @@ function log_dump_custom_get_instances() {
 pip install awscli # Only needed for log_dump_custom_get_instances
 export -f log_dump_custom_get_instances # Export to cluster/log-dump.sh
 
+if [[ -z "${KOPS_E2E_ROLE_ARN:-}" ]]; then
+  export AWS_CONFIG_FILE="/workspace/.aws/tmp-config"
+  cat > "${AWS_CONFIG_FILE}" <<EOF
+[profile jenkins-assumed-role]
+role_arn = ${KOPS_ROLE_ARN}
+source_profile = ${AWS_PROFILE:-default}
+EOF
+  export AWS_SDK_LOAD_CONFIG=true
+  export AWS_PROFILE="jenkins-assumed-role"
+  export AWS_DEFAULT_PROFILE="${AWS_PROFILE}"
+fi
+
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
