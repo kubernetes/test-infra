@@ -1270,7 +1270,6 @@ class JobTest(unittest.TestCase):
 
         blacklist = [
             'kubernetes-e2e-(kops|aws)',
-            'kubernetes-e2e-[0-9a-z-._]*-skew$',
             'kubernetes-e2e-[0-9a-z-._]*-upgrade-'
         ]
             
