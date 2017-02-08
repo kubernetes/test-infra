@@ -1326,14 +1326,17 @@
 "ci-kubernetes-e2e-gce-enormous-deploy": {
   "scenario": "kubernetes_e2e",
   "args": [
-    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env",
+    "--down=false"
   ]
 },
 
 "ci-kubernetes-e2e-gce-enormous-teardown": {
   "scenario": "kubernetes_e2e",
   "args": [
-    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-teardown.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-teardown.env",
+    "--up=false",
+    "--test=false"
   ]
 },
 
@@ -1693,7 +1696,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gke-large-deploy.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gke-large-deploy.env",
+    "--down=false"
   ]
 },
 
@@ -1701,7 +1705,9 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gke-large-teardown.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gke-large-teardown.env",
+    "--up=false",
+    "--test=false"
   ]
 },
 
