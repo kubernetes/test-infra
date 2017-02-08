@@ -65,6 +65,9 @@ fi
 
 export KOPS_STATE_STORE="${KOPS_STATE_STORE:-s3://k8s-kops-jenkins/}"
 export KOPS_CLUSTER_DOMAIN="${KOPS_CLUSTER_DOMAIN:-test-aws.k8s.io}"
+# TODO(kubernetes/kubernetes#41152): We shouldn't need this, but until
+# this bug is resolved, kops won't build clusters on release branches.
+export KOPS_RUN_OBSOLETE_VERSION=true
 export E2E_NAME="aws-kops-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export E2E_OPT="${E2E_OPT:-}\
   --kops-cluster ${E2E_NAME}.${KOPS_CLUSTER_DOMAIN}\
