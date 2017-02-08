@@ -156,6 +156,9 @@ func run(deploy deployer) error {
 	var err error
 	var errs []error
 
+	// Ensures that the cleanup/down action is performed exactly once.
+	var downDone bool = false
+
 	var (
 		beforeResources []byte
 		upResources     []byte
@@ -173,12 +176,13 @@ func run(deploy deployer) error {
 	if *up {
 		// If we tried to bring the cluster up, make a courtesy
 		// attempt to bring it down so we're not leaving resources around.
-		//
-		// TODO: We should try calling deploy.Down exactly once. Though to
-		// stop the leaking resources for now, we want to be on the safe side
-		// and call it explictly in defer if the other one is not called.
 		if *down {
-			defer xmlWrap("Deferred TearDown", deploy.Down)
+			defer xmlWrap("Deferred TearDown", func() error {
+				if !downDone {
+					return deploy.Down()
+				}
+				return nil
+			})
 		}
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
@@ -241,7 +245,16 @@ func run(deploy deployer) error {
 	}
 
 	if *down {
-		errs = appendError(errs, xmlWrap("TearDown", deploy.Down))
+		errs = appendError(errs, xmlWrap("TearDown", func() error {
+			if !downDone {
+				err := deploy.Down()
+				if err != nil {
+					return err
+				}
+				downDone = true
+			}
+			return nil
+		}))
 	}
 
 	if *checkLeakedResources {
