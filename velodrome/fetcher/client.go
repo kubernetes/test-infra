@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -102,10 +103,15 @@ func (client *Client) limitsCheckAndWait() {
 
 // ClientInterface describes what a client should be able to do
 type ClientInterface interface {
+	RepositoryName() string
 	FetchIssues(time.Time, chan *github.Issue)
 	FetchIssueEvents(*int, chan *github.IssueEvent)
 	FetchIssueComments(int, time.Time, chan *github.IssueComment)
 	FetchPullComments(int, time.Time, chan *github.PullRequestComment)
+}
+
+func (client *Client) RepositoryName() string {
+	return fmt.Sprintf("%s/%s", client.Org, client.Project)
 }
 
 // FetchIssues from Github, until 'latest' time

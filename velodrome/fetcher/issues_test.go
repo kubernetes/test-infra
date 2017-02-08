@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -32,19 +33,41 @@ func TestFindLatestIssueUpdate(t *testing.T) {
 	tests := []struct {
 		issues         []sql.Issue
 		expectedLatest time.Time
+		repository     string
 	}{
 		// If we don't have any issue, return 1900/1/1 0:0:0 UTC
 		{
 			[]sql.Issue{},
 			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
+			"ONE",
+		},
+		// We have issues, but not for this repo, return 1900/1/1 0:0:0 UTC
+		{
+			[]sql.Issue{
+				{IssueUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+			},
+			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
+			"TWO",
 		},
 		{
 			[]sql.Issue{
-				{IssueUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
-				{IssueUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
-				{IssueUpdatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC)},
+				{IssueUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+			"ONE",
+		},
+		{
+			[]sql.Issue{
+				{IssueUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueUpdatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+			},
+			time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC),
+			"TWO",
 		},
 	}
 
@@ -60,7 +83,7 @@ func TestFindLatestIssueUpdate(t *testing.T) {
 		}
 		tx.Commit()
 
-		actualLatest, err := findLatestIssueUpdate(db)
+		actualLatest, err := findLatestIssueUpdate(db, test.repository)
 		if err != nil {
 			t.Error("findLatestIssueUpdate failed:", err)
 		}
@@ -75,30 +98,35 @@ func TestUpdateIssues(t *testing.T) {
 	config := sqltest.SQLiteConfig{":memory:"}
 
 	tests := []struct {
-		before []sql.Issue
-		new    []*github.Issue
-		after  []sql.Issue
+		before     []sql.Issue
+		new        []*github.Issue
+		after      []sql.Issue
+		repository string
 	}{
 		// No new issues
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
+			repository: "FULL/REPO",
 		},
 		// New issues
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
@@ -110,52 +138,88 @@ func TestUpdateIssues(t *testing.T) {
 					time.Time{}),
 			},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "", 0, false,
+				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+					"full/repo", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
+			repository: "FULL/REPO",
 		},
 		// New issues + already existing
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(2, "Title", "", "State", "User", "", "", "full/repo",
+					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", "", 0, false,
+				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+					0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				makeGithubIssue(3, "Title", "Body", "State", "John", "", "", 0, false,
+				makeGithubIssue(3, "Title", "Body", "State", "John", "", "",
+					0, false,
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "", 0, false,
+				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+					"full/repo", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(3, "Title", "Body", "State", "John", "", "", 0, false,
+				*makeIssue(3, "Title", "Body", "State", "John", "", "", "full/repo",
+					0, false,
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
+			repository: "FULL/REPO",
+		},
+		// Fetch new repository
+		{
+			before: []sql.Issue{
+				*makeIssue(1, "Title", "", "State", "User", "", "", "full/one",
+					0, false,
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{}),
+			},
+			new: []*github.Issue{
+				makeGithubIssue(1, "Super Title", "Body", "NoState", "Login", "", "",
+					0, false,
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{}),
+			},
+			after: []sql.Issue{
+
+				*makeIssue(1, "Super Title", "Body", "NoState", "Login", "", "",
+					"full/other", 0, false,
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{}),
+			},
+			repository: "FULL/OTHER",
 		},
 	}
 
@@ -169,9 +233,9 @@ func TestUpdateIssues(t *testing.T) {
 			db.Create(&issue)
 		}
 
-		UpdateIssues(db, FakeClient{Issues: test.new})
+		UpdateIssues(db, FakeClient{Issues: test.new, Repository: test.repository})
 		var issues []sql.Issue
-		if err := db.Order("ID").Find(&issues).Error; err != nil {
+		if err := db.Order("ID").Where("repository = ?", strings.ToLower(test.repository)).Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(issues, test.after) {

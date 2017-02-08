@@ -24,10 +24,15 @@ import (
 )
 
 type FakeClient struct {
+	Repository    string
 	Issues        []*github.Issue
 	IssueEvents   []*github.IssueEvent
 	IssueComments map[int][]*github.IssueComment
 	PullComments  map[int][]*github.PullRequestComment
+}
+
+func (client FakeClient) RepositoryName() string {
+	return client.Repository
 }
 
 func (client FakeClient) FetchIssues(latest time.Time, c chan *github.Issue) {
