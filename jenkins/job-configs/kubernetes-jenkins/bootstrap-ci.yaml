@@ -1387,39 +1387,39 @@
     # START KUBEMARK
     - kubernetes-kubemark-5-gce:
         job-name: ci-kubernetes-kubemark-5-gce
-        timeout: 80
+        timeout: 0
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 1
+        json: 0
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-5-gce-1.5:
         job-name: ci-kubernetes-kubemark-5-gce-1.5
-        timeout: 80
+        timeout: 0
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 1
+        json: 0
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-kubemark-100-gce:
         job-name: ci-kubernetes-kubemark-100-gce
-        timeout: 260
+        timeout: 0
         frequency: 'H H/6 * * *'
-        json: 1
+        json: 0
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-high-density-100-gce:
         job-name: ci-kubernetes-kubemark-high-density-100-gce
-        timeout: 300
+        timeout: 0
         frequency: 'H 20 * * 6'
-        json: 1
+        json: 0
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-500-gce:
         job-name: ci-kubernetes-kubemark-500-gce
-        timeout: 140
+        timeout: 0
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 1
+        json: 0
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
-        timeout: 620
+        timeout: 0
         frequency: 'H H/12 * * *'
-        json: 1
+        json: 0
         trigger-job: ''
     # END KUBEMARK
 
