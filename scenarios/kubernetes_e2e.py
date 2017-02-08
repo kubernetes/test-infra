@@ -79,6 +79,10 @@ def main(args):
       '-v', '/etc/localtime:/etc/localtime:ro'
     ]
 
+    if args.docker_in_docker:
+        cmd.extend([
+          '-v', '/var/run/docker.sock:/var/run/docker.sock'])
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -164,12 +168,10 @@ if __name__ == '__main__':
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
         help='Path to .ssh/google_compute_engine keys')
-
     PARSER.add_argument(
         '--gce-pub',
         default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub gce ssh key')
-
     PARSER.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
@@ -178,6 +180,8 @@ if __name__ == '__main__':
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
+    PARSER.add_argument(
+        '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
