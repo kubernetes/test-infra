@@ -63,6 +63,13 @@ something bad'''
 		result = coalesce.result(pkg)
 		self.assertEqual(result.find('failure').text, 'something bad')
 
+	def test_sanitize_bad(self):
+		self.assertEqual(coalesce.sanitize('foo\033\x00\x08'), 'foo')
+
+	def test_sanitize_ansi(self):
+		self.assertEqual(coalesce.sanitize('foo\033[1mbar\033[1mbaz'),
+						 'foobarbaz')
+
 	def test_package_names(self):
 		os.chdir(self.tmpdir)
 		os.symlink('.', 'bazel-testlogs')

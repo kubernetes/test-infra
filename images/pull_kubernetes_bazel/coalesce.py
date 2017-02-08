@@ -19,6 +19,7 @@
 
 import argparse
 import os
+import re
 
 import xml.etree.ElementTree as ET
 
@@ -27,12 +28,28 @@ BAZEL_FAILURE_HEADER = '''exec ${PAGER:-/usr/bin/less} "$0" || exit 1
 -----------------------------------------------------------------------------
 '''
 
+# from https://www.w3.org/TR/xml11/#charsets
+# RestrictedChar ::= [#x1-#x8]|[#xB-#xC]|[#xE-#x1F]|[#x7F-#x84]|[#x86-#x9F]
+RESTRICTED_XML_CHARS_RE = re.compile(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F]')
+
+ANSI_ESCAPE_CODES_RE = re.compile(r'\033\[[\d;]*[@-~]')
+
 
 def test_packages(root):
     """Yields test package directories under root."""
     for package, _, files in os.walk(root):
         if 'test.xml' in files and 'test.log' in files:
             yield package
+
+def sanitize(text):
+    if text.startswith(BAZEL_FAILURE_HEADER):
+        text = text[len(BAZEL_FAILURE_HEADER):]
+    # ANSI escape sequences should be removed.
+    text = ANSI_ESCAPE_CODES_RE.sub('', text)
+
+    # And any other badness that slips through.
+    text = RESTRICTED_XML_CHARS_RE.sub('', text)
+    return text
 
 
 def result(pkg):
@@ -49,9 +66,8 @@ def result(pkg):
                 if status.tag == 'error' or status.tag == 'failure':
                     failure = ET.Element('failure')
                     with open(pkg + '/test.log') as f:
-                        failure.text = f.read().decode('utf8', 'ignore')
-                        if failure.text.startswith(BAZEL_FAILURE_HEADER):
-                            failure.text = failure.text[len(BAZEL_FAILURE_HEADER):]
+                        text = f.read().decode('utf8', 'ignore')
+                        failure.text = sanitize(text)
                     el.append(failure)
     return el
 
