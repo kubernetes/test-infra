@@ -19,6 +19,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "fetcher_test.go",
+        "influx_test.go",
         "plugins_mock_test.go",
         "plugins_test.go",
     ],
