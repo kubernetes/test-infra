@@ -265,7 +265,7 @@ func (s *Server) handle(r Report) error {
 			return fmt.Errorf("error creating comment: %v", err)
 		}
 	} else if len(entries) > 0 {
-		if err := s.ghc.EditComment(r.RepoOwner, r.RepoName, r.Number, createComment(r, entries)); err != nil {
+		if err := s.ghc.EditComment(r.RepoOwner, r.RepoName, updateID, createComment(r, entries)); err != nil {
 			return fmt.Errorf("error updating comment: %v", err)
 		}
 	}
