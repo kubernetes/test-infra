@@ -25,7 +25,7 @@ are over 300 e2e jobs, each run with a slightly different set of options.
 
 The scenario assumes the calling process (bootstrap.py) has setup all
 prerequisites, such as checking out the right repository, setting pwd,
-activiating service accounts, etc.
+activating service accounts, etc.
 
 The scenario also assumes that the calling process will handle all post-job
 works, such as recording log output, copying logs to gcs, etc.
