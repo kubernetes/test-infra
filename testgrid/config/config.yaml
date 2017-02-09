@@ -832,8 +832,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 # Manual, federated groups
 # bazel, run on prow
-- name: ci-kubernetes-bazel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel
+- name: ci-kubernetes-bazel-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
+- name: ci-kubernetes-bazel-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # rktnetes
@@ -1380,8 +1382,10 @@ dashboards:
     test_group_name: kubernetes-build-1.4
   - name: build-1.5
     test_group_name: kubernetes-build-1.5
-  - name: bazel
-    test_group_name: ci-kubernetes-bazel
+  - name: bazel-build
+    test_group_name: ci-kubernetes-bazel-build
+  - name: bazel-test
+    test_group_name: ci-kubernetes-bazel-test
   - name: test-go
     test_group_name: kubernetes-test-go
   - name: test-go-1.3
