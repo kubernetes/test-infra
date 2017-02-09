@@ -1487,59 +1487,59 @@
     ### kubernetes-e2e-upgrades-gce-cross-image-and-gci #mtaufen
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
 
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
 
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
-        timeout: 0
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: ''
 
     - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master:

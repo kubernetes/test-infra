@@ -1271,7 +1271,16 @@ class JobTest(unittest.TestCase):
             'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new',
             'kubernetes-e2e-gce-1.4-1.5-upgrade-master',
             'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster',
-            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new'
+            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new',
+            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master',
+            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster',
+            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new',
+            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master',
+            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster',
+            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new',
+            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master',
+            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster',
+            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new'
         ]
 
         blacklist = [
