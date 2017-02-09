@@ -1266,27 +1266,12 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
             'kubernetes-e2e-gke-1.3-1.4-upgrade-master',
-            'kubernetes-e2e-gce-1.3-1.4-upgrade-master',
-            'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster',
-            'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new',
-            'kubernetes-e2e-gce-1.4-1.5-upgrade-master',
-            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster',
-            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new',
-            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master',
-            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster',
-            'kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new',
-            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master',
-            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster',
-            'kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new',
-            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master',
-            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster',
-            'kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new'
         ]
 
         blacklist = [
             'kubernetes-e2e-(kops|aws)',
             'kubernetes-kubemark',
-            'kubernetes-e2e-[0-9a-z-._]*-upgrade-'
+            'kubernetes-e2e-gke-[0-9a-z-._]*-upgrade-'
         ]
             
         is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
