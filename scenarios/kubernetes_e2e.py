@@ -114,9 +114,9 @@ def main(args):
     cmd.extend([
       # Boilerplate envs
       # Skip gcloud update checking
-      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=\'true\'',
+      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
       # Use default component update behavior
-      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=\'false\'',
+      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
       # E2E
       '-e', 'E2E_UP=%s' % args.up,
       '-e', 'E2E_TEST=%s' % args.test,
