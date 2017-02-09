@@ -1268,7 +1268,10 @@ class JobTest(unittest.TestCase):
             'kubernetes-e2e-gke-1.3-1.4-upgrade-master',
             'kubernetes-e2e-gce-1.3-1.4-upgrade-master',
             'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster',
-            'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new'
+            'kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new',
+            'kubernetes-e2e-gce-1.4-1.5-upgrade-master',
+            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster',
+            'kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new'
         ]
 
         blacklist = [
