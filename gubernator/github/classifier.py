@@ -282,6 +282,10 @@ def distill_events(events):
                 continue
             if action == 'created':
                 output.append(('comment', user, timestamp))
+        if event == 'pull_request_review':
+            if action == 'submitted':
+                # this is morally equivalent to a comment
+                output.append(('comment', user, timestamp))
         if event == 'pull_request':
             if action in ('opened', 'reopened', 'synchronize'):
                 output.append(('push', user, timestamp))
