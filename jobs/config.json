@@ -315,6 +315,13 @@
   ]
 },
 
+"ci-kubernetes-e2e-kops-aws-canary": {
+  "scenario": "kubernetes_aws",
+  "args": [
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env"
+  ]
+},
+
 "ci-kubernetes-e2e-non-cri-gce": {
   "scenario": "kubernetes_e2e",
   "args": [

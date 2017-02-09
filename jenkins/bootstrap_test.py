@@ -1292,7 +1292,10 @@ class JobTest(unittest.TestCase):
 
     def testBootstrapCIYaml(self):
         # TODO(krzyzacy): temp until more jobs to be converted
-        whitelist = []
+
+        whitelist = [
+            'kubernetes-e2e-kops-aws-canary'
+        ]
 
         blacklist = [
             'kubernetes-e2e-(kops|aws)',
