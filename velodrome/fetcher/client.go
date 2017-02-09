@@ -49,10 +49,24 @@ func (client *Client) AddFlags(cmd *cobra.Command) {
 		"The OAuth Token to use for requests.")
 	cmd.PersistentFlags().StringVar(&client.TokenFile, "token-file", "",
 		"The file containing the OAuth Token to use for requests.")
-	cmd.PersistentFlags().StringVar(&client.Org, "organization", "kubernetes",
+	cmd.PersistentFlags().StringVar(&client.Org, "organization", "",
 		"The github organization to scan")
-	cmd.PersistentFlags().StringVar(&client.Project, "project", "kubernetes",
+	cmd.PersistentFlags().StringVar(&client.Project, "project", "",
 		"The github project to scan")
+}
+
+func (client *Client) CheckFlags() error {
+	if client.Org == "" {
+		return fmt.Errorf("organization flag must be set")
+	}
+	client.Org = strings.ToLower(client.Org)
+
+	if client.Project == "" {
+		return fmt.Errorf("project flag must be set")
+	}
+	client.Project = strings.ToLower(client.Project)
+
+	return nil
 }
 
 // Create the github client that we use to communicate with github

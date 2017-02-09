@@ -12,6 +12,8 @@ spec:
       containers:
       - name: fetcher
         args:
+        - --organization=kubernetes
+        - --project=kubernetes
         - --token-file=/etc/secret-volume/k8s-merge-robot
         - --stderrthreshold=0
         - --host=sqlproxy-service
