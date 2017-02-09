@@ -92,17 +92,22 @@ def main(args):
         for env in args.env_file:
             cmd.extend(['--env-file', test_infra(env)])
 
-    gce_ssh = '/workspace/.ssh/google_compute_engine'
-    gce_pub = '%s.pub' % gce_ssh
-    service = '/service-account.json'
+    if args.gce_ssh:
+        gce_ssh = '/workspace/.ssh/google_compute_engine'
+        gce_pub = '%s.pub' % gce_ssh
+        cmd.extend([
+          '-v', '%s:%s:ro' % (args.gce_ssh, gce_ssh),
+          '-v', '%s:%s:ro' % (args.gce_pub, gce_pub),
+          '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
+          '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
+
+    if args.service_account:
+        service = '/service-account.json'
+        cmd.extend([
+            '-v', '%s:%s:ro' % (args.service_account, service),
+            '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
     cmd.extend([
-      '-v', '%s:%s:ro' % (args.gce_ssh, gce_ssh),
-      '-v', '%s:%s:ro' % (args.gce_pub, gce_pub),
-      '-v', '%s:%s:ro' % (args.service_account, service),
-      '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
-      '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub,
-      '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service,
       # Boilerplate envs
       # Skip gcloud update checking
       '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=\'true\'',
