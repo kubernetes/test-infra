@@ -197,6 +197,14 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 							},
 							Env: []kube.EnvVar{
 								{
+									Name:  "LINE_IMAGE",
+									Value: lineImage,
+								},
+								{
+									Name:  "DRY_RUN",
+									Value: strconv.FormatBool(dryRun),
+								},
+								{
 									Name: "JENKINS_URL",
 									ValueFrom: &kube.EnvVarSource{
 										ConfigMap: kube.ConfigMapKeySelector{
