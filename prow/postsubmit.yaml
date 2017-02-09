@@ -1,6 +1,6 @@
 ---
 kubernetes/kubernetes:
-- name: ci-kubernetes-bazel
+- name: ci-kubernetes-bazel-build
   branches:
   - master
   spec:
@@ -14,6 +14,18 @@ kubernetes/kubernetes:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
+  run_after_success:
+  - name: ci-kubernetes-bazel-test
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:0.8
+        args:
+        - "--branch=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--git-cache=/root/.cache/git"
+        - "--clean"
+        securityContext:
+          privileged: true
 
 kubernetes/test-infra:
 - name: ci-test-infra-bazel

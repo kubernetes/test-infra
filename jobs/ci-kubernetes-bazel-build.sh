@@ -25,10 +25,6 @@ bazel clean --expunge
 make bazel-build && rc=$? || rc=$?
 
 if [[ "${rc}" == 0 ]]; then
-  make bazel-test && rc=$? || rc=$?
-fi
-
-if [[ "${rc}" == 0 ]]; then
   make bazel-release && rc=$? || rc=$?
 fi
 
