@@ -1623,16 +1623,26 @@ class JobTest(unittest.TestCase):
                 lines = list(fp)
             prev = ''
             for line in lines:
-                self.assertFalse(line.strip().endswith('\\'))
-                # FOO=a -> good
-                # FOO="a, FOO=a", FOO="a" -> bad
-                # FOO=aaa"bbb"aaa -> good
-                # FOO=a # BAR -> bad (no inline comments in env files)
-                m = re.match(r'[0-9A-Z_]+=([^\"]$|[^\n#]+[^\"\n#]$)', line)
-                empty = (line.strip() == '')
-                comment = line.startswith('#')
-                if not (m or empty or comment):
-                    self.fail('Job %s contains invalid env: %s' % (job, line))
+                line = line.strip()
+                self.assertFalse(line.endswith('\\'))
+                if not line:
+                    continue
+                if line.startswith('#'):
+                    continue
+                if not re.match(r'[0-9A-Z_]+=[^\n]+', line):
+                    self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, line))
+                if '#' in line:
+                    self.fail('[%r]: Env %r: No inline comments' % (job, line))
+                if '"' in line:
+                    self.fail('[%r]: Env %r: No quote in env' % (job, line))
+                if '$' in line:
+                    self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
+
+                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE 
+                for b in black:
+                    if b in line:
+                        self.fail('[%r]: Env %r: Convert %r to use e2e scenario flags' % (job, line, b))
+                
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
