@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"sync"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -50,15 +52,18 @@ type Job struct {
 	Description string `json:"description"`
 	URL         string `json:"url"`
 	PodName     string `json:"pod_name"`
+	Agent       string `json:"agent"`
 
 	st time.Time
 	ft time.Time
 }
 
 type JobAgent struct {
-	kc   *kube.Client
-	jobs []Job
-	mut  sync.Mutex
+	kc      *kube.Client
+	jc      *jenkins.Client
+	jobs    []Job
+	jobsMap map[string]Job // job name -> Job
+	mut     sync.Mutex
 }
 
 func (ja *JobAgent) Start() {
@@ -79,6 +84,33 @@ func (ja *JobAgent) Jobs() []Job {
 	return res
 }
 
+var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
+
+func (ja *JobAgent) GetLog(name string) ([]byte, error) {
+	ja.mut.Lock()
+	job, ok := ja.jobsMap[name]
+	ja.mut.Unlock() // unlock now-- getting the log takes a while!
+	if !ok {
+		return nil, fmt.Errorf("GetLog found no such job %s", name)
+	}
+	if job.Agent == "" || job.Agent == "kubernetes" {
+		// running on Kubernetes
+		return ja.kc.GetLog(name)
+	} else if ja.jc != nil && job.Agent == "jenkins" {
+		// running on Jenkins
+		m := jobNameRE.FindStringSubmatch(name)
+		if m == nil {
+			return nil, fmt.Errorf("GetLog invalid job name %s", name)
+		}
+		number, err := strconv.Atoi(m[2])
+		if err != nil {
+			return nil, err
+		}
+		return ja.jc.GetLog(m[1], number)
+	}
+	return nil, fmt.Errorf("cannot get log for %s", name)
+}
+
 func (ja *JobAgent) tryUpdate() {
 	if err := ja.update(); err != nil {
 		logrus.WithError(err).Warning("Error updating job list.")
@@ -97,6 +129,8 @@ func (ja *JobAgent) update() error {
 		return err
 	}
 	var njs []Job
+	njsMap := map[string]Job{}
+
 	for _, j := range js {
 		nj := Job{
 			Type:        j.Metadata.Labels["type"],
@@ -113,6 +147,7 @@ func (ja *JobAgent) update() error {
 			Description: j.Metadata.Annotations["description"],
 			URL:         j.Metadata.Annotations["url"],
 			PodName:     j.Metadata.Annotations["pod-name"],
+			Agent:       j.Metadata.Annotations["agent"],
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,
@@ -125,11 +160,15 @@ func (ja *JobAgent) update() error {
 			nj.Number = pr
 		}
 		njs = append(njs, nj)
+		if nj.PodName != "" {
+			njsMap[nj.PodName] = nj
+		}
 	}
 	sort.Sort(byStartTime(njs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	ja.jobs = njs
+	ja.jobsMap = njsMap
 	return nil
 }

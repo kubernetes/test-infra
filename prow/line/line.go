@@ -334,7 +334,7 @@ func deleteKubeJob(k deleteClient, job kube.Job) error {
 	return nil
 }
 
-func SetJobStatus(k *kube.Client, podName, jobName, state, desc, url string) error {
+func updateAnnotations(k *kube.Client, jobName string, updates map[string]string) error {
 	j, err := k.GetJob(jobName)
 	if err != nil {
 		return err
@@ -343,14 +343,28 @@ func SetJobStatus(k *kube.Client, podName, jobName, state, desc, url string) err
 	if newAnnotations == nil {
 		newAnnotations = make(map[string]string)
 	}
-	newAnnotations["pod-name"] = podName
-	newAnnotations["state"] = state
-	newAnnotations["description"] = desc
-	newAnnotations["url"] = url
+	for k, v := range updates {
+		newAnnotations[k] = v
+	}
 	_, err = k.PatchJob(jobName, kube.Job{
 		Metadata: kube.ObjectMeta{
 			Annotations: newAnnotations,
 		},
 	})
 	return err
+}
+
+func SetJobAgent(k *kube.Client, jobName, agent string) error {
+	return updateAnnotations(k, jobName, map[string]string{
+		"agent": agent,
+	})
+}
+
+func SetJobStatus(k *kube.Client, podName, jobName, state, desc, url string) error {
+	return updateAnnotations(k, jobName, map[string]string{
+		"pod-name":    podName,
+		"state":       state,
+		"description": desc,
+		"url":         url,
+	})
 }

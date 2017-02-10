@@ -19,12 +19,13 @@ package jenkins
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/satori/go.uuid"
 )
 
 const (
@@ -279,4 +280,24 @@ func (c *Client) Status(b *Build) (*Status, error) {
 		}
 	}
 	return nil, fmt.Errorf("did not find build %s", b.id)
+}
+
+func (c *Client) GetLog(job string, build int) ([]byte, error) {
+	if c.dry {
+		return []byte("fake log"), nil
+	}
+	u := fmt.Sprintf("%s/job/%s/%d/consoleText", c.baseURL, job, build)
+	resp, err := c.request(http.MethodGet, u)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("response not 2XX: %s: (%s)", resp.Status, u)
+	}
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return buf, nil
 }

@@ -66,9 +66,11 @@ var (
 )
 
 const (
-	guberBasePR   = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
-	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
-	testInfra     = "https://github.com/kubernetes/test-infra/issues"
+	guberBasePR     = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
+	guberBasePush   = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
+	testInfra       = "https://github.com/kubernetes/test-infra/issues"
+	agentKubernetes = "kubernetes"
+	agentJenkins    = "jenkins"
 )
 
 type testClient struct {
@@ -338,6 +340,8 @@ func (c *testClient) TestKubernetes() error {
 		c.tryCreateStatus("", github.StatusError, "Error creating build pod.", testInfra)
 		return err
 	}
+	c.setJobAgent(agentKubernetes)
+
 	resultURL := c.guberURL(buildID)
 	podName = actual.Metadata.Name
 	c.tryCreateStatus(podName, github.StatusPending, "Build started", resultURL)
@@ -405,22 +409,25 @@ func (c *testClient) TestPRJenkins() error {
 		c.tryCreateStatus("", github.StatusError, "Error waiting for build.", testInfra)
 		return err
 	}
+	c.setJobAgent(agentJenkins)
 
-	resultURL := c.guberURL(strconv.Itoa(result.Number))
-	c.tryCreateStatus("", github.StatusPending, "Build started.", resultURL)
+	buildID := strconv.Itoa(result.Number)
+	buildName := fmt.Sprintf("%s-%s", c.Presubmit.Name, buildID)
+	resultURL := c.guberURL(buildID)
+	c.tryCreateStatus(buildName, github.StatusPending, "Build started.", resultURL)
 	for {
 		if err != nil {
-			c.tryCreateStatus("", github.StatusError, "Error waiting for build.", testInfra)
+			c.tryCreateStatus(buildName, github.StatusError, "Error waiting for build.", testInfra)
 			return err
 		}
 		if result.Building {
 			time.Sleep(time.Minute)
 		} else {
 			if result.Success {
-				c.tryCreateStatus("", github.StatusSuccess, "Build succeeded.", resultURL)
+				c.tryCreateStatus(buildName, github.StatusSuccess, "Build succeeded.", resultURL)
 				break
 			} else {
-				c.tryCreateStatus("", github.StatusFailure, "Build failed.", resultURL)
+				c.tryCreateStatus(buildName, github.StatusFailure, "Build failed.", resultURL)
 				break
 			}
 		}
@@ -449,6 +456,12 @@ func (c *testClient) guberURL(build string) string {
 		return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
 	} else {
 		return fmt.Sprintf("%s/%s/%s/", url, c.Postsubmit.Name, build)
+	}
+}
+
+func (c *testClient) setJobAgent(agent string) {
+	if err := line.SetJobAgent(c.KubeClient, c.KubeJob, agent); err != nil {
+		logrus.WithFields(fields(c)).WithError(err).Errorf("Error setting Kube Job agent annotation to %s.", agent)
 	}
 }
 

@@ -30,6 +30,7 @@ go_library(
     ],
     tags = ["automanaged"],
     deps = [
+        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor:github.com/NYTimes/gziphandler",
         "//vendor:github.com/Sirupsen/logrus",
