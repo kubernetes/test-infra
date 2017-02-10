@@ -58,7 +58,6 @@ type client struct {
 
 var lineStartPRJob = line.StartPRJob
 var lineStartPushJob = line.StartPushJob
-var lineDeletePRJob = line.DeletePRJob
 
 func getClient(pc plugins.PluginClient) client {
 	return client{

@@ -95,7 +95,12 @@ func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, 
 			},
 		},
 	}
-	return startJob(k, jobName, context, br)
+	errDel := deleteJob(k, jobName, pr)
+	errStart := startJob(k, jobName, context, br)
+	if errDel != nil || errStart != nil {
+		return fmt.Errorf("error deleting old job: %v, error starting new job: %v", errDel, errStart)
+	}
+	return nil
 }
 
 func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
@@ -258,10 +263,6 @@ type deleteClient interface {
 	GetJob(name string) (kube.Job, error)
 	PatchJob(name string, job kube.Job) (kube.Job, error)
 	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
-}
-
-func DeletePRJob(k *kube.Client, jobName string, pr github.PullRequest) error {
-	return deleteJob(k, jobName, pr)
 }
 
 func deleteJob(k deleteClient, jobName string, pr github.PullRequest) error {
