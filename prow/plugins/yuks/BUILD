@@ -10,28 +10,24 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "plugins_test.go",
-        "respond_test.go",
-    ],
+    srcs = ["yuks_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//prow/github:go_default_library"],
+    deps = [
+        "//prow/github:go_default_library",
+        "//prow/github/fakegithub:go_default_library",
+        "//vendor:github.com/Sirupsen/logrus",
+    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "plugins.go",
-        "respond.go",
-    ],
+    srcs = ["yuks.go"],
     tags = ["automanaged"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/ghodss/yaml",
     ],
 )
 
@@ -44,15 +40,6 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//prow/plugins/cla:all-srcs",
-        "//prow/plugins/close:all-srcs",
-        "//prow/plugins/heart:all-srcs",
-        "//prow/plugins/lgtm:all-srcs",
-        "//prow/plugins/releasenote:all-srcs",
-        "//prow/plugins/trigger:all-srcs",
-        "//prow/plugins/yuks:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
