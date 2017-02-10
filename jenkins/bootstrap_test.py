@@ -1266,6 +1266,8 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
             'kubernetes-e2e-gke-1.3-1.4-upgrade-master',
+            'kubernetes-e2e-gke-1.3-1.4-upgrade-cluster',
+            'kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new'
         ]
 
         blacklist = [
