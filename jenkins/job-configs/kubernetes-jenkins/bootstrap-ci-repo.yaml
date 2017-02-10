@@ -139,7 +139,7 @@
         timeout: 90
     - kubernetes-node-kubelet-serial:  # lantaol
         branch: master
-        frequency: 'H H/1 * * *'
+        frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-serial
         json: 1
         repo-name: k8s.io/kubernetes
@@ -153,7 +153,7 @@
         timeout: 90
     - kubernetes-node-kubelet-flaky:  # lantaol
         branch: master
-        frequency: 'H H/1 * * *'
+        frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-flaky
         json: 1
         repo-name: k8s.io/kubernetes
@@ -174,7 +174,7 @@
         timeout: 90
     - kubernetes-node-kubelet-cri-serial:  # lantaol
         branch: master
-        frequency: 'H H/1 * * *'
+        frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-cri-serial
         json: 1
         repo-name: k8s.io/kubernetes
