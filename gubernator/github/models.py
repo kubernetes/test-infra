@@ -26,6 +26,29 @@ class GithubResource(ndb.Model):
         return ndb.Key(GithubResource, '%s %s' % (repo, number))
 
 
+def shrink(body):
+    '''
+    Recursively remove Github API urls from an object, to make it
+    more human-readable.
+    '''
+    toremove = []
+    for key, value in body.iteritems():
+        if isinstance(value, basestring):
+            if key.endswith('url'):
+                if (value.startswith('https://api.github.com/') or
+                    value.startswith('https://avatars.githubusercontent.com')):
+                    toremove.append(key)
+        elif isinstance(value, dict):
+            shrink(value)
+        elif isinstance(value, list):
+            for el in value:
+                if isinstance(el, dict):
+                    shrink(el)
+    for key in toremove:
+        body.pop(key)
+    return body
+
+
 class GithubWebhookRaw(ndb.Model):
     repo = ndb.StringProperty()
     number = ndb.IntegerProperty(indexed=False)
@@ -34,7 +57,7 @@ class GithubWebhookRaw(ndb.Model):
     body = ndb.TextProperty(compressed=True)
 
     def to_tuple(self):
-        return (self.event, json.loads(self.body), int(self.timestamp.strftime('%s')))
+        return (self.event, shrink(json.loads(self.body)), int(self.timestamp.strftime('%s')))
 
 
 def from_iso8601(t):
