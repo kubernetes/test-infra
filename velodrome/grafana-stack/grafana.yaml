@@ -1,18 +1,22 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: grafana
+  name: grafana-${PROJECT}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: grafana
+        project: ${PROJECT}
     spec:
       containers:
       - name: grafana
         command:
         image: grafana/grafana:3.1.1
+        resources:
+          requests:
+            cpu: 0m
         ports:
         - name: grafana-port
           containerPort: 3000
@@ -20,11 +24,6 @@ spec:
         - mountPath: /var/lib/grafana
           name: database-volume
         env:
-          - name: GF_SECURITY_ADMIN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: grafana
-                key: rootpassword
           - name: GF_AUTH_ANONYMOUS_ENABLED
             value: "true"
           - name: GF_USERS_ALLOW_SIGN_UP
@@ -34,19 +33,20 @@ spec:
           - name: GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID
             valueFrom:
               configMapKeyRef:
-                name: grafana
+                name: grafana-${PROJECT}
                 key: google-analytics-uaid
       volumes:
       - name: database-volume
         persistentVolumeClaim:
-          claimName: grafana-database-claim
+          claimName: grafana-${PROJECT}-database-claim
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: grafana
-  name: grafana-service
+    project: ${PROJECT}
+  name: grafana-${PROJECT}
 spec:
   ports:
   - name: grafana
@@ -54,11 +54,15 @@ spec:
     targetPort: grafana-port
   selector:
     app: grafana
+    project: ${PROJECT}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: grafana-database-claim
+  name: grafana-${PROJECT}-database-claim
+  labels:
+    app: grafana
+    project: ${PROJECT}
   annotations:
     volume.alpha.kubernetes.io/storage-class: value
 spec:
