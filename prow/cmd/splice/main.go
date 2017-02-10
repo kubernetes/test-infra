@@ -242,7 +242,7 @@ func main() {
 
 		running := []string{}
 		for _, job := range currentJobs {
-			if job.Status.Succeeded == 1 {
+			if job.Status.Succeeded == 1 && job.Metadata.Annotations["state"] == "success" {
 				ref := job.Metadata.Annotations["refs"]
 				context := job.Metadata.Annotations["context"]
 				succeeded[ref+context] = true
