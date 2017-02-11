@@ -53,9 +53,6 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
-	case "closed":
-		c.Logger.Info("Aborting all jobs for closed PR.")
-		return deleteAll(c, pr.PullRequest)
 	case "labeled":
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
@@ -173,15 +170,6 @@ func buildAll(c client, pr github.PullRequest) error {
 			ref = r
 		}
 		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr, ref); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func deleteAll(c client, pr github.PullRequest) error {
-	for _, job := range c.JobAgent.AllPresubmits(pr.Base.Repo.FullName) {
-		if err := lineDeletePRJob(c.KubeClient, job.Name, pr); err != nil {
 			return err
 		}
 	}
