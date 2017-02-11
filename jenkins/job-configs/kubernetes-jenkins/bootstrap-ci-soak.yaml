@@ -10,7 +10,7 @@
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
-    name: 'ci-{soak-suffix}'
+    name: 'ci-{suffix}'
     node: 'e2e'
     properties:
     - build-blocker:
@@ -40,9 +40,9 @@
 
 - project:
     jobs:
-    - 'ci-{soak-suffix}'
+    - 'ci-soak-{suffix}'
     name: bootstrap-ci-soak
-    soak-suffix:
+    suffix:
     - kubernetes-soak-gce-deploy:
         blocker: ci-kubernetes-soak-gce-test
         job-name: ci-kubernetes-soak-gce-deploy

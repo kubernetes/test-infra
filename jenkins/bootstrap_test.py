@@ -1178,18 +1178,6 @@ class JobTest(unittest.TestCase):
         'config.json',  # For --json mode
     ]
 
-    yaml_suffix = {
-        'job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml' : 'dockerpush-suffix'
-    }
-
     realjobs = {}
 
     def testJobScriptExpandsVars(self):
@@ -1421,8 +1409,7 @@ class JobTest(unittest.TestCase):
             ','.join(defined_templates - used_templates))
         self.assertEquals(defined_templates, used_templates, msg)
 
-        self.assertIn(path, self.yaml_suffix)
-        jobs = project.get(self.yaml_suffix[path])
+        jobs = project.get('suffix')
         if not jobs or not isinstance(jobs, list):
             self.fail('Could not find %s list in %s' % (suffix, project))
 

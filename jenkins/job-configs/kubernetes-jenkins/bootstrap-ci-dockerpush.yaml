@@ -11,7 +11,7 @@
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
-    name: 'ci-{dockerpush-suffix}'
+    name: 'ci-{suffix}'
     node: 'build'
     properties:
     - build-discarder:
@@ -47,9 +47,9 @@
 
 - project:
     jobs:
-    - 'ci-{dockerpush-suffix}'
+    - 'ci-dockerpush-{suffix}'
     name: bootstrap-ci-dockerpush
-    dockerpush-suffix:
+    suffix:
     - cadvisor-canarypush:
         branch: master
         job-name: ci-cadvisor-canarypush

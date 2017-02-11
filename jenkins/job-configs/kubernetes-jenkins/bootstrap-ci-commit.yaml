@@ -15,7 +15,7 @@
             --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
-    name: 'ci-{commit-suffix}'
+    name: 'ci-{suffix}'
     node: 'build'
     properties:
     - build-discarder:
@@ -55,11 +55,9 @@
 
 - project:
     jobs:
-    - 'ci-{commit-suffix}'
+    - 'ci-commit-{suffix}'
     name: bootstrap-ci-commit
-
-    commit-suffix:
-
+    suffix:
     - kops-build:
         branch: master
         commit-frequency: 'H/2 * * * *'

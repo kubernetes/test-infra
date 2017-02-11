@@ -13,7 +13,7 @@
             --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
-    name: 'ci-{repo-suffix}'
+    name: 'ci-{suffix}'
     node: 'build'
     properties:
     - build-discarder:
@@ -44,10 +44,9 @@
 
 - project:
     jobs:
-    - 'ci-{repo-suffix}'
+    - 'ci-repo-{suffix}'
     name: bootstrap-ci-repo
-    repo-suffix:
-
+    suffix:
     - cadvisor-node-kubelet:  # dawnchen
         branch: master
         frequency: 'H/30 * * * *'
