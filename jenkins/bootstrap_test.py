@@ -1265,18 +1265,19 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
-            'kubernetes-e2e-gke-1.3-1.4-upgrade-master',
-            'kubernetes-e2e-gke-1.3-1.4-upgrade-cluster',
-            'kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new',
-            'kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master',
-            'kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster',
-            'kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new'
+            'kubernetes-e2e-gke-[0-9a-z-._]*-1.4-upgrade-',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new',
+            'kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master',
+            'kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster',
+            'kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new'
         ]
 
         blacklist = [
