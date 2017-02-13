@@ -2064,6 +2064,7 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-1.3-test.env",
+    "--soak-test",
     "--up=false",
     "--down=false"
   ]

@@ -150,6 +150,10 @@ def main(args):
         if key not in docker_env_ignore:
             cmd.extend(['-e', '%s=%s' % (key, value)])
 
+    # Overwrite JOB_NAME for soak-*-test jobs
+    if args.soak_test and os.environ.get('JOB_NAME'):
+        cmd.extend(['-e', 'JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy')])
+
     cmd.append(kubekins(args.tag))
 
     signal.signal(signal.SIGTERM, sig_handler)
@@ -184,6 +188,8 @@ if __name__ == '__main__':
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
+    PARSER.add_argument(
+        '--soak-test', action='store_true', help='If the test is a soak test job')
     PARSER.add_argument(
         '--tag', default='v20170207-9bbd5f41', help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
