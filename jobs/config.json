@@ -304,6 +304,17 @@
   ]
 },
 
+"maintenance-ci-janitor": {
+  "scenario": "kubernetes_janitor"
+},
+
+"maintenance-pull-janitor": {
+  "scenario": "kubernetes_janitor",
+  "args": [
+    "--pr-janitor"
+  ]
+},
+
 "ci-kubernetes-e2e-cri-gce": {
   "scenario": "kubernetes_e2e",
   "args": [

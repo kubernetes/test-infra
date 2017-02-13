@@ -42,10 +42,21 @@
     - clean-projects:
         branch: master
         job-name: maintenance-ci-clean-projects
+        json: 0
         frequency: 'H H/3 * * *'
         repo-name: 'k8s.io/test-infra'
+        timeout: 0
     - aws-janitor:
         branch: master
         frequency: 'H * * * *'
         job-name: maintenance-ci-aws-janitor
+        json: 0
         repo-name: 'k8s.io/test-infra'
+        timeout: 0
+    - janitor:
+        branch: master
+        frequency: '@daily'
+        job-name: maintenance-ci-janitor
+        json: 1
+        repo-name: 'k8s.io/test-infra'
+        timeout: 300
