@@ -116,7 +116,7 @@ def clear_resources(project, col, resource):
             print 'Resource type %s to be deleted: %s' % (resource.name, list(items))
             continue
 
-        manage_key = {'Yes':'manage', 'No':'unmanaged'}
+        manage_key = {'Yes':'managed', 'No':'unmanaged'}
 
         # construct the customized gcloud commend
         base = ['gcloud', 'compute', '-q', resource.name]
