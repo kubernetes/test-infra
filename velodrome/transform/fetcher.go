@@ -27,11 +27,16 @@ import (
 )
 
 // fetchRecentIssues retrieves issues from DB, but only fetches issues modified since last call
-func fetchRecentIssues(db *gorm.DB, last *time.Time, out chan sql.Issue) error {
+func fetchRecentIssues(db *gorm.DB, repository string, last *time.Time, out chan sql.Issue) error {
 	glog.Infof("Fetching issues updated after %s", *last)
 
 	var issues []sql.Issue
-	query := db.Where("issue_updated_at >= ?", last).Order("issue_updated_at").Preload("Labels").Find(&issues)
+	query := db.
+		Where("issue_updated_at >= ?", last).
+		Where("repository = ?", repository).
+		Order("issue_updated_at").
+		Preload("Labels").
+		Find(&issues)
 	if query.Error != nil {
 		return query.Error
 	}
@@ -47,16 +52,26 @@ func fetchRecentIssues(db *gorm.DB, last *time.Time, out chan sql.Issue) error {
 }
 
 // fetchRecentEventsAndComments retrieves events from DB, but only fetches events created since last call
-func fetchRecentEventsAndComments(db *gorm.DB, lastEvent *int, lastComment *int, out chan interface{}) error {
+func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int, lastComment *int, out chan interface{}) error {
 	glog.Infof("Fetching issue-events with id bigger than %d", *lastEvent)
 	glog.Infof("Fetching comments with id bigger than %d", *lastComment)
 
-	eventRows, err := db.Model(sql.IssueEvent{}).Where("id > ?", *lastEvent).Order("event_created_at asc").Rows()
+	eventRows, err := db.
+		Model(sql.IssueEvent{}).
+		Where("id > ?", *lastEvent).
+		Where("repository = ?", repository).
+		Order("event_created_at asc").
+		Rows()
 	if err != nil {
 		return fmt.Errorf("Failed to query events from database: %s", err)
 	}
 
-	commentRows, err := db.Model(sql.Comment{}).Where("id > ?", *lastComment).Order("comment_created_at asc").Rows()
+	commentRows, err := db.
+		Model(sql.Comment{}).
+		Where("id > ?", *lastComment).
+		Where("repository = ?", repository).
+		Order("comment_created_at asc").
+		Rows()
 	if err != nil {
 		return fmt.Errorf("Failed to query comments from database: %s", err)
 	}
@@ -108,13 +123,15 @@ type Fetcher struct {
 	lastComment           int
 	issuesChannel         chan sql.Issue
 	eventsCommentsChannel chan interface{}
+	repository            string
 }
 
 // NewFetcher creates a new Fetcher and initializes the output channels
-func NewFetcher() *Fetcher {
+func NewFetcher(repository string) *Fetcher {
 	return &Fetcher{
 		issuesChannel:         make(chan sql.Issue, 100),
 		eventsCommentsChannel: make(chan interface{}, 100),
+		repository:            repository,
 	}
 }
 
@@ -125,10 +142,10 @@ func (f *Fetcher) GetChannels() (chan sql.Issue, chan interface{}) {
 
 // Fetch retrieves all types of events, and push them to output channels
 func (f *Fetcher) Fetch(db *gorm.DB) error {
-	if err := fetchRecentIssues(db, &f.lastIssue, f.issuesChannel); err != nil {
+	if err := fetchRecentIssues(db, f.repository, &f.lastIssue, f.issuesChannel); err != nil {
 		return err
 	}
-	if err := fetchRecentEventsAndComments(db, &f.lastEvent, &f.lastComment, f.eventsCommentsChannel); err != nil {
+	if err := fetchRecentEventsAndComments(db, f.repository, &f.lastEvent, &f.lastComment, f.eventsCommentsChannel); err != nil {
 		return err
 	}
 	return nil

@@ -26,11 +26,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func findLatestCommentUpdate(issueID int, db *gorm.DB) time.Time {
+func findLatestCommentUpdate(issueID int, db *gorm.DB, repository string) time.Time {
 	var comment sql.Comment
 	comment.CommentUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	db.Select("comment_updated_at").Where(&sql.Comment{IssueID: issueID}).Order("comment_updated_at desc").First(&comment)
+	db.Select("comment_updated_at").
+		Where(&sql.Comment{IssueID: issueID}).
+		Where("repository = ?", repository).
+		Order("comment_updated_at desc").
+		First(&comment)
 
 	return comment.CommentUpdatedAt
 }
@@ -41,7 +45,7 @@ func updateIssueComments(issueID int, latest time.Time, db *gorm.DB, client Clie
 	go client.FetchIssueComments(issueID, latest, c)
 
 	for comment := range c {
-		commentOrm, err := NewIssueComment(issueID, comment)
+		commentOrm, err := NewIssueComment(issueID, comment, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create IssueComment: ", err)
 			continue
@@ -59,7 +63,7 @@ func updatePullComments(issueID int, latest time.Time, db *gorm.DB, client Clien
 	go client.FetchPullComments(issueID, latest, c)
 
 	for comment := range c {
-		commentOrm, err := NewPullComment(issueID, comment)
+		commentOrm, err := NewPullComment(issueID, comment, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create PullComment: ", err)
 			continue
@@ -73,7 +77,7 @@ func updatePullComments(issueID int, latest time.Time, db *gorm.DB, client Clien
 
 // UpdateComments downloads issue and pull-request comments and save in DB
 func UpdateComments(issueID int, pullRequest bool, db *gorm.DB, client ClientInterface) {
-	latest := findLatestCommentUpdate(issueID, db)
+	latest := findLatestCommentUpdate(issueID, db, client.RepositoryName())
 
 	updateIssueComments(issueID, latest, db, client)
 	if pullRequest {

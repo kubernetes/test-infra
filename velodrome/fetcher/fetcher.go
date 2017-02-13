@@ -44,6 +44,10 @@ func addRootFlags(cmd *cobra.Command, config *fetcherConfig) {
 }
 
 func runProgram(config *fetcherConfig) error {
+	if err := config.Client.CheckFlags(); err != nil {
+		return err
+	}
+
 	db, err := config.CreateDatabase()
 	if err != nil {
 		return err

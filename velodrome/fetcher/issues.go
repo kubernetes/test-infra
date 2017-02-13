@@ -26,11 +26,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func findLatestIssueUpdate(db *gorm.DB) (time.Time, error) {
+func findLatestIssueUpdate(db *gorm.DB, repository string) (time.Time, error) {
 	var issue sql.Issue
 	issue.IssueUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	query := db.Select("issue_updated_at").Order("issue_updated_at desc").First(&issue)
+	query := db.
+		Select("issue_updated_at").
+		Where("repository = ?", repository).
+		Order("issue_updated_at desc").
+		First(&issue)
 	if !query.RecordNotFound() && query.Error != nil {
 		return time.Time{}, query.Error
 	}
@@ -40,7 +44,7 @@ func findLatestIssueUpdate(db *gorm.DB) (time.Time, error) {
 
 // UpdateIssues downloads new issues and saves in database
 func UpdateIssues(db *gorm.DB, client ClientInterface) {
-	latest, err := findLatestIssueUpdate(db)
+	latest, err := findLatestIssueUpdate(db, client.RepositoryName())
 	if err != nil {
 		glog.Error("Failed to find last issue update: ", err)
 		return
@@ -49,7 +53,7 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 
 	go client.FetchIssues(latest, c)
 	for issue := range c {
-		issueOrm, err := NewIssue(issue)
+		issueOrm, err := NewIssue(issue, client.RepositoryName())
 		if err != nil {
 			glog.Error("Can't create issue:", err)
 			continue

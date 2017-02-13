@@ -25,7 +25,7 @@ import (
 	sqltest "k8s.io/test-infra/velodrome/sql/testing"
 )
 
-// Fetch doesn't download too many items, and return the proper date.
+// Fetch doesn't download too many items, and return the proper date. And only from proper repo
 
 func TestFetchIssues(t *testing.T) {
 	config := sqltest.SQLiteConfig{":memory:"}
@@ -34,15 +34,16 @@ func TestFetchIssues(t *testing.T) {
 		t.Fatal("Failed to create database:", err)
 	}
 
-	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)})
-	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)})
-	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC)})
-	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC)})
+	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC), Repository: "ok"})
+	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC), Repository: "ok"})
+	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC), Repository: "ok"})
+	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "ok"})
+	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "notok"})
 
 	out := make(chan sql.Issue, 10)
 
 	last := time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)
-	if err := fetchRecentIssues(db, &last, out); err != nil {
+	if err := fetchRecentIssues(db, "ok", &last, out); err != nil {
 		t.Fatal("Failed to fetch recent issues:", err)
 	}
 	if last != time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC) {
@@ -70,15 +71,16 @@ func TestFetchEventsAndComments(t *testing.T) {
 		// Mixed events and comments
 		{
 			events: []interface{}{
-				&sql.IssueEvent{ID: 1},
-				&sql.IssueEvent{ID: 2},
-				&sql.IssueEvent{ID: 3, EventCreatedAt: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)},
-				&sql.IssueEvent{ID: 4, EventCreatedAt: time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC)},
-				&sql.Comment{ID: 1},
-				&sql.Comment{ID: 2},
-				&sql.Comment{ID: 3, CommentCreatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)},
-				&sql.Comment{ID: 4, CommentCreatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC)},
-				&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC)},
+				&sql.IssueEvent{ID: 1, Repository: "ok"},
+				&sql.IssueEvent{ID: 2, Repository: "ok"},
+				&sql.IssueEvent{ID: 3, EventCreatedAt: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.IssueEvent{ID: 4, EventCreatedAt: time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 1, Repository: "ok"},
+				&sql.Comment{ID: 2, Repository: "ok"},
+				&sql.Comment{ID: 3, CommentCreatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 4, CommentCreatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 6, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
 			lastEvent:       2,
 			lastComment:     2,
@@ -89,11 +91,12 @@ func TestFetchEventsAndComments(t *testing.T) {
 		// Only comments
 		{
 			events: []interface{}{
-				&sql.Comment{ID: 1},
-				&sql.Comment{ID: 2},
-				&sql.Comment{ID: 3, CommentCreatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)},
-				&sql.Comment{ID: 4, CommentCreatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC)},
-				&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC)},
+				&sql.Comment{ID: 1, Repository: "ok"},
+				&sql.Comment{ID: 2, Repository: "ok"},
+				&sql.Comment{ID: 3, CommentCreatedAt: time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 4, CommentCreatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
+				&sql.Comment{ID: 5, CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
 			lastEvent:       10,
 			lastComment:     2,
@@ -120,7 +123,7 @@ func TestFetchEventsAndComments(t *testing.T) {
 		lastEvent := test.lastEvent
 		lastComment := test.lastComment
 
-		if err := fetchRecentEventsAndComments(db, &lastEvent, &lastComment, out); err != nil {
+		if err := fetchRecentEventsAndComments(db, "ok", &lastEvent, &lastComment, out); err != nil {
 			t.Fatal("Failed to fetch recent events:", err)
 		}
 		if lastEvent != test.wantLastEvent {

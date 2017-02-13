@@ -18,8 +18,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -32,13 +34,24 @@ type transformConfig struct {
 	InfluxConfig
 	sql.MySQLConfig
 
-	once      bool
-	frequency int
+	repository string
+	once       bool
+	frequency  int
+}
+
+func CheckRootFlags(config *transformConfig) error {
+	if config.repository == "" {
+		return fmt.Errorf("Repository must be set.")
+	}
+	config.repository = strings.ToLower(config.repository)
+
+	return nil
 }
 
 func addRootFlags(cmd *cobra.Command, config *transformConfig) {
 	cmd.PersistentFlags().IntVar(&config.frequency, "frequency", 2, "Number of iterations per hour")
 	cmd.PersistentFlags().BoolVar(&config.once, "once", false, "Run once and then leave")
+	cmd.PersistentFlags().StringVar(&config.repository, "repository", "", "Repository to use for metrics")
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 }
 
@@ -47,13 +60,13 @@ func runProgram(config *transformConfig) error {
 	if err != nil {
 		return err
 	}
-	influxdb, err := config.InfluxConfig.CreateDatabase()
+	influxdb, err := config.InfluxConfig.CreateDatabase(map[string]string{"repository": config.repository})
 	if err != nil {
 		return err
 	}
 
 	plugins := NewPlugins(influxdb)
-	fetcher := NewFetcher()
+	fetcher := NewFetcher(config.repository)
 
 	// Plugins constantly wait for new issues/events/comments
 	go plugins.Dispatch(fetcher.GetChannels())
@@ -90,6 +103,7 @@ func main() {
 		},
 	}
 	addRootFlags(root, config)
+	CheckRootFlags(config)
 	config.MySQLConfig.AddFlags(root)
 	config.InfluxConfig.AddFlags(root)
 

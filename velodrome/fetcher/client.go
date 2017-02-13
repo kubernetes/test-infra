@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -48,10 +49,24 @@ func (client *Client) AddFlags(cmd *cobra.Command) {
 		"The OAuth Token to use for requests.")
 	cmd.PersistentFlags().StringVar(&client.TokenFile, "token-file", "",
 		"The file containing the OAuth Token to use for requests.")
-	cmd.PersistentFlags().StringVar(&client.Org, "organization", "kubernetes",
+	cmd.PersistentFlags().StringVar(&client.Org, "organization", "",
 		"The github organization to scan")
-	cmd.PersistentFlags().StringVar(&client.Project, "project", "kubernetes",
+	cmd.PersistentFlags().StringVar(&client.Project, "project", "",
 		"The github project to scan")
+}
+
+func (client *Client) CheckFlags() error {
+	if client.Org == "" {
+		return fmt.Errorf("organization flag must be set")
+	}
+	client.Org = strings.ToLower(client.Org)
+
+	if client.Project == "" {
+		return fmt.Errorf("project flag must be set")
+	}
+	client.Project = strings.ToLower(client.Project)
+
+	return nil
 }
 
 // Create the github client that we use to communicate with github
@@ -102,10 +117,15 @@ func (client *Client) limitsCheckAndWait() {
 
 // ClientInterface describes what a client should be able to do
 type ClientInterface interface {
+	RepositoryName() string
 	FetchIssues(time.Time, chan *github.Issue)
 	FetchIssueEvents(*int, chan *github.IssueEvent)
 	FetchIssueComments(int, time.Time, chan *github.IssueComment)
 	FetchPullComments(int, time.Time, chan *github.PullRequestComment)
+}
+
+func (client *Client) RepositoryName() string {
+	return fmt.Sprintf("%s/%s", client.Org, client.Project)
 }
 
 // FetchIssues from Github, until 'latest' time

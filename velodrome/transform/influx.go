@@ -18,6 +18,8 @@ package main
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -44,7 +46,7 @@ func (config *InfluxConfig) AddFlags(cmd *cobra.Command) {
 
 // CreateDatabase creates and connects a new instance of an InfluxDB
 // It is created based on the fields set in the configuration.
-func (config *InfluxConfig) CreateDatabase() (*InfluxDB, error) {
+func (config *InfluxConfig) CreateDatabase(tags map[string]string) (*InfluxDB, error) {
 	client, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
 		Addr:     config.Host,
 		Username: config.User,
@@ -66,6 +68,7 @@ func (config *InfluxConfig) CreateDatabase() (*InfluxDB, error) {
 		client:   client,
 		database: config.DB,
 		batch:    bp,
+		tags:     tags,
 	}, err
 }
 
@@ -75,12 +78,46 @@ type InfluxDB struct {
 	database  string
 	batch     influxdb.BatchPoints
 	batchSize int
+	tags      map[string]string
+}
+
+// mergeTags merge the default tags with the exta tags. Default will be overriden if it conflicts.
+func mergeTags(defaultTags, extraTags map[string]string) map[string]string {
+	newTags := map[string]string{}
+
+	for k, v := range defaultTags {
+		newTags[k] = v
+	}
+	for k, v := range extraTags {
+		newTags[k] = v
+	}
+
+	return newTags
+}
+
+// tagsToWhere creates a where query to match tags element
+func tagsToWhere(tags map[string]string) string {
+	if len(tags) == 0 {
+		return ""
+	}
+
+	sortedKeys := []string{}
+	for k := range tags {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+
+	conditions := []string{}
+	for _, key := range sortedKeys {
+		conditions = append(conditions, fmt.Sprintf(`"%s" = "%v"`, key, tags[key]))
+	}
+	return "WHERE " + strings.Join(conditions, " AND ")
 }
 
 // GetLastMeasurement returns the time of the last measurement pushed to the database
 func (i *InfluxDB) GetLastMeasurement(measurement string) (time.Time, error) {
 	query := influxdb.Query{
-		Command:  fmt.Sprintf("SELECT * FROM %s GROUP BY * ORDER BY time DESC LIMIT 1", measurement),
+		Command:  fmt.Sprintf("SELECT * FROM %s %s GROUP BY * ORDER BY time DESC LIMIT 1", measurement, tagsToWhere(i.tags)),
 		Database: i.database,
 	}
 	response, err := i.client.Query(query)
@@ -97,13 +134,12 @@ func (i *InfluxDB) GetLastMeasurement(measurement string) (time.Time, error) {
 		len(response.Results[0].Series[0].Values[0]) == 0 {
 		return time.Time{}, nil
 	}
-
 	return time.Parse(time.RFC3339, response.Results[0].Series[0].Values[0][0].(string))
 }
 
 // Push a point to the database. This appends to current batchpoint
 func (i *InfluxDB) Push(measurement string, tags map[string]string, fields map[string]interface{}, date time.Time) error {
-	pt, err := influxdb.NewPoint(measurement, tags, fields, date)
+	pt, err := influxdb.NewPoint(measurement, mergeTags(i.tags, tags), fields, date)
 	if err != nil {
 		return err
 	}

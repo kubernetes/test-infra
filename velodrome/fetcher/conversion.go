@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -25,7 +26,7 @@ import (
 )
 
 // NewIssue creates a new (orm) Issue from a github Issue
-func NewIssue(gIssue *github.Issue) (*sql.Issue, error) {
+func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 	if gIssue.Number == nil ||
 		gIssue.Title == nil ||
 		gIssue.User == nil ||
@@ -36,6 +37,7 @@ func NewIssue(gIssue *github.Issue) (*sql.Issue, error) {
 		gIssue.UpdatedAt == nil {
 		return nil, fmt.Errorf("Issue is missing mandatory field: %+v", gIssue)
 	}
+
 	var closedAt *time.Time
 	if gIssue.ClosedAt != nil {
 		closedAt = gIssue.ClosedAt
@@ -49,7 +51,7 @@ func NewIssue(gIssue *github.Issue) (*sql.Issue, error) {
 		body = *gIssue.Body
 	}
 	isPR := (gIssue.PullRequestLinks != nil && gIssue.PullRequestLinks.URL != nil)
-	labels, err := newLabels(*gIssue.Number, gIssue.Labels)
+	labels, err := newLabels(*gIssue.Number, gIssue.Labels, repository)
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +69,12 @@ func NewIssue(gIssue *github.Issue) (*sql.Issue, error) {
 		IssueClosedAt:  closedAt,
 		IssueCreatedAt: *gIssue.CreatedAt,
 		IssueUpdatedAt: *gIssue.UpdatedAt,
+		Repository:     strings.ToLower(repository),
 	}, nil
 }
 
 // NewIssueEvent creates a new (orm) Issue from a github Issue
-func NewIssueEvent(gIssueEvent *github.IssueEvent) (*sql.IssueEvent, error) {
+func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.IssueEvent, error) {
 	if gIssueEvent.ID == nil ||
 		gIssueEvent.Event == nil ||
 		gIssueEvent.CreatedAt == nil ||
@@ -101,31 +104,38 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent) (*sql.IssueEvent, error) {
 		IssueId:        *gIssueEvent.Issue.Number,
 		Assignee:       assignee,
 		Actor:          actor,
+		Repository:     strings.ToLower(repository),
 	}, nil
 }
 
 // newLabels creates a new Label for each label in the issue
-func newLabels(issueId int, gLabels []github.Label) ([]sql.Label, error) {
+func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.Label, error) {
 	labels := []sql.Label{}
+	repository = strings.ToLower(repository)
 
 	for _, label := range gLabels {
 		if label.Name == nil {
 			return nil, fmt.Errorf("Label is missing name field")
 		}
-		labels = append(labels, sql.Label{IssueID: issueId, Name: *label.Name})
+		labels = append(labels, sql.Label{
+			IssueID:    issueId,
+			Name:       *label.Name,
+			Repository: repository,
+		})
 	}
 
 	return labels, nil
 }
 
 // NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueId int, gComment *github.IssueComment) (*sql.Comment, error) {
+func NewIssueComment(issueId int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
 		gComment.UpdatedAt == nil {
 		return nil, fmt.Errorf("IssueComment is missing mandatory field: %s", gComment)
 	}
+
 	var login string
 	if gComment.User != nil && gComment.User.Login != nil {
 		login = *gComment.User.Login
@@ -139,17 +149,19 @@ func NewIssueComment(issueId int, gComment *github.IssueComment) (*sql.Comment, 
 		CommentCreatedAt: *gComment.CreatedAt,
 		CommentUpdatedAt: *gComment.UpdatedAt,
 		PullRequest:      false,
+		Repository:       strings.ToLower(repository),
 	}, nil
 }
 
 // NewPullComment creates a Comment from a github.PullRequestComment
-func NewPullComment(issueId int, gComment *github.PullRequestComment) (*sql.Comment, error) {
+func NewPullComment(issueId int, gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
 		gComment.UpdatedAt == nil {
 		return nil, fmt.Errorf("PullComment is missing mandatory field: %s", gComment)
 	}
+
 	var login string
 	if gComment.User != nil && gComment.User.Login != nil {
 		login = *gComment.User.Login
@@ -162,5 +174,6 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment) (*sql.Comm
 		CommentCreatedAt: *gComment.CreatedAt,
 		CommentUpdatedAt: *gComment.UpdatedAt,
 		PullRequest:      true,
+		Repository:       strings.ToLower(repository),
 	}, nil
 }

@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -32,19 +33,39 @@ func TestFindLatestUpdate(t *testing.T) {
 	tests := []struct {
 		events         []sql.IssueEvent
 		expectedLatest int
+		repository     string
 	}{
 		// If we don't have any issue, return 1900/1/1 0:0:0 UTC
 		{
 			[]sql.IssueEvent{},
 			0,
+			"ONE",
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC)},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)},
-				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC)},
+				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+			},
+			0,
+			"TWO",
+		},
+		{
+			[]sql.IssueEvent{
+				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			7,
+			"ONE",
+		},
+		{
+			[]sql.IssueEvent{
+				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+			},
+			1,
+			"TWO",
 		},
 	}
 
@@ -60,7 +81,7 @@ func TestFindLatestUpdate(t *testing.T) {
 		}
 		tx.Commit()
 
-		actualLatest, err := findLatestEvent(db)
+		actualLatest, err := findLatestEvent(db, test.repository)
 		if err != nil {
 			t.Error("findLatestEvent failed:", err)
 		}
@@ -69,7 +90,7 @@ func TestFindLatestUpdate(t *testing.T) {
 				t.Error("Didn't found event, expected:", test.expectedLatest)
 			}
 		} else if *actualLatest != test.expectedLatest {
-			t.Error("Actual:", actualLatest,
+			t.Error("Actual:", *actualLatest,
 				"doesn't match expected:", test.expectedLatest)
 		}
 	}
@@ -79,26 +100,28 @@ func TestUpdateEvents(t *testing.T) {
 	config := sqltest.SQLiteConfig{":memory:"}
 
 	tests := []struct {
-		before []sql.IssueEvent
-		new    []*github.IssueEvent
-		after  []sql.IssueEvent
+		before     []sql.IssueEvent
+		new        []*github.IssueEvent
+		after      []sql.IssueEvent
+		repository string
 	}{
 		// No new issues
 		{
 			before: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			new: []*github.IssueEvent{},
 			after: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
+			repository: "FULL/REPO",
 		},
 		// New issues
 		{
 			before: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			new: []*github.IssueEvent{
@@ -106,18 +129,19 @@ func TestUpdateEvents(t *testing.T) {
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			after: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
+				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
+			repository: "FULL/REPO",
 		},
 		// New issues + already existing (doesn't update)
 		{
 			before: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
+				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			new: []*github.IssueEvent{
@@ -127,13 +151,30 @@ func TestUpdateEvents(t *testing.T) {
 					time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			after: []sql.IssueEvent{
-				*makeIssueEvent(1, 2, "", "Event", "", "",
+				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
+				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				*makeIssueEvent(3, 2, "Label", "Event", "Assignee", "",
+				*makeIssueEvent(3, 2, "Label", "Event", "Assignee", "", "full/repo",
 					time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
+			repository: "FULL/REPO",
+		},
+		// Fetch new repository
+		{
+			before: []sql.IssueEvent{
+				*makeIssueEvent(2, 2, "", "Event", "", "", "full/one",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			},
+			new: []*github.IssueEvent{
+				makeGithubIssueEvent(1, 2, "", "EventNameOther", "", "",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			},
+			after: []sql.IssueEvent{
+				*makeIssueEvent(1, 2, "", "EventNameOther", "", "", "full/other",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			},
+			repository: "FULL/OTHER",
 		},
 	}
 
@@ -147,9 +188,9 @@ func TestUpdateEvents(t *testing.T) {
 			db.Create(&event)
 		}
 
-		UpdateIssueEvents(db, FakeClient{IssueEvents: test.new})
+		UpdateIssueEvents(db, FakeClient{IssueEvents: test.new, Repository: test.repository})
 		var issues []sql.IssueEvent
-		if err := db.Order("ID").Find(&issues).Error; err != nil {
+		if err := db.Order("ID").Where("repository = ?", strings.ToLower(test.repository)).Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(issues, test.after) {

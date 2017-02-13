@@ -23,10 +23,14 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
-func findLatestEvent(db *gorm.DB) (*int, error) {
+func findLatestEvent(db *gorm.DB, repository string) (*int, error) {
 	var latestEvent sql.IssueEvent
 
-	query := db.Select("id, event_created_at").Order("event_created_at desc").First(&latestEvent)
+	query := db.
+		Select("id, event_created_at").
+		Where("repository = ?", repository).
+		Order("event_created_at desc").
+		First(&latestEvent)
 	if query.RecordNotFound() {
 		return nil, nil
 	}
@@ -40,7 +44,7 @@ func findLatestEvent(db *gorm.DB) (*int, error) {
 // UpdateIssueEvents fetches all events until we find the most recent we
 // have in db, and saves everything in database
 func UpdateIssueEvents(db *gorm.DB, client ClientInterface) {
-	latest, err := findLatestEvent(db)
+	latest, err := findLatestEvent(db, client.RepositoryName())
 	if err != nil {
 		glog.Error("Failed to find last event: ", err)
 		return
@@ -49,7 +53,7 @@ func UpdateIssueEvents(db *gorm.DB, client ClientInterface) {
 
 	go client.FetchIssueEvents(latest, c)
 	for event := range c {
-		eventOrm, err := NewIssueEvent(event)
+		eventOrm, err := NewIssueEvent(event, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create issue-event", err)
 		}
