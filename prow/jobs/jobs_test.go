@@ -328,22 +328,26 @@ func TestListJobNames(t *testing.T) {
 func TestRunAgainstBranch(t *testing.T) {
 	jobs := []Presubmit{
 		{
-			Name:         "a",
-			SkipBranches: []string{"s"},
+			Name:     "a",
+			Brancher: Brancher{SkipBranches: []string{"s"}},
 		},
 		{
 			Name:     "b",
-			Branches: []string{"r"},
+			Brancher: Brancher{Branches: []string{"r"}},
 		},
 		{
-			Name:         "c",
-			SkipBranches: []string{"s"},
-			Branches:     []string{"r"},
+			Name: "c",
+			Brancher: Brancher{
+				SkipBranches: []string{"s"},
+				Branches:     []string{"r"},
+			},
 		},
 		{
-			Name:         "d",
-			SkipBranches: []string{"s"},
-			Branches:     []string{"s", "r"},
+			Name: "d",
+			Brancher: Brancher{
+				SkipBranches: []string{"s"},
+				Branches:     []string{"s", "r"},
+			},
 		},
 		{
 			Name: "default",
