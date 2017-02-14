@@ -150,6 +150,9 @@ def main(args):
         if key not in docker_env_ignore:
             cmd.extend(['-e', '%s=%s' % (key, value)])
 
+    if args.entrypoint:
+        cmd.extend(['--entrypoint=%s' % (args.entrypoint)])
+
     cmd.append(kubekins(args.tag))
 
     signal.signal(signal.SIGTERM, sig_handler)
@@ -176,6 +179,10 @@ if __name__ == '__main__':
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
+
+    PARSER.add_argument(
+        '--entrypoint',
+        help='Override entrypoint on docker image')
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
