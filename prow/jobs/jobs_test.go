@@ -256,6 +256,13 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
+func TestCrons(t *testing.T) {
+	ja := &JobAgent{}
+	if err := ja.loadCrons("../cron.yaml"); err != nil {
+		t.Fatalf("Could not load job configs: %v", err)
+	}
+}
+
 func TestGetPresubmits(t *testing.T) {
 	pres := []Presubmit{
 		{
