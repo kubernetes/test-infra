@@ -185,7 +185,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
-        '--tag', default='v20170207-9bbd5f41', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170208-a2139fbc', help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     PARSER.add_argument(
