@@ -51,6 +51,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.docker_registry="gcr.io/google-containers"
 .phase2.kubernetes_version="v1.4.1"
 .phase2.provider="{{.Phase2Provider}}"
+.phase2.kubeadm.version="stable"
 
 .phase3.run_addons=y
 .phase3.kube_proxy=y
