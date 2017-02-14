@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="BulkLGTMModule" ng-controller="BulkLGTMCntl as cntl">
+
+<head>
+  <link rel="stylesheet" href="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.0.7/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title ng-bind-template="Bulk LGTM Tool">Submit Queue</title>
+
+</head>
+
+<body>
+  <!-- Indent the whole thing -->
+  <md-content class="md-padding" layout="column">
+    <!-- Display the white border around the indented portion -->
+    <md-content class="md-whiteframe-z2">
+      <md-toolbar layout="row" layout-align="space-around center">
+        <h1 class="md-display-2">Bulk LGTM Tool</h1>
+        <a ng-href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" alt="kubernetes logo" class="titleLogo"></a>
+      </md-toolbar>
+      <md-content class="md-padding">
+        <foo ng-repeat="pr in cntl.prs">
+          <md-list-item class="md-3-line">
+            <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.user.login}}">
+              <img ng-src="{{pr.user.avatar_url}}" alt="{{pr.user.login}}">
+            </a>
+            <md-content class="md-list-item-text" layout="column">
+              <h3 class="md-body-1">
+                <a ng-href="{{pr.html_url}}">#{{pr.number}}: {{pr.title}}</a>
+              </h3>
+              <h4 class="md-body-2">{{pr.Reason}}</h4>
+              <p>{{pr.time | date:'medium'}} (<span style="color: green">+{{pr.additions}}</span>/<span style="color: red">-{{pr.deletions}}</span>)</p>
+              <md-button ng-click="cntl.lgtm(pr.number)" class="md-raised md-secondary">
+                LGTM
+              </md-button>
+            </md-content>
+          </md-list-item>
+          <md-list-item>
+            <md-content>
+              <iframe class="diffIframe" ng-src="{{'/bulkprs/prdiff?number=' + pr.number}}"></iframe>
+            </md-content>
+          </md-list-item>
+          <md-divider></md-divider>
+          </foo>
+        </md-list>
+      </md-content>
+    </md-content>
+  </md-content>
+  <!-- Angular Material Dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js" type="text/javascript"></script>
+  <!--
+  Local copy of angular-material.js with the fix in https://github.com/angular/material/issues/5681 applied.
+  This makes rendering the PR tab ~2X faster.
+  -->
+  <script src="angular-material.js" type="text/javascript"></script>
+  <script src="script.js" type="text/javascript"></script>
+</body>
+
+</html>
