@@ -69,13 +69,13 @@ def collect(project, age, resource, filt):
             '--filter=%s' % filt,
             '--project=%s' % project])):
 
-        print '%s' % item
+        print '%r' % item
 
         if 'name' not in item or 'creationTimestamp' not in item:
-            raise ValueError('%s' % item)
+            raise ValueError('%r' % item)
 
         if resource.condition and resource.condition not in item:
-            raise ValueError(resource.condition)
+            raise ValueError(resource.name, resource.condition)
 
         if resource.condition:
             colname = item[resource.condition]
@@ -84,17 +84,17 @@ def collect(project, age, resource, filt):
 
         if resource.managed:
             if 'isManaged' not in item:
-                raise ValueError(resource.managed)
+                raise ValueError(resource.name, resource.managed)
             else:
                 if resource.managed != item['isManaged']:
                     continue
 
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
-        print ('Found %s, %s in %s, created time = %s' %
+        print ('Found %r, %r in %r, created time = %r' %
                (resource.name, item['name'], colname, item['creationTimestamp']))
         if created < age:
-            print 'Added to janitor list: %s, %s' % (resource.name, item['name'])
+            print 'Added to janitor list: %r, %r' % (resource.name, item['name'])
             col[colname].append(item['name'])
     return col
 
@@ -113,7 +113,7 @@ def clear_resources(project, col, resource):
     err = 0
     for col, items in col.items():
         if ARGS.dryrun:
-            print 'Resource type %s to be deleted: %s' % (resource.name, list(items))
+            print 'Resource type %r to be deleted: %r' % (resource.name, list(items))
             continue
 
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
@@ -131,12 +131,12 @@ def clear_resources(project, col, resource):
         if resource.flags:
             base.append(resource.flags)
 
-        print 'Call %s' % base
+        print 'Call %r' % base
         try:
             subprocess.check_call(base + list(items))
         except subprocess.CalledProcessError as exc:
             err = 1
-            print >>sys.stderr, 'Error try to delete resources: %s' % exc
+            print >>sys.stderr, 'Error try to delete resources: %r' % exc
     return err
 
 
@@ -149,16 +149,23 @@ def main(project, days, hours, filt):
         filt: Resource instance filters when query.
     Returns:
         0 if no error
-        1 if deletion command fails
+        1 if list or delete command fails
     """
 
+    print '[=== Start Janitor on project %r ===]' % project
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     for res in DEMOLISH_ORDER:
-        print 'Try to search for %s with condition %s' % (res.name, res.condition)
-        col = collect(project, age, res, filt)
-        if col:
-            err |= clear_resources(project, col, res)
+        print 'Try to search for %r with condition %r' % (res.name, res.condition)
+        try:
+            col = collect(project, age, res, filt)
+            if col:
+                err |= clear_resources(project, col, res)
+        except ValueError:
+            err |= 1 # keep clean the other resource
+            print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
+
+    print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)
 
 

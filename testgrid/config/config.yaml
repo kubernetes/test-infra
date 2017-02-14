@@ -824,6 +824,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-clean-projects
 - name: maintenance-ci-aws-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
+- name: maintenance-ci-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: kubernetes-e2e-gke-large-teardown
@@ -1948,6 +1950,8 @@ dashboards:
     test_group_name: maintenance-ci-clean-projects
   - name: aws-janitor
     test_group_name: maintenance-ci-aws-janitor
+  - name: ci-janitor
+    test_group_name: maintenance-ci-janitor
 
 - name: test-infra
   dashboard_tab:

@@ -7,9 +7,11 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
+            --json='{json}' \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     properties:
     - build-discarder:
@@ -40,16 +42,22 @@
     suffix:
     - clean-projects:
         branch: master
-        job-name: maintenance-pull-clean-projects
         frequency: 'H H/3 * * *'
+        job-name: maintenance-pull-clean-projects
+        json: 0
         repo-name: 'k8s.io/test-infra'
+        timeout: 0
     - clean-ssh-keys:
         branch: master
-        job-name: maintenance-pull-clean-ssh-keys
         frequency: '@daily'
+        job-name: maintenance-pull-clean-ssh-keys
+        json: 0
         repo-name: 'k8s.io/test-infra'
+        timeout: 0
     - janitor:
         branch: master
-        frequency: 'H */3 * * *'
+        frequency: 'H H/3 * * *'
         job-name: maintenance-pull-janitor
+        json: 1
         repo-name: 'k8s.io/test-infra'
+        timeout: 30

@@ -1223,24 +1223,41 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml('job-configs/bootstrap-maintenance.yaml', Check)
 
     def testBootstrapMaintenanceCIYaml(self):
+        is_modern = lambda n: 'janitor' in n and 'aws' not in n
         def Check(job, name):
             job_name = 'maintenance-ci-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)  # TODO(krzyzacy): all modern
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml', Check)
+        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml',
+            Check, use_json=is_modern)
 
     def testBootstrapMaintenancePullYaml(self):
+        is_modern = lambda n: 'janitor' in n
         def Check(job, name):
             job_name = 'maintenance-pull-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)  # TODO(krzyzacy): all modern
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.CheckBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', Check)
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
+            Check, use_json=is_modern)
 
     def testBootstrapPullYaml(self):
         bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
