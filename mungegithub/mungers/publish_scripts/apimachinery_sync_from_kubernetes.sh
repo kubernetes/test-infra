@@ -51,15 +51,6 @@ currBranch=$(git rev-parse --abbrev-ref HEAD)
 previousKubeSHA=$(cat kubernetes-sha)
 previousBranchSHA=$(cat filter-branch-sha)
 
-# hack...
-if [ "$previousBranchSHA" == acda1e7401fbf79d89ba23df5e11d81f4a9d4e0d ]; then
-    previousBranchSHA=f6eb43d54a86a6521ef4bcebc22e4bb249e3213f
-fi
-
-if [ "$previousBranchSHA" == 442d134903e380b749aadecebe4a9e26b1faa6b6 ]; then
-    previousBranchSHA=30f11579e544d22b567f9162ecde708384160372
-fi
-
 git branch -D kube-sync || true
 git checkout upstream-kube/master -b kube-sync
 git reset --hard upstream-kube/master
