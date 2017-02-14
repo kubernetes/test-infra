@@ -79,6 +79,8 @@ go_library(
         "old-test-getter.go",
         "path_label.go",
         "publisher.go",
+        "publisher_issue.go",
+        "publisher_logger.go",
         "release-note-label.go",
         "size.go",
         "stale-green-ci.go",
