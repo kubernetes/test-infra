@@ -62,6 +62,9 @@ func (p Priority) Priority() int {
 type OwnerMapper interface {
 	// TestOwner returns a GitHub username for a test, or "" if none are found.
 	TestOwner(testName string) string
+
+	// TestSIG returns the name of the Special Interest Group (SIG) which owns the test , or "" if none are found.
+	TestSIG(testName string) string
 }
 
 // IssueFinder finds an issue for a given key.
