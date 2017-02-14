@@ -871,6 +871,15 @@ test_groups:
 # kubeadm tests
 - name: kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+# upgrade CI tests
+- name: kubernetes-e2e-gce-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-upgrade-cluster
+- name: kubernetes-e2e-gce-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-upgrade-master
+- name: kubernetes-e2e-gke-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-latest-upgrade-cluster
+- name: kubernetes-e2e-gke-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-latest-upgrade-master
 
 # Add New Testgroups Here
 
@@ -1610,6 +1619,17 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
   - name: gci-1.4-gci-latest-upgrade-master
     test_group_name: kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
+
+- name: latest-upgrades
+  dashboard_tab:
+  - name: gce-cluster
+    test_group_name: kubernetes-e2e-gce-latest-upgrade-cluster
+  - name: gce-master
+    test_group_name: kubernetes-e2e-gce-latest-upgrade-master
+  - name: gke-cluster
+    test_group_name: kubernetes-e2e-gke-latest-upgrade-cluster
+  - name: gke-master
+    test_group_name: kubernetes-e2e-gke-latest-upgrade-master
 
 - name: google-federation
   dashboard_tab:

@@ -2975,6 +2975,38 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new.env"
   ]
+},
+
+"ci-kubernetes-e2e-gce-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-latest-upgrade-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-latest-upgrade-cluster.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-latest-upgrade-master": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-latest-upgrade-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-latest-upgrade-cluster": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-latest-upgrade-cluster.env"
+  ]
 }
 
 }
