@@ -1509,7 +1509,13 @@ class JobTest(unittest.TestCase):
                 'kops-e2e-',
             ]
 
+            skip = [
+                'kubernetes-e2e-prow-canary',
+            ]
+
             if not re.search('|'.join(valids), job):
+                continue
+            if re.search('|'.join(skip), job):
                 continue
             found_timeout = False
             with open(job_path) as fp:
