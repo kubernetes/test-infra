@@ -1281,26 +1281,10 @@ class JobTest(unittest.TestCase):
 
     def testBootstrapCIYaml(self):
         # TODO(krzyzacy): temp until more jobs to be converted
-        whitelist = [
-            'kubernetes-e2e-gke-[0-9a-z-._]*-1.4-upgrade-',
-            'kubernetes-e2e-gke-[0-9a-z-._]*-1.5-upgrade-',
-            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master',
-            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster',
-            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster',
-            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster',
-            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new',
-            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master',
-            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster',
-            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new'
-        ]
+        whitelist = []
 
         blacklist = [
             'kubernetes-e2e-(kops|aws)',
-            'kubernetes-e2e-gke-[0-9a-z-._]*-upgrade-'
         ]
             
         is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
