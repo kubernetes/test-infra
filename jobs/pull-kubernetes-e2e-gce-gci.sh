@@ -49,8 +49,10 @@ export PROJECT="k8s-jkns-pr-gci-gce"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
 export NUM_NODES="4"
 export GINKGO_PARALLEL_NODES="30"
-# For now explicitly test etcd v3 mode in this suite.
+# For now explicitly test etcd v2 mode in this suite.
 export STORAGE_BACKEND="etcd2"
+export TEST_ETCD_IMAGE="2.2.1"
+export TEST_ETCD_VERSION="2.2.1"
 
 # Force to use GCI.
 export KUBE_NODE_OS_DISTRIBUTION="gci"
