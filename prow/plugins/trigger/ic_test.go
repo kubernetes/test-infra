@@ -143,7 +143,7 @@ func TestHandleIssueComment(t *testing.T) {
 					AlwaysRun: true,
 					Context:   "job job",
 					Trigger:   "@k8s-bot test this",
-					Branches:  []string{"master"},
+					Brancher:  jobs.Brancher{Branches: []string{"master"}},
 				},
 			},
 		})

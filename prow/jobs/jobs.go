@@ -28,6 +28,15 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+// Brancher is for shared code between jobs that only run against certain
+// branches. An empty brancher runs against all branches.
+type Brancher struct {
+	// Do not run against these branches. Default is no branches.
+	SkipBranches []string `json:"skip_branches"`
+	// Only run against these branches. Default is all branches.
+	Branches []string `json:"branches"`
+}
+
 // Presubmit is the job-specific trigger info.
 type Presubmit struct {
 	// eg kubernetes-pull-build-test-e2e-gce
@@ -44,35 +53,33 @@ type Presubmit struct {
 	RerunCommand string `json:"rerun_command"`
 	// Whether or not to skip commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
-	// Do not run against these branches. Default is no branches.
-	SkipBranches []string `json:"skip_branches"`
-	// Only run against these branches. Default is all branches.
-	Branches []string `json:"branches"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success"`
+
+	Brancher
 
 	// We'll set these when we load it.
 	re        *regexp.Regexp // from RerunCommand
 	reChanges *regexp.Regexp // from RunIfChanged
 }
 
-func (ps Presubmit) RunsAgainstBranch(branch string) bool {
+func (br Brancher) RunsAgainstBranch(branch string) bool {
 	// Favor SkipBranches over Branches
-	if len(ps.SkipBranches) == 0 && len(ps.Branches) == 0 {
+	if len(br.SkipBranches) == 0 && len(br.Branches) == 0 {
 		return true
 	}
 
-	for _, s := range ps.SkipBranches {
+	for _, s := range br.SkipBranches {
 		if s == branch {
 			return false
 		}
 	}
-	if len(ps.Branches) == 0 {
+	if len(br.Branches) == 0 {
 		return true
 	}
-	for _, b := range ps.Branches {
+	for _, b := range br.Branches {
 		if b == branch {
 			return true
 		}
@@ -91,34 +98,12 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name         string        `json:"name"`
-	Spec         *kube.PodSpec `json:"spec,omitempty"`
-	SkipBranches []string      `json:"skip_branches"`
-	Branches     []string      `json:"branches"`
+	Name string        `json:"name"`
+	Spec *kube.PodSpec `json:"spec,omitempty"`
+
+	Brancher
 
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
-}
-
-func (ps Postsubmit) RunsAgainstBranch(branch string) bool {
-	// Favor Skips over Branches
-	if len(ps.SkipBranches) == 0 && len(ps.Branches) == 0 {
-		return true
-	}
-
-	for _, s := range ps.SkipBranches {
-		if s == branch {
-			return false
-		}
-	}
-	if len(ps.Branches) == 0 {
-		return true
-	}
-	for _, b := range ps.Branches {
-		if b == branch {
-			return true
-		}
-	}
-	return false
 }
 
 type JobAgent struct {
