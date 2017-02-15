@@ -28,7 +28,7 @@ fi
 
 # Federation specific params
 export FEDERATION="true"
-export PROJECT="k8s-jkns-pr-gci-bld-e2e-gce-fd"
+export PROJECT="${PROJECT:-k8s-jkns-pr-gci-bld-e2e-gce-fd}"
 export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
 export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
@@ -38,7 +38,7 @@ export DNS_ZONE_NAME="pr-bldr.test-f8n.k8s.io."
 export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
 
 # Build the images.
-export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n
 export JENKINS_USE_LOCAL_BINARIES=y
@@ -54,6 +54,8 @@ export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export NUM_NODES="3"
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+# Panic if anything mutates a shared informer cache
+export ENABLE_CACHE_MUTATION_DETECTOR="true"
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
 export E2E_TEST="true"

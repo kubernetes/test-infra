@@ -26,7 +26,7 @@ if [[ "${PULL_BASE_REF:-}" == "release-1.0" || "${PULL_BASE_REF:-}" == "release-
   exit
 fi
 
-export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n
 export JENKINS_USE_LOCAL_BINARIES=y
@@ -45,7 +45,7 @@ export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
 export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-export PROJECT="k8s-jkns-pr-gce"
+export PROJECT="${PROJECT:-k8s-jkns-pr-gce}"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
 export NUM_NODES="4"
 export GINKGO_PARALLEL_NODES="30"
@@ -56,6 +56,9 @@ export TEST_ETCD_VERSION="2.2.1"
 
 # Force to use container-vm.
 export KUBE_NODE_OS_DISTRIBUTION="debian"
+
+# Panic if anything mutates a shared informer cache
+export ENABLE_CACHE_MUTATION_DETECTOR="true"
 
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
