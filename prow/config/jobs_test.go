@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package jobs
+package config
 
 import (
 	"encoding/json"
@@ -43,13 +43,12 @@ func flattenJobs(jobs []Presubmit) []Presubmit {
 	return ret
 }
 
-// Make sure that our rerun commands match our triggers.
 func TestPresubmits(t *testing.T) {
-	ja := &JobAgent{}
-	if err := ja.loadPresubmits("../presubmit.yaml"); err != nil {
-		t.Fatalf("Could not load job configs: %v", err)
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
 	}
-	if len(ja.presubmits) == 0 {
+	if len(c.Presubmits) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
 	b, err := ioutil.ReadFile("../../jobs/config.json")
@@ -58,7 +57,7 @@ func TestPresubmits(t *testing.T) {
 	}
 	var bootstrapConfig map[string]JSONJob
 	json.Unmarshal(b, &bootstrapConfig)
-	for _, rootJobs := range ja.presubmits {
+	for _, rootJobs := range c.Presubmits {
 		jobs := flattenJobs(rootJobs)
 		for i, job := range jobs {
 			if job.Name == "" {
@@ -159,8 +158,8 @@ func TestCommentBodyMatches(t *testing.T) {
 			[]string{},
 		},
 	}
-	ja := &JobAgent{
-		presubmits: map[string][]Presubmit{
+	c := &Config{
+		Presubmits: map[string][]Presubmit{
 			"org/repo": {
 				{
 					Name:      "gce",
@@ -193,7 +192,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actualJobs := ja.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
+		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
 		match := true
 		if len(actualJobs) != len(tc.expectedJobs) {
 			match = false
@@ -246,23 +245,6 @@ func TestConditionalPresubmits(t *testing.T) {
 	}
 }
 
-func TestPostsubmits(t *testing.T) {
-	ja := &JobAgent{}
-	if err := ja.loadPostsubmits("../postsubmit.yaml"); err != nil {
-		t.Fatalf("Could not load job configs: %v", err)
-	}
-	if len(ja.postsubmits) == 0 {
-		t.Fatalf("No jobs found in postsubmit.yaml.")
-	}
-}
-
-func TestPeriodics(t *testing.T) {
-	ja := &JobAgent{}
-	if err := ja.loadPeriodics("../periodic.yaml"); err != nil {
-		t.Fatalf("Could not load job configs: %v", err)
-	}
-}
-
 func TestGetPresubmits(t *testing.T) {
 	pres := []Presubmit{
 		{
@@ -286,8 +268,8 @@ func TestGetPresubmits(t *testing.T) {
 }
 
 func TestListJobNames(t *testing.T) {
-	ja := &JobAgent{
-		presubmits: map[string][]Presubmit{
+	c := &Config{
+		Presubmits: map[string][]Presubmit{
 			"r1": {
 				{
 					Name: "a",
@@ -299,7 +281,7 @@ func TestListJobNames(t *testing.T) {
 				{Name: "b"},
 			},
 		},
-		postsubmits: map[string][]Postsubmit{
+		Postsubmits: map[string][]Postsubmit{
 			"r1": {
 				{
 					Name: "c",
@@ -314,7 +296,7 @@ func TestListJobNames(t *testing.T) {
 		},
 	}
 	expected := []string{"a", "aa", "ab", "b", "c", "ca", "cb", "d", "e"}
-	actual := ja.AllJobNames()
+	actual := c.AllJobNames()
 	if len(actual) != len(expected) {
 		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
 	}

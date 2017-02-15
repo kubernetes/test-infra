@@ -133,7 +133,7 @@ func buildAll(c client, pr github.PullRequest) error {
 	var ref string
 	var changes []string // lazily initialized
 
-	for _, job := range c.JobAgent.AllPresubmits(pr.Base.Repo.FullName) {
+	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
 		if job.RunIfChanged != "" {
 			if changes == nil {
 				changesFull, err := c.GitHubClient.GetPullRequestChanges(pr)

@@ -19,7 +19,7 @@ package main
 import (
 	"testing"
 
-	"k8s.io/test-infra/prow/jobs"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/line"
 )
 
@@ -84,8 +84,8 @@ func TestGuberURL(t *testing.T) {
 	for _, tc := range testcases {
 		c := &testClient{
 			IsPresubmit: tc.IsPresubmit,
-			Presubmit:   jobs.Presubmit{Name: "j"},
-			Postsubmit:  jobs.Postsubmit{Name: "j"},
+			Presubmit:   &config.Presubmit{Name: "j"},
+			Postsubmit:  &config.Postsubmit{Name: "j"},
 			PRNumber:    tc.PRNumber,
 			RepoOwner:   tc.RepoOwner,
 			RepoName:    tc.RepoName,

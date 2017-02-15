@@ -21,9 +21,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -133,17 +133,17 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		c := client{
 			GitHubClient: g,
-			JobAgent:     &jobs.JobAgent{},
+			Config:       &config.Config{},
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
-		c.JobAgent.SetPresubmits(map[string][]jobs.Presubmit{
+		c.Config.SetPresubmits(map[string][]config.Presubmit{
 			"org/repo": {
 				{
 					Name:      "job",
 					AlwaysRun: true,
 					Context:   "job job",
 					Trigger:   "@k8s-bot test this",
-					Brancher:  jobs.Brancher{Branches: []string{"master"}},
+					Brancher:  config.Brancher{Branches: []string{"master"}},
 				},
 			},
 		})

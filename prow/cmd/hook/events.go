@@ -34,6 +34,7 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
 		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
 		if err := h(pc, pr); err != nil {
 			pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 		}
@@ -51,6 +52,7 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
 		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
 		if err := h(pc, pe); err != nil {
 			pc.Logger.WithError(err).Error("Error handling PushEvent.")
 		}
@@ -69,6 +71,7 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
 		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
 		if err := h(pc, ic); err != nil {
 			pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 		}
@@ -88,6 +91,7 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
 		pc := s.Plugins.PluginClient
 		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
 		if err := h(pc, se); err != nil {
 			pc.Logger.WithError(err).Error("Error handling StatusEvent.")
 		}

@@ -195,9 +195,9 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 									MountPath: "/etc/labels",
 								},
 								{
-									Name:      "job-configs",
+									Name:      "config",
 									ReadOnly:  true,
-									MountPath: "/etc/jobs",
+									MountPath: "/etc/config",
 								},
 							},
 							Env: []kube.EnvVar{
@@ -242,9 +242,9 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 							},
 						},
 						{
-							Name: "job-configs",
+							Name: "config",
 							ConfigMap: &kube.ConfigMapSource{
-								Name: "job-configs",
+								Name: "config",
 							},
 						},
 					},

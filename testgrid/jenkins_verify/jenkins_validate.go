@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/prow/jobs"
+	prow_config "k8s.io/test-infra/prow/config"
 	config "k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
@@ -66,8 +66,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	ja := jobs.JobAgent{}
-	if err := ja.LoadOnce(prowPath+"/presubmit.yaml", prowPath+"/postsubmit.yaml", prowPath+"/periodic.yaml"); err != nil {
+	prowConfig, err := prow_config.Load(prowPath + "/config.yaml")
+	if err != nil {
 		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
 	}
@@ -91,7 +91,7 @@ func main() {
 	}
 
 	// Also check prow jobs
-	for _, job := range ja.AllJobNames() {
+	for _, job := range prowConfig.AllJobNames() {
 		if _, ok := testgroups[job]; ok {
 			testgroups[job] = true
 			jenkinsjobs[job] = true

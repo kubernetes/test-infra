@@ -29,7 +29,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/jobs"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
 )
@@ -40,9 +40,7 @@ var (
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	logJson        = flag.Bool("log-json", false, "output log in JSON format")
-	presubmit      = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
-	postsubmit     = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
-	periodic       = flag.String("periodic", "/etc/jobs/periodic", "Where is periodic.yaml.")
+	configPath     = flag.String("config-path", "/etc/config/config", "Where is config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 
@@ -218,9 +216,9 @@ func main() {
 	}
 	defer splicer.cleanup()
 
-	ja := &jobs.JobAgent{}
-	if err := ja.Start(*presubmit, *postsubmit, *periodic); err != nil {
-		log.WithError(err).Fatal("Could not start job agent.")
+	ca := &config.ConfigAgent{}
+	if err := ca.Start(*configPath); err != nil {
+		log.WithError(err).Fatal("Could not start config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster("default")
@@ -281,7 +279,7 @@ func main() {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
 		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
-		for _, job := range ja.AllPresubmits(fmt.Sprintf("%s/%s", *orgName, *repoName)) {
+		for _, job := range ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)] {
 			if job.AlwaysRun {
 				if succeeded[buildReq.GetRefs()+job.Context] {
 					log.Infof("not triggering job %v (already succeeded previously)", job.Name)

@@ -19,8 +19,8 @@ package trigger
 import (
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
 	"k8s.io/test-infra/prow/plugins"
@@ -51,7 +51,7 @@ type githubClient interface {
 
 type client struct {
 	GitHubClient githubClient
-	JobAgent     *jobs.JobAgent
+	Config       *config.Config
 	KubeClient   *kube.Client
 	Logger       *logrus.Entry
 }
@@ -62,7 +62,7 @@ var lineStartPushJob = line.StartPushJob
 func getClient(pc plugins.PluginClient) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
-		JobAgent:     pc.JobAgent,
+		Config:       pc.Config,
 		KubeClient:   pc.KubeClient,
 		Logger:       pc.Logger,
 	}

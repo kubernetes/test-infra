@@ -26,8 +26,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -57,7 +57,7 @@ func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
 type PluginClient struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
-	JobAgent     *jobs.JobAgent
+	Config       *config.Config
 	Logger       *logrus.Entry
 }
 
