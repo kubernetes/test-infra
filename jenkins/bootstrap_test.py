@@ -1283,7 +1283,19 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
         whitelist = [
             'kubernetes-e2e-gke-[0-9a-z-._]*-1.4-upgrade-',
-            'kubernetes-e2e-gke-[0-9a-z-._]*-1.5-upgrade-'
+            'kubernetes-e2e-gke-[0-9a-z-._]*-1.5-upgrade-',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster',
+            'kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster',
+            'kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster',
+            'kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new',
+            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master',
+            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster',
+            'kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new'
         ]
 
         blacklist = [
