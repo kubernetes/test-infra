@@ -80,9 +80,9 @@ type Postsubmit struct {
 type Cron struct {
 	Name     string        `json:"name"`
 	Spec     *kube.PodSpec `json:"spec,omitempty"`
-	Duration string        `json:"duration"`
+	Interval string        `json:"interval"`
 
-	duration time.Duration
+	interval time.Duration
 }
 
 func (br Brancher) RunsAgainstBranch(branch string) bool {
@@ -337,11 +337,11 @@ func (ja *JobAgent) loadCrons(path string) error {
 	}
 	for _, js := range nj {
 		for j := range js {
-			d, err := time.ParseDuration(js[j].Duration)
+			d, err := time.ParseDuration(js[j].Interval)
 			if err != nil {
 				return fmt.Errorf("cannot parse duration for %s: %v", js[j].Name, err)
 			}
-			js[j].duration = d
+			js[j].interval = d
 		}
 	}
 	ja.crons = nj
