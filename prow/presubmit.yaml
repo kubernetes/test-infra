@@ -140,10 +140,6 @@ kubernetes/kubernetes:
   trigger: "@k8s-bot kubemark gci (e2e )?test this"
 
 - name: pull-kubernetes-node-e2e
-  skip_branches:
-  - release-1.0
-  - release-1.1
-  - release-1.2
   always_run: true
   context: Jenkins GCE Node e2e
   rerun_command: "@k8s-bot node e2e test this"
@@ -159,9 +155,6 @@ kubernetes/kubernetes:
 
 - name: pull-kubernetes-node-e2e-cri
   skip_branches:
-  - release-1.0
-  - release-1.1
-  - release-1.2
   - release-1.3
   - release-1.4
   always_run: true
