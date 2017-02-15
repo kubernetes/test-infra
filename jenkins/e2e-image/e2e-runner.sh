@@ -176,6 +176,12 @@ function install_google_cloud_sdk_tarball() {
     mkdir -p "${install_dir}"
     tar xzf "${tarball}" -C "${install_dir}"
 
+    if running_in_docker; then
+        # Delete any previously installed SDK to prevent weirdly overlapping
+        # installs from fighting each other.
+        # TODO(rmmh): should just do a components update instead?
+        rm -rf "${install_dir}/google-cloud-sdk"
+    fi
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1
     record_command "${STAGE_PRE}" "install_gcloud" "${install_dir}/google-cloud-sdk/install.sh" --disable-installation-options --bash-completion=false --path-update=false --usage-reporting=false
     export PATH=${install_dir}/google-cloud-sdk/bin:${PATH}
