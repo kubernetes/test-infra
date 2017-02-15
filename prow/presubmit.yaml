@@ -149,15 +149,15 @@ kubernetes/kubernetes:
   rerun_command: "@k8s-bot node e2e test this"
   trigger: "@k8s-bot (node )?(e2e )?test this"
 
-- name: pull-kubernetes-e2e-gce-cri
+- name: pull-kubernetes-e2e-gce-non-cri
   branches:
   - master
   always_run: true
-  context: Jenkins CRI GCE e2e
-  rerun_command: "@k8s-bot cri e2e test this"
-  trigger: "@k8s-bot (cri e2e )?test this"
+  context: Jenkins non-CRI GCE e2e
+  rerun_command: "@k8s-bot non-cri e2e test this"
+  trigger: "@k8s-bot (non-cri e2e )?test this"
 
-- name: pull-kubernetes-node-e2e-cri
+- name: pull-kubernetes-node-e2e-non-cri
   skip_branches:
   - release-1.0
   - release-1.1
@@ -165,9 +165,9 @@ kubernetes/kubernetes:
   - release-1.3
   - release-1.4
   always_run: true
-  context: Jenkins CRI GCE Node e2e
-  rerun_command: "@k8s-bot cri node e2e test this"
-  trigger: "@k8s-bot (cri node e2e )?test this"
+  context: Jenkins non-CRI GCE Node e2e
+  rerun_command: "@k8s-bot non-cri node e2e test this"
+  trigger: "@k8s-bot (non-cri node e2e )?test this"
 
 kubernetes/test-infra:
 - name: pull-test-infra-bazel

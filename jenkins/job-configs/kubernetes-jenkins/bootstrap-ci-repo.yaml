@@ -165,24 +165,24 @@
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-cri:  # yjhong
+    - kubernetes-node-kubelet-non-cri:  # yjhong
         branch: master
         frequency: 'H/30 * * * *'
-        job-name: ci-kubernetes-node-kubelet-cri
+        job-name: ci-kubernetes-node-kubelet-non-cri
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-cri-serial:  # lantaol
+    - kubernetes-node-kubelet-non-cri-serial:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-cri-serial
+        job-name: ci-kubernetes-node-kubelet-non-cri-serial
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 240
-    - kubernetes-node-kubelet-cri-benchmark:  # lantaol
+    - kubernetes-node-kubelet-non-cri-benchmark:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-cri-benchmark
+        job-name: ci-kubernetes-node-kubelet-non-cri-benchmark
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
