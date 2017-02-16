@@ -10,9 +10,9 @@
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
-gs://kube_azure_log/:
-  contact: "travisnewhouse"
-  prefix: "azure:"
+#gs://kube_azure_log/:
+#  contact: "travisnewhouse"
+#  prefix: "azure:"
 gs://rktnetes-jenkins/logs/:
   contact: "euank"
   prefix: "rktnetes:"
