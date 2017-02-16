@@ -256,9 +256,9 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
-func TestCrons(t *testing.T) {
+func TestPeriodics(t *testing.T) {
 	ja := &JobAgent{}
-	if err := ja.loadCrons("../cron.yaml"); err != nil {
+	if err := ja.loadPeriodics("../periodic.yaml"); err != nil {
 		t.Fatalf("Could not load job configs: %v", err)
 	}
 }

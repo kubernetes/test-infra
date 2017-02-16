@@ -76,8 +76,8 @@ type Postsubmit struct {
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
-// Cron runs on a timer.
-type Cron struct {
+// Periodic runs on a timer.
+type Periodic struct {
 	Name     string        `json:"name"`
 	Spec     *kube.PodSpec `json:"spec,omitempty"`
 	Interval string        `json:"interval"`
@@ -121,17 +121,17 @@ type JobAgent struct {
 	// Repo FullName (eg "kubernetes/kubernetes") -> []Job
 	presubmits  map[string][]Presubmit
 	postsubmits map[string][]Postsubmit
-	crons       map[string][]Cron
+	periodics   map[string][]Periodic
 }
 
-func (ja *JobAgent) Start(pre, post, cron string) error {
-	if err := ja.LoadOnce(pre, post, cron); err != nil {
+func (ja *JobAgent) Start(pre, post, periodic string) error {
+	if err := ja.LoadOnce(pre, post, periodic); err != nil {
 		return err
 	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
-			ja.tryLoad(pre, post, cron)
+			ja.tryLoad(pre, post, periodic)
 		}
 	}()
 	return nil
@@ -165,7 +165,7 @@ func (ja *JobAgent) AllJobNames() []string {
 	for _, v := range ja.postsubmits {
 		res = append(res, listPost(v)...)
 	}
-	for _, v := range ja.crons {
+	for _, v := range ja.periodics {
 		for _, j := range v {
 			res = append(res, j.Name)
 		}
@@ -192,7 +192,7 @@ func (ja *JobAgent) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (ja *JobAgent) LoadOnce(pre, post, cron string) error {
+func (ja *JobAgent) LoadOnce(pre, post, periodic string) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	if err := ja.loadPresubmits(pre); err != nil {
@@ -201,7 +201,7 @@ func (ja *JobAgent) LoadOnce(pre, post, cron string) error {
 	if err := ja.loadPostsubmits(post); err != nil {
 		return err
 	}
-	return ja.loadCrons(cron)
+	return ja.loadPeriodics(periodic)
 }
 
 func (ja *JobAgent) MatchingPresubmits(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
@@ -326,12 +326,12 @@ func (ja *JobAgent) loadPostsubmits(path string) error {
 }
 
 // Hold the lock.
-func (ja *JobAgent) loadCrons(path string) error {
+func (ja *JobAgent) loadPeriodics(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	nj := map[string][]Cron{}
+	nj := map[string][]Periodic{}
 	if err := yaml.Unmarshal(b, &nj); err != nil {
 		return err
 	}
@@ -344,11 +344,11 @@ func (ja *JobAgent) loadCrons(path string) error {
 			js[j].interval = d
 		}
 	}
-	ja.crons = nj
+	ja.periodics = nj
 	return nil
 }
 
-func (ja *JobAgent) tryLoad(pre, post, cron string) {
+func (ja *JobAgent) tryLoad(pre, post, periodic string) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	if err := ja.loadPresubmits(pre); err != nil {
@@ -357,7 +357,7 @@ func (ja *JobAgent) tryLoad(pre, post, cron string) {
 	if err := ja.loadPostsubmits(post); err != nil {
 		logrus.WithField("path", post).WithError(err).Error("Error loading postsubmits.")
 	}
-	if err := ja.loadCrons(cron); err != nil {
-		logrus.WithField("path", cron).WithError(err).Error("Error loading crons.")
+	if err := ja.loadPeriodics(periodic); err != nil {
+		logrus.WithField("path", periodic).WithError(err).Error("Error loading periodics.")
 	}
 }
