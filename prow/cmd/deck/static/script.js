@@ -116,7 +116,7 @@ function redraw() {
 
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
-        if (build.pod_name !== "") {
+        if (build.pod_name) {
             r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name));
         } else {
             r.appendChild(createTextCell(""));
@@ -210,4 +210,4 @@ function prRevisionCell(build) {
     al.text = build.author;
     c.appendChild(al);
     return c;
-} 
+}

@@ -17,14 +17,18 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -32,10 +36,18 @@ const (
 	namespace = "default"
 )
 
+var (
+	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
+	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+)
+
 // Matches letters, numbers, hyphens, and underscores.
 var podReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
+	flag.Parse()
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	kc, err := kube.NewClientInCluster(namespace)
@@ -43,14 +55,25 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
 
+	var jc *jenkins.Client
+	if *jenkinsURL != "" {
+		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read token file.")
+		}
+		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+	}
+
 	ja := &JobAgent{
 		kc: kc,
+		jc: jc,
 	}
 	ja.Start()
 
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
-	http.Handle("/log", gziphandler.GzipHandler(handleLog(kc)))
+	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
 }
@@ -79,7 +102,7 @@ type logClient interface {
 }
 
 // TODO(spxtr): Cache, rate limit, and limit which pods can be logged.
-func handleLog(kc logClient) http.HandlerFunc {
+func handleLog(lc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -88,9 +111,9 @@ func handleLog(kc logClient) http.HandlerFunc {
 			http.Error(w, "Invalid pod query", http.StatusBadRequest)
 			return
 		}
-		log, err := kc.GetLog(pod)
+		log, err := lc.GetLog(pod)
 		if err != nil {
-			http.Error(w, "Log not found", http.StatusNotFound)
+			http.Error(w, fmt.Sprintf("Log not found: %s", err), http.StatusNotFound)
 			logrus.WithError(err).Warning("Error returned.")
 			return
 		}
