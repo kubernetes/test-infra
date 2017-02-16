@@ -25,24 +25,22 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'name condition managed flags')
+Resource = collections.namedtuple('Resource', 'name condition managed')
 DEMOLISH_ORDER = [
-    # Beaware of insertion order
-    Resource('instances', 'zone', None, None),
-    Resource('addresses', 'region', None, None),
-    Resource('disks', 'zone', None, None),
-    Resource('firewall-rules', None, None, None),
-    Resource('routes', None, None, None),
-    Resource('forwarding-rules', 'region', None, None),
-    Resource('forwarding-rules', None, None, '--global'),
-    Resource('target-http-proxies', None, None, None),
-    Resource('url-maps', None, None, None),
-    Resource('backend-services', 'region', None, None),
-    Resource('backend-services', None, None, '--global'),
-    Resource('target-pools', 'region', None, None),
-    Resource('instance-groups', 'zone', 'Yes', None),
-    Resource('instance-groups', 'zone', 'No', None),
-    Resource('instance-templates', None, None, None),
+    # Beware of insertion order
+    Resource('instances', 'zone', None),
+    Resource('addresses', 'region', None),
+    Resource('disks', 'zone', None),
+    Resource('firewall-rules', None, None),
+    Resource('routes', None, None),
+    Resource('forwarding-rules', 'region', None),
+    Resource('target-http-proxies', None, None),
+    Resource('url-maps', None, None),
+    Resource('backend-services', 'region', None),
+    Resource('target-pools', 'region', None),
+    Resource('instance-groups', 'zone', 'Yes'),
+    Resource('instance-groups', 'zone', 'No'),
+    Resource('instance-templates', None, None),
 ]
 
 
@@ -74,10 +72,7 @@ def collect(project, age, resource, filt):
         if 'name' not in item or 'creationTimestamp' not in item:
             raise ValueError('%r' % item)
 
-        if resource.condition and resource.condition not in item:
-            raise ValueError(resource.name, resource.condition)
-
-        if resource.condition:
+        if resource.condition and resource.condition in item:
             colname = item[resource.condition]
         else:
             colname = ''
@@ -126,10 +121,10 @@ def clear_resources(project, col, resource):
         base.append('--project=%s' % project)
 
         if resource.condition:
-            base.append('--%s=%s' % (resource.condition, col))
-
-        if resource.flags:
-            base.append(resource.flags)
+            if col:
+                base.append('--%s=%s' % (resource.condition, col))
+            else:
+                base.append('--global')
 
         print 'Call %r' % base
         try:
