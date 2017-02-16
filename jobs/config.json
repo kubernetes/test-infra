@@ -2054,6 +2054,48 @@
   ]
 },
 
+"ci-kubernetes-soak-gke-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-soak-gke-deploy.env",
+    "--test=false",
+    "--down=false"
+  ]
+},
+
+"ci-kubernetes-soak-gke-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-soak-gke-test.env",
+    "--soak-test",
+    "--up=false",
+    "--down=false"
+  ]
+},
+
+"ci-kubernetes-soak-gke-gci-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-soak-gke-gci-deploy.env",
+    "--test=false",
+    "--down=false"
+  ]
+},
+
+"ci-kubernetes-soak-gke-gci-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-soak-gke-gci-test.env",
+    "--soak-test",
+    "--up=false",
+    "--down=false"
+  ]
+},
+
 "ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master": {
   "scenario": "kubernetes_e2e",
   "args": [
