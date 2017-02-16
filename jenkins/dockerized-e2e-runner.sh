@@ -33,7 +33,7 @@ mkdir -p "${HOST_ARTIFACTS_DIR}"
 # DO NOT CHANGE THIS VALUE. THIS FILE IS DEPRECATED.
 # Job changes requiring a new image require first updating the job to use the
 # kubernetes_e2e.py scenario, which requires setting --json for the job.
-KUBEKINS_E2E_IMAGE_TAG='v20170215-ba7745a55'
+KUBEKINS_E2E_IMAGE_TAG='v20170215-331e93f3'
 KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE="${WORKSPACE}/hack/jenkins/.kubekins_e2e_image_tag"
 if [[ -r "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}" ]]; then
   KUBEKINS_E2E_IMAGE_TAG=$(cat "${KUBEKINS_E2E_IMAGE_TAG_OVERRIDE_FILE}")
