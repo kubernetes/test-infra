@@ -23,6 +23,7 @@ import traceback
 import webapp2
 from webapp2_extras import security
 
+from google.appengine.api.runtime import memory_usage
 from google.appengine.datastore import datastore_query
 
 import classifier
@@ -153,28 +154,6 @@ class Status(BaseHandler):
                 (res.context, res.state, res.target_url, res.description))
 
 
-def shrink(body):
-    '''
-    Recursively remove Github API urls from an object, to make it
-    more human-readable.
-    '''
-    toremove = []
-    for key, value in body.iteritems():
-        if isinstance(value, basestring):
-            if key.endswith('url'):
-                if (value.startswith('https://api.github.com/') or
-                    value.startswith('https://avatars.githubusercontent.com')):
-                    toremove.append(key)
-        elif isinstance(value, dict):
-            shrink(value)
-        elif isinstance(value, list):
-            for el in value:
-                if isinstance(el, dict):
-                    shrink(el)
-    for key in toremove:
-        body.pop(key)
-
-
 class Timeline(BaseHandler):
     '''
     Render all the information in the datastore about a particular issue.
@@ -211,7 +190,7 @@ class Timeline(BaseHandler):
         merged = {}
         for event in events:
             body_json = json.loads(event.body)
-            shrink(body_json)
+            models.shrink(body_json)
             if 'issue' in body_json:
                 merged.update(body_json['issue'])
             elif 'pull_request' in body_json:
@@ -235,8 +214,13 @@ class Timeline(BaseHandler):
             return
         self.response.write(
             '<style>td pre{max-height:200px;overflow:scroll}</style>')
+        self.response.write('<p>Memory: %s' % memory_usage().current())
         self.emit_classified(repo, number)
+        self.response.write('<p>Memory: %s' % memory_usage().current())
+        if self.request.get('classify_only'):
+            return
         merged = self.emit_events(repo, number)
+        self.response.write('<p>Memory: %s' % memory_usage().current())
         if 'head' in merged:
             sha = merged['head']['sha']
             results = models.GHStatus.query_for_sha(repo, sha)
@@ -244,6 +228,7 @@ class Timeline(BaseHandler):
             for res in results:
                 self.response.write('<tr><td>%s<td>%s<td><a href="%s">%s</a>\n'
                    % (res.context, res.state, res.target_url, res.description))
-        shrink(merged)
+        models.shrink(merged)
         self.response.write('</table><pre>%s</pre>' % cgi.escape(
             json.dumps(merged, indent=2, sort_keys=True)))
+        self.response.write('<p>Memory: %s' % memory_usage().current())

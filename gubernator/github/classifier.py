@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 import re
+
+import google.appengine.ext.ndb as ndb
 
 import models
 
@@ -62,13 +65,25 @@ def classify_issue(repo, number):
     '''
     ancestor = models.GithubResource.make_key(repo, number)
     logging.debug('finding webhooks for %s %s', repo, number)
-    events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
-    events.sort(key=lambda e: e.timestamp)
-    logging.debug('classifying %s %s (%d events)', repo, number, len(events))
-    deduper = Deduper()
-    last_event_timestamp = events[-1].timestamp
+    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor).fetch(keys_only=True))
 
-    event_tuples = [deduper.dedup(event.to_tuple()) for event in events]
+    logging.debug('classifying %s %s (%d events)', repo, number, len(event_keys))
+    event_tuples = []
+    last_event_timestamp = datetime.datetime(2000, 1, 1)
+
+
+    if len(event_keys) > 800:
+        logging.warning('too many events. blackholing.')
+        return False, False, [], {'num_events': len(event_keys)}, last_event_timestamp
+
+    deduper = Deduper()
+
+    for x in xrange(0, len(event_keys), 100):
+        events = ndb.get_multi(event_keys[x:x+100])
+        last_event_timestamp = max(last_event_timestamp, max(e.timestamp for e in events))
+        event_tuples.extend([deduper.dedup(event.to_tuple()) for event in events])
+
+    event_tuples.sort(key=lambda x: x[2])  # sort by timestamp
 
     del deduper  # attempt to save memory
     del events
