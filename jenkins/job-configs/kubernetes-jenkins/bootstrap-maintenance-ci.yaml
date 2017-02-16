@@ -31,7 +31,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 30
+        timeout: 300
         fail: true
     triggers:
     - timed: '{frequency}'
@@ -47,14 +47,14 @@
         json: 0
         frequency: 'H H/3 * * *'
         repo-name: 'k8s.io/test-infra'
-        timeout: 0
+        timeout: 30
     - aws-janitor:
         branch: master
         frequency: 'H * * * *'
         job-name: maintenance-ci-aws-janitor
         json: 0
         repo-name: 'k8s.io/test-infra'
-        timeout: 0
+        timeout: 30
     - janitor:
         branch: master
         frequency: '@daily'
