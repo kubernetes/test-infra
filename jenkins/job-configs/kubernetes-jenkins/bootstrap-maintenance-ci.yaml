@@ -7,9 +7,11 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
+            --json='{json}' \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     node: 'node'  # light choices are node/e2e
     properties:
