@@ -57,11 +57,11 @@ func (b *BulkLGTM) Munge(obj *github.MungeObject) {
 		return
 	}
 	glog.V(4).Infof("Found a PR: %#v", *pr)
-	if !*pr.Mergeable {
+	if pr.Mergeable == nil || !*pr.Mergeable {
 		glog.V(4).Infof("PR is not mergeable, skipping")
 		return
 	}
-	if *pr.Commits > b.maxCommits {
+	if pr.Commits == nil || *pr.Commits > b.maxCommits {
 		glog.V(4).Infof("PR has too many commits %d vs %d, skipping", *pr.Commits, b.maxCommits)
 		return
 	}
@@ -208,16 +208,19 @@ func (b *BulkLGTM) ServePRs(res http.ResponseWriter, req *http.Request) {
 	var err error
 	if b.currentPRList == nil {
 		data = []byte("[]")
-	}
-	arr := make([]*githubapi.PullRequest, len(b.currentPRList))
-	for ix := range b.currentPRList {
-		arr[ix], _ = b.currentPRList[ix].GetPR()
-	}
-	data, err = json.Marshal(arr)
-	if err != nil {
-		res.Header().Set("Content-type", "text/plain")
-		res.WriteHeader(http.StatusInternalServerError)
-		return
+	} else {
+		arr := make([]*githubapi.PullRequest, len(b.currentPRList))
+		ix := 0
+		for key := range b.currentPRList {
+			arr[ix], _ = b.currentPRList[key].GetPR()
+			ix = ix + 1
+		}
+		data, err = json.Marshal(arr)
+		if err != nil {
+			res.Header().Set("Content-type", "text/plain")
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	res.WriteHeader(http.StatusOK)
