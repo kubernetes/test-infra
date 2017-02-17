@@ -46,7 +46,7 @@ DEFAULT_JOBS = {
         'kubernetes-e2e-kops-aws',
     },
     'kubernetes-jenkins/pr-logs/directory/': {
-        j['name'] for j in PROW_JOBS['kubernetes/kubernetes'] if j.get('always_run')
+        j['name'] for j in PROW_JOBS['presubmits']['kubernetes/kubernetes'] if j.get('always_run')
     },
 }
 
