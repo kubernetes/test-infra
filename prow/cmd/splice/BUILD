@@ -27,7 +27,7 @@ go_library(
     srcs = ["main.go"],
     tags = ["automanaged"],
     deps = [
-        "//prow/jobs:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/line:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",

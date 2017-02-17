@@ -32,10 +32,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
 )
@@ -55,9 +55,7 @@ var (
 	dryRun    = flag.Bool("dry-run", true, "Whether or not to make mutating Jenkins calls.")
 	report    = flag.Bool("report", true, "Whether or not to report the status on GitHub.")
 
-	presubmit        = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
-	postsubmit       = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
-	periodic         = flag.String("periodic", "/etc/jobs/periodic", "Where is periodic.yaml.")
+	configPath       = flag.String("config-path", "/etc/config/config", "Where is config.yaml.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -76,8 +74,8 @@ const (
 
 type testClient struct {
 	IsPresubmit bool
-	Presubmit   jobs.Presubmit
-	Postsubmit  jobs.Postsubmit
+	Presubmit   *config.Presubmit
+	Postsubmit  *config.Postsubmit
 
 	JobName   string
 	RepoOwner string
@@ -124,13 +122,13 @@ func main() {
 		logrus.Fatalf("Error getting kube job name: %v", err)
 	}
 
-	ja := jobs.JobAgent{}
-	if err := ja.LoadOnce(*presubmit, *postsubmit, *periodic); err != nil {
-		logrus.WithError(err).Fatal("Error loading job config.")
+	c, err := config.Load(*configPath)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error loading config.")
 	}
 	fullRepoName := fmt.Sprintf("%s/%s", *repoOwner, *repoName)
-	foundPresubmit, presubmit := ja.GetPresubmit(fullRepoName, *job)
-	foundPostsubmit, postsubmit := ja.GetPostsubmit(fullRepoName, *job)
+	foundPresubmit, presubmit := c.GetPresubmit(fullRepoName, *job)
+	foundPostsubmit, postsubmit := c.GetPostsubmit(fullRepoName, *job)
 	if !foundPresubmit && !foundPostsubmit {
 		logrus.Fatalf("Could not find job %s in job config.", *job)
 	}

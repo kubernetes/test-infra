@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package trigger
+package config
 
 import (
-	"k8s.io/test-infra/prow/github"
+	"testing"
 )
 
-func handlePE(c client, pe github.PushEvent) error {
-	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
-		if !j.RunsAgainstBranch(pe.Branch()) {
-			continue
-		}
-		if err := lineStartPushJob(c.KubeClient, j.Name, pe); err != nil {
-			return err
-		}
+func TestConfigLoads(t *testing.T) {
+	_, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
 	}
-	return nil
 }

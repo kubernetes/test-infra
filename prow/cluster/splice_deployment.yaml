@@ -15,19 +15,19 @@ spec:
         role: prow
       containers:
       - name: splice
-        image: gcr.io/k8s-prow/splice:0.12
+        image: gcr.io/k8s-prow/splice:0.13
         volumeMounts:
-        - name: job-configs
-          mountPath: /etc/jobs
+        - name: config
+          mountPath: /etc/config
           readOnly: true
         args:
         - -log-json
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.71"
+          value: "gcr.io/k8s-prow/line:0.72"
         - name: DRY_RUN
           value: "false"
       volumes:
-      - name: job-configs
+      - name: config
         configMap:
-          name: job-configs
+          name: config

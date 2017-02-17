@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -30,8 +31,9 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	Plugins    *plugins.PluginAgent
-	HMACSecret []byte
+	Plugins     *plugins.PluginAgent
+	ConfigAgent *config.ConfigAgent
+	HMACSecret  []byte
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.

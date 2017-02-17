@@ -10,7 +10,10 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["jobs_test.go"],
+    srcs = [
+        "config_test.go",
+        "jobs_test.go",
+    ],
     data = [
         "//jobs",
         "//prow:configs",
@@ -22,7 +25,11 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["jobs.go"],
+    srcs = [
+        "agent.go",
+        "config.go",
+        "jobs.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",

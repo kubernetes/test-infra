@@ -28,8 +28,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 
@@ -44,9 +44,7 @@ import (
 var (
 	port = flag.Int("port", 8888, "Port to listen on.")
 
-	presubmit    = flag.String("presubmits", "/etc/jobs/presubmit", "Path to presubmit.yaml.")
-	postsubmit   = flag.String("postsubmits", "/etc/jobs/postsubmit", "Path to postsubmit.yaml.")
-	periodic     = flag.String("periodic", "/etc/jobs/periodic", "Path to periodic.yaml.")
+	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
@@ -116,16 +114,15 @@ func main() {
 		}
 	}
 
-	jobAgent := &jobs.JobAgent{}
-	if err := jobAgent.Start(*presubmit, *postsubmit, *periodic); err != nil {
-		logrus.WithError(err).Fatal("Error starting job agent.")
+	configAgent := &config.ConfigAgent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	pluginAgent := &plugins.PluginAgent{
 		PluginClient: plugins.PluginClient{
 			GitHubClient: githubClient,
 			KubeClient:   kubeClient,
-			JobAgent:     jobAgent,
 			Logger:       logrus.NewEntry(logrus.StandardLogger()),
 		},
 	}
@@ -134,8 +131,9 @@ func main() {
 	}
 
 	server := &Server{
-		HMACSecret: webhookSecret,
-		Plugins:    pluginAgent,
+		HMACSecret:  webhookSecret,
+		ConfigAgent: configAgent,
+		Plugins:     pluginAgent,
 	}
 
 	// Return 200 on / for health checks.
