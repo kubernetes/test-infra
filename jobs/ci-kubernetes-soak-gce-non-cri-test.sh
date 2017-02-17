@@ -27,7 +27,6 @@ export KUBE_GCE_ZONE="us-central1-f"
 export FAIL_ON_GCP_RESOURCE_LEAK="true"
 export CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS="1"
 export KUBE_OS_DISTRIBUTION="gci"
-export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
 
 ### soak-env
 export JENKINS_SOAK_MODE="y"
@@ -46,7 +45,7 @@ export GINKGO_TEST_ARGS="--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
 
 ### job-env
 export PROJECT="k8s-jkns-gce-cri-soak"
-export KUBELET_TEST_ARGS="--experimental-cri=true"
+export KUBELET_TEST_ARGS="--enable-cri=false"
 
 ### post-env
 

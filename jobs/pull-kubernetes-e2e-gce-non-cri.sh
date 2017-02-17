@@ -39,9 +39,6 @@ export KUBERNETES_PROVIDER="gce"
 export E2E_MIN_STARTUP_PODS="1"
 export KUBE_GCE_ZONE="us-central1-f"
 
-# Required for CRI exec/attach/port-forward.
-export KUBE_FEATURE_GATES="StreamingProxyRedirects=true"
-
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
 
@@ -58,7 +55,7 @@ export NUM_NODES="3"
 export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 # Enable experimental CRI integration
-export KUBELET_TEST_ARGS="--experimental-cri=true"
+export KUBELET_TEST_ARGS="--enable-cri=false"
 
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"

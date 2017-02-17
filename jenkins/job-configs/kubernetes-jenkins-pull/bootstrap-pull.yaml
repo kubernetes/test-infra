@@ -99,9 +99,9 @@
         json: 0
         repo-name: 'k8s.io/kubernetes'
         timeout: 0
-    - kubernetes-e2e-gce-cri:
+    - kubernetes-e2e-gce-non-cri:
         max-total: 12
-        job-name: pull-kubernetes-e2e-gce-cri
+        job-name: pull-kubernetes-e2e-gce-non-cri
         json: 0
         repo-name: 'k8s.io/kubernetes'
         timeout: 0
@@ -165,9 +165,9 @@
         json: 1
         repo-name: 'k8s.io/kubernetes'
         timeout: 90
-    - kubernetes-node-e2e-cri:
+    - kubernetes-node-e2e-non-cri:
         max-total: 12
-        job-name: pull-kubernetes-node-e2e-cri
+        job-name: pull-kubernetes-node-e2e-non-cri
         json: 1
         repo-name: 'k8s.io/kubernetes'
         timeout: 90
