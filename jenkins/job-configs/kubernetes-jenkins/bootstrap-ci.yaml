@@ -735,18 +735,6 @@
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m53:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m53
-        timeout: 70
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m52:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m52
-        timeout: 70
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
 
     - kubernetes-e2e-gce-gci-ci-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
@@ -803,18 +791,6 @@
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m53:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m53
-        timeout: 320
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m52:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m52
-        timeout: 320
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
 
     - kubernetes-e2e-gce-gci-ci-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
@@ -868,18 +844,6 @@
     - kubernetes-e2e-gce-gci-qa-slow-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m54
-        timeout: 170
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m53:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m53
-        timeout: 170
-        json: 1
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m52:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m52
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
