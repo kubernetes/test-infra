@@ -83,6 +83,10 @@ def main(args):
         cmd.extend([
           '-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
+    if args.mount_paths:
+        for path in args.mount_paths:
+            cmd.extend(['-v', path])
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -180,6 +184,11 @@ if __name__ == '__main__':
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
+    PARSER.add_argument(
+        '--mount-paths',
+        default=[],
+        nargs='*',
+        help='Paths that should be mounted within the docker container in the form local:remote')
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(

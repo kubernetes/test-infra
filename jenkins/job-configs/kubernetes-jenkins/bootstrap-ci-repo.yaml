@@ -48,6 +48,16 @@
     name: bootstrap-ci-repo
     repo-suffix:
 
+    # START CHARTS
+    - kubernetes-charts-gce: # foxish
+        branch: master
+        frequency: 'H/5 * * * *' # At least every 30m
+        job-name: ci-kubernetes-charts-gce
+        json: 1
+        repo-name: k8s.io/charts
+        timeout: 200
+    # END CHARTS
+
     - cadvisor-node-kubelet:  # dawnchen
         branch: master
         frequency: 'H/30 * * * *'

@@ -1462,6 +1462,7 @@ class JobTest(unittest.TestCase):
             cmd = bootstrap.job_script(real_job.get('job-name'), modern)
             path = cmd[0]
             args = cmd[1:]
+
             self.assertTrue(os.path.isfile(path), name)
             if modern:
                 self.assertTrue(all(isinstance(a, basestring) for a in args), args)

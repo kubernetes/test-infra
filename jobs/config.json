@@ -961,6 +961,16 @@
   ]
 },
 
+"ci-kubernetes-charts-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-charts-gce.env",
+    "--test=false",
+    "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-scalability": {
   "scenario": "kubernetes_e2e",
   "args": [
