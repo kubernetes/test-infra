@@ -370,7 +370,7 @@ def append_result(gsutil, path, build, version, passed):
         errors += 1
 
 
-def metadata(repo, artifacts):
+def metadata(repo, artifacts, call):
     """Return metadata associated for the build, including inside artifacts."""
     # TODO(rmmh): update tooling to expect metadata in finished.json
     path = os.path.join(artifacts or '', 'metadata.json')
@@ -385,10 +385,17 @@ def metadata(repo, artifacts):
     if not meta or not isinstance(meta, dict):
         meta = {}
     meta['repo'] = repo
+
+    try:
+        commit = call(['git', 'rev-parse', 'HEAD'], output=True)
+        if commit:
+            meta['repo-commit'] = commit.strip()
+    except subprocess.CalledProcessError:
+        pass
     return meta
 
 
-def finish(gsutil, paths, success, artifacts, build, version, repo):
+def finish(gsutil, paths, success, artifacts, build, version, repo, call):
     """
     Args:
         paths: a Paths instance.
@@ -405,7 +412,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repo):
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
 
-    meta = metadata(repo, artifacts)
+    meta = metadata(repo, artifacts, call)
     if not version:
         version = meta.get('job-version')
     if not version:  # TODO(fejta): retire
@@ -787,7 +794,7 @@ def bootstrap(
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
-            finish(gsutil, paths, success, '_artifacts', build, version, repo)
+            finish(gsutil, paths, success, '_artifacts', build, version, repo, call)
         except subprocess.CalledProcessError:  # Still try to upload build log
             success = False
     logging.getLogger('').removeHandler(build_log)
