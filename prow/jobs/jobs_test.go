@@ -256,6 +256,13 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
+func TestPeriodics(t *testing.T) {
+	ja := &JobAgent{}
+	if err := ja.loadPeriodics("../periodic.yaml"); err != nil {
+		t.Fatalf("Could not load job configs: %v", err)
+	}
+}
+
 func TestGetPresubmits(t *testing.T) {
 	pres := []Presubmit{
 		{

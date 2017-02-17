@@ -17,6 +17,7 @@ limitations under the License.
 package jobs
 
 import (
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"sync"
@@ -65,6 +66,25 @@ type Presubmit struct {
 	reChanges *regexp.Regexp // from RunIfChanged
 }
 
+// Postsubmit runs on push events.
+type Postsubmit struct {
+	Name string        `json:"name"`
+	Spec *kube.PodSpec `json:"spec,omitempty"`
+
+	Brancher
+
+	RunAfterSuccess []Postsubmit `json:"run_after_success"`
+}
+
+// Periodic runs on a timer.
+type Periodic struct {
+	Name     string        `json:"name"`
+	Spec     *kube.PodSpec `json:"spec,omitempty"`
+	Interval string        `json:"interval"`
+
+	interval time.Duration
+}
+
 func (br Brancher) RunsAgainstBranch(branch string) bool {
 	// Favor SkipBranches over Branches
 	if len(br.SkipBranches) == 0 && len(br.Branches) == 0 {
@@ -96,31 +116,22 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 	return false
 }
 
-// Postsubmit runs on push events.
-type Postsubmit struct {
-	Name string        `json:"name"`
-	Spec *kube.PodSpec `json:"spec,omitempty"`
-
-	Brancher
-
-	RunAfterSuccess []Postsubmit `json:"run_after_success"`
-}
-
 type JobAgent struct {
 	mut sync.Mutex
 	// Repo FullName (eg "kubernetes/kubernetes") -> []Job
 	presubmits  map[string][]Presubmit
 	postsubmits map[string][]Postsubmit
+	periodics   map[string][]Periodic
 }
 
-func (ja *JobAgent) Start(pre, post string) error {
-	if err := ja.LoadOnce(pre, post); err != nil {
+func (ja *JobAgent) Start(pre, post, periodic string) error {
+	if err := ja.LoadOnce(pre, post, periodic); err != nil {
 		return err
 	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
-			ja.tryLoad(pre, post)
+			ja.tryLoad(pre, post, periodic)
 		}
 	}()
 	return nil
@@ -154,6 +165,11 @@ func (ja *JobAgent) AllJobNames() []string {
 	for _, v := range ja.postsubmits {
 		res = append(res, listPost(v)...)
 	}
+	for _, v := range ja.periodics {
+		for _, j := range v {
+			res = append(res, j.Name)
+		}
+	}
 	return res
 }
 
@@ -176,13 +192,16 @@ func (ja *JobAgent) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (ja *JobAgent) LoadOnce(pre, post string) error {
+func (ja *JobAgent) LoadOnce(pre, post, periodic string) error {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	if err := ja.loadPresubmits(pre); err != nil {
 		return err
 	}
-	return ja.loadPostsubmits(post)
+	if err := ja.loadPostsubmits(post); err != nil {
+		return err
+	}
+	return ja.loadPeriodics(periodic)
 }
 
 func (ja *JobAgent) MatchingPresubmits(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
@@ -306,7 +325,30 @@ func (ja *JobAgent) loadPostsubmits(path string) error {
 	return nil
 }
 
-func (ja *JobAgent) tryLoad(pre, post string) {
+// Hold the lock.
+func (ja *JobAgent) loadPeriodics(path string) error {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	nj := map[string][]Periodic{}
+	if err := yaml.Unmarshal(b, &nj); err != nil {
+		return err
+	}
+	for _, js := range nj {
+		for j := range js {
+			d, err := time.ParseDuration(js[j].Interval)
+			if err != nil {
+				return fmt.Errorf("cannot parse duration for %s: %v", js[j].Name, err)
+			}
+			js[j].interval = d
+		}
+	}
+	ja.periodics = nj
+	return nil
+}
+
+func (ja *JobAgent) tryLoad(pre, post, periodic string) {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	if err := ja.loadPresubmits(pre); err != nil {
@@ -314,5 +356,8 @@ func (ja *JobAgent) tryLoad(pre, post string) {
 	}
 	if err := ja.loadPostsubmits(post); err != nil {
 		logrus.WithField("path", post).WithError(err).Error("Error loading postsubmits.")
+	}
+	if err := ja.loadPeriodics(periodic); err != nil {
+		logrus.WithField("path", periodic).WithError(err).Error("Error loading periodics.")
 	}
 }

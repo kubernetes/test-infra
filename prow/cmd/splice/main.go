@@ -42,6 +42,7 @@ var (
 	logJson        = flag.Bool("log-json", false, "output log in JSON format")
 	presubmit      = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
 	postsubmit     = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
+	periodic       = flag.String("periodic", "/etc/jobs/periodic", "Where is periodic.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 
@@ -218,7 +219,7 @@ func main() {
 	defer splicer.cleanup()
 
 	ja := &jobs.JobAgent{}
-	if err := ja.Start(*presubmit, *postsubmit); err != nil {
+	if err := ja.Start(*presubmit, *postsubmit, *periodic); err != nil {
 		log.WithError(err).Fatal("Could not start job agent.")
 	}
 

@@ -79,7 +79,7 @@ update-cluster: get-cluster-credentials
 	@make splice-deployment --no-print-directory
 
 update-jobs: get-cluster-credentials
-	kubectl create configmap job-configs --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
+	kubectl create configmap job-configs --from-file=presubmit=presubmit.yaml --from-file=postsubmit=postsubmit.yaml --from-file=periodic=periodic.yaml --dry-run -o yaml | kubectl replace configmap job-configs -f -
 
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -

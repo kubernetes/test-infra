@@ -67,7 +67,7 @@ func main() {
 	}
 
 	ja := jobs.JobAgent{}
-	if err := ja.LoadOnce(prowPath+"/presubmit.yaml", prowPath+"/postsubmit.yaml"); err != nil {
+	if err := ja.LoadOnce(prowPath+"/presubmit.yaml", prowPath+"/postsubmit.yaml", prowPath+"/periodic.yaml"); err != nil {
 		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
 	}

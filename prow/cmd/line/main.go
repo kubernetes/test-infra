@@ -57,6 +57,7 @@ var (
 
 	presubmit        = flag.String("presubmit", "/etc/jobs/presubmit", "Where is presubmit.yaml.")
 	postsubmit       = flag.String("postsubmit", "/etc/jobs/postsubmit", "Where is postsubmit.yaml.")
+	periodic         = flag.String("periodic", "/etc/jobs/periodic", "Where is periodic.yaml.")
 	labelsPath       = flag.String("labels-path", "/etc/labels/labels", "Where our metadata.labels are mounted.")
 	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -124,7 +125,7 @@ func main() {
 	}
 
 	ja := jobs.JobAgent{}
-	if err := ja.LoadOnce(*presubmit, *postsubmit); err != nil {
+	if err := ja.LoadOnce(*presubmit, *postsubmit, *periodic); err != nil {
 		logrus.WithError(err).Fatal("Error loading job config.")
 	}
 	fullRepoName := fmt.Sprintf("%s/%s", *repoOwner, *repoName)
