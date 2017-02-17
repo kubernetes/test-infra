@@ -92,7 +92,7 @@
         job-name: pull-kubernetes-cross
         json: 1
         repo-name: 'k8s.io/kubernetes'
-        timeout: 60
+        timeout: 80
     - kubernetes-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce
