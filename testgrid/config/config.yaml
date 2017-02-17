@@ -1039,10 +1039,12 @@ dashboards:
   - name: gce-ha-master
     test_group_name: kubernetes-e2e-gce-ha-master
 
-- name: google-gci
+# "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
+# development and qualification. It should not be confused with the "google-gci"
+# tab that is for k8s development and release qualification.
+# If you are going to make a change here, kindly cc @kubernetes/goog-image.
+- name: google-gci-dev
   dashboard_tab:
-  - name: gci-gce
-    test_group_name: kubernetes-e2e-gci-gce
   - name: ci-master
     test_group_name: kubernetes-e2e-gce-gci-ci-master
   - name: ci-1.3
@@ -1067,8 +1069,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.4
   - name: ci-slow-1.5
     test_group_name: kubernetes-e2e-gce-gci-ci-slow-release-1.5
-  - name: examples
-    test_group_name: kubernetes-e2e-gci-gce-examples
   - name: qa-m54
     test_group_name: kubernetes-e2e-gce-gci-qa-m54
   - name: qa-m55
@@ -1099,6 +1099,14 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m57
   - name: qa-slow-master
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-master
+# END google-gci-dev
+
+- name: google-gci
+  dashboard_tab:
+  - name: gci-gce
+    test_group_name: kubernetes-e2e-gci-gce
+  - name: examples
+    test_group_name: kubernetes-e2e-gci-gce-examples
   - name: release-1.4
     test_group_name: kubernetes-e2e-gci-gce-release-1.4
   - name: release-1.5
