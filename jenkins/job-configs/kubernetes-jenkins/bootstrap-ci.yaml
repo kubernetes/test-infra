@@ -1381,7 +1381,7 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
-        timeout: 680
+        timeout: 760
         frequency: 'H H/12 * * *'
         json: 1
         trigger-job: ''
