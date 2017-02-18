@@ -58,6 +58,22 @@ class ParseJunitTest(unittest.TestCase):
     def test_bad_xml(self):
         self.assertEqual(self.parse('''<body />'''), [])
 
+    def test_corrupt_xml(self):
+        self.assertEqual(self.parse('<a>\xff</a>'), [])
+        failures = self.parse('''
+            <testsuites>
+                <testsuite name="a">
+                    <testcase name="Corrupt" time="0">
+                        <failure>something bad \xff</failure>
+                    </testcase>
+                </testsuite>
+            </testsuites>''')
+        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp')])
+
+    def test_not_xml(self):
+        failures = self.parse('\x01')
+        self.assertEqual(failures,
+            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp')])
 
 class BuildTest(main_test.TestBase):
     # pylint: disable=too-many-public-methods

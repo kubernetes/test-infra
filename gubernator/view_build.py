@@ -30,7 +30,15 @@ import view_base
 
 def parse_junit(xml, filename):
     """Generate failed tests as a series of (name, duration, text, filename) tuples."""
-    tree = ET.fromstring(xml)
+    try:
+        tree = ET.fromstring(xml)
+    except ET.ParseError, e:
+        logging.exception('parse_junit failed for %s', filename)
+        try:
+            tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
+        except ET.ParseError, e:
+            yield 'Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename
+            return
     if tree.tag == 'testsuite':
         for child in tree:
             name = child.attrib['name']
