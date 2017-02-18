@@ -172,16 +172,20 @@ func main() {
 		l.WithError(err).Error("Error parsing refs.")
 		return
 	}
-	for _, job := range presubmit.RunAfterSuccess {
-		if err := line.StartJob(kc, job.Name, job.Context, br); err != nil {
-			l.WithError(err).Error("Error starting child job.")
-			return
+	if presubmit != nil {
+		for _, job := range presubmit.RunAfterSuccess {
+			if err := line.StartJob(kc, job.Name, job.Context, br); err != nil {
+				l.WithError(err).Error("Error starting child job.")
+				return
+			}
 		}
 	}
-	for _, job := range postsubmit.RunAfterSuccess {
-		if err := line.StartJob(kc, job.Name, "", br); err != nil {
-			l.WithError(err).Error("Error starting child job.")
-			return
+	if postsubmit != nil {
+		for _, job := range postsubmit.RunAfterSuccess {
+			if err := line.StartJob(kc, job.Name, "", br); err != nil {
+				l.WithError(err).Error("Error starting child job.")
+				return
+			}
 		}
 	}
 }
