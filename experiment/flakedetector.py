@@ -23,6 +23,12 @@ makes it flake, but I think it's good enough.
 
 There will also be false negatives: flakes that don't show up here because the
 PR author changed the PR. Still, this is a good signal.
+
+The chance of hitting a flake is calculated assuming they are uncorrelated,
+which should be a pretty good assumption unless we have a short outage. For
+instance, if all tests start to fail for just a few minutes, then a whole
+bunch of tests will fail at once, then succeed on a rerun. This will cause the
+calculated chance of hitting a flake to be overestimated.
 """
 
 import operator
@@ -47,13 +53,19 @@ for job in data:
         jobs[job['job']][job['pull_sha']] = []
     jobs[job['job']][job['pull_sha']].append(job['state'])
 
+job_commits = {}
 job_flakes = {}
 for job, commits in jobs.items():
+    job_commits[job] = len(commits)
     job_flakes[job] = 0
     for results in commits.values():
         if 'success' in results and 'failure' in results:
             job_flakes[job] += 1
 
 print('Certain flakes from the last day:')
+total_success_chance = 1.0
 for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
-    print('{}\t{}'.format(flakes, job))
+    fail_chance = flakes / job_commits[job]
+    total_success_chance *= (1.0 - fail_chance)
+    print('{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job))
+print('Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance)))
