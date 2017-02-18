@@ -96,6 +96,7 @@ func main() {
 
 	// Serve HTTP.
 	http.HandleFunc("/healthz", healthzRequest)
+	http.HandleFunc("/robots.txt", robotsRequest)
 	http.HandleFunc("/", otherRequest)
 	log.Printf("serving on port %d", *flPort)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
@@ -110,6 +111,17 @@ func healthzRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "ok")
+}
+
+func robotsRequest(w http.ResponseWriter, r *http.Request) {
+	newTxnLogger(r)
+
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
 }
 
 func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
