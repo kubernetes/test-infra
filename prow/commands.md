@@ -9,5 +9,5 @@ Command | Plugin | Who can run it | Description
 `/close` | [close](./plugins/close) | authors and assignees | closes the issue
 `/release-note` | [releasenote](./plugins/releasenote) | authors and assignees | adds the `release-note` label
 `/release-note-none` | [releasenote](./plugins/releasenote) | authors and assignees | adds the `release-note-none` label
-`@k8s-bot test this` | [trigger](./plugins/trigger) | kubernetes org members | runs tests defined in [presubmit.yaml](./presubmit.yaml)
+`@k8s-bot test this` | [trigger](./plugins/trigger) | kubernetes org members | runs tests defined in [config.yaml](./config.yaml)
 `@k8s-bot ok to test` | [trigger](./plugins/trigger) | kubernetes org members | allows the PR author to `@k8s-bot test this`
