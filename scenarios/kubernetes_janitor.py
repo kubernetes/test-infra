@@ -92,7 +92,6 @@ def check_pr_jobs():
 
 def check_ci_jobs():
     """Handle CI jobs"""
-    # Dryrun for CI jobs
     for job in os.listdir(test_infra('jobs')):
         if not job.endswith('.env'):
             continue
@@ -106,7 +105,7 @@ def check_ci_jobs():
             continue
         if project in PR_PROJECTS:
             continue # CI janitor skips all PR jobs
-        clean_project(project, dryrun=True)
+        clean_project(project)
 
 
 def main(args):
