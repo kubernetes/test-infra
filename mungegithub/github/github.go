@@ -845,7 +845,7 @@ func (obj *MungeObject) labelEvent(label string, pred timePred) *github.IssueEve
 func (obj *MungeObject) LabelTime(label string) (*time.Time, bool) {
 	event := obj.labelEvent(label, lastTime)
 	if event == nil {
-		glog.Errorf("Error in LabelTime, recieved nil event value")
+		glog.Errorf("Error in LabelTime, received nil event value")
 		return nil, false
 	}
 	return event.CreatedAt, true
@@ -855,7 +855,7 @@ func (obj *MungeObject) LabelTime(label string) (*time.Time, bool) {
 func (obj *MungeObject) LabelCreator(label string) (string, bool) {
 	event := obj.labelEvent(label, lastTime)
 	if event == nil || event.Actor == nil || event.Actor.Login == nil {
-		glog.Errorf("Error in LabelCreator, recieved nil event value")
+		glog.Errorf("Error in LabelCreator, received nil event value")
 		return "", false
 	}
 	return *event.Actor.Login, true
