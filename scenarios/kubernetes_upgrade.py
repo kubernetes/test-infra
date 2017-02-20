@@ -41,12 +41,7 @@ def check(*cmd):
 def sig_handler(_signo, _frame):
     """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
     print >>sys.stderr, 'signo = %s, frame = %s' % (_signo, _frame)
-    check('docker', 'stop', CONTAINER)
-
-
-def kubekins(tag):
-    """Return full path to kubekins-e2e:tag."""
-    return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
+    check(['docker', 'stop', CONTAINER])
 
 
 def main(args):
@@ -59,12 +54,15 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    try:  # Pull a newer version if one exists
-        check('docker', 'pull', kubekins(args.tag))
-    except subprocess.CalledProcessError:
-        pass
+    e2e_image_tag = 'v20170104-9031f1d'
+    e2e_image_tag_override = '%s/hack/jenkins/.kubekins_e2e_image_tag' % workspace
+    if os.path.isfile(e2e_image_tag_override):
+        with open(e2e_image_tag_override) as tag:
+            e2e_image_tag = tag.read()
 
-    print 'Starting %s...' % CONTAINER
+    # exec
+
+    print >>sys.stderr, 'Starting %s...' % CONTAINER
 
     cmd = [
       'docker', 'run', '--rm',
@@ -72,10 +70,6 @@ def main(args):
       '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
       '-v', '/etc/localtime:/etc/localtime:ro'
     ]
-
-    if args.docker_in_docker:
-        cmd.extend([
-          '-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -90,27 +84,36 @@ def main(args):
         for env in args.env_file:
             cmd.extend(['--env-file', test_infra(env)])
 
-    if args.gce_ssh:
-        gce_ssh = '/workspace/.ssh/google_compute_engine'
-        gce_pub = '%s.pub' % gce_ssh
-        cmd.extend([
-          '-v', '%s:%s:ro' % (args.gce_ssh, gce_ssh),
-          '-v', '%s:%s:ro' % (args.gce_pub, gce_pub),
-          '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
-          '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
+    # Handle upgrade job specific envs
+    cmd.extend([
+      '-e', 'E2E_OPT=--check_version_skew=false',
+      '-e', 'E2E_UPGRADE_TEST=true',
+      '-e', ('GINKGO_UPGRADE_TEST_ARGS=--ginkgo.focus=\\[Feature:MasterUpgrade\\]'
+             ' --upgrade-target=ci/latest-%s' % args.new),
+      '-e', 'JENKINS_PUBLISHED_SKEW_VERSION=ci/latest-%s' % args.new,
+      '-e', 'JENKINS_PUBLISHED_VERSION=ci/latest-%s' % args.old,
+      '-e', 'KUBE_GKE_IMAGE_TYPE=%s' % args.image])
 
-    if args.service_account:
-        service = '/service-account.json'
-        cmd.extend([
-            '-v', '%s:%s:ro' % (args.service_account, service),
-            '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+    for env in args.env:
+        key, val = env.split('=', 1)
+        cmd.extend(['-e', '%s=%s' % (key, val)])
+
+    gce_ssh = '/workspace/.ssh/google_compute_engine'
+    gce_pub = '%s.pub' % gce_ssh
+    service = '/service-account.json'
 
     cmd.extend([
+      '-v', '%s:%s:ro' % (args.gce_ssh, gce_ssh),
+      '-v', '%s:%s:ro' % (args.gce_pub, gce_pub),
+      '-v', '%s:%s:ro' % (args.service_account, service),
+      '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
+      '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub,
+      '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service,
       # Boilerplate envs
       # Skip gcloud update checking
-      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
+      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=\'true\'',
       # Use default component update behavior
-      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
+      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=\'false\'',
       # E2E
       '-e', 'E2E_UP=%s' % args.up,
       '-e', 'E2E_TEST=%s' % args.test,
@@ -144,11 +147,7 @@ def main(args):
         if key not in docker_env_ignore:
             cmd.extend(['-e', '%s=%s' % (key, value)])
 
-    # Overwrite JOB_NAME for soak-*-test jobs
-    if args.soak_test and os.environ.get('JOB_NAME'):
-        cmd.extend(['-e', 'JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy')])
-
-    cmd.append(kubekins(args.tag))
+    cmd.append('gcr.io/k8s-testimages/kubekins-e2e:%s' % e2e_image_tag)
 
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGINT, sig_handler)
@@ -161,6 +160,10 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+    PARSER.add_argument('--new', help='K8s version upgrades to')
+    PARSER.add_argument('--old', help='K8s version upgrades from')
+    PARSER.add_argument('--image', help='K8s image type')
+    PARSER.add_argument('--env', help='Job specific env vars')
 
     PARSER.add_argument(
         '--gce-ssh',
@@ -177,20 +180,16 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', default='bootstrap-e2e', help='Name of the cluster')
-    PARSER.add_argument(
-        '--docker-in-docker', action='store_true', help='Enable run docker within docker')
-    PARSER.add_argument(
-        '--down', default='true', help='If we need to set --down in e2e.go')
-    PARSER.add_argument(
-        '--soak-test', action='store_true', help='If the test is a soak test job')
-    PARSER.add_argument(
-        '--tag', default='v20170215-331e93f3', help='Use a specific kubekins-e2e tag if set')
+        '--up', default='true', help='If we need to set --up in e2e.go')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     PARSER.add_argument(
-        '--up', default='true', help='If we need to set --up in e2e.go')
+        '--down', default='true', help='If we need to set --down in e2e.go')
+    PARSER.add_argument(
+        '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     ARGS = PARSER.parse_args()
+    if not (ARGS.new and ARGS.old and ARGS.image):
+        raise argparse.ArgumentTypeError('--old, --new, --image must be set')
 
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
 
