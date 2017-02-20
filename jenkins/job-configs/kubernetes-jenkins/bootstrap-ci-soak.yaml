@@ -188,28 +188,28 @@
     - kubernetes-soak-gke-deploy:
         blocker: ci-kubernetes-soak-gke-test
         job-name: ci-kubernetes-soak-gke-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gke-test:
         blocker: ci-kubernetes-soak-gke-deploy
         job-name: ci-kubernetes-soak-gke-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gke-gci-deploy:
         blocker: ci-kubernetes-soak-gke-gci-test
         job-name: ci-kubernetes-soak-gke-gci-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gke-gci-test:
         blocker: ci-kubernetes-soak-gke-gci-deploy
         job-name: ci-kubernetes-soak-gke-gci-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620

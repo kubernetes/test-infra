@@ -1353,7 +1353,19 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCISoakYaml(self):
-        is_modern = lambda n: 'kubernetes-soak-gce-1.3' in n or 'kubernetes-soak-gce-federation' in n
+        # TODO(xiangpengzhao): temp until more jobs to be converted
+        whitelist = [
+            'kubernetes-soak-gce-1.3',
+            'kubernetes-soak-gce-federation',
+            'kubernetes-soak-gke'
+        ]
+
+        blacklist = [
+            'kubernetes-soak-gce',
+            'kubernetes-soak-gci'
+        ]
+
+        is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('blocker', job)
@@ -1367,6 +1379,8 @@ class JobTest(unittest.TestCase):
             self.assertEquals(modern, job['json'], name)
             if is_modern(name):  # TODO(krzyzacy): do this for all jobs
                 self.assertGreater(job['timeout'], 0, name)
+            else:
+                self.assertEquals(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(
