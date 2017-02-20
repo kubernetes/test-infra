@@ -1353,7 +1353,7 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCISoakYaml(self):
-        is_modern = lambda n: 'kubernetes-soak-gce-1.3' in n
+        is_modern = lambda n: 'kubernetes-soak-gce-1.3' in n or 'kubernetes-soak-gce-federation' in n
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('blocker', job)
