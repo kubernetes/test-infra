@@ -79,14 +79,14 @@
         json: 1
         frequency: 'H 0 * * *'
         scan: DISABLED
-        timeout: 90
+        timeout: 110
     - kubernetes-soak-gce-federation-test:
         blocker: ci-kubernetes-soak-gce-federation-deploy
         job-name: ci-kubernetes-soak-gce-federation-test
         json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 90
+        timeout: 620
     - kubernetes-soak-gce-gci-deploy:
         blocker: ci-kubernetes-soak-gce-gci-test
         job-name: ci-kubernetes-soak-gce-gci-deploy
