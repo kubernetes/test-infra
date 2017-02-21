@@ -916,8 +916,10 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
-        timeout: 620
-        frequency: '0 17 * * *'
+        timeout: 1220
+        # TODO: Reenable after tests are done:
+        # frequency: '0 17 * * *'
+        frequency: ''
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
