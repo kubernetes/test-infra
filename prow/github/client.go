@@ -149,7 +149,6 @@ func (c *Client) requestRetry(method, path string, body interface{}) (*http.Resp
 			// If we are out of API tokens, sleep first. The X-RateLimit-Reset
 			// header tells us the time at which we can request again.
 			if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
-				resp.Body.Close()
 				var t int
 				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
 					// Sleep an extra second plus how long GitHub wants us to
@@ -161,6 +160,7 @@ func (c *Client) requestRetry(method, path string, body interface{}) (*http.Resp
 						break
 					}
 				}
+				resp.Body.Close()
 			} else if resp.StatusCode < 500 {
 				// Normal, happy case.
 				break
