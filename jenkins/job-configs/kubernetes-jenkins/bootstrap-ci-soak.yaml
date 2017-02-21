@@ -48,101 +48,101 @@
     - kubernetes-soak-gce-deploy:
         blocker: ci-kubernetes-soak-gce-test
         job-name: ci-kubernetes-soak-gce-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-test:
         blocker: ci-kubernetes-soak-gce-deploy
         job-name: ci-kubernetes-soak-gce-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gce-non-cri-deploy:
         blocker: ci-kubernetes-soak-gce-non-cri-test
         job-name: ci-kubernetes-soak-gce-non-cri-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-non-cri-test:
         blocker: ci-kubernetes-soak-gce-non-cri-deploy
         job-name: ci-kubernetes-soak-gce-non-cri-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gce-federation-deploy:
         blocker: ci-kubernetes-soak-gce-federation-test
         job-name: ci-kubernetes-soak-gce-federation-deploy
         json: 1
         frequency: 'H 0 * * *'
         scan: DISABLED
-        timeout: 90
+        timeout: 110
     - kubernetes-soak-gce-federation-test:
         blocker: ci-kubernetes-soak-gce-federation-deploy
         job-name: ci-kubernetes-soak-gce-federation-test
         json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 90
+        timeout: 620
     - kubernetes-soak-gce-gci-deploy:
         blocker: ci-kubernetes-soak-gce-gci-test
         job-name: ci-kubernetes-soak-gce-gci-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-gci-test:
         blocker: ci-kubernetes-soak-gce-gci-deploy
         job-name: ci-kubernetes-soak-gce-gci-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gce-2-deploy:
         blocker: ci-kubernetes-soak-gce-2-test
         job-name: ci-kubernetes-soak-gce-2-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-2-test:
         blocker: ci-kubernetes-soak-gce-2-deploy
         job-name: ci-kubernetes-soak-gce-2-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gce-1.5-deploy:
         blocker: ci-kubernetes-soak-gce-1.5-test
         job-name: ci-kubernetes-soak-gce-1.5-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-1.5-test:
         blocker: ci-kubernetes-soak-gce-1.5-deploy
         job-name: ci-kubernetes-soak-gce-1.5-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gce-1.4-deploy:
         blocker: ci-kubernetes-soak-gce-1.4-test
         job-name: ci-kubernetes-soak-gce-1.4-deploy
-        json: 0
+        json: 1
         frequency: 'H 0 * * 2'
         scan: DISABLED
-        timeout: 0
+        timeout: 110
     - kubernetes-soak-gce-1.4-test:
         blocker: ci-kubernetes-soak-gce-1.4-deploy
         job-name: ci-kubernetes-soak-gce-1.4-test
-        json: 0
+        json: 1
         frequency: 'H/30 * * * *'
         scan: ALL
-        timeout: 0
+        timeout: 620
     - kubernetes-soak-gci-gce-1.5-deploy:
         blocker: ci-kubernetes-soak-gci-gce-1.5-test
         job-name: ci-kubernetes-soak-gci-gce-1.5-deploy
