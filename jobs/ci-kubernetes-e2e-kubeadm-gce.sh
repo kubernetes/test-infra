@@ -25,9 +25,10 @@ readonly testinfra="$(dirname "${0}")/.."
 ### job-env
 
 export PROJECT="k8s-jkns-e2e-kubeadm-gce-ci"
+export KUBERNETES_PROVIDER=kubernetes-anywhere
 export E2E_NAME="e2e-kubeadm-gce"
-export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path ${GOPATH}/src/k8s.io/kubernetes-anywhere"
-export E2E_OPT+=" --kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${E2E_NAME}.test-kubeadm.k8s.io"
+export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path /workspace/kubernetes-anywhere"
+export E2E_OPT+=" --kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${E2E_NAME}"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
 
 ### post-env
@@ -49,7 +50,7 @@ export PATH="${PATH}:/usr/local/go/bin"
 export GINKGO_PARALLEL="y"
 
 ### Runner
-readonly runner="${testinfra}/jenkins/dockerized-e2e-runner.sh"
+readonly runner="/workspace/e2e-runner.sh"
 export DOCKER_TIMEOUT="140m"
 export KUBEKINS_TIMEOUT="120m"
 "${runner}"

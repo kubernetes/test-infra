@@ -43,24 +43,6 @@ ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
 # JENKINS_AWS_SSH_PUBLIC_KEY_FILE
 # JENKINS_AWS_CREDENTIALS_FILE
 
-# Add kubernetes-anywhere dependencies: jsonnet, terraform
-ENV TERRAFORM_VERSION 0.7.2
-
-RUN apt-get update && \
-    apt-get install -y unzip
-
-RUN cd /tmp && \
-    git clone https://github.com/google/jsonnet.git && \
-    cd jsonnet && \
-    make jsonnet && \
-    cp jsonnet /bin && \
-    rm -rf /tmp/jsonnet && \
-    mkdir -p /tmp/terraform/ && \
-    cd /tmp/terraform && \
-    wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
-    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /bin && \
-    rm -rf /tmp/terraform
-
 ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
      "/workspace/"]
 ENV PATH=/google-cloud-sdk/bin:${PATH} \
