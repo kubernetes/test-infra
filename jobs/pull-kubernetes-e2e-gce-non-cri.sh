@@ -28,7 +28,7 @@ release-1.0|release-1.1|release-1.2|release-1.3|release-1.4)
   ;;
 esac
 
-export KUBE_GCS_RELEASE_BUCKET=kubernetes-release-pull
+export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n
 export JENKINS_USE_LOCAL_BINARIES=y
@@ -47,7 +47,7 @@ export GINKGO_PARALLEL="y"
 # This list should match the list in kubernetes-e2e-gce.
 export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-export PROJECT="kubernetes-pr-cri-validation"
+export PROJECT="${PROJECT:-kubernetes-pr-cri-validation}"
 # NUM_NODES and GINKGO_PARALLEL_NODES should match kubernetes-e2e-gce.
 export NUM_NODES="3"
 
@@ -56,6 +56,9 @@ export KUBE_NODE_OS_DISTRIBUTION="gci"
 
 # Enable experimental CRI integration
 export KUBELET_TEST_ARGS="--enable-cri=false"
+
+# Panic if anything mutates a shared informer cache
+export ENABLE_CACHE_MUTATION_DETECTOR="true"
 
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
