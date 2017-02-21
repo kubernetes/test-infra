@@ -1361,8 +1361,6 @@ class JobTest(unittest.TestCase):
             self.assertNotIn('repo-name', job)
             self.assertNotIn('branch', job)
             self.assertIn('timeout', job)
-            self.assertIn('json', job)
-            self.assertTrue(job['json'], name)
             self.assertGreater(job['timeout'], 0, name)
 
             return job_name
