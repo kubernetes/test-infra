@@ -21,6 +21,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -235,9 +236,13 @@ func fields(c *testClient) logrus.Fields {
 func (c *testClient) TestKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
 	buildID := getBuildID(*totURL, c.JobName)
-	spec := c.Presubmit.Spec
-	if spec == nil {
+	var spec *kube.PodSpec
+	if c.Presubmit != nil {
+		spec = c.Presubmit.Spec
+	} else if c.Postsubmit != nil {
 		spec = c.Postsubmit.Spec
+	} else {
+		return errors.New("neither presubmit nor postsubmit")
 	}
 	spec.NodeSelector = map[string]string{
 		"role": "build",
