@@ -68,6 +68,12 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 0
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-canary: #krzyzacy - temporary job
+        job-name: ci-kubernetes-e2e-kops-aws-canary
+        timeout: 140
+        frequency: '* H * * *'
+        json: 1
+        trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
         timeout: 0
