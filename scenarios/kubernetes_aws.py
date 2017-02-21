@@ -172,21 +172,17 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
-    HOME = os.environ.get('HOME')
-    if not HOME:
-        raise ValueError('HOME dir not set!')
-
     PARSER.add_argument(
         '--aws-ssh',
-        default='%s/.ssh/kube_aws_rsa' % HOME,
+        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
         help='Path to private aws ssh keys')
     PARSER.add_argument(
         '--aws-pub',
-        default='%s/.ssh/kube_aws_rsa.pub' % HOME,
+        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub aws ssh key')
     PARSER.add_argument(
         '--aws-cred',
-        default='%s/.aws/credentials' % HOME,
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
         help='Path to aws credential file')
     PARSER.add_argument(
         '--service-account',
@@ -207,6 +203,21 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
     ARGS = PARSER.parse_args()
+
+    # If aws keys are missing, try to fetch from HOME dir
+    if not (ARGS.aws_ssh or ARGS.aws_pub or ARGS.aws_cred):
+        HOME = os.environ.get('HOME')
+        if not HOME:
+            raise ValueError('HOME dir not set!')
+        if not ARGS.aws_ssh:
+            ARGS.aws_ssh = '%s/.ssh/kube_aws_rsa' % HOME
+            print >>sys.stderr, 'AWS ssh key not found. Try to fetch from %s' % ARGS.aws_ssh
+        if not ARGS.aws_pub:
+            ARGS.aws_pub = '%s/.ssh/kube_aws_rsa.pub' % HOME
+            print >>sys.stderr, 'AWS pub key not found. Try to fetch from %s' % ARGS.aws_pub
+        if not ARGS.aws_cred:
+            ARGS.aws_cred = '%s/.aws/credentials' % HOME
+            print >>sys.stderr, 'AWS cred not found. Try to fetch from %s' % ARGS.aws_cred
 
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
 
