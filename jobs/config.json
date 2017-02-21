@@ -2054,6 +2054,27 @@
   ]
 },
 
+"ci-kubernetes-soak-gce-federation-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-soak-gce-federation-deploy.env",
+    "--test=false",
+    "--down=false"
+  ]
+},
+
+"ci-kubernetes-soak-gce-federation-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-soak-gce-federation-test.env",
+    "--soak-test",
+    "--up=false",
+    "--down=false"
+  ]
+},
+
 "ci-kubernetes-soak-gce-gci-deploy": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -2138,6 +2159,27 @@
   ]
 },
 
+"ci-kubernetes-soak-gce-1.3-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-soak-gce-1.3-deploy.env",
+    "--test=false",
+    "--down=false"
+  ]
+},
+
+"ci-kubernetes-soak-gce-1.3-test": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-soak-gce-1.3-test.env",
+    "--soak-test",
+    "--up=false",
+    "--down=false"
+  ]
+},
+
 "ci-kubernetes-soak-gci-gce-1.5-deploy": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -2174,48 +2216,6 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.4-test.env",
-    "--soak-test",
-    "--up=false",
-    "--down=false"
-  ]
-},
-
-"ci-kubernetes-soak-gce-1.3-deploy": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-soak-gce-1.3-deploy.env",
-    "--test=false",
-    "--down=false"
-  ]
-},
-
-"ci-kubernetes-soak-gce-1.3-test": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-soak-gce-1.3-test.env",
-    "--soak-test",
-    "--up=false",
-    "--down=false"
-  ]
-},
-
-"ci-kubernetes-soak-gce-federation-deploy": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-soak-gce-federation-deploy.env",
-    "--test=false",
-    "--down=false"
-  ]
-},
-
-"ci-kubernetes-soak-gce-federation-test": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-soak-gce-federation-test.env",
     "--soak-test",
     "--up=false",
     "--down=false"
