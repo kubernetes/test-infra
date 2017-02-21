@@ -17,7 +17,6 @@ kubernetes/kops:
 kubernetes/kubernetes:
 - trigger
 - release-note
-- heart
 
 kubernetes/test-infra:
 - trigger
@@ -25,7 +24,9 @@ kubernetes/test-infra:
 kubernetes:
 - cla
 - close
+- heart
 - lgtm
+- yuks
 
 kubernetes-incubator:
 - cla
