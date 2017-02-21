@@ -831,6 +831,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
+- name: kubernetes-e2e-gce-taint-evict
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
 # Manual, federated groups
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
@@ -1057,6 +1059,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-slow-release-1.5
   - name: gce-ha-master
     test_group_name: kubernetes-e2e-gce-ha-master
+  - name: gce-taint-evict
+    test_group_name: kubernetes-e2e-gce-taint-evict
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"

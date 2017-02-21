@@ -208,6 +208,13 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'kubernetes-build'
+    - kubernetes-e2e-gce-taint-evict:
+        job-name: ci-kubernetes-e2e-gce-taint-evict
+        jenkins-timeout: 180
+        timeout: 80
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'kubernetes-build'
 
     # gce-manual-jobs #gmarek
     - kubernetes-e2e-gce-enormous-cluster:
