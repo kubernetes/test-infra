@@ -1550,7 +1550,10 @@ class JobTest(unittest.TestCase):
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
             self.assertFalse(os.path.islink(job_path), job_path)
-            self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
+            if job.endswith('.sh'):
+                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
+            else:
+                self.assertTrue(os.access(job_path, os.R_OK), job_path)
 
     def testAllProjectAreUnique(self):
         allowed_list = {
