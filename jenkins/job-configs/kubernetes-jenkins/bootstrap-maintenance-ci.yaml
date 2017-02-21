@@ -31,7 +31,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 300
+        timeout: 700
         fail: true
     triggers:
     - timed: '{frequency}'
@@ -61,4 +61,4 @@
         job-name: maintenance-ci-janitor
         json: 1
         repo-name: 'k8s.io/test-infra'
-        timeout: 300
+        timeout: 600
