@@ -462,12 +462,25 @@ if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
   esac
 fi
 
-if [[ "${E2E_UP:-}" == "true" ]]; then
+if [[ "${FEDERATION:-}" == "true" ]]; then
+  FEDERATION_UP="${FEDERATION_UP:-true}"
+  FEDERATION_DOWN="${FEDERATION_DOWN:-true}"
+fi
+
+if [[ "${E2E_UP:-}" == "true" ]] || [[ "${FEDERATION_UP:-}" == "true" ]]; then
   e2e_go_args+=(--up --ctl="version --match-server-version=false")
 fi
 
-if [[ "${E2E_DOWN:-}" == "true" ]]; then
+if [[ "${E2E_DOWN:-}" == "true" ]] || [[ "${FEDERATION_DOWN:-}" == "true" ]]; then
   e2e_go_args+=(--down)
+fi
+
+if [[ "${FEDERATION_UP:-}" == "true" ]] || [[ "${FEDERATION_DOWN:-}" == "true" ]]; then
+  e2e_go_args+=(--federation)
+fi
+
+if [[ -z "${FEDERATION_CLUSTERS:-}" ]]; then
+  e2e_go_args+=("--deployment=none")
 fi
 
 if [[ "${E2E_TEST:-}" == "true" ]]; then
@@ -502,6 +515,7 @@ fi
 if [[ -n "${E2E_PUBLISH_PATH:-}" ]]; then
   e2e_go_args+=(--publish="${E2E_PUBLISH_PATH}")
 fi
+
 
 "$(dirname "${0}")/kubetest" ${E2E_OPT:-} "${e2e_go_args[@]}"
 

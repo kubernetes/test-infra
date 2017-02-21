@@ -37,9 +37,10 @@ var (
 		"You can explicitly set to false if you're, e.g., testing client changes "+
 		"for which the server version doesn't make a difference.")
 	checkLeakedResources = flag.Bool("check_leaked_resources", false, "Ensure project ends with the same resources")
-	deployment           = flag.String("deployment", "bash", "up/down mechanism (defaults to cluster/kube-{up,down}.sh) (choices: bash/kops/kubernetes-anywhere)")
+	deployment           = flag.String("deployment", "bash", "up/down mechanism (defaults to cluster/kube-{up,down}.sh) (choices: none/bash/kops/kubernetes-anywhere)")
 	down                 = flag.Bool("down", false, "If true, tear down the cluster before exiting.")
 	dump                 = flag.String("dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
+	federation           = flag.Bool("federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
 	kubemark             = flag.Bool("kubemark", false, "If true, run kubemark tests.")
 	chartTests           = flag.Bool("charts", false, "If true, run charts tests.")
 	publish              = flag.String("publish", "", "Publish version to the specified gs:// path on success")
@@ -98,6 +99,11 @@ func main() {
 		log.Fatalf("Error creating deployer: %v", err)
 	}
 
+	fedDeploy, err := getFederationDeployer()
+	if err != nil {
+		log.Fatalf("Error creating federation deployer: %v", err)
+	}
+
 	if *down {
 		// listen for signals such as ^C and gracefully attempt to clean up
 		c := make(chan os.Signal, 1)
@@ -105,15 +111,23 @@ func main() {
 		go func() {
 			for range c {
 				log.Print("Captured ^C, gracefully attempting to cleanup resources..")
-				if err := deploy.Down(); err != nil {
+				var fedErr, err error
+				if *federation {
+					if fedErr = fedDeploy.Down(); fedErr != nil {
+						log.Printf("Tearing down federation failed: %v", fedErr)
+					}
+				}
+				if err = deploy.Down(); err != nil {
 					log.Printf("Tearing down deployment failed: %v", err)
+				}
+				if fedErr != nil || err != nil {
 					os.Exit(1)
 				}
 			}
 		}()
 	}
 
-	if err := run(deploy); err != nil {
+	if err := run(deploy, fedDeploy); err != nil {
 		log.Fatalf("Something went wrong: %s", err)
 	}
 }
