@@ -40,10 +40,15 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
-def sig_handler(_signo, _frame):
-    """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
-    print >>sys.stderr, 'signo = %s, frame = %s' % (_signo, _frame)
-    check('docker', 'stop', CONTAINER)
+def setup_signal_handlers(container):
+    """Establish a signal handler to kill 'container'."""
+    def sig_handler(_signo, _frame):
+        """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
+        print >>sys.stderr, 'signo = %s, frame = %s' % (_signo, _frame)
+        check('docker', 'stop', container)
+
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
 
 
 def kubekins(tag):
@@ -54,6 +59,15 @@ def kubekins(tag):
 def main(args):
     """Set up env, start kops-runner, handle termination. """
     # pylint: disable=too-many-locals
+
+    job_name = (os.environ.get('JOB_NAME') or
+                os.environ.get('USER') or
+                'kops-aws-test')
+    build_number = (os.environ.get('BUILD_NUMBER') or
+                    ''.join(
+                        random.choice(string.ascii_lowercase + string.digits)
+                        for _ in range(8)))
+    container = '%s-%s' % (job_name, build_number)
 
     # dockerized-e2e-runner goodies setup
     workspace = os.environ.get('WORKSPACE', os.getcwd())
@@ -70,11 +84,11 @@ def main(args):
     except subprocess.CalledProcessError:
         pass
 
-    print 'Starting %s...' % CONTAINER
+    print 'Starting %s...' % container
 
     cmd = [
       'docker', 'run', '--rm',
-      '--name=%s' % CONTAINER,
+      '--name=%s' % container,
       '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
       '-v', '/etc/localtime:/etc/localtime:ro',
       '--entrypoint=/workspace/kops-e2e-runner.sh'
@@ -97,23 +111,20 @@ def main(args):
     aws_ssh = '/workspace/.ssh/kube_aws_rsa'
     aws_pub = '%s.pub' % aws_ssh
     aws_cred = '/workspace/.aws/credentials'
-    service = '/service-account.json'
 
     cmd.extend([
       '-v', '%s:%s:ro' % (args.aws_ssh, aws_ssh),
       '-v', '%s:%s:ro' % (args.aws_pub, aws_pub),
       '-v', '%s:%s:ro' % (args.aws_cred, aws_cred),
-      '-e', 'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % aws_ssh,
-      '-e', 'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % aws_pub,
-      '-e', 'JENKINS_AWS_CREDENTIALS_FILE=%s' % aws_cred])
+      ])
     if args.service_account:
+        service = '/service-account.json'
         cmd.extend(['-v', '%s:%s:ro' % (args.service_account, service),
                     '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
-    # KOPS_ZONE
-    zone = os.environ.get('KOPS_ZONES')
-    if not zone:
-        options = [
+    zones = args.zones
+    if not zones:
+        zones = random.choice([
             'us-west-1a',
             'us-west-1c',
             'us-west-2a',
@@ -122,28 +133,25 @@ def main(args):
             'us-east-1d',
             #'us-east-2a',
             #'us-east-2b',
-        ]
-        zone = random.choice(options)
+        ])
+    regions = ','.join([zone[:-1] for zone in zones.split(',')])
 
     cmd.extend([
       # Boilerplate envs
-      # Skip gcloud update checking
-      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
-      # Use default component update behavior
-      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
+      # Jenkins required variables
+      '-e', 'JOB_NAME=%s' % job_name,
+      '-e', 'BUILD_NUMBER=%s' % build_number,
+      # KOPS_REGIONS is needed by log dump hook in kops-e2e-runner.sh
+      '-e', 'KOPS_REGIONS=%s' % regions,
       # E2E
       '-e', 'E2E_UP=%s' % args.up,
       '-e', 'E2E_TEST=%s' % args.test,
       '-e', 'E2E_DOWN=%s' % args.down,
-      '-e', 'KOPS_E2E_CLUSTER_NAME=%s' % args.cluster,
-      # AWS
-      '-e', 'KOPS_ZONES=%s' % zone,
-      '-e', ('E2E_OPT=--kops-cluster %s --kops-zones %s --kops-state %s --kops-nodes=4' %
-             (args.cluster, zone, args.state)),
-      '-e', 'KOPS_REGIONS=%s' % zone[:-1],
-      # Workspace
-      '-e', 'HOME=/workspace',
-      '-e', 'WORKSPACE=/workspace'])
+      # Kops
+      '-e', ('E2E_OPT=--kops-cluster %s --kops-zones %s '
+             '--kops-state %s --kops-nodes=%s --kops-ssh-key=%s' %
+             (args.cluster, zones, args.state, args.nodes, aws_ssh)),
+    ])
 
     # env blacklist.
     # TODO(krzyzacy) change this to a whitelist
@@ -162,8 +170,7 @@ def main(args):
 
     cmd.append(kubekins(args.tag))
 
-    signal.signal(signal.SIGTERM, sig_handler)
-    signal.signal(signal.SIGINT, sig_handler)
+    setup_signal_handlers(container)
 
     check(*cmd)
 
@@ -193,17 +200,26 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', default='e2e-kops-aws-canary.test-aws.k8s.io', help='Name of the aws cluster')
+        '--cluster', default='e2e-kops-aws-canary.test-aws.k8s.io',
+        help='Name of the aws cluster')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
-        '--state', default='s3://k8s-kops-jenkins/', help='Name of the aws state storage')
+        '--nodes', default=4, type=int, help='Number of nodes to start')
     PARSER.add_argument(
-        '--tag', default='v20170207-9bbd5f41', help='Use a specific kubekins-e2e tag if set')
+        '--state', default='s3://k8s-kops-jenkins/',
+        help='Name of the aws state storage')
+    PARSER.add_argument(
+        '--tag', default='v20170207-9bbd5f41',
+        help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     PARSER.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
+    PARSER.add_argument(
+        '--zones', default=None,
+        help='Availability zones to start the cluster in. '
+        'Defaults to a random zone.')
     ARGS = PARSER.parse_args()
 
     # If aws keys are missing, try to fetch from HOME dir
@@ -220,17 +236,5 @@ if __name__ == '__main__':
         if not ARGS.aws_cred:
             ARGS.aws_cred = '%s/.aws/credentials' % HOME
             print >>sys.stderr, 'AWS cred not found. Try to fetch from %s' % ARGS.aws_cred
-
-    if not os.environ.get('JOB_NAME'):
-        os.environ['JOB_NAME'] = os.environ.get('USER') or 'aws-test'
-    if not os.environ.get('BUILD_NUMBER'):
-        os.environ['BUILD_NUMBER'] = ''.join(
-            random.choice(string.ascii_lowercase + string.digits)
-            for _ in range(8))
-    CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
-
-    # TODO(zmerlynn): This shouldn't be necessary, but it is if you're
-    # running the scenario directly on the desktop.
-    os.environ['BOOTSTRAP_MIGRATION'] = 'true'
 
     main(ARGS)
