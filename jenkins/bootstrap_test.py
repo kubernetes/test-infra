@@ -1294,14 +1294,12 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
 
         whitelist = [
-            'kubernetes-e2e-kops-aws-canary',
-            'kubernetes-e2e-kops-aws-updown'
         ]
 
         blacklist = [
-            'kubernetes-e2e-(kops|aws)',
+            'kubernetes-e2e-aws',
         ]
-            
+
         is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
         def Check(job, name):
             job_name = 'ci-%s' % name
