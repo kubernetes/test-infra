@@ -193,7 +193,7 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', default='e2e-kops-aws.test-aws.k8s.io', help='Name of the aws cluster')
+        '--cluster', default='e2e-kops-aws-canary.test-aws.k8s.io', help='Name of the aws cluster')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
