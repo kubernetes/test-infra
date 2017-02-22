@@ -1492,7 +1492,7 @@ class JobTest(unittest.TestCase):
         if not key in self.realjobs:
             for yaml in self.yaml_suffix:
                 self.LoadBootstrapYaml(yaml)
-        self.assertIn(key, self.realjobs)
+        self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
 
     def testValidTimeout(self):

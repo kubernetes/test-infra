@@ -103,9 +103,9 @@ def do_testcmd(name):
 
 def do_parse_pod_name(text):
     """Find the pod name from the failure and return the pod name."""
-    p = re.search(r'(.*) pod (.*?) .*', text)
+    p = re.search(r' pod (\S+)', text)
     if p:
-        return re.sub(r'[\'"\\:]', '', p.group(2))
+        return re.sub(r'[\'"\\:]', '', p.group(1))
     else:
         return ""
 
