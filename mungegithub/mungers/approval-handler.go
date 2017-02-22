@@ -407,7 +407,7 @@ func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approv
 	for _, file := range files {
 		fileOwners := h.unwrapAliases(h.features.Repos.Approvers(*file.Filename))
 
-		ownersFile := h.features.Repos.FindOwnersForPath(*file.Filename)
+		ownersFile := h.features.Repos.FindApproverOwnersForPath(*file.Filename)
 
 		hasApproved := fileOwners.Intersection(approverSet)
 		if len(hasApproved) != 0 {
