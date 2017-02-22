@@ -1294,7 +1294,8 @@ class JobTest(unittest.TestCase):
         # TODO(krzyzacy): temp until more jobs to be converted
 
         whitelist = [
-            'kubernetes-e2e-kops-aws-canary'
+            'kubernetes-e2e-kops-aws-canary',
+            'kubernetes-e2e-kops-aws-updown'
         ]
 
         blacklist = [

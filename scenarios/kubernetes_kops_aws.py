@@ -200,8 +200,7 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', default='e2e-kops-aws-canary.test-aws.k8s.io',
-        help='Name of the aws cluster')
+        '--cluster', help='Name of the aws cluster (required)')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
@@ -221,6 +220,9 @@ if __name__ == '__main__':
         help='Availability zones to start the cluster in. '
         'Defaults to a random zone.')
     ARGS = PARSER.parse_args()
+
+    if not ARGS.cluster:
+        raise ValueError('--cluster must be provided')
 
     # If aws keys are missing, try to fetch from HOME dir
     if not (ARGS.aws_ssh or ARGS.aws_pub or ARGS.aws_cred):
