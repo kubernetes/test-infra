@@ -76,9 +76,9 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
-        timeout: 0
+        timeout: 40
         frequency: 'H/5 * * * *' # At least every 30m
-        json: 0
+        json: 1
         trigger-job: 'ci-kubernetes-build'
     # END AWS
 
