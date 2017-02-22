@@ -18,7 +18,6 @@ package mungers
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/golang/glog"
 
@@ -105,12 +104,4 @@ func (p *publisherIssueTracker) FileIssue(failure publisherFailure) {
 		return
 	}
 	glog.Infof("Created issue %v:\n%v", *obj.Issue.Number, failure.body())
-}
-
-func readLog(logFilePath string) (string, error) {
-	data, err := ioutil.ReadFile(logFilePath)
-	if err != nil {
-		return "", err
-	}
-	return string(data), err
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -159,26 +160,21 @@ func (p *PublisherMunger) construct(src, dst coordinate) (string, error) {
 	dstRepoRoot := filepath.Join(base, goWorkspaceStructure, dst.repo)
 	curDir, err := os.Getwd()
 	if err != nil {
-		p.plog.Infof("Getwd failed")
-		return "", err
+		return "", fmt.Errorf("Getwd failed: %v", err)
 	}
 	if err = os.Chdir(srcRepoRoot); err != nil {
-		p.plog.Infof("Chdir to srcRepoRoot %s failed", srcRepoRoot)
-		return "", err
+		return "", fmt.Errorf("Chdir to srcRepoRoot %s failed: %v", srcRepoRoot, err)
 	}
 	if err = exec.Command("git", "checkout", src.branch).Run(); err != nil {
-		p.plog.Infof("git checkout %s failed", src.branch)
-		return "", err
+		return "", fmt.Errorf("git checkout %s failed: %v", src.branch, err)
 	}
 	out, err := exec.Command("git", "rev-parse", "HEAD").CombinedOutput()
 	if err != nil {
-		p.plog.Infof("git rev-parse failed")
-		return "", err
+		return "", fmt.Errorf("git rev-parse failed: %v", err)
 	}
 	commitHash := string(out)
 	if err = os.Chdir(dstRepoRoot); err != nil {
-		p.plog.Infof("Chdir to dstRepoRoot %s failed", dstRepoRoot)
-		return "", err
+		return "", fmt.Errorf("Chdir to dstRepoRoot %s failed: %v", dstRepoRoot, err)
 	}
 	// TODO: this makes construct() specific for client-go. This keeps
 	// README.md, CHANGELOG.md, .github folder in the
@@ -192,8 +188,7 @@ find %s -depth -maxdepth 1 \( \
 -name CHANGELOG.md -o \
 -path %s \) -prune \
 -o -exec rm -rf {} +`, dst.dir, dst.dir)).CombinedOutput(); err != nil {
-		p.plog.Infof("command \"find\" failed: %s", out)
-		return "", err
+		return "", fmt.Errorf("command \"find\" failed: %s: %v", out, err)
 	}
 	if dst.dir == "./" {
 		// don't copy the srcDir folder, just copy its contents
@@ -202,8 +197,7 @@ find %s -depth -maxdepth 1 \( \
 		err = exec.Command("cp", "-a", srcDir, dst.dir).Run()
 	}
 	if err != nil {
-		p.plog.Infof("copy failed")
-		return "", err
+		return "", fmt.Errorf("copy failed: %v", err)
 	}
 	// rename _vendor to vendor
 	if err = exec.Command("find", dst.dir, "-depth", "-name", "_vendor", "-type", "d", "-execdir", "mv", "{}", "vendor", ";").Run(); err != nil {
@@ -211,8 +205,7 @@ find %s -depth -maxdepth 1 \( \
 		return "", err
 	}
 	if err = os.Chdir(curDir); err != nil {
-		p.plog.Infof("Chdir to curDir failed")
-		return "", err
+		return "", fmt.Errorf("Chdir to curDir failed: %v", err)
 	}
 	srcURL := fmt.Sprintf("https://github.com/%s/%s.git", org, src.repo)
 	commitMessage := fmt.Sprintf("copied from %s, branch %s,\n", srcURL, src.branch)
@@ -256,12 +249,8 @@ func (p *PublisherMunger) EachLoop() error {
 		return err
 	}
 
-	f, err := os.OpenFile(p.logDir, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	p.plog = NewPublisherLog(f)
+	buf := bytes.NewBuffer(nil)
+	p.plog = NewPublisherLog(buf)
 
 	var errlist []error
 Repos:
@@ -328,7 +317,7 @@ Repos:
 	// publisher run
 	aggregated := errors.NewAggregate(errlist)
 	if len(errlist) != 0 {
-		log, err := readLog(p.logDir)
+		log, err := p.ReadLog()
 		if err != nil {
 			log = fmt.Sprintf("failed to extract log: %v", err)
 			glog.Errorf(log)

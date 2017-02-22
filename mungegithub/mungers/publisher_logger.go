@@ -21,25 +21,25 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/golang/glog"
 )
 
 type plog struct {
-	file *os.File
+	buf *bytes.Buffer
 }
 
-func NewPublisherLog(file *os.File) *plog {
-	return &plog{file}
+func NewPublisherLog(buf *bytes.Buffer) *plog {
+	return &plog{buf}
 }
 
 func (p *plog) write(format string, args ...interface{}) {
-	p.file.WriteString("[" + time.Now().Format(time.RFC822) + "]: ")
-	p.file.WriteString(fmt.Sprintf(format, args...))
-	p.file.WriteString("\n")
+	p.buf.WriteString("[" + time.Now().Format(time.RFC822) + "]: ")
+	p.buf.WriteString(fmt.Sprintf(format, args...))
+	p.buf.WriteString("\n")
 }
 
 func (p *plog) Errorf(format string, args ...interface{}) {
@@ -55,4 +55,8 @@ func (p *plog) Infof(format string, args ...interface{}) {
 func (p *plog) Fatalf(format string, args ...interface{}) {
 	glog.Fatalf(format, args...)
 	p.write(format, args...)
+}
+
+func (p *plog) ReadLog() string {
+	return p.buf.String()
 }
