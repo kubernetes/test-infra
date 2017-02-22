@@ -79,36 +79,45 @@ type Brancher struct {
 	Branches []string `json:"branches"`
 }
 
-func (c *Config) GetPresubmit(repo, job string) (bool, *Presubmit) {
+func (c *Config) GetPresubmit(repo, job string) *Presubmit {
 	return getPresubmit(c.Presubmits[repo], job)
 }
 
-func getPresubmit(jobs []Presubmit, job string) (bool, *Presubmit) {
+func getPresubmit(jobs []Presubmit, job string) *Presubmit {
 	for _, j := range jobs {
 		if j.Name == job {
-			return true, &j
+			return &j
 		}
-		if found, p := getPresubmit(j.RunAfterSuccess, job); found {
-			return true, p
+		if p := getPresubmit(j.RunAfterSuccess, job); p != nil {
+			return p
 		}
 	}
-	return false, nil
+	return nil
 }
 
-func (c *Config) GetPostsubmit(repo, job string) (bool, *Postsubmit) {
+func (c *Config) GetPostsubmit(repo, job string) *Postsubmit {
 	return getPostsubmit(c.Postsubmits[repo], job)
 }
 
-func getPostsubmit(jobs []Postsubmit, job string) (bool, *Postsubmit) {
+func getPostsubmit(jobs []Postsubmit, job string) *Postsubmit {
 	for _, j := range jobs {
 		if j.Name == job {
-			return true, &j
+			return &j
 		}
-		if found, p := getPostsubmit(j.RunAfterSuccess, job); found {
-			return true, p
+		if p := getPostsubmit(j.RunAfterSuccess, job); p != nil {
+			return p
 		}
 	}
-	return false, nil
+	return nil
+}
+
+func (c *Config) GetPeriodic(job string) *Periodic {
+	for _, j := range c.Periodics {
+		if j.Name == job {
+			return &j
+		}
+	}
+	return nil
 }
 
 func (br Brancher) RunsAgainstBranch(branch string) bool {
@@ -198,10 +207,8 @@ func (c *Config) AllJobNames() []string {
 	for _, v := range c.Postsubmits {
 		res = append(res, listPost(v)...)
 	}
-	for _, v := range c.Periodics {
-		for _, j := range v {
-			res = append(res, j.Name)
-		}
+	for _, j := range c.Periodics {
+		res = append(res, j.Name)
 	}
 	return res
 }

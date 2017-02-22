@@ -74,9 +74,9 @@ const (
 )
 
 type testClient struct {
-	IsPresubmit bool
-	Presubmit   *config.Presubmit
-	Postsubmit  *config.Postsubmit
+	Presubmit  *config.Presubmit
+	Postsubmit *config.Postsubmit
+	Periodic   *config.Periodic
 
 	JobName   string
 	RepoOwner string
@@ -128,16 +128,17 @@ func main() {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}
 	fullRepoName := fmt.Sprintf("%s/%s", *repoOwner, *repoName)
-	foundPresubmit, presubmit := c.GetPresubmit(fullRepoName, *job)
-	foundPostsubmit, postsubmit := c.GetPostsubmit(fullRepoName, *job)
-	if !foundPresubmit && !foundPostsubmit {
+	presubmit := c.GetPresubmit(fullRepoName, *job)
+	postsubmit := c.GetPostsubmit(fullRepoName, *job)
+	periodic := c.GetPeriodic(*job)
+	if presubmit == nil && postsubmit == nil && periodic == nil {
 		logrus.Fatalf("Could not find job %s in job config.", *job)
 	}
 
 	client := &testClient{
-		IsPresubmit: foundPresubmit,
-		Presubmit:   presubmit,
-		Postsubmit:  postsubmit,
+		Presubmit:  presubmit,
+		Postsubmit: postsubmit,
+		Periodic:   periodic,
 
 		JobName:   *job,
 		RepoOwner: *repoOwner,
@@ -157,7 +158,7 @@ func main() {
 		JenkinsClient: jenkinsClient,
 	}
 	l := logrus.WithFields(fields(client))
-	if foundPresubmit && presubmit.Spec == nil {
+	if presubmit != nil && presubmit.Spec == nil {
 		if err := client.TestPRJenkins(); err != nil {
 			l.WithError(err).Error("Error testing PR on Jenkins.")
 			return
@@ -241,8 +242,10 @@ func (c *testClient) TestKubernetes() error {
 		spec = c.Presubmit.Spec
 	} else if c.Postsubmit != nil {
 		spec = c.Postsubmit.Spec
+	} else if c.Periodic != nil {
+		spec = c.Periodic.Spec
 	} else {
-		return errors.New("neither presubmit nor postsubmit")
+		return errors.New("neither presubmit nor postsubmit nor periodic")
 	}
 	spec.NodeSelector = map[string]string{
 		"role": "build",
@@ -446,7 +449,7 @@ func (c *testClient) TestPRJenkins() error {
 
 func (c *testClient) guberURL(build string) string {
 	var url string
-	if c.IsPresubmit {
+	if c.Presubmit != nil {
 		url = guberBasePR
 	} else {
 		url = guberBasePush
@@ -460,7 +463,7 @@ func (c *testClient) guberURL(build string) string {
 	if prName == "0" {
 		prName = "batch"
 	}
-	if c.IsPresubmit {
+	if c.Presubmit != nil {
 		return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
 	} else {
 		return fmt.Sprintf("%s/%s/%s/", url, c.Postsubmit.Name, build)

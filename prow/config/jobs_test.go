@@ -256,13 +256,13 @@ func TestGetPresubmits(t *testing.T) {
 		},
 		{Name: "b"},
 	}
-	if found, _ := getPresubmit(pres, "b"); !found {
+	if p := getPresubmit(pres, "b"); p == nil {
 		t.Error("Missed root level presubmit.")
 	}
-	if found, _ := getPresubmit(pres, "ab"); !found {
+	if p := getPresubmit(pres, "ab"); p == nil {
 		t.Error("Missed child presubmit.")
 	}
-	if found, _ := getPresubmit(pres, "c"); found {
+	if p := getPresubmit(pres, "c"); p != nil {
 		t.Error("Whaa!? Found a presubmit that shouldn't exist.")
 	}
 }

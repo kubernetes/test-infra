@@ -28,9 +28,12 @@ import (
 
 // Config is a read-only snapshot of the config.
 type Config struct {
+	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
 	Presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
 	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
-	Periodics   map[string][]Periodic   `json:"periodics,omitempty"`
+
+	// Periodics are not associated with any repo.
+	Periodics []Periodic `json:"periodics,omitempty"`
 }
 
 // Load loads and parses the config at path.
@@ -56,15 +59,26 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
-	// Ensure that the periodic durations are valid.
-	for _, js := range c.Periodics {
+
+	// Ensure that postsubmits have a pod spec.
+	for _, js := range c.Postsubmits {
 		for j := range js {
-			d, err := time.ParseDuration(js[j].Interval)
-			if err != nil {
-				return fmt.Errorf("cannot parse duration for %s: %v", js[j].Name, err)
+			if js[j].Spec == nil {
+				return fmt.Errorf("job %s has no spec", js[j].Name)
 			}
-			js[j].interval = d
 		}
+	}
+
+	// Ensure that the periodic durations are valid and specs exist.
+	for j := range c.Periodics {
+		if c.Periodics[j].Spec == nil {
+			return fmt.Errorf("job %s has no spec", c.Periodics[j].Name)
+		}
+		d, err := time.ParseDuration(c.Periodics[j].Interval)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
+		}
+		c.Periodics[j].interval = d
 	}
 	return nil
 }
