@@ -21,6 +21,7 @@ go_library(
         "bash.go",
         "e2e.go",
         "kops.go",
+        "main.go",
         "util.go",
     ],
     tags = ["automanaged"],
