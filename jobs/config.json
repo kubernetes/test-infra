@@ -258,12 +258,7 @@
 },
 
 "pull-heapster-e2e": {
-  "scenario": "execute",
-  "args": [
-    "make",
-    "test-unit",
-    "test-integration"
-  ]
+  "scenario": "kubernetes_heapster"
 },
 
 "pull-kubernetes-cross": {
