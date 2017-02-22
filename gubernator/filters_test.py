@@ -120,5 +120,13 @@ class HelperTest(unittest.TestCase):
             filters.do_gcs_browse_url('/k8s/foo'),
             'http://gcsweb.k8s.io/gcs/k8s/foo')
 
+    def test_pod_name(self):
+        self.assertEqual(filters.do_parse_pod_name("start pod 'client-c6671' to"), 'client-c6671')
+        self.assertEqual(filters.do_parse_pod_name('tripod "blah"'), '')
+
+        # exercise pathological case
+        self.assertEqual(filters.do_parse_pod_name('abcd pode ' * 10000), '')
+
+
 if __name__ == '__main__':
     unittest.main()
