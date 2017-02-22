@@ -29,13 +29,13 @@ usage() {
   echo '  heavy-: create an instance for heavy postcommit jobs (build)'
   echo 'Actions (auto by default):'
   echo '  attach: connect the instance to the jenkins master'
-  echo '  auto: detatch delete create attach'
+  echo '  auto: detach delete create attach'
   echo '  auto-image: delete create update copy-keys reboot update-image delete'
   echo '  copy-keys: copy ssh keys from master to agent'
   echo '  create: insert a new vm'
   echo '  create-image: create a new agent image'
   echo '  delete: delete a vm'
-  echo '  detatch: disconnect the instance from the jenkins master'
+  echo '  detach: disconnect the instance from the jenkins master'
   echo '  reboot: reboot or hard reset the VM'
   echo '  update: configure prerequisite packages to run tests'
   echo '  update-image: update the image-family used to create new disks'
@@ -43,7 +43,7 @@ usage() {
   echo '  # Refresh image'
   echo "  $(basename "${0}") --base-image light-agent auto-image"
   echo '  # Retire agent'
-  echo "  $(basename "${0}") agent-heavy-666 detatch delete"
+  echo "  $(basename "${0}") agent-heavy-666 detach delete"
   echo '  # Refresh agent'
   echo "  $(basename "${0}") agent-light-666"
   echo "  $(basename "${0}") --pr agent-pr-666"
@@ -177,7 +177,7 @@ check-kind() {
 auto-agent() {
   echo "Automatically creating ${INSTANCE}..."
   check-kind
-  detatch-agent
+  detach-agent
   delete-agent
   create-agent
   attach-agent
@@ -218,8 +218,8 @@ master-change() {
 }
 
 
-detatch-agent() {
-  echo "Detatching ${INSTANCE}..."
+detach-agent() {
+  echo "Detaching ${INSTANCE}..."
   master-change delete
 }
 
