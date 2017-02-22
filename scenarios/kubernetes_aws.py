@@ -23,6 +23,7 @@ import argparse
 import os
 import random
 import signal
+import string
 import subprocess
 import sys
 
@@ -60,7 +61,7 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    for path in [args.aws_ssh, args.aws_pub, args.aws_cred, args.service_account]:
+    for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
         if not os.path.isfile(os.path.expandvars(path)):
             raise IOError(path, os.path.expandvars(path))
 
@@ -95,18 +96,19 @@ def main(args):
     # Enforce to be always present
     aws_ssh = '/workspace/.ssh/kube_aws_rsa'
     aws_pub = '%s.pub' % aws_ssh
-    aws_cred = '/workspace/.ssh/credentials'
+    aws_cred = '/workspace/.aws/credentials'
     service = '/service-account.json'
 
     cmd.extend([
       '-v', '%s:%s:ro' % (args.aws_ssh, aws_ssh),
       '-v', '%s:%s:ro' % (args.aws_pub, aws_pub),
       '-v', '%s:%s:ro' % (args.aws_cred, aws_cred),
-      '-v', '%s:%s:ro' % (args.service_account, service),
       '-e', 'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % aws_ssh,
       '-e', 'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % aws_pub,
-      '-e', 'JENKINS_AWS_CREDENTIALS_FILE=%s' % aws_cred,
-      '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+      '-e', 'JENKINS_AWS_CREDENTIALS_FILE=%s' % aws_cred])
+    if args.service_account:
+        cmd.extend(['-v', '%s:%s:ro' % (args.service_account, service),
+                    '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
     # KOPS_ZONE
     zone = os.environ.get('KOPS_ZONES')
@@ -219,6 +221,16 @@ if __name__ == '__main__':
             ARGS.aws_cred = '%s/.aws/credentials' % HOME
             print >>sys.stderr, 'AWS cred not found. Try to fetch from %s' % ARGS.aws_cred
 
+    if not os.environ.get('JOB_NAME'):
+        os.environ['JOB_NAME'] = os.environ.get('USER') or 'aws-test'
+    if not os.environ.get('BUILD_NUMBER'):
+        os.environ['BUILD_NUMBER'] = ''.join(
+            random.choice(string.ascii_lowercase + string.digits)
+            for _ in range(8))
     CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
+
+    # TODO(zmerlynn): This shouldn't be necessary, but it is if you're
+    # running the scenario directly on the desktop.
+    os.environ['BOOTSTRAP_MIGRATION'] = 'true'
 
     main(ARGS)
