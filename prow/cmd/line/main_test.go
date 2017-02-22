@@ -83,12 +83,14 @@ func TestGuberURL(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		c := &testClient{
-			IsPresubmit: tc.IsPresubmit,
-			Presubmit:   &config.Presubmit{Name: "j"},
-			Postsubmit:  &config.Postsubmit{Name: "j"},
-			PRNumber:    tc.PRNumber,
-			RepoOwner:   tc.RepoOwner,
-			RepoName:    tc.RepoName,
+			PRNumber:  tc.PRNumber,
+			RepoOwner: tc.RepoOwner,
+			RepoName:  tc.RepoName,
+		}
+		if tc.IsPresubmit {
+			c.Presubmit = &config.Presubmit{Name: "j"}
+		} else {
+			c.Postsubmit = &config.Postsubmit{Name: "j"}
 		}
 		actual := c.guberURL("1")
 		if actual != tc.ExpectedURL {
