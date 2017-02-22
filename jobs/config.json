@@ -318,6 +318,7 @@
 "ci-kubernetes-e2e-kops-aws-canary": {
   "scenario": "kubernetes_kops_aws",
   "args": [
+    "--env-file=platforms/kops_aws.env",
     "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env"
   ]
 },
