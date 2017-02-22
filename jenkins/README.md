@@ -37,3 +37,31 @@ Say you want to add a new job, foo.
 
 1. Make sure all presubmit tests pass. Running [`test-infra/jenkins/bootstrap_test.py`](jenkins/bootstrap_test.py) and `bazel test //...` locally is an quick way to trigger most of the unit tests.
 
+# Run a Jenkins job locally
+
+Below paths are from the root of the `kubernetes/test-infra` repo.
+
+The straight forward way to mimic a job run on Jenkins is, for example:
+```
+./jenkins/bootstrap.py --job=ci-kubernetes-e2e-gce-canary --json=1 --bare --timeout=40
+```
+
+If you want to upload the log and display in gubernator, you can append
+```
+--service-account=/path/to/service-account-cred.json --upload='gs://your-bucket-name/logs'
+```
+
+Reference: [Creating and Enabling Service Accounts for Instances](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances)
+
+You can also specify `--repo`, `--branch`, and other bootstrap flags, details can be found by running `./jenkins/bootstrap.py --help`
+
+If you want to overwrite some scenario flags, you can change [config.json](../jobs/config.json) locally.
+
+Alternatively, if you do not care about logs and artifacts, you can also run:
+```
+export BOOTSTRAP_MIGRATION=true # https://github.com/kubernetes/test-infra/pull/1801#discussion_r102347949
+export BUILD_NUMBER=SOMETHING
+export JOB_NUMBER=JOB_NAME
+./scenario/your_scenario.py --env-file=your_env_file --scenario-flag=your-flag
+```
+
