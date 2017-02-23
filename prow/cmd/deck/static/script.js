@@ -1,4 +1,4 @@
-var types = ["presubmit", "postsubmit", "batch"];
+var types = ["presubmit", "postsubmit", "periodic", "batch"];
 var repos = {};
 var jobs = {};
 var authors = {};
@@ -104,9 +104,10 @@ function redraw() {
         var build = allBuilds[i];
         if (build.type !== "pr" && selectedType === "presubmit") continue;
         if (build.type !== "push" && selectedType === "postsubmit") continue;
+        if (build.type !== "periodic" && selectedType === "periodic") continue;
         if (build.type !== "batch" && selectedType === "batch") continue;
 
-        if (!equalSelected(repoSel, build.repo)) continue;
+        if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
         if (!equalSelected(jobSel, build.job)) continue;
         if (build.type === "pr") {
             if (!equalSelected(pullSel, build.number)) continue;
@@ -121,15 +122,21 @@ function redraw() {
         } else {
             r.appendChild(createTextCell(""));
         }
-        r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
+        if (build.type === "periodic") {
+            r.appendChild(createTextCell(""));
+        } else {
+            r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
+        }
         if (build.type === "pr") {
             r.appendChild(prRevisionCell(build));
         } else if (build.type === "batch") {
             r.appendChild(batchRevisionCell(build));
         } else if (build.type === "push") {
             r.appendChild(pushRevisionCell(build));
+        } else if (build.type === "periodic") {
+            r.appendChild(createTextCell(""));
         }
-        if (build.url === "") {
+        if (build.url === "" || build.type === "periodic") {
             r.appendChild(createTextCell(build.job));
         } else {
             r.appendChild(createLinkCell(build.job, build.url));
