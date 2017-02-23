@@ -16,14 +16,24 @@ currently comprises several related pieces that live in a GKE cluster.
 
 ## How to test prow
 
-Build with `bazel build //prow/...`, test with `bazel test //prow/...`.
+Build with:
+```
+bazel build //prow/...
+```
+Test with:
+```
+bazel test //prow/...
+```
 
 You can run `cmd/hook` in a local mode for testing, and hit it with arbitrary
-fake webhooks. To do this, run `./bazel-bin/prow/cmd/hook/hook --local
---config prow/config.yaml --plugin-config prow/plugins.yaml` in one shell. This
-will listen on `localhost:8888` for webhooks. Send one with
-`./bazel-bin/prow/cmd/phony/phony --event issue_comment --payload
-prow/cmd/phony/examples/test_comment.json`.
+fake webhooks. To do this, run in one shell:
+```
+./bazel-bin/prow/cmd/hook/hook --local --config-path prow/config.yaml --plugin-config prow/plugins.yaml
+```
+This will listen on `localhost:8888` for webhooks. Send one with:
+```
+./bazel-bin/prow/cmd/phony/phony --event issue_comment --payload prow/cmd/phony/examples/test_comment.json
+```
 
 ## How to update the cluster
 
