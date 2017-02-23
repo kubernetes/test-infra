@@ -255,3 +255,18 @@ postsubmits:
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
+
+periodics:
+- name: ci-test-infra-bazel
+  interval: 1h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      args:
+      - "--branch=master"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--git-cache=/root/.cache/git"
+      - "--clean"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
