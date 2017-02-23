@@ -139,6 +139,10 @@ func run(deploy deployer) error {
 		errs = appendError(errs, xmlWrap("Kubemark", KubemarkTest))
 	}
 
+	if *chartTests {
+		errs = appendError(errs, xmlWrap("Helm Charts", ChartsTest))
+	}
+
 	if len(errs) > 0 && *dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return DumpClusterLogs(*dump)
@@ -389,6 +393,15 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 func DumpClusterLogs(location string) error {
 	log.Printf("Dumping cluster logs to: %v", location)
 	return finishRunning(exec.Command("./cluster/log-dump.sh", location))
+}
+
+func ChartsTest() error {
+	// Run helm tests.
+	if err := finishRunning(exec.Command("/src/k8s.io/charts/test/helm-test-e2e.sh")); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func KubemarkTest() error {

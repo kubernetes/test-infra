@@ -865,7 +865,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-latest-upgrade-cluster
 - name: kubernetes-e2e-gke-latest-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-latest-upgrade-master
-
+# charts tests
+- name: ci-kubernetes-charts-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
 # Add New Testgroups Here
 
 #
@@ -2044,3 +2046,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-non-cri-gke-slow
   - name: gke-updown
     test_group_name: ci-kubernetes-e2e-non-cri-gke-updown
+
+- name: kubernetes-apps
+  dashboard_tab:
+  - name: charts-gce
+    test_group_name: ci-kubernetes-charts-gce

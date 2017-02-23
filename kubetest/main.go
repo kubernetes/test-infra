@@ -41,6 +41,7 @@ var (
 	down                 = flag.Bool("down", false, "If true, tear down the cluster before exiting.")
 	dump                 = flag.String("dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	kubemark             = flag.Bool("kubemark", false, "If true, run kubemark tests.")
+	chartTests           = flag.Bool("charts", false, "If true, run charts tests.")
 	publish              = flag.String("publish", "", "Publish version to the specified gs:// path on success")
 	skewTests            = flag.Bool("skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
 	testArgs             = flag.String("test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")

@@ -83,6 +83,10 @@ def main(args):
         cmd.extend([
           '-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
+    if args.mount_paths:
+        for path in args.mount_paths:
+            cmd.extend(['-v', path])
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -180,6 +184,11 @@ if __name__ == '__main__':
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
+    PARSER.add_argument(
+        '--mount-paths',
+        default=[],
+        nargs='*',
+        help='Paths that should be mounted within the docker container in the form local:remote')
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
@@ -191,7 +200,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     PARSER.add_argument(
-        '--tag', default='v20170215-331e93f3', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170223-43ce8f86', help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     PARSER.add_argument(
