@@ -176,7 +176,7 @@ if __name__ == '__main__':
         help='Clean items more than --hours old (added to --days)')
     PARSER.add_argument(
         '--filter',
-        default='NOT tags.items:do-not-delete AND NOT name ~ ^default-route',
+        default='NOT tags.items:do-not-delete AND NOT name ~ ^default-',
         help='Filter down to these instances')
     PARSER.add_argument(
         '--dryrun',
