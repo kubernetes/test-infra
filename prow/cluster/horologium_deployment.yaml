@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors All rights reserved.
+# Copyright 2017 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,61 +15,32 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: hook
+  name: horologium
   labels:
-    app: hook
+    app: horologium
 spec:
-  replicas: 4
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  replicas: 1
   template:
     metadata:
       labels:
-        app: hook
+        app: horologium
     spec:
       nodeSelector:
         role: prow
       terminationGracePeriodSeconds: 30
       containers:
-      - name: hook
-        image: gcr.io/k8s-prow/hook:0.84
-        imagePullPolicy: Always
-        args:
-        - "--github-bot-name=k8s-ci-robot"
+      - name: horologium
+        image: gcr.io/k8s-prow/horologium:0.0
         env:
         - name: LINE_IMAGE
           value: "gcr.io/k8s-prow/line:0.76"
         - name: DRY_RUN
           value: "false"
-        ports:
-          - name: http
-            containerPort: 8888
         volumeMounts:
-        - name: hmac
-          mountPath: /etc/webhook
-          readOnly: true
-        - name: oauth
-          mountPath: /etc/github
-          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
-          readOnly: true
       volumes:
-      - name: hmac
-        secret:
-          secretName: hmac-token
-      - name: oauth
-        secret:
-          secretName: oauth-token
       - name: config
         configMap:
           name: config
-      - name: plugins
-        configMap:
-          name: plugins

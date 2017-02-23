@@ -51,7 +51,7 @@ func init() {
 // Cut off line jobs after 10 hours.
 const jobDeadline = 10 * time.Hour
 
-type startClient interface {
+type StartClient interface {
 	CreateJob(kube.Job) (kube.Job, error)
 }
 
@@ -62,6 +62,8 @@ type Pull struct {
 }
 
 type BuildRequest struct {
+	periodic bool
+
 	Org  string
 	Repo string
 
@@ -117,7 +119,11 @@ func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {
 	return startJob(k, jobName, "", br)
 }
 
-func startJob(k startClient, jobName, context string, br BuildRequest) error {
+func StartPeriodicJob(k StartClient, jobName string) error {
+	return startJob(k, jobName, "", BuildRequest{periodic: true})
+}
+
+func startJob(k StartClient, jobName, context string, br BuildRequest) error {
 	refs := br.GetRefs()
 
 	labels := map[string]string{
@@ -143,7 +149,10 @@ func startJob(k startClient, jobName, context string, br BuildRequest) error {
 		"--dry-run=" + strconv.FormatBool(dryRun),
 		"--jenkins-url=$(JENKINS_URL)",
 	}
-	if len(br.Pulls) == 0 {
+	if br.periodic {
+		labels["type"] = "periodic"
+		args = append(args, "--report=false")
+	} else if len(br.Pulls) == 0 {
 		labels["type"] = "push"
 		args = append(args, "--report=false")
 	} else if len(br.Pulls) == 1 {
