@@ -52,7 +52,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -170,7 +170,7 @@ presubmits:
     trigger: "@k8s-bot (bazel )?test this"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -198,7 +198,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -211,7 +211,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.8
+        - image: gcr.io/k8s-testimages/bazelbuild:0.9
           args:
           - "--branch=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -236,7 +236,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.8
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -261,7 +261,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.8
+    - image: gcr.io/k8s-testimages/bazelbuild:0.9
       args:
       - "--branch=master"
       - "--upload=gs://kubernetes-jenkins/logs"
