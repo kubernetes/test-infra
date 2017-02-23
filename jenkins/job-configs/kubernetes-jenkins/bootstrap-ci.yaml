@@ -30,7 +30,7 @@
             GOPATH=$WORKSPACE/go
             PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
     - timeout:
-        timeout: 700
+        timeout: 1020
         fail: true
     - workspace-cleanup:  # cleanup before the job starts, for clean build.
         dirmatch: true
