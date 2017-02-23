@@ -1743,7 +1743,8 @@
   "args": [
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-large-cluster.env",
-    "--cluster=gke-large-cluster"
+    "--cluster=gke-large-cluster",
+    "--down=false"
   ]
 },
 
