@@ -1629,9 +1629,25 @@
         frequency: 'H * * * *' # At least every hour
         json: 1
         trigger-job: 'ci-kubernetes-build'
-    
-    ### kubernetes-e2e-upgrades-gke #maisem
 
+    ### etcd upgrades #mml
+    - kubernetes-e2e-gce-gci-latest-upgrade-etcd: # upgrade etcd from 2.2 to 3.0, using latest
+        job-name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
+        timeout: 110
+        jenkins-timeout: 210
+        frequency: 'H * * * *' # At least every hour
+        json: 1
+        trigger-job: 'ci-kubernetes-build'
+
+    - kubernetes-e2e-gce-gci-1.5-upgrade-etcd: # upgrade etcd from 2.2 to 3.0, using 1.5
+        job-name: ci-kubernetes-e2e-gce-gci-1.5-upgrade-etcd
+        timeout: 110
+        jenkins-timeout: 210
+        frequency: 'H * * * *' # At least every hour
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.5'
+
+    ### kubernetes-e2e-upgrades-gke #maisem
     - kubernetes-e2e-gke-1.3-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master
         jenkins-timeout: 720
