@@ -28,36 +28,6 @@ import (
 	"time"
 )
 
-var (
-	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	// TODO(fejta): change all these _ flags to -
-	build            = flag.Bool("build", false, "If true, build a new release. Otherwise, use whatever is there.")
-	checkVersionSkew = flag.Bool("check_version_skew", true, ""+
-		"By default, verify that client and server have exact version match. "+
-		"You can explicitly set to false if you're, e.g., testing client changes "+
-		"for which the server version doesn't make a difference.")
-	checkLeakedResources = flag.Bool("check_leaked_resources", false, "Ensure project ends with the same resources")
-	deployment           = flag.String("deployment", "bash", "up/down mechanism (defaults to cluster/kube-{up,down}.sh) (choices: bash/kops/kubernetes-anywhere)")
-	down                 = flag.Bool("down", false, "If true, tear down the cluster before exiting.")
-	dump                 = flag.String("dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
-	kubemark             = flag.Bool("kubemark", false, "If true, run kubemark tests.")
-	chartTests           = flag.Bool("charts", false, "If true, run charts tests.")
-	publish              = flag.String("publish", "", "Publish version to the specified gs:// path on success")
-	skewTests            = flag.Bool("skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
-	testArgs             = flag.String("test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
-	test                 = flag.Bool("test", false, "Run Ginkgo tests.")
-	timeout              = flag.Duration("timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
-	up                   = flag.Bool("up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
-	upgradeArgs          = flag.String("upgrade_args", "", "If set, run upgrade tests before other tests")
-	verbose              = flag.Bool("v", false, "If true, print all command output.")
-
-	// Deprecated flags.
-	deprecatedPush   = flag.Bool("push", false, "Deprecated. Does nothing.")
-	deprecatedPushup = flag.Bool("pushup", false, "Deprecated. Does nothing.")
-	deprecatedCtlCmd = flag.String("ctl", "", "Deprecated. Does nothing.")
-)
-
 func appendError(errs []error, err error) []error {
 	if err != nil {
 		return append(errs, err)
