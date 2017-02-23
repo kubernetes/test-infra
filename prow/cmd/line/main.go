@@ -465,9 +465,12 @@ func (c *testClient) guberURL(build string) string {
 	}
 	if c.Presubmit != nil {
 		return fmt.Sprintf("%s/%s/%s/%s/", url, prName, c.Presubmit.Name, build)
-	} else {
+	} else if c.Postsubmit != nil {
 		return fmt.Sprintf("%s/%s/%s/", url, c.Postsubmit.Name, build)
+	} else if c.Periodic != nil {
+		return fmt.Sprintf("%s/%s/%s/", url, c.Periodic.Name, build)
 	}
+	return testInfra
 }
 
 func (c *testClient) setJobAgent(agent string) {
