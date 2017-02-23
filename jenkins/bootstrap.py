@@ -810,8 +810,7 @@ def bootstrap(
 
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""
-    parser = argparse.ArgumentParser(
-        'Checks out a github PR/branch to <basedir>/<repo>/')
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         '--json',
         nargs='?', const=1, default=0,
