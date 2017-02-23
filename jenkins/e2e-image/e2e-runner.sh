@@ -27,6 +27,7 @@ mkdir -p ${ARTIFACTS}
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
 : ${JENKINS_SOAK_PREFIX:="gs://kubernetes-jenkins/soak/${JOB_NAME}"}
+: ${JENKINS_FEDERATION_PREFIX:="gs://kubernetes-jenkins/federation/${JOB_NAME}"}
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -40,6 +41,11 @@ echo "--------------------------------------------------------------------------
 # (since they will be owned by root on the host).
 trap "chmod -R o+r '${ARTIFACTS}'" EXIT SIGINT SIGTERM
 export E2E_REPORT_DIR=${ARTIFACTS}
+
+if [[ "${FEDERATION:-}" == "true" ]]; then
+  FEDERATION_UP="${FEDERATION_UP:-true}"
+  FEDERATION_DOWN="${FEDERATION_DOWN:-true}"
+fi
 
 e2e_go_args=( \
   -v \
@@ -92,6 +98,24 @@ if [[ "${JENKINS_SOAK_MODE:-}" == "y" ]]; then
   # If we --up a cluster, we save the kubecfg and version info to gcs.
   # Otherwise we load kubecfg and version info from gcs.
   e2e_go_args+=(--save="${JENKINS_SOAK_PREFIX}")
+elif [[ "${FEDERATION_UP:-}" != "true" && -n "${FEDERATION_CLUSTERS:-}" ]]; then
+  # If we are only deploying federated clusters without the federation control plane,
+  # then the kubeconfig for these clusters will be required while deploying the federation
+  # control plane. So we persist the kubeconfig in GCS for later use.
+  e2e_go_args+=(--save="${JENKINS_FEDERATION_PREFIX}")
+elif [[ "${FEDERATION_UP:-}" == "true" && -z "${FEDERATION_CLUSTERS:-}" ]]; then
+  # If we are only deploying a federation control plane without the federated
+  # clusters, then we assume that the federated clusters are already deployed
+  # and their kubeconfig is stored in GCS. We copy that kubeconfig from GCS
+  # to the local machine to operate on those clusters.
+  #
+  # Note: This elif block and the previous one are essentially the same. The
+  # real logic that decides whether this is a store or a load is in kubetest.
+  # We could have merged the two elif blocks. However, we are keeping them
+  # separate for clarity.
+  e2e_go_args+=(--save="${JENKINS_FEDERATION_PREFIX}")
+fi
+
 fi
 
 
@@ -101,11 +125,6 @@ if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
       e2e_go_args+=(--check-leaked-resources)
       ;;
   esac
-fi
-
-if [[ "${FEDERATION:-}" == "true" ]]; then
-  FEDERATION_UP="${FEDERATION_UP:-true}"
-  FEDERATION_DOWN="${FEDERATION_DOWN:-true}"
 fi
 
 if [[ "${E2E_UP:-}" == "true" ]] || [[ "${FEDERATION_UP:-}" == "true" ]]; then
@@ -157,3 +176,4 @@ if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
 fi
 
 ./kubetest ${E2E_OPT:-} "${e2e_go_args[@]}"
+
