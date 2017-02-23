@@ -35,7 +35,7 @@ func appendError(errs []error, err error) []error {
 	return errs
 }
 
-func run(deploy deployer) error {
+func run(deploy deployer, fedDeploy federationDeployer) error {
 	if *dump != "" {
 		defer writeXML(time.Now())
 	}
@@ -65,7 +65,10 @@ func run(deploy deployer) error {
 	var errs []error
 
 	// Ensures that the cleanup/down action is performed exactly once.
-	var downDone bool = false
+	var (
+		downDone           bool = false
+		federationDownDone bool = false
+	)
 
 	var (
 		beforeResources []byte
@@ -91,6 +94,17 @@ func run(deploy deployer) error {
 				}
 				return nil
 			})
+			// Deferred statements are executed in last-in-first-out order, so
+			// federation down defer must appear after the cluster teardown in
+			// order to execute that before cluster teardown.
+			if *federation {
+				defer xmlWrap("Deferred Federation TearDown", func() error {
+					if !federationDownDone {
+						return fedDeploy.Down()
+					}
+					return nil
+				})
+			}
 		}
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
@@ -100,6 +114,12 @@ func run(deploy deployer) error {
 				})
 			}
 			return fmt.Errorf("starting e2e cluster: %s", err)
+		}
+		if *federation {
+			if err := xmlWrap("Federation Up", fedDeploy.Up); err != nil {
+				// TODO: Dump federation related logs.
+				return fmt.Errorf("error starting federation: %s", err)
+			}
 		}
 		if *dump != "" {
 			errs = appendError(errs, xmlWrap("list nodes", listNodes))
@@ -157,6 +177,18 @@ func run(deploy deployer) error {
 	}
 
 	if *down {
+		if *federation {
+			errs = appendError(errs, xmlWrap("Federation TearDown", func() error {
+				if !federationDownDone {
+					err := fedDeploy.Down()
+					if err != nil {
+						return err
+					}
+					federationDownDone = true
+				}
+				return nil
+			}))
+		}
 		errs = appendError(errs, xmlWrap("TearDown", func() error {
 			if !downDone {
 				err := deploy.Down()
@@ -309,6 +341,8 @@ type deployer interface {
 
 func getDeployer() (deployer, error) {
 	switch *deployment {
+	case "none":
+		return none{}, nil
 	case "bash":
 		return bash{}, nil
 	case "kops":
@@ -318,6 +352,10 @@ func getDeployer() (deployer, error) {
 	default:
 		return nil, fmt.Errorf("Unknown deployment strategy %q", *deployment)
 	}
+}
+
+func getFederationDeployer() (federationDeployer, error) {
+	return federationDeployer{}, nil
 }
 
 func clusterSize(deploy deployer) (int, error) {
