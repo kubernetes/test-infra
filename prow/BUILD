@@ -19,6 +19,7 @@ filegroup(
         "//prow/cmd/crier:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/hook:all-srcs",
+        "//prow/cmd/horologium:all-srcs",
         "//prow/cmd/line:all-srcs",
         "//prow/cmd/marque:all-srcs",
         "//prow/cmd/phony:all-srcs",

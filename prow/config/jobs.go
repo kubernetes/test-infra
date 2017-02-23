@@ -70,6 +70,14 @@ type Periodic struct {
 	interval time.Duration
 }
 
+func (p *Periodic) SetInterval(d time.Duration) {
+	p.interval = d
+}
+
+func (p *Periodic) GetInterval() time.Duration {
+	return p.interval
+}
+
 // Brancher is for shared code between jobs that only run against certain
 // branches. An empty brancher runs against all branches.
 type Brancher struct {

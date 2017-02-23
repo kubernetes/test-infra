@@ -41,6 +41,17 @@ type Job struct {
 	Status   JobStatus  `json:"status,omitempty"`
 }
 
+func (j *Job) Complete() bool {
+	if j.Status.Active > 0 {
+		return false
+	} else if j.Status.Succeeded > 0 {
+		return true
+	} else if j.Spec.Parallelism != nil && *j.Spec.Parallelism == 0 {
+		return true
+	}
+	return false
+}
+
 type JobSpec struct {
 	Completions           *int `json:"completions,omitempty"`
 	Parallelism           *int `json:"parallelism,omitempty"`

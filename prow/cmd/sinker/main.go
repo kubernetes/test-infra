@@ -63,7 +63,7 @@ func clean(kc kubeClient) {
 		return
 	}
 	for _, job := range jobs {
-		if jobComplete(job) && time.Since(job.Status.StartTime) > maxAge {
+		if job.Complete() && time.Since(job.Status.StartTime) > maxAge {
 			// Delete successful jobs. Don't quit if we fail to delete one.
 			if err := kc.DeleteJob(job.Metadata.Name); err == nil {
 				logrus.WithField("job", job.Metadata.Name).Info("Deleted old completed job.")
@@ -103,15 +103,4 @@ func clean(kc kubeClient) {
 			}
 		}
 	}
-}
-
-func jobComplete(j kube.Job) bool {
-	if j.Status.Active > 0 {
-		return false
-	} else if j.Status.Succeeded > 0 {
-		return true
-	} else if j.Spec.Parallelism != nil && *j.Spec.Parallelism == 0 {
-		return true
-	}
-	return false
 }
