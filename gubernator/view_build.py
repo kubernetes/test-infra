@@ -29,7 +29,8 @@ import view_base
 
 
 def parse_junit(xml, filename):
-    """Generate failed tests as a series of (name, duration, text, filename) tuples."""
+    """Generate failed tests as a series of (name, duration, text, filename, output) tuples."""
+    # pylint: disable=too-many-branches
     try:
         tree = ET.fromstring(xml)
     except ET.ParseError, e:
@@ -43,16 +44,26 @@ def parse_junit(xml, filename):
         for child in tree:
             name = child.attrib['name']
             time = float(child.attrib['time'])
+            out = []
+            for param in child.findall('system-out'):
+                out.append(param.text)
+            for param in child.findall('system-err'):
+                out.append(param.text)
             for param in child.findall('failure'):
-                yield name, time, param.text, filename
+                yield name, time, param.text, filename, '\n'.join(out)
     elif tree.tag == 'testsuites':
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
             for child in testsuite.findall('testcase'):
                 name = '%s %s' % (suite_name, child.attrib['name'])
                 time = float(child.attrib['time'])
+                out = []
+                for param in child.findall('system-out'):
+                    out.append(param.text)
+                for param in child.findall('system-err'):
+                    out.append(param.text)
                 for param in child.findall('failure'):
-                    yield name, time, param.text, filename
+                    yield name, time, param.text, filename, '\n'.join(out)
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 

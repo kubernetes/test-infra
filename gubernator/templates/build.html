@@ -68,14 +68,20 @@
 	% endif
 	% if failures
 		<h2>Test Failures</h2>
-		% for name, time, text, filename in failures
+		% for name, time, text, filename, output in failures
 			<hr>
 			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 			% if 'junit_runner' not in filename
 				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 			% endif
 			% if text
-				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				<pre class="error">{{text|linkify_stacktrace(commit)}}
+				% if output
+				<div class="hidden"><hr>{{output|linkify_stacktrace(commit)}}</div>
+				<span class="expand inset-expand">Click to see stdout/stderr</span><span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				% else
+				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				% endif
 				% set pod_name = text|parse_pod_name
 				% if pod_name
 					<p>Find <tt>{{pod_name}}</tt> mentions in <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}&wrap=on">log files</a>

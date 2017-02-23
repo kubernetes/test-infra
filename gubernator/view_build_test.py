@@ -38,7 +38,7 @@ class ParseJunitTest(unittest.TestCase):
     def test_normal(self):
         failures = self.parse(main_test.JUNIT_SUITE)
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack, "fp")])
+        self.assertEqual(failures, [('Third', 96.49, stack, "fp", "")])
 
     def test_testsuites(self):
         failures = self.parse('''
@@ -49,11 +49,16 @@ class ParseJunitTest(unittest.TestCase):
                     </properties>
                     <testcase name="TestBad" time="0.1">
                         <failure>something bad</failure>
+                        <system-out>out: first line</system-out>
+                        <system-err>err: first line</system-err>
+                        <system-out>out: second line</system-out>
                     </testcase>
                 </testsuite>
             </testsuites>''')
-        self.assertEqual(failures,
-                         [('k8s.io/suite TestBad', 0.1, 'something bad', "fp")])
+        self.assertEqual(failures, [(
+            'k8s.io/suite TestBad', 0.1, 'something bad', "fp",
+            "out: first line\nout: second line\nerr: first line",
+            )])
 
     def test_bad_xml(self):
         self.assertEqual(self.parse('''<body />'''), [])
@@ -68,7 +73,7 @@ class ParseJunitTest(unittest.TestCase):
                     </testcase>
                 </testsuite>
             </testsuites>''')
-        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp')])
+        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp', '')])
 
     def test_not_xml(self):
         failures = self.parse('\x01')
