@@ -66,7 +66,7 @@ presubmits:
     context: Jenkins Cross Build
     rerun_command: "@k8s-bot cross build this"
     trigger: "@k8s-bot (cross[ -])?build this"
-    run_if_changed: '(Makefile|\.sh|_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-kubernetes-unit
     always_run: true
