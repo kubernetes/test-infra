@@ -13,6 +13,7 @@ currently comprises several related pieces that live in a GKE cluster.
 * `cmd/marque` is a production-ready letsencrypt certificate manager.
 * `cmd/tot` vends incrementing build numbers.
 * `cmd/crier` writes GitHub statuses and comments.
+* `cmd/horologium` starts periodic jobs when necessary.
 
 ## How to test prow
 
