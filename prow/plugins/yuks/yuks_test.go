@@ -81,15 +81,6 @@ func TestJokes(t *testing.T) {
 		shouldError   bool
 	}{
 		{
-			name:          "ignore closed issue",
-			state:         "closed",
-			action:        "created",
-			body:          "@k8s-bot tell me a joke",
-			joke:          "this? that.",
-			shouldComment: false,
-			shouldError:   false,
-		},
-		{
 			name:          "ignore edited comment",
 			state:         "open",
 			action:        "edited",
