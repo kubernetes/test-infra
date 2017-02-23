@@ -132,8 +132,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-garbage
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
-- name: kubernetes-e2e-kops-aws-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
 - name: kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
 - name: kubernetes-e2e-gce
@@ -898,8 +896,6 @@ dashboards:
   dashboard_tab:
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
-  - name: kops-aws-canary
-    test_group_name: kubernetes-e2e-kops-aws-canary
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
   - name: aws

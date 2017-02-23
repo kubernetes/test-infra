@@ -310,12 +310,12 @@
   ]
 },
 
-"ci-kubernetes-e2e-kops-aws-canary": {
+"ci-kubernetes-e2e-kops-aws": {
   "scenario": "kubernetes_kops_aws",
   "args": [
-    "--cluster=e2e-kops-aws-canary.test-aws.k8s.io",
+    "--cluster=e2e-kops-aws.test-aws.k8s.io",
     "--env-file=platforms/kops_aws.env",
-    "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env"
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env"
   ]
 },
 
