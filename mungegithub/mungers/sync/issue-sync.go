@@ -242,6 +242,16 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 		panic(fmt.Errorf("Programmer error: %v does not contain %v!", body, id))
 	}
 
+	// Add SIG assignment, if missing
+	if s.owner != nil {
+		if sig := s.owner.TestSIG(source.Title()); sig != "" && !obj.HasLabel(sigLabel(sig)) {
+			if err := obj.AddLabel(sigLabel(sig)); err != nil {
+				glog.Errorf("Unable to add SIG label (%s) for issue '%s': %v",
+					sigLabel(sig), source.Title(), err)
+			}
+		}
+	}
+
 	// Try to update an existing comment.
 	// It will only update the last comment for this failure.
 	// It will not update a comment if someone else has commented after it.
@@ -298,14 +308,20 @@ func (s *IssueSyncer) createIssue(source IssueSource) (*github.MungeObject, erro
 	}
 
 	var owner string
+	labels := source.Labels()
 	if s.owner != nil {
 		owner = s.owner.TestOwner(source.Title())
+		if sig := s.owner.TestSIG(source.Title()); sig != "" {
+			if l := sigLabel(sig); s.validLabel(l) {
+				labels = append(labels, l)
+			}
+		}
 	}
 
 	obj, err := s.config.NewIssue(
 		source.Title(),
 		body,
-		source.Labels(),
+		labels,
 		owner,
 	)
 	if err != nil {
@@ -332,4 +348,25 @@ func (s *IssueSyncer) syncPriority(obj *github.MungeObject, priority Priority) e
 		}
 	}
 	return nil
+}
+
+// validLabel ensures that the given label exists. An error is logged if a label cannot be determined to be valid.
+func (s *IssueSyncer) validLabel(l string) bool {
+	if labels, err := s.config.GetLabels(); err != nil {
+		glog.Warningf("could not validate label '%s': %v", l, err)
+	} else {
+		// check that label is found in project
+		for _, i := range labels {
+			if *i.Name == l {
+				return true
+			}
+		}
+		glog.Warningf("label '%s' does not exist for repository '%s/%s'", l, s.config.Org, s.config.Project)
+	}
+	return false
+}
+
+// sigLabel returns the issue label for a given SIG.
+func sigLabel(sig string) string {
+	return fmt.Sprintf("sig/%s", sig)
 }
