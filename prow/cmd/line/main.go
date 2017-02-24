@@ -407,7 +407,6 @@ func (c *testClient) TestPRJenkins() error {
 		return nil
 	}
 	logrus.WithFields(fields(c)).Info("Starting build.")
-	c.tryCreateStatus("", github.StatusPending, "Build triggered.", "")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Presubmit.Name,
 		Number:  c.PRNumber,
@@ -425,6 +424,7 @@ func (c *testClient) TestPRJenkins() error {
 		c.tryCreateStatus("", github.StatusError, "Error queueing build.", testInfra)
 		return err
 	}
+	c.tryCreateStatus("", github.StatusPending, "Build queued.", "")
 	for eq { // Wait for it to move out of the queue
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)
