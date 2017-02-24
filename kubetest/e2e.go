@@ -476,7 +476,7 @@ func UpgradeTest(args string, checkSkew bool) error {
 	}
 	os.Setenv("E2E_REPORT_PREFIX", "upgrade")
 	return finishRunning(exec.Command(
-		"go", "run", "./hack/e2e.go",
+		os.Args[0],
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
@@ -490,11 +490,11 @@ func SkewTest(args string, checkSkew bool) error {
 	}
 	defer os.Chdir(old)
 	return finishRunning(exec.Command(
-		"go", "run", "./hack/e2e.go",
+		os.Args[0],
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
-		fmt.Sprintf("--check_version_skew=%t", checkSkew)))
+		fmt.Sprintf("--check-version-skew=%t", checkSkew)))
 }
 
 func Test(testArgs string) error {
