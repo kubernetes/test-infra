@@ -34,11 +34,20 @@ import (
 
 var (
 	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	kubetestPath          = initKubetestPath()
 	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose               = false
 	timeout               = time.Duration(0)
 	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
 )
+
+func initKubetestPath() string {
+	d, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("failed getKubetestPath(): %v", err)
+	}
+	return filepath.Join(d, os.Args[0])
+}
 
 type options struct {
 	build       buildStrategy
