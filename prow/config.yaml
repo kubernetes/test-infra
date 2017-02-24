@@ -272,9 +272,9 @@ periodics:
         privileged: true
 
 - name: ci-kubernetes-e2e-prow-canary
-  interval: 1h
+  interval: 5m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.1
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.2
       args:
       - "--timeout=60"
