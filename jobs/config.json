@@ -2036,6 +2036,16 @@
   ]
 },
 
+"ci-kubernetes-pull-gce-federation-deploy": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy.env",
+    "--test=false",
+    "--down=false"
+  ]
+},
+
 "ci-kubernetes-soak-gce-deploy": {
   "scenario": "kubernetes_e2e",
   "args": [
