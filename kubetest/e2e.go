@@ -476,7 +476,7 @@ func UpgradeTest(args string, checkSkew bool) error {
 	}
 	os.Setenv("E2E_REPORT_PREFIX", "upgrade")
 	return finishRunning(exec.Command(
-		os.Args[0],
+		kubetestPath,
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
@@ -490,7 +490,7 @@ func SkewTest(args string, checkSkew bool) error {
 	}
 	defer os.Chdir(old)
 	return finishRunning(exec.Command(
-		os.Args[0],
+		kubetestPath,
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
