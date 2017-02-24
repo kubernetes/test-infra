@@ -41,7 +41,7 @@ spec:
         - "--github-bot-name=k8s-ci-robot"
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.79"
+          value: "gcr.io/k8s-prow/line:0.80"
         - name: DRY_RUN
           value: "false"
         ports:
