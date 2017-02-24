@@ -1408,8 +1408,7 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gci-gke.env",
-    "--tag=v20170223-43ce8f86"
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke.env"
   ]
 },
 
@@ -1417,8 +1416,7 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow.env",
-    "--tag=v20170223-43ce8f86"
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow.env"
   ]
 },
 
