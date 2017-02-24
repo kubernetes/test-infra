@@ -66,7 +66,7 @@ func (l *extractStrategies) String() string {
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(local)`:                  local,
-		`^gke-?(staging|test)`:      gke,
+		`^gke-?(staging|test)?$`:    gke,
 		`^gci/([\w-]+)$`:            gci,
 		`^gci/([\w-]+)/(.+)$`:       gciCi,
 		`^ci/(.+)$`:                 ci,
