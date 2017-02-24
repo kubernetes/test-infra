@@ -61,10 +61,9 @@ ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh", \
-    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/third_party/forked/shell2junit/sh2ju.sh", \
+    "kubetest", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/sh2ju.sh"]
+RUN ["chmod", "+x", "/workspace/get-kube.sh"]
 WORKDIR "/workspace"
 
 ENTRYPOINT "/workspace/e2e-runner.sh"

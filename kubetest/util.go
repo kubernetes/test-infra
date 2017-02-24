@@ -17,9 +17,10 @@ limitations under the License.
 package main
 
 import (
-	"encoding/xml"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,43 +29,44 @@ import (
 	"time"
 )
 
-type testCase struct {
-	XMLName   xml.Name `xml:"testcase"`
-	ClassName string   `xml:"classname,attr"`
-	Name      string   `xml:"name,attr"`
-	Time      float64  `xml:"time,attr"`
-	Failure   string   `xml:"failure,omitempty"`
+// append(errs, err) if err != nil
+func appendError(errs []error, err error) []error {
+	if err != nil {
+		return append(errs, err)
+	}
+	return errs
 }
 
-type testSuite struct {
-	XMLName  xml.Name `xml:"testsuite"`
-	Failures int      `xml:"failures,attr"`
-	Tests    int      `xml:"tests,attr"`
-	Time     float64  `xml:"time,attr"`
-	Cases    []testCase
+// Returns $HOME/part/part/part
+func home(parts ...string) string {
+	p := []string{os.Getenv("HOME")}
+	for _, a := range parts {
+		p = append(p, a)
+	}
+	return filepath.Join(p...)
 }
 
-var suite testSuite
+// export PATH=path:$PATH
+func insertPath(path string) error {
+	return os.Setenv("PATH", fmt.Sprintf("%v:%v", path, os.Getenv("PATH")))
+}
 
-func writeXML(start time.Time) {
-	suite.Time = time.Since(start).Seconds()
-	out, err := xml.MarshalIndent(&suite, "", "    ")
+// Essentially curl url | writer
+func httpRead(url string, writer io.Writer) error {
+	log.Printf("curl %s", url)
+	r, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Could not marshal XML: %s", err)
+		return err
 	}
-	path := filepath.Join(*dump, "junit_runner.xml")
-	f, err := os.Create(path)
+	defer r.Body.Close()
+	if r.StatusCode >= 400 {
+		return fmt.Errorf("%v returned %d", url, r.StatusCode)
+	}
+	_, err = io.Copy(writer, r.Body)
 	if err != nil {
-		log.Fatalf("Could not create file: %s", err)
+		return err
 	}
-	defer f.Close()
-	if _, err := f.WriteString(xml.Header); err != nil {
-		log.Fatalf("Error writing XML header: %s", err)
-	}
-	if _, err := f.Write(out); err != nil {
-		log.Fatalf("Error writing XML data: %s", err)
-	}
-	log.Printf("Saved XML output to %s.", path)
+	return nil
 }
 
 // return f(), adding junit xml testcase result for name
@@ -89,7 +91,7 @@ func xmlWrap(name string, f func() error) error {
 // return cmd.Wait() and/or timing out.
 func finishRunning(cmd *exec.Cmd) error {
 	stepName := strings.Join(cmd.Args, " ")
-	if *verbose {
+	if verbose {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
@@ -126,6 +128,63 @@ func finishRunning(cmd *exec.Cmd) error {
 			}
 		case err := <-finished:
 			return err
+		}
+	}
+}
+
+// return exec.Command(cmd, args...) while calling .StdinPipe().WriteString(input)
+func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
+	c := exec.Command(cmd, args...)
+	w, e := c.StdinPipe()
+	if e != nil {
+		return nil, e
+	}
+	go func() {
+		if _, e = io.WriteString(w, input); e != nil {
+			log.Printf("Failed to write all %d chars to %s: %v", len(input), cmd, e)
+		}
+		if e = w.Close(); e != nil {
+			log.Printf("Failed to close stdin for %s: %v", cmd, e)
+		}
+	}()
+	return c, nil
+}
+
+// return cmd.CombinedOutput(), potentially timing out in the process.
+func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
+	stepName := strings.Join(cmd.Args, " ")
+	log.Printf("Running: %v", stepName)
+	defer func(start time.Time) {
+		log.Printf("Step '%s' finished in %s", stepName, time.Since(start))
+	}(time.Now())
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	type result struct {
+		bytes []byte
+		err   error
+	}
+	finished := make(chan result)
+	go func() {
+		b, err := cmd.CombinedOutput()
+		finished <- result{b, err}
+	}()
+	for {
+		select {
+		case <-terminate.C:
+			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
+			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+			cmd.Process.Kill()
+			return nil, fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
+		case <-interrupt.C:
+			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
+			terminate.Reset(15 * time.Minute)
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
+				log.Printf("Failed to interrupt %v. Will terminate immediately: %v", stepName, err)
+				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+				cmd.Process.Kill()
+			}
+		case fin := <-finished:
+			return fin.bytes, fin.err
 		}
 	}
 }

@@ -16,20 +16,28 @@ limitations under the License.
 
 package main
 
-type none struct{}
+import (
+	"log"
+)
 
-func (n none) Up() error {
+type noneDeploy struct{}
+
+func (n noneDeploy) Up() error {
+	log.Print("Noop Up()")
 	return nil
 }
 
-func (n none) IsUp() error {
+func (n noneDeploy) IsUp() error {
+	log.Print("Noop IsUp()")
 	return nil
 }
 
-func (n none) SetupKubecfg() error {
+func (n noneDeploy) SetupKubecfg() error {
+	log.Print("Noop SetupKubecfg()")
 	return nil
 }
 
-func (n none) Down() error {
+func (n noneDeploy) Down() error {
+	log.Print("Noop Down()")
 	return nil
 }
