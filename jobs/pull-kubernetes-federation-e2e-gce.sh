@@ -20,52 +20,45 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
-# TODO(fejta): remove this
-if [[ "${PULL_BASE_REF:-}" == "release-1.0" || "${PULL_BASE_REF:-}" == "release-1.1" ]]; then
-  echo "PR GCE job disabled for legacy branches."
-  exit
-fi
-
 export FEDERATION="true"
 export PROJECT="${PROJECT:-k8s-jkns-pr-bldr-e2e-gce-fdrtn}"
-export FEDERATION_PUSH_REPO_BASE="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
-export GINKGO_PARALLEL="n" # We don't have namespaces yet in federation apiserver, so we need to serialize
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
-export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
-export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
+export KUBE_REGISTRY="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
+export KUBERNETES_PROVIDER="gce"
+
+# Build federation images. This doesn't build kubernetes images.
+export JENKINS_USE_LOCAL_BINARIES=y
+./hack/jenkins/build-federation.sh
+
+# Recycle control plane.
+# We only recycle federation control plane in each run, we don't
+# want to recycle the clusters, it's too slow.
+# This is accomplished by not setting FEDERATION_CLUSTERS env
+# var or setting it to empty string. We set it to empty string
+# to explicitly call it out.
+export FEDERATION_CLUSTERS=""
+
+# Federation control plane options.
 export DNS_ZONE_NAME="pr-bldr.test-f8n.k8s.io."
 export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
 
-# Build the images.
-export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
-export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
-export KUBE_GCS_UPDATE_LATEST=n
-export JENKINS_USE_LOCAL_BINARIES=y
-export KUBE_FASTBUILD=true
-./hack/jenkins/build.sh
+# This is a shared variable that is used for both k8s and
+# federation tests to indicate that the tests must be run.
+export E2E_TEST="true"
 
-export KUBERNETES_PROVIDER="gce"
-export E2E_MIN_STARTUP_PODS="1"
+# Ginkgo and other test arguments.
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[NoCluster\]"
+export GINKGO_PARALLEL="y"
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
-export E2E_NAME="fed-e2e-${NODE_NAME}-${EXECUTOR_NUMBER}"
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
-export NUM_NODES="3"
-# Force to use container-vm.
-export KUBE_NODE_OS_DISTRIBUTION="debian"
+export E2E_MIN_STARTUP_PODS="1"
+
 # Panic if anything mutates a shared informer cache
 export ENABLE_CACHE_MUTATION_DETECTOR="true"
-# Assume we're upping, testing, and downing a cluster
-export E2E_UP="true"
-export E2E_TEST="true"
-export E2E_DOWN="true"
+
+# Misc environment configuration.
 # Skip gcloud update checking
 export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
-# GCE variables
-export INSTANCE_PREFIX=${E2E_NAME}
-export KUBE_GCE_NETWORK=${E2E_NAME}
-export KUBE_GCE_INSTANCE_PREFIX=${E2E_NAME}
-
 # Get golang into our PATH so we can run e2e.go
 export PATH=${PATH}:/usr/local/go/bin
 
