@@ -233,7 +233,7 @@ func fields(c *testClient) logrus.Fields {
 // necessary.
 // We modify the pod's spec to have the build parameters such as PR number
 // passed in as environment variables. We also include the service account
-// secret.
+// secret and gce ssh keys.
 func (c *testClient) TestKubernetes() error {
 	logrus.WithFields(fields(c)).Info("Starting pod.")
 	buildID := getBuildID(*totURL, c.JobName)
@@ -301,11 +301,24 @@ func (c *testClient) TestKubernetes() error {
 				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
 				Value: "/etc/service-account/service-account.json",
 			},
+			kube.EnvVar{
+				Name:  "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
+				Value: "/etc/ssh-key-secret/ssh-private.json",
+			},
+			kube.EnvVar{
+				Name:  "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
+				Value: "/etc/ssh-key-secret/ssh-public.json",
+			},
 		)
 		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts,
 			kube.VolumeMount{
 				Name:      "service",
 				MountPath: "/etc/service-account",
+				ReadOnly:  true,
+			},
+			kube.VolumeMount{
+				Name:      "ssh",
+				MountPath: "/etc/ssh-key-secret",
 				ReadOnly:  true,
 			},
 			kube.VolumeMount{
@@ -327,6 +340,12 @@ func (c *testClient) TestKubernetes() error {
 			Name: "service",
 			Secret: &kube.SecretSource{
 				Name: "service-account",
+			},
+		},
+		kube.Volume{
+			Name: "ssh",
+			Secret: &kube.SecretSource{
+				Name: "ssh-key-secret",
 			},
 		},
 		kube.Volume{
