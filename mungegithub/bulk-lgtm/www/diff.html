@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="DiffModule" ng-controller="DiffCntl as cntl">
+
+<head>
+  <link rel="stylesheet" href="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.0.7/angular-material.min.css" type="text/css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" type="text/css">
+  <link rel="stylesheet" type="text/css" href="diff2html.min.css">
+  <meta name="viewport" content="initial-scale=1">
+</head>
+
+<body>
+  <h2>{{cntl.subsearch}}</h2>
+  <div id='diff'>
+  </div>
+  <!-- Angular Material Dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js" type="text/javascript"></script>
+  <!--
+  Local copy of angular-material.js with the fix in https://github.com/angular/material/issues/5681 applied.
+  This makes rendering the PR tab ~2X faster.
+  -->
+
+  <script type="text/javascript" src="diff2html.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/languages/scala.min.js"></script>
+  <script type="text/javascript" src="diff2html-ui.min.js"></script>
+
+  <script src="angular-material.js" type="text/javascript"></script>
+  <script src="diff.js" type="text/javascript"></script>
+</body>
+
+</html>
