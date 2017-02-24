@@ -356,11 +356,6 @@ fi
 # $ sudo chgrp -R jenkins /var/lib/jenkins/gce_keys/
 case "${KUBERNETES_PROVIDER}" in
     gce|gke|kubemark)
-        if ! running_in_docker; then
-            mkdir -p ${WORKSPACE}/.ssh/
-            cp /var/lib/jenkins/gce_keys/google_compute_engine ${WORKSPACE}/.ssh/
-            cp /var/lib/jenkins/gce_keys/google_compute_engine.pub ${WORKSPACE}/.ssh/
-        fi
         echo 'Checking existence of private ssh key'
         gce_key="${WORKSPACE}/.ssh/google_compute_engine"
         if [[ ! -f "${gce_key}" || ! -f "${gce_key}.pub" ]]; then
@@ -414,30 +409,9 @@ fi
 
 cd kubernetes
 
-if [[ -n "${BOOTSTRAP_MIGRATION:-}" ]]; then
-  # TODO(fejta): migrate all jobs and stop using upload-to-gcs.sh to do this
-  # Right now started.json is created by e2e-runner.sh and
-  # finished.json is created by jenkins.
-  # Soon we will consolodate this responsibility inside bootstrap.py
-  # We want to switch to this logic as we start migrating jobs over to this
-  # pattern, but until then we also need jobs to continue uploading started.json
-  # until that time. This environment variable will do that.
-  source "$(dirname "${0}")/upload-to-gcs.sh"
-  version=$(find_version)  # required by print_started
-  print_started | jq '.metadata? + {version, "job-version"}' > "${ARTIFACTS}/metadata.json"
-elif [[ ! "${JOB_NAME}" =~ -pull- ]]; then
-  echo "The bootstrapper should handle Tracking the start/finish of a job and "
-  echo "uploading artifacts. TODO(fejta): migrate this job"
-  # Upload build start time and k8s version to GCS, but not on PR Jenkins.
-  # On PR Jenkins this is done before the build.
-  upload_to_gcs="$(dirname "${0}")/upload-to-gcs.sh"
-  if [[ -f "${upload_to_gcs}" ]]; then
-    JENKINS_BUILD_STARTED=true "${upload_to_gcs}"
-  else
-    echo "TODO(fejta): stop pulling upload-to-gcs.sh"
-    JENKINS_BUILD_STARTED=true bash <(curl -fsS --retry 3 --keepalive-time 2 "https://raw.githubusercontent.com/kubernetes/kubernetes/master/hack/jenkins/upload-to-gcs.sh")
-  fi
-fi
+source "$(dirname "${0}")/upload-to-gcs.sh"
+version=$(find_version)  # required by print_started
+print_started | jq '.metadata? + {version, "job-version"}' > "${ARTIFACTS}/metadata.json"
 
 if [[ -n "${PRIORITY_PATH:-}" ]]; then
   export PATH="${PRIORITY_PATH}:${PATH}"

@@ -21,6 +21,7 @@
 
 import argparse
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -44,10 +45,13 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
-def sig_handler(_signo, _frame):
-    """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
-    print >>sys.stderr, 'signo = %s, frame = %s' % (_signo, _frame)
-    check('docker', 'stop', CONTAINER)
+def check_env(env, *cmd):
+    """Log and run the command with a specific env, raising on errors."""
+    print >>sys.stderr, 'Environment:'
+    for key, value in env.items():
+        print >>sys.stderr, '%s=%s' % (key, value)
+    print >>sys.stderr, 'Run:', cmd
+    subprocess.check_call(cmd, env=env)
 
 
 def kubekins(tag):
@@ -55,38 +59,155 @@ def kubekins(tag):
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
 
+class LocalMode(object):
+    """Runs e2e tests by calling e2e-runner.sh."""
+    def __init__(self, workspace):
+        self.workspace = workspace
+        self.env = []
+        self.env_files = []
+        self.add_environment(
+            'HOME=%s' % workspace,
+            'WORKSPACE=%s' % workspace,
+            'PATH=%s' % os.getenv('PATH'),
+        )
+
+    @staticmethod
+    def parse_env(env):
+        """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
+        return env.split('=', 1)
+
+    def add_environment(self, *envs):
+        """Adds FOO=BAR to the list of environment overrides."""
+        self.env.extend(self.parse_env(e) for e in envs)
+
+    def add_files(self, env_files):
+        """Reads all FOO=BAR lines from each path in env_files seq."""
+        for env_file in env_files:
+            with open(test_infra(env_file)) as fp:
+                for line in fp:
+                    line = line.rstrip()
+                    if not line or line.startswith('#'):
+                        continue
+                    self.env_files.append(self.parse_env(line))
+
+    def add_gce_ssh(self, priv, pub):
+        """Copies priv, pub keys to $WORKSPACE/.ssh."""
+        gce_ssh = '%s/.ssh/google_compute_engine' % self.workspace
+        gce_pub = '%s/.ssh/google_compute_engine.pub' % self.workspace
+        shutil.copy(priv, gce_ssh)
+        shutil.copy(pub, gce_pub)
+        self.add_environment(
+            'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
+            'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub,
+        )
+
+    def add_service_account(self, path):
+        """Sets GOOGLE_APPLICATION_CREDENTIALS to path."""
+        self.add_environment('GOOGLE_APPLICATION_CREDENTIALS=%s' % path)
+
+    @property
+    def runner(self):
+        """Finds the best version of e2e-runner.sh."""
+        options = ['e2e-runner.sh', test_infra('jenkins/e2e-image/e2e-runner.sh')]
+        for path in options:
+            if os.path.isfile(path):
+                return path
+        raise ValueError('Cannot find e2e-runner at any of %s' % ', '.join(options))
+
+
+    def install_prerequisites(self):
+        """Copies upload-to-gcs and kubetest if needed."""
+        parent = os.path.dirname(self.runner)
+        if not os.path.isfile(os.path.join(parent, 'upload-to-gcs.sh')):
+            shutil.copy(
+                test_infra('../kubernetes/hack/jenkins/upload-to-gcs.sh'),
+                os.path.join(parent, 'upload-to-gcs.sh'))
+        if not os.path.isfile(os.path.join(parent, 'kubetest')):
+            check('go', 'install', 'k8s.io/test-infra/kubetest')
+            shutil.copy(
+                os.path.expandvars('${GOPATH}/bin/kubetest'),
+                os.path.join(parent, 'kubetest'))
+
+    def start(self):
+        """Runs e2e-runner.sh after setting env and installing prereqs."""
+        env = {}
+        env.update(self.env_files)
+        env.update(self.env)
+        self.install_prerequisites()
+        check_env(env, self.runner)
+
+
+class DockerMode(object):
+    """Runs e2e tests via docker run kubekins-e2e."""
+    def __init__(self, container, workspace, sudo, tag, mount_paths):
+        self.tag = tag
+        try:  # Pull a newer version if one exists
+            check('docker', 'pull', kubekins(tag))
+        except subprocess.CalledProcessError:
+            pass
+
+        print 'Starting %s...' % container
+
+        self.container = container
+        self.cmd = [
+            'docker', 'run', '--rm',
+            '--name=%s' % container,
+            '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
+            '-v', '/etc/localtime:/etc/localtime:ro',
+        ]
+        for path in mount_paths:
+            self.cmd.extend(['-v', path])
+
+        if sudo:
+            self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
+        self.add_environment(
+            'HOME=/workspace',
+            'WORKSPACE=/workspace')
+
+    def add_environment(self, *envs):
+        """Adds FOO=BAR to the -e list for docker."""
+        for env in envs:
+            self.cmd.extend(['-e', env])
+
+    def add_files(self, env_files):
+        """Adds each file to the --env-file list."""
+        for env_file in env_files:
+            self.cmd.extend(['--env-file', test_infra(env_file)])
+
+
+    def add_gce_ssh(self, priv, pub):
+        """Mounts priv and pub inside the container."""
+        gce_ssh = '/workspace/.ssh/google_compute_engine'
+        gce_pub = '%s.pub' % gce_ssh
+        self.cmd.extend([
+          '-v', '%s:%s:ro' % (priv, gce_ssh),
+          '-v', '%s:%s:ro' % (pub, gce_pub),
+          '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
+          '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
+
+    def add_service_account(self, path):
+        """Mounts GOOGLE_APPLICATION_CREDENTIALS inside the container."""
+        service = '/service-account.json'
+        self.cmd.extend([
+            '-v', '%s:%s:ro' % (path, service),
+            '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+
+
+    def start(self):
+        """Runs kubekins."""
+        self.cmd.append(kubekins(self.tag))
+        signal.signal(signal.SIGTERM, self.sig_handler)
+        signal.signal(signal.SIGINT, self.sig_handler)
+        check(*self.cmd)
+
+    def sig_handler(self, _signo, _frame):
+        """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
+        print >>sys.stderr, 'docker stop (signo=%s, frame=%s)' % (_signo, _frame)
+        check('docker', 'stop', self.container)
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
-    # pylint: disable=too-many-locals
-
-    # dockerized-e2e-runner goodies setup
-    workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = '%s/_artifacts' % workspace
-    if not os.path.isdir(artifacts):
-        os.makedirs(artifacts)
-
-    try:  # Pull a newer version if one exists
-        check('docker', 'pull', kubekins(args.tag))
-    except subprocess.CalledProcessError:
-        pass
-
-    print 'Starting %s...' % CONTAINER
-
-    cmd = [
-      'docker', 'run', '--rm',
-      '--name=%s' % CONTAINER,
-      '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
-      '-v', '/etc/localtime:/etc/localtime:ro'
-    ]
-
-    if args.docker_in_docker:
-        cmd.extend([
-          '-v', '/var/run/docker.sock:/var/run/docker.sock'])
-
-    if args.mount_paths:
-        for path in args.mount_paths:
-            cmd.extend(['-v', path])
-
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -96,48 +217,49 @@ def main(args):
     # So if you overwrite FOO=c for a local run it will take precedence.
     #
 
+    # dockerized-e2e-runner goodies setup
+    workspace = os.environ.get('WORKSPACE', os.getcwd())
+    artifacts = '%s/_artifacts' % workspace
+    if not os.path.isdir(artifacts):
+        os.makedirs(artifacts)
+
+    container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
+    if args.mode == 'docker':
+        mode = DockerMode(container, workspace, args.docker_in_docker, args.tag, args.mount_paths)
+    elif args.mode == 'local':
+        mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
+    else:
+        raise ValueError(args.mode)
     if args.env_file:
-        for env in args.env_file:
-            cmd.extend(['--env-file', test_infra(env)])
+        mode.add_files(args.env_file)
 
     if args.gce_ssh:
-        gce_ssh = '/workspace/.ssh/google_compute_engine'
-        gce_pub = '%s.pub' % gce_ssh
-        cmd.extend([
-          '-v', '%s:%s:ro' % (args.gce_ssh, gce_ssh),
-          '-v', '%s:%s:ro' % (args.gce_pub, gce_pub),
-          '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
-          '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
+        mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     if args.service_account:
-        service = '/service-account.json'
-        cmd.extend([
-            '-v', '%s:%s:ro' % (args.service_account, service),
-            '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+        mode.add_service_account(args.service_account)
 
-    cmd.extend([
+    mode.add_environment(
       # Boilerplate envs
       # Skip gcloud update checking
-      '-e', 'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
+      'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
       # Use default component update behavior
-      '-e', 'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
+      'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
       # E2E
-      '-e', 'E2E_UP=%s' % args.up,
-      '-e', 'E2E_TEST=%s' % args.test,
-      '-e', 'E2E_DOWN=%s' % args.down,
-      '-e', 'E2E_NAME=%s' % args.cluster,
+      'E2E_UP=%s' % args.up,
+      'E2E_TEST=%s' % args.test,
+      'E2E_DOWN=%s' % args.down,
+      'E2E_NAME=%s' % args.cluster,
       # AWS
-      '-e', 'KUBE_AWS_INSTANCE_PREFIX=%s' % args.cluster,
+      'KUBE_AWS_INSTANCE_PREFIX=%s' % args.cluster,
       # GCE
-      '-e', 'INSTANCE_PREFIX=%s' % args.cluster,
-      '-e', 'KUBE_GCE_NETWORK=%s' % args.cluster,
-      '-e', 'KUBE_GCE_INSTANCE_PREFIX=%s' % args.cluster,
+      'INSTANCE_PREFIX=%s' % args.cluster,
+      'KUBE_GCE_NETWORK=%s' % args.cluster,
+      'KUBE_GCE_INSTANCE_PREFIX=%s' % args.cluster,
       # GKE
-      '-e', 'CLUSTER_NAME=%s' % args.cluster,
-      '-e', 'KUBE_GKE_NETWORK=%s' % args.cluster,
-      # Workspace
-      '-e', 'HOME=/workspace',
-      '-e', 'WORKSPACE=/workspace'])
+      'CLUSTER_NAME=%s' % args.cluster,
+      'KUBE_GKE_NETWORK=%s' % args.cluster,
+    )
 
     # env blacklist.
     # TODO(krzyzacy) change this to a whitelist
@@ -150,25 +272,25 @@ def main(args):
       'WORKSPACE'
     ]
 
-    for key, value in os.environ.items():
-        if key not in docker_env_ignore:
-            cmd.extend(['-e', '%s=%s' % (key, value)])
+    # TODO(fejta): delete this
+    mode.add_environment(*(
+        '%s=%s' % (k, v) for (k, v) in os.environ.items()
+        if k not in docker_env_ignore))
 
     # Overwrite JOB_NAME for soak-*-test jobs
     if args.soak_test and os.environ.get('JOB_NAME'):
-        cmd.extend(['-e', 'JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy')])
+        mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
 
-    cmd.append(kubekins(args.tag))
+    mode.start()
 
-    signal.signal(signal.SIGTERM, sig_handler)
-    signal.signal(signal.SIGINT, sig_handler)
-
-    check(*cmd)
 
 
 if __name__ == '__main__':
 
     PARSER = argparse.ArgumentParser()
+
+    PARSER.add_argument(
+        '--mode', default='docker', choices=['local', 'docker'])
     PARSER.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
@@ -206,7 +328,5 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
     ARGS = PARSER.parse_args()
-
-    CONTAINER = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
 
     main(ARGS)
