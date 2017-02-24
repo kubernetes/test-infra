@@ -30,7 +30,7 @@ import (
 
 var (
 	match  = regexp.MustCompile(`(?m)^@k8s-(ci|ro)?bot tell me a joke[,.?!]*\r?$`)
-	simple = regexp.MustCompile(`^[\w?., ]+$`)
+	simple = regexp.MustCompile(`^[\w?'!., ]+$`)
 )
 
 const (
@@ -74,8 +74,8 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 }
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j joker) error {
-	// Only consider new comments to open issues.
-	if ic.Issue.State != "open" || ic.Action != "created" {
+	// Only consider new comments.
+	if ic.Action != "created" {
 		return nil
 	}
 	// Make sure they are requesting a joke
