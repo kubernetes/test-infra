@@ -39,6 +39,11 @@ func run(deploy deployer, o options) error {
 	os.Setenv("KUBE_RUNTIME_CONFIG", "batch/v2alpha1=true")
 
 	if o.up {
+		if o.federation {
+			if err := xmlWrap("Federation TearDown Previous", FedDown); err != nil {
+				return fmt.Errorf("error tearing down previous federation control plane: %v", err)
+			}
+		}
 		if err := xmlWrap("TearDown Previous", deploy.Down); err != nil {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
