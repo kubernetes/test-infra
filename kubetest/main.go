@@ -33,10 +33,11 @@ import (
 )
 
 var (
-	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose   = false
-	timeout   = time.Duration(0)
+	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	verbose               = false
+	timeout               = time.Duration(0)
+	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
 )
 
 type options struct {
@@ -168,6 +169,10 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	o, deployment := defineFlags()
 	flag.Parse()
+	if *deprecatedVersionSkew == false {
+		log.Print("--check_version_skew is deprecated. Please change to --check-version-skew")
+		o.checkSkew = false
+	}
 	if err := complete(o, deployment); err != nil {
 		log.Fatalf("Something went wrong: %s", err)
 	}
@@ -316,6 +321,10 @@ func writeMetadata(path string) error {
 
 // Install cloudsdk tarball to location, updating PATH
 func installGcloud(tarball string, location string) error {
+
+	if err := os.MkdirAll(location, 0775); err != nil {
+		return err
+	}
 
 	if err := finishRunning(exec.Command("tar", "xzf", tarball, "-C", location)); err != nil {
 		return err
