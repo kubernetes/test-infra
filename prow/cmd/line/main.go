@@ -303,11 +303,11 @@ func (c *testClient) TestKubernetes() error {
 			},
 			kube.EnvVar{
 				Name:  "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-private.json",
+				Value: "/etc/ssh-key-secret/ssh-private",
 			},
 			kube.EnvVar{
 				Name:  "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-public.json",
+				Value: "/etc/ssh-key-secret/ssh-public",
 			},
 		)
 		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts,
