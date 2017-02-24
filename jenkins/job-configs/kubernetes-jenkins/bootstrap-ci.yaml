@@ -30,7 +30,7 @@
             GOPATH=$WORKSPACE/go
             PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
     - timeout:
-        timeout: 1020
+        timeout: '{jenkins-timeout}'
         fail: true
     - workspace-cleanup:  # cleanup before the job starts, for clean build.
         dirmatch: true
@@ -53,23 +53,27 @@
     - kubernetes-e2e-aws:
         job-name: ci-kubernetes-e2e-aws
         frequency: 'H/5 * * * *' # At least every 30m
-        timeout: 0
+        jenkins-timeout: 600
         json: 0
+        timeout: 0
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-aws-release-1.5:
         job-name: ci-kubernetes-e2e-aws-release-1.5
+        jenkins-timeout: 600
         timeout: 0
         frequency: '@daily'
         json: 0
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-kops-aws: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
+        jenkins-timeout: 140
         timeout: 40
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -80,6 +84,7 @@
     # gce-master
     - kubernetes-e2e-gce:
         job-name: ci-kubernetes-e2e-gce
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -88,106 +93,124 @@
         job-name: ci-kubernetes-e2e-gce-canary
         frequency: '* H * * *'  # At least once a day, can manually trigger too
         json: 1
+        jenkins-timeout: 250
         timeout: 50
         trigger-job: ''
     - kubernetes-e2e-gce-slow:
         job-name: ci-kubernetes-e2e-gce-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-serial:
         job-name: ci-kubernetes-e2e-gce-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-reboot:
         job-name: ci-kubernetes-e2e-gce-reboot
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-autoscaling:
         job-name: ci-kubernetes-e2e-gce-autoscaling
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-gce-autoscaling-migs
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-alpha-features:
         job-name: ci-kubernetes-e2e-gce-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-flaky:
         job-name: ci-kubernetes-e2e-gce-flaky
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-scalability:
         job-name: ci-kubernetes-e2e-gce-scalability
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/12 * * *'
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-container-vm:
         job-name: ci-kubernetes-e2e-gce-container-vm
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-master-on-cvm:
         job-name: ci-kubernetes-e2e-gce-master-on-cvm
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H * * * *' # run once an hour
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-etcd3:
         job-name: ci-kubernetes-e2e-gce-etcd3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-proto:
         job-name: ci-kubernetes-e2e-gce-proto
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-examples:
         job-name: ci-kubernetes-e2e-gce-examples
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-multizone:
         job-name: ci-kubernetes-e2e-gce-multizone
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-federation:
         job-name: ci-kubernetes-e2e-gce-federation
+        jenkins-timeout: 1020
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-federation-build'
     - kubernetes-e2e-gce-federation-serial:
         job-name: ci-kubernetes-e2e-gce-federation-serial
+        jenkins-timeout: 1020
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-federation-build'
     - kubernetes-e2e-gce-ha-master:
         job-name: ci-kubernetes-e2e-gce-ha-master
+        jenkins-timeout: 340
         timeout: 240
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -196,18 +219,21 @@
     # gce-manual-jobs #gmarek
     - kubernetes-e2e-gce-enormous-cluster:
         job-name: ci-kubernetes-e2e-gce-enormous-cluster
+        jenkins-timeout: 1600
         timeout: 1500
         frequency: '' #manual
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-enormous-deploy:
         job-name: ci-kubernetes-e2e-gce-enormous-deploy
+        jenkins-timeout: 420
         timeout: 320
         frequency: '' #manual
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-enormous-teardown:
         job-name: ci-kubernetes-e2e-gce-enormous-teardown
+        jenkins-timeout: 300
         timeout: 200
         frequency: '' #manual
         json: 1
@@ -216,78 +242,91 @@
     # gci-gce-master
     - kubernetes-e2e-gci-gce:
         job-name: ci-kubernetes-e2e-gci-gce
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-slow:
         job-name: ci-kubernetes-e2e-gci-gce-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-serial:
         job-name: ci-kubernetes-e2e-gci-gce-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-reboot:
         job-name: ci-kubernetes-e2e-gci-gce-reboot
+        jenkins-timeout: 330
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-autoscaling:
         job-name: ci-kubernetes-e2e-gci-gce-autoscaling
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-alpha-features:
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-flaky:
         job-name: ci-kubernetes-e2e-gci-gce-flaky
+        jenkins-timeout: 300
         timeout: 200
         trigger-job: 'ci-kubernetes-build'
         json: 1
         frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-gci-gce-scalability:
         job-name: ci-kubernetes-e2e-gci-gce-scalability
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/12 * * *'
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-etcd3:
         job-name: ci-kubernetes-e2e-gci-gce-etcd3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-proto:
         job-name: ci-kubernetes-e2e-gci-gce-proto
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-examples:
         job-name: ci-kubernetes-e2e-gci-gce-examples
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-federation:
         job-name: ci-kubernetes-e2e-gci-gce-federation
+        jenkins-timeout: 1020
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -296,78 +335,91 @@
     # gce-master with non-cri
     - kubernetes-e2e-non-cri-gce:
         job-name: ci-kubernetes-e2e-non-cri-gce
+        jenkins-timeout: 270
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-slow:
         job-name: ci-kubernetes-e2e-non-cri-gce-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-serial:
         job-name: ci-kubernetes-e2e-non-cri-gce-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-reboot:
         job-name: ci-kubernetes-e2e-non-cri-gce-reboot
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-autoscaling:
         job-name: ci-kubernetes-e2e-non-cri-gce-autoscaling
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-non-cri-gce-autoscaling-migs
+        jenkins-timeout: 330
         timeout: 230
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-alpha-features:
         job-name: ci-kubernetes-e2e-non-cri-gce-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-flaky:
         job-name: ci-kubernetes-e2e-non-cri-gce-flaky
+        jenkins-timeout: 300
         timeout: 200
         trigger-job: 'ci-kubernetes-build'
         json: 1
         frequency: 'H/5 * * * *' # At least every 30m
     - kubernetes-e2e-non-cri-gce-scalability:
         job-name: ci-kubernetes-e2e-non-cri-gce-scalability
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/12 * * *'
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-etcd3:
         job-name: ci-kubernetes-e2e-non-cri-gce-etcd3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-proto:
         job-name: ci-kubernetes-e2e-non-cri-gce-proto
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-examples:
         job-name: ci-kubernetes-e2e-non-cri-gce-examples
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-federation:
         job-name: ci-kubernetes-e2e-non-cri-gce-federation
+        jenkins-timeout: 1020
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -376,24 +428,28 @@
     # gce-1.3
     - kubernetes-e2e-gce-release-1.3:
         job-name: ci-kubernetes-e2e-gce-release-1.3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-reboot-release-1.3:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.3
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-slow-release-1.3:
         job-name: ci-kubernetes-e2e-gce-slow-release-1.3
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-serial-release-1.3:
         job-name: ci-kubernetes-e2e-gce-serial-release-1.3
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -401,24 +457,28 @@
     # gci-gce-1.3
     - kubernetes-e2e-gci-gce-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gce-reboot-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gce-reboot-release-1.3
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gce-slow-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gce-slow-release-1.3
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gce-serial-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gce-serial-release-1.3
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -427,36 +487,42 @@
     # gce-1.4
     - kubernetes-e2e-gce-release-1.4:
         job-name: ci-kubernetes-e2e-gce-release-1.4
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-reboot-release-1.4:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-slow-release-1.4:
         job-name: ci-kubernetes-e2e-gce-slow-release-1.4
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-serial-release-1.4:
         job-name: ci-kubernetes-e2e-gce-serial-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-alpha-features-release-1.4:
         job-name: ci-kubernetes-e2e-gce-alpha-features-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-federation-release-1.4:
         job-name: ci-kubernetes-e2e-gce-federation-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -465,36 +531,42 @@
     # gci-gce-1.4
     - kubernetes-e2e-gci-gce-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.4
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gce-reboot-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gce-slow-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-slow-release-1.4
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gce-serial-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-serial-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gce-ingress-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-ingress-release-1.4
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gce-alpha-features-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -503,48 +575,56 @@
     # gce-1.5
     - kubernetes-e2e-gce-release-1.5:
         job-name: ci-kubernetes-e2e-gce-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-etcd3-release-1.5:
         job-name: ci-kubernetes-e2e-gce-etcd3-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gce-slow-release-1.5
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gce-serial-release-1.5
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gce-alpha-features-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-scalability-release-1.5:
         job-name: ci-kubernetes-e2e-gce-scalability-release-1.5
+        jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-federation-release-1.5:
         job-name: ci-kubernetes-e2e-gce-federation-release-1.5
+        jenkins-timeout: 850
         timeout: 750 # See the discussion here - https://github.com/kubernetes/test-infra/pull/1280 for the motivation behind the choice of this value.
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -553,42 +633,49 @@
     # gci-gce-1.5
     - kubernetes-e2e-gci-gce-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-reboot-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-slow-release-1.5
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-serial-release-1.5
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-ingress-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-ingress-release-1.5
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-scalability-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1.5
+        jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
         json: 1
@@ -597,24 +684,28 @@
     # gce-features
     - kubernetes-e2e-gce-ingress:
         job-name: ci-kubernetes-e2e-gce-ingress
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-es-logging:
         job-name: ci-kubernetes-e2e-gce-es-logging
+        jenkins-timeout: 190
         timeout: 90
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-statefulset:
         job-name: ci-kubernetes-e2e-gce-statefulset
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-garbage:
         job-name: ci-kubernetes-e2e-gce-garbage
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H H/6 * * *'
         json: 1
@@ -623,30 +714,35 @@
     # gci-gce-features
     - kubernetes-e2e-gci-gce-ingress:
         job-name: ci-kubernetes-e2e-gci-gce-ingress
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-es-logging:
         job-name: ci-kubernetes-e2e-gci-gce-es-logging
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-statefulset:
         job-name: ci-kubernetes-e2e-gci-gce-statefulset
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-garbage:
         job-name: ci-kubernetes-e2e-gci-gce-garbage
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H H/6 * * *'
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gci-gce-docker:
         job-name: ci-kubernetes-e2e-gci-gce-docker
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H H/6 * * *'
         json: 1
@@ -655,24 +751,28 @@
     # cri-gce-features
     - kubernetes-e2e-non-cri-gce-ingress:
         job-name: ci-kubernetes-e2e-non-cri-gce-ingress
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-es-logging:
         job-name: ci-kubernetes-e2e-non-cri-gce-es-logging
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-statefulset:
         job-name: ci-kubernetes-e2e-non-cri-gce-statefulset
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-garbage:
         job-name: ci-kubernetes-e2e-non-cri-gce-garbage
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H H/6 * * *'
         json: 1
@@ -683,24 +783,28 @@
     - kubernetes-e2e-gce-gci-ci-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-master
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.3
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.4
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
@@ -708,30 +812,35 @@
     - kubernetes-e2e-gce-gci-qa-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-master
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m57
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m56
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m55
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-m54
+        jenkins-timeout: 170
         timeout: 70
         json: 1
         trigger-job: 'ci-kubernetes-build'
@@ -739,24 +848,28 @@
     - kubernetes-e2e-gce-gci-ci-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-master
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
@@ -764,30 +877,35 @@
     - kubernetes-e2e-gce-gci-qa-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-master
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m57
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m56
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-serial-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
+        jenkins-timeout: 420
         timeout: 320
         json: 1
         trigger-job: 'ci-kubernetes-build'
@@ -795,24 +913,28 @@
     - kubernetes-e2e-gce-gci-ci-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-master
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.3:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.4:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.5:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
@@ -820,30 +942,35 @@
     - kubernetes-e2e-gce-gci-qa-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-master
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m57:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m57
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m56:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m56
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m55:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m55
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-gci-qa-slow-m54:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m54
+        jenkins-timeout: 270
         timeout: 170
         json: 1
         trigger-job: 'ci-kubernetes-build'
@@ -854,60 +981,70 @@
     # gke-master
     - kubernetes-e2e-gke:
         job-name: ci-kubernetes-e2e-gke
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-slow:
         job-name: ci-kubernetes-e2e-gke-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-multizone:
         job-name: ci-kubernetes-e2e-gke-multizone
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-alpha-features:
         job-name: ci-kubernetes-e2e-gke-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-autoscaling:
         job-name: ci-kubernetes-e2e-gke-autoscaling
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-flaky:
         job-name: ci-kubernetes-e2e-gke-flaky
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-reboot:
         job-name: ci-kubernetes-e2e-gke-reboot
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-serial:
         job-name: ci-kubernetes-e2e-gke-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-updown:
         job-name: ci-kubernetes-e2e-gke-updown
+        jenkins-timeout: 150
         timeout: 50
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-ingress:
         job-name: ci-kubernetes-e2e-gke-ingress
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -916,18 +1053,21 @@
     # gke-large
     - kubernetes-e2e-gke-large-cluster:
         job-name: ci-kubernetes-e2e-gke-large-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: '0 17 * * *'
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
+        jenkins-timeout: 1320
         timeout: 1220
         frequency: '' #manual
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-large-teardown:
         job-name: ci-kubernetes-e2e-gke-large-teardown
+        jenkins-timeout: 300
         timeout: 200
         frequency: '' #manual
         json: 1
@@ -936,60 +1076,70 @@
     # gci-gke-master
     - kubernetes-e2e-gci-gke:
         job-name: ci-kubernetes-e2e-gci-gke
+        jenkins-timeout: 270
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-slow:
         job-name: ci-kubernetes-e2e-gci-gke-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-multizone:
         job-name: ci-kubernetes-e2e-gci-gke-multizone
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-alpha-features:
         job-name: ci-kubernetes-e2e-gci-gke-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-autoscaling:
         job-name: ci-kubernetes-e2e-gci-gke-autoscaling
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-flaky:
         job-name: ci-kubernetes-e2e-gci-gke-flaky
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-reboot:
         job-name: ci-kubernetes-e2e-gci-gke-reboot
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-serial:
         job-name: ci-kubernetes-e2e-gci-gke-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-updown:
         job-name: ci-kubernetes-e2e-gci-gke-updown
+        jenkins-timeout: 150
         timeout: 50
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gke-ingress:
         job-name: ci-kubernetes-e2e-gci-gke-ingress
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -998,60 +1148,70 @@
     # cri-gke-master with CRI
     - kubernetes-e2e-non-cri-gke:
         job-name: ci-kubernetes-e2e-non-cri-gke
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-slow:
         job-name: ci-kubernetes-e2e-non-cri-gke-slow
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-multizone:
         job-name: ci-kubernetes-e2e-non-cri-gke-multizone
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-alpha-features:
         job-name: ci-kubernetes-e2e-non-cri-gke-alpha-features
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-autoscaling:
         job-name: ci-kubernetes-e2e-non-cri-gke-autoscaling
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-flaky:
         job-name: ci-kubernetes-e2e-non-cri-gke-flaky
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-reboot:
         job-name: ci-kubernetes-e2e-non-cri-gke-reboot
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-serial:
         job-name: ci-kubernetes-e2e-non-cri-gke-serial
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-updown:
         job-name: ci-kubernetes-e2e-non-cri-gke-updown
+        jenkins-timeout: 150
         timeout: 50
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gke-ingress:
         job-name: ci-kubernetes-e2e-non-cri-gke-ingress
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1060,24 +1220,28 @@
     # gke-1.3
     - kubernetes-e2e-gke-release-1.3:
         job-name: ci-kubernetes-e2e-gke-release-1.3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gke-serial-release-1.3:
         job-name: ci-kubernetes-e2e-gke-serial-release-1.3
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gke-slow-release-1.3:
         job-name: ci-kubernetes-e2e-gke-slow-release-1.3
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gke-reboot-release-1.3:
         job-name: ci-kubernetes-e2e-gke-reboot-release-1.3
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1086,24 +1250,28 @@
     # gci-gke-1.3
     - kubernetes-e2e-gci-gke-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gke-release-1.3
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gke-serial-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.3
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gke-slow-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.3
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gci-gke-reboot-release-1.3:
         job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.3
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1112,30 +1280,35 @@
     # gke-1.4
     - kubernetes-e2e-gke-release-1.4:
         job-name: ci-kubernetes-e2e-gke-release-1.4
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-serial-release-1.4:
         job-name: ci-kubernetes-e2e-gke-serial-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-alpha-features-release-1.4:
         job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-slow-release-1.4:
         job-name: ci-kubernetes-e2e-gke-slow-release-1.4
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-reboot-release-1.4:
         job-name: ci-kubernetes-e2e-gke-reboot-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1144,36 +1317,42 @@
     # gci-gke-1.4
     - kubernetes-e2e-gci-gke-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-release-1.4
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-serial-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.4
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-alpha-features-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-slow-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.4
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-reboot-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.4
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-ingress-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.4
+        jenkins-timeout: 210
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1182,30 +1361,35 @@
     # gke-1.5
     - kubernetes-e2e-gke-release-1.5:
         job-name: ci-kubernetes-e2e-gke-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gke-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gke-serial-release-1.5
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gke-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gke-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gke-slow-release-1.5
+        jenkins-timeout: 270
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gke-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gke-reboot-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1214,30 +1398,35 @@
     # gci-gke-1.5
     - kubernetes-e2e-gci-gke-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-release-1.5
+        jenkins-timeout: 170
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.5
+        jenkins-timeout: 420
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.5
+        jenkins-timeout: 280
         timeout: 170
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.5
+        jenkins-timeout: 300
         timeout: 200
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-ingress-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.5
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1248,48 +1437,56 @@
     # TODO(spxtr) float with current release.
     - kubernetes-e2e-gke-pre-release:
         job-name: ci-kubernetes-e2e-gke-pre-release
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-test:
         job-name: ci-kubernetes-e2e-gke-test
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-subnet:
         job-name: ci-kubernetes-e2e-gke-subnet
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-staging:
         job-name: ci-kubernetes-e2e-gke-staging
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-staging-parallel:
         job-name: ci-kubernetes-e2e-gke-staging-parallel
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-prod:
         job-name: ci-kubernetes-e2e-gke-prod
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-prod-parallel:
         job-name: ci-kubernetes-e2e-gke-prod-parallel
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gke-prod-smoke:
         job-name: ci-kubernetes-e2e-gke-prod-smoke
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1300,48 +1497,56 @@
     # TODO(spxtr) float with current release.
     - kubernetes-e2e-gci-gke-pre-release:
         job-name: ci-kubernetes-e2e-gci-gke-pre-release
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-test:
         job-name: ci-kubernetes-e2e-gci-gke-test
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-subnet:
         job-name: ci-kubernetes-e2e-gci-gke-subnet
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-staging:
         job-name: ci-kubernetes-e2e-gci-gke-staging
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-staging-parallel:
         job-name: ci-kubernetes-e2e-gci-gke-staging-parallel
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-prod:
         job-name: ci-kubernetes-e2e-gci-gke-prod
+        jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-prod-parallel:
         job-name: ci-kubernetes-e2e-gci-gke-prod-parallel
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-prod-smoke:
         job-name: ci-kubernetes-e2e-gci-gke-prod-smoke
+        jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1351,36 +1556,42 @@
     # START KUBEMARK
     - kubernetes-kubemark-5-gce:
         job-name: ci-kubernetes-kubemark-5-gce
+        jenkins-timeout: 180
         timeout: 80
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-5-gce-1.5:
         job-name: ci-kubernetes-kubemark-5-gce-1.5
+        jenkins-timeout: 180
         timeout: 80
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-kubemark-100-gce:
         job-name: ci-kubernetes-kubemark-100-gce
+        jenkins-timeout: 360
         timeout: 260
         frequency: 'H H/6 * * *'
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-high-density-100-gce:
         job-name: ci-kubernetes-kubemark-high-density-100-gce
+        jenkins-timeout: 400
         timeout: 300
         frequency: 'H 20 * * 6'
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-500-gce:
         job-name: ci-kubernetes-kubemark-500-gce
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
+        jenkins-timeout: 1100
         timeout: 1000
         frequency: 'H H/12 * * *'
         json: 1
@@ -1392,24 +1603,28 @@
     ### Latest version upgrades #krousey
     - kubernetes-e2e-gce-latest-upgrade-master: # upgrade master from previous version to latest
         job-name: ci-kubernetes-e2e-gce-latest-upgrade-master
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H * * * *' # At least every hour
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-latest-upgrade-cluster: # upgrade cluster from previous version to latest
         job-name: ci-kubernetes-e2e-gce-latest-upgrade-cluster
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H * * * *' # At least every hour
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-latest-upgrade-master: # upgrade master from previous version to latest
         job-name: ci-kubernetes-e2e-gke-latest-upgrade-master
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H * * * *' # At least every hour
         json: 1
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-latest-upgrade-cluster: # upgrade cluster from previous version to latest
         job-name: ci-kubernetes-e2e-gke-latest-upgrade-cluster
+        jenkins-timeout: 220
         timeout: 110
         frequency: 'H * * * *' # At least every hour
         json: 1
@@ -1419,18 +1634,21 @@
 
     - kubernetes-e2e-gke-1.3-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1439,18 +1657,21 @@
     ### kubernetes-e2e-upgrades-gce #davidopp
     - kubernetes-e2e-gce-1.3-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1458,18 +1679,21 @@
 
     - kubernetes-e2e-gce-1.4-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1478,18 +1702,21 @@
     ### kubernetes-e2e-upgrades-gce-cross-image-and-gci #mtaufen
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1497,18 +1724,21 @@
 
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1516,18 +1746,21 @@
 
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1535,18 +1768,21 @@
 
     - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1554,18 +1790,21 @@
 
     - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1573,18 +1812,21 @@
 
     - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1594,12 +1836,14 @@
     ### kubernetes-e2e-kubectl-skew-gke #maisem
     - kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1607,12 +1851,14 @@
 
     - kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1620,12 +1866,14 @@
 
     - kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1633,12 +1881,14 @@
 
     - kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1646,12 +1896,14 @@
 
     - kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-latest-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-latest-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1659,12 +1911,14 @@
 
     - kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-latest-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-latest-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1673,12 +1927,14 @@
     ### kubernetes-e2e-kubectl-skew-gce  #davidopp
     - kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1686,12 +1942,14 @@
 
     - kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         json: 1
@@ -1699,12 +1957,14 @@
 
     - kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1712,12 +1972,14 @@
 
     - kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1725,12 +1987,14 @@
 
     - kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1738,12 +2002,14 @@
 
     - kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1751,12 +2017,14 @@
 
     - kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1764,12 +2032,14 @@
 
     - kubernetes-e2e-gce-latest-latest-1.4-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-latest-1.4-cvm-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gce-latest-latest-1.4-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-latest-1.4-gci-kubectl-skew
+        jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1779,18 +2049,21 @@
     ### kubernetes-e2e-upgrades-image-gke
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1798,18 +2071,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1817,18 +2093,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1836,18 +2115,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1855,18 +2137,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1874,18 +2159,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1893,18 +2181,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1912,18 +2203,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1931,18 +2225,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1950,18 +2247,21 @@
 
     - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1969,18 +2269,21 @@
 
     - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -1988,18 +2291,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2007,18 +2313,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2026,18 +2335,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2045,18 +2357,21 @@
 
     - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2064,18 +2379,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2083,18 +2401,21 @@
 
     - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2102,18 +2423,21 @@
 
     - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
@@ -2121,18 +2445,21 @@
 
     - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
+        jenkins-timeout: 720
         timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1

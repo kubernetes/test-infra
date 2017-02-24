@@ -1310,9 +1310,11 @@ class JobTest(unittest.TestCase):
             modern = is_modern(name)
             self.assertEquals(modern, job['json'])
             if is_modern(name):
-                self.assertGreater(job['timeout'], 0)
+                self.assertGreater(job['timeout'], 0, job_name)
+                self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
             else:
                 self.assertEqual(job['timeout'], 0)
+                self.assertGreaterEqual(job['jenkins-timeout'], 600, job_name)
             return job_name
 
         self.CheckBootstrapYaml(
