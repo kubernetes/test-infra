@@ -366,7 +366,7 @@ func prepareGcp(kubernetesProvider string) error {
 
 	// Ensure ssh keys exist
 	log.Print("Checking existing of GCP ssh keys...")
-	k := filepath.Join(".ssh", "google_compute_engine")
+	k := filepath.Join(home(".ssh"), "google_compute_engine")
 	if _, err := os.Stat(k); err != nil {
 		return err
 	}
