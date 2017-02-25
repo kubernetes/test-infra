@@ -19,22 +19,25 @@ set -o pipefail
 
 echo $@
 if [ ! $# -eq 6 ]; then
-    echo "usage: publish.sh destination_dir destination_branch token netrc_dir commit_message gopath. destination_dir and netrc_dir are expected to be absolute paths."
+    echo "usage: $0 destination_dir destination_branch token commit_message
+    gopath. destination_dir is expected to be absolute paths."
     exit 1
 fi
 DST="${1}"
 DST_BRANCH="${2}"
 TOKEN="${3}"
-NETRCDIR="${4}"
-MESSAGE="${5}"
-GOPATH="${6}"
+MESSAGE="${4}"
+GOPATH="${5}"
+
 # set up github token
-echo "machine github.com login ${TOKEN}" > "${NETRCDIR}"/.netrc
-rm -f ~/.netrc
-ln -s "${NETRCDIR}"/.netrc ~/.netrc
-# set up github user
-git config --global user.email "k8s-publish-robot@users.noreply.github.com"
-git config --global user.name "Kubernetes Publisher"
+mv ~/.netrc ~/.netrc.bak || true
+echo "machine github.com login ${TOKEN}" > ~/.netrc
+
+cleanup() {
+    rm -rf ~/.netrc
+    mv ~/.netrc.bak ~/.netrc || true
+}
+trap cleanup EXIT SIGINT
 
 pushd "${DST}" > /dev/null
 git add --all
@@ -43,7 +46,7 @@ if git diff --cached --exit-code &>/dev/null; then
     echo "nothing has changed!"
     exit 0
 fi
-git commit -m "${MESSAGE}"
+git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "${MESSAGE}"
 
 # Run "godep restore" to restore dependencies. Because entries for
 # k8s.io/apimachinery are removed from Godeps.json, so the just published code
@@ -55,7 +58,7 @@ git add --all
 if git diff --cached --exit-code &>/dev/null; then
     echo "dependency has not changed!"
 else
-    git commit -m "pick up new dependencies on k8s.io repos"
+    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "pick up new dependencies on k8s.io repos"
 fi
 
 go build ./...
@@ -63,5 +66,3 @@ go test ./...
 
 git push origin "${DST_BRANCH}"
 popd > /dev/null
-rm -f ~/.netrc
-rm -f "${NETRCDIR}"/.netrc

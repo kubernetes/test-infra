@@ -14,41 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script publishes the latest changes in the master branch of
-# k8s.io/kubernetes/staging/src/apimachinery to the master branch of
-# k8s.io/apimachinery.
-#
-# The script assumes that the working directory is
-# $GOPATH/src/k8s.io/apimachinery/, the master branch is checked out and is
-# tracking the master branch of https://github.com/kubernetes/apimachinery.
-#
-# The script is expected to be run by
-# k8s.io/test-infra/mungegithub/mungers/publisher.go
+# This file includes functions shared by the each repository's publish scripts.
 
-if [ ! $# -eq 2 ]; then
-    echo "usage: $0 token"
-    exit 1
-fi
-
-TOKEN="${1}"
-
-# set up github token
-mv ~/.netrc ~/.netrc.bak || true
-echo "machine github.com login ${TOKEN}" > ~/.netrc
-
-cleanup() {
-    rm -rf ~/.netrc
-    mv ~/.netrc.bak ~/.netrc || true
-}
-trap cleanup EXIT SIGINT
-
-sync
-
-git push origin $(git rev-parse --abbrev-ref HEAD)
-
-# sync() cherry picks the latest changes in
-# k8s.io/kubernetes/staging/src/apimachinery to the local copy of
-# the k8s.io/apimachinery repository.
+# sync() cherry picks the latest changes in k8s.io/kubernetes/${filter} to the
+# local copy of the repository to be published.
 #
 # overall flow
 # 1. fetch the current level of k8s.io/kubernetes
@@ -58,30 +27,40 @@ git push origin $(git rev-parse --abbrev-ref HEAD)
 # 5. switch back to the starting branch
 # 6. for each commit, cherry-pick it (which will keep authorship) into current branch
 # 7. update metadata files indicating which commits we've sync'ed to
-
-sync() {
+#
+# The function assumes to be called at the root of the repository that's going to be published.
+sync_repo() {
+    # filter could be staging/src/k8s.io/apimachinery
+    filter="${1}"
+    src_branch="${2}"
+    readonly filter src_branch
     set -e
     dir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
-    
-    git remote add upstream-kube https://github.com/kubernetes/kubernetes.git || true
-    git fetch upstream-kube
-    
+
     currBranch=$(git rev-parse --abbrev-ref HEAD)
     previousKubeSHA=$(cat kubernetes-sha)
     previousBranchSHA=$(cat filter-branch-sha)
     
+    git remote add upstream-kube https://github.com/kubernetes/kubernetes.git || true
+    git fetch upstream-kube
     git branch -D kube-sync || true
-    git checkout upstream-kube/master -b kube-sync
-    git reset --hard upstream-kube/master
+    git checkout upstream-kube/"${src_branch}" -b kube-sync
+    git reset --hard upstream-kube/"${src_branch}"
     newKubeSHA=$(git log --oneline --format='%H' kube-sync -1)
     
-    # this command rewrite git history to *only* include staging/src/k8s.io/apimachinery
-    git filter-branch -f --subdirectory-filter staging/src/k8s.io/apimachinery HEAD
+    # this command rewrite git history to *only* include $filter 
+    git filter-branch -f --subdirectory-filter "${filter}" HEAD
     
     newBranchSHA=$(git log --oneline --format='%H' kube-sync -1)
+    #git log --no-merges --format='%H' --reverse ${previousBranchSHA}..HEAD^ > ${dir}/commits
+    # we need to start after _vendor is removed from master
     git log --no-merges --format='%H' --reverse ${previousBranchSHA}..HEAD > ${dir}/commits
     
     git checkout ${currBranch}
+
+    echo "commits to be published:"
+    cat ${dir}/commits
+    echo ""
     
     while read commitSHA; do
     	echo "working ${commitSHA}"
@@ -93,4 +72,23 @@ sync() {
     echo ${newKubeSHA} > kubernetes-sha
     echo ${newBranchSHA} > filter-branch-sha
     git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes): ${newKubeSHA}" -- kubernetes-sha filter-branch-sha
+}
+
+# To avoid repeated godep restore, repositories should share the GOPATH.
+# This function should be run after the Godeps.json are updated with the latest
+# revs of k8s.io/ dependencies.
+# The function assumes to be called at the root of the repository that's going to be published.
+restore_vendor() {
+    godep restore
+    godep save ./...
+    rm -rf ./vendor/k8s.io
+
+    # glog uses global variables, it panics when multiple copies are compiled.
+    rm -rf ./vendor/github.com/golang/glog
+    # this ensures users who get the repository via `go get` won't end up with
+    # multiple copies of k8s.io/ repos. The only copy will be the one in the
+    # GOPATH.
+    # Godeps.json has a complete, up-to-date list of dependencies, so
+    # Godeps.json will be the ground truth for users using godep/glide/dep.
+    rm -rf ./vendor/k8s.io  
 }
