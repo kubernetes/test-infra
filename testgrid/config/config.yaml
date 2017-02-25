@@ -72,6 +72,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.4
 - name: kubernetes-build-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.5
+- name: kubernetes-build-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.6
 - name: kubernetes-e2e-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.5
@@ -196,6 +198,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.4
 - name: kubernetes-federation-build-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.5
+- name: kubernetes-federation-build-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.6
 - name: kubernetes-federation-build-soak
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-soak
 - name: kubernetes-e2e-gce-flaky
@@ -550,8 +554,13 @@ test_groups:
 - name: kubernetes-test-go-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.5
   days_of_results: 4
+- name: kubernetes-test-go-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.6
+  days_of_results: 4
 - name: kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-master
+- name: kubernetes-verify-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.6
 - name: kubernetes-verify-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.5
 - name: kubernetes-verify-release-1.4
@@ -796,6 +805,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.4
 - name: ci-kubernetes-node-kubelet-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.5
+- name: ci-kubernetes-node-kubelet-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.6
 - name: kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
@@ -1387,6 +1398,8 @@ dashboards:
     test_group_name: kubernetes-test-go-release-1.5
   - name: verify-master
     test_group_name: kubernetes-verify-master
+  - name: verify-1.6
+    test_group_name: kubernetes-verify-release-1.6
   - name: verify-1.5
     test_group_name: kubernetes-verify-release-1.5
   - name: verify-1.4
@@ -1635,8 +1648,32 @@ dashboards:
     test_group_name: kubernetes-federation-build-1.4
   - name: build-1.5
     test_group_name: kubernetes-federation-build-1.5
+  - name: build-1.6
+    test_group_name: kubernetes-federation-build-1.6
   - name: build-soak
     test_group_name: kubernetes-federation-build-soak
+
+- name: release-1.6-all
+  dashboard_tab:
+  - name: build-1.6
+    test_group_name: kubernetes-build-1.6
+  - name: test-go-1.6
+    test_group_name: kubernetes-test-go-release-1.6
+  - name: verify-1.6
+    test_group_name: kubernetes-verify-release-1.6
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6
+
+- name: release-1.6-blocking
+  dashboard_tab:
+  - name: build-1.6
+    test_group_name: kubernetes-build-1.6
+  - name: test-go-1.6
+    test_group_name: kubernetes-test-go-release-1.6
+  - name: verify-1.6
+    test_group_name: kubernetes-verify-release-1.6
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6
 
 - name: release-1.5-all
   dashboard_tab:

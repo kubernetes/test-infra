@@ -34,6 +34,10 @@
   "scenario": "kubernetes_build"
 },
 
+"ci-kubernetes-build-1.6": {
+  "scenario": "kubernetes_build"
+},
+
 "ci-kubernetes-build-debian-unstable": {
   "scenario": "kubernetes_build",
   "args": [
@@ -76,6 +80,15 @@
   ]
 },
 
+"ci-kubernetes-federation-build-1.6": {
+  "scenario": "kubernetes_build",
+  "args": [
+    "--fast",
+    "--federation=k8s-jkns-e2e-gce-f8n-1-6",
+    "--release=kubernetes-federation-release-1-6"
+  ]
+},
+
 "ci-kubernetes-federation-build-soak": {
   "scenario": "kubernetes_build",
   "args": [
@@ -114,6 +127,13 @@
   "scenario": "kubernetes_kubelet",
   "args": [
     "--branch=release-1.5"
+  ]
+},
+
+"ci-kubernetes-node-kubelet-1.6": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.6"
   ]
 },
 
@@ -199,6 +219,14 @@
   ]
 },
 
+"ci-kubernetes-test-go-release-1.6": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.6",
+    "--force"
+  ]
+},
+
 "ci-kubernetes-verify-master": {
   "scenario": "kubernetes_verify",
   "args": [
@@ -230,6 +258,15 @@
   "scenario": "kubernetes_verify",
   "args": [
     "--branch=release-1.5",
+    "--force",
+    "--script=./hack/jenkins/verify-dockerized.sh"
+  ]
+},
+
+"ci-kubernetes-verify-release-1.6": {
+  "scenario": "kubernetes_verify",
+  "args": [
+    "--branch=release-1.6",
     "--force",
     "--script=./hack/jenkins/verify-dockerized.sh"
   ]
