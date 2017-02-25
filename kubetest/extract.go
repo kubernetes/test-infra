@@ -221,6 +221,10 @@ func getKube(url, version string) error {
 	if err := os.Setenv("KUBERNETES_DOWNLOAD_TESTS", "y"); err != nil {
 		return err
 	}
+	// kube-up in cluster/gke/util.sh depends on this
+	if err := os.Setenv("CLUSTER_API_VERSION", version[1:len(version)]); err != nil {
+		return err
+	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
 	if err := finishRunning(exec.Command(k)); err != nil {
 		return err
