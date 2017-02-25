@@ -81,6 +81,13 @@
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 80
+    - kubernetes-verify-release-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.6
+        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 80
     - kubernetes-verify-release-1.5:
         branch: release-1.5
         frequency: 'H/5 * * * *'
@@ -97,7 +104,7 @@
         timeout: 80
     - kubernetes-verify-release-1.3:
         branch: release-1.3
-        frequency: 'H/5 * * * *'
+        frequency: 'H/5 H/3 * * *'
         job-name: ci-kubernetes-verify-release-1.3
         json: 1
         repo-name: k8s.io/kubernetes
@@ -107,6 +114,13 @@
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go
+        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+    - kubernetes-test-go-release-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.6
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 100
@@ -199,6 +213,13 @@
         branch: release-1.5
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-node-kubelet-1.5
+        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-node-kubelet-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-1.6
         json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
