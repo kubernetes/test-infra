@@ -92,8 +92,12 @@ class LocalMode(object):
 
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
-        gce_ssh = '%s/.ssh/google_compute_engine' % self.workspace
-        gce_pub = '%s/.ssh/google_compute_engine.pub' % self.workspace
+        ssh_dir = '%s/.ssh' % self.workspace
+        if not os.path.isdir(ssh_dir):
+            os.makedirs(ssh_dir)
+
+        gce_ssh = '%s/google_compute_engine' % ssh_dir
+        gce_pub = '%s/google_compute_engine.pub' % ssh_dir
         shutil.copy(priv, gce_ssh)
         shutil.copy(pub, gce_pub)
         self.add_environment(
