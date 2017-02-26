@@ -148,11 +148,11 @@ func (k kubernetesAnywhere) IsUp() error {
 }
 
 func (k kubernetesAnywhere) SetupKubecfg() error {
-	output, err := exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path").Output()
+	o, err := output(exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path"))
 	if err != nil {
 		return fmt.Errorf("Could not get kubeconfig-path: %v", err)
 	}
-	kubecfg := strings.TrimSuffix(string(output), "\n")
+	kubecfg := strings.TrimSuffix(string(o), "\n")
 
 	if err = os.Setenv("KUBECONFIG", kubecfg); err != nil {
 		return err
