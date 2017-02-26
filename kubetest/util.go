@@ -21,6 +21,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -188,3 +189,14 @@ func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
 		}
 	}
 }
+
+// gs://foo and bar becomes gs://foo/bar
+func joinUrl(urlPath, path string) (string, error) {
+	u, err := url.Parse(urlPath)
+	if err != nil {
+		return "", err
+	}
+	u.Path = filepath.Join(u.Path, path)
+	return u.String(), nil
+}
+
