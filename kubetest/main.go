@@ -262,7 +262,7 @@ func acquireKubernetes(o *options) error {
 		}
 	}
 
-	// Potentailly stage build binaries somewhere on GCS
+	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
 		if err := xmlWrap("Stage", o.stage.Stage); err != nil {
 			return err
