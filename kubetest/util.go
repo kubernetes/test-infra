@@ -199,4 +199,3 @@ func joinUrl(urlPath, path string) (string, error) {
 	u.Path = filepath.Join(u.Path, path)
 	return u.String(), nil
 }
-

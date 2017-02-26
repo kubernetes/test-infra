@@ -223,7 +223,7 @@ func getKube(url, version string) error {
 		return err
 	}
 	// kube-up in cluster/gke/util.sh depends on this
-	if err := os.Setenv("CLUSTER_API_VERSION", version[1:len(version)]); err != nil {
+	if err := os.Setenv("CLUSTER_API_VERSION", version[1:]); err != nil {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
