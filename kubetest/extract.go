@@ -43,6 +43,7 @@ const (
 	stable              // release/stable, release/stable-1.5
 	version             // v1.5.0, v1.5.0-beta.2
 	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
+	load                // Load a --save cluster
 )
 
 type extractStrategy struct {
@@ -222,12 +223,12 @@ func getKube(url, version string) error {
 		return err
 	}
 	// kube-up in cluster/gke/util.sh depends on this
-	if err := os.Setenv("CLUSTER_API_VERSION", version[1:len(version)]); err != nil {
+	if err := os.Setenv("CLUSTER_API_VERSION", version[1:]); err != nil {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
 	if err := finishRunning(exec.Command(k)); err != nil {
-		return err
+		return fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
 	}
 	i, err := os.Stat("./kubernetes/cluster/get-kube-binaries.sh")
 	if err != nil || i.IsDir() {
@@ -367,6 +368,74 @@ func (e extractStrategy) Extract() error {
 		return getKube(url, release)
 	case gcs:
 		return getKube(path.Dir(e.option), path.Base(e.option))
+	case load:
+		return loadState(e.option)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
+}
+
+func loadState(save string) error {
+	log.Printf("Restore state from %s", save)
+	cUrl, err := joinUrl(save, "kube-config")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+	uUrl, err := joinUrl(save, "release-url.txt")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+	rUrl, err := joinUrl(save, "release.txt")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+
+	if err := os.MkdirAll(home(".kube"), 0775); err != nil {
+		return err
+	}
+	if err := finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config"))); err != nil {
+		return err
+	}
+	url, err := combinedOutput(exec.Command("gsutil", "cat", uUrl))
+	if err != nil {
+		return err
+	}
+	release, err := combinedOutput(exec.Command("gsutil", "cat", rUrl))
+	if err != nil {
+		return err
+	}
+	return getKube(string(url), string(release))
+}
+
+func saveState(save string) error {
+	url := os.Getenv("KUBERNETES_RELEASE_URL")
+	version := os.Getenv("KUBERNETES_RELEASE")
+	log.Printf("Save U=%s R=%s to %s", url, version, save)
+	cUrl, err := joinUrl(save, "kube-config")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+	uUrl, err := joinUrl(save, "release-url.txt")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+	rUrl, err := joinUrl(save, "release.txt")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+
+	if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), cUrl)); err != nil {
+		return fmt.Errorf("failed to save .kube/config to %s: %v", cUrl, err)
+	}
+	if cmd, err := inputCommand(url, "gsutil", "cp", "-", uUrl); err != nil {
+		return fmt.Errorf("failed to write url %s to %s: %v", url, uUrl, err)
+	} else if err = finishRunning(cmd); err != nil {
+		return fmt.Errorf("failed to upload url %s to %s: %v", url, uUrl, err)
+	}
+
+	if cmd, err := inputCommand(version, "gsutil", "cp", "-", rUrl); err != nil {
+		return fmt.Errorf("failed to write release %s to %s: %v", version, rUrl, err)
+	} else if err = finishRunning(cmd); err != nil {
+		return fmt.Errorf("failed to upload release %s to %s: %v", version, rUrl, err)
+	}
+	return nil
 }

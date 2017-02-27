@@ -33,20 +33,22 @@ import (
 )
 
 var (
+	artifacts             = initPath("./_artifacts")
 	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	kubetestPath          = initKubetestPath()
+	kubetestPath          = initPath(os.Args[0])
 	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose               = false
 	timeout               = time.Duration(0)
 	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
 )
 
-func initKubetestPath() string {
+// Joins os.Getwd() and path
+func initPath(path string) string {
 	d, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("failed getKubetestPath(): %v", err)
+		log.Fatalf("failed initPath(): %v", err)
 	}
-	return filepath.Join(d, os.Args[0])
+	return filepath.Join(d, path)
 }
 
 type options struct {
@@ -183,7 +185,7 @@ func main() {
 		o.checkSkew = false
 	}
 	if err := complete(o, deployment); err != nil {
-		log.Fatalf("Something went wrong: %s", err)
+		log.Fatalf("Something went wrong: %v", err)
 	}
 }
 
@@ -206,19 +208,19 @@ func complete(o *options, deployment string) error {
 		defer writeXML(o.dump, time.Now())
 	}
 	if err := prepare(); err != nil {
-		return err
+		return fmt.Errorf("failed to prepare test environment: %v", err)
 	}
 	if err := acquireKubernetes(o); err != nil {
-		return err
+		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
 
 	if err := validWorkingDirectory(); err != nil {
-		return fmt.Errorf("Called from invalid working directory: %v", err)
+		return fmt.Errorf("called from invalid working directory: %v", err)
 	}
 
 	deploy, err := getDeployer(deployment)
 	if err != nil {
-		return fmt.Errorf("Error creating deployer: %v", err)
+		return fmt.Errorf("error creating deployer: %v", err)
 	}
 
 	if o.down {
@@ -248,8 +250,18 @@ func complete(o *options, deployment string) error {
 		return err
 	}
 
-	if err := postpare(o.publish, o.save, os.Getenv("KUBERNETES_RELEASE_URL"), os.Getenv("KUBERNETES_RELEASE")); err != nil {
-		return err
+	// Save the state if we upped a new cluster without downing it
+	if o.save != "" && !o.down && o.up {
+		if err := saveState(o.save); err != nil {
+			return err
+		}
+	}
+
+	// Publish the successfully tested version when requested
+	if o.publish != "" {
+		if err := publish(o.publish); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -271,7 +283,16 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially download existing binaries and extract them.
 	if o.extract.Enabled() {
-		if err := xmlWrap("Extract", o.extract.Extract); err != nil {
+		err := xmlWrap("Extract", func() error {
+			// Should we restore a previous state?
+			if o.save != "" && !o.up {
+				// Restore version and .kube/config from --up
+				o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+			}
+			// New deployment, extract new version
+			return o.extract.Extract()
+		})
+		if err != nil {
 			return err
 		}
 	}
@@ -442,6 +463,13 @@ func activateServiceAccount() error {
 	return nil
 }
 
+// Make all artifacts world readable.
+// The root user winds up owning the files when the container exists.
+// Ensure that other users can read these files at that time.
+func chmodArtifacts() error {
+	return finishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
+}
+
 func prepare() error {
 	kp := os.Getenv("KUBERNETES_PROVIDER")
 	switch kp {
@@ -459,7 +487,7 @@ func prepare() error {
 		return err
 	}
 
-	if err := os.MkdirAll("./_artifacts", 0777); err != nil { // Create artifacts
+	if err := os.MkdirAll(artifacts, 0777); err != nil { // Create artifacts
 		return err
 	}
 
@@ -471,33 +499,11 @@ func prepare() error {
 	return nil
 }
 
-func postpare(publish, save, url, version string) error {
-	if publish != "" {
-		if v, err := ioutil.ReadFile("version"); err != nil {
-			return err
-		} else {
-			log.Printf("Set %s version to %s", publish, string(v))
-		}
-		if err := finishRunning(exec.Command("gsutil", "cp", "version", publish)); err != nil {
-			return err
-		}
+func publish(pub string) error {
+	if v, err := ioutil.ReadFile("version"); err != nil {
+		return err
+	} else {
+		log.Printf("Set %s version to %s", pub, string(v))
 	}
-	if save != "" {
-		if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), filepath.Join(save, "kube-config"))); err != nil {
-			return err
-		}
-		if cmd, err := inputCommand(url, "gsutil", "cp", "-", filepath.Join(save, "release-url.txt")); err != nil {
-			return err
-		} else if err = finishRunning(cmd); err != nil {
-			return err
-		}
-
-		if cmd, err := inputCommand(version, "gsutil", "cp", "-", filepath.Join(save, "release.txt")); err != nil {
-			return err
-		} else if err = finishRunning(cmd); err != nil {
-			return err
-		}
-	}
-	return nil
-	// chmod -R o+r everything
+	return finishRunning(exec.Command("gsutil", "cp", "version", pub))
 }
