@@ -125,10 +125,6 @@ class LocalMode(object):
     def install_prerequisites(self):
         """Copies upload-to-gcs and kubetest if needed."""
         parent = os.path.dirname(self.runner)
-        if not os.path.isfile(os.path.join(parent, 'upload-to-gcs.sh')):
-            shutil.copy(
-                test_infra('../kubernetes/hack/jenkins/upload-to-gcs.sh'),
-                os.path.join(parent, 'upload-to-gcs.sh'))
         if not os.path.isfile(os.path.join(parent, 'kubetest')):
             check('go', 'install', 'k8s.io/test-infra/kubetest')
             shutil.copy(
