@@ -152,8 +152,11 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 }
 
 // return cmd.CombinedOutput(), potentially timing out in the process.
-func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
+func output(cmd *exec.Cmd) ([]byte, error) {
 	stepName := strings.Join(cmd.Args, " ")
+	if verbose {
+		cmd.Stderr = os.Stderr
+	}
 	log.Printf("Running: %v", stepName)
 	defer func(start time.Time) {
 		log.Printf("Step '%s' finished in %s", stepName, time.Since(start))
@@ -166,7 +169,7 @@ func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
 	}
 	finished := make(chan result)
 	go func() {
-		b, err := cmd.CombinedOutput()
+		b, err := cmd.Output()
 		finished <- result{b, err}
 	}()
 	for {

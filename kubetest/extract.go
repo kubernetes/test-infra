@@ -187,7 +187,7 @@ func getTestBinaries(url, version string) error {
 		return err
 	}
 	f.Close()
-	o, err := combinedOutput(exec.Command("md5sum", f.Name()))
+	o, err := output(exec.Command("md5sum", f.Name()))
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
 	cat := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
-	release, err := combinedOutput(exec.Command("gsutil", "cat", cat))
+	release, err := output(exec.Command("gsutil", "cat", cat))
 	if err != nil {
 		return err
 	}
@@ -259,11 +259,11 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 func setupGciVars(family string) (string, error) {
 	p := "container-vm-image-staging"
-	b, err := combinedOutput(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
+	b, err := output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
 	if err != nil {
 		return "", err
 	}
-	i := string(b)
+	i := strings.TrimSpace(string(b))
 	g := "gci"
 	m := map[string]string{
 		"KUBE_GCE_MASTER_PROJECT":     p,
@@ -302,7 +302,7 @@ func setupGciVars(family string) (string, error) {
 
 func setReleaseFromGci(image string) error {
 	u := fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image)
-	b, err := combinedOutput(exec.Command("gsutil", "cat", u))
+	b, err := output(exec.Command("gsutil", "cat", u))
 	if err != nil {
 		return err
 	}
@@ -348,11 +348,16 @@ func (e extractStrategy) Extract() error {
 		if len(z) == 0 {
 			return fmt.Errorf("ZONE is unset")
 		}
-		ci, err := combinedOutput(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
+		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
 		if err != nil {
 			return err
 		}
-		return setReleaseFromGcs(true, strings.TrimSpace(string(ci)))
+		re := regexp.MustCompile(`(\d+\.\d+)(\..+)?$`) // 1.11.7-beta.0 -> 1.11
+		mat := re.FindStringSubmatch(strings.TrimSpace(string(ci)))
+		if mat == nil {
+			return fmt.Errorf("failed to parse version from %s", ci)
+		}
+		return setReleaseFromGcs(true, "latest-"+mat[1])
 	case ci:
 		return setReleaseFromGcs(true, e.option)
 	case rc, stable:
@@ -395,11 +400,11 @@ func loadState(save string) error {
 	if err := finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config"))); err != nil {
 		return err
 	}
-	url, err := combinedOutput(exec.Command("gsutil", "cat", uUrl))
+	url, err := output(exec.Command("gsutil", "cat", uUrl))
 	if err != nil {
 		return err
 	}
-	release, err := combinedOutput(exec.Command("gsutil", "cat", rUrl))
+	release, err := output(exec.Command("gsutil", "cat", rUrl))
 	if err != nil {
 		return err
 	}

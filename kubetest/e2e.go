@@ -228,7 +228,7 @@ func run(deploy deployer, o options) error {
 }
 
 func listNodes(dump string) error {
-	b, err := combinedOutput(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+	b, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
 	if verbose {
 		log.Printf("kubectl get nodes:\n%s", string(b))
 	}
