@@ -16,18 +16,23 @@ Ping @kubernetes/test-infra-maintainers if you have any questions.
 
 Say you want to add a new job, foo.
 
-1. For e2e ci job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml).
+## For CI jobs
+
+1. CI job configs are located under [job-configs/kubernetes-jenkins](job-configs/kubernetes-jenkins).
    
-   For PR job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml`](jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml)
+   For e2e jobs, add an entry to [bootstrap-ci.yaml](job-configs/kubernetes-jenkins/bootstrap-ci.yaml).
+   
+   For PR jobs, add an entry to [bootstrap-pull.yaml](job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml).
 
-   For build job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml)
+   For jobs that trigger on a merge (such as a build job), add an entry to [bootstrap-ci-commit.yaml](job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml).
 
-   For soak job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml)
+   For jobs that clone a repo, add an entry to [bootstrap-ci-repo.yaml](job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml).
 
-   For maintenance job, add an entry to [`test-infra/jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml`](jenkins/job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml)
+   For soak jobs, add an entry to [bootstrap-ci-soak.yaml](job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml).
 
-   [bootstrap flags](bootstrap.py#L806-L838) will help you determine which flag you might need.
+   For maintenance jobs, add an entry to [bootstrap-maintenance-ci.yaml](job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml).
 
+   Run `./jenkins/bootstrap.py --help` will help you determine which flag you might need.
 
 1. Add an entry to [config.json](../jobs/config.json). Choose an appropriate [scenario](../scenarios) file and args. 
 
@@ -35,7 +40,17 @@ Say you want to add a new job, foo.
 
 1. Add your new job to [`test-infra/testgrid/config/config.yaml`](../testgrid/config/config.yaml), instruction can be found in [here](../testgrid/config/README.md).
 
-1. Make sure all presubmit tests pass. Running [`test-infra/jenkins/bootstrap_test.py`](jenkins/bootstrap_test.py) and `bazel test //...` locally is an quick way to trigger most of the unit tests.
+1. Make sure all presubmit tests pass. Running `bazel test //...` locally is an quick way to trigger most of the unit tests.
+
+## For PR jobs
+
+1. PR job configs are under [job-configs/kubernetes-jenkins-pull](job-configs/kubernetes-jenkins-pull).
+
+   You are mostly want to add your PR job entry to [bootstrap-pull.yaml](job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml).
+
+1. PR jobs are triggered by [prow](../prow), add your entry to [prow config](../prow/config.yaml) as well.
+
+1. Make sure all presubmit tests pass. Running `bazel test //...` locally is an quick way to trigger most of the unit tests.
 
 # Run a Jenkins job locally
 
