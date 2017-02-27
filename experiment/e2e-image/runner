@@ -21,7 +21,7 @@ git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
     --bare \
     --job=${JOB_NAME} \
-    --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
+    --service-account=${GOOGLE_APPLICATION_CREDENTIALS_CI} \
     --upload='gs://kubernetes-jenkins/logs' \
     --json=1 \
     "$@"

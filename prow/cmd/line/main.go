@@ -302,6 +302,10 @@ func (c *testClient) TestKubernetes() error {
 				Value: "/etc/service-account/service-account.json",
 			},
 			kube.EnvVar{
+				Name:  "GOOGLE_APPLICATION_CREDENTIALS_CI",
+				Value: "/etc/ci-service-account/service-account.json",
+			},
+			kube.EnvVar{
 				Name:  "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
 				Value: "/etc/ssh-key-secret/ssh-private",
 			},
@@ -314,6 +318,11 @@ func (c *testClient) TestKubernetes() error {
 			kube.VolumeMount{
 				Name:      "service",
 				MountPath: "/etc/service-account",
+				ReadOnly:  true,
+			},
+			kube.VolumeMount{
+				Name:      "ci-service",
+				MountPath: "/etc/ci-service-account",
 				ReadOnly:  true,
 			},
 			kube.VolumeMount{
@@ -340,6 +349,12 @@ func (c *testClient) TestKubernetes() error {
 			Name: "service",
 			Secret: &kube.SecretSource{
 				Name: "service-account",
+			},
+		},
+		kube.Volume{
+			Name: "ci-service",
+			Secret: &kube.SecretSource{
+				Name: "ci-service-account",
 			},
 		},
 		kube.Volume{
