@@ -112,7 +112,10 @@ class LocalMode(object):
     @property
     def runner(self):
         """Finds the best version of e2e-runner.sh."""
-        options = ['e2e-runner.sh', test_infra('jenkins/e2e-image/e2e-runner.sh')]
+        options = [
+          '%s/e2e-runner.sh' % self.workspace,
+          test_infra('jenkins/e2e-image/e2e-runner.sh')
+        ]
         for path in options:
             if os.path.isfile(path):
                 return path
