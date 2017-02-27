@@ -275,6 +275,6 @@ periodics:
   interval: 5m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.2
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.3
       args:
       - "--timeout=60"
