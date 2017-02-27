@@ -88,7 +88,7 @@ func TestGetApprovers(t *testing.T) {
 	for testNum, test := range tests {
 		foundLeafApprovers := TestRepo.LeafApprovers(*test.testFile.Filename)
 		foundApprovers := TestRepo.Approvers(*test.testFile.Filename)
-		foundOwnersPath := TestRepo.FindOwnersForPath(*test.testFile.Filename)
+		foundOwnersPath := TestRepo.FindApproverOwnersForPath(*test.testFile.Filename)
 		if !foundLeafApprovers.Equal(test.expectedLeafOwners) {
 			t.Errorf("The Leaf Approvers Found Do Not Match Expected For Test %d: %s", testNum, test.testName)
 			t.Errorf("\tExpected Owners: %v\tFound Owners: %v ", test.expectedLeafOwners, foundLeafApprovers)

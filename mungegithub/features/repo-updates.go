@@ -268,13 +268,14 @@ func (o *RepoInfo) gitCommandDir(args []string, cmdDir string) ([]byte, error) {
 	return cmd.CombinedOutput()
 }
 
-// FindOwnersForPath returns the OWNERS file path further down the tree for a file
-func (o *RepoInfo) FindOwnersForPath(path string) string {
+// findOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
+// By default we use the reviewers section of owners flag but this can be configured by setting approvers to true
+func findOwnersForPath(path string, ownerMap map[string]sets.String) string {
 	d := path
 
 	for {
-		_, ok := o.approvers[d]
-		if ok {
+		n, ok := ownerMap[d]
+		if ok && len(n) != 0 {
 			return d
 		}
 		if d == baseDirConvention {
@@ -284,6 +285,18 @@ func (o *RepoInfo) FindOwnersForPath(path string) string {
 		d = canonicalize(d)
 	}
 	return ""
+}
+
+// FindApproversForPath returns the OWNERS file path furthest down the tree for a specified file
+// that contains an approvers section
+func (o *RepoInfo) FindApproverOwnersForPath(path string) string {
+	return findOwnersForPath(path, o.approvers)
+}
+
+// FindReviewersForPath returns the OWNERS file path furthest down the tree for a specified file
+// that contains a reviewers section
+func (o *RepoInfo) FindReviewersForPath(path string) string {
+	return findOwnersForPath(path, o.reviewers)
 }
 
 // peopleForPath returns a set of users who are assignees to the
