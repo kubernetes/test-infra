@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-JANITOR=${AWS_JANITOR_IMAGE:-b.gcr.io/k8s-test-infra-aws/aws-janitor}
+JANITOR=${AWS_JANITOR_IMAGE:-gcr.io/k8s-test-infra-aws/aws-janitor}
 
 docker pull "${JANITOR}"
 docker run -v "${JENKINS_AWS_CREDENTIALS_FILE}:/root/.aws/credentials:ro" "${JANITOR}" \
