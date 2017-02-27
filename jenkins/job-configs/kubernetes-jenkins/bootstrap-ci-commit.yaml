@@ -114,7 +114,7 @@
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build-1.6
         repo-name: k8s.io/kubernetes
-        timeout: 50
+        timeout: 100
 
     - kubernetes-federation-build:
         branch: master
