@@ -11,3 +11,4 @@ Command | Plugin | Who can run it | Description
 `/release-note-none` | [releasenote](./plugins/releasenote) | authors and assignees | adds the `release-note-none` label
 `@k8s-bot test this` | [trigger](./plugins/trigger) | kubernetes org members | runs tests defined in [config.yaml](./config.yaml)
 `@k8s-bot ok to test` | [trigger](./plugins/trigger) | kubernetes org members | allows the PR author to `@k8s-bot test this`
+`@k8s-bot tell me a joke` | [yuks](./plugins/yuks) | anyone | tells a bad joke, sometimes
