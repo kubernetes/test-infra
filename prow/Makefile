@@ -16,7 +16,7 @@ all: build fmt vet test
 
 
 HOOK_VERSION       = 0.85
-LINE_VERSION       = 0.80
+LINE_VERSION       = 0.81
 SINKER_VERSION     = 0.5
 DECK_VERSION       = 0.17
 SPLICE_VERSION     = 0.15
@@ -44,6 +44,9 @@ JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
 # Service account key for bootstrap jobs.
 SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
 
+# CI-service account key for prow-e2e jobs.
+CI_SERVICE_ACCOUNT_FILE = ${HOME}/ci-service-account.json
+
 # GCE ssh key for gce-e2e jobs
 SSH_KEY_PRIVATE = ${HOME}/ssh-private
 SSH_KEY_PUBLIC = ${HOME}/ssh-public
@@ -56,6 +59,7 @@ create-cluster:
 	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
 	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
 	kubectl create secret generic service-account --from-file=service-account.json=$(SERVICE_ACCOUNT_FILE)
+	kubectl create secret generic ci-service-account --from-file=service-account.json=$(CI_SERVICE_ACCOUNT_FILE)
 	kubectl create secret generic ssh-key-secret --from-file=ssh-private=$(SSH_KEY_PRIVATE) --from-file=ssh-public=$(SSH_KEY_PUBLIC)
 	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
 	kubectl create configmap config --from-file=config=config.yaml
