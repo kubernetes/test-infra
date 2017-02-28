@@ -141,7 +141,7 @@ class LocalMode(object):
         project = env.get('PROJECT')
         if project:
             try:
-                check(['gcloud', 'config', 'set', 'project', env['PROJECT']])
+                check('gcloud', 'config', 'set', 'project', env['PROJECT'])
             except subprocess.CalledProcessError:
                 print >>sys.stderr, 'Fail to set project %r', project
         else:
