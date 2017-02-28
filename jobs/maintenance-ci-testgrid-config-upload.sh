@@ -27,7 +27,7 @@ export TEST_INFRA=$GOPATH/src/k8s.io/test-infra
 
 # Export config
 export CONFIGDIR=$TEST_INFRA/testgrid/config
-go run $CONFIGDIR/main.go $CONFIGDIR/config.yaml $CONFIGDIR/config
+go run $CONFIGDIR/main.go --yaml=$CONFIGDIR/config.yaml --output=$CONFIGDIR/config
 gsutil cp $CONFIGDIR/config gs://k8s-testgrid/config
 rm $CONFIGDIR/config
 
