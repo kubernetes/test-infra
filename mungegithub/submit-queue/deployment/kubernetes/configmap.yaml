@@ -49,7 +49,6 @@ data:
     ci-kubernetes-e2e-gci-gce-federation,\
     ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-e2e-gci-gce-kubenet,\
-    ci-kubernetes-e2e-gci-gce-petset,\
     ci-kubernetes-e2e-gci-gce-proto,\
     ci-kubernetes-e2e-gci-gce-reboot,\
     ci-kubernetes-e2e-gci-gce-scalability,\
