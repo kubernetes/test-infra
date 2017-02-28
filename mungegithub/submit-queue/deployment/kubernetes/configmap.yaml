@@ -34,7 +34,6 @@ data:
     ci-kubernetes-bazel-build,\
     ci-kubernetes-bazel-test,\
     ci-kubernetes-cross-build,\
-    ci-kubernetes-e2e-aws,\
     ci-kubernetes-e2e-garbage-gci,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\

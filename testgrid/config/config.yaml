@@ -74,8 +74,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.5
 - name: kubernetes-build-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.6
-- name: kubernetes-e2e-aws
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws
 - name: kubernetes-e2e-aws-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-release-1.5
 - name: ci-kubernetes-e2e-non-cri-gce
@@ -917,8 +915,6 @@ dashboards:
     test_group_name: kubernetes-e2e-kops-aws
   - name: kops-aws-updown
     test_group_name: kubernetes-e2e-kops-aws-updown
-  - name: aws
-    test_group_name: kubernetes-e2e-aws
   - name: aws-1.5
     test_group_name: kubernetes-e2e-aws-release-1.5
 
