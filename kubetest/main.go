@@ -304,7 +304,7 @@ func findVersion() string {
 	// The version may be in a version file
 	if _, err := os.Stat("version"); err == nil {
 		if b, err := ioutil.ReadFile("version"); err == nil {
-			return string(b)
+			return strings.TrimSpace(string(b))
 		} else {
 			log.Printf("Failed to read version: %v", err)
 		}
@@ -315,7 +315,7 @@ func findVersion() string {
 		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
 		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
 		if b, err := output(exec.Command("bash", "-c", gross)); err == nil {
-			return string(b)
+			return strings.TrimSpace(string(b))
 		} else {
 			log.Printf("Failed to get_version_vars: %v", err)
 		}
