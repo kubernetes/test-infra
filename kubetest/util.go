@@ -151,7 +151,7 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 	return c, nil
 }
 
-// return cmd.CombinedOutput(), potentially timing out in the process.
+// return cmd.Output(), potentially timing out in the process.
 func output(cmd *exec.Cmd) ([]byte, error) {
 	stepName := strings.Join(cmd.Args, " ")
 	if verbose {
