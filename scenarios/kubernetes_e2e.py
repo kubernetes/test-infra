@@ -137,6 +137,15 @@ class LocalMode(object):
         env.update(self.env_files)
         env.update(self.env)
         self.install_prerequisites()
+        # Do not interfere with the local project
+        project = env.get('PROJECT')
+        if project:
+            try:
+                check(['gcloud', 'config', 'set', 'project', env['PROJECT']])
+            except subprocess.CalledProcessError:
+                print >>sys.stderr, 'Fail to set project %r', project
+        else:
+            print >>sys.stderr, 'PROJECT not set in job, will use local project'
         check_env(env, self.runner)
 
 
