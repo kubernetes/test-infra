@@ -21,6 +21,8 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 export FEDERATION="true"
+export USE_KUBEFED="true"
+
 export PROJECT="${PROJECT:-k8s-jkns-pr-bldr-e2e-gce-fdrtn}"
 export KUBE_REGISTRY="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
 export KUBERNETES_PROVIDER="gce"
