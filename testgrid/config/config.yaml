@@ -833,6 +833,23 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 - name: kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
+# release-1.6 e2e
+- name: ci-kubernetes-e2e-gce-reboot-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1.6
+- name: ci-kubernetes-e2e-gce-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1.6
+- name: ci-kubernetes-e2e-gce-serial-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial-release-1.6
+- name: ci-kubernetes-e2e-gce-slow-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1.6
+- name: ci-kubernetes-e2e-gci-gce-reboot-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1.6
+- name: ci-kubernetes-e2e-gci-gce-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1.6
+- name: ci-kubernetes-e2e-gci-gce-serial-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1.6
+- name: ci-kubernetes-e2e-gci-gce-slow-release-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1.6
 # Manual, federated groups
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
@@ -1682,6 +1699,22 @@ dashboards:
     test_group_name: kubernetes-verify-release-1.6
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: gce-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.6
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-release-1.6
+  - name: gce-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gce-serial-release-1.6
+  - name: gce-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gce-slow-release-1.6
+  - name: gci-gce-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.6
+  - name: gci-gce-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1.6
+  - name: gci-gce-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1.6
+  - name: gci-gce-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1.6
 
 - name: release-1.6-blocking
   dashboard_tab:
@@ -1693,6 +1726,10 @@ dashboards:
     test_group_name: kubernetes-verify-release-1.6
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-release-1.6
+  - name: gci-gce-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1.6
 
 - name: release-1.5-all
   dashboard_tab:
