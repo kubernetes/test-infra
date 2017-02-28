@@ -267,11 +267,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 		return err
 	}
 
-	cmd := exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap)
-	if verbose {
-		cmd.Stderr = os.Stderr
-	}
-	stdout, cerr := cmd.Output()
+	stdout, cerr := output(exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap))
 	if err := ioutil.WriteFile(dp, stdout, mode); err != nil {
 		return err
 	}
@@ -303,22 +299,18 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 
 func ListResources() ([]byte, error) {
 	log.Printf("Listing resources...")
-	cmd := exec.Command("./cluster/gce/list-resources.sh")
-	if verbose {
-		cmd.Stderr = os.Stderr
-	}
-	stdout, err := cmd.Output()
+	stdout, err := output(exec.Command("./cluster/gce/list-resources.sh"))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
+		return stdout, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
 	}
-	return stdout, nil
+	return stdout, err
 }
 
 func clusterSize(deploy deployer) (int, error) {
 	if err := deploy.SetupKubecfg(); err != nil {
 		return -1, err
 	}
-	o, err := exec.Command("kubectl", "get", "nodes", "--no-headers").Output()
+	o, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))
 	if err != nil {
 		log.Printf("kubectl get nodes failed: %s\n%s", WrapError(err).Error(), string(o))
 		return -1, err
