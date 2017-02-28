@@ -409,7 +409,7 @@ func KubemarkTest() error {
 	//
 	// TODO: We should try calling stop-kubemark exactly once. Though to
 	// stop the leaking resources for now, we want to be on the safe side
-	// and call it explictly in defer if the other one is not called.
+	// and call it explicitly in defer if the other one is not called.
 	defer xmlWrap("Deferred Stop kubemark", func() error {
 		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
@@ -467,7 +467,7 @@ func chdirSkew() (string, error) {
 }
 
 func UpgradeTest(args string, checkSkew bool) error {
-	// TOOD(fejta): fix this
+	// TODO(fejta): fix this
 	old, err := chdirSkew()
 	if err != nil {
 		return err
