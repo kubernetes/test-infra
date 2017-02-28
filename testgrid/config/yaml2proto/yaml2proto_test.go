@@ -17,7 +17,6 @@ limitations under the License.
 package yaml2proto
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -57,36 +56,39 @@ dashboards:
 
 func TestUpdateDefaults_Validity(t *testing.T) {
 	tests := []struct {
-		yaml          string
-		expectedError error
+		yaml            string
+		expectedMissing string
 	}{
 		{
-			yaml:          ``,
-			expectedError: errors.New("missing DefaultTestGroup"),
+			yaml:            ``,
+			expectedMissing: "DefaultTestGroup",
 		},
 		{
 			yaml: `default_test_group:
   name: default`,
-			expectedError: errors.New("missing DefaultDashboardTab"),
+			expectedMissing: "DefaultDashboardTab",
 		},
 		{
 			yaml: `default_test_group:
   name: default
 default_dashboard_tab:
   name: default`,
-			expectedError: nil,
+			expectedMissing: "",
 		},
 	}
 
 	for index, test := range tests {
 		c := Config{}
 		err := c.Update([]byte(test.yaml))
-		if (err == nil && test.expectedError == nil) ||
-			(err != nil && test.expectedError != nil && err.Error() == test.expectedError.Error()) {
+		if err == nil && test.expectedMissing == "" {
 			continue
-		} else {
-			t.Errorf("Test %v fails. ExpectedError: %v, actual error: %v", index, test.expectedError, err)
 		}
+		if err != nil {
+			if e, ok := err.(MissingFieldError); ok && e.Field == test.expectedMissing {
+				continue
+			}
+		}
+		t.Errorf("Test %v fails. expected MissingFieldError(%s), actual error: %v", index, test.expectedMissing, err)
 	}
 }
 func TestUpdate_Validate(t *testing.T) {
@@ -96,29 +98,29 @@ default_dashboard_tab:
   name: default`
 
 	tests := []struct {
-		yaml          string
-		expectedError error
+		yaml            string
+		expectedMissing string
 	}{
 		{
-			yaml:          ``,
-			expectedError: errors.New("Invalid YAML : No Valid Testgroups"),
+			yaml:            ``,
+			expectedMissing: "TestGroups",
 		},
 		{
 			yaml: `dashboards:
 - name: dashboard_1`,
-			expectedError: errors.New("Invalid YAML : No Valid Testgroups"),
+			expectedMissing: "TestGroups",
 		},
 		{
 			yaml: `test_groups:
 - name: testgroup_1`,
-			expectedError: errors.New("Invalid YAML : No Valid Dashboards"),
+			expectedMissing: "Dashboards",
 		},
 		{
 			yaml: `dashboards:
 - name: dashboard_1
 test_groups:
 - name: testgroup_1`,
-			expectedError: nil,
+			expectedMissing: "",
 		},
 	}
 
@@ -131,11 +133,14 @@ test_groups:
 			t.Errorf("Unexpected error in Update(test[%d].yaml): %v", index, err)
 		}
 		err := c.validate()
-		if (err == nil && test.expectedError == nil) ||
-			(err != nil && test.expectedError != nil && err.Error() == test.expectedError.Error()) {
+		if err == nil && test.expectedMissing == "" {
 			continue
-		} else {
-			t.Errorf("Test %v fails. ExpectedError: %v, actual error: %v", index, test.expectedError, err)
 		}
+		if err != nil {
+			if e, ok := err.(MissingFieldError); ok && e.Field == test.expectedMissing {
+				continue
+			}
+		}
+		t.Errorf("Test %v fails. expected MissingFieldError(%s), actual error: %v", index, test.expectedMissing, err)
 	}
 }

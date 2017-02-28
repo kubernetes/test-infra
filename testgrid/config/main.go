@@ -55,7 +55,7 @@ func main() {
 	for _, file := range yamlFiles {
 		b, err := ioutil.ReadFile(file)
 		if err != nil {
-			errExit("IO Error : Cannot Read File %v\n", file)
+			errExit("IO Error : Cannot Read File %s : %v\n", file, err)
 		}
 		if err = c.Update(b); err != nil {
 			errExit("Error parsing file %s : %v\n", file, err)
@@ -71,8 +71,7 @@ func main() {
 		if err != nil {
 			errExit("err encoding proto: %v", err)
 		}
-		err = ioutil.WriteFile(*outputPath, b, 0644)
-		if err != nil {
+		if err = ioutil.WriteFile(*outputPath, b, 0644); err != nil {
 			errExit("IO Error : Cannot Write File %v\n", outputPath)
 		}
 	}

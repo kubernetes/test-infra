@@ -18,6 +18,7 @@ package yaml2proto
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/golang/protobuf/proto"
@@ -28,6 +29,14 @@ import (
 type Config struct {
 	config        *config.Configuration
 	defaultConfig *config.DefaultConfiguration
+}
+
+type MissingFieldError struct {
+	Field string
+}
+
+func (e MissingFieldError) Error() string {
+	return fmt.Sprintf("field missing or unset: %s", e.Field)
 }
 
 // Set up unfilled field in a TestGroup using the default TestGroup
@@ -112,10 +121,10 @@ func (c *Config) updateDefaults(yamlData []byte) error {
 	}
 
 	if c.defaultConfig.DefaultTestGroup == nil {
-		return errors.New("missing DefaultTestGroup")
+		return MissingFieldError{"DefaultTestGroup"}
 	}
 	if c.defaultConfig.DefaultDashboardTab == nil {
-		return errors.New("missing DefaultDashboardTab")
+		return MissingFieldError{"DefaultDashboardTab"}
 	}
 
 	return nil
@@ -130,8 +139,7 @@ func (c *Config) Update(yamlData []byte) error {
 	}
 
 	curConfig := &config.Configuration{}
-	err := yaml.Unmarshal(yamlData, curConfig)
-	if err != nil {
+	if err := yaml.Unmarshal(yamlData, curConfig); err != nil {
 		return err
 	}
 
@@ -161,10 +169,10 @@ func (c *Config) validate() error {
 		return errors.New("Configuration unset")
 	}
 	if len(c.config.TestGroups) == 0 {
-		return errors.New("Invalid YAML : No Valid Testgroups")
+		return MissingFieldError{"TestGroups"}
 	}
 	if len(c.config.Dashboards) == 0 {
-		return errors.New("Invalid YAML : No Valid Dashboards")
+		return MissingFieldError{"Dashboards"}
 	}
 
 	return nil
