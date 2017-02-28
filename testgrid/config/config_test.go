@@ -21,8 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/testgrid/config/pb"
+	"gopkg.in/yaml.v2"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
@@ -36,15 +35,14 @@ func TestConfig(t *testing.T) {
 		t.Errorf("IO Error : Cannot Open File config.yaml")
 	}
 
-	protobufData, err := yaml2proto.Yaml2Proto(yamlData)
-
-	if err != nil {
+	c := yaml2proto.Config{}
+	if err := c.Update(yamlData); err != nil {
 		t.Errorf("Yaml2Proto - Conversion Error %v", err)
 	}
 
-	config := &config.Configuration{}
-	if err := proto.Unmarshal(protobufData, config); err != nil {
-		t.Errorf("Failed to parse config: %v", err)
+	config, err := c.Raw()
+	if err != nil {
+		t.Errorf("Error validating config: %v", err)
 	}
 
 	// Validate config.yaml -
@@ -162,7 +160,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	sqData := &SQConfig{}
-	err = yaml2proto.Unmarshal([]byte(configData), &sqData)
+	err = yaml.Unmarshal([]byte(configData), &sqData)
 	if err != nil {
 		t.Errorf("Unmarshal Error for SQ Data : %v", err)
 	}
