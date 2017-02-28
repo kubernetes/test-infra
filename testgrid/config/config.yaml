@@ -880,6 +880,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
 - name: kubernetes-e2e-gce-gci-1.5-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1.5-upgrade-etcd
+- name: kubernetes-e2e-gce-gci-latest-rollback-etcd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
+- name: kubernetes-e2e-gce-gci-1.5-rollback-etcd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1.5-rollback-etcd
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -1630,6 +1634,10 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-latest-upgrade-etcd
   - name: gce-1.5
     test_group_name: kubernetes-e2e-gce-gci-1.5-upgrade-etcd
+  - name: gce-rollback-latest
+    test_group_name: kubernetes-e2e-gce-gci-latest-rollback-etcd
+  - name: gce-rollback-1.5
+    test_group_name: kubernetes-e2e-gce-gci-1.5-rollback-etcd
 
 - name: google-federation
   dashboard_tab:
