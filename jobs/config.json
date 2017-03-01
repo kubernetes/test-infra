@@ -359,7 +359,10 @@
 "ci-kubernetes-e2e-kops-aws-updown": {
   "scenario": "kubernetes_kops_aws",
   "args": [
-    "--cluster=e2e-kops-aws-updown.test-aws.k8s.io",
+    "--aws-role-arn=arn:aws:iam::660757973107:role/job-kops-aws-updown",
+    "--cluster=e2e.kops-aws-updown.test-aws.k8s.io",
+    "--state=s3://kops-aws-updown-store",
+    "--zones=us-west-1b",
     "--env-file=platforms/kops_aws.env",
     "--env-file=jobs/ci-kubernetes-e2e-kops-aws-updown.env"
   ]
