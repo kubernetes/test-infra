@@ -3306,7 +3306,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd.env",
+    "--test=false"
   ]
 },
 
@@ -3314,7 +3315,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-1.5-upgrade-etcd.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-1.5-upgrade-etcd.env",
+    "--test=false"
   ]
 },
 
@@ -3322,7 +3324,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd.env",
+    "--test=false"
   ]
 },
 
@@ -3330,7 +3333,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-1.5-rollback-etcd.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-1.5-rollback-etcd.env",
+    "--test=false"
   ]
 },
 
