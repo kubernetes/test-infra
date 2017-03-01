@@ -345,7 +345,8 @@ func (c *testClient) TestKubernetes() error {
 		kube.Volume{
 			Name: "ssh",
 			Secret: &kube.SecretSource{
-				Name: "ssh-key-secret",
+				Name:        "ssh-key-secret",
+				DefaultMode: 0400,
 			},
 		},
 		kube.Volume{

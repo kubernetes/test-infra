@@ -120,7 +120,8 @@ type HostPathSource struct {
 }
 
 type SecretSource struct {
-	Name string `json:"secretName,omitempty"`
+	Name        string `json:"secretName,omitempty"`
+	DefaultMode int32  `json:"defaultMode,omitempty"`
 }
 
 type DownwardAPISource struct {
