@@ -72,7 +72,7 @@ type options struct {
 	upgradeArgs string
 }
 
-func defineFlags() (*options, string) {
+func defineFlags() (*options, *string) {
 	o := options{}
 	var deployment string
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
@@ -96,7 +96,7 @@ func defineFlags() (*options, string) {
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
-	return &o, deployment
+	return &o, &deployment
 }
 
 type testCase struct {
@@ -184,7 +184,7 @@ func main() {
 		log.Print("--check_version_skew is deprecated. Please change to --check-version-skew")
 		o.checkSkew = false
 	}
-	if err := complete(o, deployment); err != nil {
+	if err := complete(o, *deployment); err != nil {
 		log.Fatalf("Something went wrong: %v", err)
 	}
 }
