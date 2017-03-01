@@ -2070,10 +2070,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gce
   - name: gci-gce-slow
     test_group_name: kubernetes-e2e-gci-gce-slow
-  - name: gci-gke
-    test_group_name: kubernetes-e2e-gci-gke
-  - name: gci-gke-slow
-    test_group_name: kubernetes-e2e-gci-gke-slow
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
   - name: kubemark-500-gce

@@ -72,6 +72,8 @@ data:
     ci-kubernetes-e2e-cri-gce-slow,\
     ci-kubernetes-e2e-cri-gke,\
     ci-kubernetes-e2e-cri-gke-slow,\
+    ci-kubernetes-e2e-gci-gke,\
+    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-gke-large-cluster,\
     ci-kubernetes-e2e-gke-serial,\
     ci-kubernetes-e2e-gke-staging,\
@@ -95,8 +97,6 @@ data:
     ci-kubernetes-e2e-gci-gce,\
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gce-ingress,\
-    ci-kubernetes-e2e-gci-gke,\
-    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
