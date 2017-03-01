@@ -1491,6 +1491,80 @@
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
 
+    # gke-1.6
+    - kubernetes-e2e-gke-release-1.6:
+        job-name: ci-kubernetes-e2e-gke-release-1.6
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gke-serial-release-1.6:
+        job-name: ci-kubernetes-e2e-gke-serial-release-1.6
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gke-alpha-features-release-1.6:
+        job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.6
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gke-slow-release-1.6:
+        job-name: ci-kubernetes-e2e-gke-slow-release-1.6
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gke-reboot-release-1.6:
+        job-name: ci-kubernetes-e2e-gke-reboot-release-1.6
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+
+    # gci-gke-1.6
+    - kubernetes-e2e-gci-gke-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gke-release-1.6
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gke-serial-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gke-slow-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.6
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gke-reboot-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.6
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gke-ingress-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.6
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+
     # gke-version-pinned
     # trigger-job: 'ci-kubernetes-build-1.4'
     # TODO(spxtr) float with current release.
