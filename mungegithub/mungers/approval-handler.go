@@ -146,7 +146,7 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 func getApproveComments(comments []*githubapi.IssueComment) c.FilteredComments {
 	approverMatcher := c.CommandName(approveCommand)
 	lgtmMatcher := c.CommandName(lgtmLabel)
-	return c.FilterComments(comments, c.Or{approverMatcher, lgtmMatcher})
+	return c.FilterComments(comments, c.And{c.HumanActor(), c.Or{approverMatcher, lgtmMatcher}})
 }
 
 func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *githubapi.IssueComment, approversHandler approvers.Approvers) *string {

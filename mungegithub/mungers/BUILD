@@ -11,7 +11,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "approval-handler_test.go",
         "assign-fixes_test.go",
         "assign-unassign-handler_test.go",
         "check-labels_test.go",
