@@ -3408,5 +3408,85 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1.6.env"
   ]
+},
+
+"ci-kubernetes-e2e-gke-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-serial-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-serial-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-alpha-features-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-alpha-features-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-slow-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-slow-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-reboot-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-reboot-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-serial-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-serial-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-slow-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-reboot-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-reboot-release-1.6.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gke-ingress-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-ingress-release-1.6.env"
+  ]
 }
 }
