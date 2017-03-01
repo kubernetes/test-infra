@@ -399,13 +399,6 @@ func (c *testClient) TestKubernetes() error {
 // TestPRJenkins starts a Jenkins build and watches it, updating the GitHub
 // status as necessary.
 func (c *testClient) TestPRJenkins() error {
-	if size, err := c.JenkinsClient.QueueSize(); err != nil {
-		c.tryCreateStatus("", github.StatusError, "Error checking Jenkins queue.", testInfra)
-		return err
-	} else if size > 200 {
-		c.tryCreateStatus("", github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
-		return nil
-	}
 	logrus.WithFields(fields(c)).Info("Starting build.")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Presubmit.Name,
