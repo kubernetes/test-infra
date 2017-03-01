@@ -614,6 +614,12 @@
         timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gce-etcd2-release-1.6:
+        job-name: ci-kubernetes-e2e-gce-etcd2-release-1.6
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gce-reboot-release-1.6:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.6
         jenkins-timeout: 300
@@ -640,6 +646,19 @@
         trigger-job: 'ci-kubernetes-build-1.6'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.5'
+    - kubernetes-e2e-gce-alpha-features-release-1.6:
+        job-name: ci-kubernetes-e2e-gce-alpha-features-release-1.6
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gce-federation-release-1.6:
+        job-name: ci-kubernetes-e2e-gce-federation-release-1.6
+        jenkins-timeout: 1020
+        timeout: 920
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+
     # gci-gce-1.6
     - kubernetes-e2e-gci-gce-release-1.6:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.6
@@ -673,6 +692,18 @@
         trigger-job: 'ci-kubernetes-build-1.6'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.5'
+    - kubernetes-e2e-gci-gce-ingress-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gce-ingress-release-1.6
+        jenkins-timeout: 210
+        timeout: 110
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gce-alpha-features-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.6
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
 
     # gce-features
     - kubernetes-e2e-gce-ingress:
