@@ -105,6 +105,18 @@
         frequency: 'H/30 * * * *'
         scan: ALL
         timeout: 620
+    - kubernetes-soak-gce-1.6-deploy:
+        blocker: ci-kubernetes-soak-gce-1.6-test
+        job-name: ci-kubernetes-soak-gce-1.6-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+        timeout: 110
+    - kubernetes-soak-gce-1.6-test:
+        blocker: ci-kubernetes-soak-gce-1.6-deploy
+        job-name: ci-kubernetes-soak-gce-1.6-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+        timeout: 620
     - kubernetes-soak-gce-1.5-deploy:
         blocker: ci-kubernetes-soak-gce-1.5-test
         job-name: ci-kubernetes-soak-gce-1.5-deploy
@@ -138,6 +150,18 @@
     - kubernetes-soak-gce-1.3-test:
         blocker: ci-kubernetes-soak-gce-1.3-deploy
         job-name: ci-kubernetes-soak-gce-1.3-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+        timeout: 620
+    - kubernetes-soak-gci-gce-1.6-deploy:
+        blocker: ci-kubernetes-soak-gci-gce-1.6-test
+        job-name: ci-kubernetes-soak-gci-gce-1.6-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+        timeout: 110
+    - kubernetes-soak-gci-gce-1.6-test:
+        blocker: ci-kubernetes-soak-gci-gce-1.6-deploy
+        job-name: ci-kubernetes-soak-gci-gce-1.6-test
         frequency: 'H/30 * * * *'
         scan: ALL
         timeout: 620
