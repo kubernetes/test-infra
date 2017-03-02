@@ -313,14 +313,14 @@ func (p *individualFlakeSource) AddTo(previous string) string {
 
 // Labels implements IssueSource
 func (p *individualFlakeSource) Labels() []string {
-	return []string{"kind/flake", sync.PriorityP2.String()}
+	return []string{"kind/flake", sync.PriorityImportantLongterm.String()}
 }
 
 // Priority implements IssueSource
 func (p *individualFlakeSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
 	comments, ok := obj.ListComments()
 	if !ok {
-		return sync.PriorityP2, false
+		return sync.PriorityImportantLongterm, false
 	}
 	// Different IssueSource's Priority calculation may differ
 	return autoPrioritize(comments, obj.Issue.CreatedAt), true
@@ -391,14 +391,14 @@ func (p *brokenJobSource) AddTo(previous string) string {
 
 // Labels implements IssueSource
 func (p *brokenJobSource) Labels() []string {
-	return []string{"kind/flake", "team/test-infra", sync.PriorityP2.String()}
+	return []string{"kind/flake", "team/test-infra", sync.PriorityImportantLongterm.String()}
 }
 
 // Priority implements IssueSource
 func (p *brokenJobSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
 	comments, ok := obj.ListComments()
 	if !ok {
-		return sync.PriorityP2, false
+		return sync.PriorityImportantLongterm, false
 	}
 	// Different IssueSource's Priority calculation may differ
 	return autoPrioritize(comments, obj.Issue.CreatedAt), true
@@ -437,13 +437,13 @@ func autoPrioritize(comments []*libgithub.IssueComment, issueCreatedAt *time.Tim
 	// P1: 10 - 50 times in a week
 	// P2: 3 or more times in a week
 	// p3: happens once or twice in a week (default value)
-	p := sync.PriorityP3
+	p := sync.PriorityBacklog
 	if weekCount >= 50 {
-		p = sync.PriorityP0
+		p = sync.PriorityCriticalUrgent
 	} else if weekCount >= 10 {
-		p = sync.PriorityP1
+		p = sync.PriorityImportantSoon
 	} else if weekCount >= 3 {
-		p = sync.PriorityP2
+		p = sync.PriorityImportantLongterm
 	}
 	return p
 }

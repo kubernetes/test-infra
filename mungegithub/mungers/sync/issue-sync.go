@@ -31,15 +31,17 @@ const (
 	BotName = "k8s-merge-robot"
 	// JenkinsBotName is the name of kubekins bot
 	JenkinsBotName = "k8s-bot"
-	priorityPrefix = "priority/P"
-	// PriorityP0 represents Priority P0
-	PriorityP0 = Priority(0)
-	// PriorityP1 represents Priority P1
-	PriorityP1 = Priority(1)
-	// PriorityP2 represents Priority P2
-	PriorityP2 = Priority(2)
-	// PriorityP3 represents Priority P3
-	PriorityP3 = Priority(3)
+
+	priorityPrefix = "priority/"
+
+	// PriorityCriticalUrgent represents Prority/critcal-urgent
+	PriorityCriticalUrgent = Priority(0)
+	// PriorityImportantSoon represents Priority/important-soon
+	PriorityImportantSoon = Priority(1)
+	// PriorityImportantLongterm represents Priority/important-longterm
+	PriorityImportantLongterm = Priority(2)
+	// PriorityBacklog represents Priority/backlog
+	PriorityBacklog = Priority(3)
 )
 
 // RobotUser is a set of name of robot user
@@ -50,7 +52,16 @@ type Priority int
 
 // String return the priority label in string
 func (p Priority) String() string {
-	return fmt.Sprintf(priorityPrefix+"%d", p)
+	switch p {
+    case PriorityCriticalUrgent:
+        return priorityPrefix + "critical-urgent"
+    case PriorityImportantSoon:
+        return priorityPrefix + "important-soon"
+    case PriorityImportantLongterm:
+        return priorityPrefix + "important-longterm"
+    default:
+    	return priorityPrefix + "backlog"
+    }
 }
 
 // Priority returns the priority in int
