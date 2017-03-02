@@ -175,8 +175,7 @@ def pull_ref(pull):
                 refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
             checkouts.append(sha)
         return refs, checkouts
-    else:
-        return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+    return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
 
 
 def branch_ref(branch):
@@ -253,7 +252,7 @@ def checkout(call, repo, branch, pull, ssh=False, git_cache='', clean=False):
         call(['git', 'merge', '--no-ff', '-m', 'Merge %s' % ref, head])
 
 
-def start(gsutil, paths, stamp, node_name, version, pull):
+def start(gsutil, paths, stamp, node_name, version, repos):
     """Construct and upload started.json."""
     data = {
         'timestamp': int(stamp),
@@ -263,8 +262,12 @@ def start(gsutil, paths, stamp, node_name, version, pull):
     if version:
         data['repo-version'] = version
         data['version'] = version  # TODO(fejta): retire
-    if ref_has_shas(pull):
-        data['pull'] = pull
+    if repos:
+        pull = repos[repos.main]
+        if ref_has_shas(pull[1]):
+            data['pull'] = pull[1]
+        data['repos'] = {r: b or p for (r, (b, p)) in repos.items()}
+
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
     if paths.pr_build_link:
@@ -370,9 +373,8 @@ def append_result(gsutil, path, build, version, passed):
         errors += 1
 
 
-def metadata(repo, artifacts, call):
+def metadata(repos, artifacts, call):
     """Return metadata associated for the build, including inside artifacts."""
-    # TODO(rmmh): update tooling to expect metadata in finished.json
     path = os.path.join(artifacts or '', 'metadata.json')
     meta = None
     if os.path.isfile(path):
@@ -384,7 +386,9 @@ def metadata(repo, artifacts, call):
 
     if not meta or not isinstance(meta, dict):
         meta = {}
-    meta['repo'] = repo
+    if repos:
+        meta['repo'] = repos[0]
+        meta['repos'] = repos
 
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
@@ -395,7 +399,7 @@ def metadata(repo, artifacts, call):
     return meta
 
 
-def finish(gsutil, paths, success, artifacts, build, version, repo, call):
+def finish(gsutil, paths, success, artifacts, build, version, repos, call):
     """
     Args:
         paths: a Paths instance.
@@ -412,7 +416,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repo, call):
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
 
-    meta = metadata(repo, artifacts, call)
+    meta = metadata(repos, artifacts, call)
     if not version:
         version = meta.get('job-version')
     if not version:  # TODO(fejta): retire
@@ -534,12 +538,13 @@ def ci_paths(base, job, build):
 
 
 
-def pr_paths(base, repo, job, build, pull):
+def pr_paths(base, repos, job, build):
     """Return a Paths() instance for a PR."""
-    pull = str(pull)
-    if repo is None:  # test code
-        prefix = ''
-    elif repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
+    if not repos:
+        raise ValueError('repos is empty')
+    repo = repos.main
+    pull = str(repos[repo][1])
+    if repo in ['k8s.io/kubernetes', 'kubernetes/kubernetes']:
         prefix = ''
     elif repo.startswith('k8s.io/'):
         prefix = repo[len('k8s.io/'):]
@@ -724,31 +729,80 @@ def gubernator_uri(paths):
     return job
 
 
-def setup_root(call, root, repo, branch, pull, ssh, git_cache, clean):
+def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
-    logging.info(
-        'Check out %s at %s...',
-        os.path.join(root, repo or ''),
-        pull if pull else branch)
     if not os.path.exists(root):
         os.makedirs(root)
-    os.chdir(root)
-    if repo:
+    root_dir = os.path.realpath(root)
+    logging.info('Root: %s', root_dir)
+    for repo, (branch, pull) in repos.items():
+        os.chdir(root_dir)
+        logging.info(
+            'Checkout: %s %s',
+            os.path.join(root_dir, repo),
+            pull and pull or branch)
         checkout(call, repo, branch, pull, ssh, git_cache, clean)
-    elif branch or pull:
-        raise ValueError('--branch and --pull require --repo', branch, pull)
+    if len(repos) > 1:  # cd back into the primary repo
+        os.chdir(root_dir)
+        os.chdir(repos.main)
 
 
-def bootstrap(
-    job, repo, branch, pull, root, upload, robot, timeout=0,
-    use_json=False, ssh=False, git_cache='', clean=False):
+class Repos(dict):
+    """{"repo": (branch, pull)} dict with a .main attribute."""
+    main = ''
+
+    def __setitem__(self, k, v):
+        if not self:
+            self.main = k
+        return super(Repos, self).__setitem__(k, v)
+
+
+def parse_repos(args):
+    """Convert --repo=foo=this,123:abc,555:ddd into a Repos()."""
+    repos = args.repo or {}
+    if not repos and not args.bare:
+        raise ValueError('--bare or --repo required')
+    ret = Repos()
+    if len(repos) != 1:
+        if args.pull:
+            raise ValueError('Multi --repo does not support --pull, use --repo=R=branch,p1,p2')
+        if args.branch:
+            raise ValueError('Multi --repo does not support --branch, use --repo=R=branch')
+    elif len(repos) == 1 and (args.branch or args.pull):
+        ret[repos[0]] = (args.branch, args.pull)
+        return ret
+    for repo in repos:
+        mat = re.match(r'([^=]+)(=(\w+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
+        if not mat:
+            raise ValueError('bad repo', repo, repos)
+        this_repo = mat.group(1)
+        if not mat.group(2):
+            ret[this_repo] = ('master', '')
+            continue
+        commits = mat.group(2)[1:].split(',')
+        if len(commits) == 1:
+            if ':' in commits[0]:
+                raise ValueError('branch:commit must also specify PRs to merge', repos)
+            ret[this_repo] = (commits[0], '')
+            continue
+        ret[this_repo] = ('', ','.join(commits))
+    return ret
+
+
+def bootstrap(args):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    job = args.job
+    repos = parse_repos(args)
+    upload = args.upload
+    use_json = args.json
+
+
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
     started = time.time()
-    if timeout:
-        end = started + timeout * 60
+    if args.timeout:
+        end = started + args.timeout * 60
     else:
         end = 0
     call = lambda *a, **kw: _call(end, *a, **kw)
@@ -758,8 +812,8 @@ def bootstrap(
     build = build_name(started)
 
     if upload:
-        if pull:
-            paths = pr_paths(upload, repo, job, build, pull)
+        if repos and repos[repos.main][1]:  # merging commits, a pr
+            paths = pr_paths(upload, repos, job, build)
         else:
             paths = ci_paths(upload, job, build)
         logging.info('Gubernator results at %s', gubernator_uri(paths))
@@ -768,17 +822,17 @@ def bootstrap(
     exc_type = None
 
     try:
-        setup_root(call, root, repo, branch, pull, ssh, git_cache, clean)
+        setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
         logging.info('Configure environment...')
-        if repo:
+        if repos:
             version = find_version(call)
         else:
             version = ''
         setup_magic_environment(job)
-        setup_credentials(call, robot, upload)
+        setup_credentials(call, args.service_account, upload)
         logging.info('Start %s at %s...', build, version)
         if upload:
-            start(gsutil, paths, started, node(), version, pull)
+            start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
             call(job_script(job, use_json))
@@ -794,7 +848,7 @@ def bootstrap(
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
-            finish(gsutil, paths, success, '_artifacts', build, version, repo, call)
+            finish(gsutil, paths, success, '_artifacts', build, version, repos, call)
         except subprocess.CalledProcessError:  # Still try to upload build log
             success = False
     logging.getLogger('').removeHandler(build_log)
@@ -818,10 +872,16 @@ def parse_args(arguments=None):
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
-    parser.add_argument('--pull',
-        help='PR, or list of PR:sha pairs like master:abcd,12:ef12,45:ff65')
-    parser.add_argument('--branch', help='Checkout the following branch')
-    parser.add_argument('--repo', help='The repository to fetch from')
+    parser.add_argument(
+        '--pull',
+        help='Deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65')
+    parser.add_argument(
+        '--branch',
+        help='Deprecated, use --repo=k8s.io/foo=master')
+    parser.add_argument(
+        '--repo',
+        action='append',
+        help='Fetch the specified repositories, with the first one considered primary')
     parser.add_argument(
         '--bare',
         action='store_true',
@@ -853,17 +913,4 @@ def parse_args(arguments=None):
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    bootstrap(
-        ARGS.job,
-        ARGS.repo,
-        ARGS.branch,
-        ARGS.pull,
-        ARGS.root,
-        ARGS.upload,
-        ARGS.service_account,
-        ARGS.timeout,
-        ARGS.json,
-        ARGS.ssh,
-        ARGS.git_cache,
-        ARGS.clean,
-    )
+    bootstrap(ARGS)
