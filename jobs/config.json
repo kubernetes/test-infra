@@ -1363,7 +1363,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env",
-    "--cluster=e2e-enormous-cluster"
+    "--cluster=e2e-enormous-cluster",
+    "--down=false"
   ]
 },
 
