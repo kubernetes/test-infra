@@ -46,8 +46,8 @@ type RepoAlias struct {
 	alias features.Aliases
 }
 
-func NewRepoAlias(repo RepoInterface, alias features.Aliases) RepoAlias {
-	return RepoAlias{
+func NewRepoAlias(repo RepoInterface, alias features.Aliases) *RepoAlias {
+	return &RepoAlias{
 		repo:  repo,
 		alias: alias,
 	}

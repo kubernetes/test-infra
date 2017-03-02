@@ -101,7 +101,10 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 	approverSet := createApproverSet(comments, prAuthor)
 	approversHandler := approvers.Approvers{
-		approvers.NewOwners(filenames, h.features.Repos, int64(*obj.Issue.Number)),
+		approvers.NewOwners(
+			filenames,
+			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
+			int64(*obj.Issue.Number)),
 		approverSet}
 
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
