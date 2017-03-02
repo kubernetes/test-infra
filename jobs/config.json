@@ -3411,6 +3411,24 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-scalability-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-scalability-release-1.6.env",
+    "--cluster=e2e-scalability-1-6"
+  ]
+},
+
+"ci-kubernetes-e2e-gci-gce-scalability-release-1.6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env",
+    "--cluster=e2e-scalability-1-6"
+  ]
+},
+
 "ci-kubernetes-e2e-gke-release-1.6": {
   "scenario": "kubernetes_e2e",
   "args": [
