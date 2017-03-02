@@ -54,9 +54,6 @@ export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flak
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gke"
 
-# Since we're only running one test, just use two nodes.
-export NUM_NODES="2"
-
 # Assume we're upping, testing, and downing a cluster
 export E2E_UP="true"
 export E2E_TEST="true"
@@ -73,6 +70,7 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 # GKE variables
 export CLUSTER_NAME=${E2E_NAME}
 export KUBE_GKE_NETWORK=${E2E_NAME}
+export KUBE_GCE_NETWORK=${E2E_NAME}
 export ZONE="us-central1-f"
 export CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER="https://test-container.sandbox.googleapis.com/"
 export CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE=False
