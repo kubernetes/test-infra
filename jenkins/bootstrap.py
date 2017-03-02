@@ -252,6 +252,11 @@ def checkout(call, repo, branch, pull, ssh=False, git_cache='', clean=False):
         call(['git', 'merge', '--no-ff', '-m', 'Merge %s' % ref, head])
 
 
+def repos_dict(repos):
+    """Returns {"repo1": "branch", "repo2": "pull"}."""
+    return {r: b or p for (r, (b, p)) in repos.items()}
+
+
 def start(gsutil, paths, stamp, node_name, version, repos):
     """Construct and upload started.json."""
     data = {
@@ -266,7 +271,7 @@ def start(gsutil, paths, stamp, node_name, version, repos):
         pull = repos[repos.main]
         if ref_has_shas(pull[1]):
             data['pull'] = pull[1]
-        data['repos'] = {r: b or p for (r, (b, p)) in repos.items()}
+        data['repos'] = repos_dict(repos)
 
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
@@ -387,8 +392,8 @@ def metadata(repos, artifacts, call):
     if not meta or not isinstance(meta, dict):
         meta = {}
     if repos:
-        meta['repo'] = repos[0]
-        meta['repos'] = repos
+        meta['repo'] = repos.main
+        meta['repos'] = repos_dict(repos)
 
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)

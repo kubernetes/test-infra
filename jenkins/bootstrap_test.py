@@ -599,7 +599,6 @@ class AppendResultTest(unittest.TestCase):
         self.assertLess(len(cache), len(old))
 
 
-
 class FinishTest(unittest.TestCase):
     """Tests for finish()."""
     def setUp(self):
@@ -622,15 +621,15 @@ class FinishTest(unittest.TestCase):
         artifacts = 'not-a-dir'
         no_version = ''
         version = 'should not have found it'
+        repos = repo({REPO: ('master', '')})
         with Stub(bootstrap, 'metadata', lambda *a: {'random-meta': version}):
-            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
-        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
+            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
+        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
         calls = gsutil.jsons[-1]
         # json data is second positional argument
         self.assertNotIn('job-version', calls[0][1])
         self.assertNotIn('version', calls[0][1])
         self.assertTrue(calls[0][1].get('metadata'))
-
 
     def testMetadataVersion(self):
         """Test that we will extract version info from metadata."""
@@ -666,9 +665,10 @@ class FinishTest(unittest.TestCase):
                     calls.append((a, kw))
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
 
 
@@ -687,9 +687,10 @@ class FinishTest(unittest.TestCase):
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = Pass
                 gsutil.upload_text = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
                 self.assertGreater(calls, 1)
 
@@ -703,16 +704,31 @@ class FinishTest(unittest.TestCase):
         success = True
         with Stub(os.path, 'isdir', lambda _: False):
             with Stub(bootstrap.GSUtil, 'upload_artifacts', Bomb):
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
 
 
 class MetadataTest(unittest.TestCase):
+
     def testAlwaysSetMetadata(self):
-        meta = bootstrap.metadata([REPO], 'missing-artifacts-dir', FakeCall())
+        repos = repo({REPO: ('master', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
         self.assertIn('repo', meta)
         self.assertEquals(REPO, meta['repo'])
+
+    def testMultiRepo(self):
+        repos = repo({REPO: ('foo', ''), 'other-repo': ('', '123,456')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
+        self.assertIn('repo', meta)
+        self.assertEquals(REPO, meta['repo'])
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertEquals('foo', meta['repos'][REPO])
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals('123,456', meta['repos']['other-repo'])
+
+
 
 
 SECONDS = 10
@@ -1275,10 +1291,14 @@ class IntegrationTest(unittest.TestCase):
 
         # Commit SHA should in meta
         call = lambda *a, **kw: bootstrap._call(5, *a, **kw)
-        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir', call)
+        repos = repo({REPO: ('master', ''), 'other-repo': ('other-branch', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', call)
         self.assertIn('repo-commit', meta)
         self.assertEquals(sha, meta['repo-commit'])
         self.assertEquals(40, len(meta['repo-commit']))
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals(REPO, meta.get('repo'))
 
 
 class ParseArgsTest(unittest.TestCase):
