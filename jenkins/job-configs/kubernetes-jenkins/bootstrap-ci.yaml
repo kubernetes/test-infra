@@ -84,7 +84,7 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-canary:  # Canary job for image infra-changes
         job-name: ci-kubernetes-e2e-gce-canary
-        frequency: '* H * * *'  # At least once a day, can manually trigger too
+        frequency: '@daily'  # At least once a day, can manually trigger too
         json: 1
         jenkins-timeout: 250
         timeout: 50
