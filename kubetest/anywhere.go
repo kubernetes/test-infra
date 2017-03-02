@@ -31,6 +31,7 @@ var (
 	// kubernetes-anywhere specific flags.
 	kubernetesAnywherePath           = flag.String("kubernetes-anywhere-path", "", "(kubernetes-anywhere only) Path to the kubernetes-anywhere directory. Must be set for kubernetes-anywhere.")
 	kubernetesAnywherePhase2Provider = flag.String("kubernetes-anywhere-phase2-provider", "ignition", "(kubernetes-anywhere only) Provider for phase2 bootstrapping. (Defaults to ignition).")
+	kubernetesAnywhereKubeadmVersion = flag.String("kubernetes-anywhere-kubeadm-version", "stable", "(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereCluster        = flag.String("kubernetes-anywhere-cluster", "", "(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereUpTimeout      = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute, "(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 )
@@ -51,7 +52,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.docker_registry="gcr.io/google-containers"
 .phase2.kubernetes_version="v1.4.1"
 .phase2.provider="{{.Phase2Provider}}"
-.phase2.kubeadm.version="stable"
+.phase2.kubeadm.version="{{.KubeadmVersion}}"
 
 .phase3.run_addons=y
 .phase3.kube_proxy=y
@@ -64,6 +65,7 @@ type kubernetesAnywhere struct {
 	path string
 	// These are exported only because their use in the config template requires it.
 	Phase2Provider string
+	KubeadmVersion string
 	Project        string
 	Cluster        string
 }
@@ -91,6 +93,7 @@ func NewKubernetesAnywhere() (*kubernetesAnywhere, error) {
 	k := &kubernetesAnywhere{
 		path:           *kubernetesAnywherePath,
 		Phase2Provider: *kubernetesAnywherePhase2Provider,
+		KubeadmVersion: *kubernetesAnywhereKubeadmVersion,
 		Project:        project,
 		Cluster:        *kubernetesAnywhereCluster,
 	}
