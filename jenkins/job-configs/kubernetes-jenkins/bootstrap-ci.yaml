@@ -14,7 +14,14 @@
     disabled: false
     name: 'ci-{suffix}'
     node: 'e2e'
+    use-blocker: false
+    blocker: ''
     properties:
+    - build-blocker:
+        use-build-blocker: '{use-blocker}'
+        blocking-jobs:
+        - '{blocker}'
+        queue-scanning: ALL
     - build-discarder:
         days-to-keep: 7
     triggers:
@@ -622,6 +629,8 @@
         frequency: '@daily'
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
+        use-blocker: true
+        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.6'
     - kubernetes-e2e-gce-federation-release-1.5:
         job-name: ci-kubernetes-e2e-gce-federation-release-1.5
         jenkins-timeout: 850
@@ -680,6 +689,8 @@
         frequency: '@daily'
         json: 1
         trigger-job: 'ci-kubernetes-build-1.5'
+        use-blocker: true
+        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.6'
 
     # gce-1.6
     - kubernetes-e2e-gce-release-1.6:
@@ -710,6 +721,15 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gce-scalability-release-1.6:
+        job-name: ci-kubernetes-e2e-gce-scalability-release-1.6
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@daily'
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+        use-blocker: true
+        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.5'
     # gci-gce-1.6
     - kubernetes-e2e-gci-gce-release-1.6:
         job-name: ci-kubernetes-e2e-gci-gce-release-1.6
@@ -739,6 +759,15 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gci-gce-scalability-release-1.6:
+        job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@daily'
+        json: 1
+        trigger-job: 'ci-kubernetes-build-1.6'
+        use-blocker: true
+        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.5'
 
     # gce-features
     - kubernetes-e2e-gce-ingress:
