@@ -33,12 +33,6 @@ def test_infra(*paths):
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
 
 
-def check_output(*cmd):
-    """Log and run the command, return output, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
-    return subprocess.check_output(cmd)
-
-
 def check(*cmd):
     """Log and run the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
@@ -133,6 +127,7 @@ class LocalMode(object):
 
     def start(self):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
+        print >>sys.stderr, 'starts with local mode'
         env = {}
         env.update(self.env_files)
         env.update(self.env)
@@ -207,6 +202,7 @@ class DockerMode(object):
 
     def start(self):
         """Runs kubekins."""
+        print >>sys.stderr, 'starts with docker mode'
         self.cmd.append(kubekins(self.tag))
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
@@ -295,50 +291,47 @@ def main(args):
 
     mode.start()
 
-
-
-if __name__ == '__main__':
-
-    PARSER = argparse.ArgumentParser()
-
-    PARSER.add_argument(
+def create_parser():
+    """Create argparser."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         '--mode', default='docker', choices=['local', 'docker'])
-    PARSER.add_argument(
+    parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
-    PARSER.add_argument(
+    parser.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
         help='Path to .ssh/google_compute_engine keys')
-    PARSER.add_argument(
+    parser.add_argument(
         '--gce-pub',
         default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub gce ssh key')
-    PARSER.add_argument(
+    parser.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
-    PARSER.add_argument(
+    parser.add_argument(
         '--mount-paths',
         default=[],
         nargs='*',
         help='Paths that should be mounted within the docker container in the form local:remote')
-
     # Assume we're upping, testing, and downing a cluster by default
-    PARSER.add_argument(
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
-    PARSER.add_argument(
+    parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
-    PARSER.add_argument(
+    parser.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
-    PARSER.add_argument(
+    parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
-    PARSER.add_argument(
+    parser.add_argument(
         '--tag', default='v20170228-c2fc37ee', help='Use a specific kubekins-e2e tag if set')
-    PARSER.add_argument(
+    parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
-    PARSER.add_argument(
+    parser.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
-    ARGS = PARSER.parse_args()
+    return parser
 
-    main(ARGS)
+if __name__ == '__main__':
+    main(create_parser().parse_args())
