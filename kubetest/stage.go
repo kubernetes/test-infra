@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 type stageStrategy struct {
@@ -59,11 +60,15 @@ func (s *stageStrategy) Enabled() bool {
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation?
 func (s *stageStrategy) Stage() error {
-	name := "../release/push-build.sh"
+	name := k8s("release", "push-build.sh")
+	b := s.bucket
+	if strings.HasPrefix(b, "gs://") {
+		b = b[len("gs://"):]
+	}
 	args := []string{
 		"--nomock",
 		"--verbose",
-		fmt.Sprintf("--bucket=%v", s.bucket),
+		fmt.Sprintf("--bucket=%v", b),
 	}
 	if s.ci {
 		args = append(args, "--ci")
@@ -75,5 +80,7 @@ func (s *stageStrategy) Stage() error {
 		args = append(args, "--federation")
 	}
 
-	return finishRunning(exec.Command(name, args...))
+	cmd := exec.Command(name, args...)
+	cmd.Dir = k8s("kubernetes")
+	return finishRunning(cmd)
 }

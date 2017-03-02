@@ -313,7 +313,7 @@ func setReleaseFromGci(image string) error {
 func (e extractStrategy) Extract() error {
 	switch e.mode {
 	case local:
-		url := "./_output/gcs-stage"
+		url := k8s("kubernetes", "/_output/gcs-stage")
 		files, err := ioutil.ReadDir(url)
 		if err != nil {
 			return err
@@ -329,7 +329,7 @@ func (e extractStrategy) Extract() error {
 		if len(release) == 0 {
 			return fmt.Errorf("No releases found in %v", url)
 		}
-		return getKube(url, release)
+		return getKube(fmt.Sprintf("file://%s", url), release)
 	case gci, gciCi:
 		if i, err := setupGciVars(e.option); err != nil {
 			return err

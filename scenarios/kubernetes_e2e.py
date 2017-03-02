@@ -125,7 +125,11 @@ class LocalMode(object):
                 os.path.expandvars('${GOPATH}/bin/kubetest'),
                 os.path.join(parent, 'kubetest'))
 
-    def start(self):
+    def add_k8s(self, *a, **kw):
+        """Add specified k8s.io repos (noop)."""
+        pass
+
+    def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
         env = {}
@@ -141,7 +145,7 @@ class LocalMode(object):
                 print >>sys.stderr, 'Fail to set project %r', project
         else:
             print >>sys.stderr, 'PROJECT not set in job, will use local project'
-        check_env(env, self.runner)
+        check_env(env, self.runner, *args)
 
 
 class DockerMode(object):
@@ -181,6 +185,12 @@ class DockerMode(object):
         for env_file in env_files:
             self.cmd.extend(['--env-file', test_infra(env_file)])
 
+    def add_k8s(self, k8s, *repos):
+        """Add the specified k8s.io repos into container."""
+        for repo in repos:
+            self.cmd.extend([
+                '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
+        self.cmd.extend(['-v', '%s/release:/go/src/k8s.io/release' % k8s])
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
@@ -200,13 +210,15 @@ class DockerMode(object):
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
 
-    def start(self):
+    def start(self, args):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
-        self.cmd.append(kubekins(self.tag))
+        cmd = list(self.cmd)
+        cmd.append(kubekins(self.tag))
+        cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
-        check(*self.cmd)
+        check(*cmd)
 
     def sig_handler(self, _signo, _frame):
         """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
@@ -233,7 +245,8 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        mode = DockerMode(container, workspace, args.docker_in_docker, args.tag, args.mount_paths)
+        sudo = args.docker_in_docker or args.build
+        mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:
@@ -246,6 +259,17 @@ def main(args):
 
     if args.service_account:
         mode.add_service_account(args.service_account)
+
+    runner_args = []
+    if args.build:
+        runner_args.append('--build')
+        k8s = os.getcwd()
+        if not os.path.basename(k8s) == 'kubernetes':
+            raise ValueError(k8s)
+        mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
+    if args.stage:
+        runner_args.append('--stage=%s' % args.stage)
+
 
     mode.add_environment(
       # Boilerplate envs
@@ -273,6 +297,7 @@ def main(args):
     # TODO(krzyzacy) change this to a whitelist
     docker_env_ignore = [
       'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
       'GOROOT',
       'HOME',
       'PATH',
@@ -289,7 +314,7 @@ def main(args):
     if args.soak_test and os.environ.get('JOB_NAME'):
         mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
 
-    mode.start()
+    mode.start(runner_args)
 
 def create_parser():
     """Create argparser."""
@@ -317,6 +342,10 @@ def create_parser():
         nargs='*',
         help='Paths that should be mounted within the docker container in the form local:remote')
     # Assume we're upping, testing, and downing a cluster by default
+    parser.add_argument(
+        '--build', action='store_true', help='Build kubernetes binaries if set')
+    parser.add_argument(
+        '--stage', help='Stage binaries to gs:// path if set')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(

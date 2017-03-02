@@ -116,9 +116,6 @@ elif [[ "${FEDERATION_UP:-}" == "true" && -z "${FEDERATION_CLUSTERS:-}" ]]; then
   e2e_go_args+=(--save="${JENKINS_FEDERATION_PREFIX}")
 fi
 
-fi
-
-
 if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
   case "${KUBERNETES_PROVIDER}" in
     gce|gke)
@@ -159,7 +156,7 @@ if [[ "${USE_KUBEMARK:-}" == "true" ]]; then
 fi
 
 if [[ "${CHARTS_TEST:-}" == "true" ]]; then
-  e2e_go_args+=("--charts=true")
+  e2e_go_args+=(--charts=true)
 fi
 
 if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
@@ -175,5 +172,4 @@ if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
   e2e_go_args+=(--publish="gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt")
 fi
 
-./kubetest ${E2E_OPT:-} "${e2e_go_args[@]}"
-
+./kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"
