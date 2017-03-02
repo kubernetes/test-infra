@@ -50,8 +50,7 @@ export GINKGO_TOLERATE_FLAKES="y"
 export E2E_NAME="e2e-gke-${NODE_NAME}-${EXECUTOR_NUMBER:-0}"
 export GINKGO_PARALLEL="y"
 
-# Just run a smoke test.
-export GINKGO_TEST_ARGS="--ginkgo.focus=Guestbook"
+export GINKGO_TEST_ARGS='--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 export FAIL_ON_GCP_RESOURCE_LEAK="false"
 export PROJECT="k8s-jkns-pr-gci-gke"
 

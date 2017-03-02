@@ -21,13 +21,24 @@ set -o xtrace
 readonly testinfra="$(dirname "${0}")/.."
 
 export FEDERATION="true"
+export USE_KUBEFED="true"
+
 export PROJECT="${PROJECT:-k8s-jkns-pr-bldr-e2e-gce-fdrtn}"
 export KUBE_REGISTRY="gcr.io/k8s-jkns-pr-bldr-e2e-gce-fdrtn"
 export KUBERNETES_PROVIDER="gce"
 
-# Build federation images. This doesn't build kubernetes images.
+# Build a kubernetes release which also builds the federation
+# images.
+# We tried building only the federation images using
+# ./hack/jenkins/build-federation.sh, but that led to a lot of
+# complications with the release and deployment infrastructure
+# so we reverted back to building the entire kubernetes release.
+export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
+export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
+export KUBE_GCS_UPDATE_LATEST=n
 export JENKINS_USE_LOCAL_BINARIES=y
-./hack/jenkins/build-federation.sh
+export KUBE_FASTBUILD=true
+./hack/jenkins/build.sh
 
 # Recycle control plane.
 # We only recycle federation control plane in each run, we don't

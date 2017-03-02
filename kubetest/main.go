@@ -72,7 +72,7 @@ type options struct {
 	upgradeArgs string
 }
 
-func defineFlags() (*options, string) {
+func defineFlags() (*options, *string) {
 	o := options{}
 	var deployment string
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
@@ -96,7 +96,7 @@ func defineFlags() (*options, string) {
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
-	return &o, deployment
+	return &o, &deployment
 }
 
 type testCase struct {
@@ -184,7 +184,7 @@ func main() {
 		log.Print("--check_version_skew is deprecated. Please change to --check-version-skew")
 		o.checkSkew = false
 	}
-	if err := complete(o, deployment); err != nil {
+	if err := complete(o, *deployment); err != nil {
 		log.Fatalf("Something went wrong: %v", err)
 	}
 }
@@ -251,7 +251,9 @@ func complete(o *options, deployment string) error {
 	}
 
 	// Save the state if we upped a new cluster without downing it
-	if o.save != "" && !o.down && o.up {
+	// or we are turning up federated clusters without turning up
+	// the federation control plane.
+	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
 		if err := saveState(o.save); err != nil {
 			return err
 		}
@@ -285,7 +287,9 @@ func acquireKubernetes(o *options) error {
 	if o.extract.Enabled() {
 		err := xmlWrap("Extract", func() error {
 			// Should we restore a previous state?
-			if o.save != "" && !o.up {
+			// Restore if we are not upping the cluster or we are bringing up
+			// a federation control plane without the federated clusters.
+			if o.save != "" && (!o.up || (o.federation && o.up && o.deployment == "none")) {
 				// Restore version and .kube/config from --up
 				o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
 			}

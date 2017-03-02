@@ -11,7 +11,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "approval-handler_test.go",
         "assign-fixes_test.go",
         "assign-unassign-handler_test.go",
         "check-labels_test.go",
@@ -91,6 +90,7 @@ go_library(
         "//mungegithub/admin:go_default_library",
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",
+        "//mungegithub/mungers/approvers:go_default_library",
         "//mungegithub/mungers/e2e:go_default_library",
         "//mungegithub/mungers/e2e/fake:go_default_library",
         "//mungegithub/mungers/flakesync:go_default_library",
@@ -126,6 +126,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//mungegithub/mungers/approvers:all-srcs",
         "//mungegithub/mungers/e2e:all-srcs",
         "//mungegithub/mungers/flakesync:all-srcs",
         "//mungegithub/mungers/fsm:all-srcs",
