@@ -40,6 +40,7 @@ data:
     ci-kubernetes-e2e-gce-multizone,\
     ci-kubernetes-e2e-gce-scalability,\
     ci-kubernetes-e2e-gce-serial,\
+    ci-kubernetes-e2e-gce-taint-evict,\
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
     ci-kubernetes-e2e-gci-gce-es-logging,\
