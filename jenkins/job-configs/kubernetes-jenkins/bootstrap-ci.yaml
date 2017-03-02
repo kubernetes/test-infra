@@ -64,6 +64,20 @@
         frequency: 'H/5 * * * *' # At least every 30m
         json: 1
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-release-1.5: #justinsb
+        job-name: ci-kubernetes-e2e-kops-aws-release-1.5
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@daily'
+        json: 1
+        trigger-job: ''
+    - kubernetes-e2e-kops-aws-release-1.6: #justinsb
+        job-name: ci-kubernetes-e2e-kops-aws-release-1.6
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@hourly'
+        json: 1
+        trigger-job: ''
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
         jenkins-timeout: 140
