@@ -27,6 +27,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment:all-srcs",
+        "//boskos:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
         "//images/pull_kubernetes_bazel:all-srcs",
