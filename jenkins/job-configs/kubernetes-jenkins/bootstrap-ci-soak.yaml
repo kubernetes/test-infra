@@ -6,7 +6,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --bare \
             --job='{job-name}' \
-            --json=1 \
+            --json \
             --root="${{GOPATH}}/src/k8s.io" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
