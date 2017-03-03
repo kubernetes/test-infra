@@ -419,26 +419,72 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return err
 }
 
+type MissingUsers []string
+
+func (m MissingUsers) Error() string {
+	return fmt.Sprintf("cannot assign %s", strings.Join(m, ", "))
+}
+
 func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
 	c.log("AssignIssue", org, repo, number, logins)
+	assigned := make(map[string]bool)
+	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{201},
-	}, nil)
-	return err
+	}, &i)
+	if err != nil {
+		return err
+	}
+	for _, assignee := range i.Assignees {
+		assigned[assignee.Login] = true
+	}
+	var missing MissingUsers
+	for _, login := range logins {
+		if !assigned[login] {
+			missing = append(missing, login)
+		}
+	}
+	if len(missing) > 0 {
+		return missing
+	}
+	return nil
+}
+
+type ExtraUsers []string
+
+func (e ExtraUsers) Error() string {
+	return fmt.Sprintf("cannot unassign %s", strings.Join(e, ", "))
 }
 
 func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
 	c.log("UnassignIssue", org, repo, number, logins)
+	assigned := make(map[string]bool)
+	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{200},
-	}, nil)
-	return err
+	}, &i)
+	if err != nil {
+		return err
+	}
+	for _, assignee := range i.Assignees {
+		assigned[assignee.Login] = true
+	}
+	var extra ExtraUsers
+	for _, login := range logins {
+		if assigned[login] {
+			extra = append(extra, login)
+		}
+	}
+	if len(extra) > 0 {
+		return extra
+	}
+	return nil
 }
 
 func (c *Client) CloseIssue(org, repo string, number int) error {
