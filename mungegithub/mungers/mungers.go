@@ -43,7 +43,7 @@ var mungerMap = map[string]Munger{}
 var mungers = []Munger{}
 
 // GetAllMungers returns a slice of all registered mungers. This list is
-// completely independant of the mungers selected at runtime in --pr-mungers.
+// completely independent of the mungers selected at runtime in --pr-mungers.
 // This is all possible mungers.
 func GetAllMungers() []Munger {
 	out := []Munger{}
