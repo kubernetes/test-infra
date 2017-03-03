@@ -58,3 +58,56 @@ time.
 
 As an example, the token counter measures the usage of our github-tokens, and
 has a new value every hour. We can push the new value to InfluxDB.
+
+Adding a new project
+====================
+
+Adding a new project is as simple as adding it to [config.yaml](config.yaml).
+Typically, add the name of your project, the list of repositories. Don't worry
+about the `public-ip` field as the IP will be created later. You can also leave
+prometheus configuration if you don't need it initially.
+
+There are new project specific deployments necessary, and they are
+described [below](#new-project-deployments).
+
+Deployment
+==========
+
+Update/Create deployments
+-------------------------
+
+[config.py](config.py) will generate all the deployments file for you. It reads
+the configuration in [config.yaml](config.yaml) to generate deployments for each
+projects and/or repositories with proper labels. You can then use `kubectl`
+labels help you select what you want to do exactly, for example:
+
+```
+./config.py # Generates the configuration and prints it on stdout
+./config.py | kubectl apply -f - # Creates/Updates everything
+./config.py | kubectl delete -f - # Deletes everything
+./config.py | kubectl apply -f - -l project=kubernetes # Only creates/updates kubernetes
+./config.py | kubectl apply -f - -l app=fetcher # Only creates/updates fetcher
+```
+
+First time deployments
+----------------------
+
+- Make sure you create
+  [the secrets for SQL Proxy](mysql/#set-up-google-cloud-sql-proxy)
+- Create the certificates secret:
+
+```
+curl -O https://curl.haxx.se/ca/cacert.pem
+kubectl create secret generic certificates --from-file=ca-certificates.crt=cacert.pem
+```
+
+- Make sure your github token is also in a secret:
+
+```
+kubectl create secret generic github-tokens --from-file=${TOKEN_FILE}
+```
+
+New project deployments
+-----------------------
+
+- Create [secret for InfluxDB](grafana-stack/#first-time-only)
