@@ -1820,32 +1820,85 @@ dashboards:
   - name: ci-kubernetes-soak-gci-gce-1.6-test
     test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
 
+# Matches the list on https://github.com/kubernetes/test-infra/issues/2029
 - name: release-1.6-blocking
   dashboard_tab:
+  # Build/Verify
   - name: build-1.6
     test_group_name: kubernetes-build-1.6
-  - name: test-go-1.6
-    test_group_name: kubernetes-test-go-release-1.6
   - name: verify-1.6
     test_group_name: kubernetes-verify-release-1.6
-  - name: kubelet-1.6
-    test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: test-go-1.6
+    test_group_name: kubernetes-test-go-release-1.6
+  - name: federation-build-1.6
+    test_group_name: kubernetes-federation-build-1.6
+  # E2E
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-release-1.6
   - name: gci-gce-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1.6
-  - name: gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
-  - name: gce-reboot-1.6
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.6
-  - name: gce-slow-1.6
-    test_group_name: ci-kubernetes-e2e-gce-slow-release-1.6
   - name: gke-1.6
     test_group_name: ci-kubernetes-e2e-gke-release-1.6
-  - name: gke-serial-1.6
-    test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
+  - name: gci-gke-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1.6
+  # TODO: AWS
+  # Slow
+  - name: gce-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gce-slow-release-1.6
+  - name: gci-gce-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1.6
   - name: gke-slow-1.6
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1.6
+  - name: gci-gke-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1.6
+  # Serial
+  - name: gce-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gce-serial-release-1.6
+  - name: gci-gce-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1.6
+  - name: gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
+  - name: gci-gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
+  # Federation
+  - name: gce-federation-1.6
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1.6
+  # Alpha
+  - name: gce-alpha-features-1.6
+    test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1.6
+  - name: gci-gce-alpha-features-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.6
+  # Scalability
+  - name: gce-scalability-1.6
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
+  - name: gci-gce-scalability-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+  # Ingress
+  - name: gci-gce-ingress-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1.6
+  - name: gci-gke-ingress-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1.6
+  # Reboot
+  - name: gce-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.6
+  - name: gci-gce-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.6
+  - name: gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1.6
+  - name: gci-gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1.6
+  # Soak
+  - name: ci-kubernetes-soak-gce-1.6-deploy
+    test_group_name: ci-kubernetes-soak-gce-1.6-deploy
+  - name: ci-kubernetes-soak-gce-1.6-test
+    test_group_name: ci-kubernetes-soak-gce-1.6-test
+  - name: ci-kubernetes-soak-gci-gce-1.6-deploy
+    test_group_name: ci-kubernetes-soak-gci-gce-1.6-deploy
+  - name: ci-kubernetes-soak-gci-gce-1.6-test
+    test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
+  # Node
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6
 
 - name: release-1.5-all
   dashboard_tab:
