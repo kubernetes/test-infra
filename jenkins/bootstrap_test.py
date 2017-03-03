@@ -1461,12 +1461,12 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
-            modern = is_modern(name)
-            self.assertEquals(modern, job.get('json', 1), name)
             if is_modern(name):
+                self.assertNotIn('json', job)
                 self.assertGreater(job['timeout'], 0, job_name)
                 self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
             else:
+                self.assertEqual(job['json'], 0)
                 self.assertEqual(job['timeout'], 0)
                 self.assertGreaterEqual(job['jenkins-timeout'], 600, job_name)
             return job_name
@@ -1492,22 +1492,19 @@ class JobTest(unittest.TestCase):
             Check, use_json=True)
 
     def testBootstrapCIRepoYaml(self):
-        is_modern = lambda n: '-e2e-' not in n
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
-            modern = is_modern(name)  # TODO(fejta): all jobs
-            self.assertEquals(modern, job.get('json', 1), name)
-            if is_modern(name):  # TODO(fejta): do this for all jobs
-                self.assertGreater(job['timeout'], 0, name)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            Check, use_json=is_modern)
+            Check, use_json=True)
 
     def testBootstrapCISoakYaml(self):
         def Check(job, name):
