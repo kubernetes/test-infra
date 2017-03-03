@@ -93,16 +93,14 @@ presubmits:
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
   - name: pull-kubernetes-e2e-gke
-    always_run: true
     context: Jenkins GKE smoke e2e
     rerun_command: "@k8s-bot cvm gke e2e test this"
-    trigger: "@k8s-bot (cvm )?(gke )?(e2e )?test this"
+    trigger: "@k8s-bot (cvm )?(gke )?e2e test this"
 
   - name: pull-kubernetes-e2e-gke-gci
-    always_run: true
     context: Jenkins GCI GKE smoke e2e
     rerun_command: "@k8s-bot gci gke e2e test this"
-    trigger: "@k8s-bot (gci )?(gke )?(e2e )?test this"
+    trigger: "@k8s-bot (gci )?(gke )?e2e test this"
 
   - name: pull-kubernetes-e2e-gce-gci
     always_run: true
