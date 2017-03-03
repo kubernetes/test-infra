@@ -1461,9 +1461,8 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
-            self.assertIn('json', job)
             modern = is_modern(name)
-            self.assertEquals(modern, job['json'])
+            self.assertEquals(modern, job.get('json', 1), name)
             if is_modern(name):
                 self.assertGreater(job['timeout'], 0, job_name)
                 self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
@@ -1500,9 +1499,8 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
-            self.assertIn('json', job)
             modern = is_modern(name)  # TODO(fejta): all jobs
-            self.assertEquals(modern, job['json'], name)
+            self.assertEquals(modern, job.get('json', 1), name)
             if is_modern(name):  # TODO(fejta): do this for all jobs
                 self.assertGreater(job['timeout'], 0, name)
             return job_name
