@@ -1482,6 +1482,22 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
             Check, use_json=is_modern)
 
+    def testBootstrapSecurityPullYamlJobsMatch(self):
+        jobs1 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml')
+        jobs2 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
+        for name, job in jobs1.iteritems():
+            if job['repo-name'] == 'k8s.io/kubernetes':
+                job2 = jobs2[name]
+                for attr in job:
+                    if attr != 'repo-name':
+                        self.assertEquals(job[attr], job2[attr])
+        for name, job in jobs2.iteritems():
+            job2 = jobs1[name]
+            for attr in job:
+                if attr != 'repo-name':
+                    self.assertEquals(job[attr], job2[attr])
+
+
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
