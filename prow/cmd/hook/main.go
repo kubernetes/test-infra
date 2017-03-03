@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 
+	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/cla"
 	_ "k8s.io/test-infra/prow/plugins/close"
 	_ "k8s.io/test-infra/prow/plugins/heart"

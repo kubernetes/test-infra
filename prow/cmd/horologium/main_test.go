@@ -98,7 +98,7 @@ func TestSync(t *testing.T) {
 		var jobs []kube.Job
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.Job{kube.Job{
+			jobs = []kube.Job{{
 				Metadata: kube.ObjectMeta{
 					Labels: map[string]string{"jenkins-job-name": tc.jobName},
 				},
