@@ -56,6 +56,11 @@ go_library(
 )
 
 filegroup(
+    name = "configs",
+    srcs = glob(["*.yaml"]),
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],

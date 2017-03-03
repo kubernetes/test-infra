@@ -32,6 +32,11 @@ go_library(
 )
 
 filegroup(
+    name = "configs",
+    srcs = [],
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
