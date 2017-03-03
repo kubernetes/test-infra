@@ -336,6 +336,77 @@ class CheckoutTest(unittest.TestCase):
             'FETCH_HEAD' in cmd for cmd, _, _ in fake.calls
             if 'checkout' in cmd))
 
+class ParseReposTest(unittest.TestCase):
+    def testBare(self):
+        """--bare works."""
+        self.assertFalse(
+            bootstrap.parse_repos(FakeArgs(repo=[], branch=[], pull=[], bare=True)))
+
+    def testDeprecatedBranch(self):
+        """--repo=foo --branch=bbb works"""
+        self.assertEquals(
+            {'foo': ('bbb', '')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb', pull='')))
+
+    def testDeprecatedPull(self):
+        """--repo=foo --pull=123 works."""
+        self.assertEquals(
+            {'foo': ('', '123:abc,333:ddd')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='123:abc,333:ddd')))
+
+    def testPlain(self):
+        """"foo equals foo=master."""
+        self.assertEquals(
+            {'foo': ('master', '')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='')))
+
+    def testBranch(self):
+        """foo=branch."""
+        self.assertEquals(
+            {'foo': ('this', '')},
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=this'], branch='', pull='')))
+
+    def testBranchCommit(self):
+        """foo=branch:commit is not allowed."""
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=this:abcd'], branch='', pull=''))
+
+    def testPull(self):
+        """foo=111,222 works"""
+        self.assertEquals(
+            {'foo': ('', '111,222')},
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=111,222'], branch='', pull='')))
+
+
+    def testPullBranch(self):
+        """foo=master,111,222 works"""
+        self.assertEquals(
+            {'foo': ('', 'master,111,222')},
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=master,111,222'], branch='', pull='')))
+
+    def testPullBranchCommit(self):
+        """foo=master,111,222 works"""
+        self.assertEquals(
+            {'foo': ('', 'master:aaa,111:bbb,222:ccc')},
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master:aaa,111:bbb,222:ccc'], branch='', pull='')))
+
+    def testMultiRepo(self):
+        """foo=master,111,222 bar works"""
+        self.assertEquals(
+            {
+                'foo': ('', 'master:aaa,111:bbb,222:ccc'),
+                'bar': ('master', '')},
+            bootstrap.parse_repos(
+                FakeArgs(branch='', pull='', repo=[
+                    'foo=master:aaa,111:bbb,222:ccc',
+                    'bar',
+                ])))
+
 
 class GSUtilTest(unittest.TestCase):
     """Tests for GSUtil."""
@@ -528,7 +599,6 @@ class AppendResultTest(unittest.TestCase):
         self.assertLess(len(cache), len(old))
 
 
-
 class FinishTest(unittest.TestCase):
     """Tests for finish()."""
     def setUp(self):
@@ -551,15 +621,15 @@ class FinishTest(unittest.TestCase):
         artifacts = 'not-a-dir'
         no_version = ''
         version = 'should not have found it'
+        repos = repo({REPO: ('master', '')})
         with Stub(bootstrap, 'metadata', lambda *a: {'random-meta': version}):
-            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
-        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
+            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
+        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
         calls = gsutil.jsons[-1]
         # json data is second positional argument
         self.assertNotIn('job-version', calls[0][1])
         self.assertNotIn('version', calls[0][1])
         self.assertTrue(calls[0][1].get('metadata'))
-
 
     def testMetadataVersion(self):
         """Test that we will extract version info from metadata."""
@@ -595,9 +665,10 @@ class FinishTest(unittest.TestCase):
                     calls.append((a, kw))
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
 
 
@@ -616,9 +687,10 @@ class FinishTest(unittest.TestCase):
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = Pass
                 gsutil.upload_text = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
                 self.assertGreater(calls, 1)
 
@@ -632,16 +704,31 @@ class FinishTest(unittest.TestCase):
         success = True
         with Stub(os.path, 'isdir', lambda _: False):
             with Stub(bootstrap.GSUtil, 'upload_artifacts', Bomb):
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
 
 
 class MetadataTest(unittest.TestCase):
+
     def testAlwaysSetMetadata(self):
-        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir', FakeCall())
+        repos = repo({REPO: ('master', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
         self.assertIn('repo', meta)
         self.assertEquals(REPO, meta['repo'])
+
+    def testMultiRepo(self):
+        repos = repo({REPO: ('foo', ''), 'other-repo': ('', '123,456')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
+        self.assertIn('repo', meta)
+        self.assertEquals(REPO, meta['repo'])
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertEquals('foo', meta['repos'][REPO])
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals('123,456', meta['repos']['other-repo'])
+
+
 
 
 SECONDS = 10
@@ -684,7 +771,6 @@ class BuildNameTest(unittest.TestCase):
             del fake[bootstrap.BUILD_ENV]
             bootstrap.build_name(SECONDS + 60)
             self.assertNotEqual(first, fake[bootstrap.BUILD_ENV])
-
 
 
 class SetupCredentialsTest(unittest.TestCase):
@@ -826,16 +912,22 @@ class FakeFinish(object):
         self.called = True
         self.result = success
 
+def repo(config):
+    repos = bootstrap.Repos()
+    for repo, tup in config.items():
+        repos[repo] = tup
+    return repos
+
 class PRPathsTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         """Test the kubernetes/kubernetes prefix."""
-        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/kubernetes', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'kubernetes/kubernetes': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             str(PULL) == p for p in path.build_log.split('/')))
 
     def testKubernetes(self):
         """Test the kubernetes/something prefix."""
-        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/prefix', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'kubernetes/prefix': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             'prefix' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
@@ -843,12 +935,39 @@ class PRPathsTest(unittest.TestCase):
 
     def testOther(self):
         """Test the none kubernetes prefixes."""
-        path = bootstrap.pr_paths(UPLOAD, 'github.com/random/repo', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'github.com/random/repo': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             'random_repo' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
             str(PULL) in p for p in path.build_log.split('/')), path.build_log)
 
+
+class FakeArgs(object):
+    bare = False
+    clean = False
+    git_cache = ''
+    job = JOB
+    root = ROOT
+    service_account = ROBOT
+    ssh = False
+    timeout = 0
+    upload = UPLOAD
+    json = False
+
+    def __init__(self, **kw):
+        self.branch = BRANCH
+        self.pull = PULL
+        self.repo = [REPO]
+        for key, val in kw.items():
+            if not hasattr(self, key):
+                raise AttributeError(self, key)
+            setattr(self, key, val)
+
+
+def test_bootstrap(**kw):
+    if isinstance(kw.get('repo'), basestring):
+        kw['repo'] = [kw['repo']]
+    return bootstrap.bootstrap(FakeArgs(**kw))
 
 class BootstrapTest(unittest.TestCase):
 
@@ -875,25 +994,23 @@ class BootstrapTest(unittest.TestCase):
     def testEmptyRepo(self):
         repo = None
         with Stub(bootstrap, 'checkout', Bomb):
-            bootstrap.bootstrap(JOB, repo, None, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=None, pull=None, bare=True)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, None, PULL, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=None, pull=PULL)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=BRANCH, pull=None)
 
     def testRoot_NotExists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
             with Stub(os.path, 'exists', lambda p: False):
                 with Stub(os, 'makedirs', FakeCall()) as fake_makedirs:
-                    bootstrap.bootstrap(
-                        JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(branch=None)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls), fake_chdir.calls)
         self.assertTrue(any(ROOT in c[0] for c in fake_makedirs.calls), fake_makedirs.calls)
 
     def testRoot_Exists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
-            bootstrap.bootstrap(
-                JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(branch=None)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls))
 
     def testPRPaths(self):
@@ -901,17 +1018,15 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'ci_paths', Bomb):
             with Stub(bootstrap, 'pr_paths', FakePath()) as path:
-                bootstrap.bootstrap(
-                    JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
-            self.assertTrue(PULL in path.a or PULL in path.kw)
+                test_bootstrap(branch=None, pull=PULL)
+            self.assertEquals(PULL, path.a[1][REPO][1], (PULL, path.a))
 
     def testCIPaths(self):
         """Use a ci_paths when branch is set."""
 
         with Stub(bootstrap, 'pr_paths', Bomb):
             with Stub(bootstrap, 'ci_paths', FakePath()) as path:
-                bootstrap.bootstrap(
-                    JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                test_bootstrap(pull=None, branch=BRANCH)
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
@@ -920,8 +1035,7 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'start', Bomb):
                 with self.assertRaises(AssertionError):
-                    bootstrap.bootstrap(
-                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
@@ -932,22 +1046,20 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, '_call', CallError):
                 with self.assertRaises(SystemExit):
-                    bootstrap.bootstrap(
-                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testHappy(self):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
-            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result)  # Distinguish from None
 
     def testJobEnv(self):
         """bootstrap sets JOB_NAME."""
         with Stub(os, 'environ', FakeEnviron()) as env:
-            bootstrap.bootstrap(
-                JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(pull=None)
         self.assertIn(bootstrap.JOB_ENV, env)
 
 
@@ -1035,9 +1147,13 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['touch', self.BRANCH_FILE])
         subprocess.check_call(['git', 'add', self.BRANCH_FILE])
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace,
-            UPLOAD, ROBOT, git_cache=self.root_git_cache)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch=self.BRANCH,
+            pull=None,
+            root=self.root_workspace,
+            git_cache=self.root_git_cache)
         # Verify that the cache was populated by running a simple git command
         # in the git cache directory.
         subprocess.check_call(
@@ -1052,8 +1168,12 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
         os.chdir('/tmp')
-        bootstrap.bootstrap(
-            'fake-pr', self.REPO, None, self.PR, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-pr',
+            repo=self.REPO,
+            branch=None,
+            pull=self.PR,
+            root=self.root_workspace)
 
     def testBranch(self):
         subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
@@ -1063,8 +1183,12 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
 
         os.chdir('/tmp')
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch=self.BRANCH,
+            pull=None,
+            root=self.root_workspace)
 
     def testBranchRef(self):
         """Make sure we check out a specific commit."""
@@ -1080,13 +1204,20 @@ class IntegrationTest(unittest.TestCase):
 
         os.chdir('/tmp')
         # Supplying the commit exactly works.
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, '%s:%s' % (self.BRANCH, sha), None,
-            self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch='%s:%s' % (self.BRANCH, sha),
+            pull=None,
+            root=self.root_workspace)
         # Using branch head fails.
         with self.assertRaises(SystemExit):
-            bootstrap.bootstrap(
-                'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='fake-branch',
+                repo=self.REPO,
+                branch=self.BRANCH,
+                pull=None,
+                root=self.root_workspace)
 
     def testBatch(self):
         def head_sha():
@@ -1106,44 +1237,68 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         pull = ','.join(refs)
         print '--pull', pull
-        bootstrap.bootstrap(
-            'fake-pr', self.REPO, None, pull, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-pr',
+            repo=self.REPO,
+            branch=None,
+            pull=pull,
+            root=self.root_workspace)
 
     def testPr_Bad(self):
         random_pr = 111
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap(
-                        'fake-pr', self.REPO, None, random_pr, self.root_workspace, UPLOAD, ROBOT)
+                    test_bootstrap(
+                        job='fake-pr',
+                        repo=self.REPO,
+                        branch=None,
+                        pull=random_pr,
+                        root=self.root_workspace)
 
     def testBranch_Bad(self):
         random_branch = 'something'
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap(
-                        'fake-branch', self.REPO, random_branch, None, self.root_workspace, UPLOAD, ROBOT)
+                    test_bootstrap(
+                        job='fake-branch',
+                        repo=self.REPO,
+                        branch=random_branch,
+                        pull=None,
+                        root=self.root_workspace)
 
     def testJobMissing(self):
         with self.assertRaises(OSError):
-            bootstrap.bootstrap(
-                'this-job-no-exists', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='this-job-no-exists',
+                repo=self.REPO,
+                branch='master',
+                pull=None,
+                root=self.root_workspace)
 
     def testJobFails(self):
         with self.assertRaises(SystemExit):
-            bootstrap.bootstrap(
-                'fake-failure', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='fake-failure',
+                repo=self.REPO,
+                branch='master',
+                pull=None,
+                root=self.root_workspace)
 
     def testCommitInMeta(self):
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
-        
+
         # Commit SHA should in meta
         call = lambda *a, **kw: bootstrap._call(5, *a, **kw)
-        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir', call)
+        repos = repo({REPO: ('master', ''), 'other-repo': ('other-branch', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', call)
         self.assertIn('repo-commit', meta)
         self.assertEquals(sha, meta['repo-commit'])
         self.assertEquals(40, len(meta['repo-commit']))
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals(REPO, meta.get('repo'))
 
 
 class ParseArgsTest(unittest.TestCase):
