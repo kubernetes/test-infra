@@ -50,7 +50,7 @@ const kubernetesAnywhereConfigTemplate = `
 
 .phase2.installer_container="docker.io/colemickens/k8s-ignition:latest"
 .phase2.docker_registry="gcr.io/google-containers"
-.phase2.kubernetes_version="v1.4.1"
+.phase2.kubernetes_version="latest"
 .phase2.provider="{{.Phase2Provider}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 
