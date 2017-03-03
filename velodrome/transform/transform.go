@@ -69,7 +69,10 @@ func runProgram(config *transformConfig) error {
 	fetcher := NewFetcher(config.repository)
 
 	// Plugins constantly wait for new issues/events/comments
-	go plugins.Dispatch(fetcher.GetChannels())
+	go plugins.Dispatch(
+		fetcher.IssuesChannel,
+		fetcher.EventsCommentsChannel,
+	)
 
 	ticker := time.Tick(time.Hour / time.Duration(config.frequency))
 

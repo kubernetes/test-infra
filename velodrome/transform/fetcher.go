@@ -125,34 +125,30 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 
 // Fetcher is a utility class used to Fetch all types of events
 type Fetcher struct {
-	lastIssue             time.Time
-	lastEvent             int
-	lastComment           int
-	issuesChannel         chan sql.Issue
-	eventsCommentsChannel chan interface{}
-	repository            string
+	IssuesChannel         chan sql.Issue
+	EventsCommentsChannel chan interface{}
+
+	lastIssue   time.Time
+	lastEvent   int
+	lastComment int
+	repository  string
 }
 
 // NewFetcher creates a new Fetcher and initializes the output channels
 func NewFetcher(repository string) *Fetcher {
 	return &Fetcher{
-		issuesChannel:         make(chan sql.Issue, 100),
-		eventsCommentsChannel: make(chan interface{}, 100),
+		IssuesChannel:         make(chan sql.Issue, 100),
+		EventsCommentsChannel: make(chan interface{}, 100),
 		repository:            repository,
 	}
 }
 
-// GetChannels returns the list of output channels used
-func (f *Fetcher) GetChannels() (chan sql.Issue, chan interface{}) {
-	return f.issuesChannel, f.eventsCommentsChannel
-}
-
 // Fetch retrieves all types of events, and push them to output channels
 func (f *Fetcher) Fetch(db *gorm.DB) error {
-	if err := fetchRecentIssues(db, f.repository, &f.lastIssue, f.issuesChannel); err != nil {
+	if err := fetchRecentIssues(db, f.repository, &f.lastIssue, f.IssuesChannel); err != nil {
 		return err
 	}
-	if err := fetchRecentEventsAndComments(db, f.repository, &f.lastEvent, &f.lastComment, f.eventsCommentsChannel); err != nil {
+	if err := fetchRecentEventsAndComments(db, f.repository, &f.lastEvent, &f.lastComment, f.EventsCommentsChannel); err != nil {
 		return err
 	}
 	return nil
