@@ -84,6 +84,12 @@ class LocalMode(object):
                         continue
                     self.env_files.append(self.parse_env(line))
 
+    def add_aws_cred(self, priv, pub, cred):
+        """Sets aws keys and credentials."""
+        self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
+        self.add_environment('JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub)
+        self.add_environment('JENKINS_AWS_CREDENTIALS_FILE=%s' % cred)
+
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
         ssh_dir = '%s/.ssh' % self.workspace
@@ -192,6 +198,18 @@ class DockerMode(object):
                 '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
         self.cmd.extend(['-v', '%s/release:/go/src/k8s.io/release' % k8s])
 
+    def add_aws_cred(self, priv, pub, cred):
+        """Mounts aws keys/creds inside the container."""
+        aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+        aws_pub = '%s.pub' % aws_ssh
+        aws_cred = '/workspace/.aws/credentials'
+
+        self.cmd.extend([
+          '-v', '%s:%s:ro' % (priv, aws_ssh),
+          '-v', '%s:%s:ro' % (pub, aws_pub),
+          '-v', '%s:%s:ro' % (cred, aws_cred),
+        ])
+
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
         gce_ssh = '/workspace/.ssh/google_compute_engine'
@@ -228,6 +246,8 @@ class DockerMode(object):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
+    # pylint: disable=too-many-branches
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -253,6 +273,13 @@ def main(args):
         raise ValueError(args.mode)
     if args.env_file:
         mode.add_files(args.env_file)
+
+    if args.aws:
+        # Enforce aws credential/keys exists
+        for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
+            if not os.path.isfile(os.path.expandvars(path)):
+                raise IOError(path, os.path.expandvars(path))
+        mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
 
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
@@ -324,6 +351,20 @@ def create_parser():
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
+    parser.add_argument(
+        '--aws', action='store_true', help='E2E job runs in aws')
+    parser.add_argument(
+        '--aws-ssh',
+        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        help='Path to private aws ssh keys')
+    parser.add_argument(
+        '--aws-pub',
+        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        help='Path to pub aws ssh key')
+    parser.add_argument(
+        '--aws-cred',
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        help='Path to aws credential file')
     parser.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),

@@ -1,5 +1,4 @@
 - job-template:
-    json: 1
     builders:
     - shell: |
         # TODO(fejta): consider a stable tag instead of master
@@ -7,7 +6,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --bare \
             --job='{job-name}' \
-            --json='{json}' \
+            --json \
             --root="${{GOPATH}}/src/k8s.io" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
@@ -60,10 +59,9 @@
     # START AWS
     - kubernetes-e2e-aws-release-1.5:
         job-name: ci-kubernetes-e2e-aws-release-1.5
-        jenkins-timeout: 600
-        timeout: 0
+        jenkins-timeout: 240
+        timeout: 140
         frequency: '@daily'
-        json: 0
         trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-kops-aws: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws
@@ -76,14 +74,12 @@
         jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
-        json: 1
         trigger-job: ''
     - kubernetes-e2e-kops-aws-release-1.6: #justinsb
         job-name: ci-kubernetes-e2e-kops-aws-release-1.6
         jenkins-timeout: 240
         timeout: 140
         frequency: '@hourly'
-        json: 1
         trigger-job: ''
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
