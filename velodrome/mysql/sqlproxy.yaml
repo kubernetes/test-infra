@@ -35,18 +35,12 @@ spec:
         - mountPath: /credentials
           name: service-account-token
           readOnly: true
-        - mountPath: /etc/ssl/certs
-          name: certificates
-          readOnly: true
       volumes:
       - name: cloudsql
         emptyDir:
       - name: service-account-token
         secret:
           secretName: service-account-token
-      - name: certificates
-        secret:
-          secretName: certificates
 ---
 apiVersion: v1
 kind: Service

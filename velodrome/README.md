@@ -94,17 +94,10 @@ First time deployments
 
 - Make sure you create
   [the secrets for SQL Proxy](mysql/#set-up-google-cloud-sql-proxy)
-- Create the certificates secret:
+- Make sure your github tokens are also in a secret:
 
 ```
-curl -O https://curl.haxx.se/ca/cacert.pem
-kubectl create secret generic certificates --from-file=ca-certificates.crt=cacert.pem
-```
-
-- Make sure your github token is also in a secret:
-
-```
-kubectl create secret generic github-tokens --from-file=${TOKEN_FILE}
+kubectl create secret generic github-tokens --from-file=${TOKEN_FILE_1} --from-file=${TOKEN_FILE_2}
 ```
 
 New project deployments

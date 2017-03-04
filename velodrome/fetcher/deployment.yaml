@@ -20,7 +20,7 @@ spec:
         - --token-file=/etc/secret-volume/k8s-merge-robot
         - --stderrthreshold=0
         - --host=sqlproxy
-        image: gcr.io/google-containers/github-fetcher:v20170301-170024
+        image: gcr.io/google-containers/github-fetcher:v20170303-213119
         resources:
           requests:
             cpu: 0m
@@ -28,12 +28,7 @@ spec:
         - mountPath: /etc/secret-volume
           readOnly: true
           name: github-tokens-secret
-        - mountPath: /etc/ssl/certs
-          name: certificates
       volumes:
       - name: github-tokens-secret
         secret:
           secretName: github-tokens
-      - name: certificates
-        secret:
-          secretName: certificates

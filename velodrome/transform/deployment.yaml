@@ -20,7 +20,7 @@ spec:
         - --host=sqlproxy
         - --influx-host=http://influxdb-${PROJECT}:8086
         - --influx-password=$(INFLUXDB_ROOT_PWD)
-        image: gcr.io/apelisse-test/github-transform:v20170210-095655
+        image: gcr.io/apelisse-test/github-transform:v20170303-213259
         resources:
           requests:
             cpu: 0m

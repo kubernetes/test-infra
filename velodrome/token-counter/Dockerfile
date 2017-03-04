@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2017 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM busybox:1.24.2
-ADD token-counter /
+FROM alpine:3.5
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+COPY token-counter /
 ENTRYPOINT ["/token-counter"]

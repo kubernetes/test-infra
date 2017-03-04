@@ -29,5 +29,3 @@ Create secret for instances to listen to:
 ```
 kubectl create secret generic sqlproxy --from-literal=instances=${gcp_sql_project}:${zone}:github-database=tcp:0.0.0.0:3306
 ```
-
-Also make sure you have the certificates set-up, as described [here](../#first-time-deployments)
