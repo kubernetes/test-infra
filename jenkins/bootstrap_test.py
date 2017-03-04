@@ -1529,11 +1529,13 @@ class JobTest(unittest.TestCase):
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
+            self.assertIn('timeout', job)
+            self.assertGreater(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            Check)
+            Check, use_json=True)
 
     def CheckJobTemplate(self, tmpl):
         builders = tmpl.get('builders')

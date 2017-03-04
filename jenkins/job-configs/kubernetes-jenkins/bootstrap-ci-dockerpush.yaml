@@ -6,9 +6,11 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     disabled: false
     name: 'ci-{dockerpush-suffix}'
@@ -31,7 +33,7 @@
             GOPATH=$WORKSPACE/go
             PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
     - timeout:
-        timeout: 700
+        timeout: 100
         fail: true
     - workspace-cleanup:  # cleanup before the job starts, for clean build.
         dirmatch: true
@@ -55,8 +57,10 @@
         job-name: ci-cadvisor-canarypush
         repo-name: github.com/google/cadvisor
         frequency: '@daily'
+        timeout: 30
     - heapster-canarypush:
         branch: master
         job-name: ci-heapster-canarypush
         repo-name: k8s.io/heapster
         frequency: '@daily'
+        timeout: 30

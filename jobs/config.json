@@ -347,6 +347,24 @@
   ]
 },
 
+"ci-heapster-canarypush": {
+  "scenario": "canarypush",
+  "args": [
+    "--owner=pszczesniak@google.com",
+    "--target=kubernetes/heapster:canary",
+    "--file=deploy/docker/canary/Dockerfile"
+  ]
+},
+
+"ci-cadvisor-canarypush": {
+  "scenario": "canarypush",
+  "args": [
+    "--owner=stclair@google.com",
+    "--target=google/cadvisor:canary",
+    "--file=deploy/canary/Dockerfile"
+  ]
+},
+
 "ci-kubernetes-e2e-kops-aws": {
   "scenario": "kubernetes_kops_aws",
   "args": [
