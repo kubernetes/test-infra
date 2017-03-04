@@ -30,6 +30,15 @@ import (
 	"time"
 )
 
+// Returns $GOPATH/src/k8s.io/...
+func k8s(parts ...string) string {
+	p := []string{os.Getenv("GOPATH"), "src", "k8s.io"}
+	for _, a := range parts {
+		p = append(p, a)
+	}
+	return filepath.Join(p...)
+}
+
 // append(errs, err) if err != nil
 func appendError(errs []error, err error) []error {
 	if err != nil {
