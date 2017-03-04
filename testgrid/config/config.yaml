@@ -892,6 +892,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-serial-release-1.6
 - name: ci-kubernetes-e2e-gke-slow-release-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-slow-release-1.6
+# 1.6 soak
 - name: ci-kubernetes-soak-gce-1.6-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.6-deploy
 - name: ci-kubernetes-soak-gce-1.6-test
@@ -900,6 +901,39 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.6-deploy
 - name: ci-kubernetes-soak-gci-gce-1.6-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.6-test
+# 1.6 skew
+- name: ci-kubernetes-e2e-gce-1.5-1.6-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.5-1.6-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-1.5-1.6-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.5-1.6-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-1.6-1.5-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.6-1.5-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-1.6-1.5-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.6-1.5-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.5-1.6-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.5-1.6-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.5-1.6-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.5-1.6-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.6-1.5-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.6-1.5-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.6-1.5-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.6-1.5-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
 # Manual, federated groups
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
@@ -1905,6 +1939,41 @@ dashboards:
   # Node
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-1.6
+
+- name: release-1.6-upgrade-skew
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-gce-1.5-1.6-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.5-1.6-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-1.5-1.6-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.5-1.6-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-1.6-1.5-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.6-1.5-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-1.6-1.5-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.6-1.5-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.5-1.6-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.5-1.6-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.5-1.6-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.5-1.6-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.6-1.5-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.6-1.5-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.6-1.5-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.6-1.5-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew
+  - name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
 
 - name: release-1.5-all
   dashboard_tab:
