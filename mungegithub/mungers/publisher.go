@@ -88,7 +88,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		},
 	}
 	p.reposRules = []repoRules{clientGo}
-	glog.Infof("pulisher munger rules: %#v\n", p.reposRules)
+	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
 	return nil
