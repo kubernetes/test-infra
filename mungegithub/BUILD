@@ -48,7 +48,6 @@ filegroup(
         "//mungegithub/github:all-srcs",
         "//mungegithub/mungers:all-srcs",
         "//mungegithub/reports:all-srcs",
-        "//mungegithub/webhooks-publisher:all-srcs",
     ],
     tags = ["automanaged"],
 )
