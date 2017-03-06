@@ -310,9 +310,11 @@ postsubmits:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
             args:
             - "--branch=$(PULL_REFS)"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            - "--git-cache=/root/.cache/git"
             - "--clean"
+            - "--git-cache=/root/.cache/git"
+            - "--json"
+            - "--timeout=140"
+            - "--upload=gs://kubernetes-jenkins/logs"
             env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/service-account/service-account.json
