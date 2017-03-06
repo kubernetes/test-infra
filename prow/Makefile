@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: build fmt vet test
+all: build test
 
 
 HOOK_VERSION       = 0.85
@@ -29,60 +29,6 @@ HOROLOGIUM_VERSION = 0.0
 PROJECT = k8s-prow
 ZONE = us-central1-f
 CLUSTER = prow
-
-# These are GitHub credentials in files on your own machine.
-# The hook secret is your HMAC token, the OAuth secret is the OAuth
-# token of whatever account you want to comment and update statuses.
-HOOK_SECRET_FILE = ${HOME}/hook
-OAUTH_SECRET_FILE = ${HOME}/k8s-oauth-token
-
-# The Jenkins secret is the API token, and the address file contains Jenkins'
-# URL, such as http://pull-jenkins-master:8080, without a newline.
-JENKINS_SECRET_FILE = ${HOME}/jenkins
-JENKINS_ADDRESS_FILE = ${HOME}/jenkins-address
-
-# Service account key for bootstrap jobs.
-SERVICE_ACCOUNT_FILE = ${HOME}/service-account.json
-
-# GCE ssh key for gce-e2e jobs
-SSH_KEY_PRIVATE = ${HOME}/ssh-private
-SSH_KEY_PUBLIC = ${HOME}/ssh-public
-
-# Should probably move this to a script or something.
-create-cluster:
-	gcloud -q container --project "$(PROJECT)" clusters create "$(CLUSTER)" --zone "$(ZONE)" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=prow --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
-	gcloud -q container node-pools create build-pool --project "$(PROJECT)" --cluster "$(CLUSTER)" --zone "$(ZONE)" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
-	kubectl create secret generic hmac-token --from-file=hmac=$(HOOK_SECRET_FILE)
-	kubectl create secret generic oauth-token --from-file=oauth=$(OAUTH_SECRET_FILE)
-	kubectl create secret generic jenkins-token --from-file=jenkins=$(JENKINS_SECRET_FILE)
-	kubectl create secret generic service-account --from-file=service-account.json=$(SERVICE_ACCOUNT_FILE)
-	kubectl create secret generic ssh-key-secret --from-file=ssh-private=$(SSH_KEY_PRIVATE) --from-file=ssh-public=$(SSH_KEY_PUBLIC)
-	kubectl create configmap jenkins-address --from-file=jenkins-address=$(JENKINS_ADDRESS_FILE)
-	kubectl create configmap config --from-file=config=config.yaml
-	kubectl create configmap plugins --from-file=plugins=plugins.yaml
-	@make line-image --no-print-directory
-	@make hook-image --no-print-directory
-	@make deck-image --no-print-directory
-	@make sinker-image --no-print-directory
-	@make hook-deployment --no-print-directory
-	@make hook-service --no-print-directory
-	@make sinker-deployment --no-print-directory
-	@make deck-deployment --no-print-directory
-	@make deck-service --no-print-directory
-	@make splice-image --no-print-directory
-	@make splice-deployment --no-print-directory
-	kubectl apply -f cluster/ingress.yaml
-
-update-cluster: get-cluster-credentials
-	@make line-image --no-print-directory
-	@make hook-image --no-print-directory
-	@make sinker-image --no-print-directory
-	@make deck-image --no-print-directory
-	@make hook-deployment --no-print-directory
-	@make sinker-deployment --no-print-directory
-	@make deck-deployment --no-print-directory
-	@make splice-image --no-print-directory
-	@make splice-deployment --no-print-directory
 
 update-config: get-cluster-credentials
 	kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
