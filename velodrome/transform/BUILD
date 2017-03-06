@@ -65,6 +65,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//velodrome/transform/plugins:all-srcs",
+    ],
     tags = ["automanaged"],
 )
