@@ -33,7 +33,9 @@ trap 'rm -f buckets.yaml' EXIT
 gsutil -q cp "${jsonpath}" "tests.json" || true
 
 docker run --rm -v '/etc/localtime:/etc/localtime:ro' \
-  -v "$(pwd):/test-history" -w="/test-history" python:2.7 bash -c "\
+  -v "$(pwd):/test-history" -w="/test-history" \
+  -v "$(pwd)/../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml:/configmap.yaml" \
+  python:2.7 bash -c "\
     pip install -r requirements.txt && \
     time python gen_json.py \
         --buckets=buckets.yaml \
@@ -42,7 +44,7 @@ docker run --rm -v '/etc/localtime:/etc/localtime:ro' \
         --output-dir=static \
         --input=tests.json \
         --buckets=buckets.yaml \
-        --configmap=../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml \
+        --configmap=/configmap.yaml \
 "
 
 # Upload to GCS
