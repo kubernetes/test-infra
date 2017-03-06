@@ -357,6 +357,13 @@ func (e extractStrategy) Extract() error {
 		if mat == nil {
 			return fmt.Errorf("failed to parse version from %s", ci)
 		}
+		// When JENKINS_USE_SERVER_VERSION=y, we launch the default version as determined
+		// by GKE, but pull the latest version of that branch for tests. e.g. if the default
+		// version is 1.5.3, we would pull test binaries at ci/latest-1.5.txt, but launch
+		// the default (1.5.3). We have to unset CLUSTER_API_VERSION here to allow GKE to
+		// launch the default.
+		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
+		defer os.Unsetenv("CLUSTER_API_VERSION")
 		return setReleaseFromGcs(true, "latest-"+mat[1])
 	case ci:
 		return setReleaseFromGcs(true, e.option)
