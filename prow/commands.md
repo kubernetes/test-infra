@@ -4,6 +4,8 @@
 
 Command | Plugin | Who can run it | Description
 --- | --- | --- | --- | ---
+`/assign [@userA @userB @etc]` | [assign](./plugins/assign) | org members | Assigns specified people (or yourself if no one is specified)
+`/unassign [@userA @userB @etc]` | [assign](./plugins/assign) | org members | Unassigns specified people (or yourself if no one is specified)
 `/lgtm` | [lgtm](./plugins/lgtm) | assignees | adds the `lgtm` label
 `/lgtm cancel` | [lgtm](./plugins/lgtm) | authors and assignees | removes the `lgtm` label
 `/close` | [close](./plugins/close) | authors and assignees | closes the issue

@@ -45,6 +45,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/assign:go_default_library",
         "//prow/plugins/cla:go_default_library",
         "//prow/plugins/close:go_default_library",
         "//prow/plugins/heart:go_default_library",
