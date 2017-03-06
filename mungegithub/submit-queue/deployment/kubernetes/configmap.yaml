@@ -80,6 +80,8 @@ data:
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
     ci-kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-kops-aws-slow,\
+    ci-kubernetes-e2e-kops-aws-serial,\
     ci-kubernetes-e2e-kops-aws-release-1.5,\
     ci-kubernetes-e2e-kops-aws-release-1.6,\
     ci-kubernetes-e2e-kops-aws-updown,\

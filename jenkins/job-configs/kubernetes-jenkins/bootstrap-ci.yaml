@@ -69,6 +69,18 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-slow: #zmerlynn
+        job-name: ci-kubernetes-e2e-kops-aws-slow
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-serial: #zmerlynn
+        job-name: ci-kubernetes-e2e-kops-aws-serial
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-kops-aws-release-1.5: #justinsb
         job-name: ci-kubernetes-e2e-kops-aws-release-1.5
         jenkins-timeout: 240
