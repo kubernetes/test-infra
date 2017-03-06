@@ -18,6 +18,18 @@ projects:
             static_configs:
               - targets:
                   - submit-queue.k8s.io
+  istio:
+    repositories:
+      istio/api:
+      istio/auth:
+      istio/istio:
+      istio/manager:
+      istio/mixer:
+      istio/proxy:
+    nginx:
+      public-ip:
+    grafana:
+      google-analytics-uaid: ""
   tensorflow:
     repositories:
       tensorflow/tensorflow:
