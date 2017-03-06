@@ -23,6 +23,8 @@ spec:
         - --repo-dir=$(REPO_DIR)
         - --netrc-dir=$(NETRC_DIR)
         - --alsologtostderr
+        - --publisher-log-dir=$(PUBLISHER_LOG_DIR)
+        - 2>&1
         image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         env:
@@ -61,6 +63,11 @@ spec:
               configMapKeyRef:
                 name: @@-publisher-config
                 key: publisher.netrc-dir
+          - name: PUBLISHER_LOG_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: @@-publisher-config
+                key: publisher.log-dir
         resources:
           requests:
             cpu: 100m
