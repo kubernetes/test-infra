@@ -1274,18 +1274,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-pre-release
   - name: gci-gke-pre-release
     test_group_name: kubernetes-e2e-gci-gke-pre-release
-  - name: gke-prod
-    test_group_name: kubernetes-e2e-gke-prod
-  - name: gci-gke-prod
-    test_group_name: kubernetes-e2e-gci-gke-prod
-  - name: gke-prod-parallel
-    test_group_name: kubernetes-e2e-gke-prod-parallel
-  - name: gci-gke-prod-parallel
-    test_group_name: kubernetes-e2e-gci-gke-prod-parallel
-  - name: gke-prod-smoke
-    test_group_name: kubernetes-e2e-gke-prod-smoke
-  - name: gci-gke-prod-smoke
-    test_group_name: kubernetes-e2e-gci-gke-prod-smoke
   - name: gke-reboot
     test_group_name: kubernetes-e2e-gke-reboot
   - name: gci-gke-reboot
@@ -1342,14 +1330,6 @@ dashboards:
     test_group_name: kubernetes-e2e-gci-gke-slow-release-1.4
   - name: gci-gke-slow-1.5
     test_group_name: kubernetes-e2e-gci-gke-slow-release-1.5
-  - name: gke-staging
-    test_group_name: kubernetes-e2e-gke-staging
-  - name: gci-gke-staging
-    test_group_name: kubernetes-e2e-gci-gke-staging
-  - name: gke-staging-parallel
-    test_group_name: kubernetes-e2e-gke-staging-parallel
-  - name: gci-gke-staging-parallel
-    test_group_name: kubernetes-e2e-gci-gke-staging-parallel
   - name: gke-subnet
     test_group_name: kubernetes-e2e-gke-subnet
   - name: gci-gke-subnet
@@ -1362,6 +1342,32 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: kubernetes-e2e-gci-gke-updown
+
+- name: google-gke-staging
+  dashboard_tab:
+  - name: gke-staging
+    test_group_name: kubernetes-e2e-gke-staging
+  - name: gci-gke-staging
+    test_group_name: kubernetes-e2e-gci-gke-staging
+  - name: gke-staging-parallel
+    test_group_name: kubernetes-e2e-gke-staging-parallel
+  - name: gci-gke-staging-parallel
+    test_group_name: kubernetes-e2e-gci-gke-staging-parallel
+
+- name: google-gke-prod
+  dashboard_tab:
+  - name: gke-prod
+    test_group_name: kubernetes-e2e-gke-prod
+  - name: gci-gke-prod
+    test_group_name: kubernetes-e2e-gci-gke-prod
+  - name: gke-prod-parallel
+    test_group_name: kubernetes-e2e-gke-prod-parallel
+  - name: gci-gke-prod-parallel
+    test_group_name: kubernetes-e2e-gci-gke-prod-parallel
+  - name: gke-prod-smoke
+    test_group_name: kubernetes-e2e-gke-prod-smoke
+  - name: gci-gke-prod-smoke
+    test_group_name: kubernetes-e2e-gci-gke-prod-smoke
 
 - name: google-kubemark
   dashboard_tab:
