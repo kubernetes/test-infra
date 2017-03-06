@@ -1,4 +1,6 @@
-# Copyright 2017 Google Inc. All rights reserved.
+#!/bin/sh
+
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.5
-RUN apk add ca-certificates && update-ca-certificates
-COPY transform /
-ENTRYPOINT ["/transform"]
+set -o errexit
+set -o nounset
+set -o pipefail
+
+(cd $(dirname ${BASH_SOURCE}) && ./config.py)

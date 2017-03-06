@@ -1,18 +1,22 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-${PROJECT}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: nginx
+        project: ${PROJECT}
     spec:
       containers:
       - image: nginx:1.10.1
         name: nginx
         command: ['nginx', '-g', 'daemon off;']
+        resources:
+          requests:
+            cpu: 0m
         ports:
         - name: nginx-port
           containerPort: 8080
@@ -22,7 +26,7 @@ spec:
       volumes:
         - name: nginx-config
           configMap:
-            name: nginx
+            name: nginx-${PROJECT}
             items:
               - key: nginx.conf
                 path: nginx.conf
@@ -31,8 +35,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: grafana-stack
-  name: nginx-service
+    app: nginx
+    project: ${PROJECT}
+  name: nginx-${PROJECT}
 spec:
   ports:
   - name: nginx
@@ -40,15 +45,17 @@ spec:
     targetPort: nginx-port
   selector:
     app: nginx
-  loadBalancerIP: 104.197.200.129
+    project: ${PROJECT}
+  loadBalancerIP: ${NGINX_PUBLIC_IP}
   type: LoadBalancer
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx
+  name: nginx-${PROJECT}
   labels:
-    app: grafana-stack
+    app: nginx
+    project: ${PROJECT}
 data:
   nginx.conf: |
     user  nginx;
@@ -73,12 +80,12 @@ data:
         server {
             listen 8080;
             location / {
-                proxy_pass http://grafana-service:3000/;
+                proxy_pass http://grafana-${PROJECT}:3000/;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
             }
             location /influxdb/ {
-                proxy_pass http://influxdb-service:8086/;
+                proxy_pass http://influxdb-${PROJECT}:8086/;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
             }

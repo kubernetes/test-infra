@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+import subprocess
+import sys
+
+import yaml
+
+CONFIG = "config.yaml"
+
+DEPLOYMENTS = {
+    "fetcher": "fetcher/deployment.yaml",
+    "transform": "transform/deployment.yaml",
+    "influxdb": "grafana-stack/influxdb.yaml",
+    "prometheus": "grafana-stack/prometheus.yaml",
+    "prometheus-config": "grafana-stack/prometheus-config.yaml",
+    "grafana": "grafana-stack/grafana.yaml",
+    "grafana-config": "grafana-stack/grafana-config.yaml",
+    "nginx": "grafana-stack/nginx.yaml",
+    "sqlproxy": "mysql/sqlproxy.yaml",
+}
+
+
+def main():
+    if len(sys.argv) != 1:
+        print >> sys.stderr, "Too many arguments."
+        sys.exit(128)
+
+    with open(get_absolute_path(CONFIG)) as config_file:
+        config = yaml.load(config_file)
+        print_deployments(["sqlproxy"], {})
+        for project_name, project in config['projects'].items():
+            public_ip = project.get('nginx', {}).get('public-ip', '') or ''
+            print_deployments(["influxdb", "grafana", "nginx"], {
+                "PROJECT": project_name,
+                "NGINX_PUBLIC_IP": public_ip,
+            })
+            if 'prometheus' in project:
+                print_deployments(["prometheus"], {
+                    "PROJECT": project_name,
+                })
+                patch_configuration("prometheus-config",
+                                    project['prometheus'],
+                                    { "PROJECT": project_name })
+            if 'grafana' in project:
+                patch_configuration("grafana-config",
+                                    project['grafana'],
+                                    { "PROJECT": project_name })
+            for repository in project['repositories']:
+                print_deployments(["fetcher", "transform"], {
+                    "GH_ORGANIZATION": repository.split("/")[0],
+                    "GH_REPOSITORY": repository.split("/")[1],
+                    "PROJECT": project_name,
+                })
+
+
+def patch_configuration(component, values, env):
+    with open(get_absolute_path(DEPLOYMENTS[component])) as f:
+        config = yaml.load(f)
+        # We want to fail if we have unknown keys in values
+        unknown_keys = set(values) - set(config['data'])
+        if unknown_keys:
+            raise ValueError("Unknown keys in config:", unknown_keys)
+        config['data'] = values
+    print_deployment(yaml.dump(config, default_flow_style=False), env)
+
+
+def get_absolute_path(path):
+    return os.path.join(os.path.dirname(__file__), path)
+
+
+def print_deployments(components, env):
+    for component in components:
+        with open(get_absolute_path(DEPLOYMENTS[component])) as f:
+            print_deployment(f.read(), env)
+
+
+def print_deployment(deployment, env):
+    p = subprocess.Popen(["envsubst", " ".join(["$" + key for key in env])],
+                         stdin=subprocess.PIPE,
+                         env=env)
+    p.communicate(deployment)
+    print '---'
+    sys.stdout.flush()
+
+
+if __name__ == '__main__':
+    main()
