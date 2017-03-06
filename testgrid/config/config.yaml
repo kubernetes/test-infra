@@ -2226,14 +2226,23 @@ dashboards:
 - name: test-infra
   dashboard_tab:
   - name: bazel
+    description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: test-history
     test_group_name: test-infra-test-history
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
     test_group_name: testgrid-config-upload
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: gce-canary
     description: Runs a smoke test using the latest e2e image
     test_group_name: kubernetes-e2e-gce-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
 - name: sq-blocking
   dashboard_tab:
