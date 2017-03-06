@@ -132,6 +132,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-garbage
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
+- name: kubernetes-e2e-kops-aws-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
+- name: kubernetes-e2e-kops-aws-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-serial
 - name: kubernetes-e2e-kops-aws-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1.5
 - name: kubernetes-e2e-kops-aws-release-1.6
@@ -964,6 +968,10 @@ dashboards:
   dashboard_tab:
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
+  - name: kops-aws-slow
+    test_group_name: kubernetes-e2e-kops-aws-slow
+  - name: kops-aws-serial
+    test_group_name: kubernetes-e2e-kops-aws-serial
   - name: kops-aws-1.5
     test_group_name: kubernetes-e2e-kops-aws-release-1.5
   - name: kops-aws-1.6
