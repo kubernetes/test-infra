@@ -109,6 +109,21 @@ func TestAssignComment(t *testing.T) {
 			removed:   []string{"rando"},
 		},
 		{
+			name:      "tab completion",
+			action:    "created",
+			body:      "/assign @fejta ",
+			commenter: "rando",
+			added:     []string{"fejta"},
+		},
+		{
+			name:      "multi commands",
+			action:    "created",
+			body:      "/assign @fejta\n/unassign @spxtr",
+			commenter: "rando",
+			added:     []string{"fejta"},
+			removed:   []string{"spxtr"},
+		},
+		{
 			name:      "interesting names",
 			action:    "created",
 			body:      "/assign @hello-world @allow_underscore",

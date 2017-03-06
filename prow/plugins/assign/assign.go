@@ -28,7 +28,7 @@ import (
 
 const pluginName = "assign"
 
-var assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @[-\w]+?)*)\r?$`)
+var assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @[-\w]+?)*)\s*\r?$`)
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
@@ -60,27 +60,49 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		return nil
 	}
 
-	re := assignRe.FindStringSubmatch(ic.Comment.Body)
-	if re == nil {
+	matches := assignRe.FindAllStringSubmatch(ic.Comment.Body, -1)
+	if matches == nil {
 		return nil
 	}
 
-	var logins []string
-	if re[2] == "" {
-		logins = append(logins, ic.Comment.User.Login)
-	} else {
-		logins = parseLogins(re[2])
+	assignments := make(map[string]bool)
+	for _, re := range matches {
+
+		add := re[1] != "un" // unassign == !add
+		if re[2] == "" {
+			assignments[ic.Comment.User.Login] = add
+			continue
+		}
+		for _, login := range parseLogins(re[2]) {
+			assignments[login] = add
+		}
 	}
 
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
-	if re[1] == "un" {
-		log.Printf("Removing assignees from %s/%s#%d: %v", org, repo, number, logins)
-		return gc.UnassignIssue(org, repo, number, logins)
-	} else {
-		log.Printf("Adding assignees to %s/%s#%d: %v", org, repo, number, logins)
-		return gc.AssignIssue(org, repo, number, logins)
+	var assign, unassign []string
+
+	for login, add := range assignments {
+		if add {
+			assign = append(assign, login)
+		} else {
+			unassign = append(unassign, login)
+		}
 	}
+
+	if len(unassign) > 0 {
+		log.Printf("Removing assignees from %s/%s#%d: %v", org, repo, number, unassign)
+		if err := gc.UnassignIssue(org, repo, number, unassign); err != nil {
+			return err
+		}
+	}
+	if len(assign) > 0 {
+		log.Printf("Adding assignees to %s/%s#%d: %v", org, repo, number, assign)
+		if err := gc.AssignIssue(org, repo, number, assign); err != nil {
+			return err
+		}
+	}
+	return nil
 }
