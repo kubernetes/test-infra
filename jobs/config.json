@@ -356,6 +356,26 @@
   ]
 },
 
+"ci-kubernetes-e2e-kops-aws-release-1.5": {
+  "scenario": "kubernetes_kops_aws",
+  "args": [
+    "--cluster=e2e-kops-aws-release-15.test-aws.k8s.io",
+    "--env-file=platforms/kops_aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws-release-1.5.env"
+  ]
+},
+
+"ci-kubernetes-e2e-kops-aws-release-1.6": {
+  "scenario": "kubernetes_kops_aws",
+  "args": [
+    "--cluster=e2e-kops-aws-release-16.test-aws.k8s.io",
+    "--env-file=platforms/kops_aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws-release-1.6.env"
+  ]
+},
+
 "ci-kubernetes-e2e-kops-aws-updown": {
   "scenario": "kubernetes_kops_aws",
   "args": [
