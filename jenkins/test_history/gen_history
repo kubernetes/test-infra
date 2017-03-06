@@ -42,6 +42,7 @@ docker run --rm -v '/etc/localtime:/etc/localtime:ro' \
         --output-dir=static \
         --input=tests.json \
         --buckets=buckets.yaml \
+        --configmap=../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml \
 "
 
 # Upload to GCS

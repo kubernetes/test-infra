@@ -32,21 +32,6 @@ import jinja2
 import yaml
 
 
-BLOCKING_JOBS = [
-    'ci-kubernetes-build',
-    'ci-kubernetes-e2e-gce-etcd3',
-    'ci-kubernetes-e2e-gci-gce',
-    'ci-kubernetes-e2e-gci-gce-slow',
-    'ci-kubernetes-e2e-gci-gce-ingress',
-    'ci-kubernetes-e2e-gci-gke',
-    'ci-kubernetes-e2e-gci-gke-slow',
-    'ci-kubernetes-e2e-kops-aws',
-    'ci-kubernetes-kubemark-500-gce',
-    'ci-kubernetes-node-kubelet',
-    'ci-kubernetes-test-go',
-    'ci-kubernetes-verify-master',
-]
-
 JobSummary = collections.namedtuple('JobSummary', [
     'name',
     'passed',
@@ -225,12 +210,20 @@ def merge_bad_tests(bad_tests, new_tests):
             bad_tests[name]['latest_failure'] = new_test['latest_failure']
 
 
-def main(in_path, buckets_path, out_dir):
+def load_blocking_jobs(configmap):
+    with open(configmap) as b:
+        data = yaml.load(b)
+    return data['data']['submit-queue.jenkins-jobs'].split(',')
+
+
+def main(in_path, buckets_path, out_dir, configmap):
     """Uses in_path and buckets_path to write a static report under out_dir."""
     with open(in_path) as data_file:
         data = json.load(data_file)
 
     templates_path = '{}/templates'.format(os.path.abspath(os.path.dirname(__file__)))
+
+    blocking_jobs = load_blocking_jobs(configmap)
 
     summaries = []
     bad_tests = {}
@@ -242,7 +235,7 @@ def main(in_path, buckets_path, out_dir):
         prefix = prefixes[bucket]
         full_name = '{}{}'.format(prefix, job_name)
         job, tests = job_results(bucket, prefix, job_name, job_data, data['test_names'])
-        if full_name in BLOCKING_JOBS:
+        if full_name in blocking_jobs:
             merge_bad_tests(bad_tests, tests)
         summaries.append(job)
         if job.tests > 0:
@@ -254,7 +247,7 @@ def main(in_path, buckets_path, out_dir):
             with open('{}/suite-{}.html'.format(out_dir, full_name), 'w') as job_file:
                 job_file.write(job_html)
     summaries.sort()
-    blocking_job_summaries = filter(lambda s: s.name in BLOCKING_JOBS, summaries)
+    blocking_job_summaries = filter(lambda s: s.name in blocking_jobs, summaries)
 
     index_template = JINJA_ENV.get_template('index.html')
     index_html = index_template.render({
@@ -273,6 +266,8 @@ def get_options(argv):
                         help='where to write output pages')
     parser.add_argument('--input', required=True,
                         help='JSON test data to read for input')
+    parser.add_argument('--configmap', required=True,
+                        help='submit-queue configmap')
     parser.add_argument('--buckets', required=True,
                         help='JSON GCS buckets to read for test results')
     return parser.parse_args(argv)
@@ -280,4 +275,4 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    main(OPTIONS.input, OPTIONS.buckets, OPTIONS.output_dir)
+    main(OPTIONS.input, OPTIONS.buckets, OPTIONS.output_dir, OPTIONS.configmap)
