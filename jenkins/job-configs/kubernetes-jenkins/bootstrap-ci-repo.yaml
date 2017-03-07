@@ -183,7 +183,7 @@
         timeout: 90
     - kubernetes-node-kubelet-1.4:  # dawnchen
         branch: release-1.4
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.4
         repo-name: k8s.io/kubernetes
         timeout: 90
