@@ -1349,6 +1349,7 @@ class JobTest(unittest.TestCase):
         'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
@@ -1424,6 +1425,21 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
             Check, use_json=is_modern)
+
+    def testBootstrapPullJsonYaml(self):
+        def Check(job, name):
+            job_name = 'pull-%s' % name
+            self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml',
+            Check, use_json=True)
 
     def testBootstrapPullYaml(self):
         bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
@@ -1539,7 +1555,7 @@ class JobTest(unittest.TestCase):
             self.fail(tmpl)
         self.assertIn('--service-account=', cmd)
         self.assertIn('--upload=', cmd)
-        if '--pull=' in cmd:
+        if '${{PULL_REFS}}' in cmd:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/pr-logs\'', cmd)
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
@@ -1587,8 +1603,9 @@ class JobTest(unittest.TestCase):
             real_job = job[name]
             self.assertNotIn(name, real_jobs)
             real_jobs[name] = real_job
-            if name not in self.realjobs:
-                self.realjobs[name] = real_job
+            real_name = real_job.get('job-name', 'unset-%s' % name)
+            if real_name not in self.realjobs:
+                self.realjobs[real_name] = real_job
         return real_jobs
 
     def CheckBootstrapYaml(self, path, check, use_json=False):
@@ -1626,7 +1643,7 @@ class JobTest(unittest.TestCase):
             self.assertEquals(job_name, real_job.get('job-name'))
 
     def GetRealBootstrapJob(self, job):
-        key = os.path.splitext(job.strip())[0][3:]
+        key = os.path.splitext(job.strip())[0]
         if not key in self.realjobs:
             for yaml in self.yaml_suffix:
                 self.LoadBootstrapYaml(yaml)
@@ -1681,7 +1698,8 @@ class JobTest(unittest.TestCase):
                     self.assertGreater(docker_timeout, 0)
                 self.assertTrue(mat, line)
                 if int(mat.group(1)) > docker_timeout:
-                    bad_jobs.add(job)
+                    import pdb; pdb.set_trace()
+                    bad_jobs.add((job, mat.group(1), docker_timeout))
             self.assertTrue(found_timeout, job)
         self.assertFalse(bad_jobs)
 
@@ -1798,11 +1816,11 @@ class JobTest(unittest.TestCase):
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
 
-                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE 
+                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE
                 for b in black:
                     if b in line:
                         self.fail('[%r]: Env %r: Convert %r to use e2e scenario flags' % (job, line, b))
-                
+
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
@@ -1824,14 +1842,17 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 hasMatchingEnv = False
                 for arg in config[job].get('args', []):
-                    m = re.match(r'--env-file=([^\"]+)', arg)
+                    m = re.match(r'--env-file=jobs/([^\"]+)\.env', arg)
                     if m:
                         env = m.group(1)
-                        if env[5:-4] == job: # strip FOO from 'jobs/FOO.env'
+                        if env == job:
                             hasMatchingEnv = True
-                        self.assertTrue(os.path.isfile(bootstrap.test_infra(env)), job)
+                        self.assertTrue(
+                            os.path.isfile(
+                                bootstrap.test_infra('jobs/%s.env' % env)),
+                            (env, job))
                 if config[job]['scenario'] == 'kubernetes_e2e':
-                    self.assertTrue(hasMatchingEnv)
+                    self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
                         self.assertIn('--tag=v20170223-43ce8f86', config[job]['args'])
 

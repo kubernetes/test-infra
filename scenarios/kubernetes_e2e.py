@@ -298,6 +298,8 @@ def main(args):
         runner_args.append('--stage=%s' % args.stage)
 
 
+    cluster = args.cluster or 'e2e-gce-%s-%s' % (
+        os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
     mode.add_environment(
       # Boilerplate envs
       # Skip gcloud update checking
@@ -308,16 +310,16 @@ def main(args):
       'E2E_UP=%s' % args.up,
       'E2E_TEST=%s' % args.test,
       'E2E_DOWN=%s' % args.down,
-      'E2E_NAME=%s' % args.cluster,
+      'E2E_NAME=%s' % cluster,
       # AWS
-      'KUBE_AWS_INSTANCE_PREFIX=%s' % args.cluster,
+      'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
       # GCE
-      'INSTANCE_PREFIX=%s' % args.cluster,
-      'KUBE_GCE_NETWORK=%s' % args.cluster,
-      'KUBE_GCE_INSTANCE_PREFIX=%s' % args.cluster,
+      'INSTANCE_PREFIX=%s' % cluster,
+      'KUBE_GCE_NETWORK=%s' % cluster,
+      'KUBE_GCE_INSTANCE_PREFIX=%s' % cluster,
       # GKE
-      'CLUSTER_NAME=%s' % args.cluster,
-      'KUBE_GKE_NETWORK=%s' % args.cluster,
+      'CLUSTER_NAME=%s' % cluster,
+      'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
     # env blacklist.

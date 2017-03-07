@@ -86,6 +86,11 @@ presubmits:
     rerun_command: "@k8s-bot cvm gce e2e test this"
     trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
 
+  - name: pull-kubernetes-e2e-gce-canary
+    context: pull-kubernetes-e2e-gce-canary
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
+
   - name: pull-kubernetes-e2e-gce-etcd3
     always_run: true
     context: Jenkins GCE etcd3 e2e
