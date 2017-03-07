@@ -20,15 +20,12 @@ go_test(
     srcs = [
         "fetcher_test.go",
         "influx_test.go",
-        "plugins_mock_test.go",
-        "plugins_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
-        "//vendor:github.com/golang/mock/gomock",
     ],
 )
 
@@ -37,7 +34,6 @@ go_library(
     srcs = [
         "fetcher.go",
         "influx.go",
-        "plugins.go",
         "transform.go",
     ],
     tags = ["automanaged"],
