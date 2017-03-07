@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	"fmt"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"reflect"
+
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 func TestUnapprovedFiles(t *testing.T) {
@@ -399,6 +400,79 @@ func TestIsApproved(t *testing.T) {
 		if test.isApproved != calculated {
 			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
 			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
+		}
+	}
+}
+
+func TestGetFilesApprovers(t *testing.T) {
+	tests := []struct {
+		testName       string
+		filenames      []string
+		approvers      []string
+		owners         map[string]sets.String
+		expectedStatus map[string]sets.String
+	}{
+		{
+			testName:       "Empty PR",
+			filenames:      []string{},
+			approvers:      []string{},
+			owners:         map[string]sets.String{},
+			expectedStatus: map[string]sets.String{},
+		},
+		{
+			testName:       "No approvers",
+			filenames:      []string{"a/a", "c"},
+			approvers:      []string{},
+			owners:         map[string]sets.String{"": sets.NewString("RootOwner")},
+			expectedStatus: map[string]sets.String{"": sets.String{}},
+		},
+		{
+			testName: "Approvers approves some",
+			filenames: []string{
+				"a/a",
+				"c/c",
+			},
+			approvers: []string{"CApprover"},
+			owners: map[string]sets.String{
+				"a": sets.NewString("AApprover"),
+				"c": sets.NewString("CApprover"),
+			},
+			expectedStatus: map[string]sets.String{
+				"a": sets.String{},
+				"c": sets.NewString("CApprover"),
+			},
+		},
+		{
+			testName: "Multiple approvers",
+			filenames: []string{
+				"a/a",
+				"c/c",
+			},
+			approvers: []string{"RootApprover", "CApprover"},
+			owners: map[string]sets.String{
+				"":  sets.NewString("RootApprover"),
+				"a": sets.NewString("AApprover"),
+				"c": sets.NewString("CApprover"),
+			},
+			expectedStatus: map[string]sets.String{
+				"a": sets.NewString("RootApprover"),
+				"c": sets.NewString("RootApprover", "CApprover"),
+			},
+		},
+		{
+			testName:       "Case-sensitive approvers",
+			filenames:      []string{"file"},
+			approvers:      []string{"RootApprover"},
+			owners:         map[string]sets.String{"": sets.NewString("rootapprover")},
+			expectedStatus: map[string]sets.String{"": sets.NewString()},
+		},
+	}
+
+	for _, test := range tests {
+		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)}, sets.NewString(test.approvers...)}
+		calculated := testApprovers.GetFilesApprovers()
+		if !reflect.DeepEqual(test.expectedStatus, calculated) {
+			t.Errorf("Failed for test %v.  Expected approval status: %v. Found %v", test.testName, test.expectedStatus, calculated)
 		}
 	}
 }

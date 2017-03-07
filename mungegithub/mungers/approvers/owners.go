@@ -24,10 +24,11 @@ import (
 
 	"bytes"
 	"fmt"
+	"path/filepath"
+
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
-	"path/filepath"
 )
 
 const (
@@ -74,7 +75,18 @@ func NewOwners(filenames []string, r RepoInterface, s int64) Owners {
 	return Owners{filenames: filenames, repo: r, seed: s}
 }
 
-// GetApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
+// GetApprovers returns a map from ownersFiles -> people that are approvers in them
+func (o Owners) GetApprovers() map[string]sets.String {
+	ownersToApprovers := map[string]sets.String{}
+
+	for fn := range o.GetOwnersSet() {
+		ownersToApprovers[fn] = o.repo.Approvers(fn)
+	}
+
+	return ownersToApprovers
+}
+
+// GetLeafApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
 func (o Owners) GetLeafApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
@@ -185,12 +197,22 @@ type Approvers struct {
 	Approvers sets.String
 }
 
+// GetFilesApprovers returns a map from files -> list of current approvers.
+func (ap Approvers) GetFilesApprovers() map[string]sets.String {
+	filesApprovers := map[string]sets.String{}
+
+	for fn, potentialApprovers := range ap.Owners.GetApprovers() {
+		filesApprovers[fn] = potentialApprovers.Intersection(ap.Approvers)
+	}
+
+	return filesApprovers
+}
+
 // UnapprovedFiles returns owners files that still need approval
 func (ap Approvers) UnapprovedFiles() sets.String {
 	unapproved := sets.NewString()
-	for fn := range ap.Owners.GetOwnersSet() {
-		approvers := ap.Owners.repo.Approvers(fn)
-		if approvers.Intersection(ap.Approvers).Len() == 0 {
+	for fn, approvers := range ap.GetFilesApprovers() {
+		if len(approvers) == 0 {
 			unapproved.Insert(fn)
 		}
 	}
@@ -200,14 +222,13 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 // UnapprovedFiles returns owners files that still need approval
 func (ap Approvers) GetFiles() []File {
 	allOwnersFiles := []File{}
+	filesApprovers := ap.GetFilesApprovers()
 	for _, fn := range ap.Owners.GetOwnersSet().List() {
-		relevant_approvers := ap.Owners.repo.Approvers(fn).Intersection(ap.Approvers)
-		if relevant_approvers.Len() == 0 {
+		if len(filesApprovers[fn]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn})
 		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, relevant_approvers})
+			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn]})
 		}
-
 	}
 
 	return allOwnersFiles
