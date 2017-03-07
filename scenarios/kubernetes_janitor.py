@@ -69,6 +69,7 @@ def clean_project(project, hours=24, dryrun=False):
 
 BLACKLIST = [
     '-soak', # We need to keep deployed resources for test uses
+    'kubernetes-scale', # Let it's up/down job handle the resources
 ]
 
 PR_PROJECTS = [
@@ -95,13 +96,13 @@ def check_ci_jobs():
     for job in os.listdir(test_infra('jobs')):
         if not job.endswith('.env'):
             continue
-        if any(b in job for b in BLACKLIST):
-            print >>sys.stderr, 'Job %r is blacklisted in ci-janitor' % job
-            continue
 
         project = parse_project(test_infra('jobs/%s' % job))
         if not project:
             print >>sys.stderr, 'Job %r does not have a project!' % job
+            continue
+        if any(b in project for b in BLACKLIST):
+            print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
             continue
         if project in PR_PROJECTS:
             continue # CI janitor skips all PR jobs

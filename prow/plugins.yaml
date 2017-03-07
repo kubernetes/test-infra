@@ -22,6 +22,7 @@ kubernetes/test-infra:
 - trigger
 
 kubernetes:
+- assign
 - cla
 - close
 - heart

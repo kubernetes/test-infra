@@ -1446,34 +1446,19 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapCIYaml(self):
-        # TODO(krzyzacy): temp until more jobs to be converted
-
-        whitelist = [
-        ]
-
-        blacklist = [
-            'kubernetes-e2e-aws',
-        ]
-
-        is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
-            if is_modern(name):
-                self.assertNotIn('json', job)
-                self.assertGreater(job['timeout'], 0, job_name)
-                self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
-            else:
-                self.assertEqual(job['json'], 0)
-                self.assertEqual(job['timeout'], 0)
-                self.assertGreaterEqual(job['jenkins-timeout'], 600, job_name)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0, job_name)
+            self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
-            Check, use_json=is_modern)
+            Check, use_json=True)
 
     def testBootstrapCICommitYaml(self):
         def Check(job, name):

@@ -84,6 +84,12 @@ class LocalMode(object):
                         continue
                     self.env_files.append(self.parse_env(line))
 
+    def add_aws_cred(self, priv, pub, cred):
+        """Sets aws keys and credentials."""
+        self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
+        self.add_environment('JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub)
+        self.add_environment('JENKINS_AWS_CREDENTIALS_FILE=%s' % cred)
+
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
         ssh_dir = '%s/.ssh' % self.workspace
@@ -125,7 +131,11 @@ class LocalMode(object):
                 os.path.expandvars('${GOPATH}/bin/kubetest'),
                 os.path.join(parent, 'kubetest'))
 
-    def start(self):
+    def add_k8s(self, *a, **kw):
+        """Add specified k8s.io repos (noop)."""
+        pass
+
+    def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
         env = {}
@@ -141,7 +151,7 @@ class LocalMode(object):
                 print >>sys.stderr, 'Fail to set project %r', project
         else:
             print >>sys.stderr, 'PROJECT not set in job, will use local project'
-        check_env(env, self.runner)
+        check_env(env, self.runner, *args)
 
 
 class DockerMode(object):
@@ -181,6 +191,24 @@ class DockerMode(object):
         for env_file in env_files:
             self.cmd.extend(['--env-file', test_infra(env_file)])
 
+    def add_k8s(self, k8s, *repos):
+        """Add the specified k8s.io repos into container."""
+        for repo in repos:
+            self.cmd.extend([
+                '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
+        self.cmd.extend(['-v', '%s/release:/go/src/k8s.io/release' % k8s])
+
+    def add_aws_cred(self, priv, pub, cred):
+        """Mounts aws keys/creds inside the container."""
+        aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+        aws_pub = '%s.pub' % aws_ssh
+        aws_cred = '/workspace/.aws/credentials'
+
+        self.cmd.extend([
+          '-v', '%s:%s:ro' % (priv, aws_ssh),
+          '-v', '%s:%s:ro' % (pub, aws_pub),
+          '-v', '%s:%s:ro' % (cred, aws_cred),
+        ])
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
@@ -200,13 +228,15 @@ class DockerMode(object):
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
 
-    def start(self):
+    def start(self, args):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
-        self.cmd.append(kubekins(self.tag))
+        cmd = list(self.cmd)
+        cmd.append(kubekins(self.tag))
+        cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
-        check(*self.cmd)
+        check(*cmd)
 
     def sig_handler(self, _signo, _frame):
         """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
@@ -216,6 +246,8 @@ class DockerMode(object):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
+    # pylint: disable=too-many-branches
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -233,7 +265,8 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        mode = DockerMode(container, workspace, args.docker_in_docker, args.tag, args.mount_paths)
+        sudo = args.docker_in_docker or args.build
+        mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:
@@ -241,11 +274,29 @@ def main(args):
     if args.env_file:
         mode.add_files(args.env_file)
 
+    if args.aws:
+        # Enforce aws credential/keys exists
+        for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
+            if not os.path.isfile(os.path.expandvars(path)):
+                raise IOError(path, os.path.expandvars(path))
+        mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
+
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     if args.service_account:
         mode.add_service_account(args.service_account)
+
+    runner_args = []
+    if args.build:
+        runner_args.append('--build')
+        k8s = os.getcwd()
+        if not os.path.basename(k8s) == 'kubernetes':
+            raise ValueError(k8s)
+        mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
+    if args.stage:
+        runner_args.append('--stage=%s' % args.stage)
+
 
     mode.add_environment(
       # Boilerplate envs
@@ -273,6 +324,7 @@ def main(args):
     # TODO(krzyzacy) change this to a whitelist
     docker_env_ignore = [
       'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
       'GOROOT',
       'HOME',
       'PATH',
@@ -289,7 +341,7 @@ def main(args):
     if args.soak_test and os.environ.get('JOB_NAME'):
         mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
 
-    mode.start()
+    mode.start(runner_args)
 
 def create_parser():
     """Create argparser."""
@@ -299,6 +351,20 @@ def create_parser():
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
+    parser.add_argument(
+        '--aws', action='store_true', help='E2E job runs in aws')
+    parser.add_argument(
+        '--aws-ssh',
+        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        help='Path to private aws ssh keys')
+    parser.add_argument(
+        '--aws-pub',
+        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        help='Path to pub aws ssh key')
+    parser.add_argument(
+        '--aws-cred',
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        help='Path to aws credential file')
     parser.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
@@ -318,6 +384,10 @@ def create_parser():
         help='Paths that should be mounted within the docker container in the form local:remote')
     # Assume we're upping, testing, and downing a cluster by default
     parser.add_argument(
+        '--build', action='store_true', help='Build kubernetes binaries if set')
+    parser.add_argument(
+        '--stage', help='Stage binaries to gs:// path if set')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
@@ -326,7 +396,7 @@ def create_parser():
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
-        '--tag', default='v20170228-c2fc37ee', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170303-c2f53a54', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     parser.add_argument(

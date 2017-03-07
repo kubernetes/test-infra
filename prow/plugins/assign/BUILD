@@ -4,27 +4,29 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
+    "go_test",
 )
 
-go_binary(
-    name = "webhooks-publisher",
+go_test(
+    name = "go_default_test",
+    srcs = ["assign_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
+    deps = [
+        "//prow/github:go_default_library",
+        "//vendor:github.com/Sirupsen/logrus",
+    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["hook.go"],
+    srcs = ["assign.go"],
     tags = ["automanaged"],
     deps = [
-        "//vendor:cloud.google.com/go/pubsub",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/spf13/cobra",
-        "//vendor:golang.org/x/net/context",
-        "//vendor:gopkg.in/yaml.v2",
+        "//prow/github:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//vendor:github.com/Sirupsen/logrus",
     ],
 )
 

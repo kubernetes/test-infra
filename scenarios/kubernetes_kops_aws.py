@@ -26,8 +26,15 @@ import signal
 import string
 import subprocess
 import sys
+import tempfile
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
+
+ROLE_CONFIG = """\
+[profile jenkins-assumed-role]
+role_arn = {role_arn}
+source_profile = {source_profile}
+"""
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -111,6 +118,7 @@ def main(args):
     aws_ssh = '/workspace/.ssh/kube_aws_rsa'
     aws_pub = '%s.pub' % aws_ssh
     aws_cred = '/workspace/.aws/credentials'
+    aws_config = '/workspace/.aws/config'
 
     cmd.extend([
       '-v', '%s:%s:ro' % (args.aws_ssh, aws_ssh),
@@ -121,6 +129,22 @@ def main(args):
         service = '/service-account.json'
         cmd.extend(['-v', '%s:%s:ro' % (args.service_account, service),
                     '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+    profile = args.aws_profile
+    if args.aws_role_arn:
+        with tempfile.NamedTemporaryFile(
+            prefix='aws-config', delete=False) as cfg:
+            cfg.write(ROLE_CONFIG.format(
+                role_arn=args.aws_role_arn,
+                source_profile=profile))
+            cmd.extend([
+              '-v', '%s:%s:ro' % (cfg.name, aws_config),
+              '-e', 'AWS_SDK_LOAD_CONFIG=true',
+            ])
+        profile = 'jenkins-assumed-role' # From ROLE_CONFIG
+    cmd.extend([
+      '-e', 'AWS_PROFILE=%s' % profile,
+      '-e', 'AWS_DEFAULT_PROFILE=%s' % profile,
+    ])
 
     zones = args.zones
     if not zones:
@@ -193,6 +217,17 @@ if __name__ == '__main__':
         '--aws-cred',
         default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
         help='Path to aws credential file')
+    PARSER.add_argument(
+        '--aws-profile',
+        default=(os.environ.get('AWS_PROFILE') or
+                 os.environ.get('AWS_DEFAULT_PROFILE') or
+                 'default'),
+        help='Profile within --aws-cred to use')
+    PARSER.add_argument(
+        '--aws-role-arn',
+        default=os.environ.get('KOPS_E2E_ROLE_ARN'),
+        help='If set, use the --aws-profile profile credentials '
+        'and run as --aws-role-arn')
     PARSER.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),

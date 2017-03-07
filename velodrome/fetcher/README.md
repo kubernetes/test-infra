@@ -39,27 +39,17 @@ cloud-sql proxy as described here:
 https://github.com/GoogleCloudPlatform/cloudsql-proxy
 
 
-Deploying the fetcher
-=====================
+Create a new version
+====================
+Push
+----
 
-First time only
----------------
-
-Create the github-tokens secret:
+Run the push script:
 ```
-kubectl create secret generic github-tokens --from-literal=token_login_1=${your_1st_token} --from-literal=token_login_2=${your_2nd_token}
-```
-
-And install the certificate if you haven't done it yet:
-```
-curl -O https://curl.haxx.se/ca/cacert.pem
-kubectl create configmap certificates --from-file=ca-certificates.crt=cacert.pem
+make push IMG=gcr.io/your-repo/fetcher
 ```
 
-Deployment
-----------
+Update deployment
+-----------------
 
-Run the deploy script:
-```
-make deploy IMG=gcr.io/your-repo/fetcher
-```
+Update the `deployment.yaml` with the new generated version.

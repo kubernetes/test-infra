@@ -408,6 +408,28 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return err
 }
 
+func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
+	c.log("AssignIssue", org, repo, number, logins)
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
+		requestBody: map[string][]string{"assignees": logins},
+		exitCodes:   []int{201},
+	}, nil)
+	return err
+}
+
+func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
+	c.log("UnassignIssue", org, repo, number, logins)
+	_, err := c.request(&request{
+		method:      http.MethodDelete,
+		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
+		requestBody: map[string][]string{"assignees": logins},
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 func (c *Client) CloseIssue(org, repo string, number int) error {
 	c.log("CloseIssue", org, repo, number)
 	_, err := c.request(&request{

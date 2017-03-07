@@ -337,6 +337,67 @@ func TestRemoveLabel(t *testing.T) {
 	}
 }
 
+func TestAssignIssue(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string][]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 1 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if len(ps["assignees"]) != 2 {
+			t.Errorf("Wrong assignees length: %v", ps)
+		} else if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
+			t.Errorf("Wrong assignees: %v", ps)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestUnassignIssue(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string][]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 1 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if len(ps["assignees"]) != 2 {
+			t.Errorf("Wrong assignees length: %v", ps)
+		} else if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
+			t.Errorf("Wrong assignees: %v", ps)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.UnassignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
 func TestCloseIssue(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
