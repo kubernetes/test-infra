@@ -33,11 +33,19 @@ import (
 
 var (
 	allPlugins           = map[string]struct{}{}
+	issueHandlers        = map[string]IssueHandler{}
 	issueCommentHandlers = map[string]IssueCommentHandler{}
 	pullRequestHandlers  = map[string]PullRequestHandler{}
-	statusEventHandlers  = map[string]StatusEventHandler{}
 	pushEventHandlers    = map[string]PushEventHandler{}
+	statusEventHandlers  = map[string]StatusEventHandler{}
 )
+
+type IssueHandler func(PluginClient, github.IssueEvent) error
+
+func RegisterIssueHandler(name string, fn IssueHandler) {
+	allPlugins[name] = struct{}{}
+	issueHandlers[name] = fn
+}
 
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
 
@@ -136,6 +144,20 @@ func (pa *PluginAgent) Start(path string) error {
 		}
 	}()
 	return nil
+}
+
+// IssueHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) IssueHandlers(owner, repo string) map[string]IssueHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]IssueHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := issueHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+	return hs
 }
 
 // IssueCommentHandlers returns a map of plugin names to handlers for the repo.
