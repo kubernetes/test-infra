@@ -32,6 +32,8 @@ var assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @[-\w]+?)*)\s*\r?$`)
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+	plugins.RegisterIssueHandler(pluginName, handleIssue)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
 }
 
 type githubClient interface {
@@ -39,8 +41,49 @@ type githubClient interface {
 	UnassignIssue(owner, repo string, number int, logins []string) error
 }
 
+type assignEvent struct {
+	action string
+	body   string
+	login  string
+	org    string
+	repo   string
+	number int
+}
+
+func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+	ae := assignEvent{
+		action: pr.Action,
+		body:   pr.PullRequest.Body,
+		login:  pr.PullRequest.User.Login,
+		org:    pr.PullRequest.Base.Repo.Owner.Login,
+		repo:   pr.PullRequest.Base.Repo.Name,
+		number: pr.Number,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
+}
+
+func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
+	ae := assignEvent{
+		action: i.Action,
+		body:   i.Issue.Body,
+		login:  i.Issue.User.Login,
+		org:    i.Repo.Owner.Login,
+		repo:   i.Repo.Name,
+		number: i.Issue.Number,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
+}
+
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, ic)
+	ae := assignEvent{
+		action: ic.Action,
+		body:   ic.Issue.Body,
+		login:  ic.Comment.User.Login,
+		org:    ic.Repo.Owner.Login,
+		repo:   ic.Repo.Name,
+		number: ic.Issue.Number,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
 }
 
 func parseLogins(text string) []string {
@@ -55,12 +98,12 @@ func parseLogins(text string) []string {
 	return parts
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
-	if ic.Action != "created" { // Only consider new comments.
+func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
+	if ae.action != "created" && ae.action != "opened" { // Only consider new comments/issues
 		return nil
 	}
 
-	matches := assignRe.FindAllStringSubmatch(ic.Comment.Body, -1)
+	matches := assignRe.FindAllStringSubmatch(ae.body, -1)
 	if matches == nil {
 		return nil
 	}
@@ -70,17 +113,13 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 		add := re[1] != "un" // unassign == !add
 		if re[2] == "" {
-			assignments[ic.Comment.User.Login] = add
+			assignments[ae.login] = add
 			continue
 		}
 		for _, login := range parseLogins(re[2]) {
 			assignments[login] = add
 		}
 	}
-
-	org := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
-	number := ic.Issue.Number
 
 	var assign, unassign []string
 
@@ -93,14 +132,14 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	}
 
 	if len(unassign) > 0 {
-		log.Printf("Removing assignees from %s/%s#%d: %v", org, repo, number, unassign)
-		if err := gc.UnassignIssue(org, repo, number, unassign); err != nil {
+		log.Printf("Removing assignees from %s/%s#%d: %v", ae.org, ae.repo, ae.number, unassign)
+		if err := gc.UnassignIssue(ae.org, ae.repo, ae.number, unassign); err != nil {
 			return err
 		}
 	}
 	if len(assign) > 0 {
-		log.Printf("Adding assignees to %s/%s#%d: %v", org, repo, number, assign)
-		if err := gc.AssignIssue(org, repo, number, assign); err != nil {
+		log.Printf("Adding assignees to %s/%s#%d: %v", ae.org, ae.repo, ae.number, assign)
+		if err := gc.AssignIssue(ae.org, ae.repo, ae.number, assign); err != nil {
 			return err
 		}
 	}

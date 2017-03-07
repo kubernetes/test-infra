@@ -13,10 +13,7 @@ go_test(
     srcs = ["assign_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = [
-        "//prow/github:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-    ],
+    deps = ["//vendor:github.com/Sirupsen/logrus"],
 )
 
 go_library(

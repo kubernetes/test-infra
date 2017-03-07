@@ -76,31 +76,36 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) demuxEvent(eventType string, payload []byte) error {
 	switch eventType {
-	case "pull_request":
-		var pr github.PullRequestEvent
-		if err := json.Unmarshal(payload, &pr); err != nil {
+	case "issues":
+		var i github.IssueEvent
+		if err := json.Unmarshal(payload, &i); err != nil {
 			return err
 		}
-		go s.handlePullRequestEvent(pr)
+		go s.handleIssueEvent(i)
 	case "issue_comment":
 		var ic github.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
 		go s.handleIssueCommentEvent(ic)
-	case "status":
-		var se github.StatusEvent
-		if err := json.Unmarshal(payload, &se); err != nil {
+	case "pull_request":
+		var pr github.PullRequestEvent
+		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
-		go s.handleStatusEvent(se)
+		go s.handlePullRequestEvent(pr)
 	case "push":
 		var pe github.PushEvent
 		if err := json.Unmarshal(payload, &pe); err != nil {
 			return err
 		}
 		go s.handlePushEvent(pe)
+	case "status":
+		var se github.StatusEvent
+		if err := json.Unmarshal(payload, &se); err != nil {
+			return err
+		}
+		go s.handleStatusEvent(se)
 	}
-
 	return nil
 }

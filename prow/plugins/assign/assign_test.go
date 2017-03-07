@@ -20,22 +20,24 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
-
-	"k8s.io/test-infra/prow/github"
 )
 
 type fakeClient struct {
-	assigned   []string
-	unassigned []string
+	assigned   map[string]int
+	unassigned map[string]int
 }
 
 func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []string) error {
-	c.unassigned = assignees
+	for _, who := range assignees {
+		c.unassigned[who] += 1
+	}
 	return nil
 }
 
 func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
-	c.assigned = assignees
+	for _, who := range assignees {
+		c.assigned[who] += 1
+	}
 	return nil
 }
 
@@ -93,6 +95,13 @@ func TestAssignComment(t *testing.T) {
 			action:    "something",
 			body:      "uh oh",
 			commenter: "o",
+		},
+		{
+			name:      "assign on open",
+			action:    "opened",
+			body:      "/assign",
+			commenter: "rando",
+			added:     []string{"rando"},
 		},
 		{
 			name:      "assign me",
@@ -158,39 +167,36 @@ func TestAssignComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClient{}
-		ice := github.IssueCommentEvent{
-			Action: tc.action,
-			Comment: github.IssueComment{
-				Body: tc.body,
-				User: github.User{Login: tc.commenter},
-			},
-			Issue: github.Issue{
-				User:      github.User{Login: "a"},
-				Number:    5,
-				Assignees: []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
-			},
+		fc := &fakeClient{
+			assigned:   make(map[string]int),
+			unassigned: make(map[string]int),
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
+		ae := assignEvent{
+			action: tc.action,
+			body:   tc.body,
+			login:  tc.commenter,
+			number: 5,
+		}
+		if err := handle(fc, logrus.WithField("plugin", pluginName), ae); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
 		if len(fc.assigned) != len(tc.added) {
-			t.Errorf("For case %s, assigned actual %s != expected %s", tc.name, fc.assigned, tc.added)
+			t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.assigned, tc.added)
 		} else {
-			for n, who := range tc.added {
-				if who != fc.assigned[n] {
-					t.Errorf("For case %s, assigned actual %s != expected %s", tc.name, fc.assigned, tc.added)
+			for _, who := range tc.added {
+				if n, ok := fc.assigned[who]; !ok || n < 1 {
+					t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.assigned, tc.added)
 					break
 				}
 			}
 		}
 		if len(fc.unassigned) != len(tc.removed) {
-			t.Errorf("For case %s, unassigned %s != %s", tc.name, fc.unassigned, tc.removed)
+			t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.unassigned, tc.removed)
 		} else {
-			for n, who := range tc.removed {
-				if who != fc.unassigned[n] {
-					t.Errorf("For case %s, unassigned %s != %s", tc.name, fc.unassigned, tc.removed)
+			for _, who := range tc.removed {
+				if n, ok := fc.unassigned[who]; !ok || n < 1 {
+					t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.unassigned, tc.removed)
 					break
 				}
 			}

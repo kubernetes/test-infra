@@ -59,6 +59,25 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 	}
 }
 
+func (s *Server) handleIssueEvent(i github.IssueEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":    i.Repo.Owner.Login,
+		"repo":   i.Repo.Name,
+		"pr":     i.Issue.Number,
+		"author": i.Issue.User.Login,
+		"url":    i.Issue.HTMLURL,
+	})
+	l.Infof("Issue %s.", i.Action)
+	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
+		pc := s.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
+		if err := h(pc, i); err != nil {
+			pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
+		}
+	}
+}
+
 func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	l := logrus.WithFields(logrus.Fields{
 		"org":    ic.Repo.Owner.Login,

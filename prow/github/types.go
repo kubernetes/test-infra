@@ -71,6 +71,7 @@ type PullRequest struct {
 	User    User              `json:"user"`
 	Base    PullRequestBranch `json:"base"`
 	Head    PullRequestBranch `json:"head"`
+	Body    string            `json:"body"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -105,6 +106,12 @@ type Repo struct {
 	HTMLURL  string `json:"html_url"`
 }
 
+type IssueEvent struct {
+	Action string `json:"action"`
+	Issue  Issue  `json:"issue"`
+	Repo   Repo   `json:"repository"`
+}
+
 type IssueCommentEvent struct {
 	Action  string       `json:"action"`
 	Issue   Issue        `json:"issue"`
@@ -120,6 +127,7 @@ type Issue struct {
 	HTMLURL   string  `json:"html_url"`
 	Labels    []Label `json:"labels"`
 	Assignees []User  `json:"assignees"`
+	Body      string  `json:"body"`
 
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
