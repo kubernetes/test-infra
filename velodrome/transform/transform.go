@@ -63,7 +63,7 @@ func (config *transformConfig) AddFlags(cmd *cobra.Command) {
 }
 
 // Dispatch receives channels to each type of events, and dispatch them to each plugins.
-func Dispatch(plugin plugins.Plugin, DB *InfluxDB, metricName string, issues chan sql.Issue, eventsCommentsChannel chan interface{}) {
+func Dispatch(plugin plugins.Plugin, DB *InfluxDB, issues chan sql.Issue, eventsCommentsChannel chan interface{}) {
 	for {
 		var points []plugins.Point
 		select {
@@ -87,7 +87,7 @@ func Dispatch(plugin plugins.Plugin, DB *InfluxDB, metricName string, issues cha
 		}
 
 		for _, point := range points {
-			if err := DB.Push(metricName, point.Tags, point.Values, point.Date); err != nil {
+			if err := DB.Push(point.Tags, point.Values, point.Date); err != nil {
 				glog.Fatal("Failed to push point: ", err)
 			}
 		}
@@ -104,7 +104,10 @@ func (config *transformConfig) run(plugin plugins.Plugin) error {
 	if err != nil {
 		return err
 	}
-	influxdb, err := config.InfluxConfig.CreateDatabase(map[string]string{"repository": config.repository})
+
+	influxdb, err := config.InfluxConfig.CreateDatabase(
+		map[string]string{"repository": config.repository},
+		config.metricName)
 	if err != nil {
 		return err
 	}
@@ -112,7 +115,7 @@ func (config *transformConfig) run(plugin plugins.Plugin) error {
 	fetcher := NewFetcher(config.repository)
 
 	// Plugins constantly wait for new issues/events/comments
-	go Dispatch(plugin, influxdb, config.metricName, fetcher.IssuesChannel,
+	go Dispatch(plugin, influxdb, fetcher.IssuesChannel,
 		fetcher.EventsCommentsChannel)
 
 	ticker := time.Tick(time.Hour / time.Duration(config.frequency))
