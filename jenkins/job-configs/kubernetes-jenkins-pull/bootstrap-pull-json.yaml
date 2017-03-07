@@ -50,7 +50,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --job='{job-name}' \
             --json \
-            --repo='{repo-name}=${{PULL_REFS}}' \
+            --repo="{repo-name}=${{PULL_REFS}}" \
             --repo='k8s.io/release' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
