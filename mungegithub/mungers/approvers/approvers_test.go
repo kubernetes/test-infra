@@ -460,11 +460,11 @@ func TestGetFilesApprovers(t *testing.T) {
 			},
 		},
 		{
-			testName:       "Case-sensitive approvers",
+			testName:       "Case-insensitive approvers",
 			filenames:      []string{"file"},
 			approvers:      []string{"RootApprover"},
-			owners:         map[string]sets.String{"": sets.NewString("rootapprover")},
-			expectedStatus: map[string]sets.String{"": sets.NewString()},
+			owners:         map[string]sets.String{"": sets.NewString("rOOtaPProver")},
+			expectedStatus: map[string]sets.String{"": sets.NewString("RootApprover")},
 		},
 	}
 

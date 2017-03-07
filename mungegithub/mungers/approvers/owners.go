@@ -197,12 +197,37 @@ type Approvers struct {
 	Approvers sets.String
 }
 
+// IntersectSetsCase runs the intersection between to sets.String in a
+// case-insensitive way. It returns the name with the case of "one".
+func IntersectSetsCase(one, other sets.String) sets.String {
+	lower := sets.NewString()
+	for item := range other {
+		lower.Insert(strings.ToLower(item))
+	}
+
+	intersection := sets.NewString()
+	for item := range one {
+		if lower.Has(strings.ToLower(item)) {
+			intersection.Insert(item)
+		}
+	}
+	return intersection
+}
+
 // GetFilesApprovers returns a map from files -> list of current approvers.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
 
 	for fn, potentialApprovers := range ap.Owners.GetApprovers() {
-		filesApprovers[fn] = potentialApprovers.Intersection(ap.Approvers)
+		// The order of parameter matters here:
+		// - ap.Approvers is the list of github handle that have approved
+		// - potentialApprovers is the list of handle in OWNERS
+		// files that can approve each file.
+		//
+		// We want to keep the syntax of the github handle
+		// rather than the potential mis-cased username found in
+		// the OWNERS file, that's why it's the first parameter.
+		filesApprovers[fn] = IntersectSetsCase(ap.Approvers, potentialApprovers)
 	}
 
 	return filesApprovers
