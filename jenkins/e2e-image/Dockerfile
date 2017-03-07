@@ -45,7 +45,7 @@ ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
 
 ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
      "/workspace/"]
-ENV PATH=/google-cloud-sdk/bin:${PATH} \
+ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
     /google-cloud-sdk/install.sh \
