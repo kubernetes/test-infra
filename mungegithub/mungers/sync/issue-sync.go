@@ -53,15 +53,15 @@ type Priority int
 // String return the priority label in string
 func (p Priority) String() string {
 	switch p {
-    case PriorityCriticalUrgent:
-        return priorityPrefix + "critical-urgent"
-    case PriorityImportantSoon:
-        return priorityPrefix + "important-soon"
-    case PriorityImportantLongterm:
-        return priorityPrefix + "important-longterm"
-    default:
-    	return priorityPrefix + "backlog"
-    }
+	case PriorityCriticalUrgent:
+		return priorityPrefix + "critical-urgent"
+	case PriorityImportantSoon:
+		return priorityPrefix + "important-soon"
+	case PriorityImportantLongterm:
+		return priorityPrefix + "important-longterm"
+	default:
+		return priorityPrefix + "backlog"
+	}
 }
 
 // Priority returns the priority in int
