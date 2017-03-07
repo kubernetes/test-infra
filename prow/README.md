@@ -40,9 +40,9 @@ This will listen on `localhost:8888` for webhooks. Send one with:
 
 Any modifications to Go code will require redeploying the affected binaries.
 Fortunately, this should result in no downtime for the system. Bump the
-relevant version number in the makefile as well as in the `cluster` manifest
-and run `make update-cluster`. You can also consider updating individual
-images and deployments, if you'd like.
+relevant version number in the makefile as well as in the `cluster` manifest,
+then run the image and deployment make targets. For instance, if you bumped
+the hook version, run `make hook-image && make hook-deployment`.
 
 **Please ensure that your git tree is up to date before updating anything.**
 
@@ -82,3 +82,72 @@ appropriate revision. It needs to accept the `buildId` parameter which the
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
 messages defined in [config.yaml](config.yaml).
+
+## How to turn up a new cluster
+
+Prow should run anywhere that Kubernetes runs. Here are the steps required to
+set up a prow cluster on GKE.
+
+1. Create the cluster. I'm assuming that `PROJECT`, `CLUSTER`, and `ZONE` are
+set. I'm putting prow components on a node with the label `role=prow`, and I'm
+doing the actual tests on nodes with the label `role=build`, but this isn't a
+hard requirement.
+
+ ```
+ gcloud -q container --project "${PROJECT}" clusters create "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=prow --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+ gcloud -q container node-pools create build-pool --project "${PROJECT}" --cluster "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
+ ```
+
+1. Create the secrets that allow prow to talk to GitHub. The `hmac-token` is
+the token that you set on GitHub webhooks, and the `oauth-token` is an OAuth2
+token that has read and write access to the bot account.
+
+ ```
+ kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+ kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
+ ```
+
+1. Create the secrets that allow prow to talk to Jenkins. The `jenkins-token`
+is the API token that matches your Jenkins account. The `jenkins-address` is
+Jenkins' URL, such as `http://pull-jenkins-master:8080`.
+
+ ```
+ kubectl create secret generic jenkins-token --from-file=jenkins=/path/to/jenkins/secret
+ kubectl create configmap jenkins-address --from-file=jenkins-address=/path/to/address
+ ```
+
+1. Create the prow configs.
+
+ ```
+ kubectl create configmap config --from-file=config=config.yaml
+ kubectl create configmap plugins --from-file=plugins=plugins.yaml
+ ```
+
+1. *Optional*: Create service account and SSH keys for your pods to run as.
+This shouldn't be necessary for most use cases.
+
+ ```
+ kubectl create secret generic service-account --from-file=service-account.json=/path/to/service-account/secret
+ kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
+ ```
+
+1. Run the prow components that you desire. I recommend `hook`, `line`,
+`sinker`, and `deck` to start out with. You'll need some way for ingress
+traffic to reach your hook and deck deployments.
+
+ ```
+ make hook-image
+ make line-image
+ make sinker-image
+ make deck-image
+
+ make hook-deployment
+ make hook-service
+ make sinker-deployment
+ make deck-deployment
+ make deck-service
+
+ kubectl apply -f cluster/ingress.yaml
+ ```
+
+1. Add the webhook to GitHub.
