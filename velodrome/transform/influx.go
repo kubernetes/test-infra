@@ -46,7 +46,7 @@ func (config *InfluxConfig) AddFlags(cmd *cobra.Command) {
 
 // CreateDatabase creates and connects a new instance of an InfluxDB
 // It is created based on the fields set in the configuration.
-func (config *InfluxConfig) CreateDatabase(tags map[string]string) (*InfluxDB, error) {
+func (config *InfluxConfig) CreateDatabase(tags map[string]string, measurement string) (*InfluxDB, error) {
 	client, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
 		Addr:     config.Host,
 		Username: config.User,
@@ -64,21 +64,30 @@ func (config *InfluxConfig) CreateDatabase(tags map[string]string) (*InfluxDB, e
 		return nil, err
 	}
 
+	last, err := getLastMeasurement(client, config.DB, tags, measurement)
+	if err != nil {
+		return nil, err
+	}
+
 	return &InfluxDB{
-		client:   client,
-		database: config.DB,
-		batch:    bp,
-		tags:     tags,
+		client:      client,
+		database:    config.DB,
+		batch:       bp,
+		tags:        tags,
+		measurement: measurement,
+		lastFound:   last,
 	}, err
 }
 
 // InfluxDB is a connection handler to a Influx database
 type InfluxDB struct {
-	client    influxdb.Client
-	database  string
-	batch     influxdb.BatchPoints
-	batchSize int
-	tags      map[string]string
+	client      influxdb.Client
+	database    string
+	measurement string
+	lastFound   time.Time
+	batch       influxdb.BatchPoints
+	batchSize   int
+	tags        map[string]string
 }
 
 // mergeTags merge the default tags with the exta tags. Default will be overridden if it conflicts.
@@ -115,12 +124,12 @@ func tagsToWhere(tags map[string]string) string {
 }
 
 // GetLastMeasurement returns the time of the last measurement pushed to the database
-func (i *InfluxDB) GetLastMeasurement(measurement string) (time.Time, error) {
+func getLastMeasurement(client influxdb.Client, database string, tags map[string]string, measurement string) (time.Time, error) {
 	query := influxdb.Query{
-		Command:  fmt.Sprintf("SELECT * FROM %s %s GROUP BY * ORDER BY time DESC LIMIT 1", measurement, tagsToWhere(i.tags)),
-		Database: i.database,
+		Command:  fmt.Sprintf("SELECT * FROM %s %s GROUP BY * ORDER BY time DESC LIMIT 1", measurement, tagsToWhere(tags)),
+		Database: database,
 	}
-	response, err := i.client.Query(query)
+	response, err := client.Query(query)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -138,8 +147,12 @@ func (i *InfluxDB) GetLastMeasurement(measurement string) (time.Time, error) {
 }
 
 // Push a point to the database. This appends to current batchpoint
-func (i *InfluxDB) Push(measurement string, tags map[string]string, fields map[string]interface{}, date time.Time) error {
-	pt, err := influxdb.NewPoint(measurement, mergeTags(i.tags, tags), fields, date)
+func (i *InfluxDB) Push(tags map[string]string, fields map[string]interface{}, date time.Time) error {
+	if date.Before(i.lastFound) {
+		// Ignore point as we probably already have it
+		return nil
+	}
+	pt, err := influxdb.NewPoint(i.measurement, mergeTags(i.tags, tags), fields, date)
 	if err != nil {
 		return err
 	}
