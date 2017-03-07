@@ -1732,8 +1732,8 @@
         trigger-job: ''
     - kubernetes-e2e-gce-1.5-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gce-1.5-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2383,8 +2383,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2403,8 +2403,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2423,8 +2423,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-container_vm-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2443,8 +2443,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2464,8 +2464,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.5-container_vm-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.5-container_vm-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2484,8 +2484,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2504,8 +2504,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
@@ -2524,8 +2524,8 @@
         trigger-job: ''
     - kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster-new:
         job-name: ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
+        jenkins-timeout: 1020
+        timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
