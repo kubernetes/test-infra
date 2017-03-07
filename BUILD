@@ -4,9 +4,22 @@ go_prefix("k8s.io/test-infra")
 
 filegroup(
     name = "package-srcs",
-    srcs = glob(["**"], exclude=["bazel-*/**", ".git/**"]),
-    tags = ["automanaged"],
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+            "*.db",
+            "*.gz",
+        ],
+    ),
     visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "buckets",
+    srcs = ["buckets.yaml"],
+    visibility = ["//:__subpackages__"],
 )
 
 filegroup(
@@ -18,6 +31,7 @@ filegroup(
         "//images/pull_kubernetes_bazel:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
+        "//kettle:all-srcs",
         "//kubetest:all-srcs",
         "//mungegithub:all-srcs",
         "//prow:all-srcs",
