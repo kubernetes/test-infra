@@ -43,6 +43,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
+        "//velodrome/transform/plugins:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/influxdata/influxdb/client/v2",
         "//vendor:github.com/jinzhu/gorm",
