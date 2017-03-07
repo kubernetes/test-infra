@@ -1851,14 +1851,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
   - name: gke-slow-1.6
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1.6
-  - name: ci-kubernetes-soak-gce-1.6-deploy
+  - name: soak-gce-1.6-deploy
     test_group_name: ci-kubernetes-soak-gce-1.6-deploy
-  - name: ci-kubernetes-soak-gce-1.6-test
+  - name: soak-gce-1.6-test
     test_group_name: ci-kubernetes-soak-gce-1.6-test
-  - name: ci-kubernetes-soak-gci-gce-1.6-deploy
+  - name: soak-gci-gce-1.6-deploy
     test_group_name: ci-kubernetes-soak-gci-gce-1.6-deploy
-  - name: ci-kubernetes-soak-gci-gce-1.6-test
+  - name: soak-gci-gce-1.6-test
     test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
+  - name: kops-aws-1.6
+    test_group_name: kubernetes-e2e-kops-aws-release-1.6
 
 # Matches the list on https://github.com/kubernetes/test-infra/issues/2029
 - name: release-1.6-blocking
@@ -1881,7 +1883,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-release-1.6
   - name: gci-gke-1.6
     test_group_name: ci-kubernetes-e2e-gci-gke-release-1.6
-  # TODO: AWS
+  # AWS
+  - name: kops-aws-1.6
+    test_group_name: kubernetes-e2e-kops-aws-release-1.6
   # Slow
   - name: gce-slow-1.6
     test_group_name: ci-kubernetes-e2e-gce-slow-release-1.6
