@@ -2301,7 +2301,8 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-1.6-test.env",
-    "--test=false",
+    "--soak-test",
+    "--up=false",
     "--down=false",
     "--tag=v20170223-43ce8f86"
   ]
@@ -2323,7 +2324,8 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.6-test.env",
-    "--test=false",
+    "--soak-test",
+    "--up=false",
     "--down=false",
     "--tag=v20170223-43ce8f86"
   ]
