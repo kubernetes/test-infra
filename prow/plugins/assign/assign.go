@@ -77,7 +77,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	ae := assignEvent{
 		action: ic.Action,
-		body:   ic.Issue.Body,
+		body:   ic.Comment.Body,
 		login:  ic.Comment.User.Login,
 		org:    ic.Repo.Owner.Login,
 		repo:   ic.Repo.Name,
