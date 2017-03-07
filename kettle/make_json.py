@@ -82,7 +82,7 @@ def parse_junit(xml):
 # pypy compatibility hack
 BUCKETS = json.loads(subprocess.check_output(
     ['python', '-c', 'import json,yaml; print json.dumps(yaml.load(open("../buckets.yaml")))'],
-    cwd=os.path.dirname(__file__)))
+    cwd=os.path.dirname(os.path.abspath(__file__))))
 
 
 def path_to_job_and_number(path):
