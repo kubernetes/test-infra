@@ -396,7 +396,7 @@ def create_parser():
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
-        '--tag', default='v20170303-c2f53a54', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170306-c4381cc1', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     parser.add_argument(
