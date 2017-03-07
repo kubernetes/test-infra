@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
+	"k8s.io/test-infra/velodrome/transform/plugins"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -37,25 +38,68 @@ type transformConfig struct {
 	repository string
 	once       bool
 	frequency  int
+	metricName string
 }
 
-func CheckRootFlags(config *transformConfig) error {
+func (config *transformConfig) CheckRootFlags() error {
 	if config.repository == "" {
 		return fmt.Errorf("Repository must be set.")
 	}
 	config.repository = strings.ToLower(config.repository)
 
+	if config.metricName == "" {
+		return fmt.Errorf("Metric name must be set.")
+	}
+
 	return nil
 }
 
-func addRootFlags(cmd *cobra.Command, config *transformConfig) {
+func (config *transformConfig) AddFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().IntVar(&config.frequency, "frequency", 2, "Number of iterations per hour")
 	cmd.PersistentFlags().BoolVar(&config.once, "once", false, "Run once and then leave")
 	cmd.PersistentFlags().StringVar(&config.repository, "repository", "", "Repository to use for metrics")
+	cmd.PersistentFlags().StringVar(&config.metricName, "name", "", "Name of the metric")
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 }
 
-func runProgram(config *transformConfig) error {
+// Dispatch receives channels to each type of events, and dispatch them to each plugins.
+func Dispatch(plugin plugins.Plugin, DB *InfluxDB, metricName string, issues chan sql.Issue, eventsCommentsChannel chan interface{}) {
+	for {
+		var points []plugins.Point
+		select {
+		case issue, ok := <-issues:
+			if !ok {
+				return
+			}
+			points = plugin.ReceiveIssue(issue)
+		case event, ok := <-eventsCommentsChannel:
+			if !ok {
+				return
+			}
+			switch event := event.(type) {
+			case sql.IssueEvent:
+				points = plugin.ReceiveIssueEvent(event)
+			case sql.Comment:
+				points = plugin.ReceiveComment(event)
+			default:
+				glog.Fatal("Received invalid object: ", event)
+			}
+		}
+
+		for _, point := range points {
+			if err := DB.Push(metricName, point.Tags, point.Values, point.Date); err != nil {
+				glog.Fatal("Failed to push point: ", err)
+			}
+		}
+	}
+}
+
+// Plugins constantly wait for new issues/events/comments
+func (config *transformConfig) run(plugin plugins.Plugin) error {
+	if err := config.CheckRootFlags(); err != nil {
+		return err
+	}
+
 	mysqldb, err := config.MySQLConfig.CreateDatabase()
 	if err != nil {
 		return err
@@ -65,17 +109,13 @@ func runProgram(config *transformConfig) error {
 		return err
 	}
 
-	plugins := NewPlugins(influxdb)
 	fetcher := NewFetcher(config.repository)
 
 	// Plugins constantly wait for new issues/events/comments
-	go plugins.Dispatch(
-		fetcher.IssuesChannel,
-		fetcher.EventsCommentsChannel,
-	)
+	go Dispatch(plugin, influxdb, config.metricName, fetcher.IssuesChannel,
+		fetcher.EventsCommentsChannel)
 
 	ticker := time.Tick(time.Hour / time.Duration(config.frequency))
-
 	for {
 		// Fetch new events from MySQL, push it to plugins
 		if err := fetcher.Fetch(mysqldb); err != nil {
@@ -88,12 +128,10 @@ func runProgram(config *transformConfig) error {
 		if config.once {
 			break
 		}
-
 		<-ticker
 	}
 
 	return nil
-
 }
 
 func main() {
@@ -101,14 +139,12 @@ func main() {
 	root := &cobra.Command{
 		Use:   filepath.Base(os.Args[0]),
 		Short: "Transform sql database info into influx stats",
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return runProgram(config)
-		},
 	}
-	addRootFlags(root, config)
-	CheckRootFlags(config)
+	config.AddFlags(root)
 	config.MySQLConfig.AddFlags(root)
 	config.InfluxConfig.AddFlags(root)
+
+	// root.AddCommand(plugins.YourPlugin(config.run))
 
 	if err := root.Execute(); err != nil {
 		glog.Fatalf("%v\n", err)
