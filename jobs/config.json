@@ -307,6 +307,18 @@
   ]
 },
 
+"pull-kubernetes-e2e-gce-canary": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gce.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gce-canary.env",
+     "--build",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e",
+     "--cluster="
+  ]
+},
+
 "pull-kubernetes-node-e2e": {
   "scenario": "kubernetes_kubelet",
   "args": [
