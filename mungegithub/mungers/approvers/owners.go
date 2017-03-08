@@ -75,7 +75,18 @@ func NewOwners(filenames []string, r RepoInterface, s int64) Owners {
 	return Owners{filenames: filenames, repo: r, seed: s}
 }
 
-// GetApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
+// GetApprovers returns a map from ownersFiles -> people that are approvers in them
+func (o Owners) GetApprovers() map[string]sets.String {
+	ownersToApprovers := map[string]sets.String{}
+
+	for fn := range o.GetOwnersSet() {
+		ownersToApprovers[fn] = o.repo.Approvers(fn)
+	}
+
+	return ownersToApprovers
+}
+
+// GetLeafApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
 func (o Owners) GetLeafApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
@@ -186,12 +197,47 @@ type Approvers struct {
 	Approvers sets.String
 }
 
+// IntersectSetsCase runs the intersection between to sets.String in a
+// case-insensitive way. It returns the name with the case of "one".
+func IntersectSetsCase(one, other sets.String) sets.String {
+	lower := sets.NewString()
+	for item := range other {
+		lower.Insert(strings.ToLower(item))
+	}
+
+	intersection := sets.NewString()
+	for item := range one {
+		if lower.Has(strings.ToLower(item)) {
+			intersection.Insert(item)
+		}
+	}
+	return intersection
+}
+
+// GetFilesApprovers returns a map from files -> list of current approvers.
+func (ap Approvers) GetFilesApprovers() map[string]sets.String {
+	filesApprovers := map[string]sets.String{}
+
+	for fn, potentialApprovers := range ap.Owners.GetApprovers() {
+		// The order of parameter matters here:
+		// - ap.Approvers is the list of github handle that have approved
+		// - potentialApprovers is the list of handle in OWNERS
+		// files that can approve each file.
+		//
+		// We want to keep the syntax of the github handle
+		// rather than the potential mis-cased username found in
+		// the OWNERS file, that's why it's the first parameter.
+		filesApprovers[fn] = IntersectSetsCase(ap.Approvers, potentialApprovers)
+	}
+
+	return filesApprovers
+}
+
 // UnapprovedFiles returns owners files that still need approval
 func (ap Approvers) UnapprovedFiles() sets.String {
 	unapproved := sets.NewString()
-	for fn := range ap.Owners.GetOwnersSet() {
-		approvers := ap.Owners.repo.Approvers(fn)
-		if approvers.Intersection(ap.Approvers).Len() == 0 {
+	for fn, approvers := range ap.GetFilesApprovers() {
+		if len(approvers) == 0 {
 			unapproved.Insert(fn)
 		}
 	}
@@ -201,14 +247,13 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 // UnapprovedFiles returns owners files that still need approval
 func (ap Approvers) GetFiles() []File {
 	allOwnersFiles := []File{}
+	filesApprovers := ap.GetFilesApprovers()
 	for _, fn := range ap.Owners.GetOwnersSet().List() {
-		relevant_approvers := ap.Owners.repo.Approvers(fn).Intersection(ap.Approvers)
-		if relevant_approvers.Len() == 0 {
+		if len(filesApprovers[fn]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn})
 		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, relevant_approvers})
+			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn]})
 		}
-
 	}
 
 	return allOwnersFiles

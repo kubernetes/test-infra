@@ -412,3 +412,76 @@ func TestIsApproved(t *testing.T) {
 		}
 	}
 }
+
+func TestGetFilesApprovers(t *testing.T) {
+	tests := []struct {
+		testName       string
+		filenames      []string
+		approvers      []string
+		owners         map[string]sets.String
+		expectedStatus map[string]sets.String
+	}{
+		{
+			testName:       "Empty PR",
+			filenames:      []string{},
+			approvers:      []string{},
+			owners:         map[string]sets.String{},
+			expectedStatus: map[string]sets.String{},
+		},
+		{
+			testName:       "No approvers",
+			filenames:      []string{"a/a", "c"},
+			approvers:      []string{},
+			owners:         map[string]sets.String{"": sets.NewString("RootOwner")},
+			expectedStatus: map[string]sets.String{"": sets.String{}},
+		},
+		{
+			testName: "Approvers approves some",
+			filenames: []string{
+				"a/a",
+				"c/c",
+			},
+			approvers: []string{"CApprover"},
+			owners: map[string]sets.String{
+				"a": sets.NewString("AApprover"),
+				"c": sets.NewString("CApprover"),
+			},
+			expectedStatus: map[string]sets.String{
+				"a": sets.String{},
+				"c": sets.NewString("CApprover"),
+			},
+		},
+		{
+			testName: "Multiple approvers",
+			filenames: []string{
+				"a/a",
+				"c/c",
+			},
+			approvers: []string{"RootApprover", "CApprover"},
+			owners: map[string]sets.String{
+				"":  sets.NewString("RootApprover"),
+				"a": sets.NewString("AApprover"),
+				"c": sets.NewString("CApprover"),
+			},
+			expectedStatus: map[string]sets.String{
+				"a": sets.NewString("RootApprover"),
+				"c": sets.NewString("RootApprover", "CApprover"),
+			},
+		},
+		{
+			testName:       "Case-insensitive approvers",
+			filenames:      []string{"file"},
+			approvers:      []string{"RootApprover"},
+			owners:         map[string]sets.String{"": sets.NewString("rOOtaPProver")},
+			expectedStatus: map[string]sets.String{"": sets.NewString("RootApprover")},
+		},
+	}
+
+	for _, test := range tests {
+		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)}, sets.NewString(test.approvers...)}
+		calculated := testApprovers.GetFilesApprovers()
+		if !reflect.DeepEqual(test.expectedStatus, calculated) {
+			t.Errorf("Failed for test %v.  Expected approval status: %v. Found %v", test.testName, test.expectedStatus, calculated)
+		}
+	}
+}
