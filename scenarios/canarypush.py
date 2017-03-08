@@ -54,7 +54,9 @@ def main(target, buildfile):
     user = os.environ.get('DOCKER_USER')
     pwd = os.environ.get('DOCKER_PASSWORD')
     if check_output('docker', 'version', '--format=\'{{.Client.Version}}\'').startswith('1.9'):
-        email = 'not@val.id'
+        print >>sys.stderr, 'Docker 1.9, use --email'
+        email = '--email=not@val.id'
+    print >>sys.stderr, 'Logging in as %r' % user
     check_no_log('docker', 'login', email or '', '--username=%s' % user, '--password=%s' % pwd)
 
     del os.environ['DOCKER_EMAIL']
