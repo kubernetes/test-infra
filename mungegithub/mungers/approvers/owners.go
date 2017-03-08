@@ -24,10 +24,11 @@ import (
 
 	"bytes"
 	"fmt"
+	"path/filepath"
+
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
-	"path/filepath"
 )
 
 const (
@@ -214,7 +215,18 @@ func (ap Approvers) GetFiles() []File {
 }
 
 func (ap Approvers) GetCCs() []string {
-	return ap.Owners.GetSuggestedApprovers().Difference(ap.Approvers).List()
+	approvers := []string{}
+
+	reverseMap := ap.Owners.GetReverseMap()
+	unapproved := ap.UnapprovedFiles()
+
+	for _, suggestedApprover := range ap.Owners.GetSuggestedApprovers().List() {
+		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
+			approvers = append(approvers, suggestedApprover)
+		}
+	}
+
+	return approvers
 }
 
 // IsApproved returns a bool indicating whether or not the PR is approved
@@ -260,10 +272,13 @@ func GetMessage(ap Approvers, org, project string) string {
 	for _, ownersFile := range ap.GetFiles() {
 		context.WriteString(ownersFile.toString(org, project))
 	}
-	context.WriteString("\nWe suggest the following people:\ncc ")
+
 	CCs := ap.GetCCs()
-	for _, person := range CCs {
-		context.WriteString("@" + person + " ")
+	if len(CCs) != 0 {
+		context.WriteString("\nWe suggest the following people:\ncc ")
+		for _, person := range CCs {
+			context.WriteString("@" + person + " ")
+		}
 	}
 	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment\n You can cancel your approval by writing `/approve cancel` in a comment")
 	title := "This PR is **NOT APPROVED**"
