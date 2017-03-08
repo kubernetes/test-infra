@@ -231,7 +231,8 @@ func TestGetCCs(t *testing.T) {
 		filenames         []string
 		currentlyApproved sets.String
 		// testSeed affects who is chosen for CC
-		testSeed int64
+		testSeed  int64
+		assignees []string
 		// order matters for CCs
 		expectedCCs []string
 	}{
@@ -309,6 +310,27 @@ func TestGetCCs(t *testing.T) {
 			// We don't suggest approvers for a and b, only for unapproved c.
 			expectedCCs: []string{"Carol"},
 		},
+		{
+			testName:  "A, B, C; Nothing approved, but assignees can approve",
+			filenames: []string{"a/test.go", "b/test.go", "c/test"},
+			testSeed:  0,
+			// Approvers are valid approvers, but not the one we would suggest
+			currentlyApproved: sets.NewString(),
+			assignees:         []string{"Art", "Ben"},
+			// We suggest assigned people rather than "suggested" people
+			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
+			expectedCCs: []string{"Art", "Ben", "Carol"},
+		},
+		{
+			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
+			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
+			testSeed:          0,
+			currentlyApproved: sets.NewString(),
+			// Assignees are a mix of potential approvers and random people
+			assignees: []string{"Art", "Ben", "John", "Jack"},
+			// We suggest assigned people rather than "suggested" people
+			expectedCCs: []string{"Art", "Ben", "Carol"},
+		},
 	}
 
 	for _, test := range tests {
@@ -316,6 +338,7 @@ func TestGetCCs(t *testing.T) {
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
+		testApprovers.AddAssignees(test.assignees...)
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
 			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)

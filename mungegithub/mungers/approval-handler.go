@@ -108,6 +108,13 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		}
 		approversHandler.AddAuthorSelfApprover(*obj.Issue.User.Login, url)
 	}
+
+	for _, user := range obj.Issue.Assignees {
+		if user != nil && user.Login != nil {
+			approversHandler.AddAssignees(*user.Login)
+		}
+	}
+
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
 	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()

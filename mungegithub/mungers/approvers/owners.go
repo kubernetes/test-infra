@@ -17,15 +17,15 @@ limitations under the License.
 package approvers
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"math/rand"
+	"path/filepath"
 	"sort"
 	"strings"
 
-	"bytes"
-	"fmt"
-	"path/filepath"
-
+	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
@@ -137,15 +137,46 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 	return bestPerson
 }
 
+// temporaryUnapprovedFiles returns the list of files that wouldn't be
+// approved by the given set of approvers.
+func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
+	ap := NewApprovers(o)
+	for approver := range approvers {
+		ap.AddApprover(approver, "")
+	}
+	return ap.UnapprovedFiles()
+}
+
+// KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
+// knownApprovers must be a subset of potentialApprovers.
+func (o Owners) KeepCoveringApprovers(knownApprovers sets.String, potentialApprovers []string) sets.String {
+	keptApprovers := sets.NewString()
+
+	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
+	reverseMap := o.GetReverseMap()
+
+	for _, suggestedApprover := range o.GetSuggestedApprovers(potentialApprovers).List() {
+		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
+			keptApprovers.Insert(suggestedApprover)
+		}
+	}
+
+	return keptApprovers
+}
+
 // GetSuggestedApprovers solves the exact cover problem, finding an approver capable of
 // approving every OWNERS file in the PR
-func (o Owners) GetSuggestedApprovers() sets.String {
-	randomizedApprovers := o.GetShuffledApprovers()
+func (o Owners) GetSuggestedApprovers(potentialApprovers []string) sets.String {
 	reverseMap := o.GetReverseMap()
 
 	ap := NewApprovers(o)
 	for !ap.IsApproved() {
-		ap.AddApprover(findMostCoveringApprover(randomizedApprovers, reverseMap, ap.UnapprovedFiles()), "")
+		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
+		if newApprover == "" {
+			glog.Errorf("Couldn't find/suggest approvers for each files. Unapproved: %s", ap.UnapprovedFiles())
+			return ap.GetCurrentApproversSet()
+		}
+		ap.AddApprover(newApprover, "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -210,6 +241,7 @@ func (a Approval) String() string {
 type Approvers struct {
 	owners    Owners
 	approvers map[string]Approval
+	assignees sets.String
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -234,6 +266,7 @@ func NewApprovers(owners Owners) Approvers {
 	return Approvers{
 		owners:    owners,
 		approvers: map[string]Approval{},
+		assignees: sets.NewString(),
 	}
 }
 
@@ -267,6 +300,11 @@ func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
 // RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
 	delete(ap.approvers, login)
+}
+
+// AddAssignees adds assignees to the list
+func (ap *Approvers) AddAssignees(logins ...string) {
+	ap.assignees.Insert(logins...)
 }
 
 // GetCurrentApproversSet returns the set of approvers (login only)
@@ -326,19 +364,31 @@ func (ap Approvers) GetFiles() []File {
 	return allOwnersFiles
 }
 
+// GetCCs gets the list of suggested approvers for a pull-request.  It
+// now considers current assignees as potential approvers. Here is how
+// it works:
+// - We find suggested approvers from all potential approvers, but
+// remove those that are not useful considering current approvers and
+// assignees.
+// - We find a subset of suggested approvers from from current
+// approvers, suggested approvers and assignees, but we remove thoses
+// that are not useful considering suggestd approvers and current
+// approvers.
+// We return the union of the two sets: suggested and suggested
+// assignees.
+// The goal of this second step is to only keep the assignees that are
+// the most useful.
 func (ap Approvers) GetCCs() []string {
-	approvers := []string{}
+	randomizedApprovers := ap.owners.GetShuffledApprovers()
 
-	reverseMap := ap.owners.GetReverseMap()
-	unapproved := ap.UnapprovedFiles()
+	currentApprovers := ap.GetCurrentApproversSet()
+	approversAndAssignees := currentApprovers.Union(ap.assignees)
+	suggested := ap.owners.KeepCoveringApprovers(approversAndAssignees, randomizedApprovers)
+	approversAndSuggested := currentApprovers.Union(suggested)
+	everyone := approversAndSuggested.Union(ap.assignees)
+	keepAssignees := ap.owners.KeepCoveringApprovers(approversAndSuggested, everyone.List())
 
-	for _, suggestedApprover := range ap.owners.GetSuggestedApprovers().List() {
-		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
-			approvers = append(approvers, suggestedApprover)
-		}
-	}
-
-	return approvers
+	return suggested.Union(keepAssignees).List()
 }
 
 // IsApproved returns a bool indicating whether or not the PR is approved
