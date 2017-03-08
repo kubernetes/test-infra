@@ -143,14 +143,12 @@ func (o Owners) GetSuggestedApprovers() sets.String {
 	randomizedApprovers := o.GetShuffledApprovers()
 	reverseMap := o.GetReverseMap()
 
-	suggestedApprovers := sets.NewString()
-	needsApproval := Approvers{o, suggestedApprovers}.UnapprovedFiles()
-	for needsApproval.Len() > 0 {
-		suggestedApprovers.Insert(findMostCoveringApprover(randomizedApprovers, reverseMap, needsApproval))
-		needsApproval = Approvers{o, suggestedApprovers}.UnapprovedFiles()
+	ap := NewApprovers(o)
+	for !ap.IsApproved() {
+		ap.AddApprover(findMostCoveringApprover(randomizedApprovers, reverseMap, ap.UnapprovedFiles()), "", "")
 	}
 
-	return suggestedApprovers
+	return ap.GetCurrentApproversSet()
 }
 
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
@@ -192,9 +190,26 @@ func removeSubdirs(dirList []string) sets.String {
 	return finalSet
 }
 
+// Approval has the information about each approval on a PR
+type Approval struct {
+	Login     string // Login of the approver
+	How       string // How did the approver approved
+	Reference string // Where did the approver approved
+}
+
+// String creates a link for the approval. Use `Login` if you just want the name.
+func (a Approval) String() string {
+	return fmt.Sprintf(
+		`*<a href="%s" title="%s">%s</a>*`,
+		a.Reference,
+		a.How,
+		a.Login,
+	)
+}
+
 type Approvers struct {
-	Owners    Owners
-	Approvers sets.String
+	owners    Owners
+	approvers map[string]Approval
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -214,20 +229,54 @@ func IntersectSetsCase(one, other sets.String) sets.String {
 	return intersection
 }
 
+// NewApprovers create a new "Approvers" with no approval.
+func NewApprovers(owners Owners) Approvers {
+	return Approvers{
+		owners:    owners,
+		approvers: map[string]Approval{},
+	}
+}
+
+// AddApprover adds a new approval to "Approvers".
+func (ap *Approvers) AddApprover(login, how, reference string) {
+	ap.approvers[login] = Approval{
+		Login:     login,
+		How:       how,
+		Reference: reference,
+	}
+}
+
+// RemoveApprover removes an approver from the list.
+func (ap *Approvers) RemoveApprover(login string) {
+	delete(ap.approvers, login)
+}
+
+// GetCurrentApproversSet returns the set of approvers (login only)
+func (ap Approvers) GetCurrentApproversSet() sets.String {
+	currentApprovers := sets.NewString()
+
+	for approver := range ap.approvers {
+		currentApprovers.Insert(approver)
+	}
+
+	return currentApprovers
+}
+
 // GetFilesApprovers returns a map from files -> list of current approvers.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
+	currentApprovers := ap.GetCurrentApproversSet()
 
-	for fn, potentialApprovers := range ap.Owners.GetApprovers() {
+	for fn, potentialApprovers := range ap.owners.GetApprovers() {
 		// The order of parameter matters here:
-		// - ap.Approvers is the list of github handle that have approved
-		// - potentialApprovers is the list of handle in OWNERS
+		// - currentApprovers is the list of github handle that have approved
+		// - potentialApprovers is the list of handle in OWNERSa
 		// files that can approve each file.
 		//
 		// We want to keep the syntax of the github handle
 		// rather than the potential mis-cased username found in
 		// the OWNERS file, that's why it's the first parameter.
-		filesApprovers[fn] = IntersectSetsCase(ap.Approvers, potentialApprovers)
+		filesApprovers[fn] = IntersectSetsCase(currentApprovers, potentialApprovers)
 	}
 
 	return filesApprovers
@@ -248,7 +297,7 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 func (ap Approvers) GetFiles() []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
-	for _, fn := range ap.Owners.GetOwnersSet().List() {
+	for _, fn := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[fn]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn})
 		} else {
@@ -262,10 +311,10 @@ func (ap Approvers) GetFiles() []File {
 func (ap Approvers) GetCCs() []string {
 	approvers := []string{}
 
-	reverseMap := ap.Owners.GetReverseMap()
+	reverseMap := ap.owners.GetReverseMap()
 	unapproved := ap.UnapprovedFiles()
 
-	for _, suggestedApprover := range ap.Owners.GetSuggestedApprovers().List() {
+	for _, suggestedApprover := range ap.owners.GetSuggestedApprovers().List() {
 		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
 			approvers = append(approvers, suggestedApprover)
 		}
@@ -277,6 +326,17 @@ func (ap Approvers) GetCCs() []string {
 // IsApproved returns a bool indicating whether or not the PR is approved
 func (ap Approvers) IsApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
+}
+
+// ListString returns the list of all approvers along with links and tooltips.
+func (ap Approvers) ListString() string {
+	approvals := []string{}
+
+	for _, approver := range ap.approvers {
+		approvals = append(approvals, approver.String())
+	}
+
+	return strings.Join(approvals, ", ")
 }
 
 type File interface {
@@ -312,8 +372,8 @@ func (ua UnapprovedFile) toString(org, project string) string {
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
 func GetMessage(ap Approvers, org, project string) string {
-	formatStr := "The following people have approved this PR: *%v*\n\nNeeds approval from an approver in each of these OWNERS Files:\n"
-	context := bytes.NewBufferString(fmt.Sprintf(formatStr, strings.Join(ap.Approvers.List(), ", ")))
+	formatStr := "The following people have approved this PR: %v\n\nNeeds approval from an approver in each of these OWNERS Files:\n"
+	context := bytes.NewBufferString(fmt.Sprintf(formatStr, ap.ListString()))
 	for _, ownersFile := range ap.GetFiles() {
 		context.WriteString(ownersFile.toString(org, project))
 	}
@@ -322,7 +382,7 @@ func GetMessage(ap Approvers, org, project string) string {
 	if len(CCs) != 0 {
 		context.WriteString("\nWe suggest the following people:\ncc ")
 		for _, person := range CCs {
-			context.WriteString("@" + person + " ")
+			context.WriteString("" + person + " ")
 		}
 	}
 	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment\n You can cancel your approval by writing `/approve cancel` in a comment")

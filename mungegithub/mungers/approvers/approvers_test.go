@@ -103,7 +103,10 @@ func TestUnapprovedFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}, test.currentlyApproved}
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		for approver := range test.currentlyApproved {
+			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+		}
 		calculated := testApprovers.UnapprovedFiles()
 		if !test.expectedUnapproved.Equal(calculated) {
 			t.Errorf("Failed for test %v.  Expected unapproved files: %v. Found %v", test.testName, test.expectedUnapproved, calculated)
@@ -196,7 +199,10 @@ func TestGetFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}, test.currentlyApproved}
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		for approver := range test.currentlyApproved {
+			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+		}
 		calculated := testApprovers.GetFiles()
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
 			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
@@ -306,7 +312,10 @@ func TestGetCCs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed}, test.currentlyApproved}
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
+		for approver := range test.currentlyApproved {
+			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+		}
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
 			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
@@ -404,7 +413,10 @@ func TestIsApproved(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed}, test.currentlyApproved}
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
+		for approver := range test.currentlyApproved {
+			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+		}
 		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
 			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
@@ -478,10 +490,34 @@ func TestGetFilesApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := Approvers{Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)}, sets.NewString(test.approvers...)}
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)})
+		for _, approver := range test.approvers {
+			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+		}
 		calculated := testApprovers.GetFilesApprovers()
 		if !reflect.DeepEqual(test.expectedStatus, calculated) {
 			t.Errorf("Failed for test %v.  Expected approval status: %v. Found %v", test.testName, test.expectedStatus, calculated)
 		}
+	}
+}
+
+func TestListString(t *testing.T) {
+	approver := NewApprovers(Owners{})
+
+	want := ``
+	if got := approver.ListString(); got != want {
+		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
+	}
+
+	approver.AddApprover("John", "LGTM", "12345")
+	want = `*<a href="12345" title="LGTM">John</a>*`
+	if got := approver.ListString(); got != want {
+		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
+	}
+
+	approver.AddApprover("Sarah", "Approved", "54321")
+	want = `*<a href="12345" title="LGTM">John</a>*, *<a href="54321" title="Approved">Sarah</a>*`
+	if got := approver.ListString(); got != want {
+		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
 	}
 }
