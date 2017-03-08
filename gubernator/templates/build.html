@@ -45,6 +45,11 @@
 			<tr><td>{{k}}<td>{{v}}
 			% endfor
 		% endif
+		% if finished and 'metadata' in finished
+			% for k, v in finished['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
+		% endif
 	% endif
 	</table>
 	<ul class="nav">
