@@ -57,18 +57,6 @@
         frequency: 'H/30 * * * *'
         scan: ALL
         timeout: 620
-    - kubernetes-soak-gce-non-cri-deploy:
-        blocker: ci-kubernetes-soak-gce-non-cri-test
-        job-name: ci-kubernetes-soak-gce-non-cri-deploy
-        frequency: 'H 0 * * 2'
-        scan: DISABLED
-        timeout: 110
-    - kubernetes-soak-gce-non-cri-test:
-        blocker: ci-kubernetes-soak-gce-non-cri-deploy
-        job-name: ci-kubernetes-soak-gce-non-cri-test
-        frequency: 'H/30 * * * *'
-        scan: ALL
-        timeout: 620
     - kubernetes-soak-gce-federation-deploy:
         blocker: ci-kubernetes-soak-gce-federation-test
         job-name: ci-kubernetes-soak-gce-federation-deploy

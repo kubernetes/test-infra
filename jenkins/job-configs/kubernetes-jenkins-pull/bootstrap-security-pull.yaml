@@ -80,12 +80,6 @@
         json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 75
-    - kubernetes-e2e-gce-non-cri:
-        max-total: 12
-        job-name: pull-kubernetes-e2e-gce-non-cri
-        json: 1
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 75
     - kubernetes-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-gci
@@ -119,12 +113,6 @@
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e
-        json: 1
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 90
-    - kubernetes-node-e2e-non-cri:
-        max-total: 12
-        job-name: pull-kubernetes-node-e2e-non-cri
         json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 90
