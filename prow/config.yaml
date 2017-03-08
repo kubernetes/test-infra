@@ -124,6 +124,11 @@ presubmits:
     rerun_command: "@k8s-bot federation gce e2e test this"
     trigger: "@k8s-bot federation (gce )?(e2e )?test this"
 
+  - name: pull-kubernetes-federation-e2e-gce-canary
+    context: pull-kubernetes-federation-e2e-gce-canary
+    rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce-canary test this"
+    trigger: "@k8s-bot pull-kubernetes-federation-e2e-gce-canary test this"
+
   - name: pull-kubernetes-federation-e2e-gce-gci
     context: Jenkins GCI Federation GCE e2e
     rerun_command: "@k8s-bot federation gci gce e2e test this"
