@@ -35,7 +35,6 @@ export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Federation\]"
 export E2E_ZONES="us-central1-a us-central1-f" # Where the clusters will be created. Federation components are now deployed to the last one.
 export KUBE_GCE_ZONE="us-central1-f" #TODO(colhom): This should be generalized out to plural case
 export DNS_ZONE_NAME="pr-bldr.test-f8n.k8s.io."
-export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
 
 # Build the images.
 export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
