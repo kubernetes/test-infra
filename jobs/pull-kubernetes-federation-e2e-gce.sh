@@ -50,7 +50,6 @@ export FEDERATION_CLUSTERS=""
 
 # Federation control plane options.
 export DNS_ZONE_NAME="pr-bldr.test-f8n.k8s.io."
-export FEDERATIONS_DOMAIN_MAP="federation=pr-bldr.test-f8n.k8s.io"
 
 # This is a shared variable that is used for both k8s and
 # federation tests to indicate that the tests must be run.
