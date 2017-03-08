@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	"fmt"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"reflect"
+
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 func TestUnapprovedFiles(t *testing.T) {
@@ -292,6 +293,15 @@ func TestGetCCs(t *testing.T) {
 			currentlyApproved: sets.NewString(),
 			// Need an approver from each of the three owners files
 			expectedCCs: []string{"Anne", "Bill", "Carol"},
+		},
+		{
+			testName:  "A, B, C; Partially approved by non-suggested approvers",
+			filenames: []string{"a/test.go", "b/test.go", "c/test"},
+			testSeed:  0,
+			// Approvers are valid approvers, but not the one we would suggest
+			currentlyApproved: sets.NewString("Art", "Ben"),
+			// We don't suggest approvers for a and b, only for unapproved c.
+			expectedCCs: []string{"Carol"},
 		},
 	}
 
