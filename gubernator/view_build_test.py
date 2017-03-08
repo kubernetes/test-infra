@@ -147,10 +147,19 @@ class BuildTest(main_test.TestBase):
                     'master-version': 'm12'
                 }
             })
+        write(self.BUILD_DIR + 'finished.json',
+            {
+                'timestamp': 1406536800,
+                'result': 'SUCCESS',
+                'metadata': {
+                    'skew-version': 'm11'
+                }
+            })
         response = self.get_build_page()
         self.assertIn('v1+56', response)
         self.assertIn('agent-light-7', response)
         self.assertIn('<td>master-version<td>m12', response)
+        self.assertIn('<td>skew-version<td>m11', response)
         self.assertIn('1234', response)
         self.assertIn('abcd', response)
 
