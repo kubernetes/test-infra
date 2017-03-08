@@ -33,7 +33,7 @@ spec:
         image: gcr.io/k8s-prow/horologium:0.0
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.82"
+          value: "gcr.io/k8s-prow/line:0.83"
         - name: DRY_RUN
           value: "false"
         volumeMounts:

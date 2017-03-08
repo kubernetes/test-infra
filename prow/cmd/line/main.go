@@ -297,34 +297,6 @@ func (c *testClient) TestKubernetes() error {
 				Name:  "BUILD_NUMBER",
 				Value: buildID,
 			},
-			kube.EnvVar{
-				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
-				Value: "/etc/service-account/service-account.json",
-			},
-			kube.EnvVar{
-				Name:  "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-private",
-			},
-			kube.EnvVar{
-				Name:  "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-public",
-			},
-		)
-		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts,
-			kube.VolumeMount{
-				Name:      "service",
-				MountPath: "/etc/service-account",
-				ReadOnly:  true,
-			},
-			kube.VolumeMount{
-				Name:      "ssh",
-				MountPath: "/etc/ssh-key-secret",
-				ReadOnly:  true,
-			},
-			kube.VolumeMount{
-				Name:      "cache-ssd",
-				MountPath: "/root/.cache",
-			},
 		)
 		// Set the HostPort to 9999 for all build pods so that they are forced
 		// onto different nodes. Once pod affinity is GA, use that instead.
@@ -335,27 +307,6 @@ func (c *testClient) TestKubernetes() error {
 			},
 		)
 	}
-	spec.Volumes = append(spec.Volumes,
-		kube.Volume{
-			Name: "service",
-			Secret: &kube.SecretSource{
-				Name: "service-account",
-			},
-		},
-		kube.Volume{
-			Name: "ssh",
-			Secret: &kube.SecretSource{
-				Name:        "ssh-key-secret",
-				DefaultMode: 0400,
-			},
-		},
-		kube.Volume{
-			Name: "cache-ssd",
-			HostPath: &kube.HostPathSource{
-				Path: "/mnt/disks/ssd0",
-			},
-		},
-	)
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
 			Name: podName,
