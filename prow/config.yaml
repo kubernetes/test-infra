@@ -73,7 +73,7 @@ presubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -215,7 +215,7 @@ presubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -242,7 +242,7 @@ presubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -276,7 +276,7 @@ postsubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -304,7 +304,7 @@ postsubmits:
         volumes:
         - name: service
           secret:
-            name: service-account
+            secretName: service-account
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
@@ -337,10 +337,10 @@ postsubmits:
         volumes:
         - name: service
           secret:
-            name: service-account
+            secretName: service-account
         - name: ssh
           secret:
-            name: ssh-key-secret
+            secretName: ssh-key-secret
             defaultMode: 0400
         - name: cache-ssd
           hostPath:
@@ -373,7 +373,7 @@ postsubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -397,7 +397,7 @@ postsubmits:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
 
 
 periodics:
@@ -426,7 +426,7 @@ periodics:
       volumes:
       - name: service
         secret:
-          name: service-account
+          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -457,10 +457,10 @@ periodics:
     volumes:
     - name: service
       secret:
-        name: service-account
+        secretName: service-account
     - name: ssh
       secret:
-        name: ssh-key-secret
+        secretName: ssh-key-secret
         defaultMode: 0400
     - name: cache-ssd
       hostPath:
