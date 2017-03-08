@@ -1743,6 +1743,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
+            'pull-kubernetes-federation-e2e-gce-canary.env': 'pull-kubernetes-federation-e2e-gce-*',
+            'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
@@ -1807,11 +1809,11 @@ class JobTest(unittest.TestCase):
                     continue
                 if line.startswith('#'):
                     continue
-                if not re.match(r'[0-9A-Z_]+=[^\n]+', line):
+                if not re.match(r'[0-9A-Z_]+=[^\n]*', line):
                     self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, line))
                 if '#' in line:
                     self.fail('[%r]: Env %r: No inline comments' % (job, line))
-                if '"' in line:
+                if '"' in line or '\'' in line:
                     self.fail('[%r]: Env %r: No quote in env' % (job, line))
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
@@ -1847,14 +1849,17 @@ class JobTest(unittest.TestCase):
                         env = m.group(1)
                         if env == job:
                             hasMatchingEnv = True
+                        path = bootstrap.test_infra('jobs/%s.env' % env)
                         self.assertTrue(
-                            os.path.isfile(
-                                bootstrap.test_infra('jobs/%s.env' % env)),
-                            (env, job))
+                            os.path.isfile(path),
+                            '%s does not exist for %s' % (path, job))
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
                         self.assertIn('--tag=v20170223-43ce8f86', config[job]['args'])
+                    if job.startswith('pull-kubernetes-'):
+                        self.assertIn('--cluster=', config[job]['args'])
+                        self.assertIn('--stage=gs://kubernetes-release-pull/ci/%s' % job, config[job]['args'])
 
 
 if __name__ == '__main__':
