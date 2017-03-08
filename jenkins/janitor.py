@@ -35,6 +35,7 @@ DEMOLISH_ORDER = [
     Resource('routes', None, None),
     Resource('forwarding-rules', 'region', None),
     Resource('target-http-proxies', None, None),
+    Resource('target-https-proxies', None, None),
     Resource('url-maps', None, None),
     Resource('backend-services', 'region', None),
     Resource('target-pools', 'region', None),
