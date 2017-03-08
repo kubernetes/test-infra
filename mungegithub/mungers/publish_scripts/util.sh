@@ -38,22 +38,22 @@ sync_repo() {
 
     local currBranch=$(git rev-parse --abbrev-ref HEAD)
     local previousKubeSHA=$(cat kubernetes-sha)
-    local previousBranchSHA=$(cat filter-branch-sha)
     
     git remote add upstream-kube https://github.com/kubernetes/kubernetes.git || true
     git fetch upstream-kube
     git branch -D kube-sync || true
     git checkout upstream-kube/"${src_branch}" -b kube-sync
     git reset --hard upstream-kube/"${src_branch}"
-    local newKubeSHA=$(git log --oneline --format='%H' kube-sync -1)
     
     # this command rewrites git history to *only* include $subdirectory 
-    git filter-branch -f --subdirectory-filter "${subdirectory}" HEAD
-    
-    newBranchSHA=$(git log --oneline --format='%H' kube-sync -1)
-    # we need to start after _vendor is removed from master
+    git filter-branch -f --msg-filter 'awk 1 && echo && echo "Kubernetes-commit: ${GIT_COMMIT}"' \
+        --subdirectory-filter "${subdirectory}" HEAD
+
+    local newKubeSHA=$(git log kube-sync -1 | tail -n 1 | sed "s/Kubernetes-commit: //g")
+
+    local previousBranchSHA=$(git log --grep "Kubernetes-commit: ${previousKubeSHA}" --format='%H')
     local commits=$(git log --no-merges --format='%H' --reverse ${previousBranchSHA}..HEAD)
-    
+
     git checkout ${currBranch}
 
     echo "commits to be cherry-picked:"
@@ -71,12 +71,11 @@ sync_repo() {
     # track the k8s.io/kubernetes commit SHA so we can always determine which level of kube this repo matches
     # track the filtered branch commit SHA so that we can determine which commits need to be picked
     echo ${newKubeSHA} > kubernetes-sha
-    echo ${newBranchSHA} > filter-branch-sha
     if git diff --exit-code &>/dev/null; then
-        echo "SHAs havne't changed!"
+        echo "SHAs haven't changed!"
         return
     fi
-    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes): ${newKubeSHA}" -- kubernetes-sha filter-branch-sha
+    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes): ${newKubeSHA}" -- kubernetes-sha
 }
 
 # To avoid repeated godep restore, repositories should share the GOPATH.
