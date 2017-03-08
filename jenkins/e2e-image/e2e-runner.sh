@@ -172,4 +172,4 @@ if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
   e2e_go_args+=(--publish="gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt")
 fi
 
-./kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"
+kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"
