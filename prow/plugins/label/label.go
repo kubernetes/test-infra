@@ -17,20 +17,21 @@ limitations under the License.
 package label
 
 import (
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/plugins"
-
 	"fmt"
 	"regexp"
 	"strings"
+
+	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 const pluginName = "label"
 
 var (
-	allowedPrefixes = []string{"area", "priority"}
-	regexBuilder    = `(?m)^/%s[\t\s]+(?:\S*(?:[^\n]+))*`
-	labelFailed     = "The following labels: %v could not be added to the issue or PR"
+	labelRegex       = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
+	nonExistentLabel = "`%v` does not exist in this repository"
+	labelFailed      = "The following labels: %v could not be added to the issue or PR"
 )
 
 func init() {
@@ -41,7 +42,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	IsMember(org, user string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
-	RemoveLabel(owner, repo string, number int, label string) error
+	GetLabels(owner, repo string) ([]string, error)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -54,6 +55,10 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
+	matches := labelRegex.FindAllStringSubmatch(ic.Comment.Body, -1)
+	if matches == nil || len(matches) == 0 {
+		return nil
+	}
 	member, err := gc.IsMember(repo, commenter)
 	if err != nil {
 		return fmt.Errorf("IsMember failed: %v", err)
@@ -62,23 +67,23 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 		return gc.CreateComment(owner, repo, number, plugins.FormatResponse(ic.Comment, "Only kubernetes org members can add labels."))
 	}
 
+	labels, err := gc.GetLabels(owner, repo)
+	if err != nil {
+		return err
+	}
+	existingLabels := sets.NewString(labels...)
 	var failures []string
-	for _, pref := range allowedPrefixes {
-		labelRegex := regexp.MustCompile(fmt.Sprintf(regexBuilder, pref))
-		match := labelRegex.FindStringSubmatch(ic.Comment.Body)
-		if match == nil || len(match) == 0 {
-			continue
-		}
+	for _, match := range matches {
 		for _, newLabel := range strings.Split(match[0], " ")[1:] {
-			newLabel = strings.TrimSpace(newLabel)
+			newLabel = match[1] + "/" + strings.TrimSpace(newLabel)
 			if ic.Issue.HasLabel(newLabel) {
 				continue
 			}
-			if strings.HasPrefix(newLabel, pref) {
-				if err := gc.AddLabel(owner, repo, number, newLabel); err != nil {
-					failures = append(failures, newLabel)
-				}
-			} else {
+			if !existingLabels.Has(newLabel) {
+				gc.CreateComment(owner, repo, number, fmt.Sprintf(nonExistentLabel, newLabel))
+				continue
+			}
+			if err := gc.AddLabel(owner, repo, number, newLabel); err != nil {
 				failures = append(failures, newLabel)
 			}
 		}
@@ -86,6 +91,7 @@ func handle(gc githubClient, ic github.IssueCommentEvent) error {
 
 	if len(failures) > 0 {
 		gc.CreateComment(owner, repo, number, fmt.Sprintf(labelFailed, strings.Join(failures, ", "), number))
+		return err
 	}
 
 	return nil

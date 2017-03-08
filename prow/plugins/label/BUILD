@@ -16,7 +16,6 @@ go_test(
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 
@@ -27,6 +26,7 @@ go_library(
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
+        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 

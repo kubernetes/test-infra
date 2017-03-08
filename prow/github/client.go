@@ -397,6 +397,24 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	return err
 }
 
+func (c *Client) GetLabels(org, repo string) ([]string, error) {
+	c.log("GetLabel", org, repo)
+	var res struct {
+		Object []map[string]string `json:"object"`
+	}
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo),
+		exitCodes: []int{200},
+	}, &res)
+	var labels []string
+	for _, lab := range res.Object {
+		labels = append(labels, lab["name"])
+
+	}
+	return labels, err
+}
+
 func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	c.log("AddLabel", org, repo, number, label)
 	_, err := c.request(&request{

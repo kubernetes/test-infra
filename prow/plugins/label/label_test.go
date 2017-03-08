@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"reflect"
 )
 
 const (
@@ -33,26 +33,24 @@ const (
 	prNumber     = 1
 )
 
-var areaLabels = []string{"area/api", "area/infra"}
-var priorityLabels = []string{"priority/important", "priority/critical"}
-
-func formatLabels(labels sets.String) sets.String {
-	r := sets.NewString()
-	for l := range labels {
-		r.Insert(fmt.Sprintf("%s/%s#%d:%s", fakeRepoOrg, fakeRepoName, prNumber, l))
+func formatLabels(labels ...string) []string {
+	r := []string{}
+	for _, l := range labels {
+		r = append(r, fmt.Sprintf("%s/%s#%d:%s", fakeRepoOrg, fakeRepoName, prNumber, l))
+	}
+	if len(r) == 0 {
+		return nil
 	}
 	return r
 }
 
-func getFakeRepo(commentBody, commenter string, initial_labels []string) (*fakegithub.FakeClient, github.IssueCommentEvent) {
+func getFakeRepo(commentBody, commenter string, repoLabels []string) (*fakegithub.FakeClient, github.IssueCommentEvent) {
 	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
-		OrgMembers:    []string{orgMember},
+		IssueComments:  make(map[int][]github.IssueComment),
+		ExistingLabels: repoLabels,
+		OrgMembers:     []string{orgMember},
 	}
 	startingLabels := []github.Label{}
-	for _, l := range initial_labels {
-		startingLabels = append(startingLabels, github.Label{Name: l})
-	}
 
 	ice := github.IssueCommentEvent{
 		Repo: github.Repo{
@@ -75,102 +73,129 @@ func getFakeRepo(commentBody, commenter string, initial_labels []string) (*fakeg
 
 func TestLabel(t *testing.T) {
 	// "a" is the author, "a", "r1", and "r2" are reviewers.
+
 	var testcases = []struct {
 		name              string
 		body              string
 		commenter         string
-		expectedNewLabels sets.String
-		removedLabels     []string
-		initialLabels     []string
+		expectedNewLabels []string
+		repoLabels        []string
 		isPr              bool
 	}{
 		{
 			name:              "Irrelevant comment",
 			body:              "irrelelvant",
-			expectedNewLabels: sets.NewString(),
+			expectedNewLabels: []string{},
+			repoLabels:        []string{},
 			commenter:         orgMember,
 		},
 		{
 			name:              "Empty Area",
 			body:              "/area",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			expectedNewLabels: []string{},
+			repoLabels:        []string{"area/infra"},
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Single Area Label",
-			body:              "/area area/infra",
-			expectedNewLabels: formatLabels(sets.NewString("area/infra")),
+			body:              "/area infra",
+			repoLabels:        []string{"area/infra"},
+			expectedNewLabels: formatLabels("area/infra"),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Single Priority Label",
-			body:              "/priority priority/critical",
-			expectedNewLabels: formatLabels(sets.NewString("priority/critical")),
+			body:              "/priority critical",
+			repoLabels:        []string{"area/infra", "priority/critical"},
+			expectedNewLabels: formatLabels("priority/critical"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Add Single Kind Label",
+			body:              "/kind bug",
+			repoLabels:        []string{"area/infra", "priority/critical", "kind/bug"},
+			expectedNewLabels: formatLabels("kind/bug"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Can't Add Non Existing Label",
+			body:              "/priority critical",
+			repoLabels:        []string{"area/infra"},
+			expectedNewLabels: formatLabels("priority/critical"),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Non Org Member Can't Add",
-			body:              "/area area/infra",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			body:              "/area infra",
+			repoLabels:        []string{"area/infra", "priority/critical", "kind/bug"},
+			expectedNewLabels: formatLabels(),
 			commenter:         nonOrgMember,
 		},
 		{
 			name:              "Command must start at the beginning of the line",
-			body:              "  /area lgtm",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			body:              "  /area infra",
+			repoLabels:        []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", "kind/bug"},
+			expectedNewLabels: formatLabels(),
 			commenter:         orgMember,
 		},
 		{
-			name:              "Can't Add Labels With Wrong Prefixes",
+			name:              "Can't Add Labels Non Existing Labels",
 			body:              "/area lgtm",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			repoLabels:        []string{"area/infra", "area/api", "priority/critical"},
+			expectedNewLabels: formatLabels(),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Multiple Area Labels",
-			body:              "/area area/api area/infra",
-			expectedNewLabels: formatLabels(sets.NewString("area/api", "area/infra")),
+			body:              "/area api infra",
+			repoLabels:        []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
+			expectedNewLabels: formatLabels("area/api", "area/infra"),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Multiple Priority Labels",
-			body:              "/priority priority/critical priority/urgent",
-			expectedNewLabels: formatLabels(sets.NewString("priority/critical", "priority/urgent")),
+			body:              "/priority critical important",
+			repoLabels:        []string{"priority/critical", "priority/important"},
+			expectedNewLabels: formatLabels("priority/critical", "priority/important"),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Label Prefix Must Match Command (Area-Priority Mismatch)",
-			body:              "/area priority/urgent",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			body:              "/area urgent",
+			repoLabels:        []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
+			expectedNewLabels: formatLabels(),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Label Prefix Must Match Command (Priority-Area Mismatch)",
-			body:              "/priority area/infra",
-			expectedNewLabels: formatLabels(sets.NewString()),
+			body:              "/priority infra",
+			repoLabels:        []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
+			expectedNewLabels: formatLabels(),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Multiple Labels (Some Valid)",
-			body:              "/area lgtm area/infra",
-			expectedNewLabels: formatLabels(sets.NewString("area/infra")),
+			body:              "/area lgtm infra",
+			repoLabels:        []string{"area/infra", "area/api"},
+			expectedNewLabels: formatLabels("area/infra"),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Add Multiple Types of Labels Different Lines",
-			body:              "/priority priority-urgent\n/area area/infra",
-			expectedNewLabels: formatLabels(sets.NewString("priority-urgent", "area/infra")),
+			body:              "/priority urgent\n/area infra",
+			repoLabels:        []string{"area/infra", "priority/urgent"},
+			expectedNewLabels: formatLabels("priority/urgent", "area/infra"),
 			commenter:         orgMember,
 		},
 	}
 	for _, tc := range testcases {
-		fc, ice := getFakeRepo(tc.body, tc.commenter, tc.initialLabels)
+		fc, ice := getFakeRepo(tc.body, tc.commenter, tc.repoLabels)
 		if err := handle(fc, ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue
 		}
-		if !tc.expectedNewLabels.Equal(sets.NewString(fc.LabelsAdded...)) {
-			t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, sets.NewString(fc.LabelsAdded...))
+		if (tc.expectedNewLabels != nil && fc.LabelsAdded != nil) && !reflect.DeepEqual(tc.expectedNewLabels, fc.LabelsAdded) {
+			t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fc.LabelsAdded)
 		}
 	}
 }
