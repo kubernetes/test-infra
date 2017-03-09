@@ -19,8 +19,11 @@
 
 """Test for kubernetes_e2e.py"""
 
+import json
+import re
 import shutil
 import string
+import urllib
 import unittest
 
 import kubernetes_e2e
@@ -105,6 +108,16 @@ class DockerTest(ScenarioTest):
         for call in self.callstack:
             self.assertTrue(call.startswith('docker'))
 
+    def test_default_tag(self):
+        """Ensure the default tag exists on gcr.io."""
+        args = self.parser.parse_args()
+        match = re.match('gcr.io/([^:]+):(.+)', kubernetes_e2e.kubekins(args.tag))
+        self.assertIsNotNone(match)
+        url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
+                                                     match.group(2))
+        data = json.loads(urllib.urlopen(url).read())
+        self.assertNotIn('errors', data)
+        self.assertIn('name', data)
 
 if __name__ == '__main__':
     unittest.main()
