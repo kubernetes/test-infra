@@ -55,6 +55,7 @@ RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
         --usage-reporting=false && \
     gcloud components install beta && \
     gcloud components install alpha && \
+    gcloud components update kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 ADD ["e2e-runner.sh", \
