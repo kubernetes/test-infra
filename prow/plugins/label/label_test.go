@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"reflect"
@@ -45,7 +46,7 @@ func formatLabels(labels ...string) []string {
 }
 
 func getFakeRepo(commentBody, commenter string, repoLabels []string) (*fakegithub.FakeClient, github.IssueCommentEvent) {
-	fc := &fakegithub.FakeClient{
+	fakeCli := &fakegithub.FakeClient{
 		IssueComments:  make(map[int][]github.IssueComment),
 		ExistingLabels: repoLabels,
 		OrgMembers:     []string{orgMember},
@@ -67,8 +68,9 @@ func getFakeRepo(commentBody, commenter string, repoLabels []string) (*fakegithu
 			PullRequest: &struct{}{},
 			Labels:      startingLabels,
 		},
+		Action: "created",
 	}
-	return fc, ice
+	return fakeCli, ice
 }
 
 func TestLabel(t *testing.T) {
@@ -118,17 +120,17 @@ func TestLabel(t *testing.T) {
 			commenter:         orgMember,
 		},
 		{
-			name:              "Can't Add Non Existing Label",
+			name:              "Can't Add Non Existent Label",
 			body:              "/priority critical",
 			repoLabels:        []string{"area/infra"},
-			expectedNewLabels: formatLabels("priority/critical"),
+			expectedNewLabels: formatLabels(),
 			commenter:         orgMember,
 		},
 		{
 			name:              "Non Org Member Can't Add",
 			body:              "/area infra",
 			repoLabels:        []string{"area/infra", "priority/critical", "kind/bug"},
-			expectedNewLabels: formatLabels(),
+			expectedNewLabels: formatLabels("area/infra"),
 			commenter:         nonOrgMember,
 		},
 		{
@@ -187,15 +189,57 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels: formatLabels("priority/urgent", "area/infra"),
 			commenter:         orgMember,
 		},
+		{
+			name:              "Infer One Sig Label",
+			body:              "@sig-node-misc",
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node"},
+			expectedNewLabels: formatLabels("sig/node"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Infer Multiple Sig Labels One Line",
+			body:              "@sig-node-misc @sig-api-machinery-bugs",
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			expectedNewLabels: formatLabels("sig/node", "sig/api-machinery"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Infer Multiple Sig Labels Different Lines",
+			body:              "@sig-node-misc\n@sig-api-machinery-bugs",
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			expectedNewLabels: formatLabels("sig/node", "sig/api-machinery"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Infer Multiple Sig Labels Different Lines With Other Text",
+			body:              "Code Comment.  Design Review\n@sig-node-misc\ncc @sig-api-machinery-bugs",
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			expectedNewLabels: formatLabels("sig/node", "sig/api-machinery"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Add Area, Priority Labels and CC a Sig",
+			body:              "/area infra\n/priority urgent Design Review\n@sig-node-misc\ncc @sig-api-machinery-bugs",
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			expectedNewLabels: formatLabels("area/infra", "priority/urgent", "sig/node", "sig/api-machinery"),
+			commenter:         orgMember,
+		},
 	}
+
 	for _, tc := range testcases {
-		fc, ice := getFakeRepo(tc.body, tc.commenter, tc.repoLabels)
-		if err := handle(fc, ice); err != nil {
+		fakeClient, ice := getFakeRepo(tc.body, tc.commenter, tc.repoLabels)
+		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue
 		}
-		if (tc.expectedNewLabels != nil && fc.LabelsAdded != nil) && !reflect.DeepEqual(tc.expectedNewLabels, fc.LabelsAdded) {
-			t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fc.LabelsAdded)
+
+		// pass if expected and actual are both empty arrays
+		if len(tc.expectedNewLabels) == 0 && len(fakeClient.LabelsAdded) == 0 {
+			continue
+		}
+
+		if !reflect.DeepEqual(tc.expectedNewLabels, fakeClient.LabelsAdded) {
+			t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
 		}
 	}
 }

@@ -106,8 +106,12 @@ func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) erro
 	return nil
 }
 
-func (f *FakeClient) GetLabels(owner, repo string) ([]string, error) {
-	return f.ExistingLabels, nil
+func (f *FakeClient) GetLabels(owner, repo string) ([]github.Label, error) {
+	la := []github.Label{}
+	for _, l := range f.ExistingLabels {
+		la = append(la, github.Label{Name: l})
+	}
+	return la, nil
 }
 
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {

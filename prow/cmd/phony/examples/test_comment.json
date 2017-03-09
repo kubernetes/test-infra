@@ -133,7 +133,7 @@
     },
     "created_at": "2016-11-24T05:34:50Z",
     "updated_at": "2016-11-24T05:34:50Z",
-    "body": "@k8s-bot go test this"
+    "body": "/area kubectl"
   },
   "repository": {
     "id": 57333709,

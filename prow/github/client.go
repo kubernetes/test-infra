@@ -397,22 +397,36 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	return err
 }
 
-func (c *Client) GetLabels(org, repo string) ([]string, error) {
+func (c *Client) GetLabels(org, repo string) ([]Label, error) {
 	c.log("GetLabel", org, repo)
-	var res struct {
-		Object []map[string]string `json:"object"`
+	if c.fake {
+		return nil, nil
 	}
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo),
-		exitCodes: []int{200},
-	}, &res)
-	var labels []string
-	for _, lab := range res.Object {
-		labels = append(labels, lab["name"])
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo)
+	var labels []Label
+	for nextURL != "" {
+		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
 
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var labs []Label
+		if err := json.Unmarshal(b, &labs); err != nil {
+			return nil, err
+		}
+		labels = append(labels, labs...)
+		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
 	}
-	return labels, err
+	return labels, nil
 }
 
 func (c *Client) AddLabel(org, repo string, number int, label string) error {
