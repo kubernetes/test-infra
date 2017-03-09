@@ -1004,6 +1004,8 @@ dashboards:
   dashboard_tab:
   - name: cdk-gce
     test_group_name: canonical-kubernetes-e2e-gce
+  - name: ubuntu-gke
+    test_group_name: ubuntu-gke
 
 - name: kopeio
   dashboard_tab:
