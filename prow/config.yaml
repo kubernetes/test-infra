@@ -347,7 +347,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      - image: gcr.io/k8s-testimages/bazelbuild:0.10
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -400,7 +400,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.9
+    - image: gcr.io/k8s-testimages/bazelbuild:0.10
       args:
       - "--branch=master"
       - "--upload=gs://kubernetes-jenkins/logs"
