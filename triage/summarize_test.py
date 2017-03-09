@@ -1,0 +1,182 @@
+#!/usr/bin/env python2
+
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import json
+import os
+import unittest
+import shutil
+import tempfile
+
+import summarize
+
+
+make_test = lambda t: {'failure_text': t}
+
+
+class StringsTest(unittest.TestCase):
+	def test_normalize(self):
+		for src, dst in [
+				('0x1234 a 123.13.45.43 b 2e24e003-9ffd-4e78-852c-9dcb6cbef493-123', 'UNIQ1 a UNIQ2 b UNIQ3'),
+				('Mon, 12 January 2017 11:34:35 blah blah', 'TIMEblah blah'),
+				('123.45.68.12:345 abcd1234eeee', 'UNIQ1 UNIQ2'),
+		]:
+			self.assertEqual(summarize.normalize(src), dst)
+
+	def test_editdist(self):
+		for a, b, expected in [
+			('foob', 'food', 1),
+			('doot', 'dot', 1),
+			('foob', 'f', 3),
+			('foob', 'g', 4),
+		]:
+			self.assertEqual(summarize.editdist(a, b), expected, (a, b, expected))
+
+	def test_make_ngram_counts(self):
+		self.assertEqual(sum(summarize.make_ngram_counts('abcdefg')), 4)
+		self.assertEqual(sum(summarize.make_ngram_counts(u'abcdefg')), 4)
+		self.assertEqual(sum(summarize.make_ngram_counts(u'abcdefg\u2006')), 5)
+
+	def test_make_ngram_counts_digest(self):
+		# ensure stability of ngram count digest
+		self.assertEqual(summarize.make_ngram_counts_digest('some example string'), '0189cb9183d7e7cdff84')
+
+	def test_ngram_editdist(self):
+		self.assertEqual(summarize.ngram_editdist('example text', 'exampl text'), 1)
+
+
+class ClusterTest(unittest.TestCase):
+	def test_cluster_test(self):
+		# small strings aren't equal, even with tiny differences
+		t1 = make_test('exit 1')
+		t2 = make_test('exit 2')
+		self.assertEqual(summarize.cluster_test([t1, t2]), {'exit 1': [t1], 'exit 2': [t2]})
+
+		t3 = make_test('long message immediately preceding exit code 1')
+		t4 = make_test('long message immediately preceding exit code 2')
+		self.assertEqual(summarize.cluster_test([t3, t4]), {t3['failure_text']: [t3, t4]})
+
+		t5 = make_test('1 2 ' * 40000)
+		t6 = make_test('1 2 ' * 39999 + '3 4 ')
+
+		self.assertEqual(summarize.cluster_test([t1, t5, t6]), {t1['failure_text']: [t1], t5['failure_text']: [t5, t6]})
+
+	def test_cluster_global(self):
+		t1 = make_test('exit 1')
+		t2 = make_test('exit 1')
+		t3 = make_test('exit 1')
+
+		self.assertEqual(summarize.cluster_global.__wrapped__({'test a': {'exit 1': [t1, t2]}, 'test b': {'exit 1': [t3]}}),
+						 {'exit 1': {'test a': [t1, t2], 'test b': [t3]}})
+
+
+############ decode JSON without a bunch of unicode garbage
+### http://stackoverflow.com/a/33571117
+def json_load_byteified(json_text):
+    return _byteify(
+        json.load(json_text, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+def _byteify(data, ignore_dicts = False):
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+            for key, value in data.iteritems()
+        }
+    # if it's anything else, return it in its original form
+    return data
+################################
+
+
+class IntegrationTest(unittest.TestCase):
+	def setUp(self):
+		self.tmpdir = tempfile.mkdtemp(prefix='summarize_test_')
+		os.chdir(self.tmpdir)
+
+	def tearDown(self):
+		shutil.rmtree(self.tmpdir)
+
+	def test_main(self):
+		def smear(l):
+			"given a list of dictionary deltas, return a list of dictionaries"
+			cur = {}
+			out = []
+			for delta in l:
+				cur.update(delta)
+				out.append(dict(cur))
+			return out
+		json.dump(smear([
+			{'started': 1234, 'number': 1, 'tests_failed': 1, 'tests_run': 2, 'elapsed': 4, 'path': 'gs://logs/some-job/1', 'job': 'some-job', 'result': 'SUCCESS'},
+			{'number': 2, 'path': 'gs://logs/some-job/2'},
+			{'number': 3, 'path': 'gs://logs/some-job/3'},
+			{'number': 4, 'path': 'gs://logs/some-job/4'},
+			{'number': 5, 'path': 'gs://logs/other-job/5', 'job': 'other-job', 'elapsed': 8},
+			{'number': 7, 'path': 'gs://logs/other-job/7', 'result': 'FAILURE'},
+		]), open('builds.json', 'w'))
+		json.dump(smear([
+			{'name': 'example test', 'build': 'gs://logs/some-job/1', 'failure_text': 'some awful stack trace exit 1'},
+			{'build': 'gs://logs/some-job/2'},
+			{'build': 'gs://logs/some-job/3'},
+			{'build': 'gs://logs/some-job/4'},
+			{'failure_text': 'some other error message'},
+			{'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
+			{'build': 'gs://logs/other-job/7'},
+		]), open('tests.json', 'w'))
+		summarize.main('builds.json', 'tests.json')
+		output = json_load_byteified(open('failure_data.json'))
+
+		# uncomment when output changes
+		# import pprint; pprint.pprint(output)
+
+		self.assertEqual(output['builds'],
+			{'cols': {'elapsed': [8, 8, 4, 4, 4, 4],
+                      'executor': [None, None, None, None, None, None],
+                      'pr': [None, None, None, None, None, None],
+                      'result': ['SUCCESS',
+                                 'FAILURE',
+                                 'SUCCESS',
+                                 'SUCCESS',
+                                 'SUCCESS',
+                                 'SUCCESS'],
+                      'started': [1234, 1234, 1234, 1234, 1234, 1234],
+                      'tests_failed': [1, 1, 1, 1, 1, 1],
+                      'tests_run': [2, 2, 2, 2, 2, 2]},
+             'job_paths': {'other-job': 'gs://logs/other-job',
+                            'some-job': 'gs://logs/some-job'},
+             'jobs': {'other-job': {'5': 0, '7': 1},
+                       'some-job': [1, 4, 2]}})
+
+		random_hash_1 = output['clustered'][0][1]
+		random_hash_2 = output['clustered'][1][1]
+		self.assertEqual(output['clustered'],
+			[['some awful stack trace exit 1', random_hash_1, 'some awful stack trace exit 1',
+              [['example test', [['some-job', [1, 2, 3, 4]]]]]],
+             ['some other error message', random_hash_2, 'some other error message',
+              [['unrelated test', [['other-job', [5, 7]]]],
+               ['example test', [['some-job', [4]]]]]]]
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()
