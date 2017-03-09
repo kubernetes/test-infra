@@ -59,9 +59,9 @@ def main(target, buildfile):
     print >>sys.stderr, 'Logging in as %r' % user
     check_no_log('docker', 'login', email or '', '--username=%s' % user, '--password=%s' % pwd)
 
-    del os.environ['DOCKER_EMAIL']
-    del os.environ['DOCKER_USER']
-    del os.environ['DOCKER_PASSWORD']
+    os.environ.pop('DOCKER_EMAIL', None)
+    os.environ.pop('DOCKER_USER', None)
+    os.environ.pop('DOCKER_PASSWORD', None)
 
     check_with_log('docker', 'push', target)
     check_with_log('docker', 'logout')
