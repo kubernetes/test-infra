@@ -72,14 +72,13 @@ type options struct {
 	upgradeArgs string
 }
 
-func defineFlags() (*options, *string) {
+func defineFlags() *options {
 	o := options{}
-	var deployment string
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&deployment, "deployment", "bash", "Choices: bash/kops/kubernetes-anywhere")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/kops/kubernetes-anywhere")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -96,7 +95,7 @@ func defineFlags() (*options, *string) {
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
-	return &o, &deployment
+	return &o
 }
 
 type testCase struct {
@@ -178,18 +177,18 @@ func getDeployer(deployment string) (deployer, error) {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	o, deployment := defineFlags()
+	o := defineFlags()
 	flag.Parse()
 	if *deprecatedVersionSkew == false {
 		log.Print("--check_version_skew is deprecated. Please change to --check-version-skew")
 		o.checkSkew = false
 	}
-	if err := complete(o, *deployment); err != nil {
+	if err := complete(o); err != nil {
 		log.Fatalf("Something went wrong: %v", err)
 	}
 }
 
-func complete(o *options, deployment string) error {
+func complete(o *options) error {
 
 	if !terminate.Stop() {
 		<-terminate.C // Drain the value if necessary.
@@ -218,7 +217,7 @@ func complete(o *options, deployment string) error {
 		return fmt.Errorf("called from invalid working directory: %v", err)
 	}
 
-	deploy, err := getDeployer(deployment)
+	deploy, err := getDeployer(o.deployment)
 	if err != nil {
 		return fmt.Errorf("error creating deployer: %v", err)
 	}
@@ -291,6 +290,7 @@ func acquireKubernetes(o *options) error {
 			// a federation control plane without the federated clusters.
 			if o.save != "" && (!o.up || (o.federation && o.up && o.deployment == "none")) {
 				// Restore version and .kube/config from --up
+				log.Printf("Overwriting extract strategy to load kubeconfig from %s", o.save)
 				o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
 			}
 			// New deployment, extract new version
