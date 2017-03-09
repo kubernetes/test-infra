@@ -43,6 +43,7 @@ go_library(
         "plugins.go",
         "prstats.go",
         "rebase.go",
+        "retest.go",
         "transform.go",
     ],
     tags = ["automanaged"],
