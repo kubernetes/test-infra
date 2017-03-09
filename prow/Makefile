@@ -26,9 +26,9 @@ CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.0
 
 # These are the usual GKE variables.
-PROJECT = k8s-prow
-ZONE = us-central1-f
-CLUSTER = prow
+PROJECT ?= k8s-prow
+ZONE ?= us-central1-f
+CLUSTER ?= prow
 
 update-config: get-cluster-credentials
 	kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
