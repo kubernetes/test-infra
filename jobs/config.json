@@ -319,14 +319,14 @@
   ]
 },
 
-"pull-kubernetes-federation-e2e-gce-canary": {
+"pull-kubernetes-federation-e2e-gce": {
   "scenario": "kubernetes_e2e",
   "args": [
      "--env-file=platforms/gce.env",
      "--env-file=jobs/pull-kubernetes-e2e.env",
-     "--env-file=jobs/pull-kubernetes-federation-e2e-gce-canary.env",
+     "--env-file=jobs/pull-kubernetes-federation-e2e-gce.env",
      "--build",
-     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce-canary",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce",
      "--cluster="
   ]
 },

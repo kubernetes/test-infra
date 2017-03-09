@@ -1743,7 +1743,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
-            'pull-kubernetes-federation-e2e-gce-canary.env': 'pull-kubernetes-federation-e2e-gce-*',
+            'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
         }
         projects = collections.defaultdict(set)
