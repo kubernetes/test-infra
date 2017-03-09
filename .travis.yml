@@ -4,7 +4,7 @@ branches:
     - master
 language: go
 go:
-    - 1.7.4
+    - 1.8.x
 go_import_path: k8s.io/test-infra
 services:
     - docker
