@@ -409,22 +409,22 @@ periodics:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-      volumes:
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
       - name: service
-        secret:
-          secretName: service-account
+        mountPath: /etc/service-account
+        readOnly: true
       - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+        mountPath: /root/.cache
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
 
 - name: ci-kubernetes-e2e-prow-canary
   interval: 5m
