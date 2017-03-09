@@ -21,3 +21,7 @@ gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"
   sequential: false
+gs://canonical-kubernetes-tests/logs-gke/:
+  contact: "vorlonofportland"
+  prefix: "ubuntu:"
+  sequential: false

@@ -1009,6 +1009,9 @@ test_groups:
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
+# Ubuntu GKE (contact: @vorlonofportland on github)
+- name: ubuntu-gke
+  gcs_prefix: canonical-kubernetes-tests/logs-gke/kubernetes-gce-e2e-node
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
@@ -1062,6 +1065,8 @@ dashboards:
   dashboard_tab:
   - name: cdk-gce
     test_group_name: canonical-kubernetes-e2e-gce
+  - name: ubuntu-gke
+    test_group_name: ubuntu-gke
 
 - name: kopeio
   dashboard_tab:
