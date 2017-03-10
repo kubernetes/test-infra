@@ -1,9 +1,25 @@
 projects:
   kubernetes:
     repositories:
-      kubernetes/kubernetes:
-      kubernetes/test-infra:
-      kubernetes/contrib:
+      kubernetes/kubernetes: &kubernetes-transform
+        first-comment:
+          plugin: "first_comment"
+          args:
+            - --bots=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
+        merge:
+          plugin: "event_count"
+          args:
+            - --event=merged
+        lgtm:
+          plugin: "event_count"
+          args:
+            - --event=labeled:lgtm
+        approved:
+          plugin: "event_count"
+          args:
+            - --event=labeled:approved
+      kubernetes/test-infra: *kubernetes-transform
+      kubernetes/contrib: *kubernetes-transform
     nginx:
       public-ip: "104.197.200.129"
     grafana:

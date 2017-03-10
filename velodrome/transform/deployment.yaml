@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: transform-${PROJECT}-${GH_ORGANIZATION}-${GH_REPOSITORY}
+  name: transform-${PROJECT}-${GH_ORGANIZATION}-${GH_REPOSITORY}-${TRANSFORM_METRIC}
 spec:
   replicas: 1
   template:
@@ -11,6 +11,8 @@ spec:
         project: ${PROJECT}
         gh-organization: ${GH_ORGANIZATION}
         gh-repository: ${GH_REPOSITORY}
+        transform-plugin: ${TRANSFORM_PLUGIN}
+        transform-metric: ${TRANSFORM_METRIC}
     spec:
       containers:
       - name: transform
@@ -20,7 +22,10 @@ spec:
         - --host=sqlproxy
         - --influx-host=http://influxdb-${PROJECT}:8086
         - --influx-password=$(INFLUXDB_ROOT_PWD)
-        image: gcr.io/apelisse-test/github-transform:v20170303-213259
+        - --name=${TRANSFORM_METRIC}
+        - ${TRANSFORM_PLUGIN}
+        # plugin args should be appended here.
+        image: gcr.io/google-containers/github-transform:v20170310-101209
         resources:
           requests:
             cpu: 0m
