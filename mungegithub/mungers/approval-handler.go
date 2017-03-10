@@ -17,10 +17,11 @@ limitations under the License.
 package mungers
 
 import (
+	"strings"
+
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/approvers"
@@ -94,19 +95,21 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	var prAuthor *string = nil
-	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
-		prAuthor = obj.Issue.User.Login
-	}
-
-	approverSet := createApproverSet(comments, prAuthor)
-	approversHandler := approvers.Approvers{
+	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
 			filenames,
 			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
-			int64(*obj.Issue.Number)),
-		approverSet}
-
+			int64(*obj.Issue.Number)))
+	addApprovers(&approversHandler, comments)
+	// Author implicitly approves their own PR
+	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
+		url := ""
+		if obj.Issue.HTMLURL != nil {
+			// Append extra # so that it doesn't reload the page.
+			url = *obj.Issue.HTMLURL + "#"
+		}
+		approversHandler.AddApprover(*obj.Issue.User.Login, "Author-self approval", url)
+	}
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
 	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()
@@ -163,13 +166,11 @@ func (h *ApprovalHandler) updateNotification(org, project string, latestNotifica
 	return &s
 }
 
-// createApproverSet iterates through the list of comments on a PR
+// addApprovers iterates through the list of comments on a PR
 // and identifies all of the people that have said /approve and adds
-// them to the approverSet.  The function uses the latest approve or cancel comment
+// them to the Approvers.  The function uses the latest approve or cancel comment
 // to determine the Users intention
-func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) sets.String {
-	approverSet := sets.NewString()
-
+func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.IssueComment) {
 	approveComments := getApproveComments(comments)
 	for _, comment := range approveComments {
 		commands := c.ParseCommands(comment)
@@ -182,17 +183,19 @@ func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) set
 			}
 
 			if cmd.Arguments == cancel {
-				approverSet.Delete(*comment.User.Login)
+				approversHandler.RemoveApprover(*comment.User.Login)
 			} else {
-				approverSet.Insert(*comment.User.Login)
+				url := ""
+				if comment.HTMLURL != nil {
+					url = *comment.HTMLURL
+				}
+
+				approversHandler.AddApprover(
+					*comment.User.Login,
+					strings.Title(strings.ToLower(cmd.Name)),
+					url,
+				)
 			}
 		}
 	}
-
-	//prAuthor implicitly approves their own PR
-	if prAuthor != nil {
-		approverSet.Insert(*prAuthor)
-	}
-
-	return approverSet
 }
