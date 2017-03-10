@@ -52,7 +52,7 @@ trap cleanup_github_token EXIT SIGINT
 # this currently only updates commit hash of k8s.io/apimachinery
 update_godeps_json() {
     local godeps_json="./Godeps/Godeps.json"
-    local old_revs
+    local old_revs=""
     local new_rev=$(cd ../apimachinery; git rev-parse HEAD)
 
     # TODO: simplify the following lines
