@@ -36,6 +36,9 @@ type kubeClient interface {
 
 	ListJobs(labels map[string]string) ([]kube.Job, error)
 	DeleteJob(name string) error
+
+	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
+	DeleteProwJob(name string) error
 }
 
 func main() {
@@ -56,7 +59,23 @@ func main() {
 }
 
 func clean(kc kubeClient) {
-	// Clean up old jobs first.
+	// Clean up old prow jobs first.
+	prowJobs, err := kc.ListProwJobs(nil)
+	if err != nil {
+		logrus.WithError(err).Error("Error listing prow jobs.")
+		return
+	}
+	for _, prowJob := range prowJobs {
+		if !prowJob.Status.CompletionTime.IsZero() && time.Since(prowJob.Status.StartTime) > maxAge {
+			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+			} else {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+			}
+		}
+	}
+
+	// Then old jobs.
 	jobs, err := kc.ListJobs(nil)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing jobs.")
