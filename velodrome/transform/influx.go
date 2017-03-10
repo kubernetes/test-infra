@@ -44,6 +44,15 @@ func (config *InfluxConfig) AddFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&config.DB, "influx-database", "github", "InfluxDB database name")
 }
 
+func dropSeries(client influxdb.Client, measurement, database string, tags map[string]string) error {
+	query := influxdb.Query{
+		Command:  fmt.Sprintf(`DROP SERIES %s %s`, measurement, tagsToWhere(tags)),
+		Database: database,
+	}
+	_, err := client.Query(query)
+	return err
+}
+
 // CreateDatabase creates and connects a new instance of an InfluxDB
 // It is created based on the fields set in the configuration.
 func (config *InfluxConfig) CreateDatabase(tags map[string]string, measurement string) (*InfluxDB, error) {
@@ -56,15 +65,15 @@ func (config *InfluxConfig) CreateDatabase(tags map[string]string, measurement s
 		return nil, err
 	}
 
-	bp, err := influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
-		Database:  config.DB,
-		Precision: "s",
-	})
+	err = dropSeries(client, measurement, config.DB, tags)
 	if err != nil {
 		return nil, err
 	}
 
-	last, err := getLastMeasurement(client, config.DB, tags, measurement)
+	bp, err := influxdb.NewBatchPoints(influxdb.BatchPointsConfig{
+		Database:  config.DB,
+		Precision: "s",
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +84,6 @@ func (config *InfluxConfig) CreateDatabase(tags map[string]string, measurement s
 		batch:       bp,
 		tags:        tags,
 		measurement: measurement,
-		lastFound:   last,
 	}, err
 }
 
@@ -84,7 +92,6 @@ type InfluxDB struct {
 	client      influxdb.Client
 	database    string
 	measurement string
-	lastFound   time.Time
 	batch       influxdb.BatchPoints
 	batchSize   int
 	tags        map[string]string
@@ -123,35 +130,8 @@ func tagsToWhere(tags map[string]string) string {
 	return "WHERE " + strings.Join(conditions, " AND ")
 }
 
-// GetLastMeasurement returns the time of the last measurement pushed to the database
-func getLastMeasurement(client influxdb.Client, database string, tags map[string]string, measurement string) (time.Time, error) {
-	query := influxdb.Query{
-		Command:  fmt.Sprintf("SELECT * FROM %s %s GROUP BY * ORDER BY time DESC LIMIT 1", measurement, tagsToWhere(tags)),
-		Database: database,
-	}
-	response, err := client.Query(query)
-	if err != nil {
-		return time.Time{}, err
-	}
-	if response.Error() != nil {
-		return time.Time{}, response.Error()
-	}
-
-	if len(response.Results) == 0 ||
-		len(response.Results[0].Series) == 0 ||
-		len(response.Results[0].Series[0].Values) == 0 ||
-		len(response.Results[0].Series[0].Values[0]) == 0 {
-		return time.Time{}, nil
-	}
-	return time.Parse(time.RFC3339, response.Results[0].Series[0].Values[0][0].(string))
-}
-
 // Push a point to the database. This appends to current batchpoint
 func (i *InfluxDB) Push(tags map[string]string, fields map[string]interface{}, date time.Time) error {
-	if date.Before(i.lastFound) {
-		// Ignore point as we probably already have it
-		return nil
-	}
 	pt, err := influxdb.NewPoint(i.measurement, mergeTags(i.tags, tags), fields, date)
 	if err != nil {
 		return err
