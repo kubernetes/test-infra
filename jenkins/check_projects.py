@@ -66,9 +66,9 @@ def GetConfig(string):
     return json.loads(fp.read())
 
 
-def CheckProjects(needed, job_filename_filter, fix=False):
-  projects = LoadProjects(os.path.dirname(__file__) or '.',
-                          job_filename_filter)
+def CheckProjects(needed, filt, fix=False):
+  projects = LoadProjects(
+      '%s/../jobs' % os.path.dirname(__file__), filt)
   print >>sys.stderr, 'Checking %d projects for iam bindings:' % len(projects)
   for role, needs in sorted(needed.items()):
     print >>sys.stderr, '  %s: %s' % (role, ','.join(Sane(n) for n in needs))
@@ -108,32 +108,21 @@ def Sane(member):
   return email.split('@')[0]
 
 
-def LoadProjects(configs, job_filename_filter):
+def LoadProjects(configs, filt):
   projects = set()
-  for dirname, _, files in os.walk(os.path.dirname(__file__) or '.'):
+  regex = re.compile(filt)
+  for dirname, _, files in os.walk(configs):
     for path in files:
       full_path = os.path.join(dirname, path)
-      if not job_filename_filter in full_path or not path.endswith('.yaml'):
+      if not regex.match(path):
         continue
       with open(full_path) as fp:
-        for project in re.findall(r'PROJECT="(.+)"', fp.read()):
+        for project in re.findall('^PROJECT="?([^"\r\n]+)"?$', fp.read(), re.MULTILINE):
           if '{' not in project:
             projects.add(project)
             continue
-          elif '{version-infix}' not in project:
-            with lock:
-              print >>sys.stderr, 'project expansion not allowed ',
-              print project
-              errors.add(project)
-          for version in [
-              '1-0-1-2',
-              '1-1-1-2',
-              '1-1-1-3',
-              '1-2-1-3',
-              '1-2-1-4',
-              '1-3-1-4',
-          ]:
-            projects.add(project.replace('{version-infix}', version))
+          else:
+            raise ValueError(project)
   return projects
 
 
@@ -181,8 +170,10 @@ def Check(project, needed, mutate):
 
   bindings = json.loads(out)
   fixes = {}
+  roles = set()
   for binding in bindings['bindings']:
     role = binding['role']
+    roles.add(role)
     members = binding['members']
     if role in needed:
       missing = set(needed[role]) - set(members)
@@ -191,6 +182,9 @@ def Check(project, needed, mutate):
     if role == 'roles/owner':
       with lock:
         helpers[project] = members
+  missing_roles = set(needed) - roles
+  for role in missing_roles:
+    fixes[role] = needed[role]
 
   if not fixes:
     with lock:
@@ -227,7 +221,7 @@ if __name__ == '__main__':
   parser.add_argument(
       'config', type=GetConfig, default='', nargs='?', help='Path to json configuration')
   parser.add_argument(
-      '--job_filename_filter', default='',
-      help='Only look for projects in job YAML paths containing this string')
+      '--filter', default=r'^.+\.(env|sh)$',
+      help='Only look for projects with the specified names')
   args = parser.parse_args()
-  CheckProjects(args.config, args.job_filename_filter, args.fix)
+  CheckProjects(args.config, args.filter, args.fix)
