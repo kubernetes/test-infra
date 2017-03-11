@@ -288,10 +288,17 @@ func acquireKubernetes(o *options) error {
 			// Should we restore a previous state?
 			// Restore if we are not upping the cluster or we are bringing up
 			// a federation control plane without the federated clusters.
-			if o.save != "" && (!o.up || (o.federation && o.up && o.deployment == "none")) {
-				// Restore version and .kube/config from --up
-				log.Printf("Overwriting extract strategy to load kubeconfig from %s", o.save)
-				o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+			if o.save != "" {
+				if !o.up {
+					// Restore version and .kube/config from --up
+					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
+					o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+				} else if o.federation && o.up && o.deployment == "none" {
+					// Only restore .kube/config from previous --up, use the regular
+					// extraction strategy to restore version.
+					log.Printf("Load kubeconfig from %s", o.save)
+					loadKubeconfig(o.save)
+				}
 			}
 			// New deployment, extract new version
 			return o.extract.Extract()
