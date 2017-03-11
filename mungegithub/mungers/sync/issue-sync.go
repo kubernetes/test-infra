@@ -50,7 +50,7 @@ type Priority int
 
 // String return the priority label in string
 func (p Priority) String() string {
-	return fmt.Sprintf(priorityPrefix+"%d", p)
+	return "priority/failing-test"
 }
 
 // Priority returns the priority in int
