@@ -313,7 +313,7 @@ func setReleaseFromGci(image string) error {
 func (e extractStrategy) Extract() error {
 	switch e.mode {
 	case local:
-		url := k8s("kubernetes", "/_output/gcs-stage")
+		url := k8s("kubernetes", "_output", "gcs-stage")
 		files, err := ioutil.ReadDir(url)
 		if err != nil {
 			return err
@@ -386,12 +386,20 @@ func (e extractStrategy) Extract() error {
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }
 
-func loadState(save string) error {
-	log.Printf("Restore state from %s", save)
+func loadKubeconfig(save string) error {
 	cUrl, err := joinUrl(save, "kube-config")
 	if err != nil {
 		return fmt.Errorf("bad load url %s: %v", save, err)
 	}
+	if err := os.MkdirAll(home(".kube"), 0775); err != nil {
+		return err
+	}
+	return finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config")))
+}
+
+func loadState(save string) error {
+	log.Printf("Restore state from %s", save)
+
 	uUrl, err := joinUrl(save, "release-url.txt")
 	if err != nil {
 		return fmt.Errorf("bad load url %s: %v", save, err)
@@ -401,12 +409,10 @@ func loadState(save string) error {
 		return fmt.Errorf("bad load url %s: %v", save, err)
 	}
 
-	if err := os.MkdirAll(home(".kube"), 0775); err != nil {
-		return err
+	if err := loadKubeconfig(save); err != nil {
+		return fmt.Errorf("failed loading kubeconfig: %v", err)
 	}
-	if err := finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config"))); err != nil {
-		return err
-	}
+
 	url, err := output(exec.Command("gsutil", "cat", uUrl))
 	if err != nil {
 		return err
