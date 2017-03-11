@@ -79,9 +79,9 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
-    context: Jenkins Cross Build
-    rerun_command: "@k8s-bot cross build this"
-    trigger: "@k8s-bot (cross[ -])?build this"
+    context: pull-kubernetes-cross
+    rerun_command: "@k8s-bot pull-kubernetes-cross test this"
+    trigger: "@k8s-bot pull-kubernetes-cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-kubernetes-unit
@@ -114,14 +114,14 @@ presubmits:
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
   - name: pull-kubernetes-e2e-gke
-    context: Jenkins GKE smoke e2e
-    rerun_command: "@k8s-bot cvm gke e2e test this"
-    trigger: "@k8s-bot (cvm )?(gke )?e2e test this"
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gke test this"
 
   - name: pull-kubernetes-e2e-gke-gci
-    context: Jenkins GCI GKE smoke e2e
-    rerun_command: "@k8s-bot gci gke e2e test this"
-    trigger: "@k8s-bot (gci )?(gke )?e2e test this"
+    context: pull-kubernetes-e2e-gke-gci
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
 
   - name: pull-kubernetes-e2e-gce-gci
     always_run: true
@@ -216,9 +216,9 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-cross
-    context: Jenkins Cross Build
-    rerun_command: "@k8s-bot cross build this"
-    trigger: "@k8s-bot (cross[ -])?build this"
+    context: pull-security-kubernetes-cross
+    rerun_command: "@k8s-bot pull-security-kubernetes-cross test this"
+    trigger: "@k8s-bot pull-security-kubernetes-cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-security-kubernetes-unit
@@ -251,14 +251,14 @@ presubmits:
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
   - name: pull-security-kubernetes-e2e-gke
-    context: Jenkins GKE smoke e2e
-    rerun_command: "@k8s-bot cvm gke e2e test this"
-    trigger: "@k8s-bot (cvm )?(gke )?e2e test this"
+    context: pull-security-kubernetes-e2e-gke
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
 
   - name: pull-security-kubernetes-e2e-gke-gci
-    context: Jenkins GCI GKE smoke e2e
-    rerun_command: "@k8s-bot gci gke e2e test this"
-    trigger: "@k8s-bot (gci )?(gke )?e2e test this"
+    context: pull-security-kubernetes-e2e-gke-gci
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
 
   - name: pull-security-kubernetes-e2e-gce-gci
     always_run: true

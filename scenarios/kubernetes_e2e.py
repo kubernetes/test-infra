@@ -305,6 +305,8 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
     if args.stage:
         runner_args.append('--stage=%s' % args.stage)
+    if args.stage_suffix:
+        runner_args.append('--stage-suffix=%s' % args.stage_suffix)
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -422,6 +424,8 @@ def create_parser():
         '--build', action='store_true', help='Build kubernetes binaries if set')
     parser.add_argument(
         '--stage', help='Stage binaries to gs:// path if set')
+    parser.add_argument(
+        '--stage-suffix', help='Append suffix to staged version if set')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
