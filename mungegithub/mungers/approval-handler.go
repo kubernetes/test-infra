@@ -167,8 +167,7 @@ func (h *ApprovalHandler) updateNotification(org, project string, latestNotifica
 		// the notification, we do NOT need to update
 		return nil
 	}
-	s := approvers.GetMessage(approversHandler, org, project)
-	return &s
+	return approvers.GetMessage(approversHandler, org, project)
 }
 
 // addApprovers iterates through the list of comments on a PR

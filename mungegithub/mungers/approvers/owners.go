@@ -18,12 +18,12 @@ package approvers
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"path/filepath"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -350,14 +350,14 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 }
 
 // UnapprovedFiles returns owners files that still need approval
-func (ap Approvers) GetFiles() []File {
+func (ap Approvers) GetFiles(org, project string) []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
 	for _, fn := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[fn]) == 0 {
-			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn})
+			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn, org, project})
 		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn]})
+			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn], org, project})
 		}
 	}
 
@@ -396,40 +396,60 @@ func (ap Approvers) IsApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
 }
 
-// ListString returns the list of all approvers along with links and tooltips.
-func (ap Approvers) ListString() string {
-	approvals := []string{}
+// ListApprovals returns the list of approvals
+func (ap Approvers) ListApprovals() []Approval {
+	approvals := []Approval{}
 
 	for _, approver := range ap.GetCurrentApproversSet().List() {
-		approvals = append(approvals, ap.approvers[approver].String())
+		approvals = append(approvals, ap.approvers[approver])
 	}
 
-	return strings.Join(approvals, ", ")
+	return approvals
 }
 
 type File interface {
-	toString(string, string) string
+	String() string
 }
 
 type ApprovedFile struct {
 	filepath  string
 	approvers sets.String
+	org       string
+	project   string
 }
 
 type UnapprovedFile struct {
 	filepath string
+	org      string
+	project  string
 }
 
-func (a ApprovedFile) toString(org, project string) string {
+func (a ApprovedFile) String() string {
 	fullOwnersPath := filepath.Join(a.filepath, ownersFileName)
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", org, project, fullOwnersPath)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", a.org, a.project, fullOwnersPath)
 	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
 }
 
-func (ua UnapprovedFile) toString(org, project string) string {
+func (ua UnapprovedFile) String() string {
 	fullOwnersPath := filepath.Join(ua.filepath, ownersFileName)
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", org, project, fullOwnersPath)
-	return fmt.Sprintf("- **[%s](%s)** \n", fullOwnersPath, link)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", ua.org, ua.project, fullOwnersPath)
+	return fmt.Sprintf("- **[%s](%s)**\n", fullOwnersPath, link)
+}
+
+// GenerateTemplateOrFail takes a template, name and data, and generates
+// the corresping string. nil is returned if it fails. An error is
+// logged.
+func GenerateTemplateOrFail(templ, name string, data interface{}) *string {
+	buf := bytes.NewBufferString("")
+	if messageTempl, err := template.New(name).Parse(templ); err != nil {
+		glog.Errorf("Failed to generate template for %s: %s", name, err)
+		return nil
+	} else if err := messageTempl.Execute(buf, data); err != nil {
+		glog.Errorf("Failed to execute template for %s: %s", name, err)
+		return nil
+	}
+	message := buf.String()
+	return &message
 }
 
 // getMessage returns the comment body that we want the approval-handler to display on PRs
@@ -439,35 +459,27 @@ func (ua UnapprovedFile) toString(org, project string) string {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, org, project string) string {
-	formatStr := "The following people have approved this PR: %v\n\nNeeds approval from an approver in each of these OWNERS Files:\n"
-	context := bytes.NewBufferString(fmt.Sprintf(formatStr, ap.ListString()))
-	for _, ownersFile := range ap.GetFiles() {
-		context.WriteString(ownersFile.toString(org, project))
+func GetMessage(ap Approvers, org, project string) *string {
+	message := GenerateTemplateOrFail(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+{{- if not .ap.IsApproved}}
+We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}@{{$cc}}{{end}}
+{{- end}}
+
+<details {{if not .ap.IsApproved}}open{{end}}>
+Needs approval from an approver in each of these OWNERS Files:
+
+{{range .ap.GetFiles .org .project}}{{.}}{{end}}
+You can indicate your approval by writing `+"`/approve`"+` in a comment
+You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={approvers:{{js .ap.GetCCs}}} -->`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
+
+	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
+
+	if title == nil || message == nil {
+		return nil
 	}
 
-	CCs := ap.GetCCs()
-	if len(CCs) != 0 {
-		context.WriteString("\nWe suggest the following people:\ncc ")
-		for _, person := range CCs {
-			context.WriteString("" + person + " ")
-		}
-	}
-	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment\n You can cancel your approval by writing `/approve cancel` in a comment")
-	title := "This PR is **NOT APPROVED**"
-	if ap.IsApproved() {
-		title = "This PR is **APPROVED**"
-	}
-	context.WriteString(getGubernatorMeta(CCs))
-	return (&c.Notification{ApprovalNotificationName, title, context.String()}).String()
-}
-
-// gets the meta data gubernator uses for
-func getGubernatorMeta(toBeAssigned []string) string {
-	forMachine := map[string][]string{"approvers": toBeAssigned}
-	bytes, err := json.Marshal(forMachine)
-	if err == nil {
-		return fmt.Sprintf("\n<!-- META=%s -->", bytes)
-	}
-	return ""
+	notif := (&c.Notification{ApprovalNotificationName, *title, *message}).String()
+	return &notif
 }
