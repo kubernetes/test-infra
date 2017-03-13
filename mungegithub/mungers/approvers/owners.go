@@ -145,7 +145,7 @@ func (o Owners) GetSuggestedApprovers() sets.String {
 
 	ap := NewApprovers(o)
 	for !ap.IsApproved() {
-		ap.AddApprover(findMostCoveringApprover(randomizedApprovers, reverseMap, ap.UnapprovedFiles()), "", "")
+		ap.AddApprover(findMostCoveringApprover(randomizedApprovers, reverseMap, ap.UnapprovedFiles()), "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -237,11 +237,29 @@ func NewApprovers(owners Owners) Approvers {
 	}
 }
 
-// AddApprover adds a new approval to "Approvers".
-func (ap *Approvers) AddApprover(login, how, reference string) {
+// AddLGTMer adds a new LGTM Approver
+func (ap *Approvers) AddLGTMer(login, reference string) {
 	ap.approvers[login] = Approval{
 		Login:     login,
-		How:       how,
+		How:       "LGTM",
+		Reference: reference,
+	}
+}
+
+// AddApprover adds a new Approver
+func (ap *Approvers) AddApprover(login, reference string) {
+	ap.approvers[login] = Approval{
+		Login:     login,
+		How:       "Approved",
+		Reference: reference,
+	}
+}
+
+// AddSAuthorSelfApprover adds the author self approval
+func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
+	ap.approvers[login] = Approval{
+		Login:     login,
+		How:       "Author self-approved",
 		Reference: reference,
 	}
 }
@@ -332,8 +350,8 @@ func (ap Approvers) IsApproved() bool {
 func (ap Approvers) ListString() string {
 	approvals := []string{}
 
-	for _, approver := range ap.approvers {
-		approvals = append(approvals, approver.String())
+	for _, approver := range ap.GetCurrentApproversSet().List() {
+		approvals = append(approvals, ap.approvers[approver].String())
 	}
 
 	return strings.Join(approvals, ", ")
