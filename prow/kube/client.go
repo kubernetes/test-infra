@@ -64,8 +64,28 @@ func (c *Client) log(methodName string, args ...interface{}) {
 
 type ConflictError error
 
+type request struct {
+	method      string
+	path        string
+	query       map[string]string
+	requestBody interface{}
+}
+
+func (c *Client) request(r *request, ret interface{}) error {
+	out, err := c.requestRetry(r)
+	if err != nil {
+		return err
+	}
+	if ret != nil {
+		if err := json.Unmarshal(out, ret); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Retry on transport failures. Does not retry on 500s.
-func (c *Client) request(method, urlPath string, query map[string]string, body io.Reader) ([]byte, error) {
+func (c *Client) requestRetry(r *request) ([]byte, error) {
 	if c.fake {
 		return []byte("{}"), nil
 	}
@@ -73,7 +93,7 @@ func (c *Client) request(method, urlPath string, query map[string]string, body i
 	var err error
 	backoff := retryDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(method, urlPath, query, body)
+		resp, err = c.doRequest(r.method, r.path, r.query, r.requestBody)
 		if err == nil {
 			break
 		}
@@ -98,9 +118,17 @@ func (c *Client) request(method, urlPath string, query map[string]string, body i
 	return rb, nil
 }
 
-func (c *Client) doRequest(method, urlPath string, query map[string]string, body io.Reader) (*http.Response, error) {
+func (c *Client) doRequest(method, urlPath string, query map[string]string, body interface{}) (*http.Response, error) {
 	url := c.baseURL + urlPath
-	req, err := http.NewRequest(method, url, body)
+	var buf io.Reader
+	if body != nil {
+		b, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		buf = bytes.NewBuffer(b)
+	}
+	req, err := http.NewRequest(method, url, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -160,187 +188,134 @@ func NewClientInCluster(namespace string) (*Client, error) {
 	}, nil
 }
 
+func labelsToSelector(labels map[string]string) string {
+	var sel []string
+	for k, v := range labels {
+		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
+	}
+	return strings.Join(sel, ",")
+}
+
 func (c *Client) GetPod(name string) (Pod, error) {
 	c.log("GetPod", name)
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
-	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
-	if err != nil {
-		return Pod{}, err
-	}
 	var retPod Pod
-	if err = json.Unmarshal(body, &retPod); err != nil {
-		return Pod{}, err
-	}
-	return retPod, nil
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
+	}, &retPod)
+	return retPod, err
 }
 
 func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
 	c.log("ListPods", labels)
-	var sel []string
-	for k, v := range labels {
-		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
-	}
-	labelSelector := strings.Join(sel, ",")
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace)
-	b, err := c.request(http.MethodGet, path, map[string]string{
-		"labelSelector": labelSelector,
-	}, nil)
-	if err != nil {
-		return nil, err
-	}
 	var pl struct {
 		Items []Pod `json:"items"`
 	}
-	err = json.Unmarshal(b, &pl)
-	if err != nil {
-		return nil, err
-	}
-	return pl.Items, nil
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
+		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
+	}, &pl)
+	return pl.Items, err
 }
 
 func (c *Client) DeletePod(name string) error {
 	c.log("DeletePod", name)
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name)
-	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
-	return err
+	return c.request(&request{
+		method: http.MethodDelete,
+		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
+	}, nil)
 }
 
 func (c *Client) GetJob(name string) (Job, error) {
 	c.log("GetJob", name)
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
-	body, err := c.request(http.MethodGet, path, map[string]string{}, nil)
-	if err != nil {
-		return Job{}, err
-	}
 	var retJob Job
-	if err = json.Unmarshal(body, &retJob); err != nil {
-		return Job{}, err
-	}
-	return retJob, nil
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
+	}, &retJob)
+	return retJob, err
 }
 
 func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
 	c.log("ListJobs", labels)
-	var sel []string
-	for k, v := range labels {
-		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
-	}
-	labelSelector := strings.Join(sel, ",")
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace)
-	b, err := c.request(http.MethodGet, path, map[string]string{
-		"labelSelector": labelSelector,
-	}, nil)
-	if err != nil {
-		return nil, err
-	}
 	var jl struct {
 		Items []Job `json:"items"`
 	}
-	err = json.Unmarshal(b, &jl)
-	if err != nil {
-		return nil, err
-	}
-	return jl.Items, nil
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace),
+		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
+	}, &jl)
+	return jl.Items, err
 }
 
 func (c *Client) CreatePod(p Pod) (Pod, error) {
 	c.log("CreatePod", p)
-	b, err := json.Marshal(p)
-	if err != nil {
-		return Pod{}, err
-	}
-	buf := bytes.NewBuffer(b)
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace)
-	body, err := c.request(http.MethodPost, path, map[string]string{}, buf)
-	if err != nil {
-		return Pod{}, err
-	}
 	var retPod Pod
-	if err = json.Unmarshal(body, &retPod); err != nil {
-		return Pod{}, err
-	}
-	return retPod, nil
+	err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
+		requestBody: &p,
+	}, &retPod)
+	return retPod, err
 }
 
 func (c *Client) CreateJob(j Job) (Job, error) {
 	c.log("CreateJob", j)
-	b, err := json.Marshal(j)
-	if err != nil {
-		return Job{}, err
-	}
-	buf := bytes.NewBuffer(b)
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace)
-	body, err := c.request(http.MethodPost, path, map[string]string{}, buf)
-	if err != nil {
-		return Job{}, err
-	}
 	var retJob Job
-	if err = json.Unmarshal(body, &retJob); err != nil {
-		return Job{}, err
-	}
-	return retJob, nil
+	err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace),
+		requestBody: &j,
+	}, &retJob)
+	return retJob, err
 }
 
 func (c *Client) DeleteJob(name string) error {
 	c.log("DeleteJob", name)
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
-	_, err := c.request(http.MethodDelete, path, map[string]string{}, nil)
-	return err
+	return c.request(&request{
+		method: http.MethodDelete,
+		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
+	}, nil)
 }
 
 func (c *Client) PatchJob(name string, job Job) (Job, error) {
 	c.log("PatchJob", name, job)
-	b, err := json.Marshal(job)
-	if err != nil {
-		return Job{}, err
-	}
-	buf := bytes.NewBuffer(b)
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name)
-	body, err := c.request(http.MethodPatch, path, map[string]string{}, buf)
-	if err != nil {
-		return Job{}, err
-	}
 	var retJob Job
-	if err = json.Unmarshal(body, &retJob); err != nil {
-		return Job{}, err
-	}
-	return retJob, nil
+	err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
+		requestBody: &job,
+	}, &retJob)
+	return retJob, err
 }
 
 func (c *Client) PatchJobStatus(name string, job Job) (Job, error) {
 	c.log("PatchJobStatus", name, job)
-	b, err := json.Marshal(job)
-	if err != nil {
-		return Job{}, err
-	}
-	buf := bytes.NewBuffer(b)
-	path := fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s/status", c.namespace, name)
-	body, err := c.request(http.MethodPatch, path, map[string]string{}, buf)
-	if err != nil {
-		return Job{}, err
-	}
 	var retJob Job
-	if err = json.Unmarshal(body, &retJob); err != nil {
-		return Job{}, err
-	}
-	return retJob, nil
+	err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s/status", c.namespace, name),
+		requestBody: &job,
+	}, &retJob)
+	return retJob, err
 }
 
 func (c *Client) ReplaceSecret(name string, s Secret) error {
 	// Ommission of the secret from the logs is purposeful.
 	c.log("ReplaceSecret", name)
-	b, err := json.Marshal(s)
-	if err != nil {
-		return err
-	}
-	buf := bytes.NewBuffer(b)
-	path := fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", c.namespace, name)
-	_, err = c.request(http.MethodPut, path, nil, buf)
-	return err
+	return c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", c.namespace, name),
+		requestBody: &s,
+	}, nil)
 }
 
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod)
-	return c.request(http.MethodGet, path, nil, nil)
+	return c.requestRetry(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+	})
 }
