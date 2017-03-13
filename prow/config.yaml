@@ -307,7 +307,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.1
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
             args:
             - "--branch=$(PULL_REFS)"
             - "--upload=gs://kubernetes-jenkins/logs"
