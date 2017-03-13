@@ -332,8 +332,8 @@ func (ap Approvers) IsApproved() bool {
 func (ap Approvers) ListString() string {
 	approvals := []string{}
 
-	for _, approver := range ap.approvers {
-		approvals = append(approvals, approver.String())
+	for _, approver := range ap.GetCurrentApproversSet().List() {
+		approvals = append(approvals, ap.approvers[approver].String())
 	}
 
 	return strings.Join(approvals, ", ")
