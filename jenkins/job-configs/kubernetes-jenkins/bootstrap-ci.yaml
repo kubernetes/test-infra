@@ -21,7 +21,7 @@
         use-build-blocker: '{use-blocker}'
         blocking-jobs:
         - '{blocker}'
-        queue-scanning: ALL
+        queue-scanning: DISABLED
     - build-discarder:
         days-to-keep: 7
     triggers:
