@@ -1350,6 +1350,7 @@ class JobTest(unittest.TestCase):
         'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
@@ -1461,6 +1462,42 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml',
             Check, use_json=is_modern)
 
+    def testBootstrapSecurityPullYaml(self):
+        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
+        def Check(job, name):
+            job_name = 'pull-%s' % name
+            self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
+            Check, use_json=is_modern)
+
+    def testBootstrapSecurityPullYamlJobsMatch(self):
+        jobs1 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml')
+        jobs2 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
+        for name, job in jobs1.iteritems():
+            if job['repo-name'] == 'k8s.io/kubernetes':
+                job2 = jobs2[name]
+                for attr in job:
+                    if attr != 'repo-name':
+                        self.assertEquals(job[attr], job2[attr])
+        for name, job in jobs2.iteritems():
+            job2 = jobs1[name]
+            for attr in job:
+                if attr != 'repo-name':
+                    self.assertEquals(job[attr], job2[attr])
+
+
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
@@ -1555,7 +1592,9 @@ class JobTest(unittest.TestCase):
             self.fail(tmpl)
         self.assertIn('--service-account=', cmd)
         self.assertIn('--upload=', cmd)
-        if '${{PULL_REFS}}' in cmd:
+        if 'kubernetes-security' in cmd:
+            self.assertIn('--upload=\'gs://kubernetes-security-jenkins/pr-logs\'', cmd)
+        elif '${{PULL_REFS}}' in cmd:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/pr-logs\'', cmd)
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
