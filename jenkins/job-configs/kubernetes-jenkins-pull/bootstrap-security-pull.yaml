@@ -31,6 +31,13 @@
         name: buildId
     wrappers:
     - e2e-credentials-binding
+    - credentials-binding:
+      - file:
+          credential-id: 'k8s-security-gcp-service-account'
+          variable: 'K8S_SECURITY_GCP_SERVICE_ACCOUNT'
+      - file:
+          credential-id: 'k8s-security-repo-git-ssh-key'
+          variable: 'K8S_SECURITY_SSH_PRIVATE_KEY_FILE'
     - inject:
         properties-content: |
             GOROOT=/usr/local/go
