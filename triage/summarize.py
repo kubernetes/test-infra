@@ -23,6 +23,9 @@ import re
 import sys
 import zlib
 
+import berghelroach
+
+editdist = berghelroach.dist
 
 flakeReasonDateRE = re.compile(
     r'[A-Z][a-z]{2}, \d+ \w+ 2\d{3} [\d.-: ]*([-+]\d+)?|'
@@ -69,65 +72,6 @@ def normalize(s):
             , s)
 
     return flakeReasonOrdinalRE.sub(repl, s)
-
-
-def editdist(s, t, limit=None):
-    '''
-    Compute the levenshtein distance between two strings.
-    If limit is given, exit early when the edit distance is guaranteed to be
-    greater.
-    '''
-
-    # degenerate cases
-    if s == t:
-        return 0
-    if not s:
-        return len(t)
-    if not t:
-        return len(s)
-
-    # Identical prefixes or suffixes don't affect the edit distance, and should
-    # be stripped.
-    for i in range(min(len(s), len(t))):
-        if s[i] != t[i]:
-            if i > 0:
-                s = s[i:]
-                t = t[i:]
-            break
-
-    for i in range(1, min(len(s), len(t))+1):
-        if s[-i] != t[-i]:
-            if i > 1:
-                s = s[:-i+1]
-                t = t[:-i+1]
-            break
-
-    # create two work vectors of integer distances
-    v0 = range(len(t) + 1)
-    v1 = list(v0)
-
-    # initialize v0 (the previous row of distances)
-    # this row is A[0][i]: edit distance for an empty s
-    # the distance is just the number of characters to delete from t
-
-    for i in range(len(s)):
-        # calculate v1 (current row distances) from the previous row v0
-
-        # swap v0, v1 for iteration
-        v0, v1 = v1, v0
-
-        # first element of v1 is A[i+1][0]
-        #   edit distance is delete (i+1) chars from s to match empty t
-        v1[0] = i + 1
-
-        # use formula to fill in the rest of the row
-        for j in range(len(t)):
-            v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + int(s[i] != t[j]))
-
-        if limit and min(v1) > limit:
-            return min(v1)
-
-    return v1[len(t)]
 
 
 def make_ngram_counts(s, ngram_counts={}):
