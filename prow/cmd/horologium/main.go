@@ -71,7 +71,7 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if err := line.StartPeriodicJob(kc, p.Name); err != nil {
+			if _, err := line.StartPeriodicJob(kc, p.Name); err != nil {
 				return fmt.Errorf("error starting periodic job: %v", err)
 			}
 		}

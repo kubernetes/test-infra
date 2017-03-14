@@ -68,7 +68,7 @@ func TestStartJob(t *testing.T) {
 			},
 		},
 	}
-	if err := startJob(c, "job-name", "Context", br); err != nil {
+	if _, err := startJob(c, "job-name", "Context", br); err != nil {
 		t.Fatalf("Didn't expect error starting job: %v", err)
 	}
 	labels := c.job.Metadata.Labels

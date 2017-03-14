@@ -98,7 +98,7 @@ func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, 
 		},
 	}
 	errDel := deleteJob(k, jobName, pr)
-	errStart := startJob(k, jobName, context, br)
+	_, errStart := startJob(k, jobName, context, br)
 	if errDel != nil || errStart != nil {
 		return fmt.Errorf("error deleting old job: %v, error starting new job: %v", errDel, errStart)
 	}
@@ -106,7 +106,8 @@ func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, 
 }
 
 func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
-	return startJob(k, jobName, context, br)
+	_, err := startJob(k, jobName, context, br)
+	return err
 }
 
 func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {
@@ -116,14 +117,15 @@ func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {
 		BaseRef: pe.Branch(),
 		BaseSHA: pe.After,
 	}
-	return startJob(k, jobName, "", br)
+	_, err := startJob(k, jobName, "", br)
+	return err
 }
 
-func StartPeriodicJob(k StartClient, jobName string) error {
+func StartPeriodicJob(k StartClient, jobName string) (string, error) {
 	return startJob(k, jobName, "", BuildRequest{periodic: true})
 }
 
-func startJob(k StartClient, jobName, context string, br BuildRequest) error {
+func startJob(k StartClient, jobName, context string, br BuildRequest) (string, error) {
 	refs := br.GetRefs()
 
 	labels := map[string]string{
@@ -261,10 +263,8 @@ func startJob(k StartClient, jobName, context string, br BuildRequest) error {
 			},
 		},
 	}
-	if _, err := k.CreateJob(job); err != nil {
-		return err
-	}
-	return nil
+	actual, err := k.CreateJob(job)
+	return actual.Metadata.Name, err
 }
 
 type deleteClient interface {
