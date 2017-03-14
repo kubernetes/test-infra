@@ -132,6 +132,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-garbage
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
+- name: kubernetes-e2e-kops-aws-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
 - name: kubernetes-e2e-kops-aws-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
 - name: kubernetes-e2e-kops-aws-serial
@@ -1086,6 +1088,8 @@ dashboards:
   dashboard_tab:
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
+  - name: kops-aws-canary
+    test_group_name: kubernetes-e2e-kops-aws-canary
   - name: kops-aws-slow
     test_group_name: kubernetes-e2e-kops-aws-slow
   - name: kops-aws-serial
@@ -2440,6 +2444,11 @@ dashboards:
   - name: gce-canary
     description: Runs a smoke test using the latest e2e image
     test_group_name: kubernetes-e2e-gce-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: kops-aws-canary
+    description: Runs a smoke test using the latest e2e image against kops
+    test_group_name: kubernetes-e2e-kops-aws-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
