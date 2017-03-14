@@ -35,13 +35,13 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.89
+        image: gcr.io/k8s-prow/hook:0.90
         imagePullPolicy: Always
         args:
         - "--github-bot-name=k8s-ci-robot"
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.83"
+          value: "gcr.io/k8s-prow/line:0.84"
         - name: DRY_RUN
           value: "false"
         ports:
