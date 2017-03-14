@@ -405,7 +405,8 @@
   "args": [
     "--cluster=e2e-kops-aws.test-aws.k8s.io",
     "--env-file=platforms/kops_aws.env",
-    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env"
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+    "--tag=v20170223-43ce8f86"
   ]
 },
 

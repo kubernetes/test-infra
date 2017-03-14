@@ -244,7 +244,7 @@ if __name__ == '__main__':
         '--state', default='s3://k8s-kops-jenkins/',
         help='Name of the aws state storage')
     PARSER.add_argument(
-        '--tag', default='v20170207-9bbd5f41',
+        '--tag', default='v20170314-bb0669b0',
         help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
