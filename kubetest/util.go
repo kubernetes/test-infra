@@ -137,6 +137,9 @@ func finishRunning(cmd *exec.Cmd) error {
 				cmd.Process.Kill()
 			}
 		case err := <-finished:
+			if err != nil {
+				return fmt.Errorf("error during %s: %v", stepName, err)
+			}
 			return err
 		}
 	}
@@ -197,6 +200,9 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 				cmd.Process.Kill()
 			}
 		case fin := <-finished:
+			if fin.err != nil {
+				return fin.bytes, fmt.Errorf("error during %s: %v", stepName, fin.err)
+			}
 			return fin.bytes, fin.err
 		}
 	}
