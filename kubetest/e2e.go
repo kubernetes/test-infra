@@ -110,7 +110,9 @@ func run(deploy deployer, o options) error {
 		}
 		if o.federation {
 			if err := xmlWrap("Federation Up", FedUp); err != nil {
-				// TODO: Dump federation related logs.
+				xmlWrap("DumpFederationLogs", func() error {
+					return DumpFederationLogs(o.dump)
+				})
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
@@ -165,6 +167,9 @@ func run(deploy deployer, o options) error {
 	if len(errs) > 0 && o.dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return DumpClusterLogs(o.dump)
+		}))
+		errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
+			return DumpFederationLogs(o.dump)
 		}))
 	}
 
@@ -384,6 +389,11 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 func DumpClusterLogs(location string) error {
 	log.Printf("Dumping cluster logs to: %v", location)
 	return finishRunning(exec.Command("./cluster/log-dump.sh", location))
+}
+
+func DumpFederationLogs(location string) error {
+	log.Printf("Dumping Federation logs to: %v", location)
+	return finishRunning(exec.Command("./federation/cluster/log-dump.sh", location))
 }
 
 func ChartsTest() error {
