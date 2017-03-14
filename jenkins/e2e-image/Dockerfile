@@ -62,7 +62,6 @@ ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "kubetest", \
     "/workspace/"]
 RUN ["chmod", "+x", "/workspace/get-kube.sh"]
 WORKDIR "/workspace"
