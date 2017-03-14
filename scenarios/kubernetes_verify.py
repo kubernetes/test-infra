@@ -83,7 +83,7 @@ def main(branch, script, force):
         '-v', '/var/run/docker.sock:/var/run/docker.sock',
         '-v', '/etc/localtime:/etc/localtime:ro',
         '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
-        '-v', '%s:/workspace/artifacts' % artifacts,
+        '-v', '%s:/workspace/_artifacts' % artifacts,
         '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
         '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
         '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
