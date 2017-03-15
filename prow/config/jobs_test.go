@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -96,11 +97,13 @@ func TestPresubmits(t *testing.T) {
 				}
 			}
 			var scenario string
+			job.Name = strings.Replace(job.Name, "pull-security-kubernetes", "pull-kubernetes", 1)
 			if j, present := bootstrapConfig[job.Name]; present {
 				scenario = fmt.Sprintf("scenarios/%s.py", j.Scenario)
 			} else {
 				scenario = fmt.Sprintf("jobs/%s.sh", job.Name)
 			}
+
 			// Ensure that jobs have a shell script of the same name.
 			if s, err := os.Stat(fmt.Sprintf("../../%s", scenario)); err != nil {
 				t.Errorf("Cannot find test-infra/%s for %s", scenario, job.Name)
