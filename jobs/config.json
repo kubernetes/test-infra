@@ -187,6 +187,13 @@
   ]
 },
 
+"ci-kubernetes-node-memcg-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-memcg-serial.properties"
+  ]
+},
+
 "ci-kubernetes-test-go": {
   "scenario": "kubernetes_verify",
   "args": [
