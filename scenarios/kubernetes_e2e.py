@@ -26,7 +26,7 @@ import shutil
 import signal
 import subprocess
 import sys
-from time import sleep
+import time
 import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
@@ -55,8 +55,7 @@ def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
-# pylint: disable=too-few-public-methods
-class BoskosProject(object):
+class BoskosProject(object): # pylint: disable=too-few-public-methods
     """Loan/Return a gcp project from boskos service."""
     def __init__(self, job, timeout):
         self._job = job
@@ -88,7 +87,7 @@ class BoskosProject(object):
                 data = json.loads(res)
                 return data['Name']
             elif res.getcode() == 204: # StatusNoContent, no available projects
-                sleep(60) # Wait a min and try our luck later.
+                time.sleep(60) # Wait a min and try our luck later.
             else:
                 print >>sys.stderr, 'Request return with %d' % res.getcode()
                 raise ValueError(res.getcode(), 'Failed request project!')
@@ -106,7 +105,6 @@ class BoskosProject(object):
                 raise ValueError(res.getcode(), 'Failed return project!')
             print >>sys.stderr, 'Will retry %d times' % (3-attempt)
 
-# pylint: enable=too-few-public-methods
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
     def __init__(self, workspace):
