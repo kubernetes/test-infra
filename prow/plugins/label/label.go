@@ -53,7 +53,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	commenter := ic.Comment.User.Login
-	owner := ic.Repo.Owner.Name
+	owner := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
