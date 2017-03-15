@@ -107,6 +107,7 @@ go_library(
         "//vendor:github.com/prometheus/client_golang/prometheus",
         "//vendor:github.com/prometheus/client_golang/prometheus/promhttp",
         "//vendor:github.com/spf13/cobra",
+        "//vendor:golang.org/x/oauth2",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/clock",
         "//vendor:k8s.io/kubernetes/pkg/util/errors",

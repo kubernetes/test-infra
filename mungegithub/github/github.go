@@ -164,6 +164,7 @@ type Config struct {
 	// token is private so it won't get printed in the logs.
 	token     string
 	TokenFile string
+	TokenObj  *oauth2.Token
 
 	Address string // if a munger runs a web server, where it should live
 	WWWRoot string
@@ -441,8 +442,11 @@ func (config *Config) PreExecute() error {
 
 	transport = zeroCacheTransport
 
-	if len(token) > 0 {
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	if len(token) > 0 && config.TokenObj == nil {
+		config.TokenObj = &oauth2.Token{AccessToken: token}
+	}
+	if config.TokenObj != nil {
+		ts := oauth2.StaticTokenSource(config.TokenObj)
 		transport = &oauth2.Transport{
 			Base:   transport,
 			Source: oauth2.ReuseTokenSource(nil, ts),
