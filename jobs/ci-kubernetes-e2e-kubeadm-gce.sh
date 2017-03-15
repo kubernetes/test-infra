@@ -33,12 +33,17 @@ export KUBERNETES_PROVIDER=kubernetes-anywhere
 # succeeded.
 export SCM_VERSION=$(./hack/print-workspace-status.sh | grep ^STABLE_BUILD_SCM_REVISION | cut -d' ' -f2)
 
-export E2E_NAME="e2e-kubeadm-gce"
+export E2E_NAME="e2e-kubeadm-${BUILD_NUMBER:-0}"
 export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path /workspace/kubernetes-anywhere"
 export E2E_OPT+=" --kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${E2E_NAME}"
 # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
 export E2E_OPT+=" --kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/${SCM_VERSION}/build/debs/"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
+
+# Resource leak detection is disabled because prow runs multiple instances of
+# this job in the same project concurrently, and resource leak detection will
+# make the job flaky.
+export FAIL_ON_GCP_RESOURCE_LEAK="false"
 
 ### post-env
 
