@@ -88,6 +88,10 @@ type Brancher struct {
 }
 
 func (c *Config) GetPresubmit(repo, job string) *Presubmit {
+	// copy the jobs from k8s.io/kubernetes to kubernetes-security/kubernetes
+	if repo == "kubernetes-security/kubernetes" {
+		repo = "kubernetes/kubernetes"
+	}
 	return getPresubmit(c.Presubmits[repo], job)
 }
 
