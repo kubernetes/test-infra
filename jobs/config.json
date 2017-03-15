@@ -1168,7 +1168,7 @@
 "ci-kubernetes-e2e-gce-multizone": {
   "scenario": "kubernetes_e2e",
   "args": [
-    "--cluster=bootstrap-e2e-gce-multizone",
+    "--cluster=bootstrap-e2e-gce-mz",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-multizone.env"
   ]
