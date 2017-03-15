@@ -55,7 +55,7 @@ func getFakeRepo(commentBody, commenter string, repoLabels []string) (*fakegithu
 
 	ice := github.IssueCommentEvent{
 		Repo: github.Repo{
-			Owner: github.User{Name: fakeRepoOrg},
+			Owner: github.User{Login: fakeRepoOrg},
 			Name:  fakeRepoName,
 		},
 		Comment: github.IssueComment{
