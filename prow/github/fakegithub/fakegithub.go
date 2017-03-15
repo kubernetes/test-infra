@@ -17,6 +17,7 @@ limitations under the License.
 package fakegithub
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
@@ -30,6 +31,8 @@ type FakeClient struct {
 	PullRequests       map[int]*github.PullRequest
 	PullRequestChanges map[int][]github.PullRequestChange
 
+	//All Labels That Exist In The Repo
+	ExistingLabels []string
 	// org/repo#number:label
 	LabelsAdded   []string
 	LabelsRemoved []string
@@ -106,9 +109,26 @@ func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) erro
 	return nil
 }
 
+func (f *FakeClient) GetLabels(owner, repo string) ([]github.Label, error) {
+	la := []github.Label{}
+	for _, l := range f.ExistingLabels {
+		la = append(la, github.Label{Name: l})
+	}
+	return la, nil
+}
+
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
-	return nil
+	if f.ExistingLabels == nil {
+		f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+		return nil
+	}
+	for _, l := range f.ExistingLabels {
+		if label == l {
+			f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+			return nil
+		}
+	}
+	return errors.New(fmt.Sprintf("Cannot add %v to %s/%s/#%d", label, owner, repo, number))
 }
 
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {

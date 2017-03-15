@@ -1,0 +1,120 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package label
+
+import (
+	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/Sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
+)
+
+const pluginName = "label"
+
+var (
+	labelRegex       = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
+	sigMatcher       = regexp.MustCompile(`(?m)@sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
+	nonExistentLabel = "These labels do not exist in this repository: `%v`"
+)
+
+func init() {
+	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+}
+
+type githubClient interface {
+	CreateComment(owner, repo string, number int, comment string) error
+	IsMember(org, user string) (bool, error)
+	AddLabel(owner, repo string, number int, label string) error
+	GetLabels(owner, repo string) ([]github.Label, error)
+	BotName() string
+}
+
+func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, ic)
+}
+
+func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+	commenter := ic.Comment.User.Login
+	owner := ic.Repo.Owner.Name
+	repo := ic.Repo.Name
+	number := ic.Issue.Number
+
+	// only parse newly created comments and if non bot author
+	if commenter == gc.BotName() || ic.Action != "created" {
+		return nil
+	}
+
+	labelMatches := labelRegex.FindAllStringSubmatch(ic.Comment.Body, -1)
+	sigMatches := sigMatcher.FindAllStringSubmatch(ic.Comment.Body, -1)
+	if len(labelMatches) == 0 && len(sigMatches) == 0 {
+		return nil
+	}
+
+	labels, err := gc.GetLabels(owner, repo)
+	if err != nil {
+		return err
+	}
+	existingLabels := map[string]bool{}
+	for _, l := range labels {
+		existingLabels[l.Name] = true
+	}
+	var nonexistent []string
+
+	for _, match := range labelMatches {
+		for _, newLabel := range strings.Split(match[0], " ")[1:] {
+			newLabel = match[1] + "/" + strings.TrimSpace(newLabel)
+			if ic.Issue.HasLabel(newLabel) {
+				continue
+			}
+			if !existingLabels[newLabel] {
+				nonexistent = append(nonexistent, newLabel)
+				continue
+			}
+			if err := gc.AddLabel(owner, repo, number, newLabel); err != nil {
+				log.WithError(err).Errorf("Github failed to add the following label: %s", newLabel)
+			}
+		}
+	}
+
+	for _, sigMatch := range sigMatches {
+		sigLabel := "sig" + "/" + strings.TrimSpace(sigMatch[1])
+		if ic.Issue.HasLabel(sigLabel) {
+			continue
+		}
+		if !existingLabels[sigLabel] {
+			nonexistent = append(nonexistent, sigLabel)
+			continue
+		}
+		if err := gc.AddLabel(owner, repo, number, sigLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
+		}
+
+	}
+
+	if len(nonexistent) > 0 {
+		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
+		if err := gc.CreateComment(owner, repo, number, plugins.FormatResponse(ic.Comment, msg)); err != nil {
+			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+		}
+	}
+
+	return nil
+}
