@@ -3,7 +3,7 @@
 `k8s-ci-robot` and `k8s-merge-robot` understand several commands. They should all be uttered on their own line, and they are case-sensitive.
 
 Command | Implemented By | Who can run it | Description
---- | --- | --- | --- | ---
+--- | --- | --- | ---
 `/assign [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | kubernetes org members | Assigns specified people (or yourself if no one is specified)
 `/unassign [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | kubernetes org members | Unassigns specified people (or yourself if no one is specified)
 `/lgtm` | prow [lgtm](./prow/plugins/lgtm) | assignees | adds the `lgtm` label
