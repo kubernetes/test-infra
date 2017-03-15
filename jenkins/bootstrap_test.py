@@ -1892,6 +1892,11 @@ class JobTest(unittest.TestCase):
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
+                    elif 'kops' not in job:
+                        m = re.match(r'--cluster=([^\"]+)', arg)
+                        if m:
+                            cluster = m.group(1)
+                            self.assertLessEqual(len(cluster), 20, 'Job %r, --cluster should be 20 chars or fewer' % job)
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
