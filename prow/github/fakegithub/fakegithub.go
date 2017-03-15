@@ -40,6 +40,9 @@ type FakeClient struct {
 	// org/repo#issuecommentid:reaction
 	IssueReactionsAdded   []string
 	CommentReactionsAdded []string
+
+	// org/repo#number:assignee
+	AssigneesAdded []string
 }
 
 func (f *FakeClient) BotName() string {
@@ -135,4 +138,19 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 
 func (f *FakeClient) FindIssues(query string) ([]github.Issue, error) {
 	return f.Issues, nil
+}
+
+func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
+	var m github.MissingUsers
+	for _, a := range assignees {
+		if a == "not-in-the-org" {
+			m = append(m, a)
+			continue
+		}
+		f.AssigneesAdded = append(f.AssigneesAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, a))
+	}
+	if m == nil {
+		return nil
+	}
+	return m
 }

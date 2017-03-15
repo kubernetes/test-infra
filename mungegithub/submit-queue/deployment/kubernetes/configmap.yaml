@@ -9,7 +9,9 @@ data:
   config.project: kubernetes
   # Make sure approval-handler and blunderbuss run before submit-queue.
   # Otherwise it's going to take an extra-cycle to detect the label change.
-  config.pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
+  # Run blunderbuss before approval-handler, so that we can suggest approvers
+  # based on assigned reviewer.
+  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
   config.state: open
   config.token-file: /etc/secret-volume/token
   config.loop-period: 20s

@@ -1814,7 +1814,7 @@ class JobTest(unittest.TestCase):
                 continue  # No clean way to determine version
             with open(job_path) as fp:
                 script = fp.read()
-            self.assertNotIn('source ', script, job)
+            self.assertFalse(re.search(r'\Wsource ', script), job)
             self.assertNotIn('\n. ', script, job)
 
     def testAllBashJobsHaveErrExit(self):
