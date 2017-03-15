@@ -62,6 +62,25 @@ func TestRequestRateLimit(t *testing.T) {
 	}
 }
 
+func TestRetry404(t *testing.T) {
+	var slept int
+	timeSleep = func(d time.Duration) { slept += 1 }
+	defer func() { timeSleep = time.Sleep }()
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if slept == 0 {
+			http.Error(w, "404 Not Found", http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	resp, err := c.requestRetry(http.MethodGet, c.base, nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+}
+
 func TestIsMember(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

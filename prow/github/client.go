@@ -45,10 +45,11 @@ type Client struct {
 }
 
 const (
-	githubBase   = "https://api.github.com"
-	maxRetries   = 8
-	maxSleepTime = 2 * time.Minute
-	initialDelay = 2 * time.Second
+	githubBase    = "https://api.github.com"
+	maxRetries    = 8
+	max404Retries = 2
+	maxSleepTime  = 2 * time.Minute
+	initialDelay  = 2 * time.Second
 )
 
 // NewClient creates a new fully operational GitHub client.
@@ -137,8 +138,8 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	return resp.StatusCode, nil
 }
 
-// Retry on transport failures. Retries on 500s and retries after sleep on
-// ratelimit exceeded.
+// Retry on transport failures. Retries on 500s, retries after sleep on
+// ratelimit exceeded, and retries 404s a couple times.
 func (c *Client) requestRetry(method, path string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
@@ -146,9 +147,19 @@ func (c *Client) requestRetry(method, path string, body interface{}) (*http.Resp
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path, body)
 		if err == nil {
-			// If we are out of API tokens, sleep first. The X-RateLimit-Reset
-			// header tells us the time at which we can request again.
-			if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+			if resp.StatusCode == 404 && retries < max404Retries {
+				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
+				// the sense that they send us an event such as "PR opened" but an
+				// immediate request to GET the PR returns 404. We don't want to
+				// retry more than a couple times in this case, because a 404 may
+				// be caused by a bad API call and we'll just burn through API
+				// tokens.
+				resp.Body.Close()
+				timeSleep(backoff)
+				backoff *= 2
+			} else if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+				// If we are out of API tokens, sleep first. The X-RateLimit-Reset
+				// header tells us the time at which we can request again.
 				var t int
 				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
 					// Sleep an extra second plus how long GitHub wants us to
