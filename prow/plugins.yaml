@@ -31,3 +31,6 @@ kubernetes:
 
 kubernetes-incubator:
 - cla
+
+kubernetes-security/kubernetes:
+- trigger
