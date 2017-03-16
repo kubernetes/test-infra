@@ -1075,7 +1075,7 @@
         job-name: ci-kubernetes-e2e-gke-large-cluster
         jenkins-timeout: 720
         timeout: 620
-        frequency: '' # temporarily disabled '0 17 * * *'
+        frequency: '0 17 * * *'
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
