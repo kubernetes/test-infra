@@ -25,9 +25,10 @@ import (
 )
 
 type stageStrategy struct {
-	bucket string
-	ci     bool
-	suffix string
+	bucket        string
+	ci            bool
+	gcsSuffix     string
+	versionSuffix string
 }
 
 // Return something like gs://bucket/ci/suffix
@@ -36,7 +37,7 @@ func (s *stageStrategy) String() string {
 	if s.ci {
 		p = "ci"
 	}
-	return fmt.Sprintf("%v%v%v", s.bucket, p, s.suffix)
+	return fmt.Sprintf("%v%v%v", s.bucket, p, s.gcsSuffix)
 }
 
 // Parse bucket, ci, suffix from gs://BUCKET/ci/SUFFIX
@@ -48,7 +49,7 @@ func (s *stageStrategy) Set(value string) error {
 	}
 	s.bucket = mat[1]
 	s.ci = mat[2] == "ci"
-	s.suffix = mat[3]
+	s.gcsSuffix = mat[3]
 	return nil
 }
 
@@ -73,8 +74,11 @@ func (s *stageStrategy) Stage() error {
 	if s.ci {
 		args = append(args, "--ci")
 	}
-	if len(s.suffix) > 0 {
-		args = append(args, fmt.Sprintf("--gcs-suffix=%v", s.suffix))
+	if len(s.gcsSuffix) > 0 {
+		args = append(args, fmt.Sprintf("--gcs-suffix=%v", s.gcsSuffix))
+	}
+	if len(s.versionSuffix) > 0 {
+		args = append(args, fmt.Sprintf("--version-suffix=%s", s.versionSuffix))
 	}
 	if os.Getenv("FEDERATION") == "true" {
 		args = append(args, "--federation")
