@@ -1246,6 +1246,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-ha-master
   - name: gce-taint-evict
     test_group_name: kubernetes-e2e-gce-taint-evict
+  - name: gce-kubeadm
+    test_group_name: kubernetes-e2e-kubeadm-gce
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
