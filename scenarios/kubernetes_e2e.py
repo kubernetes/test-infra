@@ -308,6 +308,9 @@ def main(args):
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
 
     if args.kubeadm:
+        # Not from Jenkins
+        cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
+
         # This job only runs against the kubernetes repo, and bootstrap.py leaves the
         # current working directory at the repository root. Grab the SCM_REVISION so we
         # can use the .debs built during the bazel-build job that should have already
