@@ -72,34 +72,35 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	if err != nil {
 		return err
 	}
-	existingLabels := map[string]bool{}
+
+	existingLabels := map[string]string{}
 	for _, l := range labels {
-		existingLabels[l.Name] = true
+		existingLabels[strings.ToLower(l.Name)] = l.Name
 	}
 	var nonexistent []string
 
 	for _, match := range labelMatches {
 		for _, newLabel := range strings.Split(match[0], " ")[1:] {
-			newLabel = match[1] + "/" + strings.TrimSpace(newLabel)
+			newLabel = strings.ToLower(match[1] + "/" + strings.TrimSpace(newLabel))
 			if ic.Issue.HasLabel(newLabel) {
 				continue
 			}
-			if !existingLabels[newLabel] {
+			if _, ok := existingLabels[newLabel]; !ok {
 				nonexistent = append(nonexistent, newLabel)
 				continue
 			}
-			if err := gc.AddLabel(owner, repo, number, newLabel); err != nil {
+			if err := gc.AddLabel(owner, repo, number, existingLabels[newLabel]); err != nil {
 				log.WithError(err).Errorf("Github failed to add the following label: %s", newLabel)
 			}
 		}
 	}
 
 	for _, sigMatch := range sigMatches {
-		sigLabel := "sig" + "/" + strings.TrimSpace(sigMatch[1])
+		sigLabel := strings.ToLower("sig" + "/" + strings.TrimSpace(sigMatch[1]))
 		if ic.Issue.HasLabel(sigLabel) {
 			continue
 		}
-		if !existingLabels[sigLabel] {
+		if _, ok := existingLabels[sigLabel]; !ok {
 			nonexistent = append(nonexistent, sigLabel)
 			continue
 		}
