@@ -480,6 +480,17 @@
   ]
 },
 
+"ci-kubernetes-e2e-kubeadm-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--cluster=",
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env",
+    "--mode=local",
+    "--test=false"
+  ]
+},
+
 "ci-kubernetes-e2e-non-cri-gce": {
   "scenario": "kubernetes_e2e",
   "args": [

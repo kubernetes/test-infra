@@ -1702,8 +1702,10 @@ class JobTest(unittest.TestCase):
                 'kops-e2e-',
             ]
 
+            # Skip prow e2e for now. Fix this while we move from Jenkins to Prow.
             skip = [
                 'kubernetes-e2e-prow-canary',
+                'kubernetes-e2e-kubeadm-gce'
             ]
 
             if not re.search('|'.join(valids), job):
