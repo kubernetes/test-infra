@@ -120,6 +120,20 @@ func TestLabel(t *testing.T) {
 			commenter:         orgMember,
 		},
 		{
+			name:              "Adding Labels is Case Insensitive",
+			body:              "/kind BuG",
+			repoLabels:        []string{"area/infra", "priority/critical", "kind/bug"},
+			expectedNewLabels: formatLabels("kind/bug"),
+			commenter:         orgMember,
+		},
+		{
+			name:              "Adding Labels is Case Insensitive",
+			body:              "/kind bug",
+			repoLabels:        []string{"area/infra", "priority/critical", "kind/BUG"},
+			expectedNewLabels: formatLabels("kind/BUG"),
+			commenter:         orgMember,
+		},
+		{
 			name:              "Can't Add Non Existent Label",
 			body:              "/priority critical",
 			repoLabels:        []string{"area/infra"},
