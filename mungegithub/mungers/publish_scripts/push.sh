@@ -14,36 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script publishes the latest changes in the ${src_branch} of
-# k8s.io/kubernetes/staging/src/apimachinery to the ${dst_branch} of
-# k8s.io/apimachinery.
-#
-# The script assumes that the working directory is
-# $GOPATH/src/k8s.io/apimachinery.
-#
-# The script is expected to be run by
-# k8s.io/test-infra/mungegithub/mungers/publisher.go
+# This script sets up the .netrc file with the supplied token, then pushes to
+# the remote repo.
+# The script assumes that the working directory is the root of the repo.
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
 if [ ! $# -eq 2 ]; then
-    echo "usage: $0 src_branch dst_branch"
+    echo "usage: $0 token branch"
     exit 1
 fi
 
-# src branch of k8s.io/kubernetes
-SRC_BRANCH="${1:-master}"
-# dst branch of k8s.io/apimachinery
-DST_BRANCH="${2:-master}"
-readonly SRC_BRANCH DST_BRANCH
+TOKEN="${1}"
+BRANCH="${2}"
+readonly TOKEN BRANCH
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
 
-git checkout "${DST_BRANCH}"
-sync_repo "staging/src/k8s.io/apimachinery" "${SRC_BRANCH}"
-# restore the vendor/ folder. k8s.io/* and github.com/golang/glog will be
-# removed from the vendor folder
-restore_vendor
+set_github_token "${TOKEN}"
+trap cleanup_github_token EXIT SIGINT
+
+git push origin "${BRANCH}"
