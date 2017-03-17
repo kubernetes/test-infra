@@ -317,7 +317,7 @@ def main(args):
         # current working directory at the repository root. Grab the SCM_REVISION so we
         # can use the .debs built during the bazel-build job that should have already
         # succeeded.
-        status = re.match(
+        status = re.search(
             r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
             check_output('hack/print-workspace-status.sh')
         )
