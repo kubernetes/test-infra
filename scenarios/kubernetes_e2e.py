@@ -318,7 +318,7 @@ def main(args):
         # can use the .debs built during the bazel-build job that should have already
         # succeeded.
         status = re.match(
-            r'STABLE_BUILD_SCM_REVISION [^\n]+',
+            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
             check_output('hack/print-workspace-status.sh')
         )
         if not status:
