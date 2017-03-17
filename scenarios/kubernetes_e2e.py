@@ -21,6 +21,7 @@
 
 import argparse
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -37,6 +38,12 @@ def check(*cmd):
     """Log and run the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
+
+
+def check_output(*cmd):
+    """Log and run the command, raising on errors, return output"""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
 
 
 def check_env(env, *cmd):
@@ -113,7 +120,7 @@ class LocalMode(object):
     def runner(self):
         """Finds the best version of e2e-runner.sh."""
         options = [
-          '%s/e2e-runner.sh' % self.workspace,
+          os.path.join(self.workspace, 'e2e-runner.sh'),
           test_infra('jenkins/e2e-image/e2e-runner.sh')
         ]
         for path in options:
@@ -123,9 +130,10 @@ class LocalMode(object):
 
 
     def install_prerequisites(self):
-        """Copies upload-to-gcs and kubetest if needed."""
+        """Copies kubetest if needed."""
         parent = os.path.dirname(self.runner)
         if not os.path.isfile(os.path.join(parent, 'kubetest')):
+            print >>sys.stderr, 'Cannot find kubetest in %s, will install from test-infra' % parent
             check('go', 'install', 'k8s.io/test-infra/kubetest')
             shutil.copy(
                 os.path.expandvars('${GOPATH}/bin/kubetest'),
@@ -297,9 +305,33 @@ def main(args):
     if args.stage:
         runner_args.append('--stage=%s' % args.stage)
 
-
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
+
+    if args.kubeadm:
+        # Not from Jenkins
+        cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
+
+        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
+        # current working directory at the repository root. Grab the SCM_REVISION so we
+        # can use the .debs built during the bazel-build job that should have already
+        # succeeded.
+        status = re.match(
+            r'STABLE_BUILD_SCM_REVISION [^\n]+',
+            check_output('hack/print-workspace-status.sh')
+        )
+        if not status:
+            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
+
+        opt = '--deployment kubernetes-anywhere ' \
+            '--kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+            '--kubernetes-anywhere-phase2-provider kubeadm ' \
+            '--kubernetes-anywhere-cluster %s' \
+            '--kubernetes-anywhere-kubeadm-version ' \
+            'gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
+            # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
+        mode.add_environment('E2E_OPT=%s' % opt)
+
     mode.add_environment(
       # Boilerplate envs
       # Skip gcloud update checking
@@ -396,9 +428,11 @@ def create_parser():
     parser.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     parser.add_argument(
+        '--kubeadm', action='store_true', help='If the test is a kubeadm job')
+    parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
-        '--tag', default='v20170308-0bc656ac', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170314-bb0669b0', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     parser.add_argument(

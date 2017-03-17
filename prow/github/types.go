@@ -152,7 +152,7 @@ func (i Issue) IsPullRequest() bool {
 
 func (i Issue) HasLabel(labelToFind string) bool {
 	for _, label := range i.Labels {
-		if label.Name == labelToFind {
+		if strings.ToLower(label.Name) == strings.ToLower(labelToFind) {
 			return true
 		}
 	}

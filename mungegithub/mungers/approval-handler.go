@@ -17,8 +17,6 @@ limitations under the License.
 package mungers
 
 import (
-	"strings"
-
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 
@@ -108,8 +106,15 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 			// Append extra # so that it doesn't reload the page.
 			url = *obj.Issue.HTMLURL + "#"
 		}
-		approversHandler.AddApprover(*obj.Issue.User.Login, "Author-self approval", url)
+		approversHandler.AddAuthorSelfApprover(*obj.Issue.User.Login, url)
 	}
+
+	for _, user := range obj.Issue.Assignees {
+		if user != nil && user.Login != nil {
+			approversHandler.AddAssignees(*user.Login)
+		}
+	}
+
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
 	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()
@@ -162,8 +167,7 @@ func (h *ApprovalHandler) updateNotification(org, project string, latestNotifica
 		// the notification, we do NOT need to update
 		return nil
 	}
-	s := approvers.GetMessage(approversHandler, org, project)
-	return &s
+	return approvers.GetMessage(approversHandler, org, project)
 }
 
 // addApprovers iterates through the list of comments on a PR
@@ -190,11 +194,18 @@ func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.I
 					url = *comment.HTMLURL
 				}
 
-				approversHandler.AddApprover(
-					*comment.User.Login,
-					strings.Title(strings.ToLower(cmd.Name)),
-					url,
-				)
+				if cmd.Name == approveCommand {
+					approversHandler.AddApprover(
+						*comment.User.Login,
+						url,
+					)
+				} else {
+					approversHandler.AddLGTMer(
+						*comment.User.Login,
+						url,
+					)
+				}
+
 			}
 		}
 	}

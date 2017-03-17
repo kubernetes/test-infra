@@ -17,15 +17,15 @@ limitations under the License.
 package approvers
 
 import (
-	"encoding/json"
-	"math/rand"
-	"sort"
-	"strings"
-
 	"bytes"
 	"fmt"
+	"math/rand"
 	"path/filepath"
+	"sort"
+	"strings"
+	"text/template"
 
+	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
@@ -137,15 +137,46 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 	return bestPerson
 }
 
+// temporaryUnapprovedFiles returns the list of files that wouldn't be
+// approved by the given set of approvers.
+func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
+	ap := NewApprovers(o)
+	for approver := range approvers {
+		ap.AddApprover(approver, "")
+	}
+	return ap.UnapprovedFiles()
+}
+
+// KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
+// knownApprovers must be a subset of potentialApprovers.
+func (o Owners) KeepCoveringApprovers(knownApprovers sets.String, potentialApprovers []string) sets.String {
+	keptApprovers := sets.NewString()
+
+	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
+	reverseMap := o.GetReverseMap()
+
+	for _, suggestedApprover := range o.GetSuggestedApprovers(potentialApprovers).List() {
+		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
+			keptApprovers.Insert(suggestedApprover)
+		}
+	}
+
+	return keptApprovers
+}
+
 // GetSuggestedApprovers solves the exact cover problem, finding an approver capable of
 // approving every OWNERS file in the PR
-func (o Owners) GetSuggestedApprovers() sets.String {
-	randomizedApprovers := o.GetShuffledApprovers()
+func (o Owners) GetSuggestedApprovers(potentialApprovers []string) sets.String {
 	reverseMap := o.GetReverseMap()
 
 	ap := NewApprovers(o)
 	for !ap.IsApproved() {
-		ap.AddApprover(findMostCoveringApprover(randomizedApprovers, reverseMap, ap.UnapprovedFiles()), "", "")
+		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
+		if newApprover == "" {
+			glog.Errorf("Couldn't find/suggest approvers for each files. Unapproved: %s", ap.UnapprovedFiles())
+			return ap.GetCurrentApproversSet()
+		}
+		ap.AddApprover(newApprover, "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -210,6 +241,7 @@ func (a Approval) String() string {
 type Approvers struct {
 	owners    Owners
 	approvers map[string]Approval
+	assignees sets.String
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -234,14 +266,33 @@ func NewApprovers(owners Owners) Approvers {
 	return Approvers{
 		owners:    owners,
 		approvers: map[string]Approval{},
+		assignees: sets.NewString(),
 	}
 }
 
-// AddApprover adds a new approval to "Approvers".
-func (ap *Approvers) AddApprover(login, how, reference string) {
+// AddLGTMer adds a new LGTM Approver
+func (ap *Approvers) AddLGTMer(login, reference string) {
 	ap.approvers[login] = Approval{
 		Login:     login,
-		How:       how,
+		How:       "LGTM",
+		Reference: reference,
+	}
+}
+
+// AddApprover adds a new Approver
+func (ap *Approvers) AddApprover(login, reference string) {
+	ap.approvers[login] = Approval{
+		Login:     login,
+		How:       "Approved",
+		Reference: reference,
+	}
+}
+
+// AddSAuthorSelfApprover adds the author self approval
+func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
+	ap.approvers[login] = Approval{
+		Login:     login,
+		How:       "Author self-approved",
 		Reference: reference,
 	}
 }
@@ -249,6 +300,11 @@ func (ap *Approvers) AddApprover(login, how, reference string) {
 // RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
 	delete(ap.approvers, login)
+}
+
+// AddAssignees adds assignees to the list
+func (ap *Approvers) AddAssignees(logins ...string) {
+	ap.assignees.Insert(logins...)
 }
 
 // GetCurrentApproversSet returns the set of approvers (login only)
@@ -294,33 +350,45 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 }
 
 // UnapprovedFiles returns owners files that still need approval
-func (ap Approvers) GetFiles() []File {
+func (ap Approvers) GetFiles(org, project string) []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
 	for _, fn := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[fn]) == 0 {
-			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn})
+			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn, org, project})
 		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn]})
+			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn], org, project})
 		}
 	}
 
 	return allOwnersFiles
 }
 
+// GetCCs gets the list of suggested approvers for a pull-request.  It
+// now considers current assignees as potential approvers. Here is how
+// it works:
+// - We find suggested approvers from all potential approvers, but
+// remove those that are not useful considering current approvers and
+// assignees.
+// - We find a subset of suggested approvers from from current
+// approvers, suggested approvers and assignees, but we remove thoses
+// that are not useful considering suggestd approvers and current
+// approvers.
+// We return the union of the two sets: suggested and suggested
+// assignees.
+// The goal of this second step is to only keep the assignees that are
+// the most useful.
 func (ap Approvers) GetCCs() []string {
-	approvers := []string{}
+	randomizedApprovers := ap.owners.GetShuffledApprovers()
 
-	reverseMap := ap.owners.GetReverseMap()
-	unapproved := ap.UnapprovedFiles()
+	currentApprovers := ap.GetCurrentApproversSet()
+	approversAndAssignees := currentApprovers.Union(ap.assignees)
+	suggested := ap.owners.KeepCoveringApprovers(approversAndAssignees, randomizedApprovers)
+	approversAndSuggested := currentApprovers.Union(suggested)
+	everyone := approversAndSuggested.Union(ap.assignees)
+	keepAssignees := ap.owners.KeepCoveringApprovers(approversAndSuggested, everyone.List())
 
-	for _, suggestedApprover := range ap.owners.GetSuggestedApprovers().List() {
-		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
-			approvers = append(approvers, suggestedApprover)
-		}
-	}
-
-	return approvers
+	return suggested.Union(keepAssignees).List()
 }
 
 // IsApproved returns a bool indicating whether or not the PR is approved
@@ -328,40 +396,60 @@ func (ap Approvers) IsApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
 }
 
-// ListString returns the list of all approvers along with links and tooltips.
-func (ap Approvers) ListString() string {
-	approvals := []string{}
+// ListApprovals returns the list of approvals
+func (ap Approvers) ListApprovals() []Approval {
+	approvals := []Approval{}
 
-	for _, approver := range ap.approvers {
-		approvals = append(approvals, approver.String())
+	for _, approver := range ap.GetCurrentApproversSet().List() {
+		approvals = append(approvals, ap.approvers[approver])
 	}
 
-	return strings.Join(approvals, ", ")
+	return approvals
 }
 
 type File interface {
-	toString(string, string) string
+	String() string
 }
 
 type ApprovedFile struct {
 	filepath  string
 	approvers sets.String
+	org       string
+	project   string
 }
 
 type UnapprovedFile struct {
 	filepath string
+	org      string
+	project  string
 }
 
-func (a ApprovedFile) toString(org, project string) string {
+func (a ApprovedFile) String() string {
 	fullOwnersPath := filepath.Join(a.filepath, ownersFileName)
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", org, project, fullOwnersPath)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", a.org, a.project, fullOwnersPath)
 	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
 }
 
-func (ua UnapprovedFile) toString(org, project string) string {
+func (ua UnapprovedFile) String() string {
 	fullOwnersPath := filepath.Join(ua.filepath, ownersFileName)
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", org, project, fullOwnersPath)
-	return fmt.Sprintf("- **[%s](%s)** \n", fullOwnersPath, link)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", ua.org, ua.project, fullOwnersPath)
+	return fmt.Sprintf("- **[%s](%s)**\n", fullOwnersPath, link)
+}
+
+// GenerateTemplateOrFail takes a template, name and data, and generates
+// the corresping string. nil is returned if it fails. An error is
+// logged.
+func GenerateTemplateOrFail(templ, name string, data interface{}) *string {
+	buf := bytes.NewBufferString("")
+	if messageTempl, err := template.New(name).Parse(templ); err != nil {
+		glog.Errorf("Failed to generate template for %s: %s", name, err)
+		return nil
+	} else if err := messageTempl.Execute(buf, data); err != nil {
+		glog.Errorf("Failed to execute template for %s: %s", name, err)
+		return nil
+	}
+	message := buf.String()
+	return &message
 }
 
 // getMessage returns the comment body that we want the approval-handler to display on PRs
@@ -371,35 +459,27 @@ func (ua UnapprovedFile) toString(org, project string) string {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, org, project string) string {
-	formatStr := "The following people have approved this PR: %v\n\nNeeds approval from an approver in each of these OWNERS Files:\n"
-	context := bytes.NewBufferString(fmt.Sprintf(formatStr, ap.ListString()))
-	for _, ownersFile := range ap.GetFiles() {
-		context.WriteString(ownersFile.toString(org, project))
+func GetMessage(ap Approvers, org, project string) *string {
+	message := GenerateTemplateOrFail(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+{{- if not .ap.IsApproved}}
+We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}@{{$cc}}{{end}}
+{{- end}}
+
+<details {{if not .ap.IsApproved}}open{{end}}>
+Needs approval from an approver in each of these OWNERS Files:
+
+{{range .ap.GetFiles .org .project}}{{.}}{{end}}
+You can indicate your approval by writing `+"`/approve`"+` in a comment
+You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={approvers:{{js .ap.GetCCs}}} -->`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
+
+	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
+
+	if title == nil || message == nil {
+		return nil
 	}
 
-	CCs := ap.GetCCs()
-	if len(CCs) != 0 {
-		context.WriteString("\nWe suggest the following people:\ncc ")
-		for _, person := range CCs {
-			context.WriteString("" + person + " ")
-		}
-	}
-	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment\n You can cancel your approval by writing `/approve cancel` in a comment")
-	title := "This PR is **NOT APPROVED**"
-	if ap.IsApproved() {
-		title = "This PR is **APPROVED**"
-	}
-	context.WriteString(getGubernatorMeta(CCs))
-	return (&c.Notification{ApprovalNotificationName, title, context.String()}).String()
-}
-
-// gets the meta data gubernator uses for
-func getGubernatorMeta(toBeAssigned []string) string {
-	forMachine := map[string][]string{"approvers": toBeAssigned}
-	bytes, err := json.Marshal(forMachine)
-	if err == nil {
-		return fmt.Sprintf("\n<!-- META=%s -->", bytes)
-	}
-	return ""
+	notif := (&c.Notification{ApprovalNotificationName, *title, *message}).String()
+	return &notif
 }

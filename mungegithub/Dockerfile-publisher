@@ -15,9 +15,20 @@
 FROM google/debian:jessie
 MAINTAINER Chao Xu <xuchao@google.com>
 RUN apt-get update
-RUN apt-get install -y -qq ca-certificates git
+RUN apt-get install -y -qq ca-certificates git wget jq
+RUN wget https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.7.5.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+ENV GOPATH="/go-workspace"
+ENV PATH="${GOPATH}/bin:${PATH}"
+RUN go get github.com/tools/godep
+WORKDIR "/go-workspace/src/github.com/tools/godep"
+RUN git checkout tags/v75
+RUN go install ./... 
+WORKDIR "/"
 
 CMD ["/mungegithub", "--dry-run", "--token-file=/token"]
 
 ADD mungegithub /mungegithub
-ADD mungers/publish.sh /publish.sh
+ADD mungers/publish_scripts/ /publish_scripts

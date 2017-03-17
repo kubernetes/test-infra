@@ -38,8 +38,10 @@ func init() {
 }
 
 type githubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
+	IsMember(owner, login string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
+	AssignIssue(owner, repo string, number int, assignees []string) error
+	CreateComment(owner, repo string, number int, comment string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
@@ -74,17 +76,22 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	isAssignee := ic.Issue.IsAssignee(commentAuthor)
 	isAuthor := ic.Issue.IsAuthor(commentAuthor)
 	if isAuthor && wantLGTM {
-		resp := "you can't LGTM your own PR"
+		resp := "you cannot LGTM your own PR"
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
-	} else if !isAuthor {
-		if !isAssignee && wantLGTM {
-			resp := "you can't LGTM a PR unless you are an assignee"
-			log.Infof("Commenting with \"%s\".", resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
-		} else if !isAssignee && !wantLGTM {
-			resp := "you can't remove LGTM from a PR unless you are an assignee"
-			log.Infof("Commenting with \"%s\".", resp)
+	} else if !isAuthor && !isAssignee {
+		log.Infof("Assigning %s/%s#%d to %s", org, repo, number, commentAuthor)
+		if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
+			msg := "assigning you to the PR failed"
+			if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
+				msg = "only kubernetes org members may be assigned issues"
+			} else if merr != nil {
+				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
+			} else {
+				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
+			}
+			resp := "changing LGTM is restricted to assignees, and " + msg
+			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
 		}
 	}

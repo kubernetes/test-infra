@@ -187,6 +187,13 @@
   ]
 },
 
+"ci-kubernetes-node-memcg-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-memcg-serial.properties"
+  ]
+},
+
 "ci-kubernetes-test-go": {
   "scenario": "kubernetes_verify",
   "args": [
@@ -405,7 +412,19 @@
   "args": [
     "--cluster=e2e-kops-aws.test-aws.k8s.io",
     "--env-file=platforms/kops_aws.env",
-    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env"
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+    "--tag=v20170223-43ce8f86"
+  ]
+},
+
+"ci-kubernetes-e2e-kops-aws-canary": {
+  "scenario": "kubernetes_kops_aws",
+  "args": [
+    "--cluster=e2e-kops-aws-canary.test-aws.k8s.io",
+    "--env-file=platforms/kops_aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env",
+    "--tag=latest"
   ]
 },
 
@@ -458,6 +477,17 @@
     "--zones=us-west-1b",
     "--env-file=platforms/kops_aws.env",
     "--env-file=jobs/ci-kubernetes-e2e-kops-aws-updown.env"
+  ]
+},
+
+"ci-kubernetes-e2e-kubeadm-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--cluster=",
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env",
+    "--mode=local",
+    "--test=false"
   ]
 },
 
@@ -1168,7 +1198,7 @@
 "ci-kubernetes-e2e-gce-multizone": {
   "scenario": "kubernetes_e2e",
   "args": [
-    "--cluster=bootstrap-e2e-gce-multizone",
+    "--cluster=bootstrap-e2e-gce-mz",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-multizone.env"
   ]

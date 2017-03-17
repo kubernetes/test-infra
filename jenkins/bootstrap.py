@@ -684,6 +684,11 @@ def setup_magic_environment(job):
         'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
+    os.environ.setdefault(
+        'K8S_SECURITY_SSH_PRIVATE_KEY_FILE',
+        os.path.join(home, '.ssh/id_ed25519'),
+    )
+
 
     cwd = os.getcwd()
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this

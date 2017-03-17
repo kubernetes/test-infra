@@ -341,7 +341,7 @@ func TestGetSuggestedApprovers(t *testing.T) {
 
 	for _, test := range tests {
 		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
-		suggested := testOwners.GetSuggestedApprovers()
+		suggested := testOwners.GetSuggestedApprovers(testOwners.GetShuffledApprovers())
 		for _, ownersSet := range test.expectedOwners {
 			if ownersSet.Intersection(suggested).Len() == 0 {
 				t.Errorf("Failed for test %v.  Didn't find an approver from: %v. Actual Owners %v", test.testName, ownersSet, suggested)

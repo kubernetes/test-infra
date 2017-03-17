@@ -20,9 +20,8 @@ spec:
         - --project=$(PROJECT)
         - --pr-mungers=$(PR_MUNGERS)
         - --token-file=$(TOKEN_FILE)
-        - --repo-dir=$(REPO_DIR)
-        - --netrc-dir=$(NETRC_DIR)
         - --alsologtostderr
+        - 2>&1
         image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         env:
@@ -51,16 +50,6 @@ spec:
               configMapKeyRef:
                 name: @@-publisher-config
                 key: config.token-file
-          - name: REPO_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: gitrepo.repo-dir
-          - name: NETRC_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: publisher.netrc-dir
         resources:
           requests:
             cpu: 100m

@@ -105,7 +105,7 @@ func TestUnapprovedFiles(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE")
 		}
 		calculated := testApprovers.UnapprovedFiles()
 		if !test.expectedUnapproved.Equal(calculated) {
@@ -146,64 +146,80 @@ func TestGetFiles(t *testing.T) {
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0])}},
+			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0]), "org", "project"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"b"}},
+			expectedFiles:     []File{UnapprovedFile{"b", "org", "project"}},
 		},
 		{
 			testName:          "Single File PR in B Fully Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: bApprovers,
-			expectedFiles:     []File{ApprovedFile{"b", bApprovers}},
+			expectedFiles:     []File{ApprovedFile{"b", bApprovers, "org", "project"}},
 		},
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{""}},
+			expectedFiles:     []File{UnapprovedFile{"", "org", "project"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"a/combo"}, UnapprovedFile{"a/d"}},
+			expectedFiles: []File{
+				UnapprovedFile{"a/combo", "org", "project"},
+				UnapprovedFile{"a/d", "org", "project"},
+			},
 		},
 		{
 			testName:          "Combo and Other; Combo Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: eApprovers,
-			expectedFiles:     []File{ApprovedFile{"a/combo", eApprovers}, UnapprovedFile{"a/d"}},
+			expectedFiles: []File{
+				ApprovedFile{"a/combo", eApprovers, "org", "project"},
+				UnapprovedFile{"a/d", "org", "project"},
+			},
 		},
 		{
 			testName:          "Combo and Other; Both Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: edcApprovers.Intersection(dApprovers),
-			expectedFiles:     []File{ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers)}, ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers)}},
+			expectedFiles: []File{
+				ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers), "org", "project"},
+				ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers), "org", "project"},
+			},
 		},
 		{
 			testName:          "Combo, C, D; Combo and C Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			currentlyApproved: cApprovers,
-			expectedFiles:     []File{ApprovedFile{"a/combo", cApprovers}, UnapprovedFile{"a/d"}, ApprovedFile{"c", cApprovers}},
+			expectedFiles: []File{
+				ApprovedFile{"a/combo", cApprovers, "org", "project"},
+				UnapprovedFile{"a/d", "org", "project"},
+				ApprovedFile{"c", cApprovers, "org", "project"},
+			},
 		},
 		{
 			testName:          "Files Approved Multiple times",
 			filenames:         []string{"a/test.go", "a/d/test.go", "b/test"},
 			currentlyApproved: rootApprovers.Union(aApprovers).Union(bApprovers),
-			expectedFiles:     []File{ApprovedFile{"a", rootApprovers.Union(aApprovers)}, ApprovedFile{"b", rootApprovers.Union(bApprovers)}},
+			expectedFiles: []File{
+				ApprovedFile{"a", rootApprovers.Union(aApprovers), "org", "project"},
+				ApprovedFile{"b", rootApprovers.Union(bApprovers), "org", "project"},
+			},
 		},
 	}
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE")
 		}
-		calculated := testApprovers.GetFiles()
+		calculated := testApprovers.GetFiles("org", "project")
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
 			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
 		}
@@ -231,7 +247,8 @@ func TestGetCCs(t *testing.T) {
 		filenames         []string
 		currentlyApproved sets.String
 		// testSeed affects who is chosen for CC
-		testSeed int64
+		testSeed  int64
+		assignees []string
 		// order matters for CCs
 		expectedCCs []string
 	}{
@@ -309,13 +326,35 @@ func TestGetCCs(t *testing.T) {
 			// We don't suggest approvers for a and b, only for unapproved c.
 			expectedCCs: []string{"Carol"},
 		},
+		{
+			testName:  "A, B, C; Nothing approved, but assignees can approve",
+			filenames: []string{"a/test.go", "b/test.go", "c/test"},
+			testSeed:  0,
+			// Approvers are valid approvers, but not the one we would suggest
+			currentlyApproved: sets.NewString(),
+			assignees:         []string{"Art", "Ben"},
+			// We suggest assigned people rather than "suggested" people
+			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
+			expectedCCs: []string{"Art", "Ben", "Carol"},
+		},
+		{
+			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
+			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
+			testSeed:          0,
+			currentlyApproved: sets.NewString(),
+			// Assignees are a mix of potential approvers and random people
+			assignees: []string{"Art", "Ben", "John", "Jack"},
+			// We suggest assigned people rather than "suggested" people
+			expectedCCs: []string{"Art", "Ben", "Carol"},
+		},
 	}
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE")
 		}
+		testApprovers.AddAssignees(test.assignees...)
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
 			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
@@ -415,7 +454,7 @@ func TestIsApproved(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE")
 		}
 		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
@@ -492,7 +531,7 @@ func TestGetFilesApprovers(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)})
 		for _, approver := range test.approvers {
-			testApprovers.AddApprover(approver, "HOW", "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE")
 		}
 		calculated := testApprovers.GetFilesApprovers()
 		if !reflect.DeepEqual(test.expectedStatus, calculated) {
@@ -501,23 +540,70 @@ func TestGetFilesApprovers(t *testing.T) {
 	}
 }
 
-func TestListString(t *testing.T) {
-	approver := NewApprovers(Owners{})
+func TestGetMessage(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+			}),
+		},
+	)
+	ap.AddApprover("Bill", "REFERENCE")
 
-	want := ``
-	if got := approver.ListString(); got != want {
-		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
+	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
+We suggest the following additional approver: @Alice
+
+<details open>
+Needs approval from an approver in each of these OWNERS Files:
+
+- **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
+- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={approvers:[Alice]} -->`
+	if got := GetMessage(ap, "org", "project"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
 	}
+}
 
-	approver.AddApprover("John", "LGTM", "12345")
-	want = `*<a href="12345" title="LGTM">John</a>*`
-	if got := approver.ListString(); got != want {
-		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
-	}
+func TestGetMessageAllApproved(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+			}),
+		},
+	)
+	ap.AddApprover("Alice", "REFERENCE")
+	ap.AddLGTMer("Bill", "REFERENCE")
 
-	approver.AddApprover("Sarah", "Approved", "54321")
-	want = `*<a href="12345" title="LGTM">John</a>*, *<a href="54321" title="Approved">Sarah</a>*`
-	if got := approver.ListString(); got != want {
-		t.Errorf("%+v.ListString() = %+v, want %+v", approver, got, want)
+	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="LGTM">Bill</a>*
+
+<details >
+Needs approval from an approver in each of these OWNERS Files:
+
+- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={approvers:[]} -->`
+	if got := GetMessage(ap, "org", "project"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
 	}
 }

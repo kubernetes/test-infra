@@ -22,6 +22,15 @@
         <a ng-href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" alt="kubernetes logo" class="titleLogo"></a>
       </md-toolbar>
       <md-content class="md-padding">
+        <h4>
+          Logged in as: {{cntl.login}}
+          <md-button ng-click="cntl.doLogin()" class="md-raised md-secondary" ng-if="cntl.login=='Guest'">
+            Login
+          </md-button>
+          <md-button ng-click="cntl.logout()" class="md-raised md-secondary" ng-if="cntl.login!='Guest'">
+            Logout
+          </md-button>
+        </h4>
         <foo ng-repeat="pr in cntl.prs">
           <md-list-item class="md-3-line">
             <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.user.login}}">
@@ -33,8 +42,8 @@
               </h3>
               <h4 class="md-body-2">{{pr.Reason}}</h4>
               <p>{{pr.time | date:'medium'}} (<span style="color: green">+{{pr.additions}}</span>/<span style="color: red">-{{pr.deletions}}</span>)</p>
-              <md-button ng-click="cntl.lgtm(pr.number)" class="md-raised md-secondary">
-                LGTM
+              <md-button ng-click="cntl.lgtm(pr.number)" class="md-raised md-secondary" ng-disabled="cntl.login=='Guest'">
+                LGTM + Approve
               </md-button>
             </md-content>
           </md-list-item>

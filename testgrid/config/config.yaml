@@ -64,6 +64,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
+- name: ci-kubernetes-node-memcg-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-memcg-serial
 - name: kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: kubernetes-build-1.3
@@ -132,6 +134,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-garbage
 - name: kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
+- name: kubernetes-e2e-kops-aws-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
 - name: kubernetes-e2e-kops-aws-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
 - name: kubernetes-e2e-kops-aws-serial
@@ -1086,6 +1090,8 @@ dashboards:
   dashboard_tab:
   - name: kops-aws
     test_group_name: kubernetes-e2e-kops-aws
+  - name: kops-aws-canary
+    test_group_name: kubernetes-e2e-kops-aws-canary
   - name: kops-aws-slow
     test_group_name: kubernetes-e2e-kops-aws-slow
   - name: kops-aws-serial
@@ -1240,6 +1246,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-ha-master
   - name: gce-taint-evict
     test_group_name: kubernetes-e2e-gce-taint-evict
+  - name: gce-kubeadm
+    test_group_name: kubernetes-e2e-kubeadm-gce
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
@@ -1504,6 +1512,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
+  - name: kubelet-memcg-serial-gce-e2e
+    test_group_name: ci-kubernetes-node-memcg-serial
   - name: kubelet-non-cri-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-non-cri
   - name: kubelet-non-cri-serial-gce-e2e
@@ -2440,6 +2450,11 @@ dashboards:
   - name: gce-canary
     description: Runs a smoke test using the latest e2e image
     test_group_name: kubernetes-e2e-gce-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: kops-aws-canary
+    description: Runs a smoke test using the latest e2e image against kops
+    test_group_name: kubernetes-e2e-kops-aws-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 

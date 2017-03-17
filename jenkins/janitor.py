@@ -31,6 +31,7 @@ DEMOLISH_ORDER = [
     Resource('instances', 'zone', None),
     Resource('addresses', 'region', None),
     Resource('disks', 'zone', None),
+    Resource('health-checks', None, None),
     Resource('firewall-rules', None, None),
     Resource('routes', None, None),
     Resource('forwarding-rules', 'region', None),

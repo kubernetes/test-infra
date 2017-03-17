@@ -88,6 +88,10 @@ type Brancher struct {
 }
 
 func (c *Config) GetPresubmit(repo, job string) *Presubmit {
+	// copy the jobs from k8s.io/kubernetes to kubernetes-security/kubernetes
+	if repo == "kubernetes-security/kubernetes" {
+		repo = "kubernetes/kubernetes"
+	}
 	return getPresubmit(c.Presubmits[repo], job)
 }
 
@@ -162,6 +166,10 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
 	var result []Presubmit
 	ott := testAll.MatchString(body)
+	// copy the jobs from k8s.io/kubernetes to kubernetes-security/kubernetes
+	if fullRepoName == "kubernetes-security/kubernetes" {
+		fullRepoName = "kubernetes/kubernetes"
+	}
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
 			if job.re.MatchString(body) || (ott && job.AlwaysRun) {

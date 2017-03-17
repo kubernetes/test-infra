@@ -45,10 +45,11 @@ type Client struct {
 }
 
 const (
-	githubBase   = "https://api.github.com"
-	maxRetries   = 8
-	maxSleepTime = 2 * time.Minute
-	initialDelay = 2 * time.Second
+	githubBase    = "https://api.github.com"
+	maxRetries    = 8
+	max404Retries = 2
+	maxSleepTime  = 2 * time.Minute
+	initialDelay  = 2 * time.Second
 )
 
 // NewClient creates a new fully operational GitHub client.
@@ -137,8 +138,8 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	return resp.StatusCode, nil
 }
 
-// Retry on transport failures. Retries on 500s and retries after sleep on
-// ratelimit exceeded.
+// Retry on transport failures. Retries on 500s, retries after sleep on
+// ratelimit exceeded, and retries 404s a couple times.
 func (c *Client) requestRetry(method, path string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
@@ -146,9 +147,19 @@ func (c *Client) requestRetry(method, path string, body interface{}) (*http.Resp
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(method, path, body)
 		if err == nil {
-			// If we are out of API tokens, sleep first. The X-RateLimit-Reset
-			// header tells us the time at which we can request again.
-			if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+			if resp.StatusCode == 404 && retries < max404Retries {
+				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
+				// the sense that they send us an event such as "PR opened" but an
+				// immediate request to GET the PR returns 404. We don't want to
+				// retry more than a couple times in this case, because a 404 may
+				// be caused by a bad API call and we'll just burn through API
+				// tokens.
+				resp.Body.Close()
+				timeSleep(backoff)
+				backoff *= 2
+			} else if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
+				// If we are out of API tokens, sleep first. The X-RateLimit-Reset
+				// header tells us the time at which we can request again.
 				var t int
 				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
 					// Sleep an extra second plus how long GitHub wants us to
@@ -386,6 +397,38 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	return err
 }
 
+func (c *Client) GetLabels(org, repo string) ([]Label, error) {
+	c.log("GetLabel", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo)
+	var labels []Label
+	for nextURL != "" {
+		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var labs []Label
+		if err := json.Unmarshal(b, &labs); err != nil {
+			return nil, err
+		}
+		labels = append(labels, labs...)
+		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	}
+	return labels, nil
+}
+
 func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	c.log("AddLabel", org, repo, number, label)
 	_, err := c.request(&request{
@@ -408,26 +451,72 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return err
 }
 
+type MissingUsers []string
+
+func (m MissingUsers) Error() string {
+	return fmt.Sprintf("cannot assign %s", strings.Join(m, ", "))
+}
+
 func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
 	c.log("AssignIssue", org, repo, number, logins)
+	assigned := make(map[string]bool)
+	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{201},
-	}, nil)
-	return err
+	}, &i)
+	if err != nil {
+		return err
+	}
+	for _, assignee := range i.Assignees {
+		assigned[assignee.Login] = true
+	}
+	var missing MissingUsers
+	for _, login := range logins {
+		if !assigned[login] {
+			missing = append(missing, login)
+		}
+	}
+	if len(missing) > 0 {
+		return missing
+	}
+	return nil
+}
+
+type ExtraUsers []string
+
+func (e ExtraUsers) Error() string {
+	return fmt.Sprintf("cannot unassign %s", strings.Join(e, ", "))
 }
 
 func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
 	c.log("UnassignIssue", org, repo, number, logins)
+	assigned := make(map[string]bool)
+	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{200},
-	}, nil)
-	return err
+	}, &i)
+	if err != nil {
+		return err
+	}
+	for _, assignee := range i.Assignees {
+		assigned[assignee.Login] = true
+	}
+	var extra ExtraUsers
+	for _, login := range logins {
+		if assigned[login] {
+			extra = append(extra, login)
+		}
+	}
+	if len(extra) > 0 {
+		return extra
+	}
+	return nil
 }
 
 func (c *Client) CloseIssue(org, repo string, number int) error {

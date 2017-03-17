@@ -62,6 +62,25 @@ func TestRequestRateLimit(t *testing.T) {
 	}
 }
 
+func TestRetry404(t *testing.T) {
+	var slept int
+	timeSleep = func(d time.Duration) { slept += 1 }
+	defer func() { timeSleep = time.Sleep }()
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if slept == 0 {
+			http.Error(w, "404 Not Found", http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	resp, err := c.requestRetry(http.MethodGet, c.base, nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+}
+
 func TestIsMember(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -354,17 +373,36 @@ func TestAssignIssue(t *testing.T) {
 			t.Errorf("Could not unmarshal request: %v", err)
 		} else if len(ps) != 1 {
 			t.Errorf("Wrong length patch: %v", ps)
-		} else if len(ps["assignees"]) != 2 {
+		} else if len(ps["assignees"]) == 3 {
+			if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" || ps["assignees"][2] != "not-in-the-org" {
+				t.Errorf("Wrong assignees: %v", ps)
+			}
+		} else if len(ps["assignees"]) == 2 {
+			if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
+				t.Errorf("Wrong assignees: %v", ps)
+			}
+
+		} else {
 			t.Errorf("Wrong assignees length: %v", ps)
-		} else if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
-			t.Errorf("Wrong assignees: %v", ps)
 		}
-		http.Error(w, "201 Created", http.StatusCreated)
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(Issue{
+			Assignees: []User{{Login: "george"}, {Login: "jungle"}, {Login: "ignore-other"}},
+		})
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle", "not-in-the-org"}); err == nil {
+		t.Errorf("Expected an error")
+	} else if merr, ok := err.(MissingUsers); ok {
+		if len(merr) != 1 || merr[0] != "not-in-the-org" {
+			t.Errorf("Expected [not-in-the-org], not %v", merr)
+		}
+	} else {
+		t.Errorf("Expected MissingUsers error")
 	}
 }
 
@@ -385,16 +423,35 @@ func TestUnassignIssue(t *testing.T) {
 			t.Errorf("Could not unmarshal request: %v", err)
 		} else if len(ps) != 1 {
 			t.Errorf("Wrong length patch: %v", ps)
-		} else if len(ps["assignees"]) != 2 {
+		} else if len(ps["assignees"]) == 3 {
+			if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" || ps["assignees"][2] != "perma-assignee" {
+				t.Errorf("Wrong assignees: %v", ps)
+			}
+		} else if len(ps["assignees"]) == 2 {
+			if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
+				t.Errorf("Wrong assignees: %v", ps)
+			}
+
+		} else {
 			t.Errorf("Wrong assignees length: %v", ps)
-		} else if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
-			t.Errorf("Wrong assignees: %v", ps)
 		}
+		json.NewEncoder(w).Encode(Issue{
+			Assignees: []User{{Login: "perma-assignee"}, {Login: "ignore-other"}},
+		})
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.UnassignIssue("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if err := c.UnassignIssue("k8s", "kuber", 5, []string{"george", "jungle", "perma-assignee"}); err == nil {
+		t.Errorf("Expected an error")
+	} else if merr, ok := err.(ExtraUsers); ok {
+		if len(merr) != 1 || merr[0] != "perma-assignee" {
+			t.Errorf("Expected [perma-assignee], not %v", merr)
+		}
+	} else {
+		t.Errorf("Expected ExtraUsers error")
 	}
 }
 
