@@ -486,6 +486,7 @@
     "--cluster=",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env",
+    "--kubeadm",
     "--mode=local",
     "--test=false"
   ]
