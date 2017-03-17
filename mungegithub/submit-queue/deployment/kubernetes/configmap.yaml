@@ -71,10 +71,6 @@ data:
     ci-kubernetes-e2e-gci-gke-subnet,\
     ci-kubernetes-e2e-gci-gke-test,\
     ci-kubernetes-e2e-gci-gke-updown,\
-    ci-kubernetes-e2e-cri-gce,\
-    ci-kubernetes-e2e-cri-gce-slow,\
-    ci-kubernetes-e2e-cri-gke,\
-    ci-kubernetes-e2e-cri-gke-slow,\
     ci-kubernetes-e2e-gci-gke,\
     ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-gke-large-cluster,\
