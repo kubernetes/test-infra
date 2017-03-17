@@ -324,12 +324,12 @@ def main(args):
         if not status:
             raise ValueError('STABLE_BUILD_SCM_REVISION not found')
 
-        opt = '--deployment kubernetes-anywhere ' \
-            '--kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
-            '--kubernetes-anywhere-phase2-provider kubeadm ' \
-            '--kubernetes-anywhere-cluster %s' \
-            '--kubernetes-anywhere-kubeadm-version ' \
-            'gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
+        opt = '--deployment kubernetes-anywhere' \
+            ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+            ' --kubernetes-anywhere-phase2-provider kubeadm' \
+            ' --kubernetes-anywhere-cluster %s' \
+            ' --kubernetes-anywhere-kubeadm-version' \
+            ' gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
             # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
         mode.add_environment('E2E_OPT=%s' % opt)
 
