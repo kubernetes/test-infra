@@ -21,5 +21,6 @@ set -o pipefail
 pylint scenarios/*.py
 pylint jenkins/bootstrap.py
 pylint jenkins/janitor.py
+pylint jenkins/list_jobs.py
 pylint queue-health/graph/graph.py
 pylint queue-health/weekly_commit_stats.py
