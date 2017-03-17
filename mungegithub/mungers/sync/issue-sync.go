@@ -32,6 +32,10 @@ const (
 	// JenkinsBotName is the name of kubekins bot
 	JenkinsBotName = "k8s-bot"
 	priorityPrefix = "priority/P"
+
+
+	// PriorityFailingTest represents a failing or flaking test
+	PriorityFailingTest = Priority(2)
 	// PriorityP0 represents Priority P0
 	PriorityP0 = Priority(0)
 	// PriorityP1 represents Priority P1
