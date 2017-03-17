@@ -121,6 +121,7 @@ class LocalMode(object):
         """Finds the best version of e2e-runner.sh."""
         options = [
           os.path.join(self.workspace, 'e2e-runner.sh'),
+          '/workspace/e2e-runner.sh',
           test_infra('jenkins/e2e-image/e2e-runner.sh')
         ]
         for path in options:
