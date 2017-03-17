@@ -1954,8 +1954,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gke-1.6-master-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -1967,8 +1979,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gke-master-1.6-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -2090,8 +2114,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gce-1.6-master-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -2103,8 +2139,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gce-master-1.6-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
