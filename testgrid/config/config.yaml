@@ -999,6 +999,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-master
+# 1.6 downgrade
+- name: ci-kubernetes-e2e-gce-1.6-1.5-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1.6-1.5-downgrade-cluster
+- name: ci-kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster
 # Manual, federated groups
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
@@ -2114,6 +2119,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster-new
   - name: gke-gci-1.5-gci-1.6-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-master
+  - name: gce-1.6-1.5-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-1.6-1.5-downgrade-cluster
+  - name: gke-gci-1.6-gci-1.5-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster
 
 - name: release-1.5-all
   dashboard_tab:
