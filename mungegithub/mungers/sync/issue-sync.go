@@ -33,7 +33,6 @@ const (
 	JenkinsBotName = "k8s-bot"
 	priorityPrefix = "priority/P"
 
-
 	// PriorityFailingTest represents a failing or flaking test
 	PriorityFailingTest = Priority(2)
 	// PriorityP0 represents Priority P0
