@@ -120,7 +120,7 @@ class LocalMode(object):
     def runner(self):
         """Finds the best version of e2e-runner.sh."""
         options = [
-          '%s/e2e-runner.sh' % self.workspace,
+          os.path.join(self.workspace, 'e2e-runner.sh'),
           test_infra('jenkins/e2e-image/e2e-runner.sh')
         ]
         for path in options:
@@ -130,9 +130,10 @@ class LocalMode(object):
 
 
     def install_prerequisites(self):
-        """Copies upload-to-gcs and kubetest if needed."""
+        """Copies kubetest if needed."""
         parent = os.path.dirname(self.runner)
         if not os.path.isfile(os.path.join(parent, 'kubetest')):
+            print >>sys.stderr, 'Cannot find kubetest in %s, will install from test-infra' % parent
             check('go', 'install', 'k8s.io/test-infra/kubetest')
             shutil.copy(
                 os.path.expandvars('${GOPATH}/bin/kubetest'),
