@@ -13,7 +13,7 @@ spec:
       containers:
       - name: influxdb
         command:
-        image: tutum/influxdb:0.13
+        image: influxdb:1.2.2
         env:
         - name: ADMIN_USER
           value: root
