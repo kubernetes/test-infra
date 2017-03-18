@@ -11,6 +11,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "author_filter_wrapper.go",
         "bundle.go",
         "events.go",
         "plugin.go",
@@ -45,6 +46,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "author_filter_wrapper_test.go",
         "bundle_test.go",
         "events_test.go",
         "plugin_mock_test.go",
