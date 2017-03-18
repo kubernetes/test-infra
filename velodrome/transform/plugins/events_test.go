@@ -32,6 +32,7 @@ func TestNewEvent(t *testing.T) {
 		{"merged", MergeEvent{}},
 		{"closed", CloseEvent{}},
 		{"reopened", ReopenEvent{}},
+		{"opened", OpenEvent{}},
 	}
 
 	for _, test := range tests {
