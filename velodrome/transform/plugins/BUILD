@@ -13,6 +13,7 @@ go_library(
     srcs = [
         "events.go",
         "plugin.go",
+        "states.go",
     ],
     tags = ["automanaged"],
     deps = ["//velodrome/sql:go_default_library"],
@@ -38,7 +39,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["events_test.go"],
+    srcs = [
+        "events_test.go",
+        "states_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
 )
