@@ -65,7 +65,7 @@
             --service-account="${{K8S_SECURITY_GCP_SERVICE_ACCOUNT}}" \
             --timeout='{timeout}' \
             --upload='gs://kubernetes-security-jenkins/pr-logs' \
-            --ssh
+            --ssh="${{K8S_SECURITY_SSH_PRIVATE_KEY_FILE}}"
 - project:
     name: bootstrap-security-pull-jobs
     jobs:
