@@ -15,9 +15,13 @@ go_library(
         "events.go",
         "plugin.go",
         "states.go",
+        "type_filter_wrapper.go",
     ],
     tags = ["automanaged"],
-    deps = ["//velodrome/sql:go_default_library"],
+    deps = [
+        "//velodrome/sql:go_default_library",
+        "//vendor:github.com/spf13/cobra",
+    ],
 )
 
 filegroup(
@@ -45,6 +49,7 @@ go_test(
         "events_test.go",
         "plugin_mock_test.go",
         "states_test.go",
+        "type_filter_wrapper_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
