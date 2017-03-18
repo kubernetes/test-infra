@@ -326,6 +326,32 @@
   ]
 },
 
+"pull-kubernetes-e2e-gke": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gke.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gke.env",
+     "--build",
+     "--stage=gs://kubernetes-release-dev/ci",
+     "--stage-suffix=pull-gke",
+     "--cluster="
+  ]
+},
+
+"pull-kubernetes-e2e-gke-gci": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gke.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gke-gci.env",
+     "--build",
+     "--stage=gs://kubernetes-release-dev/ci",
+     "--stage-suffix=pull-gke-gci",
+     "--cluster="
+  ]
+},
+
 "pull-kubernetes-federation-e2e-gce": {
   "scenario": "kubernetes_e2e",
   "args": [

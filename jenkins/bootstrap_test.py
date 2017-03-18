@@ -1902,10 +1902,22 @@ class JobTest(unittest.TestCase):
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
-                        self.assertIn('--tag=v20170223-43ce8f86', config[job]['args'])
+                        self.assertIn(
+                            '--tag=v20170223-43ce8f86', config[job]['args'])
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', config[job]['args'])
-                        self.assertIn('--stage=gs://kubernetes-release-pull/ci/%s' % job, config[job]['args'])
+                        if 'gke' in job:
+                            stage = 'gs://kubernetes-release-dev/ci'
+                            suffix = True
+                        else:
+                            stage = 'gs://kubernetes-release-pull/ci/%s' % job
+                            suffix = False
+                        self.assertIn(
+                            '--stage=%s' % stage, config[job]['args'])
+                        self.assertEquals(
+                            suffix,
+                            any('--stage-suffix=' in a for a in config[job]['args']),
+                            ('--stage-suffix=', suffix, job, config[job]['args']))
 
 
 if __name__ == '__main__':
