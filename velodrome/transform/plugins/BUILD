@@ -14,6 +14,7 @@ go_library(
         "author_filter_wrapper.go",
         "author_logger_wrapper.go",
         "bundle.go",
+        "dummy.go",
         "events.go",
         "fake_comment_wrapper.go",
         "fake_open_wrapper.go",
