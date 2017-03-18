@@ -15,6 +15,7 @@ go_library(
         "author_logger_wrapper.go",
         "bundle.go",
         "comment_counter.go",
+        "count.go",
         "dummy.go",
         "event_counter.go",
         "events.go",
