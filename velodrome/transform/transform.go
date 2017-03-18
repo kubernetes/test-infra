@@ -147,7 +147,7 @@ func main() {
 	config.MySQLConfig.AddFlags(root)
 	config.InfluxConfig.AddFlags(root)
 
-	// root.AddCommand(plugins.YourPlugin(config.run))
+	root.AddCommand(plugins.NewCountPlugin(config.run))
 
 	if err := root.Execute(); err != nil {
 		glog.Fatalf("%v\n", err)
