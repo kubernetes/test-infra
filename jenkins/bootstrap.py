@@ -684,10 +684,6 @@ def setup_magic_environment(job):
         'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
-    os.environ.setdefault(
-        'K8S_SECURITY_SSH_PRIVATE_KEY_FILE',
-        os.path.join(home, '.ssh/id_ed25519'),
-    )
 
 
     cwd = os.getcwd()
@@ -832,6 +828,11 @@ def bootstrap(args):
     exc_type = None
 
     try:
+        # TODO: find more graceful way to do ssh key
+        os.environ.setdefault(
+            'K8S_SECURITY_SSH_PRIVATE_KEY_FILE',
+            os.path.join(os.environ[HOME_ENV], '.ssh/id_ed25519'),
+        )
         setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
         logging.info('Configure environment...')
         if repos:
