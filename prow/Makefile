@@ -15,15 +15,15 @@
 all: build test
 
 
-HOOK_VERSION       = 0.94
+HOOK_VERSION       = 0.95
 LINE_VERSION       = 0.86
 SINKER_VERSION     = 0.5
 DECK_VERSION       = 0.18
-SPLICE_VERSION     = 0.15
+SPLICE_VERSION     = 0.16
 MARQUE_VERSION     = 0.1
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
-HOROLOGIUM_VERSION = 0.0
+HOROLOGIUM_VERSION = 0.1
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
@@ -45,7 +45,7 @@ build:
 test:
 	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: create-cluster update-cluster update-jobs update-plugins clean build test get-cluster-credentials
+.PHONY: update-config update-plugins clean build test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
