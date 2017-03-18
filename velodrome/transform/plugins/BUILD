@@ -11,6 +11,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "bundle.go",
         "events.go",
         "plugin.go",
         "states.go",
@@ -40,6 +41,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "bundle_test.go",
         "events_test.go",
         "states_test.go",
     ],
