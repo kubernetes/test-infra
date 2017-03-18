@@ -64,6 +64,18 @@ func (OpenEvent) Opposite() EventMatcher {
 	return CloseEvent{}
 }
 
+type CommentEvent struct{}
+
+var _ EventMatcher = CommentEvent{}
+
+func (CommentEvent) Match(eventName, label string) bool {
+	return eventName == "commented"
+}
+
+func (CommentEvent) Opposite() EventMatcher {
+	return FalseEvent{}
+}
+
 type LabelEvent struct {
 	Label string
 }
@@ -137,6 +149,8 @@ func NewEventMatcher(eventDescription string) EventMatcher {
 	switch split[0] {
 	case "":
 		return FalseEvent{}
+	case "commented":
+		return CommentEvent{}
 	case "opened":
 		return OpenEvent{}
 	case "reopened":
