@@ -748,7 +748,7 @@ def choose_ssh_key(ssh):
     # during git fetch. In the future change this to GIT_SSH_COMMAND
     # https://superuser.com/questions/232373/how-to-tell-git-which-private-key-to-use
     with tempfile.NamedTemporaryFile(prefix='ssh', delete=False) as fp:
-        fp.write('#!/bin/sh\nssh -i \'%s\' -F /dev/null "${@}"\n' % ssh)
+        fp.write('#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
     try:
         os.chmod(fp.name, 0500)
         had = 'GIT_SSH' in os.environ
