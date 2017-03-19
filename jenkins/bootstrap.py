@@ -702,7 +702,8 @@ def setup_magic_environment(job):
     if JOB_ENV not in os.environ:
         os.environ[JOB_ENV] = job
     elif os.environ[JOB_ENV] != job:
-        raise ValueError(JOB_ENV, os.environ[JOB_ENV], job)
+        logging.warning('%s=%s (overrides %s)', JOB_ENV, job, os.environ[JOB_ENV])
+        os.environ[JOB_ENV] = job
     # TODO(fejta): Magic value to tell our test code not do upload started.json
     # TODO(fejta): delete upload-to-gcs.sh and then this value.
     os.environ[BOOTSTRAP_ENV] = 'yes'

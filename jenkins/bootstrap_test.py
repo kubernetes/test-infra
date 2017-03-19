@@ -864,8 +864,9 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
     def testJobEnvMismatch(self):
         env = FakeEnviron()
         with Stub(os, 'environ', env):
-            with self.assertRaises(ValueError):
-                bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertNotEquals('this-is-a-job', env[bootstrap.JOB_ENV])
+            bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertEquals('this-is-a-job', env[bootstrap.JOB_ENV])
 
     def testExpected(self):
         env = FakeEnviron()
