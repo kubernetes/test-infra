@@ -770,6 +770,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
         os.makedirs(root)
     root_dir = os.path.realpath(root)
     logging.info('Root: %s', root_dir)
+    os.environ['GIT_TRACE'] = '1'
     with choose_ssh_key(ssh):
         for repo, (branch, pull) in repos.items():
             os.chdir(root_dir)
