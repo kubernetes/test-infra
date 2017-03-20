@@ -1535,7 +1535,6 @@ class JobTest(unittest.TestCase):
     def testBootstrapCIYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
-            self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
             self.assertNotIn('json', job)
@@ -1550,7 +1549,6 @@ class JobTest(unittest.TestCase):
     def testBootstrapCISecurityYaml(self):
         def Check(job, name):
             job_name = 'ci-%s' % name
-            self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
             self.assertNotIn('json', job)
@@ -1568,7 +1566,7 @@ class JobTest(unittest.TestCase):
         for name, job in jobs2.iteritems():
             job2 = jobs1[name]
             for attr in job:
-                if attr != 'repo-name' and attr != 'trigger-job':
+                if attr != 'frequency' and attr != 'trigger-job':
                     self.assertEquals(job[attr], job2[attr])
 
     def testBootstrapCICommitYaml(self):
@@ -1631,7 +1629,7 @@ class JobTest(unittest.TestCase):
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
-            self.assertIn('frequency', job)
+            self.assertIn('commit-frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
             self.assertNotIn('json', job)
@@ -1648,7 +1646,7 @@ class JobTest(unittest.TestCase):
         for name, job in jobs2.iteritems():
             job2 = jobs1[name]
             for attr in job:
-                if attr != 'repo-name':
+                if attr != 'repo-name' and attr != 'commit-frequency':
                     self.assertEquals(job[attr], job2[attr])
 
     def testBootstrapCISoakYaml(self):

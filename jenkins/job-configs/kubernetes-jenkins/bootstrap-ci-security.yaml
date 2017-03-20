@@ -29,7 +29,6 @@
     - reverse:
         jobs: '{trigger-job}'
         result: success
-    - timed: '{frequency}'
     wrappers:
     - e2e-credentials-binding
     - credentials-binding:
@@ -66,7 +65,6 @@
         job-name: ci-kubernetes-e2e-aws-release-1.5
         jenkins-timeout: 240
         timeout: 140
-        frequency: '@daily'
         trigger-job: 'ci-security-kubernetes-build-1.5'
     # END AWS
 
@@ -76,43 +74,36 @@
         job-name: ci-kubernetes-e2e-gce-release-1.5
         jenkins-timeout: 170
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-etcd3-release-1.5:
         job-name: ci-kubernetes-e2e-gce-etcd3-release-1.5
         jenkins-timeout: 170
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gce-reboot-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gce-slow-release-1.5
         jenkins-timeout: 270
         timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gce-serial-release-1.5
         jenkins-timeout: 420
         timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gce-alpha-features-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gce-scalability-release-1.5:
         job-name: ci-kubernetes-e2e-gce-scalability-release-1.5
         jenkins-timeout: 240
         timeout: 140
-        frequency: '@daily'
         trigger-job: 'ci-security-kubernetes-build-1.5'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.6'
@@ -120,7 +111,6 @@
         job-name: ci-kubernetes-e2e-gce-federation-release-1.5
         jenkins-timeout: 850
         timeout: 750 # See the discussion here - https://github.com/kubernetes/test-infra/pull/1280 for the motivation behind the choice of this value.
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
 
     # gci-gce-1.5
@@ -128,43 +118,36 @@
         job-name: ci-kubernetes-e2e-gci-gce-release-1.5
         jenkins-timeout: 170
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-reboot-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-slow-release-1.5
         jenkins-timeout: 270
         timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-serial-release-1.5
         jenkins-timeout: 420
         timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-ingress-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-ingress-release-1.5
         jenkins-timeout: 210
         timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gce-scalability-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1.5
         jenkins-timeout: 240
         timeout: 140
-        frequency: '@daily'
         trigger-job: 'ci-security-kubernetes-build-1.5'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.6'
@@ -172,21 +155,18 @@
 
     # START GCE-GCI
     - kubernetes-e2e-gce-gci-ci-release-1.5:
-        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.5
         jenkins-timeout: 170
         timeout: 70
         trigger-job: 'ci-security-kubernetes-build-1.5'
 
     - kubernetes-e2e-gce-gci-ci-serial-release-1.5:
-        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5
         jenkins-timeout: 420
         timeout: 320
         trigger-job: 'ci-security-kubernetes-build-1.5'
 
     - kubernetes-e2e-gce-gci-ci-slow-release-1.5:
-        frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5
         jenkins-timeout: 270
         timeout: 170
@@ -200,31 +180,26 @@
         job-name: ci-kubernetes-e2e-gke-release-1.5
         jenkins-timeout: 170
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gke-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gke-serial-release-1.5
         jenkins-timeout: 420
         timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gke-alpha-features-release-1.5:
         job-name: ci-kubernetes-e2e-gke-alpha-features-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gke-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gke-slow-release-1.5
         jenkins-timeout: 270
         timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gke-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gke-reboot-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
 
     # gci-gke-1.5
@@ -232,31 +207,26 @@
         job-name: ci-kubernetes-e2e-gci-gke-release-1.5
         jenkins-timeout: 170
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-serial-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.5
         jenkins-timeout: 420
         timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-slow-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.5
         jenkins-timeout: 280
         timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-reboot-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.5
         jenkins-timeout: 300
         timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     - kubernetes-e2e-gci-gke-ingress-release-1.5:
         job-name: ci-kubernetes-e2e-gci-gke-ingress-release-1.5
         jenkins-timeout: 220
         timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     # END GKE
 
@@ -265,6 +235,5 @@
         job-name: ci-kubernetes-kubemark-5-gce-1.5
         jenkins-timeout: 180
         timeout: 80
-        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-security-kubernetes-build-1.5'
     # END KUBEMARK

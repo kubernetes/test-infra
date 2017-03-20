@@ -20,7 +20,8 @@
     - build-discarder:
         days-to-keep: 7
     triggers:
-    - timed: '{frequency}'
+    - pollscm:
+        cron: '{commit-frequency}'
     wrappers:
     - e2e-credentials-binding
     - credentials-binding:
@@ -55,21 +56,21 @@
 
     - kubernetes-verify-release-1.5:
         branch: release-1.5
-        frequency: 'H/5 * * * *'
+        commit-frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-verify-release-1.5
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 80
 
     - kubernetes-test-go-release-1.5:
         branch: release-1.5
-        frequency: 'H H/3 * * *'
+        commit-frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go-release-1.5
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 100
 
     - kubernetes-node-kubelet-1.5:  # dawnchen
         branch: release-1.5
-        frequency: 'H/5 * * * *'
+        commit-frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-node-kubelet-1.5
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 90
