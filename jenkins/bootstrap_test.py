@@ -1383,6 +1383,7 @@ class JobTest(unittest.TestCase):
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins/bootstrap-ci-security.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-security-commit.yaml' : 'commit-suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
@@ -1545,6 +1546,30 @@ class JobTest(unittest.TestCase):
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
             Check, use_json=True)
+
+    def testBootstrapCISecurityYaml(self):
+        def Check(job, name):
+            job_name = 'ci-%s' % name
+            self.assertIn('frequency', job)
+            self.assertIn('trigger-job', job)
+            self.assertNotIn('branch', job)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0, job_name)
+            self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins/bootstrap-ci-security.yaml',
+            Check, use_json=True)
+
+    def testBootstrapCISecurityYamlJobsMatch(self):
+        jobs1 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci.yaml')
+        jobs2 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins/bootstrap-ci-security.yaml')
+        for name, job in jobs2.iteritems():
+            job2 = jobs1[name]
+            for attr in job:
+                if attr != 'repo-name' and attr != 'trigger-job':
+                    self.assertEquals(job[attr], job2[attr])
 
     def testBootstrapCICommitYaml(self):
         def Check(job, name):
