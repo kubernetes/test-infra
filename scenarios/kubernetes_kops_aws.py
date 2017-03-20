@@ -173,10 +173,8 @@ def main(args):
       '-e', 'E2E_DOWN=%s' % args.down,
       # Kops
       '-e', ('E2E_OPT=--kops-cluster %s --kops-zones %s '
-             '--kops-state %s --kops-nodes=%s --kops-ssh-key=%s '
-             '--kops-image=%s' %
-             (args.cluster, zones, args.state, args.nodes, aws_ssh,
-              args.image)),
+             '--kops-state %s --kops-nodes=%s --kops-ssh-key=%s' %
+             (args.cluster, zones, args.state, args.nodes, aws_ssh)),
     ])
 
     # env blacklist.
@@ -256,9 +254,6 @@ if __name__ == '__main__':
         '--zones', default=None,
         help='Availability zones to start the cluster in. '
         'Defaults to a random zone.')
-    PARSER.add_argument(
-        '--image', default='',
-        help='Image (AMI) for nodes to use. Defaults to kops default.')
     ARGS = PARSER.parse_args()
 
     if not ARGS.cluster:
