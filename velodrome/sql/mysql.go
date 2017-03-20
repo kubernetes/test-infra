@@ -62,9 +62,6 @@ func (config *MySQLConfig) CreateDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// We manually print errors.
-	//db.LogMode(false)
-
 	return db, nil
 }
 
