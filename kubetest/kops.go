@@ -40,6 +40,7 @@ var (
 	kopsNodes       = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
 	kopsUpTimeout   = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
 	kopsAdminAccess = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
+	kopsImage       = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
 )
 
 type kops struct {
@@ -50,6 +51,7 @@ type kops struct {
 	nodes       int
 	adminAccess string
 	cluster     string
+	image       string
 	kubecfg     string
 }
 
@@ -113,6 +115,7 @@ func NewKops() (*kops, error) {
 		nodes:       *kopsNodes,
 		adminAccess: *kopsAdminAccess,
 		cluster:     *kopsCluster,
+		image:       *kopsImage,
 		kubecfg:     kubecfg,
 	}, nil
 }
@@ -130,6 +133,9 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+	}
+	if k.image != "" {
+		createArgs = append(createArgs, "--image", k.image)
 	}
 	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
