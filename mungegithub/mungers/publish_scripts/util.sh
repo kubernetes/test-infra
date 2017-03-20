@@ -16,6 +16,10 @@
 
 # This file includes functions shared by the each repository's publish scripts.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 # sync_repo() cherry picks the latest changes in k8s.io/kubernetes/${filter} to the
 # local copy of the repository to be published.
 #
@@ -34,12 +38,13 @@ sync_repo() {
     # subdirectory in k8s.io/kubernetes, e.g., staging/src/k8s.io/apimachinery
     local subdirectory="${1}"
     local src_branch="${2}"
+    local kubernetes_remote="${3:-https://github.com/kubernetes/kubernetes.git}"
     readonly filter src_branch
 
     local currBranch=$(git rev-parse --abbrev-ref HEAD)
     local previousKubeSHA=$(cat kubernetes-sha)
     
-    git remote add upstream-kube https://github.com/kubernetes/kubernetes.git || true
+    git remote add upstream-kube "${kubernetes_remote}" || true
     git fetch upstream-kube
     git branch -D kube-sync || true
     git checkout upstream-kube/"${src_branch}" -b kube-sync
@@ -75,20 +80,30 @@ sync_repo() {
         echo "SHAs haven't changed!"
         return
     fi
-    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes): ${newKubeSHA}" -- kubernetes-sha
+    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes) ${newKubeSHA}" -- kubernetes-sha
 }
 
 # To avoid repeated godep restore, repositories should share the GOPATH.
 # This function should be run after the Godeps.json are updated with the latest
-# revs of k8s.io/ dependencies.
+# revs of k8s.io/* dependencies.
 # The function assumes to be called at the root of the repository that's going to be published.
 restore_vendor() {
+    # deps are expected to be separated by ",", e.g., "client-go,apimachinery".
+    # We will expand it to "repo:commit,repo:commit..." when a release branch of a
+    # k8s.io repo needs to track a specific revision of other k8s.io/* repos.
+    local deps="${1:-""}"
+    IFS=',' read -a deps <<< "${DEPS}"
+    dep_count=${#deps[@]}
+    for (( i=0; i<${dep_count}; i++ )); do
+        pushd ../"${deps[i]}"
+            git checkout master
+        popd
+    done
+    # At this step, currently only client-go's Godeps.json contains entries for
+    # k8s.io repos, with commit hash of the first commit in the master branch.
     godep restore
     # need to remove the Godeps folder, otherwise godep won't save source code to vendor/
-    mv ./Godeps ./Godeps.backup
     godep save ./...
-    rm -rf ./Godeps
-    mv ./Godeps.backup ./Godeps
     # glog uses global variables, it panics when multiple copies are compiled.
     rm -rf ./vendor/github.com/golang/glog
     # this ensures users who get the repository via `go get` won't end up with
@@ -103,7 +118,7 @@ restore_vendor() {
         echo "vendor hasn't changed!"
         return
     fi
-    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "Update vendor/"
+    git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: resync vendor folder"
 }
 
 # set up github token in ~/.netrc
@@ -115,4 +130,27 @@ set_github_token() {
 cleanup_github_token() {
     rm -rf ~/.netrc
     mv ~/.netrc.bak ~/.netrc || true
+}
+
+# this currently only updates commit hash of k8s.io/${1}
+update_godeps_json() {
+    local repo=${1}
+    local godeps_json="./Godeps/Godeps.json"
+    local old_revs=""
+    # TODO: pass in the new_rev if we want to depend on a specific revision.
+    local new_rev=$(cd ../${repo}; git rev-parse master)
+
+    # TODO: simplify the following lines
+    while read path rev; do
+        if [[ "${path}" == "k8s.io/${repo}"* ]]; then
+            old_revs+="${rev}"$'\n'
+        fi
+    done < <(jq '.Deps|.[]|.ImportPath + " " + .Rev' -r < "${godeps_json}")
+    old_revs=$(echo "${old_revs%%$'\n'}" | sort | uniq)
+    while read old_rev; do
+        if [[ -z "${old_rev}" ]]; then
+            continue
+        fi
+        sed -i "s|${old_rev}|${new_rev}|g" "${godeps_json}"
+    done <<< "${old_revs}"
 }

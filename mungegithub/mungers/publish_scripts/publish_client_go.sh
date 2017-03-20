@@ -18,6 +18,12 @@
 # k8s.io/kubernetes/staging/src/client-go to the ${dst_branch} of
 # k8s.io/client-go.
 #
+# ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
+# in .git/config in the local checkout of client-go. We usually set it to the
+# local checkout of k8s.io/kubernetes to avoid multiple checkout.This not only
+# reduces the run time, but also ensures all published repos are generated from
+# the same revision of k8s.io/kubernetes.
+#
 # The script assumes that the working directory is $GOPATH/src/k8s.io/client-go.
 # It also assumes $GOPATH/k8s.io/apimachinery has been updated.
 #
@@ -28,54 +34,18 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 2 ]; then
-    echo "usage: $0 src_branch dst_branch"
+if [ ! $# -eq 2 -a ! $# -eq 3 ]; then
+    echo "usage: $0 src_branch dst_branch [kubernetes_remote]"
     exit 1
 fi
 
-# src branch of k8s.io/kubernetes
-SRC_BRANCH="${1:-master}"
-# dst branch of k8s.io/client-go
-DST_BRANCH="${2:-master}"
-readonly SRC_BRANCH DST_BRANCH
-
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-source "${SCRIPT_DIR}"/util.sh
-
-git checkout "${DST_BRANCH}"
-# this currently only updates commit hash of k8s.io/apimachinery
-update_godeps_json() {
-    local godeps_json="./Godeps/Godeps.json"
-    local old_revs=""
-    local new_rev=$(cd ../apimachinery; git rev-parse HEAD)
-
-    # TODO: simplify the following lines
-    while read path rev; do
-        if [[ "${path}" == "k8s.io/apimachinery"* ]]; then
-            old_revs+="${rev}"$'\n'
-        fi
-    done < <(jq '.Deps|.[]|.ImportPath + " " + .Rev' -r < "${godeps_json}")
-    old_revs=$(echo "${old_revs%%$'\n'}" | sort | uniq)
-    while read old_rev; do
-        if [[ -z "${old_rev}" ]]; then
-            continue
-        fi
-        sed -i "s|${old_rev}|${new_rev}|g" "${godeps_json}"
-    done <<< "${old_revs}"
-}
+"${SCRIPT_DIR}"/publish_template.sh "client-go" "${1}" "${2}" "apimachinery" "${3}"
 
 basic_tests() {
     go build ./...
     go test ./...
 }
 
-# sync with kubernetes/staging, commit the changes
-sync_repo "staging/src/k8s.io/client-go" "${SRC_BRANCH}"
-# update the Godeps.json. The dummy revision of k8s.io/apimachinery entries will
-# be updated with the latest commit hash.
-update_godeps_json
-# restore the vendor/ folder. k8s.io/* and github.com/golang/glog will be
-# removed from the vendor folder
-restore_vendor
 # Smoke test client-go
 basic_tests

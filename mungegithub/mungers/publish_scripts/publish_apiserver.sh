@@ -15,17 +15,17 @@
 # limitations under the License.
 
 # This script publishes the latest changes in the ${src_branch} of
-# k8s.io/kubernetes/staging/src/apimachinery to the ${dst_branch} of
-# k8s.io/apimachinery.
+# k8s.io/kubernetes/staging/src/apiserver to the ${dst_branch} of
+# k8s.io/apiserver.
 #
 # ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
-# in .git/config in the local checkout of apimachinery. We usually set it to the
+# in .git/config in the local checkout of apiserver. We usually set it to the
 # local checkout of k8s.io/kubernetes to avoid multiple checkout.This not only
 # reduces the run time, but also ensures all published repos are generated from
 # the same revision of k8s.io/kubernetes.
 #
 # The script assumes that the working directory is
-# $GOPATH/src/k8s.io/apimachinery.
+# $GOPATH/src/k8s.io/apiserver.
 #
 # The script is expected to be run by
 # k8s.io/test-infra/mungegithub/mungers/publisher.go
@@ -40,4 +40,4 @@ if [ ! $# -eq 2 -a ! $# -eq 3 ]; then
 fi
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-"${SCRIPT_DIR}"/publish_template.sh "apimachinery" "${1}" "${2}" "" "${3}"
+"${SCRIPT_DIR}"/publish_template.sh "apiserver" "${1}" "${2}" "apimachinery,client-go" "${3}"
