@@ -1933,8 +1933,9 @@ class JobTest(unittest.TestCase):
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
-                        self.assertIn(
-                            '--tag=v20170223-43ce8f86', config[job]['args'])
+                        if '-federation-' not in job:
+                            self.assertIn(
+                                '--tag=v20170223-43ce8f86', config[job]['args'])
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', config[job]['args'])
                         if 'gke' in job:
