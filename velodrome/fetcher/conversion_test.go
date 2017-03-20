@@ -27,15 +27,10 @@ import (
 )
 
 func makeIssue(number int,
-	title, body, state, user, assignee, prUrl, repository string,
+	title, body, state, user, prUrl, repository string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *sql.Issue {
-
-	var pAssignee *string
-	if assignee != "" {
-		pAssignee = &assignee
-	}
 
 	var pClosedAt *time.Time
 	if !closedAt.IsZero() {
@@ -47,7 +42,6 @@ func makeIssue(number int,
 		Title:          title,
 		Body:           body,
 		User:           user,
-		Assignee:       pAssignee,
 		State:          state,
 		Comments:       comments,
 		IsPR:           isPullRequest,
@@ -59,7 +53,7 @@ func makeIssue(number int,
 }
 
 func makeGithubIssue(number int,
-	title, body, state, user, assignee, prUrl string,
+	title, body, state, user, prUrl string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *github.Issue {
@@ -67,10 +61,6 @@ func makeGithubIssue(number int,
 	var pBody *string
 	if body != "" {
 		pBody = &body
-	}
-	var gAssignee *github.User
-	if assignee != "" {
-		gAssignee = &github.User{Login: &assignee}
 	}
 	var pullRequest *github.PullRequestLinks
 	if prUrl != "" {
@@ -88,7 +78,6 @@ func makeGithubIssue(number int,
 		Body:             pBody,
 		State:            &state,
 		User:             gUser,
-		Assignee:         gAssignee,
 		Comments:         &comments,
 		PullRequestLinks: pullRequest,
 		CreatedAt:        &createdAt,
@@ -104,12 +93,12 @@ func TestNewIssue(t *testing.T) {
 	}{
 		// Only mandatory
 		{
-			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "", "",
+			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Time{}),
-			mIssue: makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+			mIssue: makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -117,12 +106,12 @@ func TestNewIssue(t *testing.T) {
 		},
 		// All fields
 		{
-			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User", "Assignee",
+			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User",
 				"PRLink", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2100, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			mIssue: makeIssue(1, "Title", "Body", "State", "User", "Assignee",
+			mIssue: makeIssue(1, "Title", "Body", "State", "User",
 				"PRLink", "full/repo", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -140,6 +129,9 @@ func TestNewIssue(t *testing.T) {
 		actualIssue, _ := NewIssue(test.gIssue, "FULL/REPO")
 		if actualIssue != nil && reflect.DeepEqual(actualIssue.Labels, []sql.Label{}) {
 			actualIssue.Labels = nil
+		}
+		if actualIssue != nil && reflect.DeepEqual(actualIssue.Assignees, []sql.Assignee{}) {
+			actualIssue.Assignees = nil
 		}
 		if !reflect.DeepEqual(actualIssue, test.mIssue) {
 			t.Error("Actual: ", actualIssue,
