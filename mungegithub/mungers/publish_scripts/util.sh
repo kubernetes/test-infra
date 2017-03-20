@@ -61,6 +61,18 @@ sync_repo() {
 
     git checkout ${currBranch}
 
+    # we must reset Godeps.json to what it looked like BEFORE the last vendor sync so that any
+    # new Godep.json changes from k8s.io/kubernetes will apply cleanly.  Since its always auto-generated
+    # it doesn't matter that we're removing it
+    lastResyncCommit=$(git rev-list -n 1 --grep "sync: resync vendor folder" HEAD)
+    cleanGodepJsonCommit=$(git rev-list -n 1 ${lastResyncCommit}^)
+    git checkout ${cleanGodepJsonCommit} Godeps/Godeps.json
+    if git diff --cached --exit-code &>/dev/null; then
+        echo "no need to reset Godeps.json!"
+    else
+        git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: reset Godeps.json" -- Godeps/Godeps.json
+    fi
+
     echo "commits to be cherry-picked:"
     echo "${commits}"
     echo ""
@@ -99,19 +111,25 @@ restore_vendor() {
             git checkout master
         popd
     done
+
+    local is_library="${2}"
     # At this step, currently only client-go's Godeps.json contains entries for
     # k8s.io repos, with commit hash of the first commit in the master branch.
     godep restore
     # need to remove the Godeps folder, otherwise godep won't save source code to vendor/
+    rm -rf ./Godeps
     godep save ./...
-    # glog uses global variables, it panics when multiple copies are compiled.
-    rm -rf ./vendor/github.com/golang/glog
-    # this ensures users who get the repository via `go get` won't end up with
-    # multiple copies of k8s.io/ repos. The only copy will be the one in the
-    # GOPATH.
-    # Godeps.json has a complete, up-to-date list of dependencies, so
-    # Godeps.json will be the ground truth for users using godep/glide/dep.
-    rm -rf ./vendor/k8s.io  
+    if [ "${is_library}" = "true" ]; then
+        echo "remove k8s.io/* and glog from vendor/"
+        # glog uses global variables, it panics when multiple copies are compiled.
+        rm -rf ./vendor/github.com/golang/glog
+        # this ensures users who get the repository via `go get` won't end up with
+        # multiple copies of k8s.io/ repos. The only copy will be the one in the
+        # GOPATH.
+        # Godeps.json has a complete, up-to-date list of dependencies, so
+        # Godeps.json will be the ground truth for users using godep/glide/dep.
+        rm -rf ./vendor/k8s.io
+    fi
     git add --all
     # check if there are new contents 
     if git diff --cached --exit-code &>/dev/null; then
@@ -132,7 +150,7 @@ cleanup_github_token() {
     mv ~/.netrc.bak ~/.netrc || true
 }
 
-# this currently only updates commit hash of k8s.io/${1}
+# updates commit hash of k8s.io/${1}
 update_godeps_json() {
     local repo=${1}
     local godeps_json="./Godeps/Godeps.json"

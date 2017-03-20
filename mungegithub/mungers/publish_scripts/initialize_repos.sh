@@ -32,9 +32,7 @@ pushd kubernetes
     ./hack/godep-restore.sh
 popd
 
-repo_prefix="k8s.io/"
-declare -a repos=("apimachinery" "client-go" "apiserver" "kube-aggregator" "sample-apiserver")
-for repo in "${repos[@]}"
+for repo in "apimachinery" "client-go" "apiserver" "kube-aggregator" "sample-apiserver"
 do
     git clone "https://github.com/${ORG}/${repo}"
 done

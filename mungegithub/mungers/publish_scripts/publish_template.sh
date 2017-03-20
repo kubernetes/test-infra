@@ -22,6 +22,11 @@
 # e.g., "client-go,apimachinery". We will expand it to
 # "repo:commit,repo:commit..." in the future.
 #
+# ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
+# in .git/config in the local checkout of the ${repo}.
+#
+# is_library indicates is ${repo} is a library.
+#
 # The script assumes that the working directory is
 # $GOPATH/src/k8s.io/${repo}.
 #
@@ -31,8 +36,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 4 -a ! $# -eq 5 ]; then
-    echo "usage: $0 repo src_branch dst_branch dependent_k8s.io_repos [kubernetes_remote]"
+if [ ! $# -eq 6 ]; then
+    echo "usage: $0 repo src_branch dst_branch dependent_k8s.io_repos kubernetes_remote is_library"
     exit 1
 fi
 
@@ -47,7 +52,9 @@ DEPS="${4}"
 # Remote url for Kubernetes. If empty, will fetch kubernetes
 # from https://github.com/kubernetes/kubernetes.
 KUBERNETES_REMOTE="${5}"
-readonly SRC_BRANCH DST_BRANCH DEPS KUBERNETES_REMOTE 
+# If ${REPO} is a library
+IS_LIBRARY="${6}"
+readonly SRC_BRANCH DST_BRANCH DEPS KUBERNETES_REMOTE IS_LIBRARY
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
@@ -67,4 +74,4 @@ done
 
 # restore the vendor/ folder. k8s.io/* and github.com/golang/glog will be
 # removed from the vendor folder
-restore_vendor "${DEPS}"
+restore_vendor "${DEPS}" "${IS_LIBRARY}"
