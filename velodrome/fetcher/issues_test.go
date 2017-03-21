@@ -18,7 +18,6 @@ package main
 
 import (
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -212,6 +211,11 @@ func TestUpdateIssues(t *testing.T) {
 					time.Time{}),
 			},
 			after: []sql.Issue{
+				*makeIssue(1, "Title", "", "State", "User", "", "full/one",
+					0, false,
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{}),
 				*makeIssue(1, "Super Title", "Body", "NoState", "Login", "",
 					"full/other", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -234,7 +238,7 @@ func TestUpdateIssues(t *testing.T) {
 
 		UpdateIssues(db, FakeClient{Issues: test.new, Repository: test.repository})
 		var issues []sql.Issue
-		if err := db.Order("ID").Where("repository = ?", strings.ToLower(test.repository)).Find(&issues).Error; err != nil {
+		if err := db.Order("ID").Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(issues, test.after) {
