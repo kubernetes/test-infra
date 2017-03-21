@@ -24,7 +24,7 @@ import (
 // Issue is a pull-request or issue. Its format fits into the ORM
 type Issue struct {
 	Repository     string
-	ID             int
+	ID             string
 	Labels         []Label
 	Assignees      []Assignee
 	Title          string `gorm:"type:varchar(1000)"`
@@ -55,11 +55,11 @@ func (issue *Issue) FindLabels(regex *regexp.Regexp) []Label {
 // It's format fits into the ORM
 type IssueEvent struct {
 	Repository     string
-	ID             int
+	ID             string
 	Label          *string
 	Event          string
 	EventCreatedAt time.Time
-	IssueId        int
+	IssueId        string
 	Assignee       *string
 	Actor          *string
 }
@@ -67,22 +67,22 @@ type IssueEvent struct {
 // Label is a tag on an Issue. It's format fits into the ORM.
 type Label struct {
 	Repository string
-	IssueID    int
+	IssueID    string
 	Name       string
 }
 
 // Assignee is assigned to an issue.
 type Assignee struct {
 	Repository string
-	IssueID    int
+	IssueID    string
 	Name       string
 }
 
 // Comment is either a pull-request comment or an issue comment.
 type Comment struct {
 	Repository       string
-	ID               int
-	IssueID          int
+	ID               string
+	IssueID          string
 	Body             string `gorm:"type:text"`
 	User             string
 	CommentCreatedAt time.Time

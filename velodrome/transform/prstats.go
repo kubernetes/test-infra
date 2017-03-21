@@ -36,7 +36,7 @@ type Status struct {
 type PRStats struct {
 	DB       InfluxDatabase
 	last     time.Time
-	statuses map[int]*Status
+	statuses map[string]*Status
 }
 
 func (p PRStats) Count() map[string]int {
@@ -76,7 +76,7 @@ func NewPRStatsPlugin(DB InfluxDatabase) *PRStats {
 	return &PRStats{
 		DB:       DB,
 		last:     last,
-		statuses: map[int]*Status{},
+		statuses: map[string]*Status{},
 	}
 }
 
