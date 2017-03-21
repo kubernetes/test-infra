@@ -91,6 +91,10 @@ func LGTMApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel}, true)
 }
 
+func CriticalFixLGTMApprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{criticalFixLabel, claYesLabel, lgtmLabel, approvedLabel}, true)
+}
+
 func OnlyApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, approvedLabel}, true)
 }
@@ -267,9 +271,9 @@ func TestQueueOrder(t *testing.T) {
 		{
 			name: "With a priority label",
 			issues: []*github.Issue{
-				github_test.Issue(someUserName, 2, []string{"priority/P1"}, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 2, []string{multirebaseLabel}, true),
+				github_test.Issue(someUserName, 3, []string{multirebaseLabel}, true),
+				github_test.Issue(someUserName, 4, []string{criticalFixLabel}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
 			issueToEvents: labelEvents,
@@ -278,9 +282,9 @@ func TestQueueOrder(t *testing.T) {
 		{
 			name: "With two priority labels",
 			issues: []*github.Issue{
-				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P1"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 2, []string{fixLabel, criticalFixLabel}, true),
+				github_test.Issue(someUserName, 3, []string{fixLabel}, true),
+				github_test.Issue(someUserName, 4, []string{criticalFixLabel}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
 			issueToEvents: labelEvents,
@@ -289,9 +293,9 @@ func TestQueueOrder(t *testing.T) {
 		{
 			name: "With unrelated labels",
 			issues: []*github.Issue{
-				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
+				github_test.Issue(someUserName, 2, []string{fixLabel, criticalFixLabel}, true),
+				github_test.Issue(someUserName, 3, []string{fixLabel, "kind/design"}, true),
+				github_test.Issue(someUserName, 4, []string{criticalFixLabel}, true),
 				github_test.Issue(someUserName, 5, []string{lgtmLabel, "kind/new-api"}, true),
 			},
 			issueToEvents: labelEvents,
@@ -300,36 +304,36 @@ func TestQueueOrder(t *testing.T) {
 		{
 			name: "With invalid priority label",
 			issues: []*github.Issue{
-				github_test.Issue(someUserName, 2, []string{"priority/P1", "priority/P0"}, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P1", "kind/design", "priority/high"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P0", "priorty/bob"}, true),
+				github_test.Issue(someUserName, 2, []string{fixLabel, criticalFixLabel}, true),
+				github_test.Issue(someUserName, 3, []string{fixLabel, "kind/design", "priority/high"}, true),
+				github_test.Issue(someUserName, 4, []string{criticalFixLabel, "priorty/bob"}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
 			issueToEvents: labelEvents,
 			expected:      []int{4, 2, 3, 5},
 		},
 		{
-			name: "Unlabeled counts as P3",
+			name: "Unlabeled counts as below",
 			issues: []*github.Issue{
 				github_test.Issue(someUserName, 2, nil, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P2"}, true),
+				github_test.Issue(someUserName, 3, []string{blocksOthersLabel}, true),
+				github_test.Issue(someUserName, 4, []string{multirebaseLabel}, true),
 				github_test.Issue(someUserName, 5, nil, true),
 			},
 			issueToEvents: labelEvents,
-			expected:      []int{4, 5, 3, 2},
+			expected:      []int{4, 3, 5, 2},
 		},
 		{
-			name: "retestNotRequiredLabel counts as P-negative 1",
+			name: "retestNotRequiredLabel counts above everything except criticalFixLabel",
 			issues: []*github.Issue{
 				github_test.Issue(someUserName, 2, nil, true),
-				github_test.Issue(someUserName, 3, []string{"priority/P3"}, true),
-				github_test.Issue(someUserName, 4, []string{"priority/P0"}, true),
-				github_test.Issue(someUserName, 5, nil, true),
-				github_test.Issue(someUserName, 6, []string{"priority/P3", retestNotRequiredLabel}, true),
+				github_test.Issue(someUserName, 3, []string{blocksOthersLabel}, true),
+				github_test.Issue(someUserName, 4, []string{fixLabel}, true),
+				github_test.Issue(someUserName, 5, []string{criticalFixLabel}, true),
+				github_test.Issue(someUserName, 6, []string{blocksOthersLabel, retestNotRequiredLabel}, true),
 			},
 			issueToEvents: labelEvents,
-			expected:      []int{6, 4, 5, 3, 2},
+			expected:      []int{5, 6, 4, 3, 2},
 		},
 	}
 	for testNum, test := range tests {
@@ -862,6 +866,37 @@ func TestSubmitQueue(t *testing.T) {
 			imHeadSHA:       "mysha", // Set by ValidPR
 			imBaseSHA:       "mastersha",
 			masterCommit:    MasterCommit(),
+		},
+		{
+			name:            "criticalFixLabel should merge even though jenkins GCS fail",
+			pr:              ValidPR(),
+			issue:           CriticalFixLGTMApprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       FailGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          merged,
+			state:           "success",
+			isMerged:        true,
+		},
+		{
+			name:            "criticalFixLabel but should fail if e2e's fail",
+			pr:              ValidPR(),
+			issue:           CriticalFixLGTMApprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       FailGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     false,
+			retest2Pass:     true,
+			reason:          ghE2EFailed,
+			state:           "pending",
 		},
 
 		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
