@@ -289,11 +289,11 @@ func (s *IssueSyncer) updateIssue(obj *github.MungeObject, source IssueSource) e
 	if err := obj.WriteComment(body); err != nil {
 		return err
 	}
-	p, ok := source.Priority(obj)
+	_, ok = source.Priority(obj)
 	if !ok {
 		return fmt.Errorf("Unable to get priority")
 	}
-	return s.syncPriority(obj, p)
+	return nil
 }
 
 func combineIssueComments(current, extra string) {
@@ -332,25 +332,6 @@ func (s *IssueSyncer) createIssue(source IssueSource) (*github.MungeObject, erro
 	}
 	glog.Infof("Created issue %v:\n%v", *obj.Issue.Number, body)
 	return obj, nil
-}
-
-// syncPriority will sync the input priority to the issue if the input priority is higher than the existing ones
-func (s *IssueSyncer) syncPriority(obj *github.MungeObject, priority Priority) error {
-	if obj.Priority() <= priority.Priority() {
-		return nil
-	}
-	plabels := github.GetLabelsWithPrefix(obj.Issue.Labels, priorityPrefix)
-	err := obj.AddLabel(priority.String())
-	if err != nil {
-		return nil
-	}
-	for _, l := range plabels {
-		err = obj.RemoveLabel(l)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // validLabel ensures that the given label exists. An error is logged if a label cannot be determined to be valid.
