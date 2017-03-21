@@ -502,6 +502,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-updown
 - name: kubernetes-e2e-gci-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-updown
+- name: kubernetes-e2e-gke-gci-ci-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-ci-master
 - name: kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: kubernetes-kubemark-5-gce
@@ -1336,6 +1338,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-m58
   - name: qa-slow-master
     test_group_name: kubernetes-e2e-gce-gci-qa-slow-master
+  - name: ci-gke-master
+    test_group_name: kubernetes-e2e-gke-gci-ci-master
 # END google-gci-dev
 
 - name: google-gci
