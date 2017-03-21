@@ -3811,11 +3811,27 @@
   ]
 },
 
+"ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew": {
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial.env"
   ]
 },
 
@@ -3827,11 +3843,27 @@
   ]
 },
 
+"ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew": {
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gke.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial.env"
   ]
 },
 
@@ -3875,11 +3907,27 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew": {
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial.env"
   ]
 },
 
@@ -3891,11 +3939,27 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew": {
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial.env"
   ]
 },
 
