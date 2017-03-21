@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"strconv"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
@@ -38,7 +40,12 @@ func findLatestEvent(db *gorm.DB, repository string) (*int, error) {
 		return nil, query.Error
 	}
 
-	return &latestEvent.ID, nil
+	id, err := strconv.Atoi(latestEvent.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
 }
 
 // UpdateIssueEvents fetches all events until we find the most recent we

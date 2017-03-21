@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -38,7 +39,7 @@ func makeIssue(number int,
 	}
 
 	return &sql.Issue{
-		ID:             number,
+		ID:             strconv.Itoa(number),
 		Title:          title,
 		Body:           body,
 		User:           user,
@@ -157,11 +158,11 @@ func makeIssueEvent(
 	}
 
 	return &sql.IssueEvent{
-		ID:             eventId,
+		ID:             strconv.Itoa(eventId),
 		Label:          pLabel,
 		Event:          event,
 		EventCreatedAt: createdAt,
-		IssueId:        issueId,
+		IssueId:        strconv.Itoa(issueId),
 		Assignee:       pAssignee,
 		Actor:          pActor,
 		Repository:     repository,
@@ -300,8 +301,8 @@ func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time
 
 func makeComment(issueId, Id int, body, login, repository string, createdAt, updatedAt time.Time, pullRequest bool) *sql.Comment {
 	return &sql.Comment{
-		ID:               Id,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(Id),
+		IssueID:          strconv.Itoa(issueId),
 		Body:             body,
 		User:             login,
 		CommentCreatedAt: createdAt,

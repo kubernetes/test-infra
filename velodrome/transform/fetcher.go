@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -58,7 +59,7 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 
 	eventRows, err := db.
 		Model(sql.IssueEvent{}).
-		Where("id > ?", *lastEvent).
+		Where("id > ?", strconv.Itoa(*lastEvent)).
 		Where("repository = ?", repository).
 		Order("event_created_at asc").
 		Rows()
@@ -68,7 +69,7 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 
 	commentRows, err := db.
 		Model(sql.Comment{}).
-		Where("id > ?", *lastComment).
+		Where("id > ?", strconv.Itoa(*lastComment)).
 		Where("repository = ?", repository).
 		Order("comment_created_at asc").
 		Rows()
@@ -93,7 +94,10 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 	for event != nil || comment != nil {
 		if event == nil || (comment != nil && comment.CommentCreatedAt.Before(event.EventCreatedAt)) {
 			out <- *comment
-			*lastComment = comment.ID
+			*lastComment, err = strconv.Atoi(comment.ID)
+			if err != nil {
+				return err
+			}
 			if commentRows.Next() {
 				db.ScanRows(commentRows, comment)
 			} else {
@@ -101,7 +105,10 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 			}
 		} else {
 			out <- *event
-			*lastEvent = event.ID
+			*lastEvent, err = strconv.Atoi(event.ID)
+			if err != nil {
+				return err
+			}
 			if eventRows.Next() {
 				db.ScanRows(eventRows, event)
 			} else {
