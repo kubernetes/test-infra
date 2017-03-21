@@ -30,7 +30,7 @@ func queryCallback(scope *Scope) {
 	}
 
 	if value, ok := scope.Get("gorm:query_destination"); ok {
-		results = reflect.Indirect(reflect.ValueOf(value))
+		results = indirect(reflect.ValueOf(value))
 	}
 
 	if kind := results.Kind(); kind == reflect.Slice {
@@ -76,6 +76,10 @@ func queryCallback(scope *Scope) {
 						results.Set(reflect.Append(results, elem))
 					}
 				}
+			}
+
+			if err := rows.Err(); err != nil {
+				scope.Err(err)
 			}
 
 			if scope.db.RowsAffected == 0 && !isSlice {

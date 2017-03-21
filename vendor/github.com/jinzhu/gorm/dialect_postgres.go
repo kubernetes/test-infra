@@ -23,8 +23,8 @@ func (postgres) BindVar(i int) string {
 	return fmt.Sprintf("$%v", i)
 }
 
-func (postgres) DataTypeOf(field *StructField) string {
-	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field)
+func (s *postgres) DataTypeOf(field *StructField) string {
+	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field, s)
 
 	if sqlType == "" {
 		switch dataValue.Kind() {
@@ -107,7 +107,7 @@ func (s postgres) HasColumn(tableName string, columnName string) bool {
 	return count > 0
 }
 
-func (s postgres) currentDatabase() (name string) {
+func (s postgres) CurrentDatabase() (name string) {
 	s.db.QueryRow("SELECT CURRENT_DATABASE()").Scan(&name)
 	return
 }
