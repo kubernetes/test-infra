@@ -77,6 +77,48 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-kubernetes-e2e-kubeadm-gce
+      context: Jenkins kubeadm e2e
+      always_run: false
+      skip_report: true
+      rerun_command: "@k8s-bot kubeadm e2e test this"
+      trigger: "@k8s-bot (kubeadm e2e )?test this"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
+          args:
+          - "--pull=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--clean"
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name:  JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name:  JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
     context: pull-kubernetes-cross
