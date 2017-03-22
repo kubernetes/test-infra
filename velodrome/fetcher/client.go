@@ -120,8 +120,8 @@ type ClientInterface interface {
 	RepositoryName() string
 	FetchIssues(time.Time, chan *github.Issue)
 	FetchIssueEvents(*int, chan *github.IssueEvent)
-	FetchIssueComments(int, time.Time, chan *github.IssueComment)
-	FetchPullComments(int, time.Time, chan *github.PullRequestComment)
+	FetchIssueComments(time.Time, chan *github.IssueComment)
+	FetchPullComments(time.Time, chan *github.PullRequestComment)
 }
 
 func (client *Client) RepositoryName() string {
@@ -212,8 +212,8 @@ func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
 	close(c)
 }
 
-// FetchIssueComments fetches comments associated to given Issue (since latest)
-func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *github.IssueComment) {
+// FetchIssueComments fetches issue comments (since latest)
+func (client *Client) FetchIssueComments(latest time.Time, c chan *github.IssueComment) {
 	opt := &github.IssueListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
 
 	githubClient, err := client.getGithubClient()
@@ -227,7 +227,7 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 	for {
 		client.limitsCheckAndWait()
 
-		comments, resp, err := githubClient.Issues.ListComments(client.Org, client.Project, issueID, opt)
+		comments, resp, err := githubClient.Issues.ListComments(client.Org, client.Project, 0, opt)
 		if err != nil {
 			close(c)
 			glog.Error(err)
@@ -244,12 +244,12 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 		opt.ListOptions.Page = resp.NextPage
 	}
 
-	glog.Infof("Fetched %d issue comments updated since %v for issue #%d.", count, latest, issueID)
+	glog.Infof("Fetched %d issue comments updated since %v.", count, latest)
 	close(c)
 }
 
-// FetchPullComments fetches comments associated to given PullRequest (since latest)
-func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *github.PullRequestComment) {
+// FetchPullComments fetches pull-request comments (since latest)
+func (client *Client) FetchPullComments(latest time.Time, c chan *github.PullRequestComment) {
 	opt := &github.PullRequestListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
 
 	githubClient, err := client.getGithubClient()
@@ -263,7 +263,7 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 	for {
 		client.limitsCheckAndWait()
 
-		comments, resp, err := githubClient.PullRequests.ListComments(client.Org, client.Project, issueID, opt)
+		comments, resp, err := githubClient.PullRequests.ListComments(client.Org, client.Project, 0, opt)
 		if err != nil {
 			close(c)
 			glog.Error(err)
@@ -280,6 +280,6 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 		opt.ListOptions.Page = resp.NextPage
 	}
 
-	glog.Infof("Fetched %d review comments updated since %v for issue #%d.", count, latest, issueID)
+	glog.Infof("Fetched %d review comments updated since %v.", count, latest)
 	close(c)
 }

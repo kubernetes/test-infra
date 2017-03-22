@@ -150,12 +150,21 @@ func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]
 	return assignees, nil
 }
 
+func extractIDFromURL(url string) (string, error) {
+	split := strings.Split(url, "/")
+	if len(split) == 0 {
+		return "", fmt.Errorf("Couldn't find ID in url: %s", url)
+	}
+	return split[len(split)-1], nil
+}
+
 // NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueId int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
+func NewIssueComment(gComment *github.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
-		gComment.UpdatedAt == nil {
+		gComment.UpdatedAt == nil ||
+		gComment.IssueURL == nil {
 		return nil, fmt.Errorf("IssueComment is missing mandatory field: %s", gComment)
 	}
 
@@ -164,9 +173,14 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 		login = *gComment.User.Login
 	}
 
+	issueID, err := extractIDFromURL(*gComment.IssueURL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &sql.Comment{
 		ID:               strconv.Itoa(*gComment.ID),
-		IssueID:          strconv.Itoa(issueId),
+		IssueID:          issueID,
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,
@@ -177,11 +191,12 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 }
 
 // NewPullComment creates a Comment from a github.PullRequestComment
-func NewPullComment(issueId int, gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
+func NewPullComment(gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
-		gComment.UpdatedAt == nil {
+		gComment.UpdatedAt == nil ||
+		gComment.PullRequestURL == nil {
 		return nil, fmt.Errorf("PullComment is missing mandatory field: %s", gComment)
 	}
 
@@ -189,9 +204,15 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment, repository
 	if gComment.User != nil && gComment.User.Login != nil {
 		login = *gComment.User.Login
 	}
+
+	issueID, err := extractIDFromURL(*gComment.PullRequestURL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &sql.Comment{
 		ID:               strconv.Itoa(*gComment.ID),
-		IssueID:          strconv.Itoa(issueId),
+		IssueID:          issueID,
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,

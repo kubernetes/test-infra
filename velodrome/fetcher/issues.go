@@ -74,8 +74,5 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 				glog.Error("Failed to update database issue: ", err)
 			}
 		}
-
-		// Issue is updated, find if we have new comments
-		UpdateComments(*issue.Number, issueOrm.IsPR, db, client)
 	}
 }

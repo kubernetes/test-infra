@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"strconv"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -27,26 +26,26 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func findLatestCommentUpdate(issueID int, db *gorm.DB, repository string) time.Time {
+func findLatestCommentUpdate(db *gorm.DB, repository string) time.Time {
 	var comment sql.Comment
-	comment.CommentUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	db.Select("comment_updated_at").
-		Where(&sql.Comment{IssueID: strconv.Itoa(issueID)}).
+	if err := db.Select("comment_updated_at").
 		Where("repository = ?", repository).
 		Order("comment_updated_at desc").
-		First(&comment)
+		First(&comment).Error; err != nil {
+		return time.Time{}
+	}
 
 	return comment.CommentUpdatedAt
 }
 
-func updateIssueComments(issueID int, latest time.Time, db *gorm.DB, client ClientInterface) {
+func updateIssueComments(latest time.Time, db *gorm.DB, client ClientInterface) {
 	c := make(chan *github.IssueComment, 200)
 
-	go client.FetchIssueComments(issueID, latest, c)
+	go client.FetchIssueComments(latest, c)
 
 	for comment := range c {
-		commentOrm, err := NewIssueComment(issueID, comment, client.RepositoryName())
+		commentOrm, err := NewIssueComment(comment, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create IssueComment: ", err)
 			continue
@@ -58,13 +57,13 @@ func updateIssueComments(issueID int, latest time.Time, db *gorm.DB, client Clie
 	}
 }
 
-func updatePullComments(issueID int, latest time.Time, db *gorm.DB, client ClientInterface) {
+func updatePullComments(latest time.Time, db *gorm.DB, client ClientInterface) {
 	c := make(chan *github.PullRequestComment, 200)
 
-	go client.FetchPullComments(issueID, latest, c)
+	go client.FetchPullComments(latest, c)
 
 	for comment := range c {
-		commentOrm, err := NewPullComment(issueID, comment, client.RepositoryName())
+		commentOrm, err := NewPullComment(comment, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create PullComment: ", err)
 			continue
@@ -77,11 +76,9 @@ func updatePullComments(issueID int, latest time.Time, db *gorm.DB, client Clien
 }
 
 // UpdateComments downloads issue and pull-request comments and save in DB
-func UpdateComments(issueID int, pullRequest bool, db *gorm.DB, client ClientInterface) {
-	latest := findLatestCommentUpdate(issueID, db, client.RepositoryName())
+func UpdateComments(db *gorm.DB, client ClientInterface) {
+	latest := findLatestCommentUpdate(db, client.RepositoryName())
 
-	updateIssueComments(issueID, latest, db, client)
-	if pullRequest {
-		updatePullComments(issueID, latest, db, client)
-	}
+	updateIssueComments(latest, db, client)
+	updatePullComments(latest, db, client)
 }

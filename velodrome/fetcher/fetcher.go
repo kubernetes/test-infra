@@ -58,6 +58,7 @@ func runProgram(config *fetcherConfig) error {
 	for {
 		tx := db.Begin()
 		UpdateIssues(tx, config)
+		UpdateComments(tx, config)
 		UpdateIssueEvents(tx, config)
 		tx.Commit()
 
