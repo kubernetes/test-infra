@@ -366,7 +366,7 @@
      "--env-file=platforms/gce.env",
      "--env-file=jobs/pull-kubernetes-e2e.env",
      "--env-file=jobs/pull-kubernetes-federation-e2e-gce.env",
-     "--build",
+     "--build=federation",
      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce",
      "--cluster=",
      "--multiple-federations"

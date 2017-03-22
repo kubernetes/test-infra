@@ -253,6 +253,13 @@ class DockerMode(object):
         check('docker', 'stop', self.container)
 
 
+class BuildArgAction(argparse.Action):
+    def __call__(self, parser, args, values, option_string=None):
+        if not values:
+            values=True
+        setattr(args, self.dest, values)
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches
@@ -298,7 +305,7 @@ def main(args):
 
     runner_args = []
     if args.build:
-        runner_args.append('--build')
+        runner_args.append('--build='+args.build)
         k8s = os.getcwd()
         if not os.path.basename(k8s) == 'kubernetes':
             raise ValueError(k8s)
@@ -423,7 +430,7 @@ def create_parser():
         help='Paths that should be mounted within the docker container in the form local:remote')
     # Assume we're upping, testing, and downing a cluster by default
     parser.add_argument(
-        '--build', action='store_true', help='Build kubernetes binaries if set')
+        '--build', action=BuildArgAction, nargs='?', help='Build kubernetes binaries if set')
     parser.add_argument(
         '--stage', help='Stage binaries to gs:// path if set')
     parser.add_argument(

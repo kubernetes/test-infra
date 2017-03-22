@@ -75,7 +75,7 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel|federation) stategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
@@ -211,9 +211,11 @@ func complete(o *options) error {
 	if err := prepare(); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)
 	}
+
 	if err := prepareFederation(o); err != nil {
 		return fmt.Errorf("failed to prepare federation test environment: %v", err)
 	}
+
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
@@ -305,6 +307,15 @@ func acquireKubernetes(o *options) error {
 					loadKubeconfig(o.save)
 				}
 			}
+			// If this is a "federation-only" build, we use a different
+			// extraction strategy.
+			if o.build.Type() == "federation" {
+				log.Printf("Extracting federation only build, do not download kubernetes server tars")
+				if err := os.Setenv("KUBERNETES_SKIP_DOWNLOAD_SERVER_TAR", "y"); err != nil {
+					return fmt.Errorf("failed to extract federation: %v", err)
+				}
+			}
+
 			// New deployment, extract new version
 			return o.extract.Extract()
 		})
