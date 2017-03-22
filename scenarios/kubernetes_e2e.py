@@ -337,6 +337,23 @@ def main(args):
             # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
         mode.add_environment('E2E_OPT=%s' % opt)
 
+    # env blacklist.
+    # TODO(krzyzacy) change this to a whitelist
+    docker_env_ignore = [
+      'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
+      'GOROOT',
+      'HOME',
+      'PATH',
+      'PWD',
+      'WORKSPACE'
+    ]
+
+    # TODO(fejta): delete this
+    mode.add_environment(*(
+        '%s=%s' % (k, v) for (k, v) in os.environ.items()
+        if k not in docker_env_ignore))
+
     mode.add_environment(
       # Boilerplate envs
       # Skip gcloud update checking
@@ -358,23 +375,6 @@ def main(args):
       'CLUSTER_NAME=%s' % cluster,
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
-
-    # env blacklist.
-    # TODO(krzyzacy) change this to a whitelist
-    docker_env_ignore = [
-      'GOOGLE_APPLICATION_CREDENTIALS',
-      'GOPATH',
-      'GOROOT',
-      'HOME',
-      'PATH',
-      'PWD',
-      'WORKSPACE'
-    ]
-
-    # TODO(fejta): delete this
-    mode.add_environment(*(
-        '%s=%s' % (k, v) for (k, v) in os.environ.items()
-        if k not in docker_env_ignore))
 
     # Overwrite JOB_NAME for soak-*-test jobs
     if args.soak_test and os.environ.get('JOB_NAME'):
