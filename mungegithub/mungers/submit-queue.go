@@ -59,10 +59,12 @@ const (
 	cncfClaYesLabel                = "cncf-cla: yes"
 	cncfClaNoLabel                 = "cncf-cla: no"
 	claHumanLabel                  = "cla: human-approved"
-	sqContext                      = "Submit Queue"
+	criticalFixLabel               = "queue/critical-fix"
+	blocksOthersLabel              = "queue/blocks-others"
+	fixLabel                       = "queue/fix"
+	multirebaseLabel               = "queue/multiple-rebases"
 
-	retestNotRequiredMergePriority = -1 // used for retestNotRequiredLabel
-	defaultMergePriority           = 3  // when an issue is unlabeled
+	sqContext = "Submit Queue"
 
 	githubE2EPollTime = 30 * time.Second
 )
@@ -71,6 +73,11 @@ var (
 	_ = fmt.Print
 	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
 	retestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
+
+	// this is the order in which labels will be compared for queue priority
+	labelPriorities = []string{criticalFixLabel, retestNotRequiredLabel, retestNotRequiredDocsOnlyLabel, multirebaseLabel, fixLabel, blocksOthersLabel}
+	// high priority labels are checked before the release
+	lastHighPriorityLabel = 2 // retestNotRequiredDocsOnlyLabel
 )
 
 type submitStatus struct {
@@ -719,19 +726,9 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 		res.BaseRef = *pr.Base.Ref
 	}
 
-	prio, ok := obj.Annotations["priority"]
-	if !ok {
-		var prio string
-		p := priority(obj)
-		if p == retestNotRequiredMergePriority {
-			prio = retestNotRequiredLabel
-		} else {
-			prio = fmt.Sprintf("P%d", p) // store it a P1, P2, P3.  Not just 1,2,3
-		}
-		obj.Annotations["priority"] = prio
-	}
-	if prio != "" {
-		res.ExtraInfo = append(res.ExtraInfo, prio)
+	labelPriority := labelPriority(obj)
+	if labelPriority <= lastHighPriorityLabel {
+		res.ExtraInfo = append(res.ExtraInfo, labelPriorities[labelPriority])
 	}
 
 	milestone, ok := obj.Annotations["milestone"]
@@ -742,6 +739,11 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 	if milestone != "" {
 		res.ExtraInfo = append(res.ExtraInfo, milestone)
 	}
+
+	if labelPriority > lastHighPriorityLabel && labelPriority < len(labelPriorities) {
+		res.ExtraInfo = append(res.ExtraInfo, labelPriorities[labelPriority])
+	}
+
 	return &res
 }
 
@@ -1074,18 +1076,30 @@ func (sq *SubmitQueue) cleanupOldE2E(obj *github.MungeObject, reason string) {
 
 }
 
-func priority(obj *github.MungeObject) int {
-	// jump to the front of the queue if you don't need retested
-	if obj.HasLabel(retestNotRequiredLabel) || obj.HasLabel(retestNotRequiredDocsOnlyLabel) {
-		return retestNotRequiredMergePriority
+func labelPriority(obj *github.MungeObject) int {
+	for i, label := range labelPriorities {
+		if obj.HasLabel(label) {
+			return i
+		}
 	}
+	return len(labelPriorities)
+}
 
-	prio := obj.Priority()
-	// eparis randomly decided that unlabel issues count at p3
-	if prio == math.MaxInt32 {
-		return defaultMergePriority
+func compareHighPriorityLabels(a *github.MungeObject, b *github.MungeObject) int {
+	aPrio := labelPriority(a)
+	bPrio := labelPriority(b)
+
+	if aPrio > lastHighPriorityLabel && bPrio > lastHighPriorityLabel {
+		return 0
 	}
-	return prio
+	return aPrio - bPrio
+}
+
+func compareLowPriorityLabels(a *github.MungeObject, b *github.MungeObject) int {
+	aPrio := labelPriority(a)
+	bPrio := labelPriority(b)
+
+	return aPrio - bPrio
 }
 
 type queueSorter struct {
@@ -1101,12 +1115,9 @@ func (s queueSorter) Less(i, j int) bool {
 	a := s.queue[i]
 	b := s.queue[j]
 
-	aPrio := priority(a)
-	bPrio := priority(b)
-
-	if aPrio < bPrio {
+	if c := compareHighPriorityLabels(a, b); c < 0 {
 		return true
-	} else if aPrio > bPrio {
+	} else if c > 0 {
 		return false
 	}
 
@@ -1116,6 +1127,12 @@ func (s queueSorter) Less(i, j int) bool {
 	if aDue.Before(bDue) {
 		return true
 	} else if aDue.After(bDue) {
+		return false
+	}
+
+	if c := compareLowPriorityLabels(a, b); c < 0 {
+		return true
+	} else if c > 0 {
 		return false
 	}
 
@@ -1170,7 +1187,7 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		l := len(sq.githubE2EQueue)
 		sq.Unlock()
 		// Wait until something is ready to be processed
-		if l == 0 || !sq.e2eStable(false) {
+		if l == 0 {
 			time.Sleep(sq.githubE2EPollTime)
 			continue
 		}
@@ -1180,8 +1197,15 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 			continue
 		}
 
+		// only critical fixes can be merged if postsubmits are failing
+		if !sq.e2eStable(false) && !obj.HasLabel(criticalFixLabel) {
+			time.Sleep(sq.githubE2EPollTime)
+			continue
+		}
+
 		// re-test and maybe merge
-		if sq.doGithubE2EAndMerge(obj) {
+		remove := sq.doGithubE2EAndMerge(obj)
+		if remove {
 			// remove it from the map after we finish testing
 			sq.Lock()
 			sq.githubE2ERunning = nil
@@ -1310,7 +1334,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 		return false
 	}
 
-	if !sq.e2eStable(true) {
+	if !sq.e2eStable(true) && !obj.HasLabel(criticalFixLabel) {
 		if sq.validForMerge(obj) {
 			sq.interruptedObj = newInterruptedObject(obj)
 		}
@@ -1474,27 +1498,43 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	res.Write(out.Bytes())
 }
 
+func writeLabel(label string, res http.ResponseWriter) {
+	out := fmt.Sprintf(`  <li>%q label
+    <ul>
+      <li>A PR with %q will come next</li>
+    </ul>
+  </li>
+`, label, label)
+	res.Write([]byte(out))
+}
+
 func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-type", "text/plain")
 	res.WriteHeader(http.StatusOK)
-	res.Write([]byte(`The merge queue is sorted by the following. If there is a tie in any test the next test will be used. A P0 will always come before a P1, no matter how the other tests compare.
+	res.Write([]byte(`The merge queue is sorted by the following. If there is a tie in any test the next test will be used.
 <ol>
-  <li>Priority
+  <li>'` + criticalFixLabel + `' label
     <ul>
-      <li>Determined by a label of the form 'priority/pX'
-      <li>P0 -&gt; P1 -&gt; P2</li>
-      <li>A PR with no priority label is considered equal to a P3</li>
-      <li>A PR with the '` + retestNotRequiredLabel + `' or '` + retestNotRequiredDocsOnlyLabel + `' label will come first, before even P0</li>
+      <li>A PR with '` + criticalFixLabel + `' will come first</li>
+      <li>A PR with '` + criticalFixLabel + `' will merge even if the e2e tests are blocked</li>
     </ul>
   </li>
-  <li>Release milestone due date
+`))
+	for i := 1; i <= lastHighPriorityLabel; i++ {
+		writeLabel(labelPriorities[i], res)
+	}
+	res.Write([]byte(`  <li>Release milestone due date
     <ul>
       <li>Release milestones are of the form vX.Y where X and Y are integers</li>
       <li>Other milestones are ignored.
       <li>PR with no release milestone will be considered after any PR with a milestone</li>
     </ul>
   </li>
-  <li>First time at which the LGTM label was applied.
+`))
+	for i := lastHighPriorityLabel + 1; i < len(labelPriorities); i++ {
+		writeLabel(labelPriorities[i], res)
+	}
+	res.Write([]byte(`  <li>First time at which the LGTM label was applied.
     <ul>
       <li>This means all PRs start at the bottom of the queue (within their priority and milestone bands, of course) and progress towards the top.</li>
     </ul>
