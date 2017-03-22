@@ -28,7 +28,7 @@ import (
 type OpenToClose struct {
 	DB   InfluxDatabase
 	last time.Time
-	open map[int]time.Time
+	open map[string]time.Time
 }
 
 // NewOpenToClosePlugin initializes the plugin. Requires an
@@ -41,7 +41,7 @@ func NewOpenToClosePlugin(DB InfluxDatabase) *OpenToClose {
 	return &OpenToClose{
 		DB:   DB,
 		last: last,
-		open: map[int]time.Time{},
+		open: map[string]time.Time{},
 	}
 }
 

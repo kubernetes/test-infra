@@ -27,8 +27,16 @@ func (mysql) Quote(key string) string {
 }
 
 // Get Data Type for MySQL Dialect
-func (mysql) DataTypeOf(field *StructField) string {
-	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field)
+func (s *mysql) DataTypeOf(field *StructField) string {
+	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field, s)
+
+	// MySQL allows only one auto increment column per table, and it must
+	// be a KEY column.
+	if _, ok := field.TagSettings["AUTO_INCREMENT"]; ok {
+		if _, ok = field.TagSettings["INDEX"]; !ok && !field.IsPrimaryKey {
+			delete(field.TagSettings, "AUTO_INCREMENT")
+		}
+	}
 
 	if sqlType == "" {
 		switch dataValue.Kind() {
@@ -106,11 +114,11 @@ func (s mysql) RemoveIndex(tableName string, indexName string) error {
 
 func (s mysql) HasForeignKey(tableName string, foreignKeyName string) bool {
 	var count int
-	s.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_NAME=? AND CONSTRAINT_TYPE='FOREIGN KEY'", s.currentDatabase(), tableName, foreignKeyName).Scan(&count)
+	s.db.QueryRow("SELECT count(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_NAME=? AND CONSTRAINT_TYPE='FOREIGN KEY'", s.CurrentDatabase(), tableName, foreignKeyName).Scan(&count)
 	return count > 0
 }
 
-func (s mysql) currentDatabase() (name string) {
+func (s mysql) CurrentDatabase() (name string) {
 	s.db.QueryRow("SELECT DATABASE()").Scan(&name)
 	return
 }

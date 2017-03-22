@@ -316,6 +316,7 @@ go_library(
         "github.com/jinzhu/gorm/callback_delete.go",
         "github.com/jinzhu/gorm/callback_query.go",
         "github.com/jinzhu/gorm/callback_query_preload.go",
+        "github.com/jinzhu/gorm/callback_row_query.go",
         "github.com/jinzhu/gorm/callback_save.go",
         "github.com/jinzhu/gorm/callback_update.go",
         "github.com/jinzhu/gorm/dialect.go",

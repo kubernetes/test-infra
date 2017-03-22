@@ -20,7 +20,7 @@ spec:
         - --token-file=/etc/secret-volume/k8s-merge-robot
         - --stderrthreshold=0
         - --host=sqlproxy
-        image: gcr.io/google-containers/github-fetcher:v20170303-213119
+        image: gcr.io/google-containers/github-fetcher:v20170322-151808
         resources:
           requests:
             cpu: 0m

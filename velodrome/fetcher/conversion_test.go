@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -27,15 +28,10 @@ import (
 )
 
 func makeIssue(number int,
-	title, body, state, user, assignee, prUrl, repository string,
+	title, body, state, user, prUrl, repository string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *sql.Issue {
-
-	var pAssignee *string
-	if assignee != "" {
-		pAssignee = &assignee
-	}
 
 	var pClosedAt *time.Time
 	if !closedAt.IsZero() {
@@ -43,11 +39,10 @@ func makeIssue(number int,
 	}
 
 	return &sql.Issue{
-		ID:             number,
+		ID:             strconv.Itoa(number),
 		Title:          title,
 		Body:           body,
 		User:           user,
-		Assignee:       pAssignee,
 		State:          state,
 		Comments:       comments,
 		IsPR:           isPullRequest,
@@ -59,7 +54,7 @@ func makeIssue(number int,
 }
 
 func makeGithubIssue(number int,
-	title, body, state, user, assignee, prUrl string,
+	title, body, state, user, prUrl string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *github.Issue {
@@ -67,10 +62,6 @@ func makeGithubIssue(number int,
 	var pBody *string
 	if body != "" {
 		pBody = &body
-	}
-	var gAssignee *github.User
-	if assignee != "" {
-		gAssignee = &github.User{Login: &assignee}
 	}
 	var pullRequest *github.PullRequestLinks
 	if prUrl != "" {
@@ -88,7 +79,6 @@ func makeGithubIssue(number int,
 		Body:             pBody,
 		State:            &state,
 		User:             gUser,
-		Assignee:         gAssignee,
 		Comments:         &comments,
 		PullRequestLinks: pullRequest,
 		CreatedAt:        &createdAt,
@@ -104,12 +94,12 @@ func TestNewIssue(t *testing.T) {
 	}{
 		// Only mandatory
 		{
-			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "", "",
+			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Time{}),
-			mIssue: makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+			mIssue: makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -117,12 +107,12 @@ func TestNewIssue(t *testing.T) {
 		},
 		// All fields
 		{
-			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User", "Assignee",
+			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User",
 				"PRLink", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2100, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			mIssue: makeIssue(1, "Title", "Body", "State", "User", "Assignee",
+			mIssue: makeIssue(1, "Title", "Body", "State", "User",
 				"PRLink", "full/repo", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -140,6 +130,9 @@ func TestNewIssue(t *testing.T) {
 		actualIssue, _ := NewIssue(test.gIssue, "FULL/REPO")
 		if actualIssue != nil && reflect.DeepEqual(actualIssue.Labels, []sql.Label{}) {
 			actualIssue.Labels = nil
+		}
+		if actualIssue != nil && reflect.DeepEqual(actualIssue.Assignees, []sql.Assignee{}) {
+			actualIssue.Assignees = nil
 		}
 		if !reflect.DeepEqual(actualIssue, test.mIssue) {
 			t.Error("Actual: ", actualIssue,
@@ -165,11 +158,11 @@ func makeIssueEvent(
 	}
 
 	return &sql.IssueEvent{
-		ID:             eventId,
+		ID:             strconv.Itoa(eventId),
 		Label:          pLabel,
 		Event:          event,
 		EventCreatedAt: createdAt,
-		IssueId:        issueId,
+		IssueId:        strconv.Itoa(issueId),
 		Assignee:       pAssignee,
 		Actor:          pActor,
 		Repository:     repository,
@@ -278,7 +271,7 @@ func TestNewLabels(t *testing.T) {
 	}
 }
 
-func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
+func makeGithubIssueComment(id int, body, login, url string, createdAt, updatedAt time.Time) *github.IssueComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
@@ -289,27 +282,29 @@ func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt tim
 		Body:      &body,
 		CreatedAt: &createdAt,
 		UpdatedAt: &updatedAt,
+		IssueURL:  &url,
 	}
 }
 
-func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
+func makeGithubPullComment(id int, body, login, url string, createdAt, updatedAt time.Time) *github.PullRequestComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
 	}
 	return &github.PullRequestComment{
-		ID:        &id,
-		User:      user,
-		Body:      &body,
-		CreatedAt: &createdAt,
-		UpdatedAt: &updatedAt,
+		ID:             &id,
+		User:           user,
+		Body:           &body,
+		CreatedAt:      &createdAt,
+		UpdatedAt:      &updatedAt,
+		PullRequestURL: &url,
 	}
 }
 
 func makeComment(issueId, Id int, body, login, repository string, createdAt, updatedAt time.Time, pullRequest bool) *sql.Comment {
 	return &sql.Comment{
-		ID:               Id,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(Id),
+		IssueID:          strconv.Itoa(issueId),
 		Body:             body,
 		User:             login,
 		CommentCreatedAt: createdAt,
@@ -322,23 +317,20 @@ func makeComment(issueId, Id int, body, login, repository string, createdAt, upd
 func TestNewIssueComment(t *testing.T) {
 	tests := []struct {
 		gComment        *github.IssueComment
-		issueId         int
 		expectedComment *sql.Comment
 	}{
 		{
-			gComment: makeGithubIssueComment(1, "Body", "Login",
+			gComment: makeGithubIssueComment(1, "Body", "Login", "issue/12",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			issueId: 12,
 			expectedComment: makeComment(12, 1, "Body", "Login", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), false),
 		},
 		{
-			gComment: makeGithubIssueComment(1, "Body", "",
+			gComment: makeGithubIssueComment(1, "Body", "", "issue/12",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			issueId: 12,
 			expectedComment: makeComment(12, 1, "Body", "", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), false),
@@ -346,7 +338,7 @@ func TestNewIssueComment(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualComment, _ := NewIssueComment(test.issueId, test.gComment, "FULL/REPO")
+		actualComment, _ := NewIssueComment(test.gComment, "FULL/REPO")
 		if !reflect.DeepEqual(actualComment, test.expectedComment) {
 			t.Error("Actual: ", actualComment,
 				"doesn't match expected: ", test.expectedComment)
@@ -357,25 +349,22 @@ func TestNewIssueComment(t *testing.T) {
 func TestNewPullComment(t *testing.T) {
 	tests := []struct {
 		gComment        *github.PullRequestComment
-		issueId         int
 		repository      string
 		expectedComment *sql.Comment
 	}{
 		{
-			gComment: makeGithubPullComment(1, "Body", "Login",
+			gComment: makeGithubPullComment(1, "Body", "Login", "issue/12",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			issueId:    12,
 			repository: "FULL/REPO",
 			expectedComment: makeComment(12, 1, "Body", "Login", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 		},
 		{
-			gComment: makeGithubPullComment(1, "Body", "",
+			gComment: makeGithubPullComment(1, "Body", "", "issue/12",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			issueId:    12,
 			repository: "FULL/REPO",
 			expectedComment: makeComment(12, 1, "Body", "", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -384,7 +373,7 @@ func TestNewPullComment(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualComment, _ := NewPullComment(test.issueId, test.gComment, test.repository)
+		actualComment, _ := NewPullComment(test.gComment, test.repository)
 		if !reflect.DeepEqual(actualComment, test.expectedComment) {
 			t.Error("Actual: ", actualComment,
 				"doesn't match expected: ", test.expectedComment)

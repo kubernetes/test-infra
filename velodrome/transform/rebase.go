@@ -29,7 +29,7 @@ type Rebase struct {
 	DB   InfluxDatabase
 	last time.Time
 	// Number of rebase for each pull-request
-	rebases map[int]int
+	rebases map[string]int
 }
 
 // NewRebasePlugin initializes the rebase plugin. Requires an
@@ -43,7 +43,7 @@ func NewRebasePlugin(DB InfluxDatabase) *Rebase {
 	return &Rebase{
 		DB:      DB,
 		last:    last,
-		rebases: make(map[int]int),
+		rebases: make(map[string]int),
 	}
 }
 
@@ -57,7 +57,7 @@ func (m *Rebase) ReceiveComment(sql.Comment) error {
 	return nil
 }
 
-func (m *Rebase) processMerge(issueID int, date time.Time) error {
+func (m *Rebase) processMerge(issueID string, date time.Time) error {
 	if !date.After(m.last) {
 		return nil
 	}

@@ -27,8 +27,8 @@ type FakeClient struct {
 	Repository    string
 	Issues        []*github.Issue
 	IssueEvents   []*github.IssueEvent
-	IssueComments map[int][]*github.IssueComment
-	PullComments  map[int][]*github.PullRequestComment
+	IssueComments []*github.IssueComment
+	PullComments  []*github.PullRequestComment
 }
 
 func (client FakeClient) RepositoryName() string {
@@ -49,15 +49,15 @@ func (client FakeClient) FetchIssueEvents(latest *int, c chan *github.IssueEvent
 	close(c)
 }
 
-func (client FakeClient) FetchIssueComments(issueID int, latest time.Time, c chan *github.IssueComment) {
-	for _, comment := range client.IssueComments[issueID] {
+func (client FakeClient) FetchIssueComments(latest time.Time, c chan *github.IssueComment) {
+	for _, comment := range client.IssueComments {
 		c <- comment
 	}
 	close(c)
 }
 
-func (client FakeClient) FetchPullComments(issueID int, latest time.Time, c chan *github.PullRequestComment) {
-	for _, comment := range client.PullComments[issueID] {
+func (client FakeClient) FetchPullComments(latest time.Time, c chan *github.PullRequestComment) {
+	for _, comment := range client.PullComments {
 		c <- comment
 	}
 	close(c)

@@ -31,16 +31,16 @@ func TestDispatch(t *testing.T) {
 	mockPlugin := NewMockPlugin(mockCtrl)
 
 	gomock.InOrder(
-		mockPlugin.EXPECT().ReceiveIssue(sql.Issue{ID: 1}),
-		mockPlugin.EXPECT().ReceiveIssue(sql.Issue{ID: 2}),
+		mockPlugin.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}),
+		mockPlugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2"}),
 	)
 	gomock.InOrder(
-		mockPlugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: 1}),
-		mockPlugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: 2}),
+		mockPlugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "1"}),
+		mockPlugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "2"}),
 	)
 	gomock.InOrder(
-		mockPlugin.EXPECT().ReceiveComment(sql.Comment{ID: 1}),
-		mockPlugin.EXPECT().ReceiveComment(sql.Comment{ID: 2}),
+		mockPlugin.EXPECT().ReceiveComment(sql.Comment{ID: "1"}),
+		mockPlugin.EXPECT().ReceiveComment(sql.Comment{ID: "2"}),
 	)
 
 	issues := make(chan sql.Issue)
@@ -49,12 +49,12 @@ func TestDispatch(t *testing.T) {
 	plugins := Plugins([]Plugin{mockPlugin})
 	go plugins.Dispatch(issues, events)
 
-	issues <- sql.Issue{ID: 1}
-	issues <- sql.Issue{ID: 2}
-	events <- sql.IssueEvent{ID: 1}
-	events <- sql.Comment{ID: 1}
-	events <- sql.IssueEvent{ID: 2}
-	events <- sql.Comment{ID: 2}
+	issues <- sql.Issue{ID: "1"}
+	issues <- sql.Issue{ID: "2"}
+	events <- sql.IssueEvent{ID: "1"}
+	events <- sql.Comment{ID: "1"}
+	events <- sql.IssueEvent{ID: "2"}
+	events <- sql.Comment{ID: "2"}
 
 	time.Sleep(time.Millisecond)
 

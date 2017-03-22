@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,27 +43,30 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 	if gIssue.ClosedAt != nil {
 		closedAt = gIssue.ClosedAt
 	}
-	var assignee *string
-	if gIssue.Assignee != nil {
-		assignee = gIssue.Assignee.Login
+	assignees, err := newAssignees(
+		*gIssue.Number,
+		gIssue.Assignees, repository)
+	if err != nil {
+		return nil, err
 	}
 	var body string
 	if gIssue.Body != nil {
 		body = *gIssue.Body
 	}
 	isPR := (gIssue.PullRequestLinks != nil && gIssue.PullRequestLinks.URL != nil)
-	labels, err := newLabels(*gIssue.Number, gIssue.Labels, repository)
+	labels, err := newLabels(
+		*gIssue.Number, gIssue.Labels, repository)
 	if err != nil {
 		return nil, err
 	}
 
 	return &sql.Issue{
-		ID:             *gIssue.Number,
+		ID:             strconv.Itoa(*gIssue.Number),
 		Labels:         labels,
 		Title:          *gIssue.Title,
 		Body:           body,
 		User:           *gIssue.User.Login,
-		Assignee:       assignee,
+		Assignees:      assignees,
 		State:          *gIssue.State,
 		Comments:       *gIssue.Comments,
 		IsPR:           isPR,
@@ -97,11 +101,11 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.Issu
 	}
 
 	return &sql.IssueEvent{
-		ID:             *gIssueEvent.ID,
+		ID:             strconv.Itoa(*gIssueEvent.ID),
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
-		IssueId:        *gIssueEvent.Issue.Number,
+		IssueId:        strconv.Itoa(*gIssueEvent.Issue.Number),
 		Assignee:       assignee,
 		Actor:          actor,
 		Repository:     strings.ToLower(repository),
@@ -118,7 +122,7 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 			return nil, fmt.Errorf("Label is missing name field")
 		}
 		labels = append(labels, sql.Label{
-			IssueID:    issueId,
+			IssueID:    strconv.Itoa(issueId),
 			Name:       *label.Name,
 			Repository: repository,
 		})
@@ -127,12 +131,40 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 	return labels, nil
 }
 
+// newAssignees creates a new Label for each label in the issue
+func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
+	assignees := []sql.Assignee{}
+	repository = strings.ToLower(repository)
+
+	for _, assignee := range gAssignees {
+		if assignee != nil && assignee.Login == nil {
+			return nil, fmt.Errorf("Assignee is missing Login field")
+		}
+		assignees = append(assignees, sql.Assignee{
+			IssueID:    strconv.Itoa(issueId),
+			Name:       *assignee.Login,
+			Repository: repository,
+		})
+	}
+
+	return assignees, nil
+}
+
+func extractIDFromURL(url string) (string, error) {
+	split := strings.Split(url, "/")
+	if len(split) == 0 {
+		return "", fmt.Errorf("Couldn't find ID in url: %s", url)
+	}
+	return split[len(split)-1], nil
+}
+
 // NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueId int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
+func NewIssueComment(gComment *github.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
-		gComment.UpdatedAt == nil {
+		gComment.UpdatedAt == nil ||
+		gComment.IssueURL == nil {
 		return nil, fmt.Errorf("IssueComment is missing mandatory field: %s", gComment)
 	}
 
@@ -141,9 +173,14 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 		login = *gComment.User.Login
 	}
 
+	issueID, err := extractIDFromURL(*gComment.IssueURL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &sql.Comment{
-		ID:               *gComment.ID,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(*gComment.ID),
+		IssueID:          issueID,
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,
@@ -154,11 +191,12 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 }
 
 // NewPullComment creates a Comment from a github.PullRequestComment
-func NewPullComment(issueId int, gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
+func NewPullComment(gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
-		gComment.UpdatedAt == nil {
+		gComment.UpdatedAt == nil ||
+		gComment.PullRequestURL == nil {
 		return nil, fmt.Errorf("PullComment is missing mandatory field: %s", gComment)
 	}
 
@@ -166,9 +204,15 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment, repository
 	if gComment.User != nil && gComment.User.Login != nil {
 		login = *gComment.User.Login
 	}
+
+	issueID, err := extractIDFromURL(*gComment.PullRequestURL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &sql.Comment{
-		ID:               *gComment.ID,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(*gComment.ID),
+		IssueID:          issueID,
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,
