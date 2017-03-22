@@ -60,6 +60,9 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
 
 git checkout "${DST_BRANCH}"
+git fetch origin
+git reset --hard origin/"${DST_BRANCH}"
+
 # sync_repo cherry-picks the commits that change
 # k8s.io/kubernetes/staging/src/k8s.io/${REPO} to the ${DST_BRANCH}
 sync_repo "staging/src/k8s.io/${REPO}" "${SRC_BRANCH}" "${KUBERNETES_REMOTE}"

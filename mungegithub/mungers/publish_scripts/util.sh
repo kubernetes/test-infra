@@ -95,10 +95,25 @@ sync_repo() {
     git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes) ${newKubeSHA}" -- kubernetes-sha
 }
 
+# deduplicate_commits reset branch to origin/branch if they are the same.
+# This function assumes the work directory is the repo that needs to deduplication.
+deduplicate_commits() {
+    local branch="${1}"
+    if git diff origin/"${branch}" "${branch}" --exit-code &>/dev/null; then
+        if [ "$(git rev-parse --abbrev-ref HEAD)" = "${branch}" ]; then
+            git reset --hard origin/"${branch}"
+        else
+            git branch -f "${branch}" origin/"${branch}"
+        fi
+    fi
+}
+
 # To avoid repeated godep restore, repositories should share the GOPATH.
 # This function should be run after the Godeps.json are updated with the latest
-# revs of k8s.io/* dependencies.
-# The function assumes to be called at the root of the repository that's going to be published.
+# revisions of k8s.io/* dependencies.
+# This function assumes to be called at the root of the repository that's going to be published.
+# This function assumes the branch that need update is checked out.
+# This function assumes it's the last step in the publishing process that's going to generate commits.
 restore_vendor() {
     # deps are expected to be separated by ",", e.g., "client-go,apimachinery".
     # We will expand it to "repo:commit,repo:commit..." when a release branch of a
@@ -108,6 +123,7 @@ restore_vendor() {
     dep_count=${#deps[@]}
     for (( i=0; i<${dep_count}; i++ )); do
         pushd ../"${deps[i]}"
+            # currently we assume the repo depends on the master branch of dep.
             git checkout master
         popd
     done
@@ -137,6 +153,10 @@ restore_vendor() {
         return
     fi
     git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: resync vendor folder"
+
+    # Here is the last chance to generate/reverse commits. Otherwise dependent repo's Godeps.json will contain stale/invalid commit hashes.
+    # deduplicate commits. 
+    deduplicate_commits "$(git rev-parse --abbrev-ref HEAD)"
 }
 
 # set up github token in ~/.netrc

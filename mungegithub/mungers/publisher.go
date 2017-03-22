@@ -203,29 +203,8 @@ func (p *PublisherMunger) construct() error {
 		}
 		// construct branches
 		for src, dst := range repoRules.srcToDst {
-			cmd := exec.Command("git", "checkout", dst.branch)
+			cmd := exec.Command(repoRules.publishScript, src.branch, dst.branch, kubernetesRemote)
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
-				return err
-			}
-
-			cmd = exec.Command("git", "fetch", "origin")
-			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
-				return err
-			}
-
-			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", dst.branch))
-			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
-				return err
-			}
-
-			cmd = exec.Command(repoRules.publishScript, src.branch, dst.branch, kubernetesRemote)
-			output, err = cmd.CombinedOutput()
 			p.plog.Infof("%s", output)
 			if err != nil {
 				return err
