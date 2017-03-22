@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -27,6 +28,29 @@ func TestConfigLoads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not load config: %v", err)
 	}
+}
+
+func Replace(j *Presubmit, ks *Presubmit) error {
+	name := strings.Replace(j.Name, "pull-kubernetes", "pull-security-kubernetes", -1)
+	if name != ks.Name {
+		return fmt.Errorf("%s should match %s", name, ks.Name)
+	}
+	j.Name = name
+	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
+	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
+	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
+	j.re = ks.re
+	if len(j.RunAfterSuccess) != len(ks.RunAfterSuccess) {
+		return fmt.Errorf("RunAfterSuccess should match. - %s", name)
+	}
+
+	for i := range j.RunAfterSuccess {
+		if err := Replace(&j.RunAfterSuccess[i], &ks.RunAfterSuccess[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
@@ -40,15 +64,10 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 		t.Fatalf("length of kubernetes/kubernetes presumits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
 	}
 	for i, j := range kp {
-		name := strings.Replace(j.Name, "pull-kubernetes", "pull-security-kubernetes", -1)
-		if name != sp[i].Name {
-			t.Fatalf("%s should match %s", name, sp[i].Name)
+		if err := Replace(&j, &sp[i]); err != nil {
+			t.Fatalf("[Replace] : %v", err)
 		}
-		j.Name = name
-		j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
-		j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
-		j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
-		j.re = sp[i].re
+
 		if !reflect.DeepEqual(j, sp[i]) {
 			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%#v\nshould match: %#v", j, sp[i])
 		}
