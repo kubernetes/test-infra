@@ -52,24 +52,25 @@ func initPath(path string) string {
 }
 
 type options struct {
-	build       buildStrategy
-	charts      bool
-	checkLeaks  bool
-	checkSkew   bool
-	deployment  string
-	down        bool
-	dump        string
-	extract     extractStrategies
-	federation  bool
-	kubemark    bool
-	publish     string
-	save        string
-	skew        bool
-	stage       stageStrategy
-	testArgs    string
-	test        bool
-	up          bool
-	upgradeArgs string
+	build               buildStrategy
+	charts              bool
+	checkLeaks          bool
+	checkSkew           bool
+	deployment          string
+	down                bool
+	dump                string
+	extract             extractStrategies
+	federation          bool
+	kubemark            bool
+	multipleFederations bool
+	publish             string
+	save                string
+	skew                bool
+	stage               stageStrategy
+	testArgs            string
+	test                bool
+	up                  bool
+	upgradeArgs         string
 }
 
 func defineFlags() *options {
@@ -84,6 +85,7 @@ func defineFlags() *options {
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
+	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
@@ -190,7 +192,6 @@ func main() {
 }
 
 func complete(o *options) error {
-
 	if !terminate.Stop() {
 		<-terminate.C // Drain the value if necessary.
 	}
@@ -209,6 +210,9 @@ func complete(o *options) error {
 	}
 	if err := prepare(); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)
+	}
+	if err := prepareFederation(o); err != nil {
+		return fmt.Errorf("failed to prepare federation test environment: %v", err)
 	}
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
@@ -507,6 +511,27 @@ func prepare() error {
 		if err := insertPath(p); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func prepareFederation(o *options) error {
+	if o.multipleFederations {
+		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
+		// specific environment variables. So this doesn't work
+		// when we move away from Jenkins.
+		execNum := os.Getenv("EXECUTOR_NUMBER")
+		if execNum == "" {
+			execNum = "0"
+		}
+		suffix := fmt.Sprintf("%s-%s", os.Getenv("NODE_NAME"), execNum)
+		federationName := fmt.Sprintf("e2e-f8n-%s", suffix)
+		federationSystemNamespace := fmt.Sprintf("f8n-system-%s", suffix)
+		err := os.Setenv("FEDERATION_NAME", federationName)
+		if err != nil {
+			return err
+		}
+		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
 	}
 	return nil
 }
