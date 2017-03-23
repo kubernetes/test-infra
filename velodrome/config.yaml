@@ -1,23 +1,46 @@
+# The following metrics configuration will work with the default dashboard template.
+# merge:
+#   plugin: count
+#   args:
+#     - --no-issues
+#     - --event=merged
+# contributions:
+#   plugin: count
+#   args:
+#     - --ignore-authors=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
+#     - --no-issues
+#     - --event=opened
+#     - --comments=.*
+#     - --log-author
+# open:
+#   plugin: count
+#   args:
+#     - --no-issues
+#     - --state=opened,!merged
+#     - --percentiles=50
 projects:
   kubernetes:
     repositories:
       kubernetes/kubernetes: &kubernetes-transform
-        first-comment:
-          plugin: "first_comment"
-          args:
-            - --bots=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
         merge:
-          plugin: "event_count"
+          plugin: count
           args:
+            - --no-issues
             - --event=merged
-        lgtm:
-          plugin: "event_count"
+        contributions:
+          plugin: count
           args:
-            - --event=labeled:lgtm
-        approved:
-          plugin: "event_count"
+            - --ignore-authors=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
+            - --no-issues
+            - --event=opened
+            - --comments=.*
+            - --log-author
+        open:
+          plugin: count
           args:
-            - --event=labeled:approved
+            - --no-issues
+            - --state=opened,!merged
+            - --percentiles=50
       kubernetes/test-infra: *kubernetes-transform
       kubernetes/contrib: *kubernetes-transform
     nginx:
@@ -36,12 +59,30 @@ projects:
                   - submit-queue.k8s.io
   istio:
     repositories:
-      istio/api:
-      istio/auth:
-      istio/istio:
-      istio/manager:
-      istio/mixer:
-      istio/proxy:
+      istio/api: &transform-istio
+        merge:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=merged
+        contributions:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=opened
+            - --comments=.*
+            - --log-author
+        open:
+          plugin: count
+          args:
+            - --no-issues
+            - --state=opened,!merged
+            - --percentiles=50
+      istio/auth: *transform-istio
+      istio/istio: *transform-istio
+      istio/manager: *transform-istio
+      istio/mixer: *transform-istio
+      istio/proxy: *transform-istio
     nginx:
       public-ip:
     grafana:
@@ -49,13 +90,49 @@ projects:
   tensorflow:
     repositories:
       tensorflow/tensorflow:
+        merge:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=merged
+        contributions:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=opened
+            - --comments=.*
+            - --log-author
+        open:
+          plugin: count
+          args:
+            - --no-issues
+            - --state=opened,!merged
+            - --percentiles=50
     grafana:
       google-analytics-uaid: ""
     nginx:
       public-ip:
   beam:
     repositories:
-      apache/beam:
-      apache/beam-site:
+      apache/beam: &transform-beam
+        merge:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=merged
+        contributions:
+          plugin: count
+          args:
+            - --no-issues
+            - --event=opened
+            - --comments=.*
+            - --log-author
+        open:
+          plugin: count
+          args:
+            - --no-issues
+            - --state=opened,!merged
+            - --percentiles=50
+      apache/beam-site: *transform-beam
     grafana:
       google-analytics-uaid: ""
