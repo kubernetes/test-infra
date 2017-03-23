@@ -31,14 +31,14 @@ func TestTagsToWhere(t *testing.T) {
 			tags: map[string]string{
 				"key1": "value1",
 			},
-			want: `WHERE "key1" = "value1"`,
+			want: `WHERE "key1" = 'value1'`,
 		},
 		{
 			tags: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
 			},
-			want: `WHERE "key1" = "value1" AND "key2" = "value2"`,
+			want: `WHERE "key1" = 'value1' AND "key2" = 'value2'`,
 		},
 	}
 
