@@ -46,7 +46,7 @@ func (config *InfluxConfig) AddFlags(cmd *cobra.Command) {
 
 func dropSeries(client influxdb.Client, measurement, database string, tags map[string]string) error {
 	query := influxdb.Query{
-		Command:  fmt.Sprintf(`DROP SERIES %s %s`, measurement, tagsToWhere(tags)),
+		Command:  fmt.Sprintf(`DROP SERIES FROM %s %s`, measurement, tagsToWhere(tags)),
 		Database: database,
 	}
 	_, err := client.Query(query)
@@ -125,7 +125,7 @@ func tagsToWhere(tags map[string]string) string {
 
 	conditions := []string{}
 	for _, key := range sortedKeys {
-		conditions = append(conditions, fmt.Sprintf(`"%s" = "%v"`, key, tags[key]))
+		conditions = append(conditions, fmt.Sprintf(`"%s" = '%v'`, key, tags[key]))
 	}
 	return "WHERE " + strings.Join(conditions, " AND ")
 }
