@@ -25,7 +25,7 @@ spec:
         - --name=${TRANSFORM_METRIC}
         - ${TRANSFORM_PLUGIN}
         # plugin args should be appended here.
-        image: gcr.io/google-containers/github-transform:v20170310-101209
+        image: gcr.io/google-containers/github-transform:v20170323-155737
         resources:
           requests:
             cpu: 0m
