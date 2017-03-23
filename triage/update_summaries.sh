@@ -26,5 +26,12 @@ if [[ ! -e triage_builds.json ]] || [ $(stat -c%Y triage_builds.json) -lt $table
   rm -f failed*.json
 fi
 #
-pypy summarize.py triage_builds.json triage_tests.json
-gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -z html,css,js,json -a public-read failure_data.json index.html {interactive,model,render}.js style.css gs://k8s-gubernator/triage/
+gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
+pypy summarize.py triage_builds.json triage_tests.json --previous failure_data_previous.json --output failure_data.json
+
+gsutil_cp() {
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
+}
+
+gsutil_cp failure_data.json index.html {interactive,model,render}.js style.css gs://k8s-gubernator/triage/
+gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"

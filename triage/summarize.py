@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+import argparse
 import functools
 import hashlib
 import json
@@ -215,7 +216,7 @@ def cluster_local(builds, failed_tests):
 
 
 @file_memoize('clustering across tests', 'failed_clusters_global.json')
-def cluster_global(clustered):
+def cluster_global(clustered, previous_clustered):
     """Combine together clustered failures for each test.
 
     This is done hierarchically for efficiency-- each test's failures are likely to be similar,
@@ -227,6 +228,11 @@ def cluster_global(clustered):
         {failure_text: [(test_name, [failure_1, failure_2, ...]), ...], ...}
     """
     clusters = {}
+
+    if previous_clustered:
+        # seed clusters using output from the previous run
+        for key, _key_id, _ftext, _clusters in previous_clustered:
+            clusters[key] = {}
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(), key=lambda (k, v): sum(len(x) for x in v.itervalues()), reverse=True),
@@ -242,6 +248,11 @@ def cluster_global(clustered):
                     clusters[other].setdefault(test_name, []).extend(tests)
                 else:
                     clusters[key] = {test_name: list(tests)}
+
+    # If we seeded clusters using the previous run's keys, some of those
+    # clusters may have disappeared. Remove the resulting empty entries.
+    for k in {k for k, v in clusters.iteritems() if not v}:
+        clusters.pop(k)
 
     return clusters
 
@@ -261,14 +272,6 @@ def tests_group_by_job(tests, builds):
 
 def clusters_to_display(clustered, builds):
     """Transpose and sort the output of cluster_global."""
-    for key, key_id, clusters in clustered:
-        test_names = set()
-        for test_name, tests in clusters:
-            if test_name in test_names:
-                print 'WTF', test_name
-            test_names.add(test_name)
-
-
     return [
         [key, key_id, clusters[0][1][0]['failure_text'],
             [
@@ -312,6 +315,7 @@ def builds_to_columns(builds):
             jobs[k] = [numbers[0], count, base]
             for n in numbers:
                 assert n <= numbers[0] + len(numbers), (k, n, jobs[k], len(numbers), numbers)
+
     return out
 
 
@@ -325,15 +329,29 @@ def render(builds, failed_tests, clustered):
     return {'clustered': clusters_to_display(clustered_tuples, builds), 'builds': builds_to_columns(builds)}
 
 
-def main(builds_file, tests_file):
-    builds, failed_tests = load_failures(builds_file, tests_file)
+def parse_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('builds', help='builds.json file from BigQuery')
+    parser.add_argument('tests', help='tests.json file from BigQuery')
+    parser.add_argument('--previous', help='previous output')
+    parser.add_argument('--output', default='failure_data.json')
+    return parser.parse_args(args)
+
+
+def main(args):
+    builds, failed_tests = load_failures(args.builds, args.tests)
     clustered_local = cluster_local(builds, failed_tests)
-    clustered = cluster_global(clustered_local)
+
+    previous_clustered = None
+    if args.previous:
+        previous_clustered = json.load(open(args.previous))['clustered']
+    clustered = cluster_global(clustered_local, previous_clustered)
+
     print '%d clusters' % len(clustered)
 
-    json.dump(render(builds, failed_tests, clustered), open('failure_data.json', 'w'),
+    json.dump(render(builds, failed_tests, clustered), open(args.output, 'w'),
               sort_keys=True)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(parse_args(sys.argv[1:]))

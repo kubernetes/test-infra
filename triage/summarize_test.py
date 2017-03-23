@@ -73,13 +73,28 @@ class ClusterTest(unittest.TestCase):
 
 		self.assertEqual(summarize.cluster_test([t1, t5, t6]), {t1['failure_text']: [t1], t5['failure_text']: [t5, t6]})
 
+	def cluster_global(self, clustered, previous_clustered=None):
+		return summarize.cluster_global.__wrapped__(clustered, previous_clustered)
+
 	def test_cluster_global(self):
 		t1 = make_test('exit 1')
 		t2 = make_test('exit 1')
 		t3 = make_test('exit 1')
 
-		self.assertEqual(summarize.cluster_global.__wrapped__({'test a': {'exit 1': [t1, t2]}, 'test b': {'exit 1': [t3]}}),
-						 {'exit 1': {'test a': [t1, t2], 'test b': [t3]}})
+		self.assertEqual(self.cluster_global(
+				{'test a': {'exit 1': [t1, t2]}, 'test b': {'exit 1': [t3]}}),
+			{'exit 1': {'test a': [t1, t2], 'test b': [t3]}})
+
+	def test_cluster_global_previous(self):
+		# clusters are stable when provided with previou seeds
+		textOld = 'some long failure message that changes occasionally foo'
+		textNew = textOld.replace('foo', 'bar')
+		t1 = make_test(textNew)
+
+		self.assertEqual(self.cluster_global(
+				{'test a': {textNew: [t1]}},
+				[[textOld, None, None, None]]),
+			{textOld: {'test a': [t1]}})
 
 
 ############ decode JSON without a bunch of unicode garbage
@@ -143,7 +158,7 @@ class IntegrationTest(unittest.TestCase):
 			{'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
 			{'build': 'gs://logs/other-job/7'},
 		]), open('tests.json', 'w'))
-		summarize.main('builds.json', 'tests.json')
+		summarize.main(summarize.parse_args(['builds.json', 'tests.json']))
 		output = json_load_byteified(open('failure_data.json'))
 
 		# uncomment when output changes
