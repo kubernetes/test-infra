@@ -20,7 +20,7 @@
 #
 # ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
 # in .git/config in the local checkout of apimachinery. We usually set it to the
-# local checkout of k8s.io/kubernetes to avoid multiple checkout.This not only
+# local checkout of k8s.io/kubernetes to avoid multiple checkouts.This not only
 # reduces the run time, but also ensures all published repos are generated from
 # the same revision of k8s.io/kubernetes.
 #

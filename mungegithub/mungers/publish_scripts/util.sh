@@ -59,18 +59,34 @@ sync_repo() {
     local previousBranchSHA=$(git log --grep "Kubernetes-commit: ${previousKubeSHA}" --format='%H')
     local commits=$(git log --no-merges --format='%H' --reverse ${previousBranchSHA}..HEAD)
 
+    # check if any commit of commits change Godeps/Godeps.json
+    local commits_change_godeps=$(git log --format='%H' --follow Godeps/Godeps.json)
+    local cherrypicks_change_godeps="false"
+    while read commit; do
+        if [[ -z "${commit}" ]]; then
+            continue
+        fi
+        if echo ${commits_change_godeps} | grep -q ${commit} > /dev/null; then
+            echo "branch commit ${commit} changes Godeps.json"
+            cherrypicks_change_godeps="true"
+            break
+        fi
+    done <<< "${commits}"
+
     git checkout ${currBranch}
 
-    # we must reset Godeps.json to what it looked like BEFORE the last vendor sync so that any
-    # new Godep.json changes from k8s.io/kubernetes will apply cleanly.  Since its always auto-generated
-    # it doesn't matter that we're removing it
-    lastResyncCommit=$(git rev-list -n 1 --grep "sync: resync vendor folder" HEAD)
-    cleanGodepJsonCommit=$(git rev-list -n 1 ${lastResyncCommit}^)
-    git checkout ${cleanGodepJsonCommit} Godeps/Godeps.json
-    if git diff --cached --exit-code &>/dev/null; then
-        echo "no need to reset Godeps.json!"
-    else
-        git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: reset Godeps.json" -- Godeps/Godeps.json
+    # we must reset Godeps.json to what it looked like in the kube-sync branch
+    # before the first commit that's to be cherry-picked so that any new
+    # Godep.json changes from k8s.io/kubernetes will apply cleanly. Note that 
+    # entries for k8s.io/* will be updated later in the process.
+    if [ "${cherrypicks_change_godeps}" = "true" ]; then
+       local cleanGodepJsonCommit=${previousBranchSHA}
+       git checkout ${cleanGodepJsonCommit} Godeps/Godeps.json
+       if git diff --cached --exit-code &>/dev/null; then
+           echo "no need to reset Godeps.json!"
+       else
+           git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: reset Godeps.json" -- Godeps/Godeps.json
+       fi
     fi
 
     echo "commits to be cherry-picked:"
@@ -95,32 +111,34 @@ sync_repo() {
     git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync(k8s.io/kubernetes) ${newKubeSHA}" -- kubernetes-sha
 }
 
-# deduplicate_commits reset branch to origin/branch if they are the same.
-# This function assumes the work directory is the repo that needs to deduplication.
-deduplicate_commits() {
-    local branch="${1}"
-    if git diff origin/"${branch}" "${branch}" --exit-code &>/dev/null; then
-        if [ "$(git rev-parse --abbrev-ref HEAD)" = "${branch}" ]; then
-            git reset --hard origin/"${branch}"
-        else
-            git branch -f "${branch}" origin/"${branch}"
-        fi
-    fi
-}
-
-# To avoid repeated godep restore, repositories should share the GOPATH.
+# This function updates the vendor/ folder, and removes k8s.io/* and glog from 
+# the vendor/ if the repo being published is a library. This is to avoid issues
+# like https://github.com/kubernetes/client-go/issues/83 and
+# https://github.com/kubernetes/client-go/issues/19.
+#
+# "deps" lists the dependent k8s.io/* repos. For example, if the function is
+# handling k8s.io/apiserver, deps is expected to be "apimachinery,client-go".
+# deps are expected to be separated by ",", e.g., "client-go,apimachinery".
+# We will expand it to "repo:commit,repo:commit..." when a release branch of a
+# k8s.io repo needs to track a specific revision of other k8s.io/* repos.
+#
+# "is_library" indicates if the repo being published is a library.
+#
 # This function should be run after the Godeps.json are updated with the latest
 # revisions of k8s.io/* dependencies.
+#
+# To avoid repeated godep restore, repositories should share the GOPATH.
+#
 # This function assumes to be called at the root of the repository that's going to be published.
 # This function assumes the branch that need update is checked out.
 # This function assumes it's the last step in the publishing process that's going to generate commits.
 restore_vendor() {
-    # deps are expected to be separated by ",", e.g., "client-go,apimachinery".
-    # We will expand it to "repo:commit,repo:commit..." when a release branch of a
-    # k8s.io repo needs to track a specific revision of other k8s.io/* repos.
     local deps="${1:-""}"
     IFS=',' read -a deps <<< "${DEPS}"
     dep_count=${#deps[@]}
+    # The Godeps.json of apiserver, kube-aggregator, sample-apiserver in staging
+    # don't contain entries for k8s.io/* repos, so we need to explicitly check
+    # out a revision of deps.
     for (( i=0; i<${dep_count}; i++ )); do
         pushd ../"${deps[i]}"
             # currently we assume the repo depends on the master branch of dep.
@@ -153,10 +171,6 @@ restore_vendor() {
         return
     fi
     git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" commit -m "sync: resync vendor folder"
-
-    # Here is the last chance to generate/reverse commits. Otherwise dependent repo's Godeps.json will contain stale/invalid commit hashes.
-    # deduplicate commits. 
-    deduplicate_commits "$(git rev-parse --abbrev-ref HEAD)"
 }
 
 # set up github token in ~/.netrc
@@ -170,7 +184,11 @@ cleanup_github_token() {
     mv ~/.netrc.bak ~/.netrc || true
 }
 
-# updates commit hash of k8s.io/${1}
+# Godeps.json copied from the staging area might contain invalid commit hashes
+# in entries for k8s.io/*. This function updates entry for k8s.io/${1} to track
+# the latest commit created by the publishing robot.
+# Currently this function is only useful for client-go. Entries for k8s.io/* are
+# removed from the Godeps.json in the staging area of other repos.
 update_godeps_json() {
     local repo=${1}
     local godeps_json="./Godeps/Godeps.json"
