@@ -1033,6 +1033,15 @@ test_groups:
 # rktnetes
 - name: kubernetes-rktnetes
   gcs_prefix: rktnetes-jenkins/logs/kubernetes-e2e-gce
+# Tectonic (contact: @ethernetdan on GitHub)
+- name: tectonic-e2e-aws
+  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws
+- name: tectonic-e2e-etcd
+  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd
+- name: tectonic-e2e-aws-serial
+  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws-serial
+- name: tectonic-e2e-etcd-serial
+  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -1108,6 +1117,17 @@ dashboards:
   dashboard_tab:
   - name: rktnetes
     test_group_name: kubernetes-rktnetes
+
+- name: tectonic-aws
+  dashboard_tab:
+  - name: e2e
+    test_group_name: tectonic-e2e-aws
+  - name: e2e-etcd
+    test_group_name: tectonic-e2e-etcd
+  - name: e2e-serial
+    test_group_name: tectonic-e2e-aws-serial
+  - name: e2e-etcd-serial
+    test_group_name: tectonic-e2e-etcd-serial
 
 - name: google-aws
   dashboard_tab:
