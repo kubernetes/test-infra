@@ -2535,6 +2535,8 @@ dashboards:
     test_group_name: kubernetes-build
   - name: gce-etcd3
     test_group_name: kubernetes-e2e-gce-etcd3
+  - name: gce-federation
+    test_group_name: kubernetes-e2e-gce-federation
   - name: gci-gce
     test_group_name: kubernetes-e2e-gci-gce
   - name: gci-gce-slow
