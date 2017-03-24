@@ -825,6 +825,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.5
 - name: ci-kubernetes-node-kubelet-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.6
+- name: ci-kubernetes-node-kubelet-non-cri-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1.6
 - name: kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: kubernetes-e2e-gce-enormous-deploy
@@ -1928,6 +1930,8 @@ dashboards:
     test_group_name: kubernetes-verify-release-1.6
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: kubelet-non-cri-1.6
+    test_group_name: ci-kubernetes-node-kubelet-non-cri-1.6
   - name: gce-alpha-features-1.6
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1.6
   - name: gce-etcd2-1.6
@@ -2070,6 +2074,8 @@ dashboards:
   # Node
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: kubelet-non-cri-1.6
+    test_group_name: ci-kubernetes-node-kubelet-non-cri-1.6
 
 - name: release-1.6-upgrade-skew
   dashboard_tab:
