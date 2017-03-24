@@ -137,6 +137,14 @@
   ]
 },
 
+"ci-kubernetes-node-kubelet-non-cri-1.6": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.6",
+    "--properties=test/e2e_node/jenkins/non-cri_validation/jenkins-validation.properties"
+  ]
+},
+
 "ci-kubernetes-node-kubelet-benchmark": {
   "scenario": "kubernetes_kubelet",
   "args": [
