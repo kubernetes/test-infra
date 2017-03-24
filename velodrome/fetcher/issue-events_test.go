@@ -43,26 +43,26 @@ func TestFindLatestUpdate(t *testing.T) {
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "2", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			0,
 			"TWO",
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{ID: "2", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			7,
 			"ONE",
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{ID: "2", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			1,
 			"TWO",

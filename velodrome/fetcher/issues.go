@@ -65,7 +65,8 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 			db.Delete(sql.Assignee{}, "issue_id = ? AND repository = ?", issueOrm.ID, client.RepositoryName())
 			db.Save(issueOrm)
 		}
+
 		// Issue is updated, find if we have new comments
-		UpdateComments(issueOrm.ID, issueOrm.IsPR, db, client)
+		UpdateComments(*issue.Number, issueOrm.IsPR, db, client)
 	}
 }

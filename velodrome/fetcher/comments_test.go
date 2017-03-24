@@ -45,9 +45,9 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		// There are no comment for this issue/repository, return the min date
 		{
 			[]sql.Comment{
-				{IssueID: 1, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 2, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{IssueID: "1", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "2", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			2,
 			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -56,10 +56,10 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		// Only pick selected issue (and selected repo)
 		{
 			[]sql.Comment{
-				{IssueID: 1, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
-				{IssueID: 1, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 2, CommentUpdatedAt: time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{IssueID: "1", CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "2", CommentUpdatedAt: time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			1,
 			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -68,9 +68,9 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		// Can pick pull-request comments
 		{
 			[]sql.Comment{
-				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: true, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: false, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: true, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			1,
 			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -79,9 +79,9 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 		// Can pick issue comments
 		{
 			[]sql.Comment{
-				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, PullRequest: true, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{IssueID: 1, PullRequest: false, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: false, CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: true, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{IssueID: "1", PullRequest: false, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			1,
 			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),

@@ -28,7 +28,7 @@ import (
 type LGTMToMerged struct {
 	DB     InfluxDatabase
 	last   time.Time
-	lgtmed map[int]time.Time
+	lgtmed map[string]time.Time
 }
 
 // NewLGTMToMergedPlugin initializes the plugin. Requires an
@@ -41,7 +41,7 @@ func NewLGTMToMergedPlugin(DB InfluxDatabase) *LGTMToMerged {
 	return &LGTMToMerged{
 		DB:     DB,
 		last:   last,
-		lgtmed: make(map[int]time.Time),
+		lgtmed: make(map[string]time.Time),
 	}
 }
 
