@@ -35,8 +35,10 @@ import (
 var (
 	artifacts             = initPath("./_artifacts")
 	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	interrupted           = false
 	kubetestPath          = initPath(os.Args[0])
 	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	terminated            = false
 	verbose               = false
 	timeout               = time.Duration(0)
 	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
@@ -107,6 +109,7 @@ type testCase struct {
 	Name      string   `xml:"name,attr"`
 	Time      float64  `xml:"time,attr"`
 	Failure   string   `xml:"failure,omitempty"`
+	Skipped   string   `xml:"skipped,omitempty"`
 }
 
 type TestSuite struct {
