@@ -59,6 +59,22 @@ time.
 As an example, the token counter measures the usage of our github-tokens, and
 has a new value every hour. We can push the new value to InfluxDB.
 
+Naming convention
+=================
+
+To disambiguate how each word is used, let's give a description of the naming
+convention used by velodrome:
+- Organization: This has the same meaning as the Github Organization. This is
+  holding multiple repository. e.g. In `github.com/istio/manager`, the
+  organization is `istio`.
+- Repository can be either the last part of the github repository URL (i.e. in
+  `github.com/istio/manager`, it would be `manager`), or the fully qualified
+  repository name: `istio/manager`.
+- Project: A project describe a completely hermetic instance of the website for
+  a given team. A project can span across multiple organizations and multiple
+  repositories. e.g. The kubernetes project is made of repositories in the
+  `kubernetes` organization, and `kubernetes-incubator`.
+
 Adding a new project
 ====================
 
@@ -104,3 +120,9 @@ New project deployments
 -----------------------
 
 - Create [secret for InfluxDB](grafana-stack/#first-time-only)
+- Deploy everything: `./config.py | kubectl apply -f -l project=${NEW_PROJECT_NAME}`
+- Once the kubernetes service has its public IP, connect to the grafana instance, and add the
+  default dashboard, star the dashboard, set-it as the default dashboard in the
+  org preference.
+- Set the static IP in the GCP project, and update `config.yaml` with its
+  value. Potentially create a domain-name pointing to it.
