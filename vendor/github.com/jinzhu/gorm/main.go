@@ -11,20 +11,23 @@ import (
 
 // DB contains information for current db connection
 type DB struct {
-	Value             interface{}
-	Error             error
-	RowsAffected      int64
-	callbacks         *Callback
-	db                sqlCommon
-	parent            *DB
-	search            *search
+	Value        interface{}
+	Error        error
+	RowsAffected int64
+
+	// single db
+	db                SQLCommon
+	blockGlobalUpdate bool
 	logMode           int
 	logger            logger
-	dialect           Dialect
-	singularTable     bool
-	source            string
+	search            *search
 	values            map[string]interface{}
-	joinTableHandlers map[string]JoinTableHandler
+
+	// global db
+	parent        *DB
+	callbacks     *Callback
+	dialect       Dialect
+	singularTable bool
 }
 
 // Open initialize a new db connection, need to import driver first, e.g:
@@ -38,57 +41,44 @@ type DB struct {
 //    // import _ "github.com/jinzhu/gorm/dialects/postgres"
 //    // import _ "github.com/jinzhu/gorm/dialects/sqlite"
 //    // import _ "github.com/jinzhu/gorm/dialects/mssql"
-func Open(dialect string, args ...interface{}) (*DB, error) {
-	var db DB
-	var err error
-
+func Open(dialect string, args ...interface{}) (db *DB, err error) {
 	if len(args) == 0 {
 		err = errors.New("invalid database source")
-	} else {
-		var source string
-		var dbSQL sqlCommon
+		return nil, err
+	}
+	var source string
+	var dbSQL SQLCommon
 
-		switch value := args[0].(type) {
-		case string:
-			var driver = dialect
-			if len(args) == 1 {
-				source = value
-			} else if len(args) >= 2 {
-				driver = value
-				source = args[1].(string)
-			}
-			dbSQL, err = sql.Open(driver, source)
-		case sqlCommon:
-			source = reflect.Indirect(reflect.ValueOf(value)).FieldByName("dsn").String()
-			dbSQL = value
+	switch value := args[0].(type) {
+	case string:
+		var driver = dialect
+		if len(args) == 1 {
+			source = value
+		} else if len(args) >= 2 {
+			driver = value
+			source = args[1].(string)
 		}
-
-		db = DB{
-			dialect:   newDialect(dialect, dbSQL.(*sql.DB)),
-			logger:    defaultLogger,
-			callbacks: DefaultCallback,
-			source:    source,
-			values:    map[string]interface{}{},
-			db:        dbSQL,
-		}
-		db.parent = &db
-
-		if err == nil {
-			err = db.DB().Ping() // Send a ping to make sure the database connection is alive.
-		}
+		dbSQL, err = sql.Open(driver, source)
+	case SQLCommon:
+		dbSQL = value
 	}
 
-	return &db, err
-}
+	db = &DB{
+		db:        dbSQL,
+		logger:    defaultLogger,
+		values:    map[string]interface{}{},
+		callbacks: DefaultCallback,
+		dialect:   newDialect(dialect, dbSQL),
+	}
+	db.parent = db
 
-// Close close current db connection
-func (s *DB) Close() error {
-	return s.parent.db.(*sql.DB).Close()
-}
-
-// DB get `*sql.DB` from current connection
-func (s *DB) DB() *sql.DB {
-	return s.db.(*sql.DB)
+	if err == nil {
+		// Send a ping to make sure the database connection is alive.
+		if err = db.DB().Ping(); err != nil {
+			db.DB().Close()
+		}
+	}
+	return
 }
 
 // New clone a new db connection without search conditions
@@ -99,16 +89,33 @@ func (s *DB) New() *DB {
 	return clone
 }
 
-// NewScope create a scope for current operation
-func (s *DB) NewScope(value interface{}) *Scope {
-	dbClone := s.clone()
-	dbClone.Value = value
-	return &Scope{db: dbClone, Search: dbClone.search.clone(), Value: value}
+type closer interface {
+	Close() error
+}
+
+// Close close current db connection.  If database connection is not an io.Closer, returns an error.
+func (s *DB) Close() error {
+	if db, ok := s.parent.db.(closer); ok {
+		return db.Close()
+	}
+	return errors.New("can't close current db")
+}
+
+// DB get `*sql.DB` from current connection
+// If the underlying database connection is not a *sql.DB, returns nil
+func (s *DB) DB() *sql.DB {
+	db, _ := s.db.(*sql.DB)
+	return db
 }
 
 // CommonDB return the underlying `*sql.DB` or `*sql.Tx` instance, mainly intended to allow coexistence with legacy non-GORM code.
-func (s *DB) CommonDB() sqlCommon {
+func (s *DB) CommonDB() SQLCommon {
 	return s.db
+}
+
+// Dialect get dialect
+func (s *DB) Dialect() Dialect {
+	return s.parent.dialect
 }
 
 // Callback return `Callbacks` container, you could add/change/delete callbacks with it
@@ -134,13 +141,32 @@ func (s *DB) LogMode(enable bool) *DB {
 	return s
 }
 
+// BlockGlobalUpdate if true, generates an error on update/delete without where clause.
+// This is to prevent eventual error with empty objects updates/deletions
+func (s *DB) BlockGlobalUpdate(enable bool) *DB {
+	s.blockGlobalUpdate = enable
+	return s
+}
+
+// HasBlockGlobalUpdate return state of block
+func (s *DB) HasBlockGlobalUpdate() bool {
+	return s.blockGlobalUpdate
+}
+
 // SingularTable use singular table by default
 func (s *DB) SingularTable(enable bool) {
 	modelStructsMap = newModelStructsMap()
 	s.parent.singularTable = enable
 }
 
-// Where return a new relation, filter records with given conditions, accepts `map`, `struct` or `string` as conditions, refer http://jinzhu.github.io/gorm/curd.html#query
+// NewScope create a scope for current operation
+func (s *DB) NewScope(value interface{}) *Scope {
+	dbClone := s.clone()
+	dbClone.Value = value
+	return &Scope{db: dbClone, Search: dbClone.search.clone(), Value: value}
+}
+
+// Where return a new relation, filter records with given conditions, accepts `map`, `struct` or `string` as conditions, refer http://jinzhu.github.io/gorm/crud.html#query
 func (s *DB) Where(query interface{}, args ...interface{}) *DB {
 	return s.clone().search.Where(query, args...).db
 }
@@ -156,17 +182,20 @@ func (s *DB) Not(query interface{}, args ...interface{}) *DB {
 }
 
 // Limit specify the number of records to be retrieved
-func (s *DB) Limit(limit int) *DB {
+func (s *DB) Limit(limit interface{}) *DB {
 	return s.clone().search.Limit(limit).db
 }
 
 // Offset specify the number of records to skip before starting to return the records
-func (s *DB) Offset(offset int) *DB {
+func (s *DB) Offset(offset interface{}) *DB {
 	return s.clone().search.Offset(offset).db
 }
 
 // Order specify order when retrieve records from database, set reorder to `true` to overwrite defined conditions
-func (s *DB) Order(value string, reorder ...bool) *DB {
+//     db.Order("name DESC")
+//     db.Order("name DESC", true) // reorder
+//     db.Order(gorm.Expr("name = ? DESC", "first")) // sql expression
+func (s *DB) Order(value interface{}, reorder ...bool) *DB {
 	return s.clone().search.Order(value, reorder...).db
 }
 
@@ -209,7 +238,7 @@ func (s *DB) Joins(query string, args ...interface{}) *DB {
 //     }
 //
 //     db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(&orders)
-// Refer https://jinzhu.github.io/gorm/curd.html#scopes
+// Refer https://jinzhu.github.io/gorm/crud.html#scopes
 func (s *DB) Scopes(funcs ...func(*DB) *DB) *DB {
 	for _, f := range funcs {
 		s = f(s)
@@ -217,17 +246,17 @@ func (s *DB) Scopes(funcs ...func(*DB) *DB) *DB {
 	return s
 }
 
-// Unscoped return all record including deleted record, refer Soft Delete https://jinzhu.github.io/gorm/curd.html#soft-delete
+// Unscoped return all record including deleted record, refer Soft Delete https://jinzhu.github.io/gorm/crud.html#soft-delete
 func (s *DB) Unscoped() *DB {
 	return s.clone().search.unscoped().db
 }
 
-// Attrs initialize struct with argument if record not found with `FirstOrInit` https://jinzhu.github.io/gorm/curd.html#firstorinit or `FirstOrCreate` https://jinzhu.github.io/gorm/curd.html#firstorcreate
+// Attrs initialize struct with argument if record not found with `FirstOrInit` https://jinzhu.github.io/gorm/crud.html#firstorinit or `FirstOrCreate` https://jinzhu.github.io/gorm/crud.html#firstorcreate
 func (s *DB) Attrs(attrs ...interface{}) *DB {
 	return s.clone().search.Attrs(attrs...).db
 }
 
-// Assign assign result with argument regardless it is found or not with `FirstOrInit` https://jinzhu.github.io/gorm/curd.html#firstorinit or `FirstOrCreate` https://jinzhu.github.io/gorm/curd.html#firstorcreate
+// Assign assign result with argument regardless it is found or not with `FirstOrInit` https://jinzhu.github.io/gorm/crud.html#firstorinit or `FirstOrCreate` https://jinzhu.github.io/gorm/crud.html#firstorcreate
 func (s *DB) Assign(attrs ...interface{}) *DB {
 	return s.clone().search.Assign(attrs...).db
 }
@@ -301,7 +330,7 @@ func (s *DB) Related(value interface{}, foreignKeys ...string) *DB {
 }
 
 // FirstOrInit find first matched record or initialize a new one with given conditions (only works with struct, map conditions)
-// https://jinzhu.github.io/gorm/curd.html#firstorinit
+// https://jinzhu.github.io/gorm/crud.html#firstorinit
 func (s *DB) FirstOrInit(out interface{}, where ...interface{}) *DB {
 	c := s.clone()
 	if result := c.First(out, where...); result.Error != nil {
@@ -316,26 +345,26 @@ func (s *DB) FirstOrInit(out interface{}, where ...interface{}) *DB {
 }
 
 // FirstOrCreate find first matched record or create a new one with given conditions (only works with struct, map conditions)
-// https://jinzhu.github.io/gorm/curd.html#firstorcreate
+// https://jinzhu.github.io/gorm/crud.html#firstorcreate
 func (s *DB) FirstOrCreate(out interface{}, where ...interface{}) *DB {
 	c := s.clone()
-	if result := c.First(out, where...); result.Error != nil {
+	if result := s.First(out, where...); result.Error != nil {
 		if !result.RecordNotFound() {
 			return result
 		}
-		c.AddError(c.NewScope(out).inlineCondition(where...).initialize().callCallbacks(c.parent.callbacks.creates).db.Error)
+		return c.NewScope(out).inlineCondition(where...).initialize().callCallbacks(c.parent.callbacks.creates).db
 	} else if len(c.search.assignAttrs) > 0 {
-		c.AddError(c.NewScope(out).InstanceSet("gorm:update_interface", c.search.assignAttrs).callCallbacks(c.parent.callbacks.updates).db.Error)
+		return c.NewScope(out).InstanceSet("gorm:update_interface", c.search.assignAttrs).callCallbacks(c.parent.callbacks.updates).db
 	}
 	return c
 }
 
-// Update update attributes with callbacks, refer: https://jinzhu.github.io/gorm/curd.html#update
+// Update update attributes with callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
 func (s *DB) Update(attrs ...interface{}) *DB {
 	return s.Updates(toSearchableMap(attrs...), true)
 }
 
-// Updates update attributes with callbacks, refer: https://jinzhu.github.io/gorm/curd.html#update
+// Updates update attributes with callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
 func (s *DB) Updates(values interface{}, ignoreProtectedAttrs ...bool) *DB {
 	return s.clone().NewScope(s.Value).
 		Set("gorm:ignore_protected_attrs", len(ignoreProtectedAttrs) > 0).
@@ -343,12 +372,12 @@ func (s *DB) Updates(values interface{}, ignoreProtectedAttrs ...bool) *DB {
 		callCallbacks(s.parent.callbacks.updates).db
 }
 
-// UpdateColumn update attributes without callbacks, refer: https://jinzhu.github.io/gorm/curd.html#update
+// UpdateColumn update attributes without callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
 func (s *DB) UpdateColumn(attrs ...interface{}) *DB {
 	return s.UpdateColumns(toSearchableMap(attrs...))
 }
 
-// UpdateColumns update attributes without callbacks, refer: https://jinzhu.github.io/gorm/curd.html#update
+// UpdateColumns update attributes without callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
 func (s *DB) UpdateColumns(values interface{}) *DB {
 	return s.clone().NewScope(s.Value).
 		Set("gorm:update_column", true).
@@ -360,10 +389,14 @@ func (s *DB) UpdateColumns(values interface{}) *DB {
 // Save update value in database, if the value doesn't have primary key, will insert it
 func (s *DB) Save(value interface{}) *DB {
 	scope := s.clone().NewScope(value)
-	if scope.PrimaryKeyZero() {
-		return scope.callCallbacks(s.parent.callbacks.creates).db
+	if !scope.PrimaryKeyZero() {
+		newDB := scope.callCallbacks(s.parent.callbacks.updates).db
+		if newDB.Error == nil && newDB.RowsAffected == 0 {
+			return s.New().FirstOrCreate(value)
+		}
+		return newDB
 	}
-	return scope.callCallbacks(s.parent.callbacks.updates).db
+	return scope.callCallbacks(s.parent.callbacks.creates).db
 }
 
 // Create insert the value into database
@@ -421,7 +454,7 @@ func (s *DB) Begin() *DB {
 	c := s.clone()
 	if db, ok := c.db.(sqlDb); ok {
 		tx, err := db.Begin()
-		c.db = interface{}(tx).(sqlCommon)
+		c.db = interface{}(tx).(SQLCommon)
 		c.AddError(err)
 	} else {
 		c.AddError(ErrCantStartTransaction)
@@ -570,7 +603,7 @@ func (s *DB) AddForeignKey(field string, dest string, onDelete string, onUpdate 
 // Association start `Association Mode` to handler relations things easir in that mode, refer: https://jinzhu.github.io/gorm/associations.html#association-mode
 func (s *DB) Association(column string) *Association {
 	var err error
-	scope := s.clone().NewScope(s.Value)
+	var scope = s.Set("gorm:association:source", s.Value).NewScope(s.Value)
 
 	if primaryField := scope.PrimaryField(); primaryField.IsBlank {
 		err = errors.New("primary key can't be nil")
@@ -640,9 +673,9 @@ func (s *DB) AddError(err error) error {
 				s.log(err)
 			}
 
-			errors := Errors{errors: s.GetErrors()}
-			errors.Add(err)
-			if len(errors.GetErrors()) > 1 {
+			errors := Errors(s.GetErrors())
+			errors = errors.Add(err)
+			if len(errors) > 1 {
 				err = errors
 			}
 		}
@@ -653,21 +686,30 @@ func (s *DB) AddError(err error) error {
 }
 
 // GetErrors get happened errors from the db
-func (s *DB) GetErrors() (errors []error) {
-	if errs, ok := s.Error.(errorsInterface); ok {
-		return errs.GetErrors()
+func (s *DB) GetErrors() []error {
+	if errs, ok := s.Error.(Errors); ok {
+		return errs
 	} else if s.Error != nil {
 		return []error{s.Error}
 	}
-	return
+	return []error{}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Private Methods For *gorm.DB
+// Private Methods For DB
 ////////////////////////////////////////////////////////////////////////////////
 
 func (s *DB) clone() *DB {
-	db := DB{db: s.db, parent: s.parent, logger: s.logger, logMode: s.logMode, values: map[string]interface{}{}, Value: s.Value, Error: s.Error}
+	db := DB{
+		db:                s.db,
+		parent:            s.parent,
+		logger:            s.logger,
+		logMode:           s.logMode,
+		values:            map[string]interface{}{},
+		Value:             s.Value,
+		Error:             s.Error,
+		blockGlobalUpdate: s.blockGlobalUpdate,
+	}
 
 	for key, value := range s.values {
 		db.values[key] = value
@@ -684,7 +726,7 @@ func (s *DB) clone() *DB {
 }
 
 func (s *DB) print(v ...interface{}) {
-	s.logger.(logger).Print(v...)
+	s.logger.Print(v...)
 }
 
 func (s *DB) log(v ...interface{}) {

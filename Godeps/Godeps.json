@@ -113,18 +113,18 @@
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm",
-			"Comment": "v1.0-18-g2752245",
-			"Rev": "27522453dea253cf90dcb5345286a5fcf0fbed7c"
+			"Comment": "v1.0-132-g572d0a0",
+			"Rev": "572d0a0ab1eb75410a2729e96239152d1da7a91f"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm/dialects/mysql",
-			"Comment": "v1.0-18-g2752245",
-			"Rev": "27522453dea253cf90dcb5345286a5fcf0fbed7c"
+			"Comment": "v1.0-132-g572d0a0",
+			"Rev": "572d0a0ab1eb75410a2729e96239152d1da7a91f"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm/dialects/sqlite",
-			"Comment": "v1.0-18-g2752245",
-			"Rev": "27522453dea253cf90dcb5345286a5fcf0fbed7c"
+			"Comment": "v1.0-132-g572d0a0",
+			"Rev": "572d0a0ab1eb75410a2729e96239152d1da7a91f"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/inflection",
