@@ -341,7 +341,7 @@ func TestGetSuggestedApprovers(t *testing.T) {
 
 	for _, test := range tests {
 		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
-		suggested := testOwners.GetSuggestedApprovers(testOwners.GetShuffledApprovers())
+		suggested := testOwners.GetSuggestedApprovers(testOwners.GetReverseMap(testOwners.GetLeafApprovers()), testOwners.GetShuffledApprovers())
 		for _, ownersSet := range test.expectedOwners {
 			if ownersSet.Intersection(suggested).Len() == 0 {
 				t.Errorf("Failed for test %v.  Didn't find an approver from: %v. Actual Owners %v", test.testName, ownersSet, suggested)
@@ -498,7 +498,7 @@ func TestFindMostCoveringApprover(t *testing.T) {
 
 	for _, test := range tests {
 		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
-		bestPerson := findMostCoveringApprover(testOwners.GetAllPotentialApprovers(), testOwners.GetReverseMap(), test.unapproved)
+		bestPerson := findMostCoveringApprover(testOwners.GetAllPotentialApprovers(), testOwners.GetReverseMap(testOwners.GetLeafApprovers()), test.unapproved)
 		if test.expectedMostCovering.Intersection(sets.NewString(bestPerson)).Len() != 1 {
 			t.Errorf("Failed for test %v.  Didn't correct approvers list.  Expected: %v. Found %v", test.testName, test.expectedMostCovering, bestPerson)
 		}
@@ -554,7 +554,7 @@ func TestGetReverseMap(t *testing.T) {
 
 	for _, test := range tests {
 		testOwners := Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED}
-		calculatedRevMap := testOwners.GetReverseMap()
+		calculatedRevMap := testOwners.GetReverseMap(testOwners.GetLeafApprovers())
 		if !reflect.DeepEqual(calculatedRevMap, test.expectedRevMap) {
 			t.Errorf("Failed for test %v.  Didn't find correct reverse map.", test.testName)
 			t.Errorf("Person \t\t Expected \t\tFound ")
