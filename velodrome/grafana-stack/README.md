@@ -36,6 +36,16 @@ Create the InfluxDB password:
 kubectl create secret generic influxdb --from-literal=rootpassword="${influxdb_password}"
 ```
 
+Password and database creation
+------------------------------
+
+Connect to the container and create the db:
+
+```
+$ kubectl exec -i -t influx-$PROJECT-123456 -- influx -username root -password "${influxdb_password}"
+> create database github
+```
+
 Adding data-source
 ------------------
 
