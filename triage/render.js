@@ -120,7 +120,7 @@ function renderJobs(parent, buildsIterator) {
 // to dive into failures for each test or job.
 function renderCluster(top, key, keyId, text, clusters) {
   var clusterSum = clustersSum(clusters);
-  var recentCount = clustered.getHitsInLastDay(keyId);
+  var recentCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
     createElement('h2',
       {innerHTML: `${clusterSum} FAILURE${clusterSum > 1 ? "S" : ""} (${recentCount} RECENT) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
@@ -240,9 +240,9 @@ function expand(target) {
       } else if (child.dataset.cluster) {
         var cluster = child.dataset.cluster;
         if (child.className === 'graph') {
-          renderGraph(child, clustered.buildsForCluster(cluster));
+          renderGraph(child, clustered.buildsForClusterById(cluster));
         } else if (child.className === 'jobs') {
-          renderJobs(child, clustered.buildsForCluster(cluster));
+          renderJobs(child, clustered.buildsForClusterById(cluster));
         }
       }
 

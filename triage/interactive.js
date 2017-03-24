@@ -186,7 +186,7 @@ function drawVisibleGraphs() {
     }
     let rect = el.getBoundingClientRect();
     if (0 <= rect.top + kGraphHeight && rect.top - kGraphHeight < window.innerHeight) {
-      renderGraph(el, clustered.buildsForCluster(el.dataset.cluster));
+      renderGraph(el, clustered.buildsForClusterById(el.dataset.cluster));
     }
   }
 }

@@ -89,12 +89,45 @@ function sortByKey(arr, keyFunc) {
   return vals.map(x => x[1]);
 }
 
+// Return a build for each test run that failed in the given cluster.
+// Builds will be duplicated if it has multiple failed tests in the cluster.
+function *buildsForCluster(entry) {
+  let [key, keyId, text, clusters] = entry;
+  for (let [testName, testsGrouped] of clusters) {
+    for (let [job, buildNumbers] of testsGrouped) {
+      for (let number of buildNumbers) {
+        let build = builds.get(job, number);
+        if (build) {
+          yield build;
+        }
+      }
+    }
+  }
+}
+
+// Return the number of builds that completed in the last day's worth of data.
+function getHitsInLastDay(entry) {
+  if (entry.dayHits) {
+    return entry.dayHits;
+  }
+  var minStarted = builds.timespan[1] - 60 * 60 * 24;
+  var count = 0;
+  for (let build of buildsForCluster(entry)) {
+    if (build.started > minStarted) {
+      count++;
+    }
+  }
+  entry.dayHits = count;
+  return count;
+}
+
 // Store test clusters and support iterating and refiltering through them.
 class Clusters {
-  constructor(clustered, sortBy) {
+  constructor(clustered) {
     this.data = clustered;
     this.length = this.data.length;
     this.sum = sum(this.data, c => clustersSum(c[3]));
+    this.sumRecent = sum(this.data, c => c.dayHits || 0);
     this.byId = {};
     for (let cluster of this.data) {
       let keyId = cluster[1];
@@ -102,60 +135,20 @@ class Clusters {
         this.byId[keyId] = cluster;
       }
     }
-    this.sumRecent = 0;
-    if (sortBy !== undefined) {
-      var keyFunc = {
-        total: c => [-clustersSum(c[3])],
-        message: c => [c[0]],
-        day: c => [-this.getHitsInLastDay(c[1]), -clustersSum(c[3])],
-      }[sortBy];
-      this.data = sortByKey(this.data, keyFunc);
-      if (sortBy === "day") {
-        this.sumRecent = sum(this.data, c => c.dayHits || 0);
-      }
-    }
   }
 
-  // Return a build for each test run that failed in the given cluster.
-  // Builds will be duplicated if it has multiple failed tests in the cluster.
-  *buildsForCluster(clusterId) {
-    let entry = this.byId[clusterId];
-    if (!entry) {
-      console.warn(`no such cluster '${clusterId}' found`);
-      return;
-    }
-    let [key, keyId, text, clusters] = entry;
-    for (let [testName, testsGrouped] of clusters) {
-      for (let [job, buildNumbers] of testsGrouped) {
-        for (let number of buildNumbers) {
-          let build = builds.get(job, number);
-          if (build) {
-            yield build;
-          }
-        }
-      }
-    }
+  *buildsForClusterById(clusterId) {
+    yield *buildsForCluster(this.byId[clusterId]);
   }
 
-  getHitsInLastDay(clusterId) {
-    if (this.byId[clusterId].dayHits) {
-      return this.byId[clusterId].dayHits;
-    }
-    var minStarted = builds.timespan[1] - 60 * 60 * 24;
-    var count = 0;
-    for (let build of this.buildsForCluster(clusterId)) {
-      if (build.started > minStarted) {
-        count++;
-      }
-    }
-    this.byId[clusterId].dayHits = count;
-    return count;
+  getHitsInLastDayById(clusterId) {
+    return getHitsInLastDay(this.byId[clusterId]);
   }
 
   // Iterate through all builds. Can return duplicates.
   *allBuilds() {
-    for (let id of Object.keys(this.byId)) {
-      yield *this.buildsForCluster(id);
+    for (let entry of this.data) {
+      yield *buildsForCluster(entry);
     }
   }
 
@@ -193,7 +186,17 @@ class Clusters {
         out.push([key, keyId, text, clustersOut]);
       }
     }
-    return new Clusters(out, opts.sort);
+
+    if (opts.sort) {
+      var keyFunc = {
+        total: c => [-clustersSum(c[3])],
+        message: c => [c[0]],
+        day: c => [-getHitsInLastDay(c), -clustersSum(c[3])],
+      }[opts.sort];
+      out = sortByKey(out, keyFunc);
+    }
+
+    return new Clusters(out);
   }
 }
 
