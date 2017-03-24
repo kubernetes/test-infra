@@ -26,10 +26,10 @@ type Issue struct {
 	Repository     string
 	ID             int
 	Labels         []Label
+	Assignees      []Assignee
 	Title          string `gorm:"type:varchar(1000)"`
 	Body           string `gorm:"type:text"`
 	User           string
-	Assignee       *string
 	State          string
 	Comments       int
 	IsPR           bool
@@ -66,6 +66,13 @@ type IssueEvent struct {
 
 // Label is a tag on an Issue. It's format fits into the ORM.
 type Label struct {
+	Repository string
+	IssueID    int
+	Name       string
+}
+
+// Assignee is assigned to an issue.
+type Assignee struct {
 	Repository string
 	IssueID    int
 	Name       string

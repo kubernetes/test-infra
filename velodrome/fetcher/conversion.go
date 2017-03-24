@@ -42,9 +42,9 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 	if gIssue.ClosedAt != nil {
 		closedAt = gIssue.ClosedAt
 	}
-	var assignee *string
-	if gIssue.Assignee != nil {
-		assignee = gIssue.Assignee.Login
+	assignees, err := newAssignees(*gIssue.Number, gIssue.Assignees, repository)
+	if err != nil {
+		return nil, err
 	}
 	var body string
 	if gIssue.Body != nil {
@@ -62,7 +62,7 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 		Title:          *gIssue.Title,
 		Body:           body,
 		User:           *gIssue.User.Login,
-		Assignee:       assignee,
+		Assignees:      assignees,
 		State:          *gIssue.State,
 		Comments:       *gIssue.Comments,
 		IsPR:           isPR,
@@ -125,6 +125,25 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 	}
 
 	return labels, nil
+}
+
+// newAssignees creates a new Label for each label in the issue
+func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
+	assignees := []sql.Assignee{}
+	repository = strings.ToLower(repository)
+
+	for _, assignee := range gAssignees {
+		if assignee != nil && assignee.Login == nil {
+			return nil, fmt.Errorf("Assignee is missing Login field")
+		}
+		assignees = append(assignees, sql.Assignee{
+			IssueID:    issueId,
+			Name:       *assignee.Login,
+			Repository: repository,
+		})
+	}
+
+	return assignees, nil
 }
 
 // NewIssueComment creates a Comment from a github.IssueComment
