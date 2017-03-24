@@ -34,12 +34,12 @@ import (
 
 var (
 	artifacts             = initPath("./_artifacts")
+	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
 	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
 	kubetestPath          = initPath(os.Args[0])
 	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose               = false
 	timeout               = time.Duration(0)
-	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
+	verbose               = false
 )
 
 // Joins os.Getwd() and path
@@ -400,9 +400,19 @@ func installGcloud(tarball string, location string) error {
 
 func prepareGcp(kubernetesProvider string) error {
 	// Ensure project is set
+	var err error
 	p := os.Getenv("PROJECT")
 	if p == "" {
-		return fmt.Errorf("KUBERNETES_PROVIDER=%s requires setting PROJECT", kubernetesProvider)
+		log.Printf("K8s provider: %v, PROJECT not set, will make a lease from boskos.", kubernetesProvider)
+		p, err = boskos(timeout)
+		if err != nil {
+			return fmt.Errorf("[boskos] Fail to request project - %v", err)
+		}
+	}
+
+	// set current project
+	if err := finishRunning(exec.Command("gcloud", "config", "set", "project", p)); err != nil {
+		return err
 	}
 
 	// gcloud creds may have changed

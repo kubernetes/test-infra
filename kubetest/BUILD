@@ -19,6 +19,7 @@ go_library(
     srcs = [
         "anywhere.go",
         "bash.go",
+        "boskos.go",
         "build.go",
         "e2e.go",
         "extract.go",
