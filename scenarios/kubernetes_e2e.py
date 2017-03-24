@@ -307,6 +307,8 @@ def main(args):
         runner_args.append('--stage=%s' % args.stage)
     if args.stage_suffix:
         runner_args.append('--stage-suffix=%s' % args.stage_suffix)
+    if args.multiple_federations:
+        runner_args.append('--multiple-federations')
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -442,6 +444,9 @@ def create_parser():
         '--test', default='true', help='If we need to set --test in e2e.go')
     parser.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
+    parser.add_argument(
+        '--multiple-federations', default=False, action='store_true',
+        help='If we need to run multiple federation control planes in parallel')
     return parser
 
 if __name__ == '__main__':
