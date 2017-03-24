@@ -10,6 +10,4 @@ data:
   config.token-file: /etc/secret-volume/token
 
   # munger specific options.
-  gitrepo.repo-dir: /gitrepos
   config.period: "24h"
-  publisher.netrc-dir: /netrc

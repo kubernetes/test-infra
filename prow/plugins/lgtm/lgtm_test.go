@@ -17,6 +17,7 @@ limitations under the License.
 package lgtm
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -35,6 +36,7 @@ func TestLGTMComment(t *testing.T) {
 		hasLGTM       bool
 		shouldToggle  bool
 		shouldComment bool
+		shouldAssign  bool
 	}{
 		{
 			name:         "non-lgtm comment",
@@ -91,8 +93,19 @@ func TestLGTMComment(t *testing.T) {
 			body:          "/lgtm",
 			commenter:     "o",
 			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: false,
+			shouldAssign:  true,
+		},
+		{
+			name:          "lgtm comment by rando",
+			action:        "created",
+			body:          "/lgtm",
+			commenter:     "not-in-the-org",
+			hasLGTM:       false,
 			shouldToggle:  false,
 			shouldComment: true,
+			shouldAssign:  false,
 		},
 		{
 			name:          "lgtm cancel by non-reviewer",
@@ -100,8 +113,19 @@ func TestLGTMComment(t *testing.T) {
 			body:          "/lgtm cancel",
 			commenter:     "o",
 			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldComment: false,
+			shouldAssign:  true,
+		},
+		{
+			name:          "lgtm cancel by rando",
+			action:        "created",
+			body:          "/lgtm cancel",
+			commenter:     "not-in-the-org",
+			hasLGTM:       true,
 			shouldToggle:  false,
 			shouldComment: true,
+			shouldAssign:  false,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer",
@@ -144,6 +168,20 @@ func TestLGTMComment(t *testing.T) {
 		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
+		}
+		if tc.shouldAssign {
+			found := false
+			for _, a := range fc.AssigneesAdded {
+				if a == fmt.Sprintf("/#%d:%s", 5, tc.commenter) {
+					found = true
+					break
+				}
+			}
+			if !found || len(fc.AssigneesAdded) != 1 {
+				t.Errorf("For case %s, should have assigned %s but added assignees are %s", tc.name, tc.commenter, fc.AssigneesAdded)
+			}
+		} else if len(fc.AssigneesAdded) != 0 {
+			t.Errorf("For case %s, should not have assigned anyone but assigned %s", tc.name, fc.AssigneesAdded)
 		}
 		if tc.shouldToggle {
 			if tc.hasLGTM {

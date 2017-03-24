@@ -23,9 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
 	prow_config "k8s.io/test-infra/prow/config"
-	config "k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
@@ -54,15 +52,20 @@ func main() {
 	}
 
 	data, err := ioutil.ReadFile(configPath)
-	protobufData, err := yaml2proto.Yaml2Proto(data)
 	if err != nil {
+		fmt.Printf("Failed reading %v\n", configPath)
+		os.Exit(1)
+	}
+
+	c := yaml2proto.Config{}
+	if err := c.Update(data); err != nil {
 		fmt.Printf("Failed to convert yaml to protobuf: %v\n", err)
 		os.Exit(1)
 	}
 
-	config := &config.Configuration{}
-	if err := proto.Unmarshal(protobufData, config); err != nil {
-		fmt.Printf("Failed to parse config: %v\n", err)
+	config, err := c.Raw()
+	if err != nil {
+		fmt.Printf("Error validating config: %v\n", err)
 		os.Exit(1)
 	}
 

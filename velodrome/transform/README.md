@@ -58,12 +58,3 @@ Once it is set-up, you will also need the grafana-stack set-up locally. Refer to
 [../grafana-stack](../grafana-stack/) to see how to do that.
 
 You can then run `transform` to connect to your local instances.
-
-Deploying Transform
-===================
-
-Make sure the parameters match the configuration of your grafana
-stack [../grafana-stack](../grafana-stack/), and then:
-```
-kubectl apply -f deployment.yaml
-```

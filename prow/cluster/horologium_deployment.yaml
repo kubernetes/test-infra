@@ -30,10 +30,10 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:0.0
+        image: gcr.io/k8s-prow/horologium:0.1
         env:
         - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.78"
+          value: "gcr.io/k8s-prow/line:0.86"
         - name: DRY_RUN
           value: "false"
         volumeMounts:

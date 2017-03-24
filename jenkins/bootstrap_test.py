@@ -258,6 +258,36 @@ class PullRefsTest(unittest.TestCase):
             (['master'], ['FETCH_HEAD']))
 
 
+class ChooseSshKeyTest(unittest.TestCase):
+    """Tests for choose_ssh_key()."""
+    def testEmpty(self):
+        """Do not change environ if no ssh key."""
+        fake_env = {}
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key(''):
+                self.assertFalse(fake_env)
+
+    def testFull(self):
+        fake_env = {}
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key('hello there'):
+                self.assertIn('GIT_SSH', fake_env)
+                with open(fake_env['GIT_SSH']) as fp:
+                    buf = fp.read()
+                self.assertIn('hello there', buf)
+                self.assertIn('ssh ', buf)
+                self.assertIn(' -i ', buf)
+            self.assertFalse(fake_env)  # Resets env
+
+    def testFullOldValue(self):
+        fake_env = {'GIT_SSH': 'random-value'}
+        old_env = dict(fake_env)
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key('hello there'):
+                self.assertNotEqual(old_env, fake_env)
+            self.assertEquals(old_env, fake_env)
+
+
 class CheckoutTest(unittest.TestCase):
     """Tests for checkout()."""
 
@@ -335,6 +365,77 @@ class CheckoutTest(unittest.TestCase):
         self.assertTrue(any(
             'FETCH_HEAD' in cmd for cmd, _, _ in fake.calls
             if 'checkout' in cmd))
+
+class ParseReposTest(unittest.TestCase):
+    def testBare(self):
+        """--bare works."""
+        self.assertFalse(
+            bootstrap.parse_repos(FakeArgs(repo=[], branch=[], pull=[], bare=True)))
+
+    def testDeprecatedBranch(self):
+        """--repo=foo --branch=bbb works"""
+        self.assertEquals(
+            {'foo': ('bbb', '')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb', pull='')))
+
+    def testDeprecatedPull(self):
+        """--repo=foo --pull=123 works."""
+        self.assertEquals(
+            {'foo': ('', '123:abc,333:ddd')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='123:abc,333:ddd')))
+
+    def testPlain(self):
+        """"foo equals foo=master."""
+        self.assertEquals(
+            {'foo': ('master', '')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='')))
+
+    def testBranch(self):
+        """foo=branch."""
+        self.assertEquals(
+            {'foo': ('this', '')},
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=this'], branch='', pull='')))
+
+    def testBranchCommit(self):
+        """foo=branch:commit is not allowed."""
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=this:abcd'], branch='', pull=''))
+
+    def testPull(self):
+        """foo=111,222 works"""
+        self.assertEquals(
+            {'foo': ('', '111,222')},
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=111,222'], branch='', pull='')))
+
+
+    def testPullBranch(self):
+        """foo=master,111,222 works"""
+        self.assertEquals(
+            {'foo': ('', 'master,111,222')},
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=master,111,222'], branch='', pull='')))
+
+    def testPullBranchCommit(self):
+        """foo=master,111,222 works"""
+        self.assertEquals(
+            {'foo': ('', 'master:aaa,111:bbb,222:ccc')},
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master:aaa,111:bbb,222:ccc'], branch='', pull='')))
+
+    def testMultiRepo(self):
+        """foo=master,111,222 bar works"""
+        self.assertEquals(
+            {
+                'foo': ('', 'master:aaa,111:bbb,222:ccc'),
+                'bar': ('master', '')},
+            bootstrap.parse_repos(
+                FakeArgs(branch='', pull='', repo=[
+                    'foo=master:aaa,111:bbb,222:ccc',
+                    'bar',
+                ])))
 
 
 class GSUtilTest(unittest.TestCase):
@@ -528,7 +629,6 @@ class AppendResultTest(unittest.TestCase):
         self.assertLess(len(cache), len(old))
 
 
-
 class FinishTest(unittest.TestCase):
     """Tests for finish()."""
     def setUp(self):
@@ -551,15 +651,15 @@ class FinishTest(unittest.TestCase):
         artifacts = 'not-a-dir'
         no_version = ''
         version = 'should not have found it'
+        repos = repo({REPO: ('master', '')})
         with Stub(bootstrap, 'metadata', lambda *a: {'random-meta': version}):
-            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
-        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, REPO, FakeCall())
+            bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
+        bootstrap.finish(gsutil, paths, success, artifacts, BUILD, no_version, repos, FakeCall())
         calls = gsutil.jsons[-1]
         # json data is second positional argument
         self.assertNotIn('job-version', calls[0][1])
         self.assertNotIn('version', calls[0][1])
         self.assertTrue(calls[0][1].get('metadata'))
-
 
     def testMetadataVersion(self):
         """Test that we will extract version info from metadata."""
@@ -595,9 +695,10 @@ class FinishTest(unittest.TestCase):
                     calls.append((a, kw))
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
 
 
@@ -616,9 +717,10 @@ class FinishTest(unittest.TestCase):
                     raise subprocess.CalledProcessError(1, ['fakecmd'], None)
                 gsutil.upload_artifacts = Pass
                 gsutil.upload_text = fake_upload
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
                 self.assertTrue(calls)
                 self.assertGreater(calls, 1)
 
@@ -632,16 +734,31 @@ class FinishTest(unittest.TestCase):
         success = True
         with Stub(os.path, 'isdir', lambda _: False):
             with Stub(bootstrap.GSUtil, 'upload_artifacts', Bomb):
+                repos = repo({REPO: ('master', '')})
                 bootstrap.finish(
                     gsutil, paths, success, local_artifacts,
-                    build, version, REPO, FakeCall())
+                    build, version, repos, FakeCall())
 
 
 class MetadataTest(unittest.TestCase):
+
     def testAlwaysSetMetadata(self):
-        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir', FakeCall())
+        repos = repo({REPO: ('master', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
         self.assertIn('repo', meta)
         self.assertEquals(REPO, meta['repo'])
+
+    def testMultiRepo(self):
+        repos = repo({REPO: ('foo', ''), 'other-repo': ('', '123,456')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', FakeCall())
+        self.assertIn('repo', meta)
+        self.assertEquals(REPO, meta['repo'])
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertEquals('foo', meta['repos'][REPO])
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals('123,456', meta['repos']['other-repo'])
+
+
 
 
 SECONDS = 10
@@ -684,7 +801,6 @@ class BuildNameTest(unittest.TestCase):
             del fake[bootstrap.BUILD_ENV]
             bootstrap.build_name(SECONDS + 60)
             self.assertNotEqual(first, fake[bootstrap.BUILD_ENV])
-
 
 
 class SetupCredentialsTest(unittest.TestCase):
@@ -748,8 +864,9 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
     def testJobEnvMismatch(self):
         env = FakeEnviron()
         with Stub(os, 'environ', env):
-            with self.assertRaises(ValueError):
-                bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertNotEquals('this-is-a-job', env[bootstrap.JOB_ENV])
+            bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertEquals('this-is-a-job', env[bootstrap.JOB_ENV])
 
     def testExpected(self):
         env = FakeEnviron()
@@ -826,16 +943,22 @@ class FakeFinish(object):
         self.called = True
         self.result = success
 
+def repo(config):
+    repos = bootstrap.Repos()
+    for repo, tup in config.items():
+        repos[repo] = tup
+    return repos
+
 class PRPathsTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         """Test the kubernetes/kubernetes prefix."""
-        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/kubernetes', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'kubernetes/kubernetes': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             str(PULL) == p for p in path.build_log.split('/')))
 
     def testKubernetes(self):
         """Test the kubernetes/something prefix."""
-        path = bootstrap.pr_paths(UPLOAD, 'kubernetes/prefix', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'kubernetes/prefix': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             'prefix' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
@@ -843,12 +966,39 @@ class PRPathsTest(unittest.TestCase):
 
     def testOther(self):
         """Test the none kubernetes prefixes."""
-        path = bootstrap.pr_paths(UPLOAD, 'github.com/random/repo', JOB, BUILD, PULL)
+        path = bootstrap.pr_paths(UPLOAD, repo({'github.com/random/repo': ('', PULL)}), JOB, BUILD)
         self.assertTrue(any(
             'random_repo' in p for p in path.build_log.split('/')), path.build_log)
         self.assertTrue(any(
             str(PULL) in p for p in path.build_log.split('/')), path.build_log)
 
+
+class FakeArgs(object):
+    bare = False
+    clean = False
+    git_cache = ''
+    job = JOB
+    root = ROOT
+    service_account = ROBOT
+    ssh = False
+    timeout = 0
+    upload = UPLOAD
+    json = False
+
+    def __init__(self, **kw):
+        self.branch = BRANCH
+        self.pull = PULL
+        self.repo = [REPO]
+        for key, val in kw.items():
+            if not hasattr(self, key):
+                raise AttributeError(self, key)
+            setattr(self, key, val)
+
+
+def test_bootstrap(**kw):
+    if isinstance(kw.get('repo'), basestring):
+        kw['repo'] = [kw['repo']]
+    return bootstrap.bootstrap(FakeArgs(**kw))
 
 class BootstrapTest(unittest.TestCase):
 
@@ -875,25 +1025,23 @@ class BootstrapTest(unittest.TestCase):
     def testEmptyRepo(self):
         repo = None
         with Stub(bootstrap, 'checkout', Bomb):
-            bootstrap.bootstrap(JOB, repo, None, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=None, pull=None, bare=True)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, None, PULL, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=None, pull=PULL)
         with self.assertRaises(ValueError):
-            bootstrap.bootstrap(JOB, repo, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(repo=repo, branch=BRANCH, pull=None)
 
     def testRoot_NotExists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
             with Stub(os.path, 'exists', lambda p: False):
                 with Stub(os, 'makedirs', FakeCall()) as fake_makedirs:
-                    bootstrap.bootstrap(
-                        JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(branch=None)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls), fake_chdir.calls)
         self.assertTrue(any(ROOT in c[0] for c in fake_makedirs.calls), fake_makedirs.calls)
 
     def testRoot_Exists(self):
         with Stub(os, 'chdir', FakeCall()) as fake_chdir:
-            bootstrap.bootstrap(
-                JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(branch=None)
         self.assertTrue(any(ROOT in c[0] for c in fake_chdir.calls))
 
     def testPRPaths(self):
@@ -901,17 +1049,15 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'ci_paths', Bomb):
             with Stub(bootstrap, 'pr_paths', FakePath()) as path:
-                bootstrap.bootstrap(
-                    JOB, REPO, None, PULL, ROOT, UPLOAD, ROBOT)
-            self.assertTrue(PULL in path.a or PULL in path.kw)
+                test_bootstrap(branch=None, pull=PULL)
+            self.assertEquals(PULL, path.a[1][REPO][1], (PULL, path.a))
 
     def testCIPaths(self):
         """Use a ci_paths when branch is set."""
 
         with Stub(bootstrap, 'pr_paths', Bomb):
             with Stub(bootstrap, 'ci_paths', FakePath()) as path:
-                bootstrap.bootstrap(
-                    JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                test_bootstrap(pull=None, branch=BRANCH)
             self.assertFalse(any(
                 PULL in o for o in (path.a, path.kw)))
 
@@ -920,8 +1066,7 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, 'start', Bomb):
                 with self.assertRaises(AssertionError):
-                    bootstrap.bootstrap(
-                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
@@ -932,54 +1077,52 @@ class BootstrapTest(unittest.TestCase):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
             with Stub(bootstrap, '_call', CallError):
                 with self.assertRaises(SystemExit):
-                    bootstrap.bootstrap(
-                        JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+                    test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result is False)  # Distinguish from None
 
     def testHappy(self):
         with Stub(bootstrap, 'finish', FakeFinish()) as fake:
-            bootstrap.bootstrap(JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(pull=None)
         self.assertTrue(fake.called)
         self.assertTrue(fake.result)  # Distinguish from None
 
     def testJobEnv(self):
         """bootstrap sets JOB_NAME."""
         with Stub(os, 'environ', FakeEnviron()) as env:
-            bootstrap.bootstrap(
-                JOB, REPO, BRANCH, None, ROOT, UPLOAD, ROBOT)
+            test_bootstrap(pull=None)
         self.assertIn(bootstrap.JOB_ENV, env)
 
 
 class RepositoryTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         expected = 'https://github.com/kubernetes/kubernetes'
-        actual = bootstrap.repository('k8s.io/kubernetes')
+        actual = bootstrap.repository('k8s.io/kubernetes', '')
         self.assertEquals(expected, actual)
 
     def testKubernetesTestInfra(self):
         expected = 'https://github.com/kubernetes/test-infra'
-        actual = bootstrap.repository('k8s.io/test-infra')
+        actual = bootstrap.repository('k8s.io/test-infra', '')
         self.assertEquals(expected, actual)
 
     def testWhatever(self):
         expected = 'https://foo.com/bar'
-        actual = bootstrap.repository('foo.com/bar')
+        actual = bootstrap.repository('foo.com/bar', '')
         self.assertEquals(expected, actual)
 
     def testKubernetesKubernetesSSH(self):
         expected = 'git@github.com:kubernetes/kubernetes'
-        actual = bootstrap.repository('k8s.io/kubernetes', True)
+        actual = bootstrap.repository('k8s.io/kubernetes', 'path')
         self.assertEquals(expected, actual)
 
     def testKubernetesKubernetesSSHWithColon(self):
         expected = 'git@github.com:kubernetes/kubernetes'
-        actual = bootstrap.repository('github.com:kubernetes/kubernetes', True)
+        actual = bootstrap.repository('github.com:kubernetes/kubernetes', 'path')
         self.assertEquals(expected, actual)
 
     def testWhateverSSH(self):
         expected = 'git@foo.com:bar'
-        actual = bootstrap.repository('foo.com/bar', True)
+        actual = bootstrap.repository('foo.com/bar', 'path')
         self.assertEquals(expected, actual)
 
 
@@ -1035,9 +1178,13 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['touch', self.BRANCH_FILE])
         subprocess.check_call(['git', 'add', self.BRANCH_FILE])
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace,
-            UPLOAD, ROBOT, git_cache=self.root_git_cache)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch=self.BRANCH,
+            pull=None,
+            root=self.root_workspace,
+            git_cache=self.root_git_cache)
         # Verify that the cache was populated by running a simple git command
         # in the git cache directory.
         subprocess.check_call(
@@ -1052,8 +1199,12 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
         os.chdir('/tmp')
-        bootstrap.bootstrap(
-            'fake-pr', self.REPO, None, self.PR, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-pr',
+            repo=self.REPO,
+            branch=None,
+            pull=self.PR,
+            root=self.root_workspace)
 
     def testBranch(self):
         subprocess.check_call(['git', 'checkout', '-b', self.BRANCH])
@@ -1063,8 +1214,12 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'commit', '-m', 'Create %s' % self.BRANCH])
 
         os.chdir('/tmp')
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch=self.BRANCH,
+            pull=None,
+            root=self.root_workspace)
 
     def testBranchRef(self):
         """Make sure we check out a specific commit."""
@@ -1080,13 +1235,20 @@ class IntegrationTest(unittest.TestCase):
 
         os.chdir('/tmp')
         # Supplying the commit exactly works.
-        bootstrap.bootstrap(
-            'fake-branch', self.REPO, '%s:%s' % (self.BRANCH, sha), None,
-            self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-branch',
+            repo=self.REPO,
+            branch='%s:%s' % (self.BRANCH, sha),
+            pull=None,
+            root=self.root_workspace)
         # Using branch head fails.
         with self.assertRaises(SystemExit):
-            bootstrap.bootstrap(
-                'fake-branch', self.REPO, self.BRANCH, None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='fake-branch',
+                repo=self.REPO,
+                branch=self.BRANCH,
+                pull=None,
+                root=self.root_workspace)
 
     def testBatch(self):
         def head_sha():
@@ -1106,44 +1268,68 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         pull = ','.join(refs)
         print '--pull', pull
-        bootstrap.bootstrap(
-            'fake-pr', self.REPO, None, pull, self.root_workspace, UPLOAD, ROBOT)
+        test_bootstrap(
+            job='fake-pr',
+            repo=self.REPO,
+            branch=None,
+            pull=pull,
+            root=self.root_workspace)
 
     def testPr_Bad(self):
         random_pr = 111
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap(
-                        'fake-pr', self.REPO, None, random_pr, self.root_workspace, UPLOAD, ROBOT)
+                    test_bootstrap(
+                        job='fake-pr',
+                        repo=self.REPO,
+                        branch=None,
+                        pull=random_pr,
+                        root=self.root_workspace)
 
     def testBranch_Bad(self):
         random_branch = 'something'
         with Stub(bootstrap, 'start', Bomb):
             with Stub(time, 'sleep', Pass):
                 with self.assertRaises(subprocess.CalledProcessError):
-                    bootstrap.bootstrap(
-                        'fake-branch', self.REPO, random_branch, None, self.root_workspace, UPLOAD, ROBOT)
+                    test_bootstrap(
+                        job='fake-branch',
+                        repo=self.REPO,
+                        branch=random_branch,
+                        pull=None,
+                        root=self.root_workspace)
 
     def testJobMissing(self):
         with self.assertRaises(OSError):
-            bootstrap.bootstrap(
-                'this-job-no-exists', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='this-job-no-exists',
+                repo=self.REPO,
+                branch='master',
+                pull=None,
+                root=self.root_workspace)
 
     def testJobFails(self):
         with self.assertRaises(SystemExit):
-            bootstrap.bootstrap(
-                'fake-failure', self.REPO, 'master', None, self.root_workspace, UPLOAD, ROBOT)
+            test_bootstrap(
+                job='fake-failure',
+                repo=self.REPO,
+                branch='master',
+                pull=None,
+                root=self.root_workspace)
 
     def testCommitInMeta(self):
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
-        
+
         # Commit SHA should in meta
         call = lambda *a, **kw: bootstrap._call(5, *a, **kw)
-        meta = bootstrap.metadata(REPO, 'missing-artifacts-dir', call)
+        repos = repo({REPO: ('master', ''), 'other-repo': ('other-branch', '')})
+        meta = bootstrap.metadata(repos, 'missing-artifacts-dir', call)
         self.assertIn('repo-commit', meta)
         self.assertEquals(sha, meta['repo-commit'])
         self.assertEquals(40, len(meta['repo-commit']))
+        self.assertIn(REPO, meta.get('repos'))
+        self.assertIn('other-repo', meta.get('repos'))
+        self.assertEquals(REPO, meta.get('repo'))
 
 
 class ParseArgsTest(unittest.TestCase):
@@ -1194,6 +1380,8 @@ class JobTest(unittest.TestCase):
         'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
+        'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
@@ -1270,6 +1458,21 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
             Check, use_json=is_modern)
 
+    def testBootstrapPullJsonYaml(self):
+        def Check(job, name):
+            job_name = 'pull-%s' % name
+            self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml',
+            Check, use_json=True)
+
     def testBootstrapPullYaml(self):
         bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
         is_modern = lambda n: all(b not in n for b in bads)
@@ -1290,36 +1493,56 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml',
             Check, use_json=is_modern)
 
+    def testBootstrapSecurityPullYaml(self):
+        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
+        def Check(job, name):
+            job_name = 'pull-%s' % name
+            self.assertIn('max-total', job)
+            self.assertIn('repo-name', job)
+            self.assertIn('.', job['repo-name'])  # Has domain
+            self.assertIn('timeout', job)
+            self.assertIn('json', job)
+            modern = is_modern(name)
+            self.assertEquals(modern, job['json'])
+            if is_modern(name):
+                self.assertGreater(job['timeout'], 0)
+            return job_name
+
+        self.CheckBootstrapYaml(
+            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
+            Check, use_json=is_modern)
+
+    def testBootstrapSecurityPullYamlJobsMatch(self):
+        jobs1 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml')
+        jobs2 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
+        for name, job in jobs1.iteritems():
+            if job['repo-name'] == 'k8s.io/kubernetes':
+                job2 = jobs2[name]
+                for attr in job:
+                    if attr != 'repo-name':
+                        self.assertEquals(job[attr], job2[attr])
+        for name, job in jobs2.iteritems():
+            job2 = jobs1[name]
+            for attr in job:
+                if attr != 'repo-name':
+                    self.assertEquals(job[attr], job2[attr])
+
+
     def testBootstrapCIYaml(self):
-        # TODO(krzyzacy): temp until more jobs to be converted
-
-        whitelist = [
-        ]
-
-        blacklist = [
-            'kubernetes-e2e-aws',
-        ]
-
-        is_modern = lambda name: any(re.match(w, name) for w in whitelist) or not any(re.match(b, name) for b in blacklist)
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
-            self.assertIn('json', job)
-            modern = is_modern(name)
-            self.assertEquals(modern, job['json'])
-            if is_modern(name):
-                self.assertGreater(job['timeout'], 0, job_name)
-                self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
-            else:
-                self.assertEqual(job['timeout'], 0)
-                self.assertGreaterEqual(job['jenkins-timeout'], 600, job_name)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0, job_name)
+            self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
-            Check, use_json=is_modern)
+            Check, use_json=True)
 
     def testBootstrapCICommitYaml(self):
         def Check(job, name):
@@ -1338,23 +1561,19 @@ class JobTest(unittest.TestCase):
             Check, use_json=True)
 
     def testBootstrapCIRepoYaml(self):
-        is_modern = lambda n: '-e2e-' not in n
         def Check(job, name):
             job_name = 'ci-%s' % name
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
-            self.assertIn('json', job)
-            modern = is_modern(name)  # TODO(fejta): all jobs
-            self.assertEquals(modern, job['json'], name)
-            if is_modern(name):  # TODO(fejta): do this for all jobs
-                self.assertGreater(job['timeout'], 0, name)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            Check, use_json=is_modern)
+            Check, use_json=True)
 
     def testBootstrapCISoakYaml(self):
         def Check(job, name):
@@ -1379,11 +1598,13 @@ class JobTest(unittest.TestCase):
             self.assertIn('branch', job)
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
+            self.assertIn('timeout', job)
+            self.assertGreater(job['timeout'], 0, name)
             return job_name
 
         self.CheckBootstrapYaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            Check)
+            Check, use_json=True)
 
     def CheckJobTemplate(self, tmpl):
         builders = tmpl.get('builders')
@@ -1402,7 +1623,9 @@ class JobTest(unittest.TestCase):
             self.fail(tmpl)
         self.assertIn('--service-account=', cmd)
         self.assertIn('--upload=', cmd)
-        if '--pull=' in cmd:
+        if 'kubernetes-security' in cmd:
+            self.assertIn('--upload=\'gs://kubernetes-security-jenkins/pr-logs\'', cmd)
+        elif '${{PULL_REFS}}' in cmd:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/pr-logs\'', cmd)
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
@@ -1450,8 +1673,9 @@ class JobTest(unittest.TestCase):
             real_job = job[name]
             self.assertNotIn(name, real_jobs)
             real_jobs[name] = real_job
-            if name not in self.realjobs:
-                self.realjobs[name] = real_job
+            real_name = real_job.get('job-name', 'unset-%s' % name)
+            if real_name not in self.realjobs:
+                self.realjobs[real_name] = real_job
         return real_jobs
 
     def CheckBootstrapYaml(self, path, check, use_json=False):
@@ -1489,7 +1713,7 @@ class JobTest(unittest.TestCase):
             self.assertEquals(job_name, real_job.get('job-name'))
 
     def GetRealBootstrapJob(self, job):
-        key = os.path.splitext(job.strip())[0][3:]
+        key = os.path.splitext(job.strip())[0]
         if not key in self.realjobs:
             for yaml in self.yaml_suffix:
                 self.LoadBootstrapYaml(yaml)
@@ -1509,7 +1733,15 @@ class JobTest(unittest.TestCase):
                 'kops-e2e-',
             ]
 
+            # Skip prow e2e for now. Fix this while we move from Jenkins to Prow.
+            skip = [
+                'kubernetes-e2e-prow-canary',
+                'kubernetes-e2e-kubeadm-gce'
+            ]
+
             if not re.search('|'.join(valids), job):
+                continue
+            if re.search('|'.join(skip), job):
                 continue
             found_timeout = False
             with open(job_path) as fp:
@@ -1538,7 +1770,8 @@ class JobTest(unittest.TestCase):
                     self.assertGreater(docker_timeout, 0)
                 self.assertTrue(mat, line)
                 if int(mat.group(1)) > docker_timeout:
-                    bad_jobs.add(job)
+                    import pdb; pdb.set_trace()
+                    bad_jobs.add((job, mat.group(1), docker_timeout))
             self.assertTrue(found_timeout, job)
         self.assertFalse(bad_jobs)
 
@@ -1558,6 +1791,11 @@ class JobTest(unittest.TestCase):
 
     def testAllProjectAreUnique(self):
         allowed_list = {
+            # The 1.5 and 1.6 scalability jobs intentionally share projects.
+            'ci-kubernetes-e2e-gce-scalability-release-1.5.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-release-1.5.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce.env': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.env': 'ci-kubernetes-kubemark-*',
@@ -1577,6 +1815,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
+            'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
+            'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
@@ -1607,7 +1847,7 @@ class JobTest(unittest.TestCase):
                 continue  # No clean way to determine version
             with open(job_path) as fp:
                 script = fp.read()
-            self.assertNotIn('source ', script, job)
+            self.assertFalse(re.search(r'\Wsource ', script), job)
             self.assertNotIn('\n. ', script, job)
 
     def testAllBashJobsHaveErrExit(self):
@@ -1641,20 +1881,20 @@ class JobTest(unittest.TestCase):
                     continue
                 if line.startswith('#'):
                     continue
-                if not re.match(r'[0-9A-Z_]+=[^\n]+', line):
+                if not re.match(r'[0-9A-Z_]+=[^\n]*', line):
                     self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, line))
                 if '#' in line:
                     self.fail('[%r]: Env %r: No inline comments' % (job, line))
-                if '"' in line:
+                if '"' in line or '\'' in line:
                     self.fail('[%r]: Env %r: No quote in env' % (job, line))
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
 
-                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE 
+                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE
                 for b in black:
                     if b in line:
                         self.fail('[%r]: Env %r: Convert %r to use e2e scenario flags' % (job, line, b))
-                
+
 
     def testNoBadVarsInJobs(self):
         """Searches for jobs that contain ${{VAR}}"""
@@ -1676,14 +1916,40 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 hasMatchingEnv = False
                 for arg in config[job].get('args', []):
-                    m = re.match(r'--env-file=([^\"]+)', arg)
+                    m = re.match(r'--env-file=jobs/([^\"]+)\.env', arg)
                     if m:
                         env = m.group(1)
-                        if env[5:-4] == job: # strip FOO from 'jobs/FOO.env'
+                        if env == job:
                             hasMatchingEnv = True
-                        self.assertTrue(os.path.isfile(bootstrap.test_infra(env)), job)
+                        path = bootstrap.test_infra('jobs/%s.env' % env)
+                        self.assertTrue(
+                            os.path.isfile(path),
+                            '%s does not exist for %s' % (path, job))
+                    elif 'kops' not in job:
+                        m = re.match(r'--cluster=([^\"]+)', arg)
+                        if m:
+                            cluster = m.group(1)
+                            self.assertLessEqual(len(cluster), 20, 'Job %r, --cluster should be 20 chars or fewer' % job)
                 if config[job]['scenario'] == 'kubernetes_e2e':
-                    self.assertTrue(hasMatchingEnv)
+                    self.assertTrue(hasMatchingEnv, job)
+                    if '-soak-' in job:
+                        if '-federation-' not in job:
+                            self.assertIn(
+                                '--tag=v20170223-43ce8f86', config[job]['args'])
+                    if job.startswith('pull-kubernetes-'):
+                        self.assertIn('--cluster=', config[job]['args'])
+                        if 'gke' in job:
+                            stage = 'gs://kubernetes-release-dev/ci'
+                            suffix = True
+                        else:
+                            stage = 'gs://kubernetes-release-pull/ci/%s' % job
+                            suffix = False
+                        self.assertIn(
+                            '--stage=%s' % stage, config[job]['args'])
+                        self.assertEquals(
+                            suffix,
+                            any('--stage-suffix=' in a for a in config[job]['args']),
+                            ('--stage-suffix=', suffix, job, config[job]['args']))
 
 
 if __name__ == '__main__':

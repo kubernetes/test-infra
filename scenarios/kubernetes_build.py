@@ -78,7 +78,7 @@ if __name__ == '__main__':
         help='Use the unstable debian channel')
     PARSER.add_argument(
         '--federation',
-        help='Enable federation with the specified project')
+        help='Push federation images to the specified project')
     PARSER.add_argument(
         '--kops', help='Upload kops to the specified gs:// path')
     ARGS = PARSER.parse_args()

@@ -43,6 +43,7 @@ go_library(
         "plugins.go",
         "prstats.go",
         "rebase.go",
+        "retest.go",
         "transform.go",
     ],
     tags = ["automanaged"],
@@ -54,6 +55,11 @@ go_library(
         "//vendor:github.com/jinzhu/gorm/dialects/mysql",
         "//vendor:github.com/spf13/cobra",
     ],
+)
+
+filegroup(
+    name = "configs",
+    srcs = glob(["*.yaml"]),
 )
 
 filegroup(

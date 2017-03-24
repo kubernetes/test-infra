@@ -61,6 +61,15 @@ TEST_BUCKETS_DATA = {
 }
 
 
+TEST_CONFIGMAP_DATA = {
+    'apiVersion': 'v1',
+    'kind': 'ConfigMap',
+    'data': {
+        'submit-queue.jenkins-jobs': 'ci-job-one,ci-job-two',
+    },
+}
+
+
 class GenHtmlTest(unittest.TestCase):
     """Unit tests for gen_html.py."""
     # pylint: disable=invalid-name
@@ -148,20 +157,21 @@ class GenHtmlTest(unittest.TestCase):
         """Test argument parsing works correctly."""
 
         def check(args, expected_output_dir, expected_input,
-                  expected_buckets):
+                  expected_buckets, expected_configmap):
             """Check that args is parsed correctly."""
             options = gen_html.get_options(args)
             self.assertEquals(expected_output_dir, options.output_dir)
             self.assertEquals(expected_input, options.input)
             self.assertEquals(expected_buckets, options.buckets)
+            self.assertEquals(expected_configmap, options.configmap)
 
 
-        check(['--output-dir=foo', '--input=bar', '--buckets=baz'],
-              'foo', 'bar', 'baz')
-        check(['--output-dir', 'foo', '--input', 'bar', '--buckets', 'baz'],
-              'foo', 'bar', 'baz')
-        check(['--buckets=baz', '--input=bar', '--output-dir=foo'],
-              'foo', 'bar', 'baz')
+        check(['--output-dir=foo', '--input=bar', '--buckets=baz', '--configmap=qux'],
+              'foo', 'bar', 'baz', 'qux')
+        check(['--output-dir', 'foo', '--input', 'bar', '--buckets', 'baz', '--configmap', 'qux'],
+              'foo', 'bar', 'baz', 'qux')
+        check(['--configmap=qux', '--buckets=baz', '--input=bar', '--output-dir=foo'],
+              'foo', 'bar', 'baz', 'qux')
 
     def test_failure_class(self):
         for passed, failed, expected in [
@@ -192,6 +202,17 @@ class GenHtmlTest(unittest.TestCase):
         prefixes = gen_html.load_prefixes(StringIO.StringIO(data))
         self.assertEquals(prefixes['gs://bucket/'], 'bucket_prefix')
 
+    def test_load_configmap(self):
+        temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-configmap-')
+        try:
+            configmap_yaml = os.path.join(temp_dir, 'configs.yaml')
+            with open(configmap_yaml, 'w') as buf:
+                yaml.dump(TEST_CONFIGMAP_DATA, buf)
+            jobs = gen_html.load_blocking_jobs(configmap_yaml)
+            self.assertListEqual(jobs, ['ci-job-one', 'ci-job-two'])
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_main(self):
         """Test main() creates pages."""
         temp_dir = tempfile.mkdtemp(prefix='kube-test-hist-')
@@ -202,7 +223,10 @@ class GenHtmlTest(unittest.TestCase):
             buckets_yaml = os.path.join(temp_dir, 'buckets.yaml')
             with open(buckets_yaml, 'w') as buf:
                 yaml.dump(TEST_BUCKETS_DATA, buf)
-            gen_html.main(tests_json, buckets_yaml, temp_dir)
+            configmap_yaml = os.path.join(temp_dir, 'configs.yaml')
+            with open(configmap_yaml, 'w') as buf:
+                yaml.dump(TEST_CONFIGMAP_DATA, buf)
+            gen_html.main(tests_json, buckets_yaml, temp_dir, configmap_yaml)
             for page in (
                     'index',
                     'suite-kubernetes-release',

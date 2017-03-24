@@ -9,7 +9,9 @@ data:
   config.project: kubernetes
   # Make sure approval-handler and blunderbuss run before submit-queue.
   # Otherwise it's going to take an extra-cycle to detect the label change.
-  config.pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
+  # Run blunderbuss before approval-handler, so that we can suggest approvers
+  # based on assigned reviewer.
+  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest
   config.state: open
   config.token-file: /etc/secret-volume/token
   config.loop-period: 20s
@@ -34,13 +36,13 @@ data:
     ci-kubernetes-bazel-build,\
     ci-kubernetes-bazel-test,\
     ci-kubernetes-cross-build,\
-    ci-kubernetes-e2e-aws,\
     ci-kubernetes-e2e-garbage-gci,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
     ci-kubernetes-e2e-gce-scalability,\
     ci-kubernetes-e2e-gce-serial,\
+    ci-kubernetes-e2e-gce-taint-evict,\
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
     ci-kubernetes-e2e-gci-gce-es-logging,\
@@ -49,11 +51,11 @@ data:
     ci-kubernetes-e2e-gci-gce-federation,\
     ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-e2e-gci-gce-kubenet,\
-    ci-kubernetes-e2e-gci-gce-petset,\
     ci-kubernetes-e2e-gci-gce-proto,\
     ci-kubernetes-e2e-gci-gce-reboot,\
     ci-kubernetes-e2e-gci-gce-scalability,\
     ci-kubernetes-e2e-gci-gce-serial,\
+    ci-kubernetes-e2e-gci-gce-statefulset,\
     ci-kubernetes-e2e-gci-gke-alpha-features,\
     ci-kubernetes-e2e-gci-gke-autoscaling,\
     ci-kubernetes-e2e-gci-gke-ingress,\
@@ -69,15 +71,17 @@ data:
     ci-kubernetes-e2e-gci-gke-subnet,\
     ci-kubernetes-e2e-gci-gke-test,\
     ci-kubernetes-e2e-gci-gke-updown,\
-    ci-kubernetes-e2e-cri-gce,\
-    ci-kubernetes-e2e-cri-gce-slow,\
-    ci-kubernetes-e2e-cri-gke,\
-    ci-kubernetes-e2e-cri-gke-slow,\
+    ci-kubernetes-e2e-gci-gke,\
+    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-gke-large-cluster,\
     ci-kubernetes-e2e-gke-serial,\
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
     ci-kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-kops-aws-slow,\
+    ci-kubernetes-e2e-kops-aws-serial,\
+    ci-kubernetes-e2e-kops-aws-release-1.5,\
+    ci-kubernetes-e2e-kops-aws-release-1.6,\
     ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-kubemark-5-gce,\
     ci-kubernetes-node-kubelet-serial,\
@@ -96,8 +100,6 @@ data:
     ci-kubernetes-e2e-gci-gce,\
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gce-ingress,\
-    ci-kubernetes-e2e-gci-gke,\
-    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\

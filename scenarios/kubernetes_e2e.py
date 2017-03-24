@@ -21,6 +21,7 @@
 
 import argparse
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -33,16 +34,16 @@ def test_infra(*paths):
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
 
 
-def check_output(*cmd):
-    """Log and run the command, return output, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
-    return subprocess.check_output(cmd)
-
-
 def check(*cmd):
     """Log and run the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
+
+
+def check_output(*cmd):
+    """Log and run the command, raising on errors, return output"""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
 
 
 def check_env(env, *cmd):
@@ -90,10 +91,20 @@ class LocalMode(object):
                         continue
                     self.env_files.append(self.parse_env(line))
 
+    def add_aws_cred(self, priv, pub, cred):
+        """Sets aws keys and credentials."""
+        self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
+        self.add_environment('JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub)
+        self.add_environment('JENKINS_AWS_CREDENTIALS_FILE=%s' % cred)
+
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
-        gce_ssh = '%s/.ssh/google_compute_engine' % self.workspace
-        gce_pub = '%s/.ssh/google_compute_engine.pub' % self.workspace
+        ssh_dir = '%s/.ssh' % self.workspace
+        if not os.path.isdir(ssh_dir):
+            os.makedirs(ssh_dir)
+
+        gce_ssh = '%s/google_compute_engine' % ssh_dir
+        gce_pub = '%s/google_compute_engine.pub' % ssh_dir
         shutil.copy(priv, gce_ssh)
         shutil.copy(pub, gce_pub)
         self.add_environment(
@@ -108,7 +119,11 @@ class LocalMode(object):
     @property
     def runner(self):
         """Finds the best version of e2e-runner.sh."""
-        options = ['e2e-runner.sh', test_infra('jenkins/e2e-image/e2e-runner.sh')]
+        options = [
+          os.path.join(self.workspace, 'e2e-runner.sh'),
+          '/workspace/e2e-runner.sh',
+          test_infra('jenkins/e2e-image/e2e-runner.sh')
+        ]
         for path in options:
             if os.path.isfile(path):
                 return path
@@ -116,25 +131,36 @@ class LocalMode(object):
 
 
     def install_prerequisites(self):
-        """Copies upload-to-gcs and kubetest if needed."""
+        """Copies kubetest if needed."""
         parent = os.path.dirname(self.runner)
-        if not os.path.isfile(os.path.join(parent, 'upload-to-gcs.sh')):
-            shutil.copy(
-                test_infra('../kubernetes/hack/jenkins/upload-to-gcs.sh'),
-                os.path.join(parent, 'upload-to-gcs.sh'))
         if not os.path.isfile(os.path.join(parent, 'kubetest')):
+            print >>sys.stderr, 'Cannot find kubetest in %s, will install from test-infra' % parent
             check('go', 'install', 'k8s.io/test-infra/kubetest')
             shutil.copy(
                 os.path.expandvars('${GOPATH}/bin/kubetest'),
                 os.path.join(parent, 'kubetest'))
 
-    def start(self):
+    def add_k8s(self, *a, **kw):
+        """Add specified k8s.io repos (noop)."""
+        pass
+
+    def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
+        print >>sys.stderr, 'starts with local mode'
         env = {}
         env.update(self.env_files)
         env.update(self.env)
         self.install_prerequisites()
-        check_env(env, self.runner)
+        # Do not interfere with the local project
+        project = env.get('PROJECT')
+        if project:
+            try:
+                check('gcloud', 'config', 'set', 'project', env['PROJECT'])
+            except subprocess.CalledProcessError:
+                print >>sys.stderr, 'Fail to set project %r', project
+        else:
+            print >>sys.stderr, 'PROJECT not set in job, will use local project'
+        check_env(env, self.runner, *args)
 
 
 class DockerMode(object):
@@ -174,6 +200,24 @@ class DockerMode(object):
         for env_file in env_files:
             self.cmd.extend(['--env-file', test_infra(env_file)])
 
+    def add_k8s(self, k8s, *repos):
+        """Add the specified k8s.io repos into container."""
+        for repo in repos:
+            self.cmd.extend([
+                '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
+        self.cmd.extend(['-v', '%s/release:/go/src/k8s.io/release' % k8s])
+
+    def add_aws_cred(self, priv, pub, cred):
+        """Mounts aws keys/creds inside the container."""
+        aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+        aws_pub = '%s.pub' % aws_ssh
+        aws_cred = '/workspace/.aws/credentials'
+
+        self.cmd.extend([
+          '-v', '%s:%s:ro' % (priv, aws_ssh),
+          '-v', '%s:%s:ro' % (pub, aws_pub),
+          '-v', '%s:%s:ro' % (cred, aws_cred),
+        ])
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
@@ -193,12 +237,15 @@ class DockerMode(object):
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
 
-    def start(self):
+    def start(self, args):
         """Runs kubekins."""
-        self.cmd.append(kubekins(self.tag))
+        print >>sys.stderr, 'starts with docker mode'
+        cmd = list(self.cmd)
+        cmd.append(kubekins(self.tag))
+        cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
-        check(*self.cmd)
+        check(*cmd)
 
     def sig_handler(self, _signo, _frame):
         """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
@@ -208,6 +255,8 @@ class DockerMode(object):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
+    # pylint: disable=too-many-branches
+
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
     # --env-file FOO=a --env-file FOO=b -> FOO=b
@@ -225,7 +274,8 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        mode = DockerMode(container, workspace, args.docker_in_docker, args.tag, args.mount_paths)
+        sudo = args.docker_in_docker or args.build
+        mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:
@@ -233,11 +283,59 @@ def main(args):
     if args.env_file:
         mode.add_files(args.env_file)
 
+    if args.aws:
+        # Enforce aws credential/keys exists
+        for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
+            if not os.path.isfile(os.path.expandvars(path)):
+                raise IOError(path, os.path.expandvars(path))
+        mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
+
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     if args.service_account:
         mode.add_service_account(args.service_account)
+
+    runner_args = []
+    if args.build:
+        runner_args.append('--build')
+        k8s = os.getcwd()
+        if not os.path.basename(k8s) == 'kubernetes':
+            raise ValueError(k8s)
+        mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
+    if args.stage:
+        runner_args.append('--stage=%s' % args.stage)
+    if args.stage_suffix:
+        runner_args.append('--stage-suffix=%s' % args.stage_suffix)
+    if args.multiple_federations:
+        runner_args.append('--multiple-federations')
+
+    cluster = args.cluster or 'e2e-gce-%s-%s' % (
+        os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
+
+    if args.kubeadm:
+        # Not from Jenkins
+        cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
+
+        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
+        # current working directory at the repository root. Grab the SCM_REVISION so we
+        # can use the .debs built during the bazel-build job that should have already
+        # succeeded.
+        status = re.search(
+            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
+            check_output('hack/print-workspace-status.sh')
+        )
+        if not status:
+            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
+
+        opt = '--deployment kubernetes-anywhere' \
+            ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+            ' --kubernetes-anywhere-phase2-provider kubeadm' \
+            ' --kubernetes-anywhere-cluster %s' \
+            ' --kubernetes-anywhere-kubeadm-version' \
+            ' gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
+            # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
+        mode.add_environment('E2E_OPT=%s' % opt)
 
     mode.add_environment(
       # Boilerplate envs
@@ -249,22 +347,23 @@ def main(args):
       'E2E_UP=%s' % args.up,
       'E2E_TEST=%s' % args.test,
       'E2E_DOWN=%s' % args.down,
-      'E2E_NAME=%s' % args.cluster,
+      'E2E_NAME=%s' % cluster,
       # AWS
-      'KUBE_AWS_INSTANCE_PREFIX=%s' % args.cluster,
+      'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
       # GCE
-      'INSTANCE_PREFIX=%s' % args.cluster,
-      'KUBE_GCE_NETWORK=%s' % args.cluster,
-      'KUBE_GCE_INSTANCE_PREFIX=%s' % args.cluster,
+      'INSTANCE_PREFIX=%s' % cluster,
+      'KUBE_GCE_NETWORK=%s' % cluster,
+      'KUBE_GCE_INSTANCE_PREFIX=%s' % cluster,
       # GKE
-      'CLUSTER_NAME=%s' % args.cluster,
-      'KUBE_GKE_NETWORK=%s' % args.cluster,
+      'CLUSTER_NAME=%s' % cluster,
+      'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
     # env blacklist.
     # TODO(krzyzacy) change this to a whitelist
     docker_env_ignore = [
       'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
       'GOROOT',
       'HOME',
       'PATH',
@@ -281,52 +380,74 @@ def main(args):
     if args.soak_test and os.environ.get('JOB_NAME'):
         mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
 
-    mode.start()
+    mode.start(runner_args)
 
-
-
-if __name__ == '__main__':
-
-    PARSER = argparse.ArgumentParser()
-
-    PARSER.add_argument(
+def create_parser():
+    """Create argparser."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         '--mode', default='docker', choices=['local', 'docker'])
-    PARSER.add_argument(
+    parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
 
-    PARSER.add_argument(
+    parser.add_argument(
+        '--aws', action='store_true', help='E2E job runs in aws')
+    parser.add_argument(
+        '--aws-ssh',
+        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        help='Path to private aws ssh keys')
+    parser.add_argument(
+        '--aws-pub',
+        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        help='Path to pub aws ssh key')
+    parser.add_argument(
+        '--aws-cred',
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        help='Path to aws credential file')
+    parser.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
         help='Path to .ssh/google_compute_engine keys')
-    PARSER.add_argument(
+    parser.add_argument(
         '--gce-pub',
         default=os.environ.get('JENKINS_GCE_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub gce ssh key')
-    PARSER.add_argument(
+    parser.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
-    PARSER.add_argument(
+    parser.add_argument(
         '--mount-paths',
         default=[],
         nargs='*',
         help='Paths that should be mounted within the docker container in the form local:remote')
-
     # Assume we're upping, testing, and downing a cluster by default
-    PARSER.add_argument(
+    parser.add_argument(
+        '--build', action='store_true', help='Build kubernetes binaries if set')
+    parser.add_argument(
+        '--stage', help='Stage binaries to gs:// path if set')
+    parser.add_argument(
+        '--stage-suffix', help='Append suffix to staged version if set')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
-    PARSER.add_argument(
+    parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
-    PARSER.add_argument(
+    parser.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
-    PARSER.add_argument(
+    parser.add_argument(
+        '--kubeadm', action='store_true', help='If the test is a kubeadm job')
+    parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
-    PARSER.add_argument(
-        '--tag', default='v20170224-0d598e77', help='Use a specific kubekins-e2e tag if set')
-    PARSER.add_argument(
+    parser.add_argument(
+        '--tag', default='v20170318-ea026eaa', help='Use a specific kubekins-e2e tag if set')
+    parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
-    PARSER.add_argument(
+    parser.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
-    ARGS = PARSER.parse_args()
+    parser.add_argument(
+        '--multiple-federations', default=False, action='store_true',
+        help='If we need to run multiple federation control planes in parallel')
+    return parser
 
-    main(ARGS)
+if __name__ == '__main__':
+    main(create_parser().parse_args())

@@ -36,6 +36,11 @@ collects test results from the last 24 hours. It is updated hourly by the
 scripts under `jenkins/test-history`.
 * [Gubernator](https://k8s-gubernator.appspot.com/) is a Google App Engine site
 that parses and presents the results from individual test jobs.
+* [Prow](https://prow.k8s.io) is the system that handles GitHub events and commands for Kubernetes.
+It also has separate dashboards show results for [postsubmit jobs](https://prow.k8s.io/?type=postsubmit) 
+and [periodic jobs](https://prow.k8s.io/?type=periodic).
+* [Triage Dashboard](https://go.k8s.io/triage) shows occurance of each failing
+test entry among all the running jobs.
 
 ## Federated Testing
 

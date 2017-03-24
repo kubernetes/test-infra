@@ -3,6 +3,7 @@ var repos = {};
 var jobs = {};
 var authors = {};
 var pulls = {};
+var states = {};
 
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     var match = RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
@@ -26,11 +27,12 @@ window.onload = function() {
         if (allBuilds[i].type === "pr") {
             authors[allBuilds[i].author] = true;
             pulls[allBuilds[i].number] = true;
+            states[allBuilds[i].state] = true;
         }
     }
 
     addOptions(types, "type");
-    var rs = Array.from(Object.keys(repos)).sort();
+    var rs = Array.from(Object.keys(repos)).filter(function(r) { return r !== "/"; }).sort();
     addOptions(rs, "repo");
     var js = Array.from(Object.keys(jobs)).sort();
     addOptions(js, "job");
@@ -42,6 +44,8 @@ window.onload = function() {
         return parseInt(a) - parseInt(b);
     });
     addOptions(ps, "pull");
+    var ss = Array.from(Object.keys(states)).sort();
+    addOptions(ss, "state");
 
     redraw();
 };
@@ -81,6 +85,7 @@ function redraw() {
     var pullSel = document.getElementById("pull")
     var authorSel = document.getElementById("author")
     var jobSel = document.getElementById("job")
+    var stateSel = document.getElementById("state")
 
     if (window.history && window.history.replaceState !== undefined) {
         var args = [];
@@ -93,6 +98,8 @@ function redraw() {
         if (at !== "") args.push("author=" + at);
         var jt = encodedText(jobSel);
         if (jt !== "") args.push("job=" + jt);
+        var st = encodedText(stateSel);
+        if (st !== "") args.push("state=" + st);
         if (args.length > 0) {
             history.replaceState(null, "", "/?" + args.join('&'));
         } else {
@@ -108,6 +115,7 @@ function redraw() {
         if (build.type !== "batch" && selectedType === "batch") continue;
 
         if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
+        if (!equalSelected(stateSel, build.state)) continue;
         if (!equalSelected(jobSel, build.job)) continue;
         if (build.type === "pr") {
             if (!equalSelected(pullSel, build.number)) continue;

@@ -1,26 +1,32 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: transform
+  name: transform-${PROJECT}-${GH_ORGANIZATION}-${GH_REPOSITORY}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: transform
+        project: ${PROJECT}
+        gh-organization: ${GH_ORGANIZATION}
+        gh-repository: ${GH_REPOSITORY}
     spec:
       containers:
       - name: transform
         args:
-        - --repository=kubernetes/kubernetes
+        - --repository=${GH_ORGANIZATION}/${GH_REPOSITORY}
         - --stderrthreshold=0
-        - --host=sqlproxy-service
-        - --influx-host=http://influxdb-service:8086
+        - --host=sqlproxy
+        - --influx-host=http://influxdb-${PROJECT}:8086
         - --influx-password=$(INFLUXDB_ROOT_PWD)
-        image: gcr.io/google-containers/github-transform:v20170210-095655
+        image: gcr.io/apelisse-test/github-transform:v20170303-213259
+        resources:
+          requests:
+            cpu: 0m
         env:
         - name: INFLUXDB_ROOT_PWD
           valueFrom:
             secretKeyRef:
-              name: influxdb
+              name: influxdb-${PROJECT}
               key: rootpassword

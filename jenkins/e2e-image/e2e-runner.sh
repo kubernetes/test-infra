@@ -20,13 +20,16 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
 # Have cmd/e2e run by goe2e.sh generate JUnit report in ${WORKSPACE}/junit*.xml
 ARTIFACTS=${WORKSPACE}/_artifacts
 mkdir -p ${ARTIFACTS}
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
-JENKINS_SOAK_PREFIX="gs://kubernetes-jenkins/soak/${JOB_NAME}"
+: ${JENKINS_SOAK_PREFIX:="gs://kubernetes-jenkins/soak/${JOB_NAME}"}
+: ${JENKINS_FEDERATION_PREFIX:="gs://kubernetes-jenkins/federation/${JOB_NAME}"}
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -40,6 +43,11 @@ echo "--------------------------------------------------------------------------
 # (since they will be owned by root on the host).
 trap "chmod -R o+r '${ARTIFACTS}'" EXIT SIGINT SIGTERM
 export E2E_REPORT_DIR=${ARTIFACTS}
+
+if [[ "${FEDERATION:-}" == "true" ]]; then
+  FEDERATION_UP="${FEDERATION_UP:-true}"
+  FEDERATION_DOWN="${FEDERATION_DOWN:-true}"
+fi
 
 e2e_go_args=( \
   -v \
@@ -55,7 +63,11 @@ e2e_go_args=( \
 # For upgrades, PUBLISHED_SKEW should be a new release than PUBLISHED.
 if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
   e2e_go_args+=(--extract="${JENKINS_PUBLISHED_SKEW_VERSION}")
-  if [[ "${JENKINS_USE_SKEW_TESTS:-}" != "true" ]]; then
+  # Assume JENKINS_USE_SKEW_KUBECTL == true for backward compatibility
+  : ${JENKINS_USE_SKEW_KUBECTL:=true}
+  if [[ "${JENKINS_USE_SKEW_TESTS:-}" == "true" ]]; then
+    e2e_go_args+=(--skew)  # Get kubectl as well as test code from kubernetes_skew
+  elif [[ "${JENKINS_USE_SKEW_KUBECTL}" == "true" ]]; then
     # Append kubectl-path of skewed kubectl to test args, since we always
     # want that to use the skewed kubectl version:
     #  - for upgrade jobs, we want kubectl to be at the same version as
@@ -63,8 +75,6 @@ if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
     #  - for client skew tests, we want to use the skewed kubectl
     #    (that's what we're testing).
     GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
-  else
-    e2e_go_args+=(--skew)  # Get kubectl as well as test code from kubernetes_skew
   fi
 fi
 
@@ -91,11 +101,24 @@ if [[ "${JENKINS_SOAK_MODE:-}" == "y" ]]; then
   # In soak mode we sync cluster state to gcs.
   # If we --up a cluster, we save the kubecfg and version info to gcs.
   # Otherwise we load kubecfg and version info from gcs.
-  #e2e_go_args+=(--save="gs://${JENKINS_SOAK_PREFIX}")
-  # TODO FIX ME DO NOT SUBMIT AAAAAAAAAAAAAAAAAAA
-  e2e_go_args+=(--save="gs://fejternetes/soak")
+  e2e_go_args+=(--save="${JENKINS_SOAK_PREFIX}")
+elif [[ "${FEDERATION_UP:-}" != "true" && -n "${FEDERATION_CLUSTERS:-}" ]]; then
+  # If we are only deploying federated clusters without the federation control plane,
+  # then the kubeconfig for these clusters will be required while deploying the federation
+  # control plane. So we persist the kubeconfig in GCS for later use.
+  e2e_go_args+=(--save="${JENKINS_FEDERATION_PREFIX}")
+elif [[ "${FEDERATION_UP:-}" == "true" && -z "${FEDERATION_CLUSTERS:-}" ]]; then
+  # If we are only deploying a federation control plane without the federated
+  # clusters, then we assume that the federated clusters are already deployed
+  # and their kubeconfig is stored in GCS. We copy that kubeconfig from GCS
+  # to the local machine to operate on those clusters.
+  #
+  # Note: This elif block and the previous one are essentially the same. The
+  # real logic that decides whether this is a store or a load is in kubetest.
+  # We could have merged the two elif blocks. However, we are keeping them
+  # separate for clarity.
+  e2e_go_args+=(--save="${JENKINS_FEDERATION_PREFIX}")
 fi
-
 
 if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
   case "${KUBERNETES_PROVIDER}" in
@@ -103,11 +126,6 @@ if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
       e2e_go_args+=(--check-leaked-resources)
       ;;
   esac
-fi
-
-if [[ "${FEDERATION:-}" == "true" ]]; then
-  FEDERATION_UP="${FEDERATION_UP:-true}"
-  FEDERATION_DOWN="${FEDERATION_DOWN:-true}"
 fi
 
 if [[ "${E2E_UP:-}" == "true" ]] || [[ "${FEDERATION_UP:-}" == "true" ]]; then
@@ -142,7 +160,7 @@ if [[ "${USE_KUBEMARK:-}" == "true" ]]; then
 fi
 
 if [[ "${CHARTS_TEST:-}" == "true" ]]; then
-  e2e_go_args+=("--charts=true")
+  e2e_go_args+=(--charts=true)
 fi
 
 if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
@@ -158,4 +176,4 @@ if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
   e2e_go_args+=(--publish="gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt")
 fi
 
-./kubetest ${E2E_OPT:-} "${e2e_go_args[@]}"
+kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"

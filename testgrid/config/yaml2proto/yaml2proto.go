@@ -19,14 +19,28 @@ package yaml2proto
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
+	"io"
 
 	"github.com/golang/protobuf/proto"
+	"gopkg.in/yaml.v2"
 	"k8s.io/test-infra/testgrid/config/pb"
 )
 
+type Config struct {
+	config        *config.Configuration
+	defaultConfig *config.DefaultConfiguration
+}
+
+type MissingFieldError struct {
+	Field string
+}
+
+func (e MissingFieldError) Error() string {
+	return fmt.Sprintf("field missing or unset: %s", e.Field)
+}
+
 // Set up unfilled field in a TestGroup using the default TestGroup
-func ValidateTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *config.TestGroup) {
+func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *config.TestGroup) {
 	if currentTestGroup.DaysOfResults == 0 {
 		currentTestGroup.DaysOfResults = defaultTestGroup.DaysOfResults
 	}
@@ -50,7 +64,7 @@ func ValidateTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *con
 }
 
 // Set up unfilled field in a DashboardTab using the default DashboardTab
-func ValidateDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
+func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
 	if currentTab.BugComponent == 0 {
 		currentTab.BugComponent = defaultTab.BugComponent
 	}
@@ -84,54 +98,109 @@ func ValidateDashboardtab(currentTab *config.DashboardTab, defaultTab *config.Da
 	}
 }
 
-func Unmarshal(yamlData []byte, out interface{}) error {
-	// A Wrapper for yaml.Unmarshal
-	return yaml.Unmarshal(yamlData, out)
-}
-
-func Yaml2Proto(yamlData []byte) ([]byte, error) {
-
-	// Unmarshal yaml to config
-	curConfig := &config.Configuration{}
-	defaultConfig := &config.DefaultConfiguration{}
-	err := Unmarshal(yamlData, &curConfig)
+// updateDefaults reads any default configuration from yamlData and updates the
+// defaultConfig in c.
+//
+// Returns an error if the defaultConfig remains unset.
+func (c *Config) updateDefaults(yamlData []byte) error {
+	newDefaults := &config.DefaultConfiguration{}
+	err := yaml.Unmarshal(yamlData, newDefaults)
 	if err != nil {
-		fmt.Printf("Unmarshal Error for config : %v\n", err)
-		return nil, err
+		return err
 	}
 
-	err = Unmarshal(yamlData, &defaultConfig)
-	if err != nil {
-		fmt.Printf("Unmarshal Error for defaultconfig : %v\n", err)
-		return nil, err
-	}
-
-	// Reject empty yaml ( No testgroups or dashboards )
-	if len(curConfig.TestGroups) == 0 {
-		return nil, errors.New("Invalid Yaml : No Valid Testgroups")
-	}
-
-	if len(curConfig.Dashboards) == 0 {
-		return nil, errors.New("Invalid Yaml : No Valid Dashboards")
-	}
-
-	if defaultConfig.DefaultTestGroup == nil || defaultConfig.DefaultDashboardTab == nil {
-		return nil, errors.New("Please Include The Default Testgroup & Dashboardtab")
-	}
-
-	// validating testgroups
-	for _, testgroup := range curConfig.TestGroups {
-		ValidateTestGroup(testgroup, defaultConfig.DefaultTestGroup)
-	}
-
-	// validating dashboards
-	for _, dashboard := range curConfig.Dashboards {
-		// validate dashboard tabs
-		for _, dashboardtab := range dashboard.DashboardTab {
-			ValidateDashboardtab(dashboardtab, defaultConfig.DefaultDashboardTab)
+	if c.defaultConfig == nil {
+		c.defaultConfig = newDefaults
+	} else {
+		if newDefaults.DefaultTestGroup != nil {
+			c.defaultConfig.DefaultTestGroup = newDefaults.DefaultTestGroup
+		}
+		if newDefaults.DefaultDashboardTab != nil {
+			c.defaultConfig.DefaultDashboardTab = newDefaults.DefaultDashboardTab
 		}
 	}
 
-	// Marshal config to protobuf
-	return proto.Marshal(curConfig)
+	if c.defaultConfig.DefaultTestGroup == nil {
+		return MissingFieldError{"DefaultTestGroup"}
+	}
+	if c.defaultConfig.DefaultDashboardTab == nil {
+		return MissingFieldError{"DefaultDashboardTab"}
+	}
+
+	return nil
+}
+
+// Update reads the config in yamlData and updates the config in c.
+// If yamlData does not contain any defaults, the defaults from a
+// previous call to Update are used instead.
+func (c *Config) Update(yamlData []byte) error {
+	if err := c.updateDefaults(yamlData); err != nil {
+		return err
+	}
+
+	curConfig := &config.Configuration{}
+	if err := yaml.Unmarshal(yamlData, curConfig); err != nil {
+		return err
+	}
+
+	if c.config == nil {
+		c.config = &config.Configuration{}
+	}
+
+	for _, testgroup := range curConfig.TestGroups {
+		ReconcileTestGroup(testgroup, c.defaultConfig.DefaultTestGroup)
+		c.config.TestGroups = append(c.config.TestGroups, testgroup)
+	}
+
+	for _, dashboard := range curConfig.Dashboards {
+		// validate dashboard tabs
+		for _, dashboardtab := range dashboard.DashboardTab {
+			ReconcileDashboardtab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
+		}
+		c.config.Dashboards = append(c.config.Dashboards, dashboard)
+	}
+
+	return nil
+}
+
+// validate checks that a configuration is well-formed, having test groups and dashboards set.
+func (c *Config) validate() error {
+	if c.config == nil {
+		return errors.New("Configuration unset")
+	}
+	if len(c.config.TestGroups) == 0 {
+		return MissingFieldError{"TestGroups"}
+	}
+	if len(c.config.Dashboards) == 0 {
+		return MissingFieldError{"Dashboards"}
+	}
+
+	return nil
+}
+
+// MarshalText writes a text version of the parsed configuration to the supplied io.Writer.
+// Returns an error if config is invalid or writing failed.
+func (c *Config) MarshalText(w io.Writer) error {
+	if err := c.validate(); err != nil {
+		return err
+	}
+	return proto.MarshalText(w, c.config)
+}
+
+// MarshalBytes returns the wire-encoded protobuf data for the parsed configuration.
+// Returns an error if config is invalid or encoding failed.
+func (c *Config) MarshalBytes() ([]byte, error) {
+	if err := c.validate(); err != nil {
+		return nil, err
+	}
+	return proto.Marshal(c.config)
+}
+
+// Raw returns the raw protocol buffer for the parsed configuration after validation.
+// Returns an error if validation fails.
+func (c *Config) Raw() (*config.Configuration, error) {
+	if err := c.validate(); err != nil {
+		return nil, err
+	}
+	return c.config, nil
 }

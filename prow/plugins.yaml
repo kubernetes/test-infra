@@ -20,8 +20,10 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - trigger
+- label
 
 kubernetes:
+- assign
 - cla
 - close
 - heart
@@ -30,3 +32,6 @@ kubernetes:
 
 kubernetes-incubator:
 - cla
+
+kubernetes-security/kubernetes:
+- trigger

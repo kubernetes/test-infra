@@ -17,31 +17,20 @@ limitations under the License.
 package mungers
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"math/rand"
-	"path/filepath"
-	"sort"
-	"strings"
-
-	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/approvers"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
 )
 
 const (
-	approvalNotificationName = "ApprovalNotifier"
-	approveCommand           = "APPROVE"
-	lgtmCommand              = "LGTM"
-	cancel                   = "cancel"
-	ownersFileName           = "OWNERS"
+	approveCommand = "APPROVE"
+	lgtmCommand    = "LGTM"
+	cancel         = "cancel"
 )
 
 // ApprovalHandler will try to add "approved" label once
@@ -91,33 +80,54 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	// keep the suggest approvers the same for this PR (unless new files added)
-	rand.Seed(int64(*obj.Issue.Number))
+	filenames := []string{}
 	files, ok := obj.ListFiles()
 	if !ok {
 		return
 	}
-
+	for _, fn := range files {
+		filenames = append(filenames, *fn.Filename)
+	}
 	comments, ok := obj.ListComments()
 	if !ok {
 		return
 	}
 
-	var prAuthor *string = nil
+	approversHandler := approvers.NewApprovers(
+		approvers.NewOwners(
+			filenames,
+			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
+			int64(*obj.Issue.Number)))
+	addApprovers(&approversHandler, comments)
+	// Author implicitly approves their own PR
 	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
-		prAuthor = obj.Issue.User.Login
+		url := ""
+		if obj.Issue.HTMLURL != nil {
+			// Append extra # so that it doesn't reload the page.
+			url = *obj.Issue.HTMLURL + "#"
+		}
+		approversHandler.AddAuthorSelfApprover(*obj.Issue.User.Login, url)
 	}
 
-	approverSet := createApproverSet(comments, prAuthor)
-	ownersMap := h.getApprovedOwners(files, approverSet)
-
-	isFullyApproved := prFullyApproved(ownersMap)
-
-	if err := h.updateNotification(obj, ownersMap, approverSet, isFullyApproved); err != nil {
-		return
+	for _, user := range obj.Issue.Assignees {
+		if user != nil && user.Login != nil {
+			approversHandler.AddAssignees(*user.Login)
+		}
 	}
 
-	if !isFullyApproved {
+	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
+
+	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()
+	latestApprove := getApproveComments(comments).GetLast()
+	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, approversHandler)
+	if newMessage != nil {
+		if latestNotification != nil {
+			obj.DeleteComment(latestNotification)
+		}
+		obj.WriteComment(*newMessage)
+	}
+
+	if !approversHandler.IsApproved() {
 		if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
 			obj.RemoveLabel(approvedLabel)
 		}
@@ -128,15 +138,6 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		}
 	}
 
-}
-
-func prFullyApproved(ownersMap map[string]sets.String) bool {
-	for _, approverSet := range ownersMap {
-		if approverSet.Len() == 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func humanAddedApproved(obj *github.MungeObject) bool {
@@ -156,219 +157,24 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 func getApproveComments(comments []*githubapi.IssueComment) c.FilteredComments {
 	approverMatcher := c.CommandName(approveCommand)
 	lgtmMatcher := c.CommandName(lgtmLabel)
-	return c.FilterComments(comments, c.Or{approverMatcher, lgtmMatcher})
+	return c.FilterComments(comments, c.And{c.HumanActor(), c.Or{approverMatcher, lgtmMatcher}})
 }
 
-func (h *ApprovalHandler) updateNotification(obj *github.MungeObject, ownersMap map[string]sets.String, approverSet sets.String, isFullyApproved bool) error {
-	notificationMatcher := c.MungerNotificationName(approvalNotificationName)
-	comments, ok := obj.ListComments()
-	if !ok {
-		return fmt.Errorf("Unable to ListComments for %d", obj.Number())
-	}
-
-	notifications := c.FilterComments(comments, notificationMatcher)
-	latestNotification := notifications.GetLast()
-	if latestNotification == nil {
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
-		return obj.WriteComment(body)
-	}
-
-	latestApprove := getApproveComments(comments).GetLast()
-	if latestApprove == nil || latestApprove.CreatedAt == nil {
-		// there was already a bot notification and nothing has changed since
-		// or we wouldn't tell when the latestApproval occurred
+func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *githubapi.IssueComment, approversHandler approvers.Approvers) *string {
+	if latestNotification != nil && (latestApprove == nil || latestApprove.CreatedAt.Before(*latestNotification.CreatedAt)) {
+		// if we have an existing notification AND
+		// the latestApprove happened before we updated
+		// the notification, we do NOT need to update
 		return nil
 	}
-	if latestApprove.CreatedAt.After(*latestNotification.CreatedAt) {
-		// if someone approved since the last comment, we should update the comment
-		glog.Infof("Latest approve was after last time notified")
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
-		obj.DeleteComment(latestNotification)
-		return obj.WriteComment(body)
-	}
-	lastModified, ok := obj.LastModifiedTime()
-	if !ok {
-		return fmt.Errorf("Unable to get LastModifiedTime for %d", obj.Number())
-	}
-	if latestNotification.CreatedAt.Before(*lastModified) {
-		// the PR was modified After our last notification, so we should update the approvers notification
-		// i.e. People that have formerly approved haven't necessarily approved of new changes
-		glog.Infof("PR Modified After Last Notification")
-		body := h.getMessage(obj, ownersMap, approverSet, isFullyApproved)
-		obj.DeleteComment(latestNotification)
-		return obj.WriteComment(body)
-	}
-	return nil
+	return approvers.GetMessage(approversHandler, org, project)
 }
 
-func (h ApprovalHandler) unwrapAliases(ownerSet sets.String) sets.String {
-	aliases := h.features.Aliases
-	if aliases == nil || !aliases.IsEnabled {
-		return ownerSet
-	}
-	return aliases.Expand(ownerSet)
-}
-
-func getRandomizedKeys(approverOwnersfiles map[string]sets.String) []string {
-	sliceOfKeys := make([]string, 0, len(approverOwnersfiles))
-	for approver := range approverOwnersfiles {
-		sliceOfKeys = append(sliceOfKeys, approver)
-	}
-	sort.Strings(sliceOfKeys)
-	order := rand.Perm(len(approverOwnersfiles))
-	shuffledList := make([]string, 0, len(approverOwnersfiles))
-	for i := range sliceOfKeys {
-		shuffledList = append(shuffledList, sliceOfKeys[order[i]])
-	}
-	return shuffledList
-}
-
-// findPeopleToApprove Takes the Owners Files that Are Needed for the PR and chooses a good
-// subset of Approvers that are guaranteed to cover all of them (exact cover)
-// This is a greedy approximation and not guaranteed to find the minimum number of OWNERS
-func (h ApprovalHandler) findPeopleToApprove(ownersPaths sets.String) sets.String {
-
-	// approverCount contains a map: person -> set of relevant OWNERS file they are in
-	approverOwnersfiles := make(map[string]sets.String)
-	copyOfFiles := sets.NewString()
-	for ownersFile := range ownersPaths {
-		// LeafApprovers removes the last part of a path for dirs and files, so we append owners to the path
-		leafApprovers := h.unwrapAliases(h.features.Repos.LeafApprovers(filepath.Join(ownersFile, ownersFileName)))
-
-		if len(leafApprovers) == 0 {
-			glog.Warning(fmt.Sprintf("Couldn't find valid approvers for %v", filepath.Join(ownersFile, ownersFileName)))
-			continue
-		}
-		copyOfFiles.Insert(ownersFile)
-		for approver := range leafApprovers {
-			if _, ok := approverOwnersfiles[approver]; ok {
-				approverOwnersfiles[approver].Insert(ownersFile)
-			} else {
-				approverOwnersfiles[approver] = sets.NewString(ownersFile)
-			}
-		}
-	}
-	// it's weird if the suggested set of Approvers changes every time the comment is updated
-	// so deterministically set order (can't just sort since that may unfairly skew selection)
-	randomizedApprovers := getRandomizedKeys(approverOwnersfiles)
-
-	approverGroup := sets.NewString()
-	var bestPerson string
-	for copyOfFiles.Len() > 0 {
-		maxCovered := 0
-		for _, approver := range randomizedApprovers {
-			filesCanApprove := approverOwnersfiles[approver]
-			if filesCanApprove.Intersection(copyOfFiles).Len() > maxCovered {
-				maxCovered = len(filesCanApprove)
-				bestPerson = approver
-			}
-		}
-
-		approverGroup.Insert(bestPerson)
-		toDelete := sets.NewString()
-		// remove all files in the directories that our approver approved AND
-		// in the subdirectories that s/he approved.  HasPrefix finds subdirs
-		for fn := range copyOfFiles {
-			for approvedFile := range approverOwnersfiles[bestPerson] {
-				if strings.HasPrefix(fn, approvedFile) {
-					toDelete.Insert(fn)
-				}
-
-			}
-		}
-		copyOfFiles.Delete(toDelete.List()...)
-	}
-	return approverGroup
-}
-
-// removeSubdirs takes a list of directories as an input and returns a set of directories with all
-// subdirectories removed.  E.g. [/a,/a/b/c,/d/e,/d/e/f] -> [/a, /d/e]
-func removeSubdirs(dirList []string) sets.String {
-	toDel := sets.String{}
-	for i := 0; i < len(dirList)-1; i++ {
-		for j := i + 1; j < len(dirList); j++ {
-			// ex /a/b has prefix /a so if remove /a/b since its already covered
-			if strings.HasPrefix(dirList[i], dirList[j]) {
-				toDel.Insert(dirList[i])
-			} else if strings.HasPrefix(dirList[j], dirList[i]) {
-				toDel.Insert(dirList[j])
-			}
-		}
-	}
-	finalSet := sets.NewString(dirList...)
-	finalSet.Delete(toDel.List()...)
-	return finalSet
-}
-
-// getMessage returns the comment body that we want the approval-handler to display on PRs
-// The comment shows:
-// 	- a list of approvers files (and links) needed to get the PR approved
-// 	- a list of approvers files with strikethroughs that already have an approver's approval
-// 	- a suggested list of people from each OWNERS files that can fully approve the PR
-// 	- how an approver can indicate their approval
-// 	- how an approver can cancel their approval
-func (h *ApprovalHandler) getMessage(obj *github.MungeObject, ownersMap map[string]sets.String, alreadyApproved sets.String, isFullyApproved bool) string {
-	// sort the keys so we always display OWNERS files in same order
-	sliceOfKeys := make([]string, len(ownersMap))
-	i := 0
-	for path := range ownersMap {
-		sliceOfKeys[i] = path
-		i++
-	}
-	sort.Strings(sliceOfKeys)
-
-	unapprovedOwners := sets.NewString()
-	context := bytes.NewBufferString("")
-	if len(alreadyApproved) != 0 {
-		context.WriteString("The following people have approved this PR: ")
-		context.WriteString("*" + strings.Join(alreadyApproved.List(), ", ") + "*\n\n")
-	}
-
-	context.WriteString("Needs approval from an approver in each of these OWNERS Files:\n")
-	for _, path := range sliceOfKeys {
-		approverSet := ownersMap[path]
-		fullOwnersPath := filepath.Join(path, ownersFileName)
-		link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", obj.Org(), obj.Project(), fullOwnersPath)
-
-		if approverSet.Len() == 0 {
-			context.WriteString(fmt.Sprintf("- **[%s](%s)** \n", fullOwnersPath, link))
-			unapprovedOwners.Insert(path)
-		} else {
-			context.WriteString(fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(approverSet.List(), ",")))
-		}
-	}
-	context.WriteString("\n")
-	suggestedApprovers := h.findPeopleToApprove(sets.NewString(sliceOfKeys...))
-	toBeAssigned := suggestedApprovers.Difference(alreadyApproved)
-	if unapprovedOwners.Len() > 0 {
-		context.WriteString("We suggest the following people:\n")
-		context.WriteString("cc ")
-		for person := range toBeAssigned {
-			context.WriteString("@" + person + " ")
-		}
-	}
-	context.WriteString("\n You can indicate your approval by writing `/approve` in a comment")
-	context.WriteString("\n You can cancel your approval by writing `/approve cancel` in a comment")
-	title := "This PR is **NOT APPROVED**"
-	if isFullyApproved {
-		title = "This PR is **APPROVED**"
-	}
-	forMachine := map[string][]string{"approvers": toBeAssigned.List()}
-	bytes, err := json.Marshal(forMachine)
-	if err == nil {
-		context.WriteString(fmt.Sprintf("\n<!-- META=%s -->", bytes))
-	}
-	notif := c.Notification{approvalNotificationName, title, context.String()}
-	return notif.String()
-}
-
-// createApproverSet iterates through the list of comments on a PR
+// addApprovers iterates through the list of comments on a PR
 // and identifies all of the people that have said /approve and adds
-// them to the approverSet.  The function uses the latest approve or cancel comment
+// them to the Approvers.  The function uses the latest approve or cancel comment
 // to determine the Users intention
-func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) sets.String {
-	approverSet := sets.NewString()
-
+func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.IssueComment) {
 	approveComments := getApproveComments(comments)
 	for _, comment := range approveComments {
 		commands := c.ParseCommands(comment)
@@ -381,45 +187,26 @@ func createApproverSet(comments []*githubapi.IssueComment, prAuthor *string) set
 			}
 
 			if cmd.Arguments == cancel {
-				approverSet.Delete(*comment.User.Login)
+				approversHandler.RemoveApprover(*comment.User.Login)
 			} else {
-				approverSet.Insert(*comment.User.Login)
+				url := ""
+				if comment.HTMLURL != nil {
+					url = *comment.HTMLURL
+				}
+
+				if cmd.Name == approveCommand {
+					approversHandler.AddApprover(
+						*comment.User.Login,
+						url,
+					)
+				} else {
+					approversHandler.AddLGTMer(
+						*comment.User.Login,
+						url,
+					)
+				}
+
 			}
 		}
 	}
-
-	//prAuthor implicitly approves their own PR
-	if prAuthor != nil {
-		approverSet.Insert(*prAuthor)
-	}
-
-	return approverSet
-}
-
-// getApprovedOwners finds all the relevant OWNERS files for the PRs and identifies all the people from them
-// that have approved the PR.  For all files that have not been approved, it finds the minimum number of owners files
-// that cover all of them.  E.g. If /a/b/c.txt and /a/d.txt need approval, it will only indicate that an approval from
-// someone in /a/OWNERS is needed
-func (h ApprovalHandler) getApprovedOwners(files []*githubapi.CommitFile, approverSet sets.String) map[string]sets.String {
-	ownersApprovers := make(map[string]sets.String)
-	// TODO: go through the files starting at the top of the tree
-	needsApproval := sets.NewString()
-	for _, file := range files {
-		fileOwners := h.unwrapAliases(h.features.Repos.Approvers(*file.Filename))
-
-		ownersFile := h.features.Repos.FindOwnersForPath(*file.Filename)
-
-		hasApproved := fileOwners.Intersection(approverSet)
-		if len(hasApproved) != 0 {
-			ownersApprovers[ownersFile] = hasApproved
-		} else {
-			needsApproval.Insert(ownersFile)
-		}
-
-	}
-	needsApproval = removeSubdirs(needsApproval.List())
-	for fn := range needsApproval {
-		ownersApprovers[fn] = sets.NewString()
-	}
-	return ownersApprovers
 }

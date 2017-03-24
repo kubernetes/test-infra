@@ -38,7 +38,7 @@ type IssueCreation struct {
 type FirstComment struct {
 	DB     InfluxDatabase
 	last   time.Time
-	issues map[int]IssueCreation
+	issues map[string]IssueCreation
 }
 
 // NewFirstCommentPlugin initializes the plugin. Requires an
@@ -51,7 +51,7 @@ func NewFirstCommentPlugin(DB InfluxDatabase) *FirstComment {
 	return &FirstComment{
 		DB:     DB,
 		last:   last,
-		issues: make(map[int]IssueCreation),
+		issues: make(map[string]IssueCreation),
 	}
 }
 
@@ -77,7 +77,7 @@ func (m *FirstComment) ReceiveIssue(issue sql.Issue) error {
 // Process decides if the PR has received its first comment or LGTM.
 // If it already was "Pushed", then it's too late, we have processed the first event.
 // If it hasn't been pushed, and it's not initated by the author or a bot, we save the metric.
-func (m *FirstComment) Process(issueID int, author string, date time.Time) error {
+func (m *FirstComment) Process(issueID string, author string, date time.Time) error {
 	creation, ok := m.issues[issueID]
 	if !ok {
 		return nil

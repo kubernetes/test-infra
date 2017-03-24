@@ -11,7 +11,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "approval-handler_test.go",
         "assign-fixes_test.go",
         "assign-unassign-handler_test.go",
         "check-labels_test.go",
@@ -79,6 +78,7 @@ go_library(
         "old-test-getter.go",
         "path_label.go",
         "publisher.go",
+        "publisher_logger.go",
         "release-note-label.go",
         "size.go",
         "stale-green-ci.go",
@@ -91,6 +91,7 @@ go_library(
         "//mungegithub/admin:go_default_library",
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",
+        "//mungegithub/mungers/approvers:go_default_library",
         "//mungegithub/mungers/e2e:go_default_library",
         "//mungegithub/mungers/e2e/fake:go_default_library",
         "//mungegithub/mungers/flakesync:go_default_library",
@@ -107,9 +108,9 @@ go_library(
         "//vendor:github.com/prometheus/client_golang/prometheus",
         "//vendor:github.com/prometheus/client_golang/prometheus/promhttp",
         "//vendor:github.com/spf13/cobra",
+        "//vendor:golang.org/x/oauth2",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/clock",
-        "//vendor:k8s.io/kubernetes/pkg/util/errors",
         "//vendor:k8s.io/kubernetes/pkg/util/sets",
         "//vendor:k8s.io/kubernetes/pkg/util/yaml",
     ],
@@ -126,6 +127,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//mungegithub/mungers/approvers:all-srcs",
         "//mungegithub/mungers/e2e:all-srcs",
         "//mungegithub/mungers/flakesync:all-srcs",
         "//mungegithub/mungers/fsm:all-srcs",

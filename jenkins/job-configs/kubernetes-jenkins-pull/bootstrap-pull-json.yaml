@@ -1,0 +1,83 @@
+# Temporary, will switch boostrap-pull.yaml to use this
+# after validating it works
+
+- job-template:
+    name: 'pull-{jsonsuffix}'
+    concurrent: true
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    - throttle:
+        max-total: '{max-total}'
+        max-per-node: 2
+        option: project
+    - raw:
+        xml: |
+            <com.cloudbees.plugins.JobPrerequisites plugin="slave-prerequisites@1.0">
+                <script>docker version; gcloud version</script>
+                <interpreter>shell script</interpreter>
+            </com.cloudbees.plugins.JobPrerequisites>
+    parameters:
+    - string:
+        name: PULL_REFS
+    - string:
+        name: PULL_NUMBER
+    - string:
+        name: PULL_BASE_REF
+    # The test job tracks a run through the queue using the buildId parameter.
+    - string:
+        name: buildId
+    wrappers:
+    - e2e-credentials-binding
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - workspace-cleanup:
+        dirmatch: true
+        exclude:
+        - 'go/src/{repo-name}/.git/'
+        - 'test-infra/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    - timeout:
+        timeout: 90
+        fail: true
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' \
+            --job='{job-name}' \
+            --json \
+            --repo="{repo-name}=${{PULL_REFS}}" \
+            --repo='k8s.io/release' \
+            --root="${{GOPATH}}/src" \
+            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
+            --upload='gs://kubernetes-jenkins/pr-logs'
+- project:
+    name: bootstrap-pull-jobs-json
+    jobs:
+    - 'pull-{jsonsuffix}'
+    jsonsuffix:  # pull-<repo>-<suffix> is the expected format
+    - kubernetes-e2e-gce-canary:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-canary
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 75
+    - kubernetes-e2e-gke:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gke
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 75
+    - kubernetes-e2e-gke-gci:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gke-gci
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 75
+    - kubernetes-federation-e2e-gce:
+        max-total: 12
+        job-name: pull-kubernetes-federation-e2e-gce
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 110

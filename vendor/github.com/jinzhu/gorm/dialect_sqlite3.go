@@ -12,7 +12,6 @@ type sqlite3 struct {
 }
 
 func init() {
-	RegisterDialect("sqlite", &sqlite3{})
 	RegisterDialect("sqlite3", &sqlite3{})
 }
 
@@ -21,8 +20,8 @@ func (sqlite3) GetName() string {
 }
 
 // Get Data Type for Sqlite Dialect
-func (sqlite3) DataTypeOf(field *StructField) string {
-	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field)
+func (s *sqlite3) DataTypeOf(field *StructField) string {
+	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field, s)
 
 	if sqlType == "" {
 		switch dataValue.Kind() {
@@ -89,7 +88,7 @@ func (s sqlite3) HasColumn(tableName string, columnName string) bool {
 	return count > 0
 }
 
-func (s sqlite3) currentDatabase() (name string) {
+func (s sqlite3) CurrentDatabase() (name string) {
 	var (
 		ifaces   = make([]interface{}, 3)
 		pointers = make([]*string, 3)

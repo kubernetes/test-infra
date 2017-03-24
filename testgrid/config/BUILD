@@ -25,9 +25,8 @@ go_test(
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
-        "//testgrid/config/pb:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",
-        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:gopkg.in/yaml.v2",
     ],
 )
 

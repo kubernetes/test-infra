@@ -433,7 +433,7 @@ func (e *RealE2ETester) GCSWeakStable() bool {
 			continue
 		}
 
-		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is comming from the infrastructure
+		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is coming from the infrastructure
 		// Check results of previous two builds.
 		unstable := make([]int, 0)
 		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {

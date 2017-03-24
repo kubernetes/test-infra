@@ -20,12 +20,6 @@ set -o xtrace
 
 readonly testinfra="$(dirname "${0}")/.."
 
-# TODO(fejta): remove this
-if [[ "${PULL_BASE_REF:-}" == "release-1.0" || "${PULL_BASE_REF:-}" == "release-1.1" ]]; then
-  echo "PR GCE job disabled for legacy branches."
-  exit
-fi
-
 export KUBE_GCS_RELEASE_BUCKET="${KUBE_GCS_RELEASE_BUCKET:-kubernetes-release-pull}"
 export KUBE_GCS_RELEASE_SUFFIX="/${JOB_NAME}"
 export KUBE_GCS_UPDATE_LATEST=n

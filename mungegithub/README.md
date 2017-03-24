@@ -24,7 +24,7 @@ After successfully running the local binary one may build, test, and deploy in r
 - Store your personal access token in a plain text file named (token) in the mungegithub directory.
 - Run `APP=submit-queue; TARGET=<reponame>; make secret` to generate a local.secret.yaml.
 - Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/local.secret.yaml` to load the secret.
-- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pv.yaml` to create a persistent volume. (If you are running a local cluster, and not on GCP, use `mungegithub/submit-queue/pv-local.yaml` to create a persistent volume on your host. The file may need to be modified to match the expected name of the persistent volume by the deployment). 
+- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pv.yaml` to create a persistent volume. (If you are running a local cluster, and not on GCP, use `mungegithub/submit-queue/pv-local.yaml` to create a persistent volume on your host. The file may need to be modified to match the expected name of the persistent volume by the deployment).
 - Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pvc.yaml` to create a persistent volume claim.
 - Check that the persistent volume claim is bound by checking `kubectl --kubeconfig=... get pvc`.
 
@@ -44,7 +44,7 @@ the master branch (configmap, etc) reflects what is currently running.
 After this has successfully deployed to the test cluster in read-only mode, running in production involves running any required `kubectl config` commands to point to the production cluster, pushing a configmap if necessary, and then running:
 ```sh
 TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig READONLY=false make deploy
-``` 
+```
 
 ## About the mungers
 
@@ -76,9 +76,9 @@ A small amount of information about some of the individual mungers inside each o
 * cherrypick-queue - This is the web display of all PRs with the `cherrypick-candidate` label which a branch owner is likely to want to pay attention to.
 
 ### Instructions on running mungegithub locally with your own repository		
-	
+
 Sometimes we may want to run QA tests locally using the mungegithub binary. The steps to do this are as follows.		
-		
+
 * `cd` to the contrib/mungegithub directory.		
 * Run `go build` to compile the mungegithub binary.		
 * Running the binary is as simple as running `./mungegithub` and supplying the appropriate flags.		
@@ -88,7 +88,7 @@ Sometimes we may want to run QA tests locally using the mungegithub binary. The 
     * The `--dry-run=true` flag must be specified to ensure you're not posting comments accidentally.		
     * The `--repo-dir` should be pointed to /tmp if required.		
     * The `--www=submit-queue/www/` will start up the http server if specified with the submit-queue munger, and serve on localhost:8080.
-    
+
 ### Instructions on turning up a new submit-queue instance.
 
 The steps below make use of the utility cluster which runs the existing submit-queues.
@@ -101,7 +101,7 @@ The steps below make use of the utility cluster which runs the existing submit-q
      * The secret must be named `<TARGET>-github-token`.
      * The service must be named `<TARGET>-sq-status`.
 * Create a persistent disk named `<TARGET>-cache` on the utility cluster. It is typically 10G in size.
-* Switch context with kubectl to point to the utility cluster. 
+* Switch context with kubectl to point to the utility cluster.
 * Create the PV and PVC resources. After creation, the PV and PVC should be bound.
 * Create a new secret using the below command, which uses an API token stored in `./token`, and generates a `local.secret.yaml` file.
 ```
@@ -114,9 +114,4 @@ make secret APP=submit-queue TARGET=<TARGET>
 
 ## Communicating with the Bot
 
-Github contributors and reviewers can communicate with the mungebot by commenting on a PR with the following commands entered alone in the text field. All commands require the following syntax: `/<COMMAND> [OPTIONAL ARGS]`.  Note the forward slashing preceding the command name.
-
-### List of Commands
-
-1. **/lgtm** : applies the lgtm label
-2. **/lgtm cancel** : removes a previously applied lgtm label
+The bot understands the commands in [k8s-ci-robot Commands](../commands.md).

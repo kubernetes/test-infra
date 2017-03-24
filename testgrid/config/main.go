@@ -17,40 +17,62 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
-//
-// usage: config <input/path/to/yaml> <output/path/to/proto>
-//
+var (
+	yamlPaths  = flag.String("yaml", "", "comma-separated list of input YAML files")
+	printText  = flag.Bool("print-text", false, "print generated proto in text format to stdout")
+	outputPath = flag.String("output", "", "output path to save generated protobuf data")
+)
+
+func errExit(format string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, format, a...)
+	os.Exit(1)
+}
 
 func main() {
-	args := os.Args[1:]
+	flag.Parse()
 
-	if len(args) != 2 {
-		fmt.Printf("Wrong Arguments - usage: yaml2proto <input/path/to/yaml> <output/path/to/proto>\n")
-		os.Exit(-1)
+	yamlFiles := strings.Split(*yamlPaths, ",")
+	if len(yamlFiles) == 0 || yamlFiles[0] == "" {
+		errExit("Must specify one or more YAML files with --yaml\n")
+	}
+	if !*printText && *outputPath == "" {
+		errExit("Must set --print-text or --output\n")
+	}
+	if *printText && *outputPath != "" {
+		errExit("Cannot set both --print-text and --output\n")
 	}
 
-	yamlData, err := ioutil.ReadFile(args[0])
-	if err != nil {
-		fmt.Printf("IO Error : Cannot Read File %v\n", args[0])
-		os.Exit(-1)
+	var c yaml2proto.Config
+	for _, file := range yamlFiles {
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			errExit("IO Error : Cannot Read File %s : %v\n", file, err)
+		}
+		if err = c.Update(b); err != nil {
+			errExit("Error parsing file %s : %v\n", file, err)
+		}
 	}
 
-	protobufData, err := yaml2proto.Yaml2Proto(yamlData)
-	if err != nil {
-		fmt.Printf("Yaml2Proto Error : %v\n", err)
-		os.Exit(-1)
-	}
-
-	err = ioutil.WriteFile(args[1], protobufData, 0777)
-	if err != nil {
-		fmt.Printf("IO Error : Cannot Write File %v\n", args[1])
-		os.Exit(-1)
+	if *printText {
+		if err := c.MarshalText(os.Stdout); err != nil {
+			errExit("err printing proto: %v", err)
+		}
+	} else {
+		b, err := c.MarshalBytes()
+		if err != nil {
+			errExit("err encoding proto: %v", err)
+		}
+		if err = ioutil.WriteFile(*outputPath, b, 0644); err != nil {
+			errExit("IO Error : Cannot Write File %v\n", outputPath)
+		}
 	}
 }

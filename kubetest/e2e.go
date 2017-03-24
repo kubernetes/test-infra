@@ -39,6 +39,11 @@ func run(deploy deployer, o options) error {
 	os.Setenv("KUBE_RUNTIME_CONFIG", "batch/v2alpha1=true")
 
 	if o.up {
+		if o.federation {
+			if err := xmlWrap("Federation TearDown Previous", FedDown); err != nil {
+				return fmt.Errorf("error tearing down previous federation control plane: %v", err)
+			}
+		}
 		if err := xmlWrap("TearDown Previous", deploy.Down); err != nil {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
@@ -92,8 +97,13 @@ func run(deploy deployer, o options) error {
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
 			if o.dump != "" {
-				xmlWrap("DumpClusterLogs", func() error {
-					return DumpClusterLogs(o.dump)
+				xmlWrap("DumpClusterLogs (--up failed)", func() error {
+					// This frequently means the cluster does not exist.
+					// Thus DumpClusterLogs() typically fails.
+					// Therefore always return null for this scenarios.
+					// TODO(fejta): report a green E in testgrid if it errors.
+					DumpClusterLogs(o.dump)
+					return nil
 				})
 			}
 			return fmt.Errorf("starting e2e cluster: %s", err)
@@ -223,7 +233,7 @@ func run(deploy deployer, o options) error {
 }
 
 func listNodes(dump string) error {
-	b, err := combinedOutput(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+	b, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
 	if verbose {
 		log.Printf("kubectl get nodes:\n%s", string(b))
 	}
@@ -262,11 +272,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 		return err
 	}
 
-	cmd := exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap)
-	if verbose {
-		cmd.Stderr = os.Stderr
-	}
-	stdout, cerr := cmd.Output()
+	stdout, cerr := output(exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap))
 	if err := ioutil.WriteFile(dp, stdout, mode); err != nil {
 		return err
 	}
@@ -298,22 +304,18 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 
 func ListResources() ([]byte, error) {
 	log.Printf("Listing resources...")
-	cmd := exec.Command("./cluster/gce/list-resources.sh")
-	if verbose {
-		cmd.Stderr = os.Stderr
-	}
-	stdout, err := cmd.Output()
+	stdout, err := output(exec.Command("./cluster/gce/list-resources.sh"))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
+		return stdout, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
 	}
-	return stdout, nil
+	return stdout, err
 }
 
 func clusterSize(deploy deployer) (int, error) {
 	if err := deploy.SetupKubecfg(); err != nil {
 		return -1, err
 	}
-	o, err := exec.Command("kubectl", "get", "nodes", "--no-headers").Output()
+	o, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))
 	if err != nil {
 		log.Printf("kubectl get nodes failed: %s\n%s", WrapError(err).Error(), string(o))
 		return -1, err
@@ -404,7 +406,7 @@ func KubemarkTest() error {
 	//
 	// TODO: We should try calling stop-kubemark exactly once. Though to
 	// stop the leaking resources for now, we want to be on the safe side
-	// and call it explictly in defer if the other one is not called.
+	// and call it explicitly in defer if the other one is not called.
 	defer xmlWrap("Deferred Stop kubemark", func() error {
 		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
@@ -462,7 +464,7 @@ func chdirSkew() (string, error) {
 }
 
 func UpgradeTest(args string, checkSkew bool) error {
-	// TOOD(fejta): fix this
+	// TODO(fejta): fix this
 	old, err := chdirSkew()
 	if err != nil {
 		return err
@@ -476,7 +478,7 @@ func UpgradeTest(args string, checkSkew bool) error {
 	}
 	os.Setenv("E2E_REPORT_PREFIX", "upgrade")
 	return finishRunning(exec.Command(
-		os.Args[0],
+		kubetestPath,
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
@@ -490,7 +492,7 @@ func SkewTest(args string, checkSkew bool) error {
 	}
 	defer os.Chdir(old)
 	return finishRunning(exec.Command(
-		os.Args[0],
+		kubetestPath,
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),

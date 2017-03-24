@@ -21,12 +21,14 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 type stageStrategy struct {
-	bucket string
-	ci     bool
-	suffix string
+	bucket        string
+	ci            bool
+	gcsSuffix     string
+	versionSuffix string
 }
 
 // Return something like gs://bucket/ci/suffix
@@ -35,7 +37,7 @@ func (s *stageStrategy) String() string {
 	if s.ci {
 		p = "ci"
 	}
-	return fmt.Sprintf("%v%v%v", s.bucket, p, s.suffix)
+	return fmt.Sprintf("%v%v%v", s.bucket, p, s.gcsSuffix)
 }
 
 // Parse bucket, ci, suffix from gs://BUCKET/ci/SUFFIX
@@ -47,7 +49,7 @@ func (s *stageStrategy) Set(value string) error {
 	}
 	s.bucket = mat[1]
 	s.ci = mat[2] == "ci"
-	s.suffix = mat[3]
+	s.gcsSuffix = mat[3]
 	return nil
 }
 
@@ -59,21 +61,30 @@ func (s *stageStrategy) Enabled() bool {
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation?
 func (s *stageStrategy) Stage() error {
-	name := "../release/push-build.sh"
+	name := k8s("release", "push-build.sh")
+	b := s.bucket
+	if strings.HasPrefix(b, "gs://") {
+		b = b[len("gs://"):]
+	}
 	args := []string{
 		"--nomock",
 		"--verbose",
-		fmt.Sprintf("--bucket=%v", s.bucket),
+		fmt.Sprintf("--bucket=%v", b),
 	}
 	if s.ci {
 		args = append(args, "--ci")
 	}
-	if len(s.suffix) > 0 {
-		args = append(args, fmt.Sprintf("--gcs-suffix=%v", s.suffix))
+	if len(s.gcsSuffix) > 0 {
+		args = append(args, fmt.Sprintf("--gcs-suffix=%v", s.gcsSuffix))
+	}
+	if len(s.versionSuffix) > 0 {
+		args = append(args, fmt.Sprintf("--version-suffix=%s", s.versionSuffix))
 	}
 	if os.Getenv("FEDERATION") == "true" {
 		args = append(args, "--federation")
 	}
 
-	return finishRunning(exec.Command(name, args...))
+	cmd := exec.Command(name, args...)
+	cmd.Dir = k8s("kubernetes")
+	return finishRunning(cmd)
 }

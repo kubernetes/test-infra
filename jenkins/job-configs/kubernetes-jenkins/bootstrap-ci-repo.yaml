@@ -6,7 +6,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
-            --json='{json}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
@@ -53,7 +53,6 @@
         branch: master
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-charts-gce
-        json: 1
         repo-name: k8s.io/charts
         timeout: 200
     # END CHARTS
@@ -62,7 +61,6 @@
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-cadvisor-node-kubelet
-        json: 1
         repo-name: github.com/google/cadvisor
         timeout: 90
 
@@ -70,7 +68,6 @@
         branch: master
         frequency: 'H * * * *'
         job-name: ci-test-infra-test-history
-        json: 1
         repo-name: github.com/kubernetes/test-infra
         timeout: 30
 
@@ -78,28 +75,30 @@
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-verify-master
-        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 80
+    - kubernetes-verify-release-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 80
     - kubernetes-verify-release-1.5:
         branch: release-1.5
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-verify-release-1.5
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 80
     - kubernetes-verify-release-1.4:
         branch: release-1.4
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-verify-release-1.4
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 80
     - kubernetes-verify-release-1.3:
         branch: release-1.3
-        frequency: 'H/5 * * * *'
+        frequency: 'H H * * *' # Once per day for old releases
         job-name: ci-kubernetes-verify-release-1.3
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 60
 
@@ -107,28 +106,30 @@
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go
-        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+    - kubernetes-test-go-release-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.5:
         branch: release-1.5
         frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-test-go-release-1.5
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.4:
         branch: release-1.4
         frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-test-go-release-1.4
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.3:
         branch: release-1.3
-        frequency: 'H H/3 * * *'
+        frequency: 'H H * * *' # Once per day for old releases
         job-name: ci-kubernetes-test-go-release-1.3
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 100
 
@@ -136,70 +137,78 @@
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-kubernetes-node-kubelet
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-serial:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-serial
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 240
+    - kubernetes-node-memcg-serial: # dashpole
+        branch: master
+        frequency: 'H H/2 * * *'
+        job-name: ci-kubernetes-node-memcg-serial
+        repo-name: k8s.io/kubernetes
+        timeout: 60
     - kubernetes-node-kubelet-benchmark:  # zhoufang
         branch: master
         frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-benchmark
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-flaky:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-flaky
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-conformance:  # lantaol
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-kubernetes-node-kubelet-conformance
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-non-cri:  # yjhong
         branch: master
         frequency: 'H/30 * * * *'
         job-name: ci-kubernetes-node-kubelet-non-cri
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-non-cri-serial:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-non-cri-serial
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 240
     - kubernetes-node-kubelet-non-cri-benchmark:  # lantaol
         branch: master
         frequency: 'H H/2 * * *'
         job-name: ci-kubernetes-node-kubelet-non-cri-benchmark
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-1.4:  # dawnchen
         branch: release-1.4
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.4
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-1.5:  # dawnchen
         branch: release-1.5
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-node-kubelet-1.5
-        json: 1
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-node-kubelet-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-1.6
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-node-kubelet-non-cri-1.6:
+        branch: release-1.6
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-non-cri-1.6
         repo-name: k8s.io/kubernetes
         timeout: 90
 
@@ -207,13 +216,11 @@
         branch: master
         frequency: '@hourly'
         job-name: ci-kubernetes-node-docker
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-docker-benchmark:  # dawnchen
         branch: master
         frequency: '@daily'
         job-name: ci-kubernetes-node-docker-benchmark
-        json: 1
         repo-name: k8s.io/kubernetes
         timeout: 90

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -31,7 +32,7 @@ func findLatestCommentUpdate(issueID int, db *gorm.DB, repository string) time.T
 	comment.CommentUpdatedAt = time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	db.Select("comment_updated_at").
-		Where(&sql.Comment{IssueID: issueID}).
+		Where(&sql.Comment{IssueID: strconv.Itoa(issueID)}).
 		Where("repository = ?", repository).
 		Order("comment_updated_at desc").
 		First(&comment)

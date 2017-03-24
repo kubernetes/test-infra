@@ -17,11 +17,7 @@ limitations under the License.
 package yaml2proto
 
 import (
-	"errors"
 	"testing"
-
-	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/testgrid/config/pb"
 )
 
 func TestYaml2Proto_IsExternal_And_UseKuberClient_False(t *testing.T) {
@@ -35,17 +31,18 @@ test_groups:
 dashboards:
 - name: dashboard_1`
 
-	protobufData, err := Yaml2Proto([]byte(yaml))
+	c := Config{}
+	err := c.Update([]byte(yaml))
 
 	if err != nil {
 		t.Errorf("Convert Error: %v\n", err)
 	}
 
-	config := &config.Configuration{}
-	if err := proto.Unmarshal(protobufData, config); err != nil {
-		t.Errorf("Failed to parse config: %v\n", err)
+	config, err := c.Raw()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+		t.FailNow()
 	}
-
 	for _, testgroup := range config.TestGroups {
 		if !testgroup.IsExternal {
 			t.Errorf("IsExternal should always be true!")
@@ -57,53 +54,93 @@ dashboards:
 	}
 }
 
-func TestYaml2Proto_Invalid_Yaml(t *testing.T) {
+func TestUpdateDefaults_Validity(t *testing.T) {
 	tests := []struct {
-		yaml          string
-		expectedError error
+		yaml            string
+		expectedMissing string
 	}{
 		{
-			yaml:          ``,
-			expectedError: errors.New("Invalid Yaml : No Valid Testgroups"),
+			yaml:            ``,
+			expectedMissing: "DefaultTestGroup",
 		},
 		{
-			yaml: `dashboards:
-- name: dashboard_1`,
-			expectedError: errors.New("Invalid Yaml : No Valid Testgroups"),
-		},
-		{
-			yaml: `test_groups:
-- name: testgroup_1`,
-			expectedError: errors.New("Invalid Yaml : No Valid Dashboards"),
-		},
-		{
-			yaml: `default_dashboard_tab:
-test_groups:
-- name: testgroup_1
-dashboards:
-- name: dashboard_1`,
-			expectedError: errors.New("Please Include The Default Testgroup & Dashboardtab"),
+			yaml: `default_test_group:
+  name: default`,
+			expectedMissing: "DefaultDashboardTab",
 		},
 		{
 			yaml: `default_test_group:
   name: default
 default_dashboard_tab:
-  name: default
-test_groups:
-- name: testgroup_1
-dashboards:
-- name: dashboard_1`,
-			expectedError: nil,
+  name: default`,
+			expectedMissing: "",
 		},
 	}
 
 	for index, test := range tests {
-		_, err := Yaml2Proto([]byte(test.yaml))
-		if (err == nil && test.expectedError == nil) ||
-			(err != nil && test.expectedError != nil && err.Error() == test.expectedError.Error()) {
+		c := Config{}
+		err := c.Update([]byte(test.yaml))
+		if err == nil && test.expectedMissing == "" {
 			continue
-		} else {
-			t.Errorf("Test %v fails. ExpectedError: %v, actual error: %v", index, test.expectedError, err)
 		}
+		if err != nil {
+			if e, ok := err.(MissingFieldError); ok && e.Field == test.expectedMissing {
+				continue
+			}
+		}
+		t.Errorf("Test %v fails. expected MissingFieldError(%s), actual error: %v", index, test.expectedMissing, err)
+	}
+}
+func TestUpdate_Validate(t *testing.T) {
+	defaultYaml := `default_test_group:
+  name: default
+default_dashboard_tab:
+  name: default`
+
+	tests := []struct {
+		yaml            string
+		expectedMissing string
+	}{
+		{
+			yaml:            ``,
+			expectedMissing: "TestGroups",
+		},
+		{
+			yaml: `dashboards:
+- name: dashboard_1`,
+			expectedMissing: "TestGroups",
+		},
+		{
+			yaml: `test_groups:
+- name: testgroup_1`,
+			expectedMissing: "Dashboards",
+		},
+		{
+			yaml: `dashboards:
+- name: dashboard_1
+test_groups:
+- name: testgroup_1`,
+			expectedMissing: "",
+		},
+	}
+
+	for index, test := range tests {
+		c := Config{}
+		if err := c.Update([]byte(defaultYaml)); err != nil {
+			t.Errorf("Unexpected error in Update(defaultYaml): %v", err)
+		}
+		if err := c.Update([]byte(test.yaml)); err != nil {
+			t.Errorf("Unexpected error in Update(test[%d].yaml): %v", index, err)
+		}
+		err := c.validate()
+		if err == nil && test.expectedMissing == "" {
+			continue
+		}
+		if err != nil {
+			if e, ok := err.(MissingFieldError); ok && e.Field == test.expectedMissing {
+				continue
+			}
+		}
+		t.Errorf("Test %v fails. expected MissingFieldError(%s), actual error: %v", index, test.expectedMissing, err)
 	}
 }

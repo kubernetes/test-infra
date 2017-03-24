@@ -193,7 +193,7 @@ tunnel-to-master() {
   done
   sudo netstat -anp | grep :8080 && echo "8080 already used" && exit 1 \
     || echo "Tunneling to ${MASTER}..."
-  gcloud compute ssh "${MASTER}" --ssh-flag='-L8080:localhost:8080' sleep 5 &
+  gcloud compute ssh "${MASTER}" --command='sleep 5' --ssh-flag='-L8080:localhost:8080' &
   for i in {1..10}; do
     if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
       break
@@ -226,9 +226,9 @@ detach-agent() {
 
 attach-agent() {
   echo "Testing gcloud works on ${INSTANCE}..."
-  gcloud compute ssh "${INSTANCE}" -- gcloud compute instances list "--filter=name=${INSTANCE}"
+  gcloud compute ssh "${INSTANCE}" --command="gcloud compute instances list '--filter=name=${INSTANCE}'"
   echo "Checking presence of ssh keys on ${INSTANCE}..."
-  gcloud compute ssh "${INSTANCE}" -- "[[ -f /var/lib/jenkins/gce_keys/google_compute_engine ]]"
+  gcloud compute ssh "${INSTANCE}" --command="[[ -f /var/lib/jenkins/gce_keys/google_compute_engine ]]"
   echo "Attaching ${INSTANCE}..."
   check-kind
   master-change create
@@ -284,7 +284,7 @@ create-agent() {
     --machine-type="${MACHINE_TYPE}" \
     --scopes="${SCOPES}" \
     --tags='do-not-delete,jenkins'
-  while ! gcloud compute ssh "${INSTANCE}" uname -a < /dev/null; do
+  while ! gcloud compute ssh "${INSTANCE}" --command='uname -a' < /dev/null; do
     sleep 1
   done
 }
@@ -381,9 +381,9 @@ INSTANTIATE_DONE
 
 reboot-agent() {
   echo "Rebooting ${INSTANCE}..."
-  gcloud compute ssh "${INSTANCE}" sudo reboot || gcloud compute instances reset "${INSTANCE}"
+  gcloud compute ssh "${INSTANCE}" --command='sudo reboot' || gcloud compute instances reset "${INSTANCE}"
   sleep 30  # TODO(fejta): still but sightly less lame
-  while ! gcloud compute ssh "${INSTANCE}" uname -a < /dev/null; do
+  while ! gcloud compute ssh "${INSTANCE}" --command='uname -a' < /dev/null; do
     sleep 1
   done
 }

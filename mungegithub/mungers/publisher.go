@@ -17,15 +17,14 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 )
@@ -44,21 +43,28 @@ func (c coordinate) String() string {
 
 // a collection of publishing rules for a single destination repo
 type repoRules struct {
-	dstRepo  string
+	dstRepo string
+	// this file has assumption that src.repo is always kubernetes.
 	srcToDst map[coordinate]coordinate
+	// if empty (e.g., for client-go), publisher will use its default publish script
+	publishScript string
 }
 
 // PublisherMunger publishes content from one repository to another one.
 type PublisherMunger struct {
 	// Command for the 'publisher' munger to run periodically.
 	PublishCommand string
-	// base for all repos
-	baseDir string
 	// location to write the netrc file needed for github authentication
-	netrcDir     string
+	netrcDir string
+	// location of the plog output
+	logDir       string
 	reposRules   []repoRules
 	features     *features.Features
 	githubConfig *github.Config
+	// plog duplicates the logs at glog and a file
+	plog *plog
+	// absolute path to the k8s repos.
+	k8sIOPath string
 }
 
 func init() {
@@ -70,14 +76,13 @@ func init() {
 func (p *PublisherMunger) Name() string { return "publisher" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (p *PublisherMunger) RequiredFeatures() []string { return []string{features.RepoFeatureName} }
+func (p *PublisherMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (p *PublisherMunger) Initialize(config *github.Config, features *features.Features) error {
-	p.baseDir = features.Repos.BaseDir
-	if len(p.baseDir) == 0 {
-		glog.Fatalf("--repo-dir is required with selected munger(s)")
-	}
+	gopath := os.Getenv("GOPATH")
+	p.k8sIOPath = filepath.Join(gopath, "src", "k8s.io")
+
 	clientGo := repoRules{
 		dstRepo: "client-go",
 		srcToDst: map[coordinate]coordinate{
@@ -86,158 +91,177 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 			// rule for the client-go release-2.0 branch
 			coordinate{repo: config.Project, branch: "release-1.5", dir: "staging/src/k8s.io/client-go"}: coordinate{repo: "client-go", branch: "release-2.0", dir: "./"},
 		},
+		publishScript: "/publish_scripts/publish_client_go.sh",
 	}
-	p.reposRules = []repoRules{clientGo}
-	glog.Infof("pulisher munger rules: %#v\n", p.reposRules)
+
+	apimachinery := repoRules{
+		dstRepo: "apimachinery",
+		srcToDst: map[coordinate]coordinate{
+			// rule for the apimachinery master branch
+			coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apimachinery"}: coordinate{repo: "apimachinery", branch: "master", dir: "./"},
+		},
+		publishScript: "/publish_scripts/publish_apimachinery.sh",
+	}
+
+	apiserver := repoRules{
+		dstRepo: "apiserver",
+		srcToDst: map[coordinate]coordinate{
+			// rule for the apiserver master branch
+			coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apiserver"}: coordinate{repo: "apiserver", branch: "master", dir: "./"},
+		},
+		publishScript: "/publish_scripts/publish_apiserver.sh",
+	}
+
+	kubeAggregator := repoRules{
+		dstRepo: "kube-aggregator",
+		srcToDst: map[coordinate]coordinate{
+			// rule for the kube-aggregator master branch
+			coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/kube-aggregator"}: coordinate{repo: "kube-aggregator", branch: "master", dir: "./"},
+		},
+		publishScript: "/publish_scripts/publish_kube_aggregator.sh",
+	}
+
+	sampleAPIServer := repoRules{
+		dstRepo: "sample-apiserver",
+		srcToDst: map[coordinate]coordinate{
+			// rule for the apiserver master branch
+			coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/sample-apiserver"}: coordinate{repo: "sample-apiserver", branch: "master", dir: "./"},
+		},
+		publishScript: "/publish_scripts/publish_sample_apiserver.sh",
+	}
+
+	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
+	p.reposRules = []repoRules{apimachinery, clientGo, apiserver, kubeAggregator, sampleAPIServer}
+	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
 	return nil
 }
 
-// git clone dstURL to dst
-func clone(dst string, dstURL string) error {
-	err := exec.Command("rm", "-rf", dst).Run()
+// update the local checkout of k8s.io/kubernetes
+func (p *PublisherMunger) updateKubernetes() error {
+	cmd := exec.Command("git", "fetch", "origin")
+	cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
+	output, err := cmd.CombinedOutput()
+	p.plog.Infof("%s", output)
 	if err != nil {
 		return err
 	}
-	err = exec.Command("mkdir", "-p", dst).Run()
+	// update kubernetes branches that are needed by other k8s.io repos.
+	for _, repoRules := range p.reposRules {
+		for src := range repoRules.srcToDst {
+			// we assume src.repo is always kubernetes
+			cmd := exec.Command("git", "branch", "-f", src.branch, fmt.Sprintf("origin/%s", src.branch))
+			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
+			output, err := cmd.CombinedOutput()
+			p.plog.Infof("%s", output)
+			if err == nil {
+				continue
+			}
+			// probably the error is because we cannot do `git branch -f` while
+			// current branch is src.branch, so try `git reset --hard` instead.
+			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", src.branch))
+			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
+			output, err = cmd.CombinedOutput()
+			p.plog.Infof("%s", output)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// git clone dstURL to dst if dst doesn't exist yet.
+func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
+	if _, err := os.Stat(dst); err == nil {
+		return nil
+	}
+
+	err := exec.Command("mkdir", "-p", dst).Run()
 	if err != nil {
 		return err
 	}
 	err = exec.Command("git", "clone", dstURL, dst).Run()
-	if err != nil {
+	return err
+}
+
+// constructs all the repos, but does not push the changes to remotes.
+func (p *PublisherMunger) construct() error {
+	kubernetesRemote := filepath.Join(p.k8sIOPath, "kubernetes", ".git")
+	for _, repoRules := range p.reposRules {
+		// clone the destination repo
+		dstDir := filepath.Join(p.k8sIOPath, repoRules.dstRepo, "")
+		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, repoRules.dstRepo)
+		if err := p.ensureCloned(dstDir, dstURL); err != nil {
+			p.plog.Errorf("%v", err)
+			return err
+		}
+		p.plog.Infof("Successfully ensured %s exists", dstDir)
+		if err := os.Chdir(dstDir); err != nil {
+			return err
+		}
+		// construct branches
+		for src, dst := range repoRules.srcToDst {
+			cmd := exec.Command(repoRules.publishScript, src.branch, dst.branch, kubernetesRemote)
+			output, err := cmd.CombinedOutput()
+			p.plog.Infof("%s", output)
+			if err != nil {
+				return err
+			}
+			p.plog.Infof("Successfully constructed %s", dst)
+		}
+	}
+	return nil
+}
+
+// publish to remotes.
+func (p *PublisherMunger) publish() error {
+	// NOTE: because some repos depend on each other, e.g., client-go depends on
+	// apimachinery, they should be published atomically, but it's not supported
+	// by github.
+	for _, repoRules := range p.reposRules {
+		dstDir := filepath.Join(p.k8sIOPath, repoRules.dstRepo, "")
+		if err := os.Chdir(dstDir); err != nil {
+			return err
+		}
+		for _, dst := range repoRules.srcToDst {
+			cmd := exec.Command("/publish_scripts/push.sh", p.githubConfig.Token(), dst.branch)
+			output, err := cmd.CombinedOutput()
+			p.plog.Infof("%s", output)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// EachLoop is called at the start of every munge loop
+func (p *PublisherMunger) EachLoop() error {
+	buf := bytes.NewBuffer(nil)
+	p.plog = NewPublisherLog(buf)
+
+	if err := p.updateKubernetes(); err != nil {
+		p.plog.Errorf("%v", err)
+		p.plog.Flush()
+		return err
+	}
+	if err := p.construct(); err != nil {
+		p.plog.Errorf("%v", err)
+		p.plog.Flush()
+		return err
+	}
+	if err := p.publish(); err != nil {
+		p.plog.Errorf("%v", err)
+		p.plog.Flush()
 		return err
 	}
 	return nil
 }
 
-// construct checks out the source repo, copy the contents to the destination,
-// returns a commit message snippet and error.
-func construct(base, org string, src, dst coordinate) (string, error) {
-	srcRepoRoot := filepath.Join(base, src.repo)
-	srcDir := filepath.Join(base, src.repo, src.dir)
-	dstRepoRoot := filepath.Join(base, dst.repo)
-	curDir, err := os.Getwd()
-	if err != nil {
-		glog.Infof("Getwd failed")
-		return "", err
-	}
-	if err = os.Chdir(srcRepoRoot); err != nil {
-		glog.Infof("Chdir to srcRepoRoot %s failed", srcRepoRoot)
-		return "", err
-	}
-	if err = exec.Command("git", "checkout", src.branch).Run(); err != nil {
-		glog.Infof("git checkout %s failed", src.branch)
-		return "", err
-	}
-	out, err := exec.Command("git", "rev-parse", "HEAD").CombinedOutput()
-	if err != nil {
-		glog.Infof("git rev-parse failed")
-		return "", err
-	}
-	commitHash := string(out)
-	if err = os.Chdir(dstRepoRoot); err != nil {
-		glog.Infof("Chdir to dstRepoRoot %s failed", dstRepoRoot)
-		return "", err
-	}
-	// TODO: this makes construct() specific for client-go. This keeps
-	// README.md, CHANGELOG.md, .github folder in the
-	// client-go, rather than copying them from src.
-	if out, err := exec.Command("sh", "-c", fmt.Sprintf(`\
-find %s -depth -maxdepth 1 \( \
--name .github -o \
--name .git -o \
--name README.md -o \
--name CHANGELOG.md -o \
--path %s \) -prune \
--o -exec rm -rf {} +`, dst.dir, dst.dir)).CombinedOutput(); err != nil {
-		glog.Infof("command \"find\" failed: %s", out)
-		return "", err
-	}
-	if dst.dir == "./" {
-		// don't copy the srcDir folder, just copy its contents
-		err = exec.Command("cp", "-a", srcDir+"/.", dst.dir).Run()
-	} else {
-		err = exec.Command("cp", "-a", srcDir, dst.dir).Run()
-	}
-	if err != nil {
-		glog.Infof("copy failed")
-		return "", err
-	}
-	// rename _vendor to vendor
-	if err = exec.Command("find", dst.dir, "-depth", "-name", "_vendor", "-type", "d", "-execdir", "mv", "{}", "vendor", ";").Run(); err != nil {
-		glog.Infof("rename _vendor to vendor failed")
-		return "", err
-	}
-	if err = os.Chdir(curDir); err != nil {
-		glog.Infof("Chdir to curDir failed")
-		return "", err
-	}
-	srcURL := fmt.Sprintf("https://github.com/%s/%s.git", org, src.repo)
-	commitMessage := fmt.Sprintf("copied from %s, branch %s,\n", srcURL, src.branch)
-	commitMessage += fmt.Sprintf("last commit is %s\n", commitHash)
-	return commitMessage, nil
-}
-
-// EachLoop is called at the start of every munge loop
-func (p *PublisherMunger) EachLoop() error {
-	var errlist []error
-Repos:
-	for _, rules := range p.reposRules {
-		// clone the destination repo
-		dstDir := filepath.Join(p.baseDir, rules.dstRepo, "")
-		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, rules.dstRepo)
-		err := clone(dstDir, dstURL)
-		if err != nil {
-			glog.Errorf("Failed to clone %s.\nError: %s", dstURL, err)
-			errlist = append(errlist, err)
-			continue Repos
-		} else {
-			glog.Infof("Successfully clone %s", dstURL)
-		}
-		if err = os.Chdir(dstDir); err != nil {
-			glog.Errorf("Failed to chdir to %s.\nError: %s", dstDir, err)
-			errlist = append(errlist, err)
-			continue Repos
-		}
-		// construct the repo's branches and subdirs
-		for src, dst := range rules.srcToDst {
-			var commitMessage = "published by bot\n(https://github.com/kubernetes/test-infra/tree/master/mungegithub)\n\n"
-			if err = exec.Command("git", "checkout", dst.branch).Run(); err != nil {
-				glog.Errorf("Failed to checkout branch %s.\nError: %s", dst.branch, err)
-				errlist = append(errlist, err)
-				continue Repos
-			}
-			dstRepoRoot := filepath.Join(p.baseDir, dst.repo)
-			snippet, err := construct(p.baseDir, p.githubConfig.Org, src, dst)
-			if err != nil {
-				glog.Errorf("Failed to construct %s.\nError: %s", dstRepoRoot, err)
-				errlist = append(errlist, err)
-				continue Repos
-			} else {
-				commitMessage += snippet
-				glog.Infof("Successfully construct %s", filepath.Join(dstRepoRoot, dst.dir))
-			}
-
-			// publish the destination branch
-			cmd := exec.Command("/publish.sh", filepath.Join(dstRepoRoot, dst.dir), dst.branch, p.githubConfig.Token(), p.netrcDir, strings.TrimSpace(commitMessage))
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				glog.Errorf("Failed to publish %s.\nOutput: %s\nError: %s", dst, output, err)
-				errlist = append(errlist, err)
-				continue Repos
-			} else {
-				glog.Infof("Successfully publish %s: %s", dst, output)
-			}
-		}
-	}
-	return errors.NewAggregate(errlist)
-}
-
 // AddFlags will add any request flags to the cobra `cmd`
-func (p *PublisherMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.netrcDir, "netrc-dir", "", "Location to write the netrc file needed for github authentication.")
-}
+func (p *PublisherMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (p *PublisherMunger) Munge(obj *github.MungeObject) {}

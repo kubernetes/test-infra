@@ -18,7 +18,6 @@ package main
 
 import (
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -106,7 +105,7 @@ func TestUpdateIssues(t *testing.T) {
 		// No new issues
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -114,7 +113,7 @@ func TestUpdateIssues(t *testing.T) {
 			},
 			new: []*github.Issue{},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -125,25 +124,25 @@ func TestUpdateIssues(t *testing.T) {
 		// New issues
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", "", 0, false,
+				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "",
 					"full/repo", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -154,40 +153,40 @@ func TestUpdateIssues(t *testing.T) {
 		// New issues + already existing
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Title", "", "State", "User", "", "", "full/repo",
+				*makeIssue(2, "Title", "", "State", "User", "", "full/repo",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				makeGithubIssue(3, "Title", "Body", "State", "John", "", "",
+				makeGithubIssue(3, "Title", "Body", "State", "John", "",
 					0, false,
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			after: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/repo", 0, false,
+				*makeIssue(1, "Title", "", "State", "User", "", "full/repo", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "", "",
+				*makeIssue(2, "Super Title", "Body", "NoState", "Login", "",
 					"full/repo", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				*makeIssue(3, "Title", "Body", "State", "John", "", "", "full/repo",
+				*makeIssue(3, "Title", "Body", "State", "John", "", "full/repo",
 					0, false,
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -198,22 +197,26 @@ func TestUpdateIssues(t *testing.T) {
 		// Fetch new repository
 		{
 			before: []sql.Issue{
-				*makeIssue(1, "Title", "", "State", "User", "", "", "full/one",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/one",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(1, "Super Title", "Body", "NoState", "Login", "", "",
+				makeGithubIssue(1, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
 			after: []sql.Issue{
-
-				*makeIssue(1, "Super Title", "Body", "NoState", "Login", "", "",
+				*makeIssue(1, "Title", "", "State", "User", "", "full/one",
+					0, false,
+					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
+					time.Time{}),
+				*makeIssue(1, "Super Title", "Body", "NoState", "Login", "",
 					"full/other", 0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -235,7 +238,7 @@ func TestUpdateIssues(t *testing.T) {
 
 		UpdateIssues(db, FakeClient{Issues: test.new, Repository: test.repository})
 		var issues []sql.Issue
-		if err := db.Order("ID").Where("repository = ?", strings.ToLower(test.repository)).Find(&issues).Error; err != nil {
+		if err := db.Order("ID").Find(&issues).Error; err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(issues, test.after) {

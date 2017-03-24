@@ -297,34 +297,6 @@ func (c *testClient) TestKubernetes() error {
 				Name:  "BUILD_NUMBER",
 				Value: buildID,
 			},
-			kube.EnvVar{
-				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
-				Value: "/etc/service-account/service-account.json",
-			},
-			kube.EnvVar{
-				Name:  "JENKINS_GCE_SSH_PRIVATE_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-private.json",
-			},
-			kube.EnvVar{
-				Name:  "JENKINS_GCE_SSH_PUBLIC_KEY_FILE",
-				Value: "/etc/ssh-key-secret/ssh-public.json",
-			},
-		)
-		spec.Containers[i].VolumeMounts = append(spec.Containers[i].VolumeMounts,
-			kube.VolumeMount{
-				Name:      "service",
-				MountPath: "/etc/service-account",
-				ReadOnly:  true,
-			},
-			kube.VolumeMount{
-				Name:      "ssh",
-				MountPath: "/etc/ssh-key-secret",
-				ReadOnly:  true,
-			},
-			kube.VolumeMount{
-				Name:      "cache-ssd",
-				MountPath: "/root/.cache",
-			},
 		)
 		// Set the HostPort to 9999 for all build pods so that they are forced
 		// onto different nodes. Once pod affinity is GA, use that instead.
@@ -335,26 +307,6 @@ func (c *testClient) TestKubernetes() error {
 			},
 		)
 	}
-	spec.Volumes = append(spec.Volumes,
-		kube.Volume{
-			Name: "service",
-			Secret: &kube.SecretSource{
-				Name: "service-account",
-			},
-		},
-		kube.Volume{
-			Name: "ssh",
-			Secret: &kube.SecretSource{
-				Name: "ssh-key-secret",
-			},
-		},
-		kube.Volume{
-			Name: "cache-ssd",
-			HostPath: &kube.HostPathSource{
-				Path: "/mnt/disks/ssd0",
-			},
-		},
-	)
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
 			Name: podName,
@@ -399,15 +351,7 @@ func (c *testClient) TestKubernetes() error {
 // TestPRJenkins starts a Jenkins build and watches it, updating the GitHub
 // status as necessary.
 func (c *testClient) TestPRJenkins() error {
-	if size, err := c.JenkinsClient.QueueSize(); err != nil {
-		c.tryCreateStatus("", github.StatusError, "Error checking Jenkins queue.", testInfra)
-		return err
-	} else if size > 200 {
-		c.tryCreateStatus("", github.StatusError, "Jenkins overloaded. Please try again later.", testInfra)
-		return nil
-	}
 	logrus.WithFields(fields(c)).Info("Starting build.")
-	c.tryCreateStatus("", github.StatusPending, "Build triggered.", "")
 	b, err := c.JenkinsClient.Build(jenkins.BuildRequest{
 		JobName: c.Presubmit.Name,
 		Number:  c.PRNumber,
@@ -425,6 +369,7 @@ func (c *testClient) TestPRJenkins() error {
 		c.tryCreateStatus("", github.StatusError, "Error queueing build.", testInfra)
 		return err
 	}
+	c.tryCreateStatus("", github.StatusPending, "Build queued.", "")
 	for eq { // Wait for it to move out of the queue
 		time.Sleep(10 * time.Second)
 		eq, err = c.JenkinsClient.Enqueued(b)

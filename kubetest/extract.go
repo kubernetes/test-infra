@@ -43,6 +43,7 @@ const (
 	stable              // release/stable, release/stable-1.5
 	version             // v1.5.0, v1.5.0-beta.2
 	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
+	load                // Load a --save cluster
 )
 
 type extractStrategy struct {
@@ -66,7 +67,7 @@ func (l *extractStrategies) String() string {
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(local)`:                  local,
-		`^gke-?(staging|test)`:      gke,
+		`^gke-?(staging|test)?$`:    gke,
 		`^gci/([\w-]+)$`:            gci,
 		`^gci/([\w-]+)/(.+)$`:       gciCi,
 		`^ci/(.+)$`:                 ci,
@@ -186,7 +187,7 @@ func getTestBinaries(url, version string) error {
 		return err
 	}
 	f.Close()
-	o, err := combinedOutput(exec.Command("md5sum", f.Name()))
+	o, err := output(exec.Command("md5sum", f.Name()))
 	if err != nil {
 		return err
 	}
@@ -221,9 +222,13 @@ func getKube(url, version string) error {
 	if err := os.Setenv("KUBERNETES_DOWNLOAD_TESTS", "y"); err != nil {
 		return err
 	}
+	// kube-up in cluster/gke/util.sh depends on this
+	if err := os.Setenv("CLUSTER_API_VERSION", version[1:]); err != nil {
+		return err
+	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
 	if err := finishRunning(exec.Command(k)); err != nil {
-		return err
+		return fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
 	}
 	i, err := os.Stat("./kubernetes/cluster/get-kube-binaries.sh")
 	if err != nil || i.IsDir() {
@@ -245,7 +250,7 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
 	cat := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
-	release, err := combinedOutput(exec.Command("gsutil", "cat", cat))
+	release, err := output(exec.Command("gsutil", "cat", cat))
 	if err != nil {
 		return err
 	}
@@ -254,11 +259,11 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 func setupGciVars(family string) (string, error) {
 	p := "container-vm-image-staging"
-	b, err := combinedOutput(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
+	b, err := output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
 	if err != nil {
 		return "", err
 	}
-	i := string(b)
+	i := strings.TrimSpace(string(b))
 	g := "gci"
 	m := map[string]string{
 		"KUBE_GCE_MASTER_PROJECT":     p,
@@ -297,7 +302,7 @@ func setupGciVars(family string) (string, error) {
 
 func setReleaseFromGci(image string) error {
 	u := fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image)
-	b, err := combinedOutput(exec.Command("gsutil", "cat", u))
+	b, err := output(exec.Command("gsutil", "cat", u))
 	if err != nil {
 		return err
 	}
@@ -308,7 +313,7 @@ func setReleaseFromGci(image string) error {
 func (e extractStrategy) Extract() error {
 	switch e.mode {
 	case local:
-		url := "./_output/gcs-stage"
+		url := k8s("kubernetes", "_output", "gcs-stage")
 		files, err := ioutil.ReadDir(url)
 		if err != nil {
 			return err
@@ -324,7 +329,7 @@ func (e extractStrategy) Extract() error {
 		if len(release) == 0 {
 			return fmt.Errorf("No releases found in %v", url)
 		}
-		return getKube(url, release)
+		return getKube(fmt.Sprintf("file://%s", url), release)
 	case gci, gciCi:
 		if i, err := setupGciVars(e.option); err != nil {
 			return err
@@ -343,11 +348,23 @@ func (e extractStrategy) Extract() error {
 		if len(z) == 0 {
 			return fmt.Errorf("ZONE is unset")
 		}
-		ci, err := combinedOutput(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
+		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
 		if err != nil {
 			return err
 		}
-		return setReleaseFromGcs(true, strings.TrimSpace(string(ci)))
+		re := regexp.MustCompile(`(\d+\.\d+)(\..+)?$`) // 1.11.7-beta.0 -> 1.11
+		mat := re.FindStringSubmatch(strings.TrimSpace(string(ci)))
+		if mat == nil {
+			return fmt.Errorf("failed to parse version from %s", ci)
+		}
+		// When JENKINS_USE_SERVER_VERSION=y, we launch the default version as determined
+		// by GKE, but pull the latest version of that branch for tests. e.g. if the default
+		// version is 1.5.3, we would pull test binaries at ci/latest-1.5.txt, but launch
+		// the default (1.5.3). We have to unset CLUSTER_API_VERSION here to allow GKE to
+		// launch the default.
+		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
+		defer os.Unsetenv("CLUSTER_API_VERSION")
+		return setReleaseFromGcs(true, "latest-"+mat[1])
 	case ci:
 		return setReleaseFromGcs(true, e.option)
 	case rc, stable:
@@ -363,6 +380,80 @@ func (e extractStrategy) Extract() error {
 		return getKube(url, release)
 	case gcs:
 		return getKube(path.Dir(e.option), path.Base(e.option))
+	case load:
+		return loadState(e.option)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
+}
+
+func loadKubeconfig(save string) error {
+	cUrl, err := joinUrl(save, "kube-config")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+	if err := os.MkdirAll(home(".kube"), 0775); err != nil {
+		return err
+	}
+	return finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config")))
+}
+
+func loadState(save string) error {
+	log.Printf("Restore state from %s", save)
+
+	uUrl, err := joinUrl(save, "release-url.txt")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+	rUrl, err := joinUrl(save, "release.txt")
+	if err != nil {
+		return fmt.Errorf("bad load url %s: %v", save, err)
+	}
+
+	if err := loadKubeconfig(save); err != nil {
+		return fmt.Errorf("failed loading kubeconfig: %v", err)
+	}
+
+	url, err := output(exec.Command("gsutil", "cat", uUrl))
+	if err != nil {
+		return err
+	}
+	release, err := output(exec.Command("gsutil", "cat", rUrl))
+	if err != nil {
+		return err
+	}
+	return getKube(string(url), string(release))
+}
+
+func saveState(save string) error {
+	url := os.Getenv("KUBERNETES_RELEASE_URL")
+	version := os.Getenv("KUBERNETES_RELEASE")
+	log.Printf("Save U=%s R=%s to %s", url, version, save)
+	cUrl, err := joinUrl(save, "kube-config")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+	uUrl, err := joinUrl(save, "release-url.txt")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+	rUrl, err := joinUrl(save, "release.txt")
+	if err != nil {
+		return fmt.Errorf("bad save url %s: %v", save, err)
+	}
+
+	if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), cUrl)); err != nil {
+		return fmt.Errorf("failed to save .kube/config to %s: %v", cUrl, err)
+	}
+	if cmd, err := inputCommand(url, "gsutil", "cp", "-", uUrl); err != nil {
+		return fmt.Errorf("failed to write url %s to %s: %v", url, uUrl, err)
+	} else if err = finishRunning(cmd); err != nil {
+		return fmt.Errorf("failed to upload url %s to %s: %v", url, uUrl, err)
+	}
+
+	if cmd, err := inputCommand(version, "gsutil", "cp", "-", rUrl); err != nil {
+		return fmt.Errorf("failed to write release %s to %s: %v", version, rUrl, err)
+	} else if err = finishRunning(cmd); err != nil {
+		return fmt.Errorf("failed to upload release %s to %s: %v", version, rUrl, err)
+	}
+	return nil
 }

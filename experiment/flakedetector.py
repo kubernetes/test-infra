@@ -65,6 +65,8 @@ for job, commits in jobs.items():
 print('Certain flakes from the last day:')
 total_success_chance = 1.0
 for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
+    if job_commits[job] < 10:
+        continue
     fail_chance = flakes / job_commits[job]
     total_success_chance *= (1.0 - fail_chance)
     print('{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job))

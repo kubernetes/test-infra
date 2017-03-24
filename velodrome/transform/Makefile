@@ -10,5 +10,5 @@ build:
 	@echo Built $(IMG):$(TAG)
 
 push: build
-	gcloud docker push $(IMG):$(TAG)
+	gcloud docker -- push $(IMG):$(TAG)
 	@echo Pushed $(IMG):$(TAG)

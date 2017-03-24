@@ -17,12 +17,19 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-git clone https://github.com/kubernetes/test-infra
-git clone https://github.com/kubernetes/kubernetes-anywhere
+if [ ! -e test-infra ]; then
+  git clone https://github.com/kubernetes/test-infra
+fi
+
+if [ ! -e kubernetes-anywhere ]; then
+  git clone https://github.com/kubernetes/kubernetes-anywhere
+fi
 
 # This is required until https://github.com/kubernetes/kubernetes-anywhere/issues/332
 # is implemented.
-ln -s "${GOOGLE_APPLICATION_CREDENTIALS}" kubernetes-anywhere/phase1/gce/account.json
+if [ ! -e kubernetes-anywhere/phase1/gce/account.json ]; then
+  ln -s "${GOOGLE_APPLICATION_CREDENTIALS}" kubernetes-anywhere/phase1/gce/account.json
+fi
 
 ./test-infra/jenkins/bootstrap.py \
     --repo="k8s.io/${REPO_NAME}" \

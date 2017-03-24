@@ -33,51 +33,64 @@ import (
 )
 
 var (
+	artifacts             = initPath("./_artifacts")
 	interrupt             = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	kubetestPath          = initPath(os.Args[0])
 	terminate             = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose               = false
 	timeout               = time.Duration(0)
 	deprecatedVersionSkew = flag.Bool("check_version_skew", true, "Verify client and server versions match")
 )
 
-type options struct {
-	build       buildStrategy
-	charts      bool
-	checkLeaks  bool
-	checkSkew   bool
-	deployment  string
-	down        bool
-	dump        string
-	extract     extractStrategies
-	federation  bool
-	kubemark    bool
-	publish     string
-	save        string
-	skew        bool
-	stage       stageStrategy
-	testArgs    string
-	test        bool
-	up          bool
-	upgradeArgs string
+// Joins os.Getwd() and path
+func initPath(path string) string {
+	d, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("failed initPath(): %v", err)
+	}
+	return filepath.Join(d, path)
 }
 
-func defineFlags() (*options, string) {
+type options struct {
+	build               buildStrategy
+	charts              bool
+	checkLeaks          bool
+	checkSkew           bool
+	deployment          string
+	down                bool
+	dump                string
+	extract             extractStrategies
+	federation          bool
+	kubemark            bool
+	multipleFederations bool
+	publish             string
+	save                string
+	skew                bool
+	stage               stageStrategy
+	testArgs            string
+	test                bool
+	up                  bool
+	upgradeArgs         string
+}
+
+func defineFlags() *options {
 	o := options{}
-	var deployment string
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&deployment, "deployment", "bash", "Choices: bash/kops/kubernetes-anywhere")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/kops/kubernetes-anywhere")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
+	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
+	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
@@ -85,7 +98,7 @@ func defineFlags() (*options, string) {
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
-	return &o, deployment
+	return &o
 }
 
 type testCase struct {
@@ -167,19 +180,18 @@ func getDeployer(deployment string) (deployer, error) {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	o, deployment := defineFlags()
+	o := defineFlags()
 	flag.Parse()
 	if *deprecatedVersionSkew == false {
 		log.Print("--check_version_skew is deprecated. Please change to --check-version-skew")
 		o.checkSkew = false
 	}
-	if err := complete(o, deployment); err != nil {
-		log.Fatalf("Something went wrong: %s", err)
+	if err := complete(o); err != nil {
+		log.Fatalf("Something went wrong: %v", err)
 	}
 }
 
-func complete(o *options, deployment string) error {
-
+func complete(o *options) error {
 	if !terminate.Stop() {
 		<-terminate.C // Drain the value if necessary.
 	}
@@ -197,19 +209,22 @@ func complete(o *options, deployment string) error {
 		defer writeXML(o.dump, time.Now())
 	}
 	if err := prepare(); err != nil {
-		return err
+		return fmt.Errorf("failed to prepare test environment: %v", err)
+	}
+	if err := prepareFederation(o); err != nil {
+		return fmt.Errorf("failed to prepare federation test environment: %v", err)
 	}
 	if err := acquireKubernetes(o); err != nil {
-		return err
+		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
 
 	if err := validWorkingDirectory(); err != nil {
-		return fmt.Errorf("Called from invalid working directory: %v", err)
+		return fmt.Errorf("called from invalid working directory: %v", err)
 	}
 
-	deploy, err := getDeployer(deployment)
+	deploy, err := getDeployer(o.deployment)
 	if err != nil {
-		return fmt.Errorf("Error creating deployer: %v", err)
+		return fmt.Errorf("error creating deployer: %v", err)
 	}
 
 	if o.down {
@@ -239,8 +254,20 @@ func complete(o *options, deployment string) error {
 		return err
 	}
 
-	if err := postpare(o.publish, o.save, os.Getenv("KUBERNETES_RELEASE_URL"), os.Getenv("KUBERNETES_RELEASE")); err != nil {
-		return err
+	// Save the state if we upped a new cluster without downing it
+	// or we are turning up federated clusters without turning up
+	// the federation control plane.
+	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
+		if err := saveState(o.save); err != nil {
+			return err
+		}
+	}
+
+	// Publish the successfully tested version when requested
+	if o.publish != "" {
+		if err := publish(o.publish); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -253,7 +280,7 @@ func acquireKubernetes(o *options) error {
 		}
 	}
 
-	// Potentailly stage build binaries somewhere on GCS
+	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
 		if err := xmlWrap("Stage", o.stage.Stage); err != nil {
 			return err
@@ -262,7 +289,26 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially download existing binaries and extract them.
 	if o.extract.Enabled() {
-		if err := xmlWrap("Extract", o.extract.Extract); err != nil {
+		err := xmlWrap("Extract", func() error {
+			// Should we restore a previous state?
+			// Restore if we are not upping the cluster or we are bringing up
+			// a federation control plane without the federated clusters.
+			if o.save != "" {
+				if !o.up {
+					// Restore version and .kube/config from --up
+					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
+					o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+				} else if o.federation && o.up && o.deployment == "none" {
+					// Only restore .kube/config from previous --up, use the regular
+					// extraction strategy to restore version.
+					log.Printf("Load kubeconfig from %s", o.save)
+					loadKubeconfig(o.save)
+				}
+			}
+			// New deployment, extract new version
+			return o.extract.Extract()
+		})
+		if err != nil {
 			return err
 		}
 	}
@@ -274,7 +320,7 @@ func findVersion() string {
 	// The version may be in a version file
 	if _, err := os.Stat("version"); err == nil {
 		if b, err := ioutil.ReadFile("version"); err == nil {
-			return string(b)
+			return strings.TrimSpace(string(b))
 		} else {
 			log.Printf("Failed to read version: %v", err)
 		}
@@ -284,8 +330,8 @@ func findVersion() string {
 	if _, err := os.Stat("hack/lib/version.sh"); err == nil {
 		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
 		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
-		if b, err := combinedOutput(exec.Command("bash", "-c", gross)); err == nil {
-			return string(b)
+		if b, err := output(exec.Command("bash", "-c", gross)); err == nil {
+			return strings.TrimSpace(string(b))
 		} else {
 			log.Printf("Failed to get_version_vars: %v", err)
 		}
@@ -376,7 +422,7 @@ func prepareGcp(kubernetesProvider string) error {
 	}
 
 	log.Printf("Checking presence of public key in %s", p)
-	if o, err := combinedOutput(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
+	if o, err := output(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
 		return err
 	} else if b, err := ioutil.ReadFile(pk); err != nil {
 		return err
@@ -433,6 +479,13 @@ func activateServiceAccount() error {
 	return nil
 }
 
+// Make all artifacts world readable.
+// The root user winds up owning the files when the container exists.
+// Ensure that other users can read these files at that time.
+func chmodArtifacts() error {
+	return finishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
+}
+
 func prepare() error {
 	kp := os.Getenv("KUBERNETES_PROVIDER")
 	switch kp {
@@ -450,7 +503,7 @@ func prepare() error {
 		return err
 	}
 
-	if err := os.MkdirAll("./_artifacts", 0777); err != nil { // Create artifacts
+	if err := os.MkdirAll(artifacts, 0777); err != nil { // Create artifacts
 		return err
 	}
 
@@ -462,33 +515,32 @@ func prepare() error {
 	return nil
 }
 
-func postpare(publish, save, url, version string) error {
-	if publish != "" {
-		if v, err := ioutil.ReadFile("version"); err != nil {
-			return err
-		} else {
-			log.Printf("Set %s version to %s", publish, string(v))
+func prepareFederation(o *options) error {
+	if o.multipleFederations {
+		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
+		// specific environment variables. So this doesn't work
+		// when we move away from Jenkins.
+		execNum := os.Getenv("EXECUTOR_NUMBER")
+		if execNum == "" {
+			execNum = "0"
 		}
-		if err := finishRunning(exec.Command("gsutil", "cp", "version", publish)); err != nil {
-			return err
-		}
-	}
-	if save != "" {
-		if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), filepath.Join(save, "kube-config"))); err != nil {
-			return err
-		}
-		if cmd, err := inputCommand(url, "gsutil", "cp", "-", filepath.Join(save, "release-url.txt")); err != nil {
-			return err
-		} else if err = finishRunning(cmd); err != nil {
+		suffix := fmt.Sprintf("%s-%s", os.Getenv("NODE_NAME"), execNum)
+		federationName := fmt.Sprintf("e2e-f8n-%s", suffix)
+		federationSystemNamespace := fmt.Sprintf("f8n-system-%s", suffix)
+		err := os.Setenv("FEDERATION_NAME", federationName)
+		if err != nil {
 			return err
 		}
-
-		if cmd, err := inputCommand(version, "gsutil", "cp", "-", filepath.Join(save, "release.txt")); err != nil {
-			return err
-		} else if err = finishRunning(cmd); err != nil {
-			return err
-		}
+		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
 	}
 	return nil
-	// chmod -R o+r everything
+}
+
+func publish(pub string) error {
+	if v, err := ioutil.ReadFile("version"); err != nil {
+		return err
+	} else {
+		log.Printf("Set %s version to %s", pub, string(v))
+	}
+	return finishRunning(exec.Command("gsutil", "cp", "version", pub))
 }

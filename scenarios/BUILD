@@ -17,3 +17,11 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
+
+py_test(
+    name = "kubernetes_e2e_test",
+    srcs = [
+        "kubernetes_e2e.py",
+        "kubernetes_e2e_test.py",
+    ],
+)

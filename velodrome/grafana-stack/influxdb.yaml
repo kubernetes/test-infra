@@ -1,13 +1,14 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: influxdb
+  name: influxdb-${PROJECT}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
         app: influxdb
+        project: ${PROJECT}
     spec:
       containers:
       - name: influxdb
@@ -19,13 +20,13 @@ spec:
         - name: INFLUXDB_INIT_PWD
           valueFrom:
             secretKeyRef:
-              name: influxdb
+              name: influxdb-${PROJECT}
               key: rootpassword
         - name: PRE_CREATE_DB
           value: github;monitoring
         resources:
-          limits:
-            memory: "3Gi"
+          requests:
+            cpu: 0m
         ports:
         - name: influxdb-port
           containerPort: 8086
@@ -37,10 +38,10 @@ spec:
       volumes:
       - name: database-volume
         persistentVolumeClaim:
-          claimName: influxdb-database-claim
+          claimName: influxdb-${PROJECT}-database-claim
       - name: influx-config
         configMap:
-          name: influxdb
+          name: influxdb-${PROJECT}
           items:
           - key: influxdb.toml
             path: config.toml
@@ -50,7 +51,8 @@ kind: Service
 metadata:
   labels:
     app: influxdb
-  name: influxdb-service
+    project: ${PROJECT}
+  name: influxdb-${PROJECT}
 spec:
   ports:
   - name: influxdb
@@ -58,11 +60,15 @@ spec:
     targetPort: influxdb-port
   selector:
     app: influxdb
+    project: ${PROJECT}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: influxdb-database-claim
+  name: influxdb-${PROJECT}-database-claim
+  labels:
+    app: influxdb
+    project: ${PROJECT}
   annotations:
     volume.alpha.kubernetes.io/storage-class: value
 spec:
@@ -75,9 +81,10 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: influxdb
+  name: influxdb-${PROJECT}
   labels:
-    app: grafana-stack
+    app: influxdb
+    project: ${PROJECT}
 data:
   influxdb.toml: |
     reporting-disabled = false

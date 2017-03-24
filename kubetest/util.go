@@ -21,6 +21,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +29,15 @@ import (
 	"syscall"
 	"time"
 )
+
+// Returns $GOPATH/src/k8s.io/...
+func k8s(parts ...string) string {
+	p := []string{os.Getenv("GOPATH"), "src", "k8s.io"}
+	for _, a := range parts {
+		p = append(p, a)
+	}
+	return filepath.Join(p...)
+}
 
 // append(errs, err) if err != nil
 func appendError(errs []error, err error) []error {
@@ -127,6 +137,9 @@ func finishRunning(cmd *exec.Cmd) error {
 				cmd.Process.Kill()
 			}
 		case err := <-finished:
+			if err != nil {
+				return fmt.Errorf("error during %s: %v", stepName, err)
+			}
 			return err
 		}
 	}
@@ -150,9 +163,12 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 	return c, nil
 }
 
-// return cmd.CombinedOutput(), potentially timing out in the process.
-func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
+// return cmd.Output(), potentially timing out in the process.
+func output(cmd *exec.Cmd) ([]byte, error) {
 	stepName := strings.Join(cmd.Args, " ")
+	if verbose {
+		cmd.Stderr = os.Stderr
+	}
 	log.Printf("Running: %v", stepName)
 	defer func(start time.Time) {
 		log.Printf("Step '%s' finished in %s", stepName, time.Since(start))
@@ -165,7 +181,7 @@ func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
 	}
 	finished := make(chan result)
 	go func() {
-		b, err := cmd.CombinedOutput()
+		b, err := cmd.Output()
 		finished <- result{b, err}
 	}()
 	for {
@@ -184,7 +200,20 @@ func combinedOutput(cmd *exec.Cmd) ([]byte, error) {
 				cmd.Process.Kill()
 			}
 		case fin := <-finished:
+			if fin.err != nil {
+				return fin.bytes, fmt.Errorf("error during %s: %v", stepName, fin.err)
+			}
 			return fin.bytes, fin.err
 		}
 	}
+}
+
+// gs://foo and bar becomes gs://foo/bar
+func joinUrl(urlPath, path string) (string, error) {
+	u, err := url.Parse(urlPath)
+	if err != nil {
+		return "", err
+	}
+	u.Path = filepath.Join(u.Path, path)
+	return u.String(), nil
 }
