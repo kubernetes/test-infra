@@ -1,0 +1,33 @@
+li {
+  cursor: pointer;
+}
+
+pre {
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow: auto;
+  background-color: #eee;
+  max-height: 800px;
+}
+
+h2 {
+  position: sticky;
+  top: 0px;
+  padding: 5px;
+  background-color: white;
+  border: 1px solid black;
+}
+
+input[type=text] {
+  width: 500px;
+}
+
+a.key {
+  font-size: 14px;
+  padding: 10px 0 0 0;
+}
+
+div.graph {
+  width: 1200px;
+  height: 200px;  /* keep synchronized with script.js:graphHeight */
+}
