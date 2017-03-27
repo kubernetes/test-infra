@@ -31,29 +31,26 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 	config := sqltest.SQLiteConfig{":memory:"}
 	tests := []struct {
 		comments       []sql.Comment
-		issueID        int
 		expectedLatest time.Time
 		repository     string
 	}{
 		// If we don't have any comment, return 1900/1/1 0:0:0 UTC
 		{
 			[]sql.Comment{},
-			1,
-			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Time{},
 			"ONE",
 		},
-		// There are no comment for this issue/repository, return the min date
+		// There are no comment for this repository, return the min date
 		{
 			[]sql.Comment{
 				{IssueID: "1", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 				{IssueID: "1", CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 				{IssueID: "2", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
-			2,
-			time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC),
-			"ONE",
+			time.Time{},
+			"THREE",
 		},
-		// Only pick selected issue (and selected repo)
+		// Only pick selected repo
 		{
 			[]sql.Comment{
 				{IssueID: "1", CommentUpdatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
@@ -61,8 +58,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 				{IssueID: "1", CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 				{IssueID: "2", CommentUpdatedAt: time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
-			1,
-			time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 			"ONE",
 		},
 		// Can pick pull-request comments
@@ -72,7 +68,6 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 				{IssueID: "1", PullRequest: false, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 				{IssueID: "1", PullRequest: true, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
-			1,
 			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 			"ONE",
 		},
@@ -83,7 +78,6 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 				{IssueID: "1", PullRequest: true, CommentUpdatedAt: time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 				{IssueID: "1", PullRequest: false, CommentUpdatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
-			1,
 			time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 			"ONE",
 		},
@@ -99,7 +93,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 			db.Create(&comment)
 		}
 
-		actualLatest := findLatestCommentUpdate(test.issueID, db, test.repository)
+		actualLatest := findLatestCommentUpdate(db, test.repository)
 		if actualLatest != test.expectedLatest {
 			t.Error("Actual:", actualLatest,
 				"doesn't match expected:", test.expectedLatest)
@@ -112,11 +106,9 @@ func TestUpdateComments(t *testing.T) {
 
 	tests := []struct {
 		before           []sql.Comment
-		newIssueComments map[int][]*github.IssueComment
-		newPullComments  map[int][]*github.PullRequestComment
+		newIssueComments []*github.IssueComment
+		newPullComments  []*github.PullRequestComment
 		after            []sql.Comment
-		updateID         int
-		isPullRequest    bool
 	}{
 		// No new comments
 		{
@@ -125,15 +117,13 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{},
-			newPullComments:  map[int][]*github.PullRequestComment{},
+			newIssueComments: []*github.IssueComment{},
+			newPullComments:  []*github.PullRequestComment{},
 			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			updateID:      1,
-			isPullRequest: true,
 		},
 		// New comments, include PR
 		{
@@ -142,27 +132,21 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{
-				3: {
-					makeGithubIssueComment(2, "IssueBody", "SomeLogin",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-					makeGithubIssueComment(3, "AnotherBody", "AnotherLogin",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				},
+			newIssueComments: []*github.IssueComment{
+				makeGithubIssueComment(2, "IssueBody", "SomeLogin", "issue/3",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
+				makeGithubIssueComment(3, "AnotherBody", "AnotherLogin", "issue/3",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			newPullComments: map[int][]*github.PullRequestComment{
-				2: {
-					makeGithubPullComment(4, "Body", "Login",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC)),
-				},
-				3: {
-					makeGithubPullComment(5, "SecondBody", "OtherLogin",
-						time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
-				},
+			newPullComments: []*github.PullRequestComment{
+				makeGithubPullComment(4, "Body", "Login", "issue/2",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC)),
+				makeGithubPullComment(5, "SecondBody", "OtherLogin", "issue/3",
+					time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login", "full/repo",
@@ -174,49 +158,13 @@ func TestUpdateComments(t *testing.T) {
 				*makeComment(3, 3, "AnotherBody", "AnotherLogin", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), false),
+				*makeComment(2, 4, "Body", "Login", "full/repo",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC), true),
 				*makeComment(3, 5, "SecondBody", "OtherLogin", "full/repo",
 					time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			updateID:      3,
-			isPullRequest: true,
-		},
-		// Only interesting new comment is in PR, and we don't take PR
-		{
-			before: []sql.Comment{
-				*makeComment(12, 1, "Body", "Login", "full/repo",
-					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
-			},
-			newIssueComments: map[int][]*github.IssueComment{
-				3: {
-					makeGithubIssueComment(2, "IssueBody", "SomeLogin",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-					makeGithubIssueComment(3, "AnotherBody", "AnotherLogin",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				},
-			},
-			newPullComments: map[int][]*github.PullRequestComment{
-				2: {
-					makeGithubPullComment(4, "Body", "Login",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC)),
-				},
-				3: {
-					makeGithubPullComment(5, "SecondBody", "OtherLogin",
-						time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
-				},
-			},
-			after: []sql.Comment{
-				*makeComment(12, 1, "Body", "Login", "full/repo",
-					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
-			},
-			updateID:      2,
-			isPullRequest: false,
 		},
 		// New modified comment
 		{
@@ -225,21 +173,17 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{},
-			newPullComments: map[int][]*github.PullRequestComment{
-				12: {
-					makeGithubPullComment(1, "IssueBody", "SomeLogin",
-						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
-						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				},
+			newIssueComments: []*github.IssueComment{},
+			newPullComments: []*github.PullRequestComment{
+				makeGithubPullComment(1, "IssueBody", "SomeLogin", "issue/12",
+					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
+					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			after: []sql.Comment{
 				*makeComment(12, 1, "IssueBody", "SomeLogin", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			updateID:      12,
-			isPullRequest: true,
 		},
 	}
 
@@ -250,11 +194,13 @@ func TestUpdateComments(t *testing.T) {
 		}
 
 		for _, comment := range test.before {
-			db.Create(&comment)
+			if err := db.Create(&comment).Error; err != nil {
+				t.Fatal(err)
+			}
 		}
 
-		client := FakeClient{PullComments: test.newPullComments, IssueComments: test.newIssueComments, Repository: "FULL/REPO"}
-		UpdateComments(test.updateID, test.isPullRequest, db, client)
+		client := FakeClient{PullComments: test.newPullComments, IssueComments: test.newIssueComments, Repository: "full/repo"}
+		UpdateComments(db, client)
 		var comments []sql.Comment
 		if err := db.Order("ID").Find(&comments).Error; err != nil {
 			t.Fatal(err)
