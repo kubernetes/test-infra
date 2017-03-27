@@ -78,12 +78,10 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 }
 
 // NewIssueEvent creates a new (orm) Issue from a github Issue
-func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.IssueEvent, error) {
+func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository string) (*sql.IssueEvent, error) {
 	if gIssueEvent.ID == nil ||
 		gIssueEvent.Event == nil ||
-		gIssueEvent.CreatedAt == nil ||
-		gIssueEvent.Issue == nil ||
-		gIssueEvent.Issue.Number == nil {
+		gIssueEvent.CreatedAt == nil {
 		return nil, fmt.Errorf("IssueEvent is missing mandatory field: %+v", gIssueEvent)
 	}
 
@@ -105,7 +103,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.Issu
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
-		IssueId:        strconv.Itoa(*gIssueEvent.Issue.Number),
+		IssueId:        strconv.Itoa(issueID),
 		Assignee:       assignee,
 		Actor:          actor,
 		Repository:     strings.ToLower(repository),

@@ -77,5 +77,7 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 
 		// Issue is updated, find if we have new comments
 		UpdateComments(*issue.Number, issueOrm.IsPR, db, client)
+		// and find if we have new events
+		UpdateIssueEvents(*issue.Number, db, client)
 	}
 }
