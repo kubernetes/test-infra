@@ -48,7 +48,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["util_test.go"],
+    srcs = [
+        "anywhere_test.go",
+        "util_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
 )

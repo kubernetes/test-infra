@@ -55,10 +55,11 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 
 .phase3.run_addons=y
-.phase3.kube_proxy=y
-.phase3.dashboard=y
-.phase3.heapster=y
-.phase3.kube_dns=y
+.phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
+.phase3.kube_proxy=n
+.phase3.dashboard=n
+.phase3.heapster=n
+.phase3.kube_dns=n
 `
 
 type kubernetesAnywhere struct {
@@ -137,7 +138,7 @@ func (k kubernetesAnywhere) writeConfig() error {
 }
 
 func (k kubernetesAnywhere) Up() error {
-	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy-cluster")
+	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
 	if err := finishRunning(cmd); err != nil {
 		return err
 	}
@@ -169,5 +170,5 @@ func (k kubernetesAnywhere) Down() error {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
-	return finishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy-cluster"))
+	return finishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy"))
 }
