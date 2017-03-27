@@ -43,8 +43,13 @@ go_test(
     srcs = [
         "bundle_test.go",
         "events_test.go",
+        "plugin_mock_test.go",
         "states_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
+    deps = [
+        "//velodrome/sql:go_default_library",
+        "//vendor:github.com/golang/mock/gomock",
+    ],
 )
