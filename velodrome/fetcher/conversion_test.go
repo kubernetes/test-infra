@@ -170,7 +170,7 @@ func makeIssueEvent(
 }
 
 func makeGithubIssueEvent(
-	eventId, issueId int,
+	eventId int,
 	label, event, assignee, actor string,
 	createdAt time.Time) *github.IssueEvent {
 
@@ -193,7 +193,6 @@ func makeGithubIssueEvent(
 		Label:     gLabel,
 		Event:     &event,
 		CreatedAt: &createdAt,
-		Issue:     &github.Issue{Number: &issueId},
 		Assignee:  gAssignee,
 		Actor:     gActor,
 	}
@@ -202,31 +201,35 @@ func makeGithubIssueEvent(
 func TestNewIssueEvent(t *testing.T) {
 	tests := []struct {
 		gIssueEvent *github.IssueEvent
+		issueID     int
 		mIssueEvent *sql.IssueEvent
 	}{
 		// Only mandatory
 		{
-			gIssueEvent: makeGithubIssueEvent(1, 2, "", "Event", "", "",
+			gIssueEvent: makeGithubIssueEvent(1, "", "Event", "", "",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 		},
 		// All fields
 		{
-			gIssueEvent: makeGithubIssueEvent(1, 2, "Label", "Event", "Assignee", "Actor",
+			gIssueEvent: makeGithubIssueEvent(1, "Label", "Event", "Assignee", "Actor",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 		},
 		// Missing mandatory fields returns nil
 		{
 			&github.IssueEvent{},
+			2,
 			nil,
 		},
 	}
 
 	for _, test := range tests {
-		actualIssueEvent, _ := NewIssueEvent(test.gIssueEvent, "FULL/REPO")
+		actualIssueEvent, _ := NewIssueEvent(test.gIssueEvent, test.issueID, "FULL/REPO")
 		if !reflect.DeepEqual(actualIssueEvent, test.mIssueEvent) {
 			t.Error("Actual: ", actualIssueEvent,
 				"doesn't match expected: ", test.mIssueEvent)

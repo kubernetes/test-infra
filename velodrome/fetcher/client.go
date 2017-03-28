@@ -118,10 +118,10 @@ func (client *Client) limitsCheckAndWait() {
 // ClientInterface describes what a client should be able to do
 type ClientInterface interface {
 	RepositoryName() string
-	FetchIssues(time.Time, chan *github.Issue)
-	FetchIssueEvents(*int, chan *github.IssueEvent)
-	FetchIssueComments(int, time.Time, chan *github.IssueComment)
-	FetchPullComments(int, time.Time, chan *github.PullRequestComment)
+	FetchIssues(last time.Time, c chan *github.Issue)
+	FetchIssueEvents(issueID int, last *int, c chan *github.IssueEvent)
+	FetchIssueComments(issueID int, last time.Time, c chan *github.IssueComment)
+	FetchPullComments(issueID int, last time.Time, c chan *github.PullRequestComment)
 }
 
 func (client *Client) RepositoryName() string {
@@ -177,7 +177,7 @@ func hasID(events []*github.IssueEvent, ID int) bool {
 
 // FetchIssueEvents from github and return the full list, until it matches 'latest'
 // The entire last page will be included so you can have redundancy.
-func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
+func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
 	opt := &github.ListOptions{PerPage: 100}
 
 	githubClient, err := client.getGithubClient()
@@ -191,9 +191,9 @@ func (client *Client) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
 	for {
 		client.limitsCheckAndWait()
 
-		events, resp, err := githubClient.Issues.ListRepositoryEvents(client.Org, client.Project, opt)
+		events, resp, err := githubClient.Issues.ListIssueEvents(client.Org, client.Project, issueID, opt)
 		if err != nil {
-			glog.Error("Request failed. Wait before trying again.")
+			glog.Errorf("ListIssueEvents failed: %s. Retrying...", err)
 			time.Sleep(time.Second)
 			continue
 		}

@@ -26,7 +26,7 @@ import (
 type FakeClient struct {
 	Repository    string
 	Issues        []*github.Issue
-	IssueEvents   []*github.IssueEvent
+	IssueEvents   map[int][]*github.IssueEvent
 	IssueComments map[int][]*github.IssueComment
 	PullComments  map[int][]*github.PullRequestComment
 }
@@ -42,8 +42,8 @@ func (client FakeClient) FetchIssues(latest time.Time, c chan *github.Issue) {
 	close(c)
 }
 
-func (client FakeClient) FetchIssueEvents(latest *int, c chan *github.IssueEvent) {
-	for _, event := range client.IssueEvents {
+func (client FakeClient) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
+	for _, event := range client.IssueEvents[issueID] {
 		c <- event
 	}
 	close(c)
