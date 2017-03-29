@@ -470,7 +470,6 @@ presubmits:
     rerun_command: "@k8s-bot verify test this"
     trigger: "@k8s-bot (verify )?test this"
     always_run: true
-    skip_report: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
