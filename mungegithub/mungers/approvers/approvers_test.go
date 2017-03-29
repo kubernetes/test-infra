@@ -33,6 +33,7 @@ func TestUnapprovedFiles(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -103,7 +104,7 @@ func TestUnapprovedFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
@@ -122,6 +123,7 @@ func TestGetFiles(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -215,7 +217,7 @@ func TestGetFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
@@ -234,6 +236,7 @@ func TestGetCCs(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -350,7 +353,7 @@ func TestGetCCs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
@@ -371,6 +374,7 @@ func TestIsApproved(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	approverless := sets.NewString("approverless", "a/approverless")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -452,7 +456,7 @@ func TestIsApproved(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, approverless), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
@@ -529,7 +533,7 @@ func TestGetFilesApprovers(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners, sets.NewString())})
 		for _, approver := range test.approvers {
 			testApprovers.AddApprover(approver, "REFERENCE")
 		}
@@ -547,7 +551,8 @@ func TestGetMessage(t *testing.T) {
 			repo: createFakeRepo(map[string]sets.String{
 				"a": sets.NewString("Alice"),
 				"b": sets.NewString("Bill"),
-			}),
+			},
+				sets.NewString()),
 		},
 	)
 	ap.AddApprover("Bill", "REFERENCE")
@@ -581,7 +586,8 @@ func TestGetMessageAllApproved(t *testing.T) {
 			repo: createFakeRepo(map[string]sets.String{
 				"a": sets.NewString("Alice"),
 				"b": sets.NewString("Bill"),
-			}),
+			},
+				sets.NewString()),
 		},
 	)
 	ap.AddApprover("Alice", "REFERENCE")
