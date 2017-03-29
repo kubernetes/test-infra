@@ -474,6 +474,8 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
+        args:
+        - "--root=/go/src"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
