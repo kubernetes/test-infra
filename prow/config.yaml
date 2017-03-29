@@ -463,6 +463,34 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: pull-test-infra-verify-bazel
+    context: verify-bazel
+    branches:
+    - master
+    rerun_command: "@k8s-bot verify test this"
+    trigger: "@k8s-bot (verify )?test this"
+    always_run: true
+    skip_report: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
 
 postsubmits:
   kubernetes/kubernetes:
