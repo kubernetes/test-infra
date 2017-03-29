@@ -1028,8 +1028,12 @@ test_groups:
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
+- name: ci-kubernetes-bazel-build-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1.6
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
+- name: ci-kubernetes-bazel-test-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1.6
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # rktnetes
@@ -1072,6 +1076,8 @@ test_groups:
 # kubeadm tests
 - name: kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: kubernetes-e2e-kubeadm-gce-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1.6
 # upgrade CI tests
 - name: kubernetes-e2e-gce-latest-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-upgrade-cluster
@@ -1293,6 +1299,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gce-taint-evict
   - name: gce-kubeadm
     test_group_name: kubernetes-e2e-kubeadm-gce
+  - name: gce-kubeadm-1.6
+    test_group_name: kubernetes-e2e-kubeadm-gce-1.6
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
@@ -1642,8 +1650,12 @@ dashboards:
     test_group_name: kubernetes-build-1.5
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
+  - name: bazel-build-1.6
+    test_group_name: ci-kubernetes-bazel-build-1.6
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
+  - name: bazel-test-1.6
+    test_group_name: ci-kubernetes-bazel-test-1.6
   - name: test-go
     test_group_name: kubernetes-test-go
   - name: test-go-1.3
