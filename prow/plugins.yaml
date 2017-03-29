@@ -20,13 +20,13 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - trigger
-- label
 
 kubernetes:
 - assign
 - cla
 - close
 - heart
+- label
 - lgtm
 - yuks
 
