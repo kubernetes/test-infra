@@ -14,7 +14,6 @@ install:
     - true
 # Do not add anything new here.
 script:
-    - ./verify/verify-bazel.sh
     - ./jenkins/diff-job-config-patch.sh
     - ./jenkins/diff-e2e-runner.sh
     - ./testgrid/jenkins_verify/verify.sh
