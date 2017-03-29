@@ -86,7 +86,7 @@ presubmits:
       trigger: "@k8s-bot (kubeadm e2e )?test this"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
           args:
           - "--pull=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -265,7 +265,7 @@ presubmits:
       trigger: "@k8s-bot (kubeadm e2e )?test this"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
           args:
           - "--pull=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -528,7 +528,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
             args:
             - "--branch=$(PULL_REFS)"
             - "--clean"
