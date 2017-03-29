@@ -4,6 +4,9 @@ py_test(
         "gen_html.py",
         "gen_html_test.py",
     ],
+    deps = [
+        "@jinja2//:jinja2",
+    ],
 )
 
 py_test(
