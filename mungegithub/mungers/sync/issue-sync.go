@@ -36,14 +36,6 @@ const (
 
 	// PriorityFailingTest represents a failing or flaking test
 	PriorityFailingTest = Priority(2)
-	// PriorityP0 represents Priority P0
-	PriorityP0 = Priority(0)
-	// PriorityP1 represents Priority P1
-	PriorityP1 = Priority(1)
-	// PriorityP2 represents Priority P2
-	PriorityP2 = Priority(2)
-	// PriorityP3 represents Priority P3
-	PriorityP3 = Priority(3)
 )
 
 // RobotUser is a set of name of robot user
