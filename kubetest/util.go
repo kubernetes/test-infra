@@ -26,6 +26,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -81,6 +82,7 @@ func httpRead(url string, writer io.Writer) error {
 
 // return f(), adding junit xml testcase result for name
 func xmlWrap(name string, f func() error) error {
+	alreadyInterrupted := interrupted
 	start := time.Now()
 	err := f()
 	duration := time.Since(start)
@@ -89,10 +91,18 @@ func xmlWrap(name string, f func() error) error {
 		ClassName: "e2e.go",
 		Time:      duration.Seconds(),
 	}
+	if err == nil && !alreadyInterrupted && interrupted {
+		err = fmt.Errorf("kubetest interrupted during step %s", name)
+	}
 	if err != nil {
-		c.Failure = err.Error()
+		if !alreadyInterrupted {
+			c.Failure = err.Error()
+		} else {
+			c.Skipped = err.Error()
+		}
 		suite.Failures++
 	}
+
 	suite.Cases = append(suite.Cases, c)
 	suite.Tests++
 	return err
@@ -101,6 +111,9 @@ func xmlWrap(name string, f func() error) error {
 // return cmd.Wait() and/or timing out.
 func finishRunning(cmd *exec.Cmd) error {
 	stepName := strings.Join(cmd.Args, " ")
+	if terminated {
+		return fmt.Errorf("kubetest terminated before starting %s", stepName)
+	}
 	if verbose {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -124,11 +137,13 @@ func finishRunning(cmd *exec.Cmd) error {
 	for {
 		select {
 		case <-terminate.C:
+			terminated = true
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
 			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 			cmd.Process.Kill()
 			return fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
 		case <-interrupt.C:
+			interrupted = true
 			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
 			terminate.Reset(15 * time.Minute)
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
@@ -166,6 +181,9 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 // return cmd.Output(), potentially timing out in the process.
 func output(cmd *exec.Cmd) ([]byte, error) {
 	stepName := strings.Join(cmd.Args, " ")
+	if terminated {
+		return []byte{}, fmt.Errorf("kubetest terminated before starting %s", stepName)
+	}
 	if verbose {
 		cmd.Stderr = os.Stderr
 	}
@@ -180,7 +198,17 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 		err   error
 	}
 	finished := make(chan result)
+	lock := sync.Mutex{}
+	started := false
 	go func() {
+		lock.Lock()
+		if !terminated {
+			started = true
+		}
+		lock.Unlock()
+		if !started {
+			return
+		}
 		b, err := cmd.Output()
 		finished <- result{b, err}
 	}()
@@ -188,12 +216,27 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 		select {
 		case <-terminate.C:
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
-			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-			cmd.Process.Kill()
+			lock.Lock()
+			if !started {
+				terminated = true
+			}
+			lock.Unlock()
+			if started {
+				terminated = true
+				for cmd.Process == nil {
+					time.Sleep(50 * time.Millisecond)
+				}
+				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+				cmd.Process.Kill()
+			}
 			return nil, fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
 		case <-interrupt.C:
+			interrupted = true
 			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
 			terminate.Reset(15 * time.Minute)
+			for cmd.Process == nil {
+				time.Sleep(50 * time.Millisecond)
+			}
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
 				log.Printf("Failed to interrupt %v. Will terminate immediately: %v", stepName, err)
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)

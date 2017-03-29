@@ -34,38 +34,43 @@ func TestFindLatestUpdate(t *testing.T) {
 		events         []sql.IssueEvent
 		expectedLatest int
 		repository     string
+		issueID        int
 	}{
 		// If we don't have any issue, return 1900/1/1 0:0:0 UTC
 		{
 			[]sql.IssueEvent{},
 			0,
 			"ONE",
+			1,
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueId: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			0,
 			"TWO",
-		},
-		{
-			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
-			},
 			7,
-			"ONE",
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: 2, EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 7, EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: 1, EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueId: "2", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", IssueId: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+			},
+			2,
+			"ONE",
+			7,
+		},
+		{
+			[]sql.IssueEvent{
+				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueId: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", IssueId: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			1,
 			"TWO",
+			7,
 		},
 	}
 
@@ -81,7 +86,7 @@ func TestFindLatestUpdate(t *testing.T) {
 		}
 		tx.Commit()
 
-		actualLatest, err := findLatestEvent(db, test.repository)
+		actualLatest, err := findLatestEvent(test.issueID, db, test.repository)
 		if err != nil {
 			t.Error("findLatestEvent failed:", err)
 		}
@@ -101,9 +106,10 @@ func TestUpdateEvents(t *testing.T) {
 
 	tests := []struct {
 		before     []sql.IssueEvent
-		new        []*github.IssueEvent
+		new        map[int][]*github.IssueEvent
 		after      []sql.IssueEvent
 		repository string
+		issueID    int
 	}{
 		// No new issues
 		{
@@ -111,12 +117,13 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: []*github.IssueEvent{},
+			new: map[int][]*github.IssueEvent{},
 			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			repository: "FULL/REPO",
+			issueID:    2,
 		},
 		// New issues
 		{
@@ -124,9 +131,11 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: []*github.IssueEvent{
-				makeGithubIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor",
-					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			new: map[int][]*github.IssueEvent{
+				2: {
+					makeGithubIssueEvent(2, "Label", "Event", "Assignee", "Actor",
+						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
+				},
 			},
 			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
@@ -135,6 +144,7 @@ func TestUpdateEvents(t *testing.T) {
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			repository: "FULL/REPO",
+			issueID:    2,
 		},
 		// New issues + already existing (doesn't update)
 		{
@@ -144,11 +154,13 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: []*github.IssueEvent{
-				makeGithubIssueEvent(1, 2, "", "EventNameChanged", "", "",
-					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
-				makeGithubIssueEvent(3, 2, "Label", "Event", "Assignee", "",
-					time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			new: map[int][]*github.IssueEvent{
+				2: {
+					makeGithubIssueEvent(1, "", "EventNameChanged", "", "",
+						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+					makeGithubIssueEvent(3, "Label", "Event", "Assignee", "",
+						time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
+				},
 			},
 			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
@@ -159,6 +171,7 @@ func TestUpdateEvents(t *testing.T) {
 					time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			repository: "FULL/REPO",
+			issueID:    2,
 		},
 		// Fetch new repository
 		{
@@ -166,15 +179,18 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(2, 2, "", "Event", "", "", "full/one",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: []*github.IssueEvent{
-				makeGithubIssueEvent(1, 2, "", "EventNameOther", "", "",
-					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			new: map[int][]*github.IssueEvent{
+				2: {
+					makeGithubIssueEvent(1, "", "EventNameOther", "", "",
+						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+				},
 			},
 			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "EventNameOther", "", "", "full/other",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
 			repository: "FULL/OTHER",
+			issueID:    2,
 		},
 	}
 
@@ -188,7 +204,7 @@ func TestUpdateEvents(t *testing.T) {
 			db.Create(&event)
 		}
 
-		UpdateIssueEvents(db, FakeClient{IssueEvents: test.new, Repository: test.repository})
+		UpdateIssueEvents(test.issueID, db, FakeClient{IssueEvents: test.new, Repository: test.repository})
 		var issues []sql.IssueEvent
 		if err := db.Order("ID").Where("repository = ?", strings.ToLower(test.repository)).Find(&issues).Error; err != nil {
 			t.Fatal(err)

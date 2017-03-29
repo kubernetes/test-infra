@@ -129,8 +129,8 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-serial:
         job-name: ci-kubernetes-e2e-gce-serial
-        jenkins-timeout: 420
-        timeout: 320
+        jenkins-timeout: 620
+        timeout: 520
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-reboot:
@@ -409,57 +409,6 @@
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
-
-    # gce-1.3
-    - kubernetes-e2e-gce-release-1.3:
-        job-name: ci-kubernetes-e2e-gce-release-1.3
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gce-reboot-release-1.3:
-        job-name: ci-kubernetes-e2e-gce-reboot-release-1.3
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gce-slow-release-1.3:
-        job-name: ci-kubernetes-e2e-gce-slow-release-1.3
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gce-serial-release-1.3:
-        job-name: ci-kubernetes-e2e-gce-serial-release-1.3
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    # gci-gce-1.3
-    - kubernetes-e2e-gci-gce-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gce-release-1.3
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gce-reboot-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gce-reboot-release-1.3
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gce-slow-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gce-slow-release-1.3
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gce-serial-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gce-serial-release-1.3
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
 
     # gce-1.4
     - kubernetes-e2e-gce-release-1.4:
@@ -825,12 +774,6 @@
         jenkins-timeout: 170
         timeout: 70
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-ci-release-1.3:
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.3
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-release-1.4:
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-e2e-gce-gci-ci-release-1.4
@@ -887,12 +830,6 @@
         jenkins-timeout: 420
         timeout: 320
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-ci-serial-release-1.3:
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.3
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-serial-release-1.4:
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4
@@ -949,12 +886,6 @@
         jenkins-timeout: 270
         timeout: 170
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-ci-slow-release-1.3:
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.3
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build-1.3'
     - kubernetes-e2e-gce-gci-ci-slow-release-1.4:
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4
@@ -1151,6 +1082,12 @@
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gke-gci-ci-master:
+        job-name: ci-kubernetes-e2e-gke-gci-ci-master
+        jenkins-timeout: 270
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
 
     # cri-gke-master with CRI
     - kubernetes-e2e-non-cri-gke:
@@ -1213,58 +1150,6 @@
         timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
-
-    # gke-1.3
-    - kubernetes-e2e-gke-release-1.3:
-        job-name: ci-kubernetes-e2e-gke-release-1.3
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gke-serial-release-1.3:
-        job-name: ci-kubernetes-e2e-gke-serial-release-1.3
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gke-slow-release-1.3:
-        job-name: ci-kubernetes-e2e-gke-slow-release-1.3
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gke-reboot-release-1.3:
-        job-name: ci-kubernetes-e2e-gke-reboot-release-1.3
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-
-    # gci-gke-1.3
-    - kubernetes-e2e-gci-gke-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gke-release-1.3
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gke-serial-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gke-serial-release-1.3
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gke-slow-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.3
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
-    - kubernetes-e2e-gci-gke-reboot-release-1.3:
-        job-name: ci-kubernetes-e2e-gci-gke-reboot-release-1.3
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.3'
 
     # gke-1.4
     - kubernetes-e2e-gke-release-1.4:
@@ -1665,46 +1550,6 @@
         frequency: 'H * * * *' # At least every hour
         trigger-job: 'ci-kubernetes-build-1.5'
 
-    ### kubernetes-e2e-upgrades-gke #maisem
-    - kubernetes-e2e-gke-1.3-1.4-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-1.3-1.4-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    ### kubernetes-e2e-upgrades-gce #davidopp
-    - kubernetes-e2e-gce-1.3-1.4-upgrade-master:
-        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gce-1.3-1.4-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
     - kubernetes-e2e-gce-1.4-1.5-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master
         jenkins-timeout: 720
@@ -1742,63 +1587,11 @@
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
-
-    ### kubernetes-e2e-upgrades-gce-cross-image-and-gci #mtaufen
-    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gce-debian-latest-1.3-gci-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-debian-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gce-gci-latest-1.3-gci-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+    - kubernetes-e2e-gce-1.6-1.5-downgrade-cluster:
+        job-name: ci-kubernetes-e2e-gce-1.6-1.5-downgrade-cluster
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
     - kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master:
@@ -1860,33 +1653,6 @@
 
 
     ### kubernetes-e2e-kubectl-skew-gke #maisem
-    # Skew 1.3 vs 1.4
-    - kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.3-1.4-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.3-1.4-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.4-1.3-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.4-1.3-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
     # Skew 1.4 vs 1.5
     - kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
@@ -1948,8 +1714,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gke-1.6-master-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -1961,8 +1739,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gke-master-1.6-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -1996,33 +1786,6 @@
         trigger-job: ''
 
     ### kubernetes-e2e-kubectl-skew-gce  #davidopp
-    # Skew 1.3 vs 1.4
-    - kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-1.4-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.3-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
     # Skew 1.4 vs 1.5
     - kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
@@ -2084,8 +1847,20 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gce-1.6-master-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
+    - kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
@@ -2097,38 +1872,23 @@
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
+    - kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: ''
     - kubernetes-e2e-gce-master-1.6-gci-kubectl-skew:
         job-name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
         jenkins-timeout: 240
         timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
-
-    # TODO(someone): do we still need to skew 1.3 or 1.4 vs master?
-    - kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-cvm-kubectl-skew
+    - kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial:
+        job-name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial
         jenkins-timeout: 240
         timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.3-latest-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-latest-1.3-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
     - kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew:
@@ -2159,139 +1919,6 @@
 
 
     ### kubernetes-e2e-upgrades-image-gke
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.4-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.4-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.4-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-1.5-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-1.5-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-1.5-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-1.5-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
     ### 1.4 to 1.5 GKE upgrade tests
     # cvm -> cvm
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-master:
@@ -2534,81 +2161,11 @@
         timeout: 920
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
-
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-container_vm-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-container_vm-1.3-gci-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-container_vm-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gke-gci-1.3-gci-latest-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+    - kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster:
+        job-name: ci-kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: ''
 
     - kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-master:

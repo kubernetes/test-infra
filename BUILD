@@ -38,6 +38,7 @@ filegroup(
         "//scenarios:all-srcs",
         "//testgrid/config:all-srcs",
         "//testgrid/jenkins_verify:all-srcs",
+        "//triage:all-srcs",
         "//velodrome:all-srcs",
         "//vendor:all-srcs",
         "//verify:all-srcs",

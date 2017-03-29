@@ -19,7 +19,6 @@ package approvers
 import (
 	"testing"
 
-	"fmt"
 	"reflect"
 
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -347,6 +346,15 @@ func TestGetCCs(t *testing.T) {
 			// We suggest assigned people rather than "suggested" people
 			expectedCCs: []string{"Art", "Ben", "Carol"},
 		},
+		{
+			testName:          "Assignee is top OWNER, No one has approved",
+			filenames:         []string{"a/test.go"},
+			testSeed:          0,
+			currentlyApproved: sets.NewString(),
+			// Assignee is a root approver
+			assignees:   []string{"Alice"},
+			expectedCCs: []string{"Alice"},
+		},
 	}
 
 	for _, test := range tests {
@@ -357,7 +365,6 @@ func TestGetCCs(t *testing.T) {
 		testApprovers.AddAssignees(test.assignees...)
 		calculated := testApprovers.GetCCs()
 		if !reflect.DeepEqual(test.expectedCCs, calculated) {
-			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
 			t.Errorf("Failed for test %v.  Expected CCs: %v. Found %v", test.testName, test.expectedCCs, calculated)
 		}
 	}
@@ -458,7 +465,6 @@ func TestIsApproved(t *testing.T) {
 		}
 		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
-			fmt.Printf("Currently Approved %v\n", test.currentlyApproved)
 			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
 		}
 	}

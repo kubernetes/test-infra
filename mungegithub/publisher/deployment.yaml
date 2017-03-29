@@ -52,9 +52,9 @@ spec:
                 key: config.token-file
         resources:
           requests:
-            cpu: 100m
+            cpu: 2000m
           limits:
-            cpu: 100m
+            cpu: 2000m
         volumeMounts:
         - mountPath: /etc/secret-volume
           name: secret-volume

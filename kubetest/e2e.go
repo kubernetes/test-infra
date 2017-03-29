@@ -97,8 +97,13 @@ func run(deploy deployer, o options) error {
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
 			if o.dump != "" {
-				xmlWrap("DumpClusterLogs", func() error {
-					return DumpClusterLogs(o.dump)
+				xmlWrap("DumpClusterLogs (--up failed)", func() error {
+					// This frequently means the cluster does not exist.
+					// Thus DumpClusterLogs() typically fails.
+					// Therefore always return null for this scenarios.
+					// TODO(fejta): report a green E in testgrid if it errors.
+					DumpClusterLogs(o.dump)
+					return nil
 				})
 			}
 			return fmt.Errorf("starting e2e cluster: %s", err)

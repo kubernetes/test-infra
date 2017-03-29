@@ -110,9 +110,9 @@ func (o Owners) GetAllPotentialApprovers() []string {
 }
 
 // GetReverseMap returns a map from people -> OWNERS files for which they are an approver
-func (o Owners) GetReverseMap() map[string]sets.String {
+func (o Owners) GetReverseMap(approvers map[string]sets.String) map[string]sets.String {
 	approverOwnersfiles := map[string]sets.String{}
-	for ownersFile, approvers := range o.GetLeafApprovers() {
+	for ownersFile, approvers := range approvers {
 		for approver := range approvers {
 			if _, ok := approverOwnersfiles[approver]; ok {
 				approverOwnersfiles[approver].Insert(ownersFile)
@@ -149,13 +149,12 @@ func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
-func (o Owners) KeepCoveringApprovers(knownApprovers sets.String, potentialApprovers []string) sets.String {
+func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovers sets.String, potentialApprovers []string) sets.String {
 	keptApprovers := sets.NewString()
 
 	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
-	reverseMap := o.GetReverseMap()
 
-	for _, suggestedApprover := range o.GetSuggestedApprovers(potentialApprovers).List() {
+	for _, suggestedApprover := range o.GetSuggestedApprovers(reverseMap, potentialApprovers).List() {
 		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
 			keptApprovers.Insert(suggestedApprover)
 		}
@@ -166,9 +165,7 @@ func (o Owners) KeepCoveringApprovers(knownApprovers sets.String, potentialAppro
 
 // GetSuggestedApprovers solves the exact cover problem, finding an approver capable of
 // approving every OWNERS file in the PR
-func (o Owners) GetSuggestedApprovers(potentialApprovers []string) sets.String {
-	reverseMap := o.GetReverseMap()
-
+func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potentialApprovers []string) sets.String {
 	ap := NewApprovers(o)
 	for !ap.IsApproved() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
@@ -369,11 +366,13 @@ func (ap Approvers) GetFiles(org, project string) []File {
 // it works:
 // - We find suggested approvers from all potential approvers, but
 // remove those that are not useful considering current approvers and
-// assignees.
+// assignees. This only uses leave approvers to find approvers the
+// closest to the changes.
 // - We find a subset of suggested approvers from from current
 // approvers, suggested approvers and assignees, but we remove thoses
 // that are not useful considering suggestd approvers and current
-// approvers.
+// approvers. This uses the full approvers list, and will result in root
+// approvers to be suggested when they are assigned.
 // We return the union of the two sets: suggested and suggested
 // assignees.
 // The goal of this second step is to only keep the assignees that are
@@ -383,10 +382,12 @@ func (ap Approvers) GetCCs() []string {
 
 	currentApprovers := ap.GetCurrentApproversSet()
 	approversAndAssignees := currentApprovers.Union(ap.assignees)
-	suggested := ap.owners.KeepCoveringApprovers(approversAndAssignees, randomizedApprovers)
+	leafReverseMap := ap.owners.GetReverseMap(ap.owners.GetLeafApprovers())
+	suggested := ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssignees, randomizedApprovers)
 	approversAndSuggested := currentApprovers.Union(suggested)
 	everyone := approversAndSuggested.Union(ap.assignees)
-	keepAssignees := ap.owners.KeepCoveringApprovers(approversAndSuggested, everyone.List())
+	fullReverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
+	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggested, everyone.List())
 
 	return suggested.Union(keepAssignees).List()
 }

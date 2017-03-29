@@ -20,6 +20,8 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
 # Have cmd/e2e run by goe2e.sh generate JUnit report in ${WORKSPACE}/junit*.xml
 ARTIFACTS=${WORKSPACE}/_artifacts
 mkdir -p ${ARTIFACTS}
@@ -61,7 +63,11 @@ e2e_go_args=( \
 # For upgrades, PUBLISHED_SKEW should be a new release than PUBLISHED.
 if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
   e2e_go_args+=(--extract="${JENKINS_PUBLISHED_SKEW_VERSION}")
-  if [[ "${JENKINS_USE_SKEW_TESTS:-}" != "true" ]]; then
+  # Assume JENKINS_USE_SKEW_KUBECTL == true for backward compatibility
+  : ${JENKINS_USE_SKEW_KUBECTL:=true}
+  if [[ "${JENKINS_USE_SKEW_TESTS:-}" == "true" ]]; then
+    e2e_go_args+=(--skew)  # Get kubectl as well as test code from kubernetes_skew
+  elif [[ "${JENKINS_USE_SKEW_KUBECTL}" == "true" ]]; then
     # Append kubectl-path of skewed kubectl to test args, since we always
     # want that to use the skewed kubectl version:
     #  - for upgrade jobs, we want kubectl to be at the same version as
@@ -69,8 +75,6 @@ if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
     #  - for client skew tests, we want to use the skewed kubectl
     #    (that's what we're testing).
     GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
-  else
-    e2e_go_args+=(--skew)  # Get kubectl as well as test code from kubernetes_skew
   fi
 fi
 

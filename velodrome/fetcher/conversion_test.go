@@ -18,6 +18,7 @@ package main
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -27,15 +28,10 @@ import (
 )
 
 func makeIssue(number int,
-	title, body, state, user, assignee, prUrl, repository string,
+	title, body, state, user, prUrl, repository string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *sql.Issue {
-
-	var pAssignee *string
-	if assignee != "" {
-		pAssignee = &assignee
-	}
 
 	var pClosedAt *time.Time
 	if !closedAt.IsZero() {
@@ -43,11 +39,10 @@ func makeIssue(number int,
 	}
 
 	return &sql.Issue{
-		ID:             number,
+		ID:             strconv.Itoa(number),
 		Title:          title,
 		Body:           body,
 		User:           user,
-		Assignee:       pAssignee,
 		State:          state,
 		Comments:       comments,
 		IsPR:           isPullRequest,
@@ -59,7 +54,7 @@ func makeIssue(number int,
 }
 
 func makeGithubIssue(number int,
-	title, body, state, user, assignee, prUrl string,
+	title, body, state, user, prUrl string,
 	comments int,
 	isPullRequest bool,
 	createdAt, updatedAt, closedAt time.Time) *github.Issue {
@@ -67,10 +62,6 @@ func makeGithubIssue(number int,
 	var pBody *string
 	if body != "" {
 		pBody = &body
-	}
-	var gAssignee *github.User
-	if assignee != "" {
-		gAssignee = &github.User{Login: &assignee}
 	}
 	var pullRequest *github.PullRequestLinks
 	if prUrl != "" {
@@ -88,7 +79,6 @@ func makeGithubIssue(number int,
 		Body:             pBody,
 		State:            &state,
 		User:             gUser,
-		Assignee:         gAssignee,
 		Comments:         &comments,
 		PullRequestLinks: pullRequest,
 		CreatedAt:        &createdAt,
@@ -104,12 +94,12 @@ func TestNewIssue(t *testing.T) {
 	}{
 		// Only mandatory
 		{
-			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "", "",
+			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Time{}),
-			mIssue: makeIssue(1, "Title", "", "State", "User", "", "", "full/repo",
+			mIssue: makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -117,12 +107,12 @@ func TestNewIssue(t *testing.T) {
 		},
 		// All fields
 		{
-			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User", "Assignee",
+			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User",
 				"PRLink", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2100, time.January, 1, 19, 30, 0, 0, time.UTC)),
-			mIssue: makeIssue(1, "Title", "Body", "State", "User", "Assignee",
+			mIssue: makeIssue(1, "Title", "Body", "State", "User",
 				"PRLink", "full/repo", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -140,6 +130,9 @@ func TestNewIssue(t *testing.T) {
 		actualIssue, _ := NewIssue(test.gIssue, "FULL/REPO")
 		if actualIssue != nil && reflect.DeepEqual(actualIssue.Labels, []sql.Label{}) {
 			actualIssue.Labels = nil
+		}
+		if actualIssue != nil && reflect.DeepEqual(actualIssue.Assignees, []sql.Assignee{}) {
+			actualIssue.Assignees = nil
 		}
 		if !reflect.DeepEqual(actualIssue, test.mIssue) {
 			t.Error("Actual: ", actualIssue,
@@ -165,11 +158,11 @@ func makeIssueEvent(
 	}
 
 	return &sql.IssueEvent{
-		ID:             eventId,
+		ID:             strconv.Itoa(eventId),
 		Label:          pLabel,
 		Event:          event,
 		EventCreatedAt: createdAt,
-		IssueId:        issueId,
+		IssueId:        strconv.Itoa(issueId),
 		Assignee:       pAssignee,
 		Actor:          pActor,
 		Repository:     repository,
@@ -177,7 +170,7 @@ func makeIssueEvent(
 }
 
 func makeGithubIssueEvent(
-	eventId, issueId int,
+	eventId int,
 	label, event, assignee, actor string,
 	createdAt time.Time) *github.IssueEvent {
 
@@ -200,7 +193,6 @@ func makeGithubIssueEvent(
 		Label:     gLabel,
 		Event:     &event,
 		CreatedAt: &createdAt,
-		Issue:     &github.Issue{Number: &issueId},
 		Assignee:  gAssignee,
 		Actor:     gActor,
 	}
@@ -209,31 +201,35 @@ func makeGithubIssueEvent(
 func TestNewIssueEvent(t *testing.T) {
 	tests := []struct {
 		gIssueEvent *github.IssueEvent
+		issueID     int
 		mIssueEvent *sql.IssueEvent
 	}{
 		// Only mandatory
 		{
-			gIssueEvent: makeGithubIssueEvent(1, 2, "", "Event", "", "",
+			gIssueEvent: makeGithubIssueEvent(1, "", "Event", "", "",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 		},
 		// All fields
 		{
-			gIssueEvent: makeGithubIssueEvent(1, 2, "Label", "Event", "Assignee", "Actor",
+			gIssueEvent: makeGithubIssueEvent(1, "Label", "Event", "Assignee", "Actor",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
+			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 		},
 		// Missing mandatory fields returns nil
 		{
 			&github.IssueEvent{},
+			2,
 			nil,
 		},
 	}
 
 	for _, test := range tests {
-		actualIssueEvent, _ := NewIssueEvent(test.gIssueEvent, "FULL/REPO")
+		actualIssueEvent, _ := NewIssueEvent(test.gIssueEvent, test.issueID, "FULL/REPO")
 		if !reflect.DeepEqual(actualIssueEvent, test.mIssueEvent) {
 			t.Error("Actual: ", actualIssueEvent,
 				"doesn't match expected: ", test.mIssueEvent)
@@ -308,8 +304,8 @@ func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time
 
 func makeComment(issueId, Id int, body, login, repository string, createdAt, updatedAt time.Time, pullRequest bool) *sql.Comment {
 	return &sql.Comment{
-		ID:               Id,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(Id),
+		IssueID:          strconv.Itoa(issueId),
 		Body:             body,
 		User:             login,
 		CommentCreatedAt: createdAt,

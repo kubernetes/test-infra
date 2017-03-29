@@ -258,6 +258,36 @@ class PullRefsTest(unittest.TestCase):
             (['master'], ['FETCH_HEAD']))
 
 
+class ChooseSshKeyTest(unittest.TestCase):
+    """Tests for choose_ssh_key()."""
+    def testEmpty(self):
+        """Do not change environ if no ssh key."""
+        fake_env = {}
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key(''):
+                self.assertFalse(fake_env)
+
+    def testFull(self):
+        fake_env = {}
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key('hello there'):
+                self.assertIn('GIT_SSH', fake_env)
+                with open(fake_env['GIT_SSH']) as fp:
+                    buf = fp.read()
+                self.assertIn('hello there', buf)
+                self.assertIn('ssh ', buf)
+                self.assertIn(' -i ', buf)
+            self.assertFalse(fake_env)  # Resets env
+
+    def testFullOldValue(self):
+        fake_env = {'GIT_SSH': 'random-value'}
+        old_env = dict(fake_env)
+        with Stub(os, 'environ', fake_env):
+            with bootstrap.choose_ssh_key('hello there'):
+                self.assertNotEqual(old_env, fake_env)
+            self.assertEquals(old_env, fake_env)
+
+
 class CheckoutTest(unittest.TestCase):
     """Tests for checkout()."""
 
@@ -834,8 +864,9 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
     def testJobEnvMismatch(self):
         env = FakeEnviron()
         with Stub(os, 'environ', env):
-            with self.assertRaises(ValueError):
-                bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertNotEquals('this-is-a-job', env[bootstrap.JOB_ENV])
+            bootstrap.setup_magic_environment('this-is-a-job')
+            self.assertEquals('this-is-a-job', env[bootstrap.JOB_ENV])
 
     def testExpected(self):
         env = FakeEnviron()
@@ -1066,32 +1097,32 @@ class BootstrapTest(unittest.TestCase):
 class RepositoryTest(unittest.TestCase):
     def testKubernetesKubernetes(self):
         expected = 'https://github.com/kubernetes/kubernetes'
-        actual = bootstrap.repository('k8s.io/kubernetes')
+        actual = bootstrap.repository('k8s.io/kubernetes', '')
         self.assertEquals(expected, actual)
 
     def testKubernetesTestInfra(self):
         expected = 'https://github.com/kubernetes/test-infra'
-        actual = bootstrap.repository('k8s.io/test-infra')
+        actual = bootstrap.repository('k8s.io/test-infra', '')
         self.assertEquals(expected, actual)
 
     def testWhatever(self):
         expected = 'https://foo.com/bar'
-        actual = bootstrap.repository('foo.com/bar')
+        actual = bootstrap.repository('foo.com/bar', '')
         self.assertEquals(expected, actual)
 
     def testKubernetesKubernetesSSH(self):
         expected = 'git@github.com:kubernetes/kubernetes'
-        actual = bootstrap.repository('k8s.io/kubernetes', True)
+        actual = bootstrap.repository('k8s.io/kubernetes', 'path')
         self.assertEquals(expected, actual)
 
     def testKubernetesKubernetesSSHWithColon(self):
         expected = 'git@github.com:kubernetes/kubernetes'
-        actual = bootstrap.repository('github.com:kubernetes/kubernetes', True)
+        actual = bootstrap.repository('github.com:kubernetes/kubernetes', 'path')
         self.assertEquals(expected, actual)
 
     def testWhateverSSH(self):
         expected = 'git@foo.com:bar'
-        actual = bootstrap.repository('foo.com/bar', True)
+        actual = bootstrap.repository('foo.com/bar', 'path')
         self.assertEquals(expected, actual)
 
 
@@ -1902,10 +1933,23 @@ class JobTest(unittest.TestCase):
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
                     if '-soak-' in job:
-                        self.assertIn('--tag=v20170223-43ce8f86', config[job]['args'])
+                        if '-federation-' not in job:
+                            self.assertIn(
+                                '--tag=v20170223-43ce8f86', config[job]['args'])
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', config[job]['args'])
-                        self.assertIn('--stage=gs://kubernetes-release-pull/ci/%s' % job, config[job]['args'])
+                        if 'gke' in job:
+                            stage = 'gs://kubernetes-release-dev/ci'
+                            suffix = True
+                        else:
+                            stage = 'gs://kubernetes-release-pull/ci/%s' % job
+                            suffix = False
+                        self.assertIn(
+                            '--stage=%s' % stage, config[job]['args'])
+                        self.assertEquals(
+                            suffix,
+                            any('--stage-suffix=' in a for a in config[job]['args']),
+                            ('--stage-suffix=', suffix, job, config[job]['args']))
 
 
 if __name__ == '__main__':

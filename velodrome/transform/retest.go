@@ -39,7 +39,7 @@ type Retest struct {
 	DB   InfluxDatabase
 	last time.Time
 	// Number of requests for retest per PR.
-	retests map[int]int
+	retests map[string]int
 }
 
 // NewRetestPlugin initializes the plugin.
@@ -51,7 +51,7 @@ func NewRetestPlugin(DB InfluxDatabase) *Retest {
 	return &Retest{
 		DB:      DB,
 		last:    last,
-		retests: make(map[int]int),
+		retests: make(map[string]int),
 	}
 }
 

@@ -59,12 +59,25 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 			continue
 		}
 		if db.Create(issueOrm).Error != nil {
-			// If we can't create, let's try update
-			// First we need to delete labels, as they are just concatenated
-			db.Delete(sql.Label{}, "issue_id = ?", issueOrm.ID)
-			db.Save(issueOrm)
+			// We assume record already exists. Let's
+			// update. First we need to delete labels and
+			// assignees, as they are just concatenated
+			// otherwise.
+			db.Delete(sql.Label{},
+				"issue_id = ? AND repository = ?",
+				issueOrm.ID, client.RepositoryName())
+			db.Delete(sql.Assignee{},
+				"issue_id = ? AND repository = ?",
+				issueOrm.ID, client.RepositoryName())
+
+			if err := db.Save(issueOrm).Error; err != nil {
+				glog.Error("Failed to update database issue: ", err)
+			}
 		}
+
 		// Issue is updated, find if we have new comments
-		UpdateComments(issueOrm.ID, issueOrm.IsPR, db, client)
+		UpdateComments(*issue.Number, issueOrm.IsPR, db, client)
+		// and find if we have new events
+		UpdateIssueEvents(*issue.Number, db, client)
 	}
 }

@@ -18,6 +18,12 @@
 # k8s.io/kubernetes/staging/src/apimachinery to the ${dst_branch} of
 # k8s.io/apimachinery.
 #
+# ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
+# in .git/config in the local checkout of apimachinery. We usually set it to the
+# local checkout of k8s.io/kubernetes to avoid multiple checkouts.This not only
+# reduces the run time, but also ensures all published repos are generated from
+# the same revision of k8s.io/kubernetes.
+#
 # The script assumes that the working directory is
 # $GOPATH/src/k8s.io/apimachinery.
 #
@@ -28,22 +34,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 2 ]; then
-    echo "usage: $0 src_branch dst_branch"
+if [ ! $# -eq 3 ]; then
+    echo "usage: $0 src_branch dst_branch kubernetes_remote"
     exit 1
 fi
 
-# src branch of k8s.io/kubernetes
-SRC_BRANCH="${1:-master}"
-# dst branch of k8s.io/apimachinery
-DST_BRANCH="${2:-master}"
-readonly SRC_BRANCH DST_BRANCH
-
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-source "${SCRIPT_DIR}"/util.sh
-
-git checkout "${DST_BRANCH}"
-sync_repo "staging/src/k8s.io/apimachinery" "${SRC_BRANCH}"
-# restore the vendor/ folder. k8s.io/* and github.com/golang/glog will be
-# removed from the vendor folder
-restore_vendor
+"${SCRIPT_DIR}"/publish_template.sh "apimachinery" "${1}" "${2}" "" "${3}" "true"

@@ -141,18 +141,6 @@
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         scan: ALL
         timeout: 620
-    - kubernetes-soak-gce-1.3-deploy:
-        blocker: ci-kubernetes-soak-gce-1.3-test
-        job-name: ci-kubernetes-soak-gce-1.3-deploy
-        frequency: 'H 0 * * 2'
-        scan: DISABLED
-        timeout: 110
-    - kubernetes-soak-gce-1.3-test:
-        blocker: ci-kubernetes-soak-gce-1.3-deploy
-        job-name: ci-kubernetes-soak-gce-1.3-test
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        scan: ALL
-        timeout: 620
     - kubernetes-soak-gci-gce-1.6-deploy:
         blocker: ci-kubernetes-soak-gci-gce-1.6-test
         job-name: ci-kubernetes-soak-gci-gce-1.6-deploy

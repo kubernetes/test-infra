@@ -7,7 +7,7 @@ import (
 // DefaultCallback default callbacks defined by gorm
 var DefaultCallback = &Callback{}
 
-// Callback is a struct that contains all CURD callbacks
+// Callback is a struct that contains all CRUD callbacks
 //   Field `creates` contains callbacks will be call when creating object
 //   Field `updates` contains callbacks will be call when updating object
 //   Field `deletes` contains callbacks will be call when deleting object
@@ -93,6 +93,13 @@ func (cp *CallbackProcessor) Before(callbackName string) *CallbackProcessor {
 
 // Register a new callback, refer `Callbacks.Create`
 func (cp *CallbackProcessor) Register(callbackName string, callback func(scope *Scope)) {
+	if cp.kind == "row_query" {
+		if cp.before == "" && cp.after == "" && callbackName != "gorm:row_query" {
+			fmt.Printf("Registing RowQuery callback %v without specify order with Before(), After(), applying Before('gorm:row_query') by default for compatibility...\n", callbackName)
+			cp.before = "gorm:row_query"
+		}
+	}
+
 	cp.name = callbackName
 	cp.processor = &callback
 	cp.parent.processors = append(cp.parent.processors, cp)
@@ -208,7 +215,7 @@ func sortProcessors(cps []*CallbackProcessor) []*func(scope *Scope) {
 	return sortedFuncs
 }
 
-// reorder all registered processors, and reset CURD callbacks
+// reorder all registered processors, and reset CRUD callbacks
 func (c *Callback) reorder() {
 	var creates, updates, deletes, queries, rowQueries []*CallbackProcessor
 

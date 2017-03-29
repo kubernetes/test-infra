@@ -28,6 +28,17 @@ import unittest
 
 import kubernetes_e2e
 
+FAKE_WORKSPACE_STATUS = 'STABLE_BUILD_GIT_COMMIT 599539dc0b99976fda0f326f4ce47e93ec07217c\n' \
+'STABLE_BUILD_SCM_STATUS clean\n' \
+'STABLE_BUILD_SCM_REVISION v1.7.0-alpha.0.1320+599539dc0b9997\n' \
+'STABLE_BUILD_MAJOR_VERSION 1\n' \
+'STABLE_BUILD_MINOR_VERSION 7+\n' \
+'STABLE_gitCommit 599539dc0b99976fda0f326f4ce47e93ec07217c\n' \
+'STABLE_gitTreeState clean\n' \
+'STABLE_gitVersion v1.7.0-alpha.0.1320+599539dc0b9997\n' \
+'STABLE_gitMajor 1\n' \
+'STABLE_gitMinor 7+\n'
+
 def fake_pass(*_unused, **_unused2):
     """Do nothing."""
     pass
@@ -81,6 +92,11 @@ class ScenarioTest(unittest.TestCase):
         self.envs.update(env)
         self.callstack.append(string.join(cmd))
 
+    def fake_output_work_status(self, *cmd):
+        """fake a workstatus bolb."""
+        self.callstack.append(string.join(cmd))
+        return FAKE_WORKSPACE_STATUS
+
 
 class LocalTest(ScenarioTest):
     """Class for testing e2e scenario in local mode."""
@@ -94,6 +110,24 @@ class LocalTest(ScenarioTest):
         self.assertNotEqual(self.envs, {})
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
+
+    def test_kubeadm(self):
+        """Make sure kubeadm mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--kubeadm'])
+        self.assertEqual(args.mode, 'local')
+        self.assertEqual(args.kubeadm, True)
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
+                kubernetes_e2e.main(args)
+
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('v1.7.0-alpha.0.1320+599539dc0b9997', self.envs['E2E_OPT'])
+        called = False
+        for call in self.callstack:
+            self.assertFalse(call.startswith('docker'))
+            if call == 'hack/print-workspace-status.sh':
+                called = True
+        self.assertTrue(called)
 
 class DockerTest(ScenarioTest):
     """Class for testing e2e scenario in docker mode."""

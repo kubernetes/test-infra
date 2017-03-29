@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,27 +43,30 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 	if gIssue.ClosedAt != nil {
 		closedAt = gIssue.ClosedAt
 	}
-	var assignee *string
-	if gIssue.Assignee != nil {
-		assignee = gIssue.Assignee.Login
+	assignees, err := newAssignees(
+		*gIssue.Number,
+		gIssue.Assignees, repository)
+	if err != nil {
+		return nil, err
 	}
 	var body string
 	if gIssue.Body != nil {
 		body = *gIssue.Body
 	}
 	isPR := (gIssue.PullRequestLinks != nil && gIssue.PullRequestLinks.URL != nil)
-	labels, err := newLabels(*gIssue.Number, gIssue.Labels, repository)
+	labels, err := newLabels(
+		*gIssue.Number, gIssue.Labels, repository)
 	if err != nil {
 		return nil, err
 	}
 
 	return &sql.Issue{
-		ID:             *gIssue.Number,
+		ID:             strconv.Itoa(*gIssue.Number),
 		Labels:         labels,
 		Title:          *gIssue.Title,
 		Body:           body,
 		User:           *gIssue.User.Login,
-		Assignee:       assignee,
+		Assignees:      assignees,
 		State:          *gIssue.State,
 		Comments:       *gIssue.Comments,
 		IsPR:           isPR,
@@ -74,12 +78,10 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 }
 
 // NewIssueEvent creates a new (orm) Issue from a github Issue
-func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.IssueEvent, error) {
+func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository string) (*sql.IssueEvent, error) {
 	if gIssueEvent.ID == nil ||
 		gIssueEvent.Event == nil ||
-		gIssueEvent.CreatedAt == nil ||
-		gIssueEvent.Issue == nil ||
-		gIssueEvent.Issue.Number == nil {
+		gIssueEvent.CreatedAt == nil {
 		return nil, fmt.Errorf("IssueEvent is missing mandatory field: %+v", gIssueEvent)
 	}
 
@@ -97,11 +99,11 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, repository string) (*sql.Issu
 	}
 
 	return &sql.IssueEvent{
-		ID:             *gIssueEvent.ID,
+		ID:             strconv.Itoa(*gIssueEvent.ID),
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
-		IssueId:        *gIssueEvent.Issue.Number,
+		IssueId:        strconv.Itoa(issueID),
 		Assignee:       assignee,
 		Actor:          actor,
 		Repository:     strings.ToLower(repository),
@@ -118,13 +120,32 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 			return nil, fmt.Errorf("Label is missing name field")
 		}
 		labels = append(labels, sql.Label{
-			IssueID:    issueId,
+			IssueID:    strconv.Itoa(issueId),
 			Name:       *label.Name,
 			Repository: repository,
 		})
 	}
 
 	return labels, nil
+}
+
+// newAssignees creates a new Label for each label in the issue
+func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
+	assignees := []sql.Assignee{}
+	repository = strings.ToLower(repository)
+
+	for _, assignee := range gAssignees {
+		if assignee != nil && assignee.Login == nil {
+			return nil, fmt.Errorf("Assignee is missing Login field")
+		}
+		assignees = append(assignees, sql.Assignee{
+			IssueID:    strconv.Itoa(issueId),
+			Name:       *assignee.Login,
+			Repository: repository,
+		})
+	}
+
+	return assignees, nil
 }
 
 // NewIssueComment creates a Comment from a github.IssueComment
@@ -142,8 +163,8 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 	}
 
 	return &sql.Comment{
-		ID:               *gComment.ID,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(*gComment.ID),
+		IssueID:          strconv.Itoa(issueId),
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,
@@ -167,8 +188,8 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment, repository
 		login = *gComment.User.Login
 	}
 	return &sql.Comment{
-		ID:               *gComment.ID,
-		IssueID:          issueId,
+		ID:               strconv.Itoa(*gComment.ID),
+		IssueID:          strconv.Itoa(issueId),
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,

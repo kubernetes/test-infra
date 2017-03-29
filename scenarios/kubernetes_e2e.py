@@ -121,6 +121,7 @@ class LocalMode(object):
         """Finds the best version of e2e-runner.sh."""
         options = [
           os.path.join(self.workspace, 'e2e-runner.sh'),
+          '/workspace/e2e-runner.sh',
           test_infra('jenkins/e2e-image/e2e-runner.sh')
         ]
         for path in options:
@@ -304,6 +305,10 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
     if args.stage:
         runner_args.append('--stage=%s' % args.stage)
+    if args.stage_suffix:
+        runner_args.append('--stage-suffix=%s' % args.stage_suffix)
+    if args.multiple_federations:
+        runner_args.append('--multiple-federations')
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -316,21 +321,38 @@ def main(args):
         # current working directory at the repository root. Grab the SCM_REVISION so we
         # can use the .debs built during the bazel-build job that should have already
         # succeeded.
-        status = re.match(
-            r'STABLE_BUILD_SCM_REVISION [^\n]+',
+        status = re.search(
+            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
             check_output('hack/print-workspace-status.sh')
         )
         if not status:
             raise ValueError('STABLE_BUILD_SCM_REVISION not found')
 
-        opt = '--deployment kubernetes-anywhere ' \
-            '--kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
-            '--kubernetes-anywhere-phase2-provider kubeadm ' \
-            '--kubernetes-anywhere-cluster %s' \
-            '--kubernetes-anywhere-kubeadm-version ' \
-            'gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
+        opt = '--deployment kubernetes-anywhere' \
+            ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+            ' --kubernetes-anywhere-phase2-provider kubeadm' \
+            ' --kubernetes-anywhere-cluster %s' \
+            ' --kubernetes-anywhere-kubeadm-version' \
+            ' gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
             # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
         mode.add_environment('E2E_OPT=%s' % opt)
+
+    # env blacklist.
+    # TODO(krzyzacy) change this to a whitelist
+    docker_env_ignore = [
+      'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
+      'GOROOT',
+      'HOME',
+      'PATH',
+      'PWD',
+      'WORKSPACE'
+    ]
+
+    # TODO(fejta): delete this
+    mode.add_environment(*(
+        '%s=%s' % (k, v) for (k, v) in os.environ.items()
+        if k not in docker_env_ignore))
 
     mode.add_environment(
       # Boilerplate envs
@@ -353,23 +375,6 @@ def main(args):
       'CLUSTER_NAME=%s' % cluster,
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
-
-    # env blacklist.
-    # TODO(krzyzacy) change this to a whitelist
-    docker_env_ignore = [
-      'GOOGLE_APPLICATION_CREDENTIALS',
-      'GOPATH',
-      'GOROOT',
-      'HOME',
-      'PATH',
-      'PWD',
-      'WORKSPACE'
-    ]
-
-    # TODO(fejta): delete this
-    mode.add_environment(*(
-        '%s=%s' % (k, v) for (k, v) in os.environ.items()
-        if k not in docker_env_ignore))
 
     # Overwrite JOB_NAME for soak-*-test jobs
     if args.soak_test and os.environ.get('JOB_NAME'):
@@ -422,6 +427,8 @@ def create_parser():
     parser.add_argument(
         '--stage', help='Stage binaries to gs:// path if set')
     parser.add_argument(
+        '--stage-suffix', help='Append suffix to staged version if set')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
@@ -432,11 +439,14 @@ def create_parser():
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
-        '--tag', default='v20170314-bb0669b0', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170324-16213036', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     parser.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
+    parser.add_argument(
+        '--multiple-federations', default=False, action='store_true',
+        help='If we need to run multiple federation control planes in parallel')
     return parser
 
 if __name__ == '__main__':

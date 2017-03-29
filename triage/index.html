@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>Kubernetes Aggregated Test Results</title>
+</head>
+<body>
+<h1>Kubernetes Failures</h1>
+<form id="options" onchange="rerender();">
+Sort by
+<label><input id="sort" name="sort" type="radio" value="total">total count</label>
+<label><input name="sort" type="radio" value="day" checked>count in last day</label>
+<label><input name="sort" type="radio" value="message">error message</label>
+<br>
+<label style="display:none"><input type="checkbox" id="show-normalize">Display normalized errors</label><br>
+Include results from:
+<label><input type="checkbox" checked id="job-ci">CI</label>
+<label><input type="checkbox" id="job-pr">PR</label>
+<br><br>
+Filter (these are regexes):
+<table>
+<label><tr><td>Failure text<td><input type="text" id="filter-text"></label><br>
+<label><tr><td>Job<td><input type="text" id="filter-job"></label><br>
+<label><tr><td>Test<td><input type="text" id="filter-test"></label><br>
+</table>
+</form>
+<div id="summary"></div>
+<div id="clusters">
+  <h2>Loading... <span id="loading-progress"></span></h2>
+</div>
+</body>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="model.js"></script>
+<script src="render.js"></script>
+<script src="interactive.js"></script>
+<script>load();</script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-82843984-4', 'auto');
+  ga('send', 'pageview');
+</script>
+</script>
+</html>

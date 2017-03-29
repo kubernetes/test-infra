@@ -43,20 +43,24 @@ func (p *plog) write(format string, args ...interface{}) {
 }
 
 func (p *plog) Errorf(format string, args ...interface{}) {
-	glog.ErrorDepth(2, fmt.Sprintf(format, args...))
+	glog.ErrorDepth(1, fmt.Sprintf(format, args...))
 	p.write(format, args...)
 }
 
 func (p *plog) Infof(format string, args ...interface{}) {
-	glog.InfoDepth(2, fmt.Sprintf(format, args...))
+	glog.InfoDepth(1, fmt.Sprintf(format, args...))
 	p.write(format, args...)
 }
 
 func (p *plog) Fatalf(format string, args ...interface{}) {
-	glog.FatalDepth(2, fmt.Sprintf(format, args...))
+	glog.FatalDepth(1, fmt.Sprintf(format, args...))
 	p.write(format, args...)
 }
 
 func (p *plog) ReadLog() string {
 	return p.buf.String()
+}
+
+func (p *plog) Flush() {
+	glog.Flush()
 }

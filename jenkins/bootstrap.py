@@ -40,6 +40,7 @@ The contract with the runner is as follows:
 
 
 import argparse
+import contextlib
 import json
 import logging
 import os
@@ -51,6 +52,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
@@ -187,11 +189,11 @@ def branch_ref(branch):
         return [branch], ['FETCH_HEAD']
 
 
-def repository(repo, ssh=False):
+def repository(repo, ssh):
     """Return the url associated with the repo."""
     if repo.startswith('k8s.io/'):
         repo = 'github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
-    if ssh is True:
+    if ssh:
         if ":" not in repo:
             parts = repo.split('/', 1)
             repo = '%s:%s' % (parts[0], parts[1])
@@ -204,7 +206,7 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(call, repo, branch, pull, ssh=False, git_cache='', clean=False):
+def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull."""
     # pylint: disable=too-many-locals
     if bool(branch) == bool(pull):
@@ -684,10 +686,6 @@ def setup_magic_environment(job):
         'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
-    os.environ.setdefault(
-        'K8S_SECURITY_SSH_PRIVATE_KEY_FILE',
-        os.path.join(home, '.ssh/id_ed25519'),
-    )
 
 
     cwd = os.getcwd()
@@ -704,7 +702,8 @@ def setup_magic_environment(job):
     if JOB_ENV not in os.environ:
         os.environ[JOB_ENV] = job
     elif os.environ[JOB_ENV] != job:
-        raise ValueError(JOB_ENV, os.environ[JOB_ENV], job)
+        logging.warning('%s=%s (overrides %s)', JOB_ENV, job, os.environ[JOB_ENV])
+        os.environ[JOB_ENV] = job
     # TODO(fejta): Magic value to tell our test code not do upload started.json
     # TODO(fejta): delete upload-to-gcs.sh and then this value.
     os.environ[BOOTSTRAP_ENV] = 'yes'
@@ -739,19 +738,47 @@ def gubernator_uri(paths):
     return job
 
 
+@contextlib.contextmanager
+def choose_ssh_key(ssh):
+    """Creates a script for GIT_SSH that uses -i ssh if set."""
+    if not ssh:  # Nothing to do
+        yield
+        return
+
+    # Create a script for use with GIT_SSH, which defines the program git uses
+    # during git fetch. In the future change this to GIT_SSH_COMMAND
+    # https://superuser.com/questions/232373/how-to-tell-git-which-private-key-to-use
+    with tempfile.NamedTemporaryFile(prefix='ssh', delete=False) as fp:
+        fp.write('#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
+    try:
+        os.chmod(fp.name, 0500)
+        had = 'GIT_SSH' in os.environ
+        old = os.getenv('GIT_SSH')
+        os.environ['GIT_SSH'] = fp.name
+
+        yield
+
+        del os.environ['GIT_SSH']
+        if had:
+            os.environ['GIT_SSH'] = old
+    finally:
+        os.unlink(fp.name)
+
+
 def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     if not os.path.exists(root):
         os.makedirs(root)
     root_dir = os.path.realpath(root)
     logging.info('Root: %s', root_dir)
-    for repo, (branch, pull) in repos.items():
-        os.chdir(root_dir)
-        logging.info(
-            'Checkout: %s %s',
-            os.path.join(root_dir, repo),
-            pull and pull or branch)
-        checkout(call, repo, branch, pull, ssh, git_cache, clean)
+    with choose_ssh_key(ssh):
+        for repo, (branch, pull) in repos.items():
+            os.chdir(root_dir)
+            logging.info(
+                'Checkout: %s %s',
+                os.path.join(root_dir, repo),
+                pull and pull or branch)
+            checkout(call, repo, branch, pull, ssh, git_cache, clean)
     if len(repos) > 1:  # cd back into the primary repo
         os.chdir(root_dir)
         os.chdir(repos.main)
@@ -905,8 +932,7 @@ def parse_args(arguments=None):
         help='Activate and use path/to/service-account.json if set.')
     parser.add_argument(
         '--ssh',
-        action='store_true',
-        help='Use ssh to fetch the repository instead of https.')
+        help='Use the ssh key to fetch the repository instead of https if set.')
     parser.add_argument(
         '--git-cache',
         help='Location of the git cache.')

@@ -77,11 +77,53 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-kubernetes-e2e-kubeadm-gce
+      context: Jenkins kubeadm e2e
+      always_run: false
+      skip_report: true
+      rerun_command: "@k8s-bot kubeadm e2e test this"
+      trigger: "@k8s-bot (kubeadm e2e )?test this"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
+          args:
+          - "--pull=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--clean"
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name:  JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name:  JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
-    context: Jenkins Cross Build
-    rerun_command: "@k8s-bot cross build this"
-    trigger: "@k8s-bot (cross[ -])?build this"
+    context: pull-kubernetes-cross
+    rerun_command: "@k8s-bot pull-kubernetes-cross test this"
+    trigger: "@k8s-bot pull-kubernetes-cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-kubernetes-unit
@@ -114,14 +156,14 @@ presubmits:
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
   - name: pull-kubernetes-e2e-gke
-    context: Jenkins GKE smoke e2e
-    rerun_command: "@k8s-bot cvm gke e2e test this"
-    trigger: "@k8s-bot (cvm )?(gke )?e2e test this"
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gke test this"
 
   - name: pull-kubernetes-e2e-gke-gci
-    context: Jenkins GCI GKE smoke e2e
-    rerun_command: "@k8s-bot gci gke e2e test this"
-    trigger: "@k8s-bot (gci )?(gke )?e2e test this"
+    context: pull-kubernetes-e2e-gke-gci
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
 
   - name: pull-kubernetes-e2e-gce-gci
     always_run: true
@@ -179,6 +221,185 @@ presubmits:
     rerun_command: "@k8s-bot non-cri node e2e test this"
     trigger: "@k8s-bot (non-cri node e2e )?test this"
 
+  kubernetes-security/kubernetes: # TODO(fejta, spxr): find way to not duplicate these
+  - name: pull-security-kubernetes-bazel
+    context: Jenkins Bazel Build
+    always_run: true
+    rerun_command: "@k8s-bot bazel test this"
+    trigger: "@k8s-bot (bazel )?test this"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--git-cache=/root/.cache/git"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-security-kubernetes-e2e-kubeadm-gce
+      context: Jenkins kubeadm e2e
+      always_run: false
+      skip_report: true
+      rerun_command: "@k8s-bot kubeadm e2e test this"
+      trigger: "@k8s-bot (kubeadm e2e )?test this"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
+          args:
+          - "--pull=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--clean"
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name:  JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name:  JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
+
+  - name: pull-security-kubernetes-cross
+    context: pull-security-kubernetes-cross
+    rerun_command: "@k8s-bot pull-security-kubernetes-cross test this"
+    trigger: "@k8s-bot pull-security-kubernetes-cross test this"
+    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
+
+  - name: pull-security-kubernetes-unit
+    always_run: true
+    context: Jenkins unit/integration
+    rerun_command: "@k8s-bot unit test this"
+    trigger: "@k8s-bot (unit )?test this"
+
+  - name: pull-security-kubernetes-verify
+    always_run: true
+    context: Jenkins verification
+    rerun_command: "@k8s-bot verify test this"
+    trigger: "@k8s-bot (verify )?test this"
+
+  - name: pull-security-kubernetes-e2e-gce
+    always_run: true
+    context: Jenkins GCE e2e
+    rerun_command: "@k8s-bot cvm gce e2e test this"
+    trigger: "@k8s-bot (cvm )?(gce )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-e2e-gce-canary
+    context: pull-security-kubernetes-e2e-gce-canary
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
+
+  - name: pull-security-kubernetes-e2e-gce-etcd3
+    always_run: true
+    context: Jenkins GCE etcd3 e2e
+    rerun_command: "@k8s-bot gce etcd3 e2e test this"
+    trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-e2e-gke
+    context: pull-security-kubernetes-e2e-gke
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
+
+  - name: pull-security-kubernetes-e2e-gke-gci
+    context: pull-security-kubernetes-e2e-gke-gci
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
+
+  - name: pull-security-kubernetes-e2e-gce-gci
+    always_run: true
+    context: Jenkins GCI GCE e2e
+    rerun_command: "@k8s-bot gci gce e2e test this"
+    trigger: "@k8s-bot (gci )?(gce )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-e2e-kops-aws
+    always_run: true
+    context: Jenkins kops AWS e2e
+    rerun_command: "@k8s-bot kops aws e2e test this"
+    trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-federation-e2e-gce
+    context: pull-security-kubernetes-federation-e2e-gce
+    rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce|federation gce e2e) test this"
+
+  - name: pull-security-kubernetes-federation-e2e-gce-gci
+    context: Jenkins GCI Federation GCE e2e
+    rerun_command: "@k8s-bot federation gci gce e2e test this"
+    trigger: "@k8s-bot federation gci (gce )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-kubemark-e2e-gce
+    trigger: "@k8s-bot (kubemark )?(e2e )?test this"
+    always_run: true
+    context: Jenkins Kubemark GCE e2e
+    rerun_command: "@k8s-bot kubemark e2e test this"
+
+  - name: pull-security-kubernetes-kubemark-e2e-gce-gci
+    context: Jenkins GCI Kubemark GCE e2e
+    rerun_command: "@k8s-bot kubemark gci e2e test this"
+    trigger: "@k8s-bot kubemark gci (e2e )?test this"
+
+  - name: pull-security-kubernetes-node-e2e
+    always_run: true
+    context: Jenkins GCE Node e2e
+    rerun_command: "@k8s-bot node e2e test this"
+    trigger: "@k8s-bot (node )?(e2e )?test this"
+
+  - name: pull-security-kubernetes-e2e-gce-non-cri
+    branches:
+    - master
+    always_run: true
+    context: Jenkins non-CRI GCE e2e
+    rerun_command: "@k8s-bot non-cri e2e test this"
+    trigger: "@k8s-bot (non-cri e2e )?test this"
+
+  - name: pull-security-kubernetes-node-e2e-non-cri
+    skip_branches:
+    - release-1.3
+    - release-1.4
+    always_run: true
+    context: Jenkins non-CRI GCE Node e2e
+    rerun_command: "@k8s-bot non-cri node e2e test this"
+    trigger: "@k8s-bot (non-cri node e2e )?test this"
+
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
     context: Bazel test
@@ -225,6 +446,35 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.2
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
+  - name: pull-test-infra-verify-bazel
+    context: verify-bazel
+    branches:
+    - master
+    rerun_command: "@k8s-bot verify test this"
+    trigger: "@k8s-bot (verify )?test this"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
+        args:
+        - "--root=/go/src"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -307,7 +557,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.2
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
             args:
             - "--branch=$(PULL_REFS)"
             - "--clean"

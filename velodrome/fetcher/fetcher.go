@@ -53,19 +53,18 @@ func runProgram(config *fetcherConfig) error {
 		return err
 	}
 
-	for {
-		begin := time.Now()
+	ticker := time.Tick(time.Hour / time.Duration(config.frequency))
 
+	for {
 		tx := db.Begin()
 		UpdateIssues(tx, config)
-		UpdateIssueEvents(tx, config)
 		tx.Commit()
 
 		if config.once {
 			break
 		}
 
-		time.Sleep(time.Hour/time.Duration(config.frequency) - time.Since(begin))
+		<-ticker
 	}
 
 	return nil

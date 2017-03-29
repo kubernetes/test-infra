@@ -17,17 +17,20 @@ limitations under the License.
 package main
 
 import (
+	"strconv"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
 	"k8s.io/test-infra/velodrome/sql"
 )
 
-func findLatestEvent(db *gorm.DB, repository string) (*int, error) {
+func findLatestEvent(issueID int, db *gorm.DB, repository string) (*int, error) {
 	var latestEvent sql.IssueEvent
 
 	query := db.
 		Select("id, event_created_at").
+		Where(&sql.IssueEvent{IssueId: strconv.Itoa(issueID)}).
 		Where("repository = ?", repository).
 		Order("event_created_at desc").
 		First(&latestEvent)
@@ -38,22 +41,27 @@ func findLatestEvent(db *gorm.DB, repository string) (*int, error) {
 		return nil, query.Error
 	}
 
-	return &latestEvent.ID, nil
+	id, err := strconv.Atoi(latestEvent.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
 }
 
 // UpdateIssueEvents fetches all events until we find the most recent we
 // have in db, and saves everything in database
-func UpdateIssueEvents(db *gorm.DB, client ClientInterface) {
-	latest, err := findLatestEvent(db, client.RepositoryName())
+func UpdateIssueEvents(issueID int, db *gorm.DB, client ClientInterface) {
+	latest, err := findLatestEvent(issueID, db, client.RepositoryName())
 	if err != nil {
 		glog.Error("Failed to find last event: ", err)
 		return
 	}
 	c := make(chan *github.IssueEvent, 500)
 
-	go client.FetchIssueEvents(latest, c)
+	go client.FetchIssueEvents(issueID, latest, c)
 	for event := range c {
-		eventOrm, err := NewIssueEvent(event, client.RepositoryName())
+		eventOrm, err := NewIssueEvent(event, issueID, client.RepositoryName())
 		if err != nil {
 			glog.Error("Failed to create issue-event", err)
 		}
