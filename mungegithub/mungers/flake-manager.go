@@ -310,15 +310,11 @@ func (p *individualFlakeSource) AddTo(previous string) string {
 
 // Labels implements IssueSource
 func (p *individualFlakeSource) Labels() []string {
-	return []string{"kind/flake", sync.PriorityP2.String()}
+	return []string{"kind/flake", sync.PriorityFailingTest.String()}
 }
 
 // Priority implements IssueSource
 func (p *individualFlakeSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
-	_, ok := obj.ListComments()
-	if !ok {
-		return sync.PriorityP2, false
-	}
 	// Different IssueSource's Priority calculation may differ
 	return sync.PriorityFailingTest, true
 }
@@ -388,15 +384,11 @@ func (p *brokenJobSource) AddTo(previous string) string {
 
 // Labels implements IssueSource
 func (p *brokenJobSource) Labels() []string {
-	return []string{"kind/flake", "team/test-infra", sync.PriorityP2.String()}
+	return []string{"kind/flake", "team/test-infra", sync.PriorityFailingTest.String()}
 }
 
 // Priority implements IssueSource
 func (p *brokenJobSource) Priority(obj *github.MungeObject) (sync.Priority, bool) {
-	_, ok := obj.ListComments()
-	if !ok {
-		return sync.PriorityP2, false
-	}
 	// Different IssueSource's Priority calculation may differ
 	return sync.PriorityFailingTest, true
 }
