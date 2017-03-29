@@ -20,7 +20,7 @@ set -o xtrace
 
 JANITOR=${AWS_JANITOR_IMAGE:-gcr.io/k8s-test-infra-aws/aws-janitor}
 
-docker pull "${JANITOR}"
+gcloud docker -- pull "${JANITOR}"
 docker run -v "${JENKINS_AWS_CREDENTIALS_FILE}:/root/.aws/credentials:ro" "${JANITOR}" \
   --path s3://janitor-jenkins/objs.json\
   --ttl 2h30m # Aggressive, but all of our jobs are <2h right now.
