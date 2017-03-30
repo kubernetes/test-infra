@@ -16,6 +16,12 @@
 
 set -exu
 cd $(dirname $0)
+
+if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+  bq show
+fi
+
 date
 # cat << '#'
 table_mtime=$(bq --format=json show 'k8s-gubernator:build.week' | jq -r '(.lastModifiedTime|tonumber)/1000|floor' )
@@ -30,7 +36,7 @@ gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.jso
 pypy summarize.py triage_builds.json triage_tests.json --previous failure_data_previous.json --output failure_data.json
 
 gsutil_cp() {
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
+  gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
 }
 
 gsutil_cp failure_data.json index.html {interactive,model,render}.js style.css gs://k8s-gubernator/triage/
