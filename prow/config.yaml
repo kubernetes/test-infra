@@ -712,3 +712,20 @@ periodics:
     - name: cache-ssd
       hostPath:
         path: /mnt/disks/ssd0
+
+- name: ci-test-infra-triage
+  interval: 1h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/triage:v20170330-41a45ce8
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: triage-service-account
