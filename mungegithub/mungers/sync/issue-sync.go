@@ -35,23 +35,18 @@ const (
 
 
 	// PriorityFailingTest represents a failing or flaking test
-	PriorityFailingTest = Priority(2)
+	PriorityFailingTest = Priority("priority/failing-test")
 )
 
 // RobotUser is a set of name of robot user
 var RobotUser = sets.NewString(JenkinsBotName, BotName)
 
 // Priority represents the priority label in an issue
-type Priority int
+type Priority string
 
 // String return the priority label in string
 func (p Priority) String() string {
-	return fmt.Sprintf(priorityPrefix+"%d", p)
-}
-
-// Priority returns the priority in int
-func (p Priority) Priority() int {
-	return int(p)
+	return string(p)
 }
 
 // OwnerMapper finds an owner for a given test name.
