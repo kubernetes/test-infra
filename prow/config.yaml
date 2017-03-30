@@ -182,11 +182,6 @@ presubmits:
     rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce|federation gce e2e) test this"
 
-  - name: pull-kubernetes-federation-e2e-gce-gci
-    context: Jenkins GCI Federation GCE e2e
-    rerun_command: "@k8s-bot federation gci gce e2e test this"
-    trigger: "@k8s-bot federation gci (gce )?(e2e )?test this"
-
   - name: pull-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"
     always_run: true
@@ -360,11 +355,6 @@ presubmits:
     context: pull-security-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce|federation gce e2e) test this"
-
-  - name: pull-security-kubernetes-federation-e2e-gce-gci
-    context: Jenkins GCI Federation GCE e2e
-    rerun_command: "@k8s-bot federation gci gce e2e test this"
-    trigger: "@k8s-bot federation gci (gce )?(e2e )?test this"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"

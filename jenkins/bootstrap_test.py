@@ -1494,7 +1494,7 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapSecurityPullYaml(self):
-        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        bads = ['kops', 'federation-e2e', 'kubemark-e2e']
         is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
@@ -1515,18 +1515,30 @@ class JobTest(unittest.TestCase):
 
     def testBootstrapSecurityPullYamlJobsMatch(self):
         jobs1 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml')
+        json_jobs = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml')
+
         jobs2 = self.LoadBootstrapYaml('job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
         for name, job in jobs1.iteritems():
             if job['repo-name'] == 'k8s.io/kubernetes':
                 job2 = jobs2[name]
                 for attr in job:
                     if attr != 'repo-name':
-                        self.assertEquals(job[attr], job2[attr])
+                        self.assertEquals(job[attr], job2[attr], job)
         for name, job in jobs2.iteritems():
-            job2 = jobs1[name]
+            if job.get('json') and 'kubernetes-e2e' in name:
+                jobs = json_jobs
+                skip_json = True
+            else:
+                jobs = jobs1
+                skip_json = False
+            self.assertIn(name, jobs)
+            job2 = jobs[name]
             for attr in job:
-                if attr != 'repo-name':
-                    self.assertEquals(job[attr], job2[attr])
+                if attr == 'repo-name':
+                    continue
+                if attr == 'json' and skip_json:
+                    continue
+                self.assertEquals(job[attr], job2[attr])
 
 
     def testBootstrapCIYaml(self):
@@ -1688,7 +1700,7 @@ class JobTest(unittest.TestCase):
             cmd = bootstrap.job_script(real_job.get('job-name'), modern)
             path = cmd[0]
             args = cmd[1:]
-            self.assertTrue(os.path.isfile(path), name)
+            self.assertTrue(os.path.isfile(path), (name, path))
             if modern:
                 self.assertTrue(all(isinstance(a, basestring) for a in args), args)
                 # Ensure the .sh script isn't there
@@ -1770,7 +1782,6 @@ class JobTest(unittest.TestCase):
                     self.assertGreater(docker_timeout, 0)
                 self.assertTrue(mat, line)
                 if int(mat.group(1)) > docker_timeout:
-                    import pdb; pdb.set_trace()
                     bad_jobs.add((job, mat.group(1), docker_timeout))
             self.assertTrue(found_timeout, job)
         self.assertFalse(bad_jobs)
@@ -1817,6 +1828,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
             'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
+            'pull-kubernetes-e2e-gce.env': 'pull-kubernetes-e2e-gce-*',
+            'pull-kubernetes-e2e-gce-canary.env': 'pull-kubernetes-e2e-gce-*',
         }
         projects = collections.defaultdict(set)
         for job, job_path in self.jobs:
