@@ -227,6 +227,27 @@ func (c *Client) DeletePod(name string) error {
 	}, nil)
 }
 
+func (c *Client) ListProwJobs(labels map[string]string) ([]ProwJob, error) {
+	c.log("ListProwJobs", labels)
+	var jl struct {
+		Items []ProwJob `json:"items"`
+	}
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
+		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
+	}, &jl)
+	return jl.Items, err
+}
+
+func (c *Client) DeleteProwJob(name string) error {
+	c.log("DeleteProwJob", name)
+	return c.request(&request{
+		method: http.MethodDelete,
+		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
+	}, nil)
+}
+
 func (c *Client) GetJob(name string) (Job, error) {
 	c.log("GetJob", name)
 	var retJob Job

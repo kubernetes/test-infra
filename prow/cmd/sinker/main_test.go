@@ -25,11 +25,13 @@ import (
 )
 
 type fakeClient struct {
-	Pods []kube.Pod
-	Jobs []kube.Job
+	Pods     []kube.Pod
+	Jobs     []kube.Job
+	ProwJobs []kube.ProwJob
 
-	DeletedPods []kube.Pod
-	DeletedJobs []kube.Job
+	DeletedPods     []kube.Pod
+	DeletedJobs     []kube.Job
+	DeletedProwJobs []kube.ProwJob
 }
 
 func (c *fakeClient) ListPods(labels map[string]string) ([]kube.Pod, error) {
@@ -50,6 +52,27 @@ func (c *fakeClient) ListJobs(labels map[string]string) ([]kube.Job, error) {
 		}
 	}
 	return jl, nil
+}
+
+func (c *fakeClient) ListProwJobs(labels map[string]string) ([]kube.ProwJob, error) {
+	jl := make([]kube.ProwJob, 0, len(c.ProwJobs))
+	for _, j := range c.ProwJobs {
+		if labelsMatch(labels, j.Metadata.Labels) {
+			jl = append(jl, j)
+		}
+	}
+	return jl, nil
+}
+
+func (c *fakeClient) DeleteProwJob(name string) error {
+	for i, j := range c.ProwJobs {
+		if j.Metadata.Name == name {
+			c.ProwJobs = append(c.ProwJobs[:i], c.ProwJobs[i+1:]...)
+			c.DeletedProwJobs = append(c.DeletedProwJobs, j)
+			return nil
+		}
+	}
+	return fmt.Errorf("prowjob %s not found", name)
 }
 
 func (c *fakeClient) DeleteJob(name string) error {
@@ -233,9 +256,40 @@ func TestClean(t *testing.T) {
 		"old, deleted",
 		"old, aborted with pod",
 	}
+	prowJobs := []kube.ProwJob{
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old, complete",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxAge).Add(-time.Second),
+				CompletionTime: time.Now().Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old, incomplete",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "new",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: time.Now().Add(-time.Second),
+			},
+		},
+	}
+	deletedProwJobs := []string{
+		"old, complete",
+	}
 	kc := &fakeClient{
-		Pods: pods,
-		Jobs: jobs,
+		Pods:     pods,
+		Jobs:     jobs,
+		ProwJobs: prowJobs,
 	}
 	clean(kc)
 	if len(deletedPods) != len(kc.DeletedPods) {
@@ -264,6 +318,20 @@ func TestClean(t *testing.T) {
 		}
 		if !found {
 			t.Errorf("Did not delete job %s", n)
+		}
+	}
+	if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
+		t.Errorf("Deleted wrong number of prowjobs: got %v expected %v", kc.DeletedProwJobs, deletedProwJobs)
+	}
+	for _, n := range deletedProwJobs {
+		found := false
+		for _, j := range kc.DeletedProwJobs {
+			if j.Metadata.Name == n {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Did not delete prowjob %s", n)
 		}
 	}
 }
