@@ -19,7 +19,7 @@ cd $(dirname $0)
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-  bq show
+  bq show k8s-gubernator:build.week
 fi
 
 date
