@@ -7,6 +7,12 @@ metadata:
     kubernetes.io/tls-acme: true
 spec:
   rules:
+  - host: submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: kubernetes-sq-status
+            servicePort: 80
   - host: kubernetes.submit-queue.k8s.io
     http:
       paths:
