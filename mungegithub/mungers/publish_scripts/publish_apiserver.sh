@@ -34,10 +34,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 3 ]; then
-    echo "usage: $0 src_branch dst_branch kubernetes_remote"
+if [ ! $# -eq 4 ]; then
+    echo "usage: $0 src_branch dst_branch dependent_k8s_repos kubernetes_remote"
     exit 1
 fi
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-"${SCRIPT_DIR}"/publish_template.sh "apiserver" "${1}" "${2}" "apimachinery,client-go" "${3}" "true"
+"${SCRIPT_DIR}"/publish_template.sh "apiserver" "${1}" "${2}" "${3}" "${4}" "true"

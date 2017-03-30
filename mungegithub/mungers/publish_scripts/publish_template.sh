@@ -59,9 +59,14 @@ readonly SRC_BRANCH DST_BRANCH DEPS KUBERNETES_REMOTE IS_LIBRARY
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
 
-git checkout "${DST_BRANCH}"
 git fetch origin
-git reset --hard origin/"${DST_BRANCH}"
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "${DST_BRANCH}" ]; then
+    git reset --hard origin/"${DST_BRANCH}"
+else
+    git branch -D "${DST_BRANCH}" || true
+    git branch -f "${DST_BRANCH}" origin/"${DST_BRANCH}"
+    git checkout "${DST_BRANCH}"
+fi
 
 # sync_repo cherry-picks the commits that change
 # k8s.io/kubernetes/staging/src/k8s.io/${REPO} to the ${DST_BRANCH}
