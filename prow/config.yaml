@@ -717,7 +717,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/triage:v20170330-41a45ce8
+    - image: gcr.io/k8s-testimages/triage:v20170330-90267e4b
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
