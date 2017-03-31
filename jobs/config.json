@@ -549,8 +549,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env",
     "--kubeadm",
-    "--mode=local",
-    "--test=false"
+    "--mode=local"
   ]
 },
 
@@ -561,8 +560,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-6.env",
     "--kubeadm",
-    "--mode=local",
-    "--test=false"
+    "--mode=local"
   ]
 },
 
