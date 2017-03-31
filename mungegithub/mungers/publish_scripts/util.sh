@@ -116,11 +116,11 @@ sync_repo() {
 # like https://github.com/kubernetes/client-go/issues/83 and
 # https://github.com/kubernetes/client-go/issues/19.
 #
-# "deps" lists the dependent k8s.io/* repos. For example, if the function is
-# handling k8s.io/apiserver, deps is expected to be "apimachinery,client-go".
-# deps are expected to be separated by ",", e.g., "client-go,apimachinery".
-# We will expand it to "repo:commit,repo:commit..." when a release branch of a
-# k8s.io repo needs to track a specific revision of other k8s.io/* repos.
+# "deps" lists the dependent k8s.io/* repos and branches. For example, if the
+# function is handling the release-1.6 branch of k8s.io/apiserver, deps is
+# expected to be "apimachinery:release-1.6,client-go:release-3.0". Dependencies
+# are expected to be separated by ",", and the name of the dependent repo and
+# the branch name are expected to be separated by ":".
 #
 # "is_library" indicates if the repo being published is a library.
 #
@@ -140,9 +140,8 @@ restore_vendor() {
     # don't contain entries for k8s.io/* repos, so we need to explicitly check
     # out a revision of deps.
     for (( i=0; i<${dep_count}; i++ )); do
-        pushd ../"${deps[i]}"
-            # currently we assume the repo depends on the master branch of dep.
-            git checkout master
+        pushd ../"${deps[i]%%:*}"
+            git checkout "${deps[i]##*:}"
         popd
     done
 
@@ -190,11 +189,12 @@ cleanup_github_token() {
 # Currently this function is only useful for client-go. Entries for k8s.io/* are
 # removed from the Godeps.json in the staging area of other repos.
 update_godeps_json() {
-    local repo=${1}
+    local repo=${1%%:*}
+    local branch=${1##*:}
     local godeps_json="./Godeps/Godeps.json"
     local old_revs=""
     # TODO: pass in the new_rev if we want to depend on a specific revision.
-    local new_rev=$(cd ../${repo}; git rev-parse master)
+    local new_rev=$(cd ../${repo}; git rev-parse ${branch})
 
     # TODO: simplify the following lines
     while read path rev; do
