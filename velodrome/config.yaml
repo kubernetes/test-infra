@@ -41,6 +41,46 @@ projects:
             - --no-issues
             - --state=opened,!merged
             - --percentiles=50
+        needs-rebase:
+          plugin: count
+          args:
+            - --no-issues
+            - --percentiles=50
+            - --state=opened,labeled:needs-rebase
+        lgtmed:
+          plugin: count
+          args:
+            - --no-issues
+            - --percentiles=50
+            - --state=opened,!labeled:needs-rebase,labeled:lgtm
+        approved:
+          plugin: count
+          args:
+            - --no-issues
+            - --percentiles=50
+            - --state=opened,!labeled:needs-rebase,labeled:approved
+        lgtmer:
+          plugin: count
+          args:
+            - --no-issues
+            - --ignore-authors=k8s-merge-robot
+            - --event=labeled:lgtm
+            - --comments=(?m)^/lgtm$
+            - --log-author
+        approver:
+          plugin: count
+          args:
+            - --no-issues
+            - --ignore-authors=k8s-merge-robot
+            - --event=labeled:approved
+            - --comments=(?m)^/approve$
+            - --log-author
+        testthis:
+          plugin: count
+          args:
+            - --no-issues
+            - --ignore-authors=k8s-merge-robot,k8s-ci-robot
+            - --comments=(?m)^@k8s-bot.*test this
       kubernetes/test-infra: *kubernetes-transform
       kubernetes/contrib: *kubernetes-transform
     nginx:
