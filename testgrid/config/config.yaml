@@ -909,7 +909,7 @@ test_groups:
 - name: kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
 - name: kubernetes-e2e-kubeadm-gce-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1.6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6
 # upgrade CI tests
 - name: kubernetes-e2e-gce-latest-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-upgrade-cluster
@@ -1699,6 +1699,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-release-1.6
   - name: gci-gke-1.6
     test_group_name: ci-kubernetes-e2e-gci-gke-release-1.6
+  - name: kubeadm-gce-1.6
+    test_group_name: kubernetes-e2e-kubeadm-gce-1.6
   # AWS
   - name: kops-aws-1.6
     test_group_name: kubernetes-e2e-kops-aws-release-1.6
