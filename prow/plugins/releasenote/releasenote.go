@@ -87,7 +87,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	if !isAssignee && !isAuthor {
 		resp := "you can only set release notes if you are the author or an assignee"
 		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	// Add the requested label if necessary.

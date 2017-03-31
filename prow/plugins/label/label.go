@@ -112,7 +112,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	if len(nonexistent) > 0 {
 		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
-		if err := gc.CreateComment(owner, repo, number, plugins.FormatResponse(ic.Comment, msg)); err != nil {
+		if err := gc.CreateComment(owner, repo, number, plugins.FormatICResponse(ic.Comment, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
 	}

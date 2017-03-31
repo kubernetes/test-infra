@@ -62,7 +62,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
 		resp := "you can't close an issue unless you authored it or you are assigned to it"
 		log.Infof("Commenting \"%s\".", resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	log.Info("Closing issue.")

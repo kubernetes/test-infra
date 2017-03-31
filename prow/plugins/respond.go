@@ -25,13 +25,18 @@ import (
 
 const AboutThisBot = "Instructions for interacting with me using PR comments are available [here](https://github.com/kubernetes/community/blob/master/contributors/devel/pull-request-commands.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md)."
 
-// FormatResponse nicely formats a response to an issue comment.
-func FormatResponse(ic github.IssueComment, s string) string {
+// FormatICResponse nicely formats a response to an issue comment.
+func FormatICResponse(ic github.IssueComment, s string) string {
+	return FormatResponseRaw(ic.Body, ic.HTMLURL, ic.User.Login, s)
+}
+
+// FormatResponseRaw nicely formats a response for one does not have an issue comment
+func FormatResponseRaw(body, bodyURL, login, reply string) string {
 	format := `@%s: %s.
 
 <details>
 
-In response to [this comment](%s):
+In response to [this](%s):
 
 %s
 
@@ -40,8 +45,8 @@ In response to [this comment](%s):
 `
 	// Quote the user's comment by prepending ">" to each line.
 	var quoted []string
-	for _, l := range strings.Split(ic.Body, "\n") {
+	for _, l := range strings.Split(body, "\n") {
 		quoted = append(quoted, ">"+l)
 	}
-	return fmt.Sprintf(format, ic.User.Login, s, ic.HTMLURL, strings.Join(quoted, "\n"), AboutThisBot)
+	return fmt.Sprintf(format, login, reply, bodyURL, strings.Join(quoted, "\n"), AboutThisBot)
 }

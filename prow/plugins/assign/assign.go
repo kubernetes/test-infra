@@ -17,6 +17,7 @@ limitations under the License.
 package assign
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -38,6 +39,7 @@ func init() {
 
 type githubClient interface {
 	AssignIssue(owner, repo string, number int, logins []string) error
+	CreateComment(owner, repo string, number int, comment string) error
 	UnassignIssue(owner, repo string, number int, logins []string) error
 }
 
@@ -47,6 +49,7 @@ type assignEvent struct {
 	login  string
 	org    string
 	repo   string
+	url    string
 	number int
 }
 
@@ -57,6 +60,7 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		login:  pr.PullRequest.User.Login,
 		org:    pr.PullRequest.Base.Repo.Owner.Login,
 		repo:   pr.PullRequest.Base.Repo.Name,
+		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
 	return handle(pc.GitHubClient, pc.Logger, ae)
@@ -69,6 +73,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		login:  i.Issue.User.Login,
 		org:    i.Repo.Owner.Login,
 		repo:   i.Repo.Name,
+		url:    i.Issue.HTMLURL,
 		number: i.Issue.Number,
 	}
 	return handle(pc.GitHubClient, pc.Logger, ae)
@@ -81,6 +86,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		login:  ic.Comment.User.Login,
 		org:    ic.Repo.Owner.Login,
 		repo:   ic.Repo.Name,
+		url:    ic.Comment.HTMLURL,
 		number: ic.Issue.Number,
 	}
 	return handle(pc.GitHubClient, pc.Logger, ae)
@@ -140,6 +146,14 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	if len(assign) > 0 {
 		log.Printf("Adding assignees to %s/%s#%d: %v", ae.org, ae.repo, ae.number, assign)
 		if err := gc.AssignIssue(ae.org, ae.repo, ae.number, assign); err != nil {
+			if mu, ok := err.(github.MissingUsers); ok {
+				msg := fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.",
+					strings.Join(mu, ", "), ae.org, ae.org)
+				if e2 := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); e2 != nil {
+					return fmt.Errorf("comment err: %v", e2)
+				}
+				return nil
+			}
 			return err
 		}
 	}

@@ -78,7 +78,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	if isAuthor && wantLGTM {
 		resp := "you cannot LGTM your own PR"
 		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	} else if !isAuthor && !isAssignee {
 		log.Infof("Assigning %s/%s#%d to %s", org, repo, number, commentAuthor)
 		if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
@@ -92,7 +92,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 			}
 			resp := "changing LGTM is restricted to assignees, and " + msg
 			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+			return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}
 	}
 

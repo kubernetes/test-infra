@@ -15,7 +15,7 @@
 all: build test
 
 
-HOOK_VERSION       = 0.95
+HOOK_VERSION       = 0.96
 LINE_VERSION       = 0.86
 SINKER_VERSION     = 0.6
 DECK_VERSION       = 0.19
