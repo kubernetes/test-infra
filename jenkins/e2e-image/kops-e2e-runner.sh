@@ -58,7 +58,7 @@ if [[ -z "${EXTERNAL_IP}" ]]; then
   echo
   echo "WARNING: Getting external IP from instance metadata failed, assuming not running on GCE."
   echo
-  EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
+  EXTERNAL_IP=$(curl 'http://ifconfig.co')
 fi
 export E2E_OPT="${E2E_OPT} --kops-admin-access ${EXTERNAL_IP}/32"
 
