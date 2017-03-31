@@ -41,36 +41,49 @@ func TestHandleRequest(t *testing.T) {
 		resources []*Resource
 		path      string
 		code      int
+		method    string
 	}{
+		{
+			name:      "get",
+			resources: []*Resource{},
+			path:      "?type=t&state=s&owner=o",
+			code:      http.StatusBadRequest,
+			method:    http.MethodGet,
+		},
 		{
 			name:      "no arg",
 			resources: []*Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
 			resources: []*Resource{},
 			path:      "?state=s&owner=o",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
 			resources: []*Resource{},
 			path:      "?type=t&owner=o",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing owner",
 			resources: []*Resource{},
 			path:      "?type=t&state=s",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
 			resources: []*Resource{},
 			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusInternalServerError,
+			method:    http.MethodPost,
 		},
 		{
 			name: "no match type",
@@ -82,8 +95,9 @@ func TestHandleRequest(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?type=t&state=s&owner=o",
-			code: http.StatusInternalServerError,
+			path:   "?type=t&state=s&owner=o",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "no match state",
@@ -95,8 +109,9 @@ func TestHandleRequest(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?type=t&state=s&owner=o",
-			code: http.StatusInternalServerError,
+			path:   "?type=t&state=s&owner=o",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "busy",
@@ -108,8 +123,9 @@ func TestHandleRequest(t *testing.T) {
 					Owner: "user",
 				},
 			},
-			path: "?type=t&state=s&owner=o",
-			code: http.StatusInternalServerError,
+			path:   "?type=t&state=s&owner=o",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "ok",
@@ -121,14 +137,15 @@ func TestHandleRequest(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?type=t&state=s&owner=o",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&owner=o",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 	}
 
 	for _, tc := range testcases {
 		handler := handleStart(MakeFakeClient(tc.resources))
-		req, err := http.NewRequest(http.MethodGet, "", nil)
+		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
@@ -159,30 +176,42 @@ func TestDone(t *testing.T) {
 		resources []*Resource
 		path      string
 		code      int
+		method    string
 	}{
+		{
+			name:      "get",
+			resources: []*Resource{},
+			path:      "?name=res&state=d",
+			code:      http.StatusBadRequest,
+			method:    http.MethodGet,
+		},
 		{
 			name:      "no arg",
 			resources: []*Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing name",
 			resources: []*Resource{},
 			path:      "?state=d",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
 			resources: []*Resource{},
 			path:      "?name=res",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
 			resources: []*Resource{},
 			path:      "?name=res&state=d",
 			code:      http.StatusInternalServerError,
+			method:    http.MethodPost,
 		},
 		{
 			name: "no owner",
@@ -194,8 +223,9 @@ func TestDone(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?name=res&state=d",
-			code: http.StatusInternalServerError,
+			path:   "?name=res&state=d",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "no match name",
@@ -207,8 +237,9 @@ func TestDone(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?name=res&state=d",
-			code: http.StatusInternalServerError,
+			path:   "?name=res&state=d",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "ok",
@@ -220,15 +251,16 @@ func TestDone(t *testing.T) {
 					Owner: "user",
 				},
 			},
-			path: "?name=res&state=d",
-			code: http.StatusOK,
+			path:   "?name=res&state=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 	}
 
 	for _, tc := range testcases {
 		c := MakeFakeClient(tc.resources)
 		handler := handleDone(c)
-		req, err := http.NewRequest(http.MethodGet, "", nil)
+		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
@@ -261,42 +293,56 @@ func TestReset(t *testing.T) {
 		resources []*Resource
 		path      string
 		code      int
+		method    string
 	}{
+		{
+			name:      "get",
+			resources: []*Resource{},
+			path:      "?type=t&state=s&expire=10m&dest=d",
+			code:      http.StatusBadRequest,
+			method:    http.MethodGet,
+		},
 		{
 			name:      "no arg",
 			resources: []*Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
 			resources: []*Resource{},
 			path:      "?state=s&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
 			resources: []*Resource{},
 			path:      "?type=t&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing expire",
 			resources: []*Resource{},
 			path:      "?type=t&state=s&dest=d",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
 			resources: []*Resource{},
 			path:      "?type=t&state=s&expire=10m",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "bad expire",
 			resources: []*Resource{},
 			path:      "?type=t&state=s&expire=woooo&dest=d",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name: "empty - has owner",
@@ -309,8 +355,9 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
 			},
-			path: "?type=t&state=s&expire=10m&dest=d",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 		{
 			name: "empty - not expire",
@@ -323,8 +370,9 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now(),
 				},
 			},
-			path: "?type=t&state=s&expire=10m&dest=d",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 		{
 			name: "empty - no match type",
@@ -337,8 +385,9 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
 			},
-			path: "?type=t&state=s&expire=10m&dest=d",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 		{
 			name: "empty - no match state",
@@ -351,8 +400,9 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
 			},
-			path: "?type=t&state=s&expire=10m&dest=d",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 		{
 			name: "ok",
@@ -365,15 +415,16 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
 			},
-			path: "?type=t&state=s&expire=10m&dest=d",
-			code: http.StatusOK,
+			path:   "?type=t&state=s&expire=10m&dest=d",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 	}
 
 	for _, tc := range testcases {
 		c := MakeFakeClient(tc.resources)
 		handler := handleReset(c)
-		req, err := http.NewRequest(http.MethodGet, "", nil)
+		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
@@ -412,18 +463,28 @@ func TestUpdate(t *testing.T) {
 		resources []*Resource
 		path      string
 		code      int
+		method    string
 	}{
+		{
+			name:      "get",
+			resources: []*Resource{},
+			path:      "?name=foo",
+			code:      http.StatusBadRequest,
+			method:    http.MethodGet,
+		},
 		{
 			name:      "no arg",
 			resources: []*Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
 			resources: []*Resource{},
 			path:      "?name=res",
 			code:      http.StatusInternalServerError,
+			method:    http.MethodPost,
 		},
 		{
 			name: "no matched resource",
@@ -435,8 +496,9 @@ func TestUpdate(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path: "?name=foo",
-			code: http.StatusInternalServerError,
+			path:   "?name=foo",
+			code:   http.StatusInternalServerError,
+			method: http.MethodPost,
 		},
 		{
 			name: "ok",
@@ -449,15 +511,16 @@ func TestUpdate(t *testing.T) {
 					LastUpdate: FakeNow,
 				},
 			},
-			path: "?name=res",
-			code: http.StatusOK,
+			path:   "?name=res",
+			code:   http.StatusOK,
+			method: http.MethodPost,
 		},
 	}
 
 	for _, tc := range testcases {
 		c := MakeFakeClient(tc.resources)
 		handler := handleUpdate(c)
-		req, err := http.NewRequest(http.MethodGet, "", nil)
+		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}

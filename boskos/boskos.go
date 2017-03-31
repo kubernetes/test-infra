@@ -48,6 +48,13 @@ func main() {
 	http.Handle("/update", handleUpdate(r))
 	http.Handle("/metric", handleMetric(r))
 
+	go func() {
+		for range time.Tick(time.Minute) {
+			r.logStatus()
+			r.saveState()
+		}
+	}()
+
 	logrus.Info("Start Service")
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
@@ -61,6 +68,12 @@ func handleDefault() http.HandlerFunc {
 func handleStart(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleStart").Infof("From %v", req.RemoteAddr)
+
+		if req.Method != "POST" {
+			logrus.Warning("[BadRequest]method %v, expect POST", req.Method)
+			http.Error(res, "/start only accept POST method", http.StatusBadRequest)
+			return
+		}
 
 		rtype := req.URL.Query().Get("type")
 		state := req.URL.Query().Get("state")
@@ -95,6 +108,12 @@ func handleDone(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleDone").Infof("From %v", req.RemoteAddr)
 
+		if req.Method != "POST" {
+			logrus.Warning("[BadRequest]method %v, expect POST", req.Method)
+			http.Error(res, "/done only accept POST method", http.StatusBadRequest)
+			return
+		}
+
 		name := req.URL.Query().Get("name")
 		state := req.URL.Query().Get("state")
 		if name == "" || state == "" {
@@ -116,6 +135,12 @@ func handleDone(r *Ranch) http.HandlerFunc {
 func handleReset(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleReset").Infof("From %v", req.RemoteAddr)
+
+		if req.Method != "POST" {
+			logrus.Warning("[BadRequest]method %v, expect POST", req.Method)
+			http.Error(res, "/reset only accept POST method", http.StatusBadRequest)
+			return
+		}
 
 		rtype := req.URL.Query().Get("type")
 		state := req.URL.Query().Get("state")
@@ -153,6 +178,12 @@ func handleUpdate(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleUpdate").Infof("From %v", req.RemoteAddr)
 
+		if req.Method != "POST" {
+			logrus.Warning("[BadRequest]method %v, expect POST", req.Method)
+			http.Error(res, "/update only accept POST method", http.StatusBadRequest)
+			return
+		}
+
 		// validate vars
 		name := req.URL.Query().Get("name")
 		if name == "" {
@@ -173,6 +204,14 @@ func handleUpdate(r *Ranch) http.HandlerFunc {
 
 func handleMetric(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		logrus.WithField("handler", "handleMetric").Infof("From %v", req.RemoteAddr)
+
+		if req.Method != "GET" {
+			logrus.Warning("[BadRequest]method %v, expect GET", req.Method)
+			http.Error(res, "/metric only accept GET method", http.StatusBadRequest)
+			return
+		}
+
 		fmt.Fprint(res, "To be implemented.\n")
 	}
 }

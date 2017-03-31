@@ -29,7 +29,7 @@ State is a string that tells the current status of the resource.
 
 1. 	URL: /start
 	Desc: Use /start when you want to get hold of some resource.
-	Method: GET/POST
+	Method: POST
 	URL Params: 
 		Required: type=[string] : type of requested resource
 		Required: state=[string] : state of the requested resource
@@ -39,7 +39,7 @@ State is a string that tells the current status of the resource.
 
 2.	URL: /done
 	Desc: use /done when you finish use some resource.
-	Method: GET/POST
+	Method: POST
 	URL Params:
 		Required: name=[string] : name of finished resource
 		Required: state=[string] : dest state
@@ -48,14 +48,14 @@ State is a string that tells the current status of the resource.
 
 3.	URL: /update
 	Desc: Update resource last-update timestamp.
-	Method: GET/POST
+	Method: POST
 	URL Params:
 		Required: name=[string] : name of target resource
 	Return: status code
 
 4.	URL: /reset
 	Desc: Reset a group of expired resource to certain state.
-	Method: GET/POST
+	Method: POST
 	URL Params:
 		Required: type=[string] : type of resource in interest
 		Required: state=[string] : original state
@@ -64,8 +64,8 @@ State is a string that tells the current status of the resource.
 			*durationStr is any string can be parsed by [time.ParseDuration()](https://golang.org/pkg/time/#ParseDuration)
 		Return: error code, or a list of [Owner:Resource] pairs.
 
-5.	URL: /list
-	Method: GET/POST
+5.	URL: /metric
+	Method: GET
 	URL Params: 
 		Required: type=[string] : type of requested resource
 
