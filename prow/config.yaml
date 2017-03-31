@@ -592,7 +592,7 @@ postsubmits:
           - name: cache-ssd
             hostPath:
               path: /mnt/disks/ssd0
-  - name: ci-kubernetes-bazel-build-1.6
+  - name: ci-kubernetes-bazel-build-1-6
     branches:
     - release-1.6
     spec:
@@ -623,7 +623,7 @@ postsubmits:
         hostPath:
           path: /mnt/disks/ssd0
     run_after_success:
-    - name: ci-kubernetes-bazel-test-1.6
+    - name: ci-kubernetes-bazel-test-1-6
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:0.9
@@ -651,7 +651,7 @@ postsubmits:
           hostPath:
             path: /mnt/disks/ssd0
       run_after_success:
-      - name: ci-kubernetes-e2e-kubeadm-gce-1.6
+      - name: ci-kubernetes-e2e-kubeadm-gce-1-6
         spec:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:0.3
