@@ -25,6 +25,7 @@ image:
 	go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
 	gcloud docker -- push "gcr.io/k8s-testimages/boskos:$(TAG)"
+	rm boskos
 
 deployment:
 	kubectl apply -f deployment.yaml

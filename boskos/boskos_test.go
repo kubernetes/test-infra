@@ -27,7 +27,7 @@ import (
 	"time"
 )
 
-func MakeFakeClient(resources []*Resource) *Ranch {
+func MakeFakeClient(resources []Resource) *Ranch {
 	newRanch := &Ranch{
 		Resources: resources,
 	}
@@ -35,60 +35,60 @@ func MakeFakeClient(resources []*Resource) *Ranch {
 	return newRanch
 }
 
-func TestHandleRequest(t *testing.T) {
+func TestAcquire(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []*Resource
+		resources []Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&owner=o",
-			code:      http.StatusBadRequest,
+			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?state=s&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing owner",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&owner=o",
-			code:      http.StatusInternalServerError,
+			code:      http.StatusConflict,
 			method:    http.MethodPost,
 		},
 		{
 			name: "no match type",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "wrong",
 					State: "s",
@@ -96,13 +96,13 @@ func TestHandleRequest(t *testing.T) {
 				},
 			},
 			path:   "?type=t&state=s&owner=o",
-			code:   http.StatusInternalServerError,
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "no match state",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "wrong",
@@ -110,13 +110,13 @@ func TestHandleRequest(t *testing.T) {
 				},
 			},
 			path:   "?type=t&state=s&owner=o",
-			code:   http.StatusInternalServerError,
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "busy",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -124,13 +124,13 @@ func TestHandleRequest(t *testing.T) {
 				},
 			},
 			path:   "?type=t&state=s&owner=o",
-			code:   http.StatusInternalServerError,
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -144,7 +144,8 @@ func TestHandleRequest(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		handler := handleStart(MakeFakeClient(tc.resources))
+		c := MakeFakeClient(tc.resources)
+		handler := handleAcquire(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
@@ -164,94 +165,105 @@ func TestHandleRequest(t *testing.T) {
 			var data Resource
 			json.Unmarshal(rr.Body.Bytes(), &data)
 			if data.Name != "res" {
-				t.Errorf("Got res %v, expect res", data.Name)
+				t.Errorf("%s - Got res %v, expect res", tc.name, data.Name)
+			}
+
+			if c.Resources[0].Owner != "o" {
+				t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, c.Resources[0].Owner)
 			}
 		}
 	}
 }
 
-func TestDone(t *testing.T) {
+func TestRelease(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []*Resource
+		resources []Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []*Resource{},
-			path:      "?name=res&state=d",
-			code:      http.StatusBadRequest,
+			resources: []Resource{},
+			path:      "?name=res&dest=d&owner=foo",
+			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing name",
-			resources: []*Resource{},
-			path:      "?state=d",
+			resources: []Resource{},
+			path:      "?dest=d&owner=foo",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
-			resources: []*Resource{},
-			path:      "?name=res",
+			resources: []Resource{},
+			path:      "?name=res&owner=foo",
+			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
+		},
+		{
+			name:      "missing owner",
+			resources: []Resource{},
+			path:      "?name=res&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []*Resource{},
-			path:      "?name=res&state=d",
-			code:      http.StatusInternalServerError,
+			resources: []Resource{},
+			path:      "?name=res&dest=d&owner=foo",
+			code:      http.StatusConflict,
 			method:    http.MethodPost,
 		},
 		{
-			name: "no owner",
-			resources: []*Resource{
-				&Resource{
+			name: "wrong owner",
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
-					Owner: "",
+					Owner: "merlin",
 				},
 			},
-			path:   "?name=res&state=d",
-			code:   http.StatusInternalServerError,
+			path:   "?name=res&dest=d&owner=foo",
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "no match name",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "foo",
 					Type:  "t",
 					State: "s",
-					Owner: "",
+					Owner: "merlin",
 				},
 			},
-			path:   "?name=res&state=d",
-			code:   http.StatusInternalServerError,
+			path:   "?name=res&dest=d&owner=merlin",
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
-					Owner: "user",
+					Owner: "merlin",
 				},
 			},
-			path:   "?name=res&state=d",
+			path:   "?name=res&dest=d&owner=merlin",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
@@ -259,7 +271,7 @@ func TestDone(t *testing.T) {
 
 	for _, tc := range testcases {
 		c := MakeFakeClient(tc.resources)
-		handler := handleDone(c)
+		handler := handleRelease(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
@@ -277,11 +289,11 @@ func TestDone(t *testing.T) {
 
 		if rr.Code == http.StatusOK {
 			if c.Resources[0].State != "d" {
-				t.Errorf("Wrong state. Got %v, expect d", c.Resources[0].State)
+				t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, c.Resources[0].State)
 			}
 
 			if c.Resources[0].Owner != "" {
-				t.Errorf("Wrong owner. Got %v, expect empty", c.Resources[0].Owner)
+				t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, c.Resources[0].Owner)
 			}
 		}
 	}
@@ -290,64 +302,64 @@ func TestDone(t *testing.T) {
 func TestReset(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []*Resource
+		resources []Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&expire=10m&dest=d",
-			code:      http.StatusBadRequest,
+			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?state=s&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing expire",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&expire=10m",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "bad expire",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?type=t&state=s&expire=woooo&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name: "empty - has owner",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -361,8 +373,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - not expire",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -376,8 +388,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - no match type",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "wrong",
 					State:      "s",
@@ -391,8 +403,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - no match state",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "t",
 					State:      "wrong",
@@ -406,8 +418,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "ok",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -444,11 +456,11 @@ func TestReset(t *testing.T) {
 			json.Unmarshal(rr.Body.Bytes(), &rmap)
 			if strings.HasPrefix(tc.name, "empty") {
 				if len(rmap) != 0 {
-					t.Errorf("Expect empty map. Got %v", rmap)
+					t.Errorf("%s - Expect empty map. Got %v", tc.name, rmap)
 				}
 			} else {
 				if owner, ok := rmap["res"]; !ok || owner != "user" {
-					t.Errorf("Expect res - user. Got %v", rmap)
+					t.Errorf("%s - Expect res - user. Got %v", tc.name, rmap)
 				}
 			}
 		}
@@ -460,58 +472,72 @@ func TestUpdate(t *testing.T) {
 
 	var testcases = []struct {
 		name      string
-		resources []*Resource
+		resources []Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "?name=foo",
-			code:      http.StatusBadRequest,
+			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []*Resource{},
+			resources: []Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []*Resource{},
-			path:      "?name=res",
-			code:      http.StatusInternalServerError,
+			resources: []Resource{},
+			path:      "?name=res&owner=merlin",
+			code:      http.StatusConflict,
 			method:    http.MethodPost,
 		},
 		{
-			name: "no matched resource",
-			resources: []*Resource{
-				&Resource{
+			name: "wrong owner",
+			resources: []Resource{
+				Resource{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
-					Owner: "",
+					Owner: "evil",
 				},
 			},
-			path:   "?name=foo",
-			code:   http.StatusInternalServerError,
+			path:   "?name=res&owner=merlin",
+			code:   http.StatusConflict,
+			method: http.MethodPost,
+		},
+		{
+			name: "no matched resource",
+			resources: []Resource{
+				Resource{
+					Name:  "res",
+					Type:  "t",
+					State: "s",
+					Owner: "merlin",
+				},
+			},
+			path:   "?name=foo&owner=merlin",
+			code:   http.StatusConflict,
 			method: http.MethodPost,
 		},
 		{
 			name: "ok",
-			resources: []*Resource{
-				&Resource{
+			resources: []Resource{
+				Resource{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
-					Owner:      "",
+					Owner:      "merlin",
 					LastUpdate: FakeNow,
 				},
 			},
-			path:   "?name=res",
+			path:   "?name=res&owner=merlin",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
