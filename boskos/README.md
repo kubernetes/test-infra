@@ -8,7 +8,7 @@ boskos is a resource manager service, that handles and manages different kind of
 
 ## Introduction
 
-Boskos is inited with a config of resources, one JSON entry per line, from `-config` flag
+Boskos is inited with a config of resources, one JSON entry per line, from `-config`
 
 A resource object looks like
 ```
@@ -27,30 +27,32 @@ State is a string that tells the current status of the resource.
 
 ## API
 
-1. 	URL: /start
+1. 	URL: /acquire
 	Desc: Use /start when you want to get hold of some resource.
 	Method: POST
 	URL Params: 
-		Required: type=[string] : type of requested resource
+		Required: type=[string]  : type of requested resource
 		Required: state=[string] : state of the requested resource
 		Required: owner=[string] : requester of the resource
 	Return: error code or 200 with a valid Resource JSON object.
-	Example: /start?type=project&state=free&owner=senlu
+	Example: /acquire?type=project&state=free&owner=senlu
 
-2.	URL: /done
-	Desc: use /done when you finish use some resource.
+2.	URL: /release
+	Desc: use /done when you finish use some resource. Owner need to match current owner.
 	Method: POST
 	URL Params:
-		Required: name=[string] : name of finished resource
-		Required: state=[string] : dest state
+		Required: name=[string]  : name of finished resource
+		Required: owner=[string] : owner of the resource
+		Required: dest=[string]  : dest state
 	Return: status code
-	Example: /done?name=k8s-jkns-foo&state=dirty
+	Example: /release?name=k8s-jkns-foo&dest=dirty
 
 3.	URL: /update
-	Desc: Update resource last-update timestamp.
+	Desc: Update resource last-update timestamp. Owner need to match current owner.
 	Method: POST
 	URL Params:
-		Required: name=[string] : name of target resource
+		Required: name=[string]  : name of target resource
+		Required: owner=[string] : owner of the resource
 	Return: status code
 
 4.	URL: /reset
@@ -60,7 +62,7 @@ State is a string that tells the current status of the resource.
 		Required: type=[string] : type of resource in interest
 		Required: state=[string] : original state
 		Required: dest=[string] : dest state, for expired resource
-		Required: expire=[durationStr*]
+		Required: expire=[durationStr*] resource has not been updated since before {expire}. 
 			*durationStr is any string can be parsed by [time.ParseDuration()](https://golang.org/pkg/time/#ParseDuration)
 		Return: error code, or a list of [Owner:Resource] pairs.
 
@@ -76,7 +78,7 @@ State is a string that tells the current status of the resource.
 			A sample object will look like:
 			{
 				“type” : “project”
-				“Status”: 
+				“Current”: 
 				{
 					“total”   : 35 
 					“free”    : 20
@@ -84,7 +86,7 @@ State is a string that tells the current status of the resource.
 					“injured” : 5
 				}
 	
-				“Moved to”:
+				“Total”:
 				{
 					“free”:    600
 					“dirty”:   500
@@ -104,9 +106,9 @@ State is a string that tells the current status of the resource.
 ```
 
 ## Local test:
-1. Shoot it up with a fake resources.json, with `go run boskos.go -config=/path/to/resources.json`
+1. Start boskos with a fake resources.json, with `go run boskos.go -config=/path/to/resources.json`
 
-1. Punt it with local requests:
+1. Sent some local requests to boskos:
 ```
 curl 'http://127.0.0.1:8080/start?type=project&state=free&owner=user'
 ```
