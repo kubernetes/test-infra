@@ -301,6 +301,18 @@
   ]
 },
 
+"pull-kubernetes-e2e-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gce.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gce.env",
+     "--build",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
+     "--cluster="
+  ]
+},
+
 "pull-kubernetes-e2e-gce-canary": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -312,6 +324,43 @@
      "--cluster="
   ]
 },
+
+"pull-kubernetes-e2e-gce-etcd3": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gce.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gce-etcd3.env",
+     "--build",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3",
+     "--cluster="
+  ]
+},
+
+"pull-kubernetes-e2e-gce-gci": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gce.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gce-gci.env",
+     "--build",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gci",
+     "--cluster="
+  ]
+},
+
+"pull-kubernetes-e2e-gce-non-cri": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+     "--env-file=platforms/gce.env",
+     "--env-file=jobs/pull-kubernetes-e2e.env",
+     "--env-file=jobs/pull-kubernetes-e2e-gce-non-cri.env",
+     "--build",
+     "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-non-cri",
+     "--cluster="
+  ]
+},
+
 
 "pull-kubernetes-e2e-gke": {
   "scenario": "kubernetes_e2e",
@@ -351,7 +400,6 @@
      "--multiple-federations"
   ]
 },
-
 
 "pull-kubernetes-node-e2e": {
   "scenario": "kubernetes_kubelet",
