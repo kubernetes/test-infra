@@ -22,7 +22,10 @@ if [ ! -e test-infra ]; then
 fi
 
 if [ ! -e kubernetes-anywhere ]; then
-  git clone https://github.com/kubernetes/kubernetes-anywhere
+  # This is a short-term fix to get kubeadm e2es stable before the correct fix
+  # is in place. https://github.com/kubernetes/kubeadm/issues/219
+  # TODO(pipejakob): point this back to kubernetes/kubernetes-anywhere
+  git clone https://github.com/pipejakob/kubernetes-anywhere
 fi
 
 # This is required until https://github.com/kubernetes/kubernetes-anywhere/issues/332
