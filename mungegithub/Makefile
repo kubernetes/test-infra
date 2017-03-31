@@ -18,6 +18,7 @@ CACHEDIR ?= /tmp/mungegithub-cache
 WWW ?= $(PWD)/$(APP)/www
 TARGET ?= kubernetes
 
+# MUNGERS is used only by the `local_dryrun` target. It selects what munger to test.
 ifeq ($(APP),submit-queue)
 MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter"
 else ifeq ($(APP),cherrypick)
