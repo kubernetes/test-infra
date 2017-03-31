@@ -30,17 +30,42 @@ type ObjectMeta struct {
 	UID             string `json:"uid,omitempty"`
 }
 
+type ProwJobType string
+type ProwJobState string
+
+const (
+	PresubmitJob  ProwJobType = "presubmit"
+	PostsubmitJob             = "postsubmit"
+	PeriodicJob               = "periodic"
+	BatchJob                  = "batch"
+)
+
+const (
+	TriggeredState ProwJobState = "triggered"
+	PendingState                = "pending"
+	SuccessState                = "success"
+	FailureState                = "failure"
+	AbortedState                = "aborted"
+	ErrorState                  = "error"
+)
+
 type ProwJob struct {
 	Metadata ObjectMeta    `json:"metadata,omitempty"`
 	Spec     ProwJobSpec   `json:"spec,omitempty"`
 	Status   ProwJobStatus `json:"status,omitempty"`
 }
 
-type ProwJobSpec struct{}
+type ProwJobSpec struct {
+	Type ProwJobType `json:"type,omitempty"`
+	Job  string      `json:"job,omitempty"`
+}
 
 type ProwJobStatus struct {
-	StartTime      time.Time `json:"startTime,omitempty"`
-	CompletionTime time.Time `json:"completionTime,omitempty"`
+	StartTime      time.Time    `json:"startTime,omitempty"`
+	CompletionTime time.Time    `json:"completionTime,omitempty"`
+	State          ProwJobState `json:"state,omitempty"`
+	// TODO(spxtr): Remove this once migration is complete.
+	KubeJobName string `json:"kube_job_name,omitempty"`
 }
 
 type Secret struct {
