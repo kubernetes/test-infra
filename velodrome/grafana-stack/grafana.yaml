@@ -13,7 +13,7 @@ spec:
       containers:
       - name: grafana
         command:
-        image: grafana/grafana:3.1.1
+        image: grafana/grafana:4.2.0
         resources:
           requests:
             cpu: 0m
