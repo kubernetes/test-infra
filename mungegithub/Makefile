@@ -12,20 +12,7 @@ CONTAINER := $(REPO)/$(APP):$(TAG)
 
 KUBECONFIG ?= $(HOME)/.kube/config
 
-# Change it to a /tmp directory when run locally, otherwise your workspace might get overwritten.
-KUBEDIR ?= $(GOPATH)/src/k8s.io/kubernetes
-CACHEDIR ?= /tmp/mungegithub-cache
-WWW ?= $(PWD)/$(APP)/www
 TARGET ?= kubernetes
-
-ifeq ($(APP),submit-queue)
-MUNGERS ?= "blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter"
-else ifeq ($(APP),cherrypick)
-MUNGERS ?= "cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue"
-else ifeq ($(APP),publisher)
-MUNGERS ?= "publisher"
-endif
-
 
 TOKEN ?= "./token"
 token=$(shell cat $(TOKEN))
@@ -65,15 +52,6 @@ push_config:
 	# pushes a new configmap.
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/deployment/$(TARGET)/configmap.yaml
 
-ensure_dirs:
-	-mkdir -p $(KUBEDIR)
-	-mkdir -p $(CACHEDIR)
-
-# Try to run the binary locally using docker, doesn't need to push or have a running kube cluster.
-# Binary is exposed on port 8080
-local_dryrun: container ensure_dirs
-	docker run --rm -v $(KUBEDIR):/gitrepos/kubernetes:z -v $(CACHEDIR):/cache/httpcache:z -v $(WWW):/www:z -p 8080:8080 $(CONTAINER) --pr-mungers=$(MUNGERS) --http-cache-dir=/cache/httpcache --www=/www --token=$(token)
-
 # updates the deployment.yaml with current build information and sets it to --dry-run
 deployment:
 	# update the deployment.yaml with the current date and git hash
@@ -107,7 +85,7 @@ ui-stub:
 help:
 	@echo "ENVIRONMENT VARS:"
 	@echo " REPO=       repository for the docker image being build. Default: $(REPO)"
-	@echo " TOKEN=      file with github oauth token, needed in local_dryrun and secret. Default: $(TOKEN)"
+	@echo " TOKEN=      file with github oauth token, needed in secret. Default: $(TOKEN)"
 	@echo " KUBECONFIG= kubeconfig file for deployment. Default: $(KUBECONFIG)"
 	@echo " READONLY=   should the container actually mute github objects or just do everything else. Default: $(READONLY)"
 	@echo " APP=        which application you are trying to deploy. cherrypick or submit-queue. Default: $(APP)"
@@ -120,11 +98,10 @@ help:
 	@echo " push:         pushes the container to the registry"
 	@echo " deploy:       launches/updates the app on a kubernetes cluster"
 	@echo " push_config:  applys changes to configMaps for the app/target. $(APP)/deployment/$(TARGET)/configmap.yaml"
-	@echo " local_dryrun: tries to launch the container locally with docker"
 	@echo " deployment:   updates $(APP)/deployment.yaml and places results in $(APP)/local.deployment.yaml"
 	@echo " ui-stub:      grab upstream submit-queue data and launch the web ui on port 8000"
 	@echo " secret:       updates $(APP)/secret.yaml with TOKEN an creates $(APP)/local.secret.yaml"
 	@echo " clean:        deletes the binary and local files (does not delete old containers)"
 
 
-.PHONY: all mungegithub test container push dryrun cleandryrun local_dryrun deployment secret clean help
+.PHONY: all mungegithub test container push dryrun cleandryrun deployment secret clean help
