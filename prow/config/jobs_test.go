@@ -26,6 +26,8 @@ import (
 	"testing"
 )
 
+var podRe = regexp.MustCompile(`[a-z0-9]([-a-z0-9]*[a-z0-9])?`)
+
 const testThis = "@k8s-bot test this"
 
 type JSONJob struct {
@@ -357,6 +359,18 @@ func TestRunAgainstBranch(t *testing.T) {
 
 		if !job.RunsAgainstBranch("r") {
 			t.Errorf("Job %s should run branch r", job.Name)
+		}
+	}
+}
+
+func TestValidPodNames(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+	for _, j := range c.AllJobNames() {
+		if !podRe.MatchString(j) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
 		}
 	}
 }
