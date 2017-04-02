@@ -4,6 +4,7 @@ py_test(
         "bootstrap.py",
         "bootstrap_test.py",
     ],
+    deps = ["@yaml//:yaml"],
     data = [
         "dockerized-e2e-runner.sh",
         "//jenkins/job-configs:configs",

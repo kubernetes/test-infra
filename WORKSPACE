@@ -26,6 +26,34 @@ npm_repository(
 )
 
 new_http_archive(
+    name = "requests",
+    urls = ["https://pypi.python.org/packages/16/09/37b69de7c924d318e51ece1c4ceb679bf93be9d05973bb30c35babd596e2/requests-2.13.0.tar.gz"],
+    sha256 = "5722cd09762faa01276230270ff16af7acf7c5c45d623868d9ba116f15791ce8",
+    strip_prefix = "requests-2.13.0/requests",
+    build_file_content = """
+py_library(
+    name = "requests",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+)
+
+new_http_archive(
+    name = "yaml",
+    urls = ["https://pypi.python.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz"],
+    sha256 = "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab",
+    strip_prefix = "PyYAML-3.12/lib/yaml",
+    build_file_content = """
+py_library(
+    name = "yaml",
+    srcs = glob(["*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+)
+
+new_http_archive(
     name = "markupsafe",
     build_file = "BUILD.markupsafe",
     sha256 = "a6be69091dac236ea9c6bc7d012beab42010fa914c459791d627dad4910eb665",

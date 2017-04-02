@@ -5,6 +5,10 @@ py_test(
         "make_db_test.py",
         "model.py",
     ],
+    deps = [
+        "@requests//:requests",
+        "@yaml//:yaml",
+    ],
     # Remove when these are fixed.
     # https://github.com/bazelbuild/bazel/issues/1973
     # https://github.com/bazelbuild/bazel/issues/2056
