@@ -18,6 +18,7 @@ package plank
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/line"
@@ -68,7 +69,7 @@ func (c *Controller) Sync() error {
 
 func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 	// Pass over completed prow jobs.
-	if !pj.Status.CompletionTime.IsZero() {
+	if pj.Complete() {
 		return nil
 	}
 	if pj.Status.KubeJobName == "" {
@@ -79,6 +80,7 @@ func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 		}
 		pj.Status.KubeJobName = name
 		pj.Status.State = kube.PendingState
+		pj.Status.StartTime = time.Now()
 		if _, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj); err != nil {
 			return err
 		}

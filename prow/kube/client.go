@@ -227,6 +227,17 @@ func (c *Client) DeletePod(name string) error {
 	}, nil)
 }
 
+func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
+	c.log("CreateProwJob", j)
+	var retJob ProwJob
+	err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
+		requestBody: &j,
+	}, &retJob)
+	return retJob, err
+}
+
 func (c *Client) ListProwJobs(labels map[string]string) ([]ProwJob, error) {
 	c.log("ListProwJobs", labels)
 	var jl struct {

@@ -66,7 +66,7 @@ func clean(kc kubeClient) {
 		return
 	}
 	for _, prowJob := range prowJobs {
-		if !prowJob.Status.CompletionTime.IsZero() && time.Since(prowJob.Status.StartTime) > maxAge {
+		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxAge {
 			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
 			} else {
