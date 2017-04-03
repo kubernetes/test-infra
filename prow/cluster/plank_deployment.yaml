@@ -29,7 +29,7 @@ spec:
         role: prow
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.0
+        image: gcr.io/k8s-prow/plank:0.1
         env:
         - name: LINE_IMAGE
           value: "gcr.io/k8s-prow/line:0.86"
