@@ -24,9 +24,9 @@ import (
 )
 
 type fakeKubeClient struct {
-	pj             kube.ProwJob
-	createdKubeJob bool
-	patchedProwJob bool
+	pj              kube.ProwJob
+	createdKubeJob  bool
+	replacedProwJob bool
 }
 
 func (f *fakeKubeClient) ListJobs(map[string]string) ([]kube.Job, error) {
@@ -35,9 +35,9 @@ func (f *fakeKubeClient) ListJobs(map[string]string) ([]kube.Job, error) {
 func (f *fakeKubeClient) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
 	return nil, nil
 }
-func (f *fakeKubeClient) PatchProwJob(s string, j kube.ProwJob) (kube.ProwJob, error) {
+func (f *fakeKubeClient) ReplaceProwJob(s string, j kube.ProwJob) (kube.ProwJob, error) {
 	f.pj = j
-	f.patchedProwJob = true
+	f.replacedProwJob = true
 	return j, nil
 }
 func (f *fakeKubeClient) CreateJob(kube.Job) (kube.Job, error) {
@@ -57,7 +57,7 @@ func TestSyncJob(t *testing.T) {
 
 		expectedError bool
 		shouldCreate  bool
-		shouldPatch   bool
+		shouldReplace bool
 		expectedState kube.ProwJobState
 	}{
 		{
@@ -74,7 +74,7 @@ func TestSyncJob(t *testing.T) {
 			jobType:       kube.PeriodicJob,
 			startState:    kube.TriggeredState,
 			shouldCreate:  true,
-			shouldPatch:   true,
+			shouldReplace: true,
 			expectedState: kube.PendingState,
 		},
 		{
@@ -97,7 +97,7 @@ func TestSyncJob(t *testing.T) {
 					CompletionTime: time.Now(),
 				},
 			},
-			shouldPatch:   true,
+			shouldReplace: true,
 			expectedState: kube.FailureState,
 		},
 		{
@@ -130,10 +130,10 @@ func TestSyncJob(t *testing.T) {
 		if err != nil && !tc.expectedError {
 			t.Fatalf("Unexpected error for %s: %v", tc.name, err)
 		}
-		if fc.patchedProwJob != tc.shouldPatch {
-			t.Fatalf("Wrong usage of PatchProwJob for %s", tc.name)
+		if fc.replacedProwJob != tc.shouldReplace {
+			t.Fatalf("Wrong usage of ReplaceProwJob for %s", tc.name)
 		}
-		if tc.shouldPatch && fc.pj.Status.State != tc.expectedState {
+		if tc.shouldReplace && fc.pj.Status.State != tc.expectedState {
 			t.Fatalf("Wrong final state for %s, got %v", tc.name, tc.expectedState)
 		}
 	}
