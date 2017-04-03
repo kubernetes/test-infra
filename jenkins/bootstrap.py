@@ -809,7 +809,7 @@ def parse_repos(args):
         ret[repos[0]] = (args.branch, args.pull)
         return ret
     for repo in repos:
-        mat = re.match(r'([^=]+)(=(\w+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
+        mat = re.match(r'([^=]+)(=([^:,~^\s]+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
         if not mat:
             raise ValueError('bad repo', repo, repos)
         this_repo = mat.group(1)
