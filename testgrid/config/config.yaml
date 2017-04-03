@@ -360,6 +360,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-autoscaling
 - name: kubernetes-e2e-gci-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
+- name: kubernetes-e2e-gke-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stackdriver
 - name: kubernetes-e2e-gke-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-flaky
 - name: kubernetes-e2e-gci-gke-flaky
@@ -1225,6 +1227,8 @@ dashboards:
     test_group_name: kubernetes-e2e-gke-autoscaling
   - name: gci-gke-autoscaling
     test_group_name: kubernetes-e2e-gci-gke-autoscaling
+  - name: gke-stackdriver
+    test_group_name: kubernetes-e2e-gke-stackdriver
   - name: gke-flaky
     test_group_name: kubernetes-e2e-gke-flaky
   - name: gci-gke-flaky
