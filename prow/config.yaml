@@ -766,7 +766,7 @@ periodics:
         path: /mnt/disks/ssd0
 
 - name: ci-kubernetes-e2e-prow-canary
-  interval: 5m
+  interval: 1h
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.3
