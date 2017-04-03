@@ -816,3 +816,103 @@ periodics:
     - name: service
       secret:
         secretName: triage-service-account
+
+- name: periodic-kubernetes-bazel-build-1-6
+  interval: 2h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      args:
+      - "--repo=kubernetes"
+      - "--branch=release-1.6"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--git-cache=/root/.cache/git"
+      - "--clean"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+  run_after_success:
+  - name: periodic-kubernetes-bazel-test-1-6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+        args:
+        - "--repo=kubernetes"
+        - "--branch=release-1.6"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--git-cache=/root/.cache/git"
+        - "--clean"
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
+          args:
+          - "--repo=kubernetes"
+          - "--branch=release-1.6"
+          - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--json"
+          - "--timeout=140"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name:  JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name:  JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
