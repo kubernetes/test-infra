@@ -823,8 +823,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.9
       args:
-      - "--repo=kubernetes"
-      - "--branch=release-1.6"
+      - "--repo=k8s.io/kubernetes=release-1.6"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
@@ -853,8 +852,7 @@ periodics:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
-        - "--repo=kubernetes"
-        - "--branch=release-1.6"
+        - "--repo=k8s.io/kubernetes=release-1.6"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
@@ -882,8 +880,7 @@ periodics:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
           args:
-          - "--repo=kubernetes"
-          - "--branch=release-1.6"
+          - "--repo=k8s.io/kubernetes=release-1.6"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--json"
