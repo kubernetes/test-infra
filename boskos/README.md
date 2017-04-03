@@ -35,7 +35,7 @@ State is a string that tells the current status of the resource.
 		Required: state=[string] : state of the requested resource
 		Required: owner=[string] : requester of the resource
 	Return: error code or 200 with a valid Resource JSON object.
-	Example: /acquire?type=project&state=free&owner=senlu
+	Example: /acquire?type=project&state=free&owner=user
 
 2.	URL: /release
 	Desc: use /done when you finish use some resource. Owner need to match current owner.
@@ -45,7 +45,7 @@ State is a string that tells the current status of the resource.
 		Required: owner=[string] : owner of the resource
 		Required: dest=[string]  : dest state
 	Return: status code
-	Example: /release?name=k8s-jkns-foo&dest=dirty
+	Example: /release?name=k8s-jkns-foo&dest=dirty&owner=user
 
 3.	URL: /update
 	Desc: Update resource last-update timestamp. Owner need to match current owner.
@@ -53,7 +53,9 @@ State is a string that tells the current status of the resource.
 	URL Params:
 		Required: name=[string]  : name of target resource
 		Required: owner=[string] : owner of the resource
+		Required: state=[string] : current state of the resource
 	Return: status code
+	Example: /update?name=k8s-jkns-foo&state=free&owner=user
 
 4.	URL: /reset
 	Desc: Reset a group of expired resource to certain state.
@@ -64,7 +66,8 @@ State is a string that tells the current status of the resource.
 		Required: dest=[string] : dest state, for expired resource
 		Required: expire=[durationStr*] resource has not been updated since before {expire}. 
 			*durationStr is any string can be parsed by [time.ParseDuration()](https://golang.org/pkg/time/#ParseDuration)
-		Return: error code, or a list of [Owner:Resource] pairs.
+	Return: status code with a list of [Owner:Resource] pairs, which can be unmarshal into map[string]string
+	Example: /reset?name=k8s-jkns-foo&state=free&dest=dirty&expire=20m
 
 5.	URL: /metric
 	Method: GET
