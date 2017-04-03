@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -652,6 +653,76 @@ func TestProjectConfig(t *testing.T) {
 
 		if !strings.Contains(p.Name, "FAKE") { // placeholder, change it to a valid pattern later.
 			t.Errorf("Invalid project: %v\n", p.Name)
+		}
+	}
+}
+
+func TestSyncConfig(t *testing.T) {
+	var testcases = []struct {
+		name   string
+		oldRes []Resource
+		newRes []Resource
+		expect []Resource
+	}{
+		{
+			name:   "empty",
+			oldRes: []Resource{},
+			newRes: []Resource{},
+			expect: []Resource{},
+		},
+		{
+			name:   "append",
+			oldRes: []Resource{},
+			newRes: []Resource{
+				Resource{
+					Name: "res",
+					Type: "t",
+				},
+			},
+			expect: []Resource{
+				Resource{
+					Name:  "res",
+					Type:  "t",
+					State: "free",
+				},
+			},
+		},
+		{
+			name: "delete",
+			oldRes: []Resource{
+				Resource{
+					Name: "res",
+					Type: "t",
+				},
+			},
+			newRes: []Resource{},
+			expect: []Resource{},
+		},
+		{
+			name: "delete busy",
+			oldRes: []Resource{
+				Resource{
+					Name:  "res",
+					Type:  "t",
+					Owner: "o",
+				},
+			},
+			newRes: []Resource{},
+			expect: []Resource{
+				Resource{
+					Name:  "res",
+					Type:  "t",
+					Owner: "o",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeFakeClient(tc.oldRes)
+		c.syncConfigHelper(tc.newRes)
+		if !reflect.DeepEqual(c.Resources, tc.expect) {
+			t.Errorf("Test %v: got %v, expect %v", tc.name, c.Resources, tc.expect)
 		}
 	}
 }
