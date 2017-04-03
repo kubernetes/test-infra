@@ -56,8 +56,10 @@ type ProwJob struct {
 }
 
 type ProwJobSpec struct {
-	Type ProwJobType `json:"type,omitempty"`
-	Job  string      `json:"job,omitempty"`
+	Type    ProwJobType `json:"type,omitempty"`
+	Job     string      `json:"job,omitempty"`
+	Refs    Refs        `json:"refs,omitempty"`
+	Context string      `json:"context,omitempty"`
 }
 
 type ProwJobStatus struct {
@@ -70,6 +72,22 @@ type ProwJobStatus struct {
 
 func (j *ProwJob) Complete() bool {
 	return !j.Status.CompletionTime.IsZero()
+}
+
+type Pull struct {
+	Number int    `json:"number,omitempty"`
+	Author string `json:"author,omitempty"`
+	SHA    string `json:"sha,omitempty"`
+}
+
+type Refs struct {
+	Org  string `json:"org,omitempty"`
+	Repo string `json:"repo,omitempty"`
+
+	BaseRef string `json:"base_ref,omitempty"`
+	BaseSHA string `json:"base_sha,omitempty"`
+
+	Pulls []Pull `json:"pulls,omitempty"`
 }
 
 type Secret struct {

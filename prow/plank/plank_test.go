@@ -66,7 +66,7 @@ func TestSyncJob(t *testing.T) {
 		},
 		{
 			name:          "unhandled job type",
-			jobType:       kube.PresubmitJob,
+			jobType:       "unknown",
 			expectedError: true,
 		},
 		{

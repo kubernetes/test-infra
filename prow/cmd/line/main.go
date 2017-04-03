@@ -176,7 +176,7 @@ func main() {
 	}
 	if presubmit != nil {
 		for _, job := range presubmit.RunAfterSuccess {
-			if err := line.StartJob(kc, job.Name, job.Context, br); err != nil {
+			if _, err := line.StartJob(kc, job.Name, job.Context, br); err != nil {
 				l.WithError(err).Error("Error starting child job.")
 				return
 			}
@@ -184,7 +184,7 @@ func main() {
 	}
 	if postsubmit != nil {
 		for _, job := range postsubmit.RunAfterSuccess {
-			if err := line.StartJob(kc, job.Name, "", br); err != nil {
+			if _, err := line.StartJob(kc, job.Name, "", br); err != nil {
 				l.WithError(err).Error("Error starting child job.")
 				return
 			}
