@@ -2198,8 +2198,10 @@ dashboards:
     test_group_name: kubernetes-test-go
   - name: ingress
     test_group_name: kubernetes-e2e-gci-gce-ingress
-  - name: verify 
+  - name: verify
     test_group_name: kubernetes-verify-master
+  - name: federation
+    test_group_name: kubernetes-e2e-gce-federation
 
 - name: google-non-cri
   dashboard_tab:

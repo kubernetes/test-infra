@@ -25,7 +25,8 @@ data:
     \"Jenkins Kubemark GCE e2e\",\
     \"Jenkins GCE etcd3 e2e\",\
     \"Jenkins Bazel Build\",\
-    \"Jenkins kops AWS e2e\""
+    \"Jenkins kops AWS e2e\",\
+    \"Jenkins GCI Federation GCE e2e\""
 
   submit-queue.protected-branches: "master"
   submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
@@ -38,7 +39,6 @@ data:
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-garbage-gci,\
     ci-kubernetes-e2e-gce-examples,\
-    ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
     ci-kubernetes-e2e-gce-scalability,\
     ci-kubernetes-e2e-gce-serial,\
@@ -97,6 +97,7 @@ data:
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
+    ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gci-gce,\
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gce-ingress,\
