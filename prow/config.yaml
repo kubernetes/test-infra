@@ -823,7 +823,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.9
       args:
-      - "--repo=k8s.io/kubernetes=release-1.6"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
@@ -831,6 +830,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: REPO_NAME
+        value: kubernetes=release-1.6
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       volumeMounts:
@@ -852,13 +853,14 @@ periodics:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:0.9
         args:
-        - "--repo=k8s.io/kubernetes=release-1.6"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
         securityContext:
           privileged: true
         env:
+        - name: REPO_NAME
+          value: kubernetes=release-1.6
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         volumeMounts:
