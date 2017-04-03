@@ -26,7 +26,7 @@ import (
 type kubeClient interface {
 	ListJobs(map[string]string) ([]kube.Job, error)
 	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
-	PatchProwJob(string, kube.ProwJob) (kube.ProwJob, error)
+	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 	CreateJob(kube.Job) (kube.Job, error)
 }
 
@@ -79,7 +79,7 @@ func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 		}
 		pj.Status.KubeJobName = name
 		pj.Status.State = kube.PendingState
-		if _, err := c.kc.PatchProwJob(pj.Metadata.Name, pj); err != nil {
+		if _, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj); err != nil {
 			return err
 		}
 	} else if j, ok := jm[pj.Status.KubeJobName]; !ok {
@@ -88,7 +88,7 @@ func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 		// Kube job finished, update prow job.
 		pj.Status.State = kube.ProwJobState(j.Metadata.Annotations["state"])
 		pj.Status.CompletionTime = j.Status.CompletionTime
-		if _, err := c.kc.PatchProwJob(pj.Metadata.Name, pj); err != nil {
+		if _, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj); err != nil {
 			return err
 		}
 	} else {

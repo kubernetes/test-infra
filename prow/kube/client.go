@@ -248,11 +248,11 @@ func (c *Client) DeleteProwJob(name string) error {
 	}, nil)
 }
 
-func (c *Client) PatchProwJob(name string, job ProwJob) (ProwJob, error) {
-	c.log("PatchProwJob", name, job)
+func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
+	c.log("ReplaceProwJob", name, job)
 	var retJob ProwJob
 	err := c.request(&request{
-		method:      http.MethodPatch,
+		method:      http.MethodPut,
 		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 		requestBody: &job,
 	}, &retJob)
