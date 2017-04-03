@@ -4,7 +4,6 @@ py_test(
         "bootstrap.py",
         "bootstrap_test.py",
     ],
-    deps = ["@yaml//:yaml"],
     data = [
         "dockerized-e2e-runner.sh",
         "//jenkins/job-configs:configs",
@@ -12,6 +11,7 @@ py_test(
         "//jenkins/job-configs/kubernetes-jenkins-pull:configs",
         "//jobs",
     ],
+    deps = ["@yaml//:yaml"],
 )
 
 filegroup(
