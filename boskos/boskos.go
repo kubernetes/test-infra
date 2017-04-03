@@ -99,8 +99,9 @@ func handleAcquire(r *Ranch) http.HandlerFunc {
 		if resource != nil {
 			resJSON, err := json.Marshal(resource)
 			if err != nil {
-				logrus.WithError(err).Errorf("json.Marshal failed : %v", resource)
+				logrus.WithError(err).Errorf("json.Marshal failed : %v, resource will be released", resource)
 				http.Error(res, err.Error(), http.StatusUnprocessableEntity)
+				resource.Owner = "" // release the resource, though this is not expected to happen.
 				return
 			}
 			logrus.Infof("Resource leased: %v", string(resJSON))
