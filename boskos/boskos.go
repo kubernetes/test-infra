@@ -51,12 +51,15 @@ func main() {
 	go func() {
 		logTick := time.NewTicker(time.Minute).C
 		saveTick := time.NewTicker(time.Minute).C
+		configTick := time.NewTicker(time.Minute * 10).C
 		for {
 			select {
 			case <-logTick:
 				r.logStatus()
 			case <-saveTick:
 				r.saveState()
+			case <-configTick:
+				r.syncConfig(*configPath)
 			}
 		}
 	}()
@@ -289,33 +292,10 @@ func NewRanch(config string, storage string) (*Ranch, error) {
 		}
 	}
 
-	file, err := ioutil.ReadFile(config)
-	if err != nil {
+	if err := newRanch.syncConfig(config); err != nil {
 		return nil, err
 	}
 
-	var data []Resource
-	err = json.Unmarshal(file, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, p := range data {
-		found := false
-		for _, exist := range newRanch.Resources {
-			if p.Name == exist.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			if p.State == "" {
-				p.State = "free"
-			}
-			p.LastUpdate = time.Now()
-			newRanch.Resources = append(newRanch.Resources, p)
-		}
-	}
 	newRanch.logStatus()
 
 	return newRanch, nil
@@ -329,6 +309,65 @@ func (r *Ranch) logStatus() {
 		resJSON, _ := json.Marshal(res)
 		logrus.Infof("Current Resources : %v", string(resJSON))
 	}
+}
+
+func (r *Ranch) syncConfig(config string) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	file, err := ioutil.ReadFile(config)
+	if err != nil {
+		return err
+	}
+
+	var data []Resource
+	err = json.Unmarshal(file, &data)
+	if err != nil {
+		return err
+	}
+
+	return r.syncConfigHelper(data)
+}
+
+func (r *Ranch) syncConfigHelper(data []Resource) error {
+	// delete non-exist resource
+	valid := 0
+	for _, res := range r.Resources {
+		// If currently busy, yield deletion to later cycles.
+		if res.Owner != "" {
+			r.Resources[valid] = res
+			valid++
+			continue
+		}
+
+		for _, newRes := range data {
+			if res.Name == newRes.Name {
+				r.Resources[valid] = res
+				valid++
+				break
+			}
+		}
+	}
+	r.Resources = r.Resources[:valid]
+
+	// add new resource
+	for _, p := range data {
+		found := false
+		for _, exist := range r.Resources {
+			if p.Name == exist.Name {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			if p.State == "" {
+				p.State = "free"
+			}
+			r.Resources = append(r.Resources, p)
+		}
+	}
+	return nil
 }
 
 func (r *Ranch) saveState() {
