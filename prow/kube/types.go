@@ -68,6 +68,10 @@ type ProwJobStatus struct {
 	KubeJobName string `json:"kube_job_name,omitempty"`
 }
 
+func (j *ProwJob) Complete() bool {
+	return !j.Status.CompletionTime.IsZero()
+}
+
 type Secret struct {
 	Metadata ObjectMeta        `json:"metadata,omitempty"`
 	Data     map[string]string `json:"data,omitempty"`

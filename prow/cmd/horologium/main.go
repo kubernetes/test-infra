@@ -22,10 +22,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/line"
 )
 
 var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -52,18 +52,21 @@ func main() {
 }
 
 type kubeClient interface {
-	ListJobs(map[string]string) ([]kube.Job, error)
-	CreateJob(kube.Job) (kube.Job, error)
+	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
-	jobs, err := kc.ListJobs(map[string]string{"type": "periodic"})
+	jobs, err := kc.ListProwJobs(nil)
 	if err != nil {
-		return fmt.Errorf("error listing jobs: %v", err)
+		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	latestJobs := map[string]kube.Job{}
+	latestJobs := map[string]kube.ProwJob{}
 	for _, j := range jobs {
-		name := j.Metadata.Labels["jenkins-job-name"]
+		if j.Spec.Type != kube.PeriodicJob {
+			continue
+		}
+		name := j.Spec.Job
 		if j.Status.StartTime.After(latestJobs[name].Status.StartTime) {
 			latestJobs[name] = j
 		}
@@ -71,8 +74,17 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := line.StartPeriodicJob(kc, p.Name); err != nil {
-				return fmt.Errorf("error starting periodic job: %v", err)
+			if _, err := kc.CreateProwJob(kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					// TODO(spxtr): Remove this, replace with cmd/tot usage.
+					Name: uuid.NewV1().String(),
+				},
+				Spec: kube.ProwJobSpec{
+					Type: kube.PeriodicJob,
+					Job:  p.Name,
+				},
+			}); err != nil {
+				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}
 	}

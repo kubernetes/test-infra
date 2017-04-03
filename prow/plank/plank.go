@@ -69,7 +69,7 @@ func (c *Controller) Sync() error {
 
 func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 	// Pass over completed prow jobs.
-	if !pj.Status.CompletionTime.IsZero() {
+	if pj.Complete() {
 		return nil
 	}
 	if pj.Status.KubeJobName == "" {

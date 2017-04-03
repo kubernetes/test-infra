@@ -25,15 +25,15 @@ import (
 )
 
 type fakeKube struct {
-	jobs    []kube.Job
+	jobs    []kube.ProwJob
 	created bool
 }
 
-func (fk *fakeKube) ListJobs(ls map[string]string) ([]kube.Job, error) {
+func (fk *fakeKube) ListProwJobs(ls map[string]string) ([]kube.ProwJob, error) {
 	return fk.jobs, nil
 }
 
-func (fk *fakeKube) CreateJob(j kube.Job) (kube.Job, error) {
+func (fk *fakeKube) CreateProwJob(j kube.ProwJob) (kube.ProwJob, error) {
 	fk.created = true
 	return j, nil
 }
@@ -95,19 +95,20 @@ func TestSync(t *testing.T) {
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
-		var jobs []kube.Job
+		var jobs []kube.ProwJob
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.Job{{
-				Metadata: kube.ObjectMeta{
-					Labels: map[string]string{"jenkins-job-name": tc.jobName},
+			jobs = []kube.ProwJob{{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PeriodicJob,
+					Job:  tc.jobName,
 				},
-				Status: kube.JobStatus{
+				Status: kube.ProwJobStatus{
 					StartTime: now.Add(-tc.jobStartTimeAgo),
 				},
 			}}
 			if tc.jobComplete {
-				jobs[0].Status.Succeeded = 1
+				jobs[0].Status.CompletionTime = now.Add(-time.Millisecond)
 			}
 		}
 		kc := &fakeKube{jobs: jobs}
