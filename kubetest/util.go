@@ -65,7 +65,11 @@ func insertPath(path string) error {
 // Essentially curl url | writer
 func httpRead(url string, writer io.Writer) error {
 	log.Printf("curl %s", url)
-	r, err := http.Get(url)
+	// TODO: we should probably create only one Transport and reuse it for all calls
+	t := &http.Transport{}
+	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
+	c := &http.Client{Transport: t}
+	r, err := c.Get(url)
 	if err != nil {
 		return err
 	}
