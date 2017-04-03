@@ -418,6 +418,14 @@ class ParseReposTest(unittest.TestCase):
             bootstrap.parse_repos(
                 FakeArgs(repo=['foo=master,111,222'], branch='', pull='')))
 
+    def testPullReleaseBranch(self):
+        """foo=release-3.14,&a-fancy%_branch+:abcd,222 works"""
+        self.assertEquals(
+            {'foo': ('', 'release-3.14,&a-fancy%_branch+:abcd,222')},
+            bootstrap.parse_repos(
+                FakeArgs(repo=['foo=release-3.14,&a-fancy%_branch+:abcd,222'],
+                         branch='', pull='')))
+
     def testPullBranchCommit(self):
         """foo=master,111,222 works"""
         self.assertEquals(
