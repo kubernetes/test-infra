@@ -49,9 +49,15 @@ func main() {
 	http.Handle("/metric", handleMetric(r))
 
 	go func() {
-		for range time.Tick(time.Minute) {
-			r.logStatus()
-			r.saveState()
+		logTick := time.NewTicker(time.Minute).C
+		saveTick := time.NewTicker(time.Minute).C
+		for {
+			select {
+			case <-logTick:
+				r.logStatus()
+			case <-saveTick:
+				r.saveState()
+			}
 		}
 	}()
 
@@ -59,13 +65,14 @@ func main() {
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
+//  handleDefault: Handler for /, always pass with 200
 func handleDefault() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleDefault").Infof("From %v", req.RemoteAddr)
 	}
 }
 
-//  Handler for /acquire
+//  handleAcquire: Handler for /acquire
 // 	URLParams:
 //		Required: type=[string]  : type of requested resource
 //		Required: state=[string] : state of the requested resource
@@ -75,7 +82,7 @@ func handleAcquire(r *Ranch) http.HandlerFunc {
 		logrus.WithField("handler", "handleStart").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "POST" {
-			msg := fmt.Sprintf("Method %v, /acquire only accepts POST method.", req.Method)
+			msg := fmt.Sprintf("Method %v, /acquire only accepts POST.", req.Method)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusMethodNotAllowed)
 			return
@@ -94,13 +101,13 @@ func handleAcquire(r *Ranch) http.HandlerFunc {
 
 		logrus.Infof("Request for a %v %v from %v", state, rtype, owner)
 
-		resource := r.Acquire(rtype, state, owner)
+		status, resource := r.Acquire(rtype, state, owner)
 
 		if resource != nil {
 			resJSON, err := json.Marshal(resource)
 			if err != nil {
 				logrus.WithError(err).Errorf("json.Marshal failed : %v, resource will be released", resource)
-				http.Error(res, err.Error(), http.StatusUnprocessableEntity)
+				http.Error(res, err.Error(), http.StatusInternalServerError)
 				resource.Owner = "" // release the resource, though this is not expected to happen.
 				return
 			}
@@ -108,12 +115,12 @@ func handleAcquire(r *Ranch) http.HandlerFunc {
 			fmt.Fprint(res, string(resJSON))
 		} else {
 			logrus.Infof("No available resource")
-			http.Error(res, "No resource", http.StatusConflict)
+			http.Error(res, "No resource", status)
 		}
 	}
 }
 
-//  Handler for /release
+//  handleRelease: Handler for /release
 //	URL Params:
 //		Required: name=[string]  : name of finished resource
 //		Required: owner=[string] : owner of the resource
@@ -123,7 +130,7 @@ func handleRelease(r *Ranch) http.HandlerFunc {
 		logrus.WithField("handler", "handleDone").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "POST" {
-			msg := fmt.Sprintf("Method %v, /release only accepts POST method.", req.Method)
+			msg := fmt.Sprintf("Method %v, /release only accepts POST.", req.Method)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusMethodNotAllowed)
 			return
@@ -139,9 +146,9 @@ func handleRelease(r *Ranch) http.HandlerFunc {
 			return
 		}
 
-		if err := r.Release(name, dest, owner); err != nil {
+		if status, err := r.Release(name, dest, owner); err != nil {
 			logrus.WithError(err).Errorf("Done failed: %v - %v (from %v)", name, dest, owner)
-			http.Error(res, err.Error(), http.StatusConflict)
+			http.Error(res, err.Error(), status)
 			return
 		}
 
@@ -149,7 +156,7 @@ func handleRelease(r *Ranch) http.HandlerFunc {
 	}
 }
 
-//  Handler for /reset
+//  handleReset: Handler for /reset
 //	URL Params:
 //		Required: type=[string] : type of resource in interest
 //		Required: state=[string] : original state
@@ -160,7 +167,7 @@ func handleReset(r *Ranch) http.HandlerFunc {
 		logrus.WithField("handler", "handleReset").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "POST" {
-			msg := fmt.Sprintf("Method %v, /reset only accepts POST method.", req.Method)
+			msg := fmt.Sprintf("Method %v, /reset only accepts POST.", req.Method)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusMethodNotAllowed)
 			return
@@ -187,11 +194,11 @@ func handleReset(r *Ranch) http.HandlerFunc {
 			return
 		}
 
-		rmap := r.Reset(rtype, state, expire, dest)
+		_, rmap := r.Reset(rtype, state, expire, dest)
 		resJSON, err := json.Marshal(rmap)
 		if err != nil {
 			logrus.WithError(err).Errorf("json.Marshal failed : %v", rmap)
-			http.Error(res, err.Error(), http.StatusUnprocessableEntity)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		logrus.Infof("Resource %v reset successful, %d items moved to state %v", rtype, len(rmap), dest)
@@ -199,16 +206,17 @@ func handleReset(r *Ranch) http.HandlerFunc {
 	}
 }
 
-//  Handler for /update
+//  handleUpdate: Handler for /update
 //  URLParams
 //		Required: name=[string]  : name of target resource
 //		Required: owner=[string] : owner of the resource
+//		Required: state=[string] : current state of the resource
 func handleUpdate(r *Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleUpdate").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "POST" {
-			msg := fmt.Sprintf("Method %v, /update only accepts POST method.", req.Method)
+			msg := fmt.Sprintf("Method %v, /update only accepts POST.", req.Method)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusMethodNotAllowed)
 			return
@@ -216,16 +224,17 @@ func handleUpdate(r *Ranch) http.HandlerFunc {
 
 		name := req.URL.Query().Get("name")
 		owner := req.URL.Query().Get("owner")
-		if name == "" || owner == "" {
-			msg := fmt.Sprintf("Name: %v, owner: %v, both must not be empty in the request.", name, owner)
+		state := req.URL.Query().Get("state")
+		if name == "" || owner == "" || state == "" {
+			msg := fmt.Sprintf("Name: %v, owner: %v, state : %v, all of them must not be empty in the request.", name, owner, state)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusBadRequest)
 			return
 		}
 
-		if err := r.Update(name, owner); err != nil {
-			logrus.WithError(err).Errorf("Update failed: %v (%v)", name, owner)
-			http.Error(res, err.Error(), http.StatusConflict)
+		if status, err := r.Update(name, owner, state); err != nil {
+			logrus.WithError(err).Errorf("Update failed: %v - %v (%v)", name, state, owner)
+			http.Error(res, err.Error(), status)
 			return
 		}
 
@@ -239,7 +248,7 @@ func handleMetric(r *Ranch) http.HandlerFunc {
 
 		if req.Method != "GET" {
 			logrus.Warning("[BadRequest]method %v, expect GET", req.Method)
-			http.Error(res, "/metric only accepts GET method", http.StatusMethodNotAllowed)
+			http.Error(res, "/metric only accepts GET", http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -345,7 +354,7 @@ func (r *Ranch) saveState() {
 	}
 }
 
-func (r *Ranch) Acquire(rtype string, state string, owner string) *Resource {
+func (r *Ranch) Acquire(rtype string, state string, owner string) (int, *Resource) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -354,14 +363,14 @@ func (r *Ranch) Acquire(rtype string, state string, owner string) *Resource {
 		if rtype == res.Type && state == res.State && res.Owner == "" {
 			res.LastUpdate = time.Now()
 			res.Owner = owner
-			return res
+			return http.StatusOK, res
 		}
 	}
 
-	return nil
+	return http.StatusNotFound, nil
 }
 
-func (r *Ranch) Release(name string, dest string, owner string) error {
+func (r *Ranch) Release(name string, dest string, owner string) (int, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -369,19 +378,19 @@ func (r *Ranch) Release(name string, dest string, owner string) error {
 		res := &r.Resources[idx]
 		if name == res.Name {
 			if owner != res.Owner {
-				return fmt.Errorf("Owner not match, got %v, expect %v", res.Owner, owner)
+				return http.StatusUnauthorized, fmt.Errorf("Owner not match, got %v, expect %v", res.Owner, owner)
 			}
 			res.LastUpdate = time.Now()
 			res.Owner = ""
 			res.State = dest
-			return nil
+			return http.StatusOK, nil
 		}
 	}
 
-	return fmt.Errorf("Cannot find resource %v", name)
+	return http.StatusNotFound, fmt.Errorf("Cannot find resource %v", name)
 }
 
-func (r *Ranch) Update(name string, owner string) error {
+func (r *Ranch) Update(name string, owner string, state string) (int, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -389,17 +398,21 @@ func (r *Ranch) Update(name string, owner string) error {
 		res := &r.Resources[idx]
 		if name == res.Name {
 			if owner != res.Owner {
-				return fmt.Errorf("Owner not match, got %v, expect %v", res.Owner, owner)
+				return http.StatusUnauthorized, fmt.Errorf("Owner not match, got %v, expect %v", res.Owner, owner)
+			}
+
+			if state != res.State {
+				return http.StatusConflict, fmt.Errorf("State not match, got %v, expect %v", res.State, state)
 			}
 			res.LastUpdate = time.Now()
-			return nil
+			return http.StatusOK, nil
 		}
 	}
 
-	return fmt.Errorf("Cannot find resource %v", name)
+	return http.StatusNotFound, fmt.Errorf("Cannot find resource %v", name)
 }
 
-func (r *Ranch) Reset(rtype string, state string, expire time.Duration, dest string) map[string]string {
+func (r *Ranch) Reset(rtype string, state string, expire time.Duration, dest string) (int, map[string]string) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -417,5 +430,5 @@ func (r *Ranch) Reset(rtype string, state string, expire time.Duration, dest str
 		}
 	}
 
-	return ret
+	return http.StatusOK, ret
 }
