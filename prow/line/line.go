@@ -105,9 +105,8 @@ func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, 
 	return nil
 }
 
-func StartJob(k *kube.Client, jobName, context string, br BuildRequest) error {
-	_, err := startJob(k, jobName, context, br)
-	return err
+func StartJob(k StartClient, jobName, context string, br BuildRequest) (string, error) {
+	return startJob(k, jobName, context, br)
 }
 
 func StartPushJob(k *kube.Client, jobName string, pe github.PushEvent) error {

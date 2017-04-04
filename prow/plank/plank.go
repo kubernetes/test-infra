@@ -100,13 +100,32 @@ func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
 }
 
 func (c *Controller) startJob(pj kube.ProwJob) (string, error) {
-	//TODO(spxtr): All the rest.
 	switch pj.Spec.Type {
 	case kube.PresubmitJob:
+		return line.StartJob(c.kc, pj.Spec.Job, pj.Spec.Context, pjToBR(pj))
 	case kube.PostsubmitJob:
+		return line.StartJob(c.kc, pj.Spec.Job, "", pjToBR(pj))
 	case kube.PeriodicJob:
 		return line.StartPeriodicJob(c.kc, pj.Spec.Job)
 	case kube.BatchJob:
+		return line.StartJob(c.kc, pj.Spec.Job, "", pjToBR(pj))
 	}
-	return "", fmt.Errorf("unhandled job type")
+	return "", fmt.Errorf("unhandled job type: %s", pj.Spec.Type)
+}
+
+func pjToBR(pj kube.ProwJob) line.BuildRequest {
+	br := line.BuildRequest{
+		Org:     pj.Spec.Refs.Org,
+		Repo:    pj.Spec.Refs.Repo,
+		BaseRef: pj.Spec.Refs.BaseRef,
+		BaseSHA: pj.Spec.Refs.BaseSHA,
+	}
+	for _, p := range pj.Spec.Refs.Pulls {
+		br.Pulls = append(br.Pulls, line.Pull{
+			Author: p.Author,
+			Number: p.Number,
+			SHA:    p.SHA,
+		})
+	}
+	return br
 }

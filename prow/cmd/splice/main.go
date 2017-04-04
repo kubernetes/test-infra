@@ -285,7 +285,7 @@ func main() {
 					log.Infof("not triggering job %v (already succeeded previously)", job.Name)
 					continue
 				}
-				if err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
+				if _, err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
 					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
 				}
 			}

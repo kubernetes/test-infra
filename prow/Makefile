@@ -24,7 +24,7 @@ MARQUE_VERSION     = 0.1
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.2
-PLANK_VERSION      = 0.2
+PLANK_VERSION      = 0.3
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
