@@ -17,8 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"testing"
@@ -253,5 +257,30 @@ func TestOutput(t *testing.T) {
 		if tc.causeTermination && !terminated {
 			t.Errorf("Step %s did not terminate, err: %v", tc.name, err)
 		}
+	}
+}
+
+func TestHttpFileScheme(t *testing.T) {
+	expected := "some testdata"
+	tmpfile, err := ioutil.TempFile("", "test_http_file_scheme")
+	if err != nil {
+		t.Errorf("Error creating temporary file: %v", err)
+	}
+	defer os.Remove(tmpfile.Name())
+	if _, err := tmpfile.WriteString(expected); err != nil {
+		t.Errorf("Error writing to temporary file: %v", err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		t.Errorf("Error closing temporary file: %v", err)
+	}
+
+	fileUrl := fmt.Sprintf("file://%s", tmpfile.Name())
+	buf := new(bytes.Buffer)
+	if err := httpRead(fileUrl, buf); err != nil {
+		t.Errorf("Error reading temporary file through httpRead: %v", err)
+	}
+
+	if buf.String() != expected {
+		t.Errorf("httpRead(%s): expected %v, got %v", fileUrl, expected, buf)
 	}
 }
