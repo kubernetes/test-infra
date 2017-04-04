@@ -146,6 +146,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1.6
 - name: ci-kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
+- name: ci-kubernetes-e2e-kops-aws-weave
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
 - name: ci-kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
 - name: ci-kubernetes-e2e-gce-canary
@@ -936,6 +938,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1.6
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
+  - name: kops-aws-weave
+    test_group_name: ci-kubernetes-e2e-kops-aws-weave
   - name: aws-1.5
     test_group_name: ci-kubernetes-e2e-aws-release-1.5
 

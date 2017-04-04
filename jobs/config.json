@@ -549,6 +549,16 @@
   ]
 },
 
+"ci-kubernetes-e2e-kops-aws-weave": {
+  "scenario": "kubernetes_kops_aws",
+  "args": [
+    "--kops-args=\"--networking=weave\"",
+    "--cluster=e2e-kops-aws-weave.test-aws.k8s.io",
+    "--env-file=platforms/kops_aws.env",
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env"
+  ]
+},
+
 "ci-kubernetes-e2e-kubeadm-gce": {
   "scenario": "kubernetes_e2e",
   "args": [
