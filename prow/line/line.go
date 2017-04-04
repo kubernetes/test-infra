@@ -97,7 +97,7 @@ func StartPRJob(k *kube.Client, jobName, context string, pr github.PullRequest, 
 			},
 		},
 	}
-	errDel := deleteJob(k, jobName, pr)
+	errDel := DeletePRJob(k, jobName, pr)
 	_, errStart := startJob(k, jobName, context, br)
 	if errDel != nil || errStart != nil {
 		return fmt.Errorf("error deleting old job: %v, error starting new job: %v", errDel, errStart)
@@ -266,18 +266,22 @@ func startJob(k StartClient, jobName, context string, br BuildRequest) (string, 
 	return actual.Metadata.Name, err
 }
 
-type deleteClient interface {
+type DeleteClient interface {
 	ListJobs(labels map[string]string) ([]kube.Job, error)
 	GetJob(name string) (kube.Job, error)
 	PatchJob(name string, job kube.Job) (kube.Job, error)
 	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
 }
 
-func deleteJob(k deleteClient, jobName string, pr github.PullRequest) error {
+func DeletePRJob(k DeleteClient, jobName string, pr github.PullRequest) error {
+	return DeleteJob(k, jobName, pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+}
+
+func DeleteJob(k DeleteClient, jobName, org, repo string, pr int) error {
 	jobs, err := k.ListJobs(map[string]string{
-		"owner":            pr.Base.Repo.Owner.Login,
-		"repo":             pr.Base.Repo.Name,
-		"pr":               strconv.Itoa(pr.Number),
+		"owner":            org,
+		"repo":             repo,
+		"pr":               strconv.Itoa(pr),
 		"jenkins-job-name": jobName,
 	})
 	if err != nil {
@@ -305,7 +309,7 @@ func deleteJob(k deleteClient, jobName string, pr github.PullRequest) error {
 	return nil
 }
 
-func deleteKubeJob(k deleteClient, job kube.Job) error {
+func deleteKubeJob(k DeleteClient, job kube.Job) error {
 	if job.Spec.Parallelism != nil && *job.Spec.Parallelism == 0 {
 		// Already aborted this one.
 		return nil

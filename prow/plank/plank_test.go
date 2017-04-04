@@ -25,24 +25,40 @@ import (
 
 type fakeKubeClient struct {
 	pj              kube.ProwJob
+	kj              kube.Job
 	createdKubeJob  bool
+	patchedKubeJob  bool
 	replacedProwJob bool
 }
 
 func (f *fakeKubeClient) ListJobs(map[string]string) ([]kube.Job, error) {
-	return nil, nil
+	return []kube.Job{f.kj}, nil
 }
 func (f *fakeKubeClient) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
-	return nil, nil
+	return []kube.ProwJob{f.pj}, nil
 }
 func (f *fakeKubeClient) ReplaceProwJob(s string, j kube.ProwJob) (kube.ProwJob, error) {
 	f.pj = j
 	f.replacedProwJob = true
 	return j, nil
 }
-func (f *fakeKubeClient) CreateJob(kube.Job) (kube.Job, error) {
+func (f *fakeKubeClient) CreateJob(j kube.Job) (kube.Job, error) {
 	f.createdKubeJob = true
-	return kube.Job{}, nil
+	f.kj = j
+	return j, nil
+}
+func (f *fakeKubeClient) GetJob(name string) (kube.Job, error) {
+	return f.kj, nil
+}
+func (f *fakeKubeClient) PatchJob(name string, job kube.Job) (kube.Job, error) {
+	f.patchedKubeJob = true
+	f.kj = job
+	return f.kj, nil
+}
+func (f *fakeKubeClient) PatchJobStatus(name string, job kube.Job) (kube.Job, error) {
+	f.patchedKubeJob = true
+	f.kj = job
+	return f.kj, nil
 }
 
 func TestSyncJob(t *testing.T) {
@@ -53,12 +69,14 @@ func TestSyncJob(t *testing.T) {
 		jobType     kube.ProwJobType
 		startState  kube.ProwJobState
 		kubeJobName string
-		kubeJob     *kube.Job
+		kubeJob     kube.Job
+		refs        kube.Refs
 
-		expectedError bool
-		shouldCreate  bool
-		shouldReplace bool
-		expectedState kube.ProwJobState
+		expectedError  bool
+		shouldCreate   bool
+		shouldReplace  bool
+		shouldPatchJob bool
+		expectedState  kube.ProwJobState
 	}{
 		{
 			name:     "completed job",
@@ -86,8 +104,9 @@ func TestSyncJob(t *testing.T) {
 			name:        "complete kube job",
 			startState:  kube.PendingState,
 			kubeJobName: "something",
-			kubeJob: &kube.Job{
+			kubeJob: kube.Job{
 				Metadata: kube.ObjectMeta{
+					Name: "something",
 					Annotations: map[string]string{
 						"state": kube.FailureState,
 					},
@@ -103,28 +122,49 @@ func TestSyncJob(t *testing.T) {
 		{
 			name:        "incomplete kube job",
 			kubeJobName: "something",
-			kubeJob: &kube.Job{
+			kubeJob: kube.Job{
 				Metadata: kube.ObjectMeta{
+					Name: "something",
 					Annotations: map[string]string{
 						"state": kube.PendingState,
 					},
 				},
 			},
 		},
+		{
+			name:        "abort presubmit",
+			jobType:     kube.PresubmitJob,
+			complete:    true,
+			refs:        kube.Refs{Pulls: []kube.Pull{{}}},
+			kubeJobName: "something",
+			kubeJob: kube.Job{
+				Metadata: kube.ObjectMeta{
+					Name: "something",
+					Annotations: map[string]string{
+						"state": kube.PendingState,
+					},
+				},
+				Status: kube.JobStatus{
+					Active: 1,
+				},
+			},
+			shouldPatchJob: true,
+		},
 	}
 	for _, tc := range testcases {
 		var pj kube.ProwJob
 		pj.Spec.Type = tc.jobType
+		pj.Spec.Refs = tc.refs
 		pj.Status.KubeJobName = tc.kubeJobName
 		pj.Status.State = tc.startState
 		if tc.complete {
 			pj.Status.CompletionTime = time.Now()
 		}
 		jsm := map[string]*kube.Job{}
-		if tc.kubeJob != nil {
-			jsm[tc.kubeJobName] = tc.kubeJob
+		if tc.kubeJob.Metadata.Name != "" {
+			jsm[tc.kubeJobName] = &tc.kubeJob
 		}
-		fc := &fakeKubeClient{pj: pj}
+		fc := &fakeKubeClient{pj: pj, kj: tc.kubeJob}
 		c := &Controller{kc: fc}
 		err := c.syncJob(pj, jsm)
 		if err != nil && !tc.expectedError {
@@ -132,6 +172,9 @@ func TestSyncJob(t *testing.T) {
 		}
 		if fc.replacedProwJob != tc.shouldReplace {
 			t.Fatalf("Wrong usage of ReplaceProwJob for %s", tc.name)
+		}
+		if fc.patchedKubeJob != tc.shouldPatchJob {
+			t.Fatalf("Wrong usage of PatchKubeJob for %s", tc.name)
 		}
 		if tc.shouldReplace && fc.pj.Status.State != tc.expectedState {
 			t.Fatalf("Wrong final state for %s, got %v", tc.name, tc.expectedState)

@@ -89,7 +89,7 @@ func TestStartJob(t *testing.T) {
 // Just make sure we set the parallelism to 0.
 func TestDeleteJob(t *testing.T) {
 	c := &kc{}
-	if err := deleteJob(c, "job-name", github.PullRequest{}); err != nil {
+	if err := DeletePRJob(c, "job-name", github.PullRequest{}); err != nil {
 		t.Fatalf("Didn't expect error deleting job: %v", err)
 	}
 	// The default kube.Job has nil parallelism and 0 succeeded pods. Ensure
