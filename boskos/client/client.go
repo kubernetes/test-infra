@@ -46,8 +46,8 @@ func (c *Client) popResource() (string, bool) {
 	return r, true
 }
 
-func (c *Client) Start(rtype string, state string) (string, error) {
-	r, err := c.start(rtype, state)
+func (c *Client) Acquire(rtype string, state string) (string, error) {
+	r, err := c.acquire(rtype, state)
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +56,7 @@ func (c *Client) Start(rtype string, state string) (string, error) {
 	return r, nil
 }
 
-func (c *Client) DoneAll(state string) error {
+func (c *Client) ReleaseAll(dest string) error {
 	if len(c.resources) == 0 {
 		return fmt.Errorf("No holding resource")
 	}
@@ -67,7 +67,7 @@ func (c *Client) DoneAll(state string) error {
 			break
 		}
 
-		if err := c.done(r, state); err != nil {
+		if err := c.release(r, dest); err != nil {
 			return err
 		}
 	}
@@ -75,13 +75,13 @@ func (c *Client) DoneAll(state string) error {
 	return nil
 }
 
-func (c *Client) DoneOne(name string, state string) error {
+func (c *Client) ReleaseOne(name string, dest string) error {
 
 	for idx, r := range c.resources {
 		if r == name {
 			c.resources[idx] = c.resources[len(c.resources)-1]
 			c.resources = c.resources[:len(c.resources)-1]
-			if err := c.done(r, state); err != nil {
+			if err := c.release(r, dest); err != nil {
 				return err
 			}
 			return nil
@@ -91,13 +91,13 @@ func (c *Client) DoneOne(name string, state string) error {
 	return fmt.Errorf("No resource name %v", name)
 }
 
-func (c *Client) UpdateAll() error {
+func (c *Client) UpdateAll(state string) error {
 	if len(c.resources) == 0 {
 		return fmt.Errorf("No holding resource")
 	}
 
 	for _, r := range c.resources {
-		if err := c.update(r); err != nil {
+		if err := c.update(r, state); err != nil {
 			return err
 		}
 	}
@@ -105,10 +105,10 @@ func (c *Client) UpdateAll() error {
 	return nil
 }
 
-func (c *Client) UpdateOne(name string) error {
+func (c *Client) UpdateOne(name string, state string) error {
 	for _, r := range c.resources {
 		if r == name {
-			if err := c.update(r); err != nil {
+			if err := c.update(r, state); err != nil {
 				return err
 			}
 			return nil
@@ -135,8 +135,10 @@ func NewClient(url string, owner string) *Client {
 	return client
 }
 
-func (c *Client) start(rtype string, state string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("%v/start?type=%v&state=%v&owner=%v", c.url, rtype, state, c.owner))
+// private methods
+
+func (c *Client) acquire(rtype string, state string) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("%v/acquire?type=%v&state=%v&owner=%v", c.url, rtype, state, c.owner))
 	if err != nil {
 		return "", err
 	}
@@ -159,8 +161,8 @@ func (c *Client) start(rtype string, state string) (string, error) {
 	return "", fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
 }
 
-func (c *Client) done(name string, state string) error {
-	resp, err := http.Get(fmt.Sprintf("%v/done?name=%v&state=%v", c.url, name, state))
+func (c *Client) release(name string, dest string) error {
+	resp, err := http.Get(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v", c.url, name, dest, c.owner))
 	if err != nil {
 		return err
 	}
@@ -172,8 +174,8 @@ func (c *Client) done(name string, state string) error {
 	return nil
 }
 
-func (c *Client) update(name string) error {
-	resp, err := http.Get(fmt.Sprintf("%v/update?name=%v", c.url, name))
+func (c *Client) update(name string, state string) error {
+	resp, err := http.Get(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v", c.url, name, c.owner, state))
 	if err != nil {
 		return err
 	}

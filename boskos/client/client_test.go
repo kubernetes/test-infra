@@ -34,14 +34,14 @@ func ErrStr(err error) string {
 	return err.Error()
 }
 
-func TestStart(t *testing.T) {
+func TestAcquire(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, FAKE_RES)
 	}))
 	defer ts.Close()
 
 	c := NewClient(ts.URL, "user")
-	name, err := c.Start("t", "s")
+	name, err := c.Acquire("t", "s")
 	if err != nil {
 		t.Errorf("Error in start : %v", err)
 	} else if name != "res" {
@@ -51,7 +51,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestDone(t *testing.T) {
+func TestRelease(t *testing.T) {
 	var testcases = []struct {
 		name      string
 		resources []string
@@ -100,9 +100,9 @@ func TestDone(t *testing.T) {
 		}
 		var err error
 		if tc.res == "" {
-			err = c.DoneAll("d")
+			err = c.ReleaseAll("d")
 		} else {
-			err = c.DoneOne(tc.res, "d")
+			err = c.ReleaseOne(tc.res, "d")
 		}
 
 		if ErrStr(err) != tc.errWanted {
@@ -164,9 +164,9 @@ func TestUpdate(t *testing.T) {
 		}
 		var err error
 		if tc.res == "" {
-			err = c.UpdateAll()
+			err = c.UpdateAll("s")
 		} else {
-			err = c.UpdateOne(tc.res)
+			err = c.UpdateOne(tc.res, "s")
 		}
 
 		if ErrStr(err) != tc.errWanted {
