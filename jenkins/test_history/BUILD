@@ -6,6 +6,7 @@ py_test(
     ],
     deps = [
         "@jinja2//:jinja2",
+        "@yaml//:yaml",
     ],
 )
 
@@ -19,6 +20,10 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/1973
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
+    deps = [
+        "@requests//:requests",
+        "@yaml//:yaml",
+    ],
 )
 
 filegroup(

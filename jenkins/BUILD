@@ -11,6 +11,7 @@ py_test(
         "//jenkins/job-configs/kubernetes-jenkins-pull:configs",
         "//jobs",
     ],
+    deps = ["@yaml//:yaml"],
 )
 
 filegroup(
