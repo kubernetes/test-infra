@@ -82,6 +82,7 @@ data:
     ci-kubernetes-e2e-kops-aws-serial,\
     ci-kubernetes-e2e-kops-aws-release-1.5,\
     ci-kubernetes-e2e-kops-aws-release-1.6,\
+    ci-kubernetes-e2e-kops-aws-statefulset,\
     ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-kubemark-5-gce,\
     ci-kubernetes-node-kubelet-serial,\
