@@ -31,6 +31,13 @@ import (
 	"time"
 )
 
+var httpTransport *http.Transport
+
+func init() {
+	httpTransport = new(http.Transport)
+	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
+}
+
 // Returns $GOPATH/src/k8s.io/...
 func k8s(parts ...string) string {
 	p := []string{os.Getenv("GOPATH"), "src", "k8s.io"}
@@ -65,10 +72,7 @@ func insertPath(path string) error {
 // Essentially curl url | writer
 func httpRead(url string, writer io.Writer) error {
 	log.Printf("curl %s", url)
-	// TODO: we should probably create only one Transport and reuse it for all calls
-	t := &http.Transport{}
-	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
-	c := &http.Client{Transport: t}
+	c := &http.Client{Transport: httpTransport}
 	r, err := c.Get(url)
 	if err != nil {
 		return err
