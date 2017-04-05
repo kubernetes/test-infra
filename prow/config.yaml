@@ -52,8 +52,9 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
@@ -226,8 +227,9 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
@@ -400,8 +402,9 @@ presubmits:
     trigger: "@k8s-bot (bazel )?test this"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
@@ -490,8 +493,9 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
@@ -519,8 +523,9 @@ postsubmits:
     - name: ci-kubernetes-bazel-test
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.11
+        - image: gcr.io/k8s-testimages/bazelbuild:0.12
           args:
+          - "--repo=k8s.io/$(REPO_NAME)"
           - "--branch=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
@@ -587,8 +592,9 @@ postsubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
@@ -616,8 +622,9 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.9
+        - image: gcr.io/k8s-testimages/bazelbuild:0.12
           args:
+          - "--repo=k8s.io/$(REPO_NAME)"
           - "--branch=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
@@ -686,8 +693,9 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/$(REPO_NAME)"
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
@@ -739,8 +747,9 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.11
+    - image: gcr.io/k8s-testimages/bazelbuild:0.12
       args:
+      - "--repo=k8s.io/test-infra"
       - "--branch=master"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
@@ -821,8 +830,9 @@ periodics:
   interval: 2h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.9
+    - image: gcr.io/k8s-testimages/bazelbuild:0.12
       args:
+      - "--repo=k8s.io/kubernetes=release-1.6"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
@@ -830,8 +840,6 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: REPO_NAME
-        value: kubernetes=release-1.6
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       volumeMounts:
@@ -851,16 +859,15 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
+        - "--repo=k8s.io/kubernetes=release-1.6"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
         securityContext:
           privileged: true
         env:
-        - name: REPO_NAME
-          value: kubernetes=release-1.6
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         volumeMounts:
