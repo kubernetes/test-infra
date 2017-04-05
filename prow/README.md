@@ -131,21 +131,14 @@ This shouldn't be necessary for most use cases.
  kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
  ```
 
-1. Run the prow components that you desire. I recommend `hook`, `line`,
-`sinker`, and `deck` to start out with. You'll need some way for ingress
-traffic to reach your hook and deck deployments.
+1. Run the prow components that you desire. You'll need some way for GitHub's
+webhooks to reach your hook pods. I use an Ingress object, but a LoadBalancer
+service will also suffice.
 
  ```
- make hook-image
- make line-image
- make sinker-image
- make deck-image
-
- make hook-deployment
- make hook-service
- make sinker-deployment
- make deck-deployment
- make deck-service
+ make hook-image line-image sinker-image deck-image tot-image crier-image
+ make hook-deployment sinker-deployment deck-deployment tot-deployment crier-deployment
+ make hook-service deck-service tot-service crier-service
 
  kubectl apply -f cluster/ingress.yaml
  ```
