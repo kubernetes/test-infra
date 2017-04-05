@@ -47,6 +47,11 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
+	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
+			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+		}
+	}
 	// Which jobs does the comment want us to run?
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
 	if len(requestedJobs) == 0 {
