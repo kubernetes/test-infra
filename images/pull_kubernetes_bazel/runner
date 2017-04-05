@@ -17,9 +17,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Since the --repo flag appends values instead of overwriting them, let jobs
+# indicate that the runner should not to add this flag itself.
+if [ "${DISABLE_AUTO_REPO:-}" != "y" ]; then
+    FLAGS=--repo="k8s.io/${REPO_NAME:-test-infra}"
+fi
+
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
-    --repo="k8s.io/${REPO_NAME:-test-infra}" \
+    ${FLAGS:-} \
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     "$@"
