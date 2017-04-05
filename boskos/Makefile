@@ -22,7 +22,7 @@ boskos:
 	go build k8s.io/test-infra/boskos/
 
 image:
-	go build -o boskos k8s.io/test-infra/boskos/
+	CGO_ENABLED=0 go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
 	gcloud docker -- push "gcr.io/k8s-testimages/boskos:$(TAG)"
 	rm boskos

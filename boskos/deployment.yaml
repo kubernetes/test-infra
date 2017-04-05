@@ -57,7 +57,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-testimages/boskos:v20170330-f1c76875
+        image: gcr.io/k8s-testimages/boskos:v20170405-8a746783
         imagePullPolicy: Always
         args:
         - -storage=/store/boskos.json
