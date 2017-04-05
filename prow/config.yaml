@@ -121,9 +121,9 @@ presubmits:
             path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
-    context: pull-kubernetes-cross
-    rerun_command: "@k8s-bot pull-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-kubernetes-cross test this"
+    context: Jenkins cross build
+    rerun_command: "@k8s-bot cross test this"
+    trigger: "@k8s-bot cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-kubernetes-unit
@@ -295,9 +295,9 @@ presubmits:
             path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-cross
-    context: pull-security-kubernetes-cross
-    rerun_command: "@k8s-bot pull-security-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-security-kubernetes-cross test this"
+    context: Jenkins cross build
+    rerun_command: "@k8s-bot cross test this"
+    trigger: "@k8s-bot cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-security-kubernetes-unit
