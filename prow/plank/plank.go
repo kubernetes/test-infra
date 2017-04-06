@@ -29,6 +29,9 @@ type kubeClient interface {
 	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 	CreateJob(kube.Job) (kube.Job, error)
+	GetJob(name string) (kube.Job, error)
+	PatchJob(name string, job kube.Job) (kube.Job, error)
+	PatchJobStatus(name string, job kube.Job) (kube.Job, error)
 }
 
 type Controller struct {
@@ -68,8 +71,16 @@ func (c *Controller) Sync() error {
 }
 
 func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
-	// Pass over completed prow jobs.
 	if pj.Complete() {
+		if j, ok := jm[pj.Status.KubeJobName]; ok && pj.Spec.Type == kube.PresubmitJob && !j.Complete() {
+			// Complete prow job, incomplete k8s job, abort it.
+			// TODO(spxtr): We currently only abort presubmits. We should
+			// consider aborting other kinds of jobs.
+			if len(pj.Spec.Refs.Pulls) != 1 {
+				return fmt.Errorf("prowjob %s has wrong number of pulls: %+v", pj.Metadata.Name, pj.Spec.Refs)
+			}
+			return line.DeleteJob(c.kc, pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
+		}
 		return nil
 	}
 	if pj.Status.KubeJobName == "" {
