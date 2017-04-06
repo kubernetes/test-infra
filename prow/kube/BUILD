@@ -10,7 +10,10 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["client_test.go"],
+    srcs = [
+        "client_test.go",
+        "prowjob_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
 )
@@ -19,6 +22,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "prowjob.go",
         "types.go",
     ],
     tags = ["automanaged"],
