@@ -36,7 +36,7 @@ const (
 
 :memo: **Please follow instructions at <https://github.com/kubernetes/kubernetes/wiki/CLA-FAQ> to sign the CLA.**
 
-Once you've signed, please reply here (e.g. "I signed it!") and we'll verify.  Thanks.
+It may take a couple minutes for the CLA signature to be fully registered; after that, please reply here with a new comment and we'll verify.  Thanks.
 
 ---
 
