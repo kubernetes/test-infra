@@ -17,13 +17,13 @@ spec:
     http:
       paths:
         - backend:
-            serviceName: kubernetes-sq-status
+            serviceName: nginx-https-redirect 
             servicePort: 80
   - host: contrib.submit-queue.k8s.io
     http:
       paths:
         - backend:
-            serviceName: contrib-sq-status
+            serviceName: nginx-https-redirect 
             servicePort: 80
   - host: docs.submit-queue.k8s.io
     http:
