@@ -1953,10 +1953,6 @@ class JobTest(unittest.TestCase):
                             self.assertLessEqual(len(cluster), 20, 'Job %r, --cluster should be 20 chars or fewer' % job)
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
-                    if '-soak-' in job:
-                        if '-federation-' not in job:
-                            self.assertIn(
-                                '--tag=v20170223-43ce8f86', config[job]['args'])
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', config[job]['args'])
                         if 'gke' in job:

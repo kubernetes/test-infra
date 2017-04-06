@@ -474,8 +474,7 @@
   "args": [
     "--cluster=e2e-kops-aws.test-aws.k8s.io",
     "--env-file=platforms/kops_aws.env",
-    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
-    "--tag=v20170223-43ce8f86"
+    "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env"
   ]
 },
 
@@ -1576,7 +1575,6 @@
     "--env-file=jobs/ci-kubernetes-kubemark-500-gce.env",
     "--docker-in-docker",
     "--cluster=kubemark-500",
-    "--tag=v20170223-43ce8f86",
     "--test=false"
   ]
 },
@@ -1596,8 +1594,7 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gci-gke.env",
-    "--tag=v20170223-43ce8f86"
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke.env"
   ]
 },
 
@@ -1605,8 +1602,7 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gke.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow.env",
-    "--tag=v20170223-43ce8f86"
+    "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow.env"
   ]
 },
 
@@ -2194,8 +2190,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2206,8 +2201,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2217,8 +2211,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-non-cri-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2229,8 +2222,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-non-cri-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2261,8 +2253,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-gci-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2273,8 +2264,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-gci-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2284,8 +2274,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-2-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2296,8 +2285,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-2-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2307,8 +2295,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-1.6-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2319,8 +2306,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-1.6-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2330,8 +2316,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.6-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2342,8 +2327,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.6-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2353,8 +2337,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-1.5-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2365,8 +2348,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-1.5-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2376,8 +2358,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gce-1.4-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2388,8 +2369,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gce-1.4-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2399,8 +2379,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.5-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2411,8 +2390,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.5-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2422,8 +2400,7 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.4-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2434,8 +2411,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.4-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2445,8 +2421,7 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-soak-gke-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2457,8 +2432,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gke-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2468,8 +2442,7 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-soak-gke-gci-deploy.env",
     "--test=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
@@ -2480,8 +2453,7 @@
     "--env-file=jobs/ci-kubernetes-soak-gke-gci-test.env",
     "--soak-test",
     "--up=false",
-    "--down=false",
-    "--tag=v20170223-43ce8f86"
+    "--down=false"
   ]
 },
 
