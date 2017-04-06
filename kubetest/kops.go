@@ -41,6 +41,7 @@ var (
 	kopsUpTimeout   = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
 	kopsAdminAccess = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
 	kopsImage       = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
+	kopsArgs        = flag.String("kops-args", "", "(kops only) Additional space-separated args to pass unvalidated to 'kops create cluster', e.g. '--kops-args=\"--dns private --node-size t2.micro\"'")
 )
 
 type kops struct {
@@ -52,6 +53,7 @@ type kops struct {
 	adminAccess string
 	cluster     string
 	image       string
+	args        string
 	kubecfg     string
 }
 
@@ -116,6 +118,7 @@ func NewKops() (*kops, error) {
 		adminAccess: *kopsAdminAccess,
 		cluster:     *kopsCluster,
 		image:       *kopsImage,
+		args:        *kopsArgs,
 		kubecfg:     kubecfg,
 	}, nil
 }
@@ -136,6 +139,9 @@ func (k kops) Up() error {
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
+	}
+	if k.args != "" {
+		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
 	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
