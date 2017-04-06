@@ -22,14 +22,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/server"
 )
 
-func MakeFakeClient(resources []Resource) *Ranch {
-	newRanch := &Ranch{
+func MakeFakeClient(resources []common.Resource) *server.Ranch {
+	newRanch := &server.Ranch{
 		Resources: resources,
 	}
 
@@ -39,57 +41,57 @@ func MakeFakeClient(resources []Resource) *Ranch {
 func TestAcquire(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []Resource
+		resources []common.Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?state=s&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing owner",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusNotFound,
 			method:    http.MethodPost,
 		},
 		{
 			name: "no match type",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "wrong",
 					State: "s",
@@ -102,8 +104,8 @@ func TestAcquire(t *testing.T) {
 		},
 		{
 			name: "no match state",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "wrong",
@@ -116,8 +118,8 @@ func TestAcquire(t *testing.T) {
 		},
 		{
 			name: "busy",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -130,8 +132,8 @@ func TestAcquire(t *testing.T) {
 		},
 		{
 			name: "ok",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -163,7 +165,7 @@ func TestAcquire(t *testing.T) {
 		}
 
 		if rr.Code == http.StatusOK {
-			var data Resource
+			var data common.Resource
 			json.Unmarshal(rr.Body.Bytes(), &data)
 			if data.Name != "res" {
 				t.Errorf("%s - Got res %v, expect res", tc.name, data.Name)
@@ -179,57 +181,57 @@ func TestAcquire(t *testing.T) {
 func TestRelease(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []Resource
+		resources []common.Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&dest=d&owner=foo",
 			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing name",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?dest=d&owner=foo",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&owner=foo",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing owner",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&dest=d&owner=foo",
 			code:      http.StatusNotFound,
 			method:    http.MethodPost,
 		},
 		{
 			name: "wrong owner",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -242,8 +244,8 @@ func TestRelease(t *testing.T) {
 		},
 		{
 			name: "no match name",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "foo",
 					Type:  "t",
 					State: "s",
@@ -256,8 +258,8 @@ func TestRelease(t *testing.T) {
 		},
 		{
 			name: "ok",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -303,64 +305,64 @@ func TestRelease(t *testing.T) {
 func TestReset(t *testing.T) {
 	var testcases = []struct {
 		name      string
-		resources []Resource
+		resources []common.Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=10m&dest=d",
 			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing type",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?state=s&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing state",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing expire",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "missing dest",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=10m",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "bad expire",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=woooo&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name: "empty - has owner",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -374,8 +376,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - not expire",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -389,8 +391,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - no match type",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "wrong",
 					State:      "s",
@@ -404,8 +406,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "empty - no match state",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "t",
 					State:      "wrong",
@@ -419,8 +421,8 @@ func TestReset(t *testing.T) {
 		},
 		{
 			name: "ok",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -473,57 +475,57 @@ func TestUpdate(t *testing.T) {
 
 	var testcases = []struct {
 		name      string
-		resources []Resource
+		resources []common.Resource
 		path      string
 		code      int
 		method    string
 	}{
 		{
 			name:      "get",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=foo",
 			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
 		{
 			name:      "no arg",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no name",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?state=s&owner=merlin",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no owner",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&state=s",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no state",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&owner=merlin",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "no resource",
-			resources: []Resource{},
+			resources: []common.Resource{},
 			path:      "?name=res&state=s&owner=merlin",
 			code:      http.StatusNotFound,
 			method:    http.MethodPost,
 		},
 		{
 			name: "wrong owner",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -536,8 +538,8 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "wrong state",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -550,8 +552,8 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "no matched resource",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:  "res",
 					Type:  "t",
 					State: "s",
@@ -564,8 +566,8 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "ok",
-			resources: []Resource{
-				Resource{
+			resources: []common.Resource{
+				{
 					Name:       "res",
 					Type:       "t",
 					State:      "s",
@@ -617,7 +619,7 @@ func TestDefault(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		handler := handleDefault()
+		handler := handleDefault(nil)
 		req, err := http.NewRequest(http.MethodGet, "", nil)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
@@ -636,7 +638,7 @@ func TestProjectConfig(t *testing.T) {
 		t.Errorf("ReadFile error: %v\n", err)
 	}
 
-	var data []Resource
+	var data []common.Resource
 	err = json.Unmarshal(file, &data)
 	if err != nil {
 		t.Errorf("Unmarshal error: %v\n", err)
@@ -653,76 +655,6 @@ func TestProjectConfig(t *testing.T) {
 
 		if !strings.Contains(p.Name, "FAKE") { // placeholder, change it to a valid pattern later.
 			t.Errorf("Invalid project: %v\n", p.Name)
-		}
-	}
-}
-
-func TestSyncConfig(t *testing.T) {
-	var testcases = []struct {
-		name   string
-		oldRes []Resource
-		newRes []Resource
-		expect []Resource
-	}{
-		{
-			name:   "empty",
-			oldRes: []Resource{},
-			newRes: []Resource{},
-			expect: []Resource{},
-		},
-		{
-			name:   "append",
-			oldRes: []Resource{},
-			newRes: []Resource{
-				Resource{
-					Name: "res",
-					Type: "t",
-				},
-			},
-			expect: []Resource{
-				Resource{
-					Name:  "res",
-					Type:  "t",
-					State: "free",
-				},
-			},
-		},
-		{
-			name: "delete",
-			oldRes: []Resource{
-				Resource{
-					Name: "res",
-					Type: "t",
-				},
-			},
-			newRes: []Resource{},
-			expect: []Resource{},
-		},
-		{
-			name: "delete busy",
-			oldRes: []Resource{
-				Resource{
-					Name:  "res",
-					Type:  "t",
-					Owner: "o",
-				},
-			},
-			newRes: []Resource{},
-			expect: []Resource{
-				Resource{
-					Name:  "res",
-					Type:  "t",
-					Owner: "o",
-				},
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		c := MakeFakeClient(tc.oldRes)
-		c.syncConfigHelper(tc.newRes)
-		if !reflect.DeepEqual(c.Resources, tc.expect) {
-			t.Errorf("Test %v: got %v, expect %v", tc.name, c.Resources, tc.expect)
 		}
 	}
 }

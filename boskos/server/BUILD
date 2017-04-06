@@ -4,35 +4,24 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
 )
 
-go_binary(
-    name = "boskos",
-    library = ":go_default_library",
-    tags = ["automanaged"],
-)
-
 go_test(
     name = "go_default_test",
-    srcs = ["boskos_test.go"],
-    data = ["resources.json"],
+    srcs = ["server_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = [
-        "//boskos/common:go_default_library",
-        "//boskos/server:go_default_library",
-    ],
+    deps = ["//boskos/common:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["boskos.go"],
+    srcs = ["server.go"],
     tags = ["automanaged"],
     deps = [
-        "//boskos/server:go_default_library",
+        "//boskos/common:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )
@@ -46,10 +35,6 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//boskos/common:all-srcs",
-        "//boskos/server:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
