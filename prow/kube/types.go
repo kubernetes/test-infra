@@ -30,66 +30,6 @@ type ObjectMeta struct {
 	UID             string `json:"uid,omitempty"`
 }
 
-type ProwJobType string
-type ProwJobState string
-
-const (
-	PresubmitJob  ProwJobType = "presubmit"
-	PostsubmitJob             = "postsubmit"
-	PeriodicJob               = "periodic"
-	BatchJob                  = "batch"
-)
-
-const (
-	TriggeredState ProwJobState = "triggered"
-	PendingState                = "pending"
-	SuccessState                = "success"
-	FailureState                = "failure"
-	AbortedState                = "aborted"
-	ErrorState                  = "error"
-)
-
-type ProwJob struct {
-	Metadata ObjectMeta    `json:"metadata,omitempty"`
-	Spec     ProwJobSpec   `json:"spec,omitempty"`
-	Status   ProwJobStatus `json:"status,omitempty"`
-}
-
-type ProwJobSpec struct {
-	Type    ProwJobType `json:"type,omitempty"`
-	Job     string      `json:"job,omitempty"`
-	Refs    Refs        `json:"refs,omitempty"`
-	Context string      `json:"context,omitempty"`
-}
-
-type ProwJobStatus struct {
-	StartTime      time.Time    `json:"startTime,omitempty"`
-	CompletionTime time.Time    `json:"completionTime,omitempty"`
-	State          ProwJobState `json:"state,omitempty"`
-	// TODO(spxtr): Remove this once migration is complete.
-	KubeJobName string `json:"kube_job_name,omitempty"`
-}
-
-func (j *ProwJob) Complete() bool {
-	return !j.Status.CompletionTime.IsZero()
-}
-
-type Pull struct {
-	Number int    `json:"number,omitempty"`
-	Author string `json:"author,omitempty"`
-	SHA    string `json:"sha,omitempty"`
-}
-
-type Refs struct {
-	Org  string `json:"org,omitempty"`
-	Repo string `json:"repo,omitempty"`
-
-	BaseRef string `json:"base_ref,omitempty"`
-	BaseSHA string `json:"base_sha,omitempty"`
-
-	Pulls []Pull `json:"pulls,omitempty"`
-}
-
 type Secret struct {
 	Metadata ObjectMeta        `json:"metadata,omitempty"`
 	Data     map[string]string `json:"data,omitempty"`

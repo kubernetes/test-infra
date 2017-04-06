@@ -62,7 +62,7 @@ type JobAgent struct {
 	kc      *kube.Client
 	jc      *jenkins.Client
 	jobs    []Job
-	jobsMap map[string]Job // job name -> Job
+	jobsMap map[string]Job // pod name -> Job
 	mut     sync.Mutex
 }
 
@@ -128,9 +128,15 @@ func (ja *JobAgent) update() error {
 	if err != nil {
 		return err
 	}
+	pjs, err := ja.kc.ListProwJobs(nil)
+	if err != nil {
+		return err
+	}
 	var njs []Job
 	njsMap := map[string]Job{}
+	dupJobs := map[string]bool{}
 
+	// TODO(spxtr): Remove this block once we switch to ProwJobs.
 	for _, j := range js {
 		nj := Job{
 			Type:        j.Metadata.Labels["type"],
@@ -158,6 +164,45 @@ func (ja *JobAgent) update() error {
 		}
 		if pr, err := strconv.Atoi(j.Metadata.Labels["pr"]); err == nil {
 			nj.Number = pr
+		}
+		njs = append(njs, nj)
+		if nj.PodName != "" {
+			njsMap[nj.PodName] = nj
+		}
+		dupJobs[j.Metadata.Name] = true
+	}
+	for _, j := range pjs {
+		// If we have both a ProwJob and a Job, don't duplicate.
+		if j.Status.KubeJobName != "" && dupJobs[j.Status.KubeJobName] {
+			continue
+		}
+		nj := Job{
+			Type:        string(j.Spec.Type),
+			Repo:        fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
+			Refs:        j.Spec.Refs.String(),
+			BaseRef:     j.Spec.Refs.BaseRef,
+			BaseSHA:     j.Spec.Refs.BaseSHA,
+			Job:         j.Spec.Job,
+			Context:     j.Spec.Context,
+			Description: j.Spec.Description,
+			URL:         j.Spec.URL,
+			Agent:       string(j.Spec.Agent),
+
+			Started: j.Status.StartTime.Format(time.Stamp),
+			State:   string(j.Status.State),
+			PodName: j.Status.PodName,
+
+			st: j.Status.StartTime,
+			ft: j.Status.CompletionTime,
+		}
+		if !nj.ft.IsZero() {
+			nj.Finished = nj.ft.Format("15:04:05")
+			nj.Duration = nj.ft.Sub(nj.st).String()
+		}
+		if len(j.Spec.Refs.Pulls) == 1 {
+			nj.Number = j.Spec.Refs.Pulls[0].Number
+			nj.Author = j.Spec.Refs.Pulls[0].Author
+			nj.PullSHA = j.Spec.Refs.Pulls[0].SHA
 		}
 		njs = append(njs, nj)
 		if nj.PodName != "" {
