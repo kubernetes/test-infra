@@ -63,14 +63,15 @@ func (s StateNotMatch) Error() string {
 }
 
 func ErrorToStatus(err error) int {
-	if _, ok := err.(*OwnerNotMatch); ok {
-		return http.StatusUnauthorized
-	} else if _, ok := err.(*ResourceNotFound); ok {
-		return http.StatusNotFound
-	} else if _, ok := err.(*StateNotMatch); ok {
-		return http.StatusConflict
-	} else {
+	switch err.(type) {
+	default:
 		return http.StatusInternalServerError
+	case *OwnerNotMatch:
+		return http.StatusUnauthorized
+	case *ResourceNotFound:
+		return http.StatusNotFound
+	case *StateNotMatch:
+		return http.StatusConflict
 	}
 }
 
