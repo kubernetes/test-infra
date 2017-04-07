@@ -20,24 +20,41 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
+	"k8s.io/test-infra/prow/github"
 )
 
 type fakeClient struct {
 	assigned   map[string]int
 	unassigned map[string]int
+	commented  bool
 }
 
 func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []string) error {
 	for _, who := range assignees {
 		c.unassigned[who] += 1
 	}
+
 	return nil
 }
 
 func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
+	var missing github.MissingUsers
 	for _, who := range assignees {
-		c.assigned[who] += 1
+		if who != "evil" {
+			c.assigned[who] += 1
+		} else {
+			missing = append(missing, who)
+		}
 	}
+
+	if len(missing) == 0 {
+		return nil
+	}
+	return missing
+}
+
+func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	c.commented = true
 	return nil
 }
 
@@ -83,6 +100,7 @@ func TestAssignComment(t *testing.T) {
 		commenter string
 		added     []string
 		removed   []string
+		commented bool
 	}{
 		{
 			name:      "unrelated comment",
@@ -165,11 +183,41 @@ func TestAssignComment(t *testing.T) {
 			commenter: "san",
 			removed:   []string{"ashitaka", "eboshi"},
 		},
+		{
+			name:      "evil commenter",
+			action:    "created",
+			body:      "/assign @merlin",
+			commenter: "evil",
+			added:     []string{"merlin"},
+		},
+		{
+			name:      "evil commenter self assign",
+			action:    "created",
+			body:      "/assign",
+			commenter: "evil",
+			commented: true,
+		},
+		{
+			name:      "evil assignee",
+			action:    "created",
+			body:      "/assign @evil @merlin",
+			commenter: "innocent",
+			added:     []string{"merlin"},
+			commented: true,
+		},
+		{
+			name:      "evil unassignee",
+			action:    "created",
+			body:      "/unassign @evil @merlin",
+			commenter: "innocent",
+			removed:   []string{"evil", "merlin"},
+		},
 	}
 	for _, tc := range testcases {
 		fc := &fakeClient{
 			assigned:   make(map[string]int),
 			unassigned: make(map[string]int),
+			commented:  false,
 		}
 		ae := assignEvent{
 			action: tc.action,
@@ -181,6 +229,11 @@ func TestAssignComment(t *testing.T) {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
+
+		if tc.commented != fc.commented {
+			t.Errorf("For case %s, expect commented: %v, got commented %v", tc.name, tc.commented, fc.commented)
+		}
+
 		if len(fc.assigned) != len(tc.added) {
 			t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.assigned, tc.added)
 		} else {

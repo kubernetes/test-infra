@@ -95,5 +95,5 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j j
 		return fmt.Errorf("joke contains invalid characters: %v", resp)
 	}
 	log.Infof("Commenting with \"%s\".", resp)
-	return gc.CreateComment(org, repo, number, plugins.FormatResponse(ic.Comment, resp))
+	return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 }
