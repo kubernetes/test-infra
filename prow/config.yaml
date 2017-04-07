@@ -178,9 +178,11 @@ presubmits:
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
   - name: pull-kubernetes-federation-e2e-gce
-    context: pull-kubernetes-federation-e2e-gce
+    always_run: true
+    skip_report: true  # Remove this once we are confident about this job
+    context: Jenkins Federation GCE e2e
     rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce|federation gce e2e) test this"
+    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce |federation gce e2e )?test this"
 
   - name: pull-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"
@@ -352,9 +354,11 @@ presubmits:
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
   - name: pull-security-kubernetes-federation-e2e-gce
-    context: pull-security-kubernetes-federation-e2e-gce
+    always_run: true
+    skip_report: true
+    context: Jenkins Federation GCE e2e
     rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce|federation gce e2e) test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce |federation gce e2e )?test this"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"
