@@ -17,115 +17,41 @@ limitations under the License.
 package plank
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/satori/go.uuid"
+
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/line"
 )
 
-type kubeClient interface {
-	ListJobs(map[string]string) ([]kube.Job, error)
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
-	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
-	CreateJob(kube.Job) (kube.Job, error)
-}
-
-type Controller struct {
-	kc kubeClient
-}
-
-func NewController(kc *kube.Client) *Controller {
-	return &Controller{
-		kc: kc,
+func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
+	return kube.ProwJob{
+		Metadata: kube.ObjectMeta{
+			// TODO(spxtr): Remove this, replace with cmd/tot usage.
+			Name: uuid.NewV1().String(),
+		},
+		Spec: spec,
+		Status: kube.ProwJobStatus{
+			StartTime: time.Now(),
+			State:     kube.TriggeredState,
+		},
 	}
 }
 
-func (c *Controller) Sync() error {
-	pjs, err := c.kc.ListProwJobs(nil)
-	if err != nil {
-		return fmt.Errorf("error listing prow jobs: %v", err)
+func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
+	pjs := kube.ProwJobSpec{
+		Type: kube.PeriodicJob,
+		Job:  p.Name,
 	}
-	js, err := c.kc.ListJobs(nil)
-	if err != nil {
-		return fmt.Errorf("error listing jobs: %v", err)
-	}
-	jm := map[string]*kube.Job{}
-	for _, j := range js {
-		jm[j.Metadata.Name] = &j
-	}
-	var errs []error
-	for _, pj := range pjs {
-		if err := c.syncJob(pj, jm); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if len(errs) == 0 {
-		return nil
+	if p.Spec == nil {
+		pjs.Agent = kube.JenkinsAgent
 	} else {
-		return fmt.Errorf("errors syncing: %v", errs)
+		pjs.Agent = kube.KubernetesAgent
+		pjs.PodSpec = *p.Spec
 	}
-}
-
-func (c *Controller) syncJob(pj kube.ProwJob, jm map[string]*kube.Job) error {
-	// Pass over completed prow jobs.
-	if pj.Complete() {
-		return nil
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
 	}
-	if pj.Status.KubeJobName == "" {
-		// Start job.
-		name, err := c.startJob(pj)
-		if err != nil {
-			return err
-		}
-		pj.Status.KubeJobName = name
-		pj.Status.State = kube.PendingState
-		pj.Status.StartTime = time.Now()
-		if _, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj); err != nil {
-			return err
-		}
-	} else if j, ok := jm[pj.Status.KubeJobName]; !ok {
-		return fmt.Errorf("kube job %s not found", pj.Status.KubeJobName)
-	} else if j.Complete() {
-		// Kube job finished, update prow job.
-		pj.Status.State = kube.ProwJobState(j.Metadata.Annotations["state"])
-		pj.Status.CompletionTime = j.Status.CompletionTime
-		if _, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj); err != nil {
-			return err
-		}
-	} else {
-		// Kube job still running. Nothing to do.
-	}
-	return nil
-}
-
-func (c *Controller) startJob(pj kube.ProwJob) (string, error) {
-	switch pj.Spec.Type {
-	case kube.PresubmitJob:
-		return line.StartJob(c.kc, pj.Spec.Job, pj.Spec.Context, pjToBR(pj))
-	case kube.PostsubmitJob:
-		return line.StartJob(c.kc, pj.Spec.Job, "", pjToBR(pj))
-	case kube.PeriodicJob:
-		return line.StartPeriodicJob(c.kc, pj.Spec.Job)
-	case kube.BatchJob:
-		return line.StartJob(c.kc, pj.Spec.Job, "", pjToBR(pj))
-	}
-	return "", fmt.Errorf("unhandled job type: %s", pj.Spec.Type)
-}
-
-func pjToBR(pj kube.ProwJob) line.BuildRequest {
-	br := line.BuildRequest{
-		Org:     pj.Spec.Refs.Org,
-		Repo:    pj.Spec.Refs.Repo,
-		BaseRef: pj.Spec.Refs.BaseRef,
-		BaseSHA: pj.Spec.Refs.BaseSHA,
-	}
-	for _, p := range pj.Spec.Refs.Pulls {
-		br.Pulls = append(br.Pulls, line.Pull{
-			Author: p.Author,
-			Number: p.Number,
-			SHA:    p.SHA,
-		})
-	}
-	return br
+	return pjs
 }

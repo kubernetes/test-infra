@@ -22,10 +22,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 )
 
 var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -74,16 +74,7 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(kube.ProwJob{
-				Metadata: kube.ObjectMeta{
-					// TODO(spxtr): Remove this, replace with cmd/tot usage.
-					Name: uuid.NewV1().String(),
-				},
-				Spec: kube.ProwJobSpec{
-					Type: kube.PeriodicJob,
-					Job:  p.Name,
-				},
-			}); err != nil {
+			if _, err := kc.CreateProwJob(plank.NewProwJob(plank.PeriodicSpec(p))); err != nil {
 				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -25,12 +26,17 @@ import (
 	"k8s.io/test-infra/prow/plank"
 )
 
+var (
+	totURL   = flag.String("tot-url", "http://tot", "Tot URL")
+	crierURL = flag.String("crier-url", "http://crier", "Crier URL")
+)
+
 func main() {
 	kc, err := kube.NewClientInCluster("default")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
-	c := plank.NewController(kc)
+	c := plank.NewController(kc, *crierURL, *totURL)
 	for range time.Tick(30 * time.Second) {
 		if err := c.Sync(); err != nil {
 			logrus.WithError(err).Error("Error syncing.")
