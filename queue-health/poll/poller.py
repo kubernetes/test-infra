@@ -26,9 +26,9 @@ import requests
 
 def get_submit_queue_json(path):
     for n in range(3):
-        uri = 'http://submit-queue.k8s.io/%s' % path
+        uri = 'https://submit-queue.k8s.io/%s' % path
         print >>sys.stderr, 'GET %s' % uri
-        resp = requests.get(uri)
+        resp = requests.get(uri, allow_redirects=True)
         if resp.ok:
             break
         time.sleep(2**n)
