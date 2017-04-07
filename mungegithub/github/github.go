@@ -1574,6 +1574,21 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, bool) {
 	return pr, true
 }
 
+// Returns true if the github usr is in the list of assignees
+func userInList(user *github.User, assignees []string) bool {
+	if user == nil {
+		return false
+	}
+
+	for _, assignee := range assignees {
+		if *user.Login == assignee {
+			return true
+		}
+	}
+
+	return false
+}
+
 // RemoveAssignees removes the passed-in assignees from the github PR's assignees list
 func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 	config := obj.config
@@ -1587,6 +1602,18 @@ func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 		glog.Errorf("Error unassigning %v from PR# %d: %v", assignees, prNum, err)
 		return err
 	}
+
+	// Remove people from the local object. Replace with an entirely new copy of the list
+	newIssueAssignees := []*github.User{}
+	for _, user := range obj.Issue.Assignees {
+		if userInList(user, assignees) {
+			// Skip this user
+			continue
+		}
+		newIssueAssignees = append(newIssueAssignees, user)
+	}
+	obj.Issue.Assignees = newIssueAssignees
+
 	return nil
 }
 
@@ -1603,6 +1630,11 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 		glog.Errorf("Error assigning issue #%d to %v: %v", prNum, owner, err)
 		return err
 	}
+
+	obj.Issue.Assignees = append(obj.Issue.Assignees, &github.User{
+		Login: &owner,
+	})
+
 	return nil
 }
 
