@@ -59,9 +59,15 @@ type ProwJobSpec struct {
 	Job   string       `json:"job,omitempty"`
 	Refs  Refs         `json:"refs,omitempty"`
 
-	Context     string `json:"context,omitempty"`
-	Description string `json:"description,omitempty"`
-	URL         string `json:"url,omitempty"`
+	Report       bool   `json:"report,omitempty"`
+	Context      string `json:"context,omitempty"`
+	Description  string `json:"description,omitempty"`
+	RerunCommand string `json:"rerun_command,omitempty"`
+	URL          string `json:"url,omitempty"`
+
+	PodSpec PodSpec `json:"pod_spec,omitempty"`
+
+	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }
 
 type ProwJobStatus struct {

@@ -67,6 +67,8 @@ type Periodic struct {
 	Spec     *kube.PodSpec `json:"spec,omitempty"`
 	Interval string        `json:"interval"`
 
+	RunAfterSuccess []Periodic `json:"run_after_success"`
+
 	interval time.Duration
 }
 

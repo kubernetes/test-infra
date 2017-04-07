@@ -13,16 +13,24 @@ go_test(
     srcs = ["plank_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/kube:go_default_library",
+    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["plank.go"],
+    srcs = [
+        "controller.go",
+        "plank.go",
+    ],
     tags = ["automanaged"],
     deps = [
+        "//prow/config:go_default_library",
+        "//prow/crier:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/line:go_default_library",
+        "//vendor:github.com/satori/go.uuid",
     ],
 )
 

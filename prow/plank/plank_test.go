@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,124 +17,315 @@ limitations under the License.
 package plank
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
-type fakeKubeClient struct {
-	pj              kube.ProwJob
-	createdKubeJob  bool
-	replacedProwJob bool
+type fkc struct {
+	prowjobs []kube.ProwJob
+	pods     []kube.Pod
 }
 
-func (f *fakeKubeClient) ListJobs(map[string]string) ([]kube.Job, error) {
-	return nil, nil
+func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	f.prowjobs = append(f.prowjobs, pj)
+	return pj, nil
 }
-func (f *fakeKubeClient) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
-	return nil, nil
+
+func (f *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+	return f.prowjobs, nil
 }
-func (f *fakeKubeClient) ReplaceProwJob(s string, j kube.ProwJob) (kube.ProwJob, error) {
-	f.pj = j
-	f.replacedProwJob = true
-	return j, nil
+
+func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error) {
+	for i := range f.prowjobs {
+		if f.prowjobs[i].Metadata.Name == name {
+			f.prowjobs[i] = job
+			return job, nil
+		}
+	}
+	return kube.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
 }
-func (f *fakeKubeClient) CreateJob(kube.Job) (kube.Job, error) {
-	f.createdKubeJob = true
-	return kube.Job{}, nil
+
+func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
+	f.pods = append(f.pods, pod)
+	return pod, nil
+}
+
+func (f *fkc) ListPods(map[string]string) ([]kube.Pod, error) {
+	return f.pods, nil
+}
+
+func (f *fkc) DeletePod(name string) error {
+	for i := range f.pods {
+		if f.pods[i].Metadata.Name == name {
+			f.pods = append(f.pods[:i], f.pods[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("did not find pod %s", name)
+}
+
+func handleTot(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "42")
+}
+
+func handleCrier(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncJob(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		complete    bool
-		jobType     kube.ProwJobType
-		startState  kube.ProwJobState
-		kubeJobName string
-		kubeJob     *kube.Job
+		pj   kube.ProwJob
+		pods []kube.Pod
 
-		expectedError bool
-		shouldCreate  bool
-		shouldReplace bool
-		expectedState kube.ProwJobState
+		expectedState      kube.ProwJobState
+		expectedPodName    string
+		expectedNumPods    int
+		expectedComplete   bool
+		expectedCreatedPJs int
 	}{
 		{
-			name:     "completed job",
-			complete: true,
-		},
-		{
-			name:          "unhandled job type",
-			jobType:       "unknown",
-			expectedError: true,
-		},
-		{
-			name:          "start new job",
-			jobType:       kube.PeriodicJob,
-			startState:    kube.TriggeredState,
-			shouldCreate:  true,
-			shouldReplace: true,
-			expectedState: kube.PendingState,
-		},
-		{
-			name:          "missing kube job",
-			kubeJobName:   "something",
-			expectedError: true,
-		},
-		{
-			name:        "complete kube job",
-			startState:  kube.PendingState,
-			kubeJobName: "something",
-			kubeJob: &kube.Job{
-				Metadata: kube.ObjectMeta{
-					Annotations: map[string]string{
-						"state": kube.FailureState,
-					},
-				},
-				Status: kube.JobStatus{
-					Succeeded:      1,
+			name: "completed prow job",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
 					CompletionTime: time.Now(),
+					State:          kube.FailureState,
 				},
 			},
-			shouldReplace: true,
-			expectedState: kube.FailureState,
+			expectedState:    kube.FailureState,
+			expectedComplete: true,
 		},
 		{
-			name:        "incomplete kube job",
-			kubeJobName: "something",
-			kubeJob: &kube.Job{
-				Metadata: kube.ObjectMeta{
-					Annotations: map[string]string{
-						"state": kube.PendingState,
+			name: "start new pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "boop",
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedPodName: "boop-42",
+			expectedNumPods: 1,
+		},
+		{
+			name: "reset when pod goes missing",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedPodName: "",
+		},
+		{
+			name: "delete pod in unknown state",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-41",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodUnknown,
 					},
 				},
 			},
+			expectedState:   kube.PendingState,
+			expectedPodName: "",
+			expectedNumPods: 0,
+		},
+		{
+			name: "succeeded pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodSucceeded,
+					},
+				},
+			},
+			expectedComplete:   true,
+			expectedState:      kube.SuccessState,
+			expectedPodName:    "boop-42",
+			expectedNumPods:    1,
+			expectedCreatedPJs: 1,
+		},
+		{
+			name: "failed pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodFailed,
+					},
+				},
+			},
+			expectedComplete: true,
+			expectedState:    kube.FailureState,
+			expectedPodName:  "boop-42",
+			expectedNumPods:  1,
+		},
+		{
+			name: "running pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodRunning,
+					},
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedPodName: "boop-42",
+			expectedNumPods: 1,
 		},
 	}
 	for _, tc := range testcases {
-		var pj kube.ProwJob
-		pj.Spec.Type = tc.jobType
-		pj.Status.KubeJobName = tc.kubeJobName
-		pj.Status.State = tc.startState
-		if tc.complete {
-			pj.Status.CompletionTime = time.Now()
+		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+		defer totServ.Close()
+		crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
+		defer crierServ.Close()
+		pm := make(map[string]kube.Pod)
+		for i := range tc.pods {
+			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
 		}
-		jsm := map[string]*kube.Job{}
-		if tc.kubeJob != nil {
-			jsm[tc.kubeJobName] = tc.kubeJob
+		fc := &fkc{
+			prowjobs: []kube.ProwJob{tc.pj},
+			pods:     tc.pods,
 		}
-		fc := &fakeKubeClient{pj: pj}
-		c := &Controller{kc: fc}
-		err := c.syncJob(pj, jsm)
-		if err != nil && !tc.expectedError {
-			t.Fatalf("Unexpected error for %s: %v", tc.name, err)
+		c := Controller{
+			kc:       fc,
+			totURL:   totServ.URL,
+			crierURL: crierServ.URL,
 		}
-		if fc.replacedProwJob != tc.shouldReplace {
-			t.Fatalf("Wrong usage of ReplaceProwJob for %s", tc.name)
+		if err := c.syncJob(tc.pj, pm); err != nil {
+			t.Errorf("for case %s got an error: %v", tc.name, err)
+			continue
 		}
-		if tc.shouldReplace && fc.pj.Status.State != tc.expectedState {
-			t.Fatalf("Wrong final state for %s, got %v", tc.name, tc.expectedState)
+		actual := fc.prowjobs[0]
+		if actual.Status.State != tc.expectedState {
+			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
 		}
+		if actual.Status.PodName != tc.expectedPodName {
+			t.Errorf("for case %s got pod name %s", tc.name, actual.Status.PodName)
+		}
+		if len(fc.pods) != tc.expectedNumPods {
+			t.Errorf("for case %s got %d pods", tc.name, len(fc.pods))
+		}
+		if actual.Complete() != tc.expectedComplete {
+			t.Errorf("for case %s got wrong completion", tc.name)
+		}
+		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
+			t.Errorf("for case %s got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
+		}
+	}
+}
+
+// TestPeriodic walks through the happy path of a periodic job.
+func TestPeriodic(t *testing.T) {
+	per := config.Periodic{
+		Name: "ci-periodic-job",
+		Spec: &kube.PodSpec{},
+		RunAfterSuccess: []config.Periodic{
+			config.Periodic{
+				Name: "ci-periodic-job-2",
+				Spec: &kube.PodSpec{},
+			},
+		},
+	}
+
+	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+	defer totServ.Close()
+	crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
+	defer crierServ.Close()
+	fc := &fkc{
+		prowjobs: []kube.ProwJob{NewProwJob(PeriodicSpec(per))},
+	}
+	c := Controller{
+		kc:       fc,
+		totURL:   totServ.URL,
+		crierURL: crierServ.URL,
+	}
+
+	if err := c.Sync(); err != nil {
+		t.Fatalf("Error on first sync: %v", err)
+	}
+	if len(fc.pods) != 1 {
+		t.Fatal("Didn't create pod on first sync.")
+	}
+	if fc.pods[0].Metadata.Name != "ci-periodic-job-42" {
+		t.Fatalf("Wrong pod name: %s", fc.pods[0].Metadata.Name)
+	}
+	if err := c.Sync(); err != nil {
+		t.Fatalf("Error on second sync: %v", err)
+	}
+	if len(fc.pods) != 1 {
+		t.Fatalf("Wrong number of pods after second sync: %d", len(fc.pods))
+	}
+	fc.pods[0].Status.Phase = kube.PodSucceeded
+	if err := c.Sync(); err != nil {
+		t.Fatalf("Error on third sync: %v", err)
+	}
+	if !fc.prowjobs[0].Complete() {
+		t.Fatal("Prow job didn't complete.")
+	}
+	if fc.prowjobs[0].Status.State != kube.SuccessState {
+		t.Fatalf("Should be success: %v", fc.prowjobs[0].Status.State)
+	}
+	if len(fc.prowjobs) != 2 {
+		t.Fatalf("Wrong number of prow jobs: %d", len(fc.prowjobs))
+	}
+	if err := c.Sync(); err != nil {
+		t.Fatalf("Error on fourth sync: %v", err)
+	}
+	if len(fc.pods) != 2 {
+		t.Fatalf("Wrong number of pods: %d", len(fc.pods))
 	}
 }
