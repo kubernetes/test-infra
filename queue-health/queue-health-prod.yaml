@@ -23,7 +23,7 @@ spec:
           mountPath: /creds
           readOnly: true
       - name: poller
-        image: gcr.io/google-containers/queue-health-poll:v20161020
+      image: gcr.io/k8s-testimages/queue-health-poll:v20170407
         command:
         - python
         - /poller.py
