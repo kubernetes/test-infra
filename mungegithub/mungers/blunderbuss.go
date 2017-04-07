@@ -43,6 +43,7 @@ type BlunderbussMunger struct {
 	config              *BlunderbussConfig
 	features            *features.Features
 	BlunderbussReassign bool
+	NumAssignees        int
 }
 
 func init() {
@@ -70,6 +71,7 @@ func (b *BlunderbussMunger) EachLoop() error { return nil }
 // AddFlags will add any request flags to the cobra `cmd`
 func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().BoolVar(&b.BlunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+	cmd.Flags().IntVar(&b.NumAssignees, "blunderbuss-number-assignees", 2, "Number of assignees to select for each PR.")
 }
 
 func chance(val, total int64) float64 {
@@ -128,6 +130,38 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 	return potentialOwners, weightSum
 }
 
+func selectMultipleOwners(potentialOwners weightMap, weightSum int64, count int) []string {
+	// Make a copy of the map
+	pOwners := weightMap{}
+	for k, v := range potentialOwners {
+		pOwners[k] = v
+	}
+
+	owners := []string{}
+
+	for i := 0; i < count; i++ {
+		if len(pOwners) == 0 || weightSum == 0 {
+			break
+		}
+		selection := rand.Int63n(weightSum)
+		owner := ""
+		for o, w := range pOwners {
+			owner = o
+			selection -= w
+			if selection <= 0 {
+				break
+			}
+		}
+
+		owners = append(owners, owner)
+		weightSum -= pOwners[owner]
+
+		// Remove this person from the map.
+		delete(pOwners, owner)
+	}
+	return owners
+}
+
 // Munge is the workhorse the will actually make updates to the PR
 func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
@@ -159,16 +193,12 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 		c := chance(potentialOwners[cur], weightSum)
 		glog.Infof("Current assignee %v has a %02.2f%% chance of having been chosen", cur, c)
 	}
-	selection := rand.Int63n(weightSum)
-	owner := ""
-	for o, w := range potentialOwners {
-		owner = o
-		selection -= w
-		if selection <= 0 {
-			break
-		}
+
+	owners := selectMultipleOwners(potentialOwners, weightSum, b.NumAssignees)
+
+	for _, owner := range owners {
+		c := chance(potentialOwners[owner], weightSum)
+		glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned", *issue.Number, owner, c)
+		obj.AddAssignee(owner)
 	}
-	c := chance(potentialOwners[owner], weightSum)
-	glog.Infof("Assigning %v to %v who had a %02.2f%% chance to be assigned (previously assigned to %v)", *issue.Number, owner, c, github.DescribeUser(issue.Assignee))
-	obj.AddAssignee(owner)
 }
