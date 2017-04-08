@@ -116,22 +116,6 @@
         repo-name: k8s.io/kubernetes
         timeout: 50
 
-    - kubernetes-federation-build-1.4:
-        branch: release-1.4
-        commit-frequency: 'H/5 * * * *'
-        giturl: 'https://github.com/kubernetes/kubernetes'
-        job-name: ci-kubernetes-federation-build-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 50
-
-    - kubernetes-federation-build-1.5:
-        branch: release-1.5
-        giturl: 'https://github.com/kubernetes/kubernetes'
-        job-name: ci-kubernetes-federation-build-1.5
-        repo-name: k8s.io/kubernetes
-        commit-frequency: 'H/5 * * * *'
-        timeout: 50
-
     - kubernetes-federation-build-1.6:
         branch: release-1.6
         giturl: 'https://github.com/kubernetes/kubernetes'
