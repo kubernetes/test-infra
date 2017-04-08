@@ -76,6 +76,16 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Kubernetes Testgroup %v, name does not match GCS Bucket %v", testgroup.Name, testgroup.GcsPrefix)
 			}
 		}
+
+		if testgroup.TestNameConfig != nil {
+			if testgroup.TestNameConfig.NameFormat == "" {
+				t.Errorf("Testgroup %v: NameFormat must not be empty!", testgroup.Name)
+			}
+
+			if len(testgroup.TestNameConfig.NameElements) != strings.Count(testgroup.TestNameConfig.NameFormat, "%") {
+				t.Errorf("Testgroup %v: TestNameConfig must have number NameElement equal to format count in NameFormat!", testgroup.Name)
+			}
+		}
 	}
 
 	// dashboard name set
