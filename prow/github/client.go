@@ -530,6 +530,17 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	return err
 }
 
+func (c *Client) OpenIssue(org, repo string, number int) error {
+	c.log("OpenIssue", org, repo, number)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number),
+		requestBody: map[string]string{"state": "open"},
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 // GetRef returns the SHA of the given ref, such as "heads/master".
 func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	c.log("GetRef", org, repo, ref)
