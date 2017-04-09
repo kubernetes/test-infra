@@ -113,9 +113,9 @@
     - kubernetes-kubemark-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce-gci
-        json: 0
+        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 0
+        timeout: 75
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e

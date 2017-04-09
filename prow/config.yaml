@@ -191,9 +191,9 @@ presubmits:
     rerun_command: "@k8s-bot kubemark e2e test this"
 
   - name: pull-kubernetes-kubemark-e2e-gce-gci
-    context: Jenkins GCI Kubemark GCE e2e
-    rerun_command: "@k8s-bot kubemark gci e2e test this"
-    trigger: "@k8s-bot kubemark gci (e2e )?test this"
+    context: pull-kubernetes-kubemark-e2e-gce-gci
+    rerun_command: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
+    trigger: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
 
   - name: pull-kubernetes-node-e2e
     always_run: true
@@ -367,9 +367,9 @@ presubmits:
     rerun_command: "@k8s-bot kubemark e2e test this"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce-gci
-    context: Jenkins GCI Kubemark GCE e2e
-    rerun_command: "@k8s-bot kubemark gci e2e test this"
-    trigger: "@k8s-bot kubemark gci (e2e )?test this"
+    context: pull-security-kubernetes-kubemark-e2e-gce-gci
+    rerun_command: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
+    trigger: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
 
   - name: pull-security-kubernetes-node-e2e
     always_run: true
