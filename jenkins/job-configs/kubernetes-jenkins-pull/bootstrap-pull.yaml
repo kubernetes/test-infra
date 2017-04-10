@@ -99,12 +99,6 @@
         json: 0
         repo-name: 'k8s.io/kubernetes'
         timeout: 0
-    - kubernetes-kubemark-e2e-gce:
-        max-total: 12
-        job-name: pull-kubernetes-kubemark-e2e-gce
-        json: 0
-        repo-name: 'k8s.io/kubernetes'
-        timeout: 0
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e

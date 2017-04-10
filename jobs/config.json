@@ -412,6 +412,19 @@
   ]
 },
 
+"pull-kubernetes-kubemark-e2e-gce": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--build",
+    "--cluster=",
+    "--docker-in-docker",
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/pull-kubernetes-kubemark-e2e-gce.env",
+    "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
+    "--test=false"
+  ]
+},
+
 "pull-kubernetes-kubemark-e2e-gce-gci": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -424,7 +437,6 @@
     "--test=false"
   ]
 },
-
 
 "maintenance-ci-janitor": {
   "scenario": "kubernetes_janitor"

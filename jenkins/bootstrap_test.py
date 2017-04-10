@@ -1482,8 +1482,8 @@ class JobTest(unittest.TestCase):
             Check, use_json=True)
 
     def testBootstrapPullYaml(self):
-        bads = ['kops', 'federation-e2e', 'kubemark-e2e']
-        is_modern = lambda n: 'kubemark-e2e-gce-gci' in n or all(b not in n for b in bads)
+        bads = ['kops', 'federation-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1502,8 +1502,8 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapSecurityPullYaml(self):
-        bads = ['kops', 'federation-e2e', 'kubemark-e2e']
-        is_modern = lambda n: 'kubemark-e2e-gce-gci' in n or all(b not in n for b in bads)
+        bads = ['kops', 'federation-e2e']
+        is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1533,7 +1533,7 @@ class JobTest(unittest.TestCase):
                     if attr != 'repo-name':
                         self.assertEquals(job[attr], job2[attr], job)
         for name, job in jobs2.iteritems():
-            if job.get('json') and any(n in name for n in ['kubernetes-e2e', 'kubemark-e2e-gce-gci']):
+            if job.get('json') and any(n in name for n in ['kubernetes-e2e', 'kubemark-e2e']):
                 jobs = json_jobs
                 skip_json = True
             else:
@@ -1691,7 +1691,7 @@ class JobTest(unittest.TestCase):
             self.assertEquals(1, len(job), job)
             name = job.keys()[0]
             real_job = job[name]
-            self.assertNotIn(name, real_jobs)
+            self.assertNotIn(name, real_jobs, 'duplicate job: %s' % name)
             real_jobs[name] = real_job
             real_name = real_job.get('job-name', 'unset-%s' % name)
             if real_name not in self.realjobs:
