@@ -23,7 +23,7 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//boskos/common:go_default_library",
-        "//boskos/server:go_default_library",
+        "//boskos/ranch:go_default_library",
     ],
 )
 
@@ -32,7 +32,7 @@ go_library(
     srcs = ["boskos.go"],
     tags = ["automanaged"],
     deps = [
-        "//boskos/server:go_default_library",
+        "//boskos/ranch:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )
@@ -49,7 +49,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//boskos/common:all-srcs",
-        "//boskos/server:all-srcs",
+        "//boskos/ranch:all-srcs",
     ],
     tags = ["automanaged"],
 )

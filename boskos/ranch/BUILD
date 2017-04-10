@@ -10,7 +10,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["server_test.go"],
+    srcs = ["ranch_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//boskos/common:go_default_library"],
@@ -18,7 +18,7 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["server.go"],
+    srcs = ["ranch.go"],
     tags = ["automanaged"],
     deps = [
         "//boskos/common:go_default_library",

@@ -27,11 +27,11 @@ import (
 	"time"
 
 	"k8s.io/test-infra/boskos/common"
-	"k8s.io/test-infra/boskos/server"
+	"k8s.io/test-infra/boskos/ranch"
 )
 
-func MakeFakeClient(resources []common.Resource) *server.Ranch {
-	newRanch := &server.Ranch{
+func MakeFakeClient(resources []common.Resource) *ranch.Ranch {
+	newRanch := &ranch.Ranch{
 		Resources: resources,
 	}
 

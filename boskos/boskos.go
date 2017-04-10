@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"k8s.io/test-infra/boskos/server"
+	"k8s.io/test-infra/boskos/ranch"
 )
 
 var configPath = flag.String("config", "resources.json", "Path to init resource file")
@@ -34,9 +34,9 @@ func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	r, err := server.NewRanch(*configPath, *storage)
+	r, err := ranch.NewRanch(*configPath, *storage)
 	if err != nil {
-		logrus.WithError(err).Fatal("Fail to create my ranch! Config: %v, storage : %v", *configPath, *storage)
+		logrus.WithError(err).Fatal("Failed to create ranch! Config: %v, storage : %v", *configPath, *storage)
 	}
 
 	http.Handle("/", handleDefault(r))
@@ -66,19 +66,34 @@ func main() {
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
+// ErrorToStatus translates error into http code
+func ErrorToStatus(err error) int {
+	switch err.(type) {
+	default:
+		return http.StatusInternalServerError
+	case *ranch.OwnerNotMatch:
+		return http.StatusUnauthorized
+	case *ranch.ResourceNotFound:
+		return http.StatusNotFound
+	case *ranch.StateNotMatch:
+		return http.StatusConflict
+	}
+}
+
 //  handleDefault: Handler for /, always pass with 200
-func handleDefault(r *server.Ranch) http.HandlerFunc {
+func handleDefault(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleDefault").Infof("From %v", req.RemoteAddr)
 	}
 }
 
 //  handleAcquire: Handler for /acquire
+//  Method: POST
 // 	URLParams:
 //		Required: type=[string]  : type of requested resource
 //		Required: state=[string] : state of the requested resource
 //		Required: owner=[string] : requester of the resource
-func handleAcquire(r *server.Ranch) http.HandlerFunc {
+func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleStart").Infof("From %v", req.RemoteAddr)
 
@@ -106,14 +121,14 @@ func handleAcquire(r *server.Ranch) http.HandlerFunc {
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
-			http.Error(res, err.Error(), server.ErrorToStatus(err))
+			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
 
 		resJSON, err := json.Marshal(resource)
 		if err != nil {
-			logrus.WithError(err).Errorf("json.Marshal failed : %v, resource will be released", resource)
-			http.Error(res, err.Error(), server.ErrorToStatus(err))
+			logrus.WithError(err).Errorf("json.Marshal failed: %v, resource will be released", resource)
+			http.Error(res, err.Error(), ErrorToStatus(err))
 			resource.Owner = "" // release the resource, though this is not expected to happen.
 			return
 		}
@@ -124,11 +139,12 @@ func handleAcquire(r *server.Ranch) http.HandlerFunc {
 }
 
 //  handleRelease: Handler for /release
+//  Method: POST
 //	URL Params:
 //		Required: name=[string]  : name of finished resource
 //		Required: owner=[string] : owner of the resource
 //		Required: dest=[string]  : dest state
-func handleRelease(r *server.Ranch) http.HandlerFunc {
+func handleRelease(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleDone").Infof("From %v", req.RemoteAddr)
 
@@ -151,7 +167,7 @@ func handleRelease(r *server.Ranch) http.HandlerFunc {
 
 		if err := r.Release(name, dest, owner); err != nil {
 			logrus.WithError(err).Errorf("Done failed: %v - %v (from %v)", name, dest, owner)
-			http.Error(res, err.Error(), server.ErrorToStatus(err))
+			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
 
@@ -160,12 +176,13 @@ func handleRelease(r *server.Ranch) http.HandlerFunc {
 }
 
 //  handleReset: Handler for /reset
+//  Method: POST
 //	URL Params:
 //		Required: type=[string] : type of resource in interest
 //		Required: state=[string] : original state
 //		Required: dest=[string] : dest state, for expired resource
 //		Required: expire=[durationStr*] resource has not been updated since before {expire}.
-func handleReset(r *server.Ranch) http.HandlerFunc {
+func handleReset(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleReset").Infof("From %v", req.RemoteAddr)
 
@@ -192,7 +209,7 @@ func handleReset(r *server.Ranch) http.HandlerFunc {
 
 		expire, err := time.ParseDuration(expireStr)
 		if err != nil {
-			logrus.WithError(err).Errorf("Invalid expire: %v", expireStr)
+			logrus.WithError(err).Errorf("Invalid expiration: %v", expireStr)
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -200,8 +217,8 @@ func handleReset(r *server.Ranch) http.HandlerFunc {
 		rmap := r.Reset(rtype, state, expire, dest)
 		resJSON, err := json.Marshal(rmap)
 		if err != nil {
-			logrus.WithError(err).Errorf("json.Marshal failed : %v", rmap)
-			http.Error(res, err.Error(), server.ErrorToStatus(err))
+			logrus.WithError(err).Errorf("json.Marshal failed: %v", rmap)
+			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
 		logrus.Infof("Resource %v reset successful, %d items moved to state %v", rtype, len(rmap), dest)
@@ -210,11 +227,12 @@ func handleReset(r *server.Ranch) http.HandlerFunc {
 }
 
 //  handleUpdate: Handler for /update
+//  Method: POST
 //  URLParams
 //		Required: name=[string]  : name of target resource
 //		Required: owner=[string] : owner of the resource
 //		Required: state=[string] : current state of the resource
-func handleUpdate(r *server.Ranch) http.HandlerFunc {
+func handleUpdate(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleUpdate").Infof("From %v", req.RemoteAddr)
 
@@ -237,7 +255,7 @@ func handleUpdate(r *server.Ranch) http.HandlerFunc {
 
 		if err := r.Update(name, owner, state); err != nil {
 			logrus.WithError(err).Errorf("Update failed: %v - %v (%v)", name, state, owner)
-			http.Error(res, err.Error(), server.ErrorToStatus(err))
+			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
 
@@ -245,7 +263,9 @@ func handleUpdate(r *server.Ranch) http.HandlerFunc {
 	}
 }
 
-func handleMetric(r *server.Ranch) http.HandlerFunc {
+//  handleMetric: Handler for /metric
+//  Method: GET
+func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		logrus.WithField("handler", "handleMetric").Infof("From %v", req.RemoteAddr)
 

@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package ranch
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -29,13 +28,16 @@ import (
 	"k8s.io/test-infra/boskos/common"
 )
 
+// Ranch is the place which all of the Resource objects lives.
 type Ranch struct {
 	Resources   []common.Resource
 	lock        sync.RWMutex
 	storagePath string
 }
 
-// errors
+// Public errors:
+
+// OwnerNotMatch will be returned if request owner does not match current owner for target resource.
 type OwnerNotMatch struct {
 	request string
 	owner   string
@@ -45,6 +47,7 @@ func (o OwnerNotMatch) Error() string {
 	return fmt.Sprintf("OwnerNotMatch - request by %s, currently owned by %s", o.request, o.owner)
 }
 
+// ResourceNotFound will be returned if requested resource does not exist.
 type ResourceNotFound struct {
 	name string
 }
@@ -53,6 +56,7 @@ func (r ResourceNotFound) Error() string {
 	return fmt.Sprintf("Resource %s not exist", r.name)
 }
 
+// StateNotMatch will be returned if requested state does not match current state for target resource.
 type StateNotMatch struct {
 	expect  string
 	current string
@@ -60,19 +64,6 @@ type StateNotMatch struct {
 
 func (s StateNotMatch) Error() string {
 	return fmt.Sprintf("StateNotMatch - expect %v, current %v", s.expect, s.current)
-}
-
-func ErrorToStatus(err error) int {
-	switch err.(type) {
-	default:
-		return http.StatusInternalServerError
-	case *OwnerNotMatch:
-		return http.StatusUnauthorized
-	case *ResourceNotFound:
-		return http.StatusNotFound
-	case *StateNotMatch:
-		return http.StatusConflict
-	}
 }
 
 // NewRanch creates a new Ranch object.
@@ -111,7 +102,8 @@ func NewRanch(config string, storage string) (*Ranch, error) {
 // In: rtype - name of the target resource
 //     state - destination state of the resource
 //     owner - requester of the resource
-// Out: error if owner does not match, or resource does not exist
+// Out: A valid Resource object on success, or
+//      ResourceNotFound error if target type resource does not exist in target state.
 func (r *Ranch) Acquire(rtype string, state string, owner string) (*common.Resource, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -132,7 +124,9 @@ func (r *Ranch) Acquire(rtype string, state string, owner string) (*common.Resou
 // In: name - name of the target resource
 //     dest - destination state of the resource
 //     owner - owner of the resource
-// Out: error if owner does not match, or resource does not exist
+// Out: nil on success, or
+//      OwnerNotMatch error if owner does not match current owner of the resource, or
+//      ResourceNotFound error if target named resource does not exist.
 func (r *Ranch) Release(name string, dest string, owner string) error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -157,7 +151,10 @@ func (r *Ranch) Release(name string, dest string, owner string) error {
 // In: name - name of the target resource
 //     state - current state of the resource
 //     owner - current owner of the resource
-// Out: error if state or owner does not match, or resource does not exist
+// Out: nil on success, or
+//      OwnerNotMatch error if owner does not match current owner of the resource, or
+//      ResourceNotFound error if target named resource does not exist, or
+//      StateNotMatch error if state does not match current state of the resource.
 func (r *Ranch) Update(name string, owner string, state string) error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -185,7 +182,7 @@ func (r *Ranch) Update(name string, owner string, state string) error {
 //     state - current state of the resource
 //     expire - duration before resource's last update
 //     dest - destination state of expired resources
-// Out: map of resource name - resource owner
+// Out: map of resource name - resource owner.
 func (r *Ranch) Reset(rtype string, state string, expire time.Duration, dest string) map[string]string {
 	r.lock.Lock()
 	defer r.lock.Unlock()
@@ -234,10 +231,11 @@ func (r *Ranch) SyncConfig(config string) error {
 		return err
 	}
 
-	return r.syncConfigHelper(data)
+	r.syncConfigHelper(data)
+	return nil
 }
 
-func (r *Ranch) syncConfigHelper(data []common.Resource) error {
+func (r *Ranch) syncConfigHelper(data []common.Resource) {
 	// delete non-exist resource
 	valid := 0
 	for _, res := range r.Resources {
@@ -275,7 +273,6 @@ func (r *Ranch) syncConfigHelper(data []common.Resource) error {
 			r.Resources = append(r.Resources, p)
 		}
 	}
-	return nil
 }
 
 // SaveState saves current server state in json format
