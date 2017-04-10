@@ -69,6 +69,13 @@ func TestConfig(t *testing.T) {
 		if !testgroup.UseKubernetesClient {
 			t.Errorf("Testgroup %v: UseKubernetesClient should always be true!", testgroup.Name)
 		}
+
+		// All testgroup from kubernetes must have testgroup name match its bucket name
+		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
+			if strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") != testgroup.Name {
+				t.Errorf("Kubernetes Testgroup %v, name does not match GCS Bucket %v", testgroup.Name, testgroup.GcsPrefix)
+			}
+		}
 	}
 
 	// dashboard name set
