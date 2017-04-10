@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bulk-lgtm
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bulk-lgtm
+    spec:
+      containers:
+      - name: submit-queue
+        command:
+        - /mungegithub
+        - --organization=kubernetes
+        - --project=kubernetes
+        - --pr-mungers=bulk-lgtm
+        - --token-file=/etc/secret-volume/token
+        - --address=0.0.0.0:8080
+        - --www=/bulk-lgtm-www
+        - --dry-run=false
+        - --bulk-lgtm-github-oauth-redirect-url=https://kubernetes.submit-queue.k8s.io/bulk-lgtm/bulkprs/callback
+        - --bulk-lgtm-www-prefix=/bulk-lgtm
+        image: gcr.io/k8s-testimages/submit-queue:v20170409
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: secret-volume
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: kubernetes-github-token

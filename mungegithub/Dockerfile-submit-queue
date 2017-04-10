@@ -28,4 +28,5 @@ ADD committers.txt /committers.txt
 ADD whitelist.txt /whitelist.txt
 # Submit queue web interface
 ADD submit-queue/www /www
+ADD bulk-lgtm/www /bulk-lgtm-www
 ADD mungegithub /mungegithub
