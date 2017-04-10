@@ -235,6 +235,11 @@ func (r *Ranch) SyncConfig(config string) error {
 	return nil
 }
 
+// Boskos resource config will be updated every 10 mins.
+// It will append newly added resources to ranch.Resources,
+// And try to remove newly deleted resources from ranch.Resources.
+// If the newly deleted resource is currently held by a user, the deletion will
+// yield to next update cycle.
 func (r *Ranch) syncConfigHelper(data []common.Resource) {
 	// delete non-exist resource
 	valid := 0

@@ -108,6 +108,16 @@ State is a string that tells the current status of the resource.
 
 ```
 
+## Config update:
+1. Edit resources.json, and send a PR.
+
+1. After PR is LG'd, make sure your branch is synced up with master.
+
+1. run `make update-config` to update the configmap.
+
+1. Boskos updates its config every 10min. Newly added resources will be available after next update cycle.
+Newly deleted resource will be removed in a future update cycle if the resource is not owned by any user. 
+
 ## Local test:
 1. Start boskos with a fake resources.json, with `go run boskos.go -config=/path/to/resources.json`
 
