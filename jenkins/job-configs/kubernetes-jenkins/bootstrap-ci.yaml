@@ -99,6 +99,12 @@
         timeout: 140
         frequency: '@hourly'
         trigger-job: ''
+    - kubernetes-e2e-kops-aws-statefulset:
+        job-name: ci-kubernetes-e2e-kops-aws-statefulset
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: '@daily'
+        trigger-job: ''
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
         jenkins-timeout: 140
