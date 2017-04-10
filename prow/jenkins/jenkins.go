@@ -61,10 +61,9 @@ type BuildRequest struct {
 }
 
 type Build struct {
-	jobName  string
-	refs     string
-	id       string
-	queueURL *url.URL
+	JobName  string
+	ID       string
+	QueueURL *url.URL
 }
 
 func NewClient(url, user, token string) *Client {
@@ -153,19 +152,18 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 		return nil, err
 	}
 	return &Build{
-		jobName:  br.JobName,
-		refs:     br.Refs,
-		id:       buildID,
-		queueURL: loc,
+		JobName:  br.JobName,
+		ID:       buildID,
+		QueueURL: loc,
 	}, nil
 }
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.
-func (c *Client) Enqueued(b *Build) (bool, error) {
+func (c *Client) Enqueued(queueURL string) (bool, error) {
 	if c.dry {
 		return false, nil
 	}
-	u := fmt.Sprintf("%sapi/json", b.queueURL)
+	u := fmt.Sprintf("%sapi/json", queueURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return false, err
@@ -237,14 +235,14 @@ func (c *Client) QueueSize() (int, error) {
 }
 
 // Status returns the current status of the build.
-func (c *Client) Status(b *Build) (*Status, error) {
+func (c *Client) Status(job, id string) (*Status, error) {
 	if c.dry {
 		return &Status{
 			Building: false,
 			Success:  true,
 		}, nil
 	}
-	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, b.jobName)
+	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return nil, err
@@ -276,7 +274,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 	for _, build := range builds.Builds {
 		for _, action := range build.Actions {
 			for _, p := range action.Parameters {
-				if p.Name == "buildId" && p.Value == b.id {
+				if p.Name == "buildId" && p.Value == id {
 					if build.Result == nil {
 						return &Status{Building: true, Number: build.Number}, nil
 					} else {
@@ -290,7 +288,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("did not find build %s", b.id)
+	return nil, fmt.Errorf("did not find build %s", id)
 }
 
 func (c *Client) GetLog(job string, build int) ([]byte, error) {

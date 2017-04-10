@@ -31,7 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/line"
+	"k8s.io/test-infra/prow/plank"
 )
 
 var (
@@ -186,10 +186,10 @@ func (s *splicer) gitRef(ref string) string {
 	return strings.TrimSpace(output)
 }
 
-// Produce a line.BuildRequest for the given pull requests. This involves
-// computing the git ref for master and the PRs.
-func (s *splicer) makeBuildRequest(org, repo string, prs []int) line.BuildRequest {
-	req := line.BuildRequest{
+// Produce a kube.Refs for the given pull requests. This involves computing the
+// git ref for master and the PRs.
+func (s *splicer) makeBuildRefs(org, repo string, prs []int) kube.Refs {
+	refs := kube.Refs{
 		Org:     org,
 		Repo:    repo,
 		BaseRef: "master",
@@ -197,9 +197,9 @@ func (s *splicer) makeBuildRequest(org, repo string, prs []int) line.BuildReques
 	}
 	for _, pr := range prs {
 		branch := fmt.Sprintf("pr/%d", pr)
-		req.Pulls = append(req.Pulls, line.Pull{Number: pr, SHA: s.gitRef(branch)})
+		refs.Pulls = append(refs.Pulls, kube.Pull{Number: pr, SHA: s.gitRef(branch)})
 	}
-	return req
+	return refs
 }
 
 func main() {
@@ -230,9 +230,9 @@ func main() {
 	// Loop endlessly, sleeping a minute between iterations
 	for range time.Tick(1 * time.Minute) {
 		// List batch jobs, only start a new one if none are active.
-		currentJobs, err := kc.ListJobs(map[string]string{"type": "batch"})
+		currentJobs, err := kc.ListProwJobs(nil)
 		if err != nil {
-			log.WithError(err).Error("Error listing batch jobs.")
+			log.WithError(err).Error("Error listing prow jobs.")
 			continue
 		}
 
@@ -241,13 +241,13 @@ func main() {
 
 		running := []string{}
 		for _, job := range currentJobs {
-			if job.Complete() && job.Metadata.Annotations["state"] == "success" {
-				ref := job.Metadata.Annotations["refs"]
-				context := job.Metadata.Annotations["context"]
+			if job.Complete() && job.Status.State == kube.SuccessState {
+				ref := job.Spec.Refs.String()
+				context := job.Spec.Context
 				succeeded[ref+context] = true
 			}
 			if !job.Complete() {
-				running = append(running, job.Metadata.Labels["jenkins-job-name"])
+				running = append(running, job.Spec.Job)
 			}
 		}
 		if len(running) > 0 {
@@ -278,14 +278,14 @@ func main() {
 		if len(batchPRs) > *maxBatchSize {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
-		buildReq := splicer.makeBuildRequest(*orgName, *repoName, batchPRs)
+		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		for _, job := range ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)] {
 			if job.AlwaysRun {
-				if succeeded[buildReq.GetRefs()+job.Context] {
+				if succeeded[refs.String()+job.Context] {
 					log.Infof("not triggering job %v (already succeeded previously)", job.Name)
 					continue
 				}
-				if _, err := line.StartJob(kc, job.Name, job.Context, buildReq); err != nil {
+				if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
 					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
 				}
 			}

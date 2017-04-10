@@ -24,7 +24,14 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/crier"
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+)
+
+const (
+	guberBasePR   = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
+	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
+	testInfra     = "https://github.com/kubernetes/test-infra/issues"
 )
 
 type kubeClient interface {
@@ -37,15 +44,23 @@ type kubeClient interface {
 	DeletePod(string) error
 }
 
+type jenkinsClient interface {
+	Build(jenkins.BuildRequest) (*jenkins.Build, error)
+	Enqueued(string) (bool, error)
+	Status(job, id string) (*jenkins.Status, error)
+}
+
 type Controller struct {
 	kc       kubeClient
+	jc       jenkinsClient
 	crierURL string
 	totURL   string
 }
 
-func NewController(kc *kube.Client, crierURL, totURL string) *Controller {
+func NewController(kc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
 	return &Controller{
 		kc:       kc,
+		jc:       jc,
 		crierURL: crierURL,
 		totURL:   totURL,
 	}
@@ -66,8 +81,16 @@ func (c *Controller) Sync() error {
 	}
 	var errs []error
 	for _, pj := range pjs {
-		if err := c.syncJob(pj, pm); err != nil {
-			errs = append(errs, err)
+		if pj.Spec.Agent == kube.KubernetesAgent {
+			if err := c.syncKubernetesJob(pj, pm); err != nil {
+				errs = append(errs, err)
+			}
+		} else if pj.Spec.Agent == kube.JenkinsAgent {
+			if err := c.syncJenkinsJob(pj); err != nil {
+				errs = append(errs, err)
+			}
+		} else {
+			errs = append(errs, fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent))
 		}
 	}
 	if len(errs) == 0 {
@@ -77,7 +100,94 @@ func (c *Controller) Sync() error {
 	}
 }
 
-func (c *Controller) syncJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
+func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
+	var jerr error
+	if pj.Complete() {
+		return nil
+	} else if pj.Status.State == kube.TriggeredState {
+		// Start the Jenkins job.
+		pj.Status.State = kube.PendingState
+		br := jenkins.BuildRequest{
+			JobName: pj.Spec.Job,
+			Refs:    pj.Spec.Refs.String(),
+			BaseRef: pj.Spec.Refs.BaseRef,
+			BaseSHA: pj.Spec.Refs.BaseSHA,
+		}
+		if len(pj.Spec.Refs.Pulls) == 1 {
+			br.Number = pj.Spec.Refs.Pulls[0].Number
+			br.PullSHA = pj.Spec.Refs.Pulls[0].SHA
+		}
+		if build, err := c.jc.Build(br); err != nil {
+			jerr = fmt.Errorf("error starting Jenkins job: %v", err)
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.ErrorState
+			pj.Status.URL = testInfra
+		} else {
+			pj.Status.JenkinsQueueURL = build.QueueURL.String()
+			pj.Status.JenkinsBuildID = build.ID
+			pj.Status.JenkinsEnqueued = true
+		}
+		if err := c.report(pj); err != nil {
+			return fmt.Errorf("error reporting to crier: %v", err)
+		}
+	} else if pj.Status.JenkinsEnqueued {
+		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
+			jerr = fmt.Errorf("error checking queue status: %v", err)
+			pj.Status.JenkinsEnqueued = false
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.ErrorState
+			pj.Status.URL = testInfra
+			if err := c.report(pj); err != nil {
+				return fmt.Errorf("error reporting to crier: %v", err)
+			}
+		} else if eq {
+			// Still in queue.
+			return nil
+		} else {
+			pj.Status.JenkinsEnqueued = false
+		}
+	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Status.JenkinsBuildID); err != nil {
+		jerr = fmt.Errorf("error checking build status: %v", err)
+		pj.Status.CompletionTime = time.Now()
+		pj.Status.State = kube.ErrorState
+		pj.Status.URL = testInfra
+		if err := c.report(pj); err != nil {
+			return fmt.Errorf("error reporting to crier: %v", err)
+		}
+	} else {
+		if url := guberURL(pj, strconv.Itoa(status.Number)); pj.Status.URL != url {
+			pj.Status.URL = url
+		} else if status.Building {
+			// Build still going.
+			return nil
+		}
+		if !status.Building && status.Success {
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.SuccessState
+			if err := c.report(pj); err != nil {
+				return fmt.Errorf("error reporting to crier: %v", err)
+			}
+			for _, nj := range pj.Spec.RunAfterSuccess {
+				if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
+					return fmt.Errorf("error starting next prowjob: %v", err)
+				}
+			}
+		} else if !status.Building {
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.FailureState
+			if err := c.report(pj); err != nil {
+				return fmt.Errorf("error reporting to crier: %v", err)
+			}
+		}
+	}
+	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	if rerr != nil || jerr != nil {
+		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
+	}
+	return nil
+}
+
+func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
 	if pj.Complete() {
 		// ProwJob is complete. Do nothing.
 		return nil
@@ -124,6 +234,8 @@ func (c *Controller) syncJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
+	} else if url := guberURL(pj, pod.Metadata.Name); pj.Status.URL != url {
+		pj.Status.URL = url
 	} else {
 		// Pod is running. Do nothing.
 		return nil
@@ -149,7 +261,7 @@ func (c *Controller) report(pj kube.ProwJob) error {
 		State:        string(pj.Status.State),
 		Description:  pj.Spec.Description,
 		RerunCommand: pj.Spec.RerunCommand,
-		URL:          pj.Spec.URL,
+		URL:          pj.Status.URL,
 	})
 }
 
@@ -264,4 +376,31 @@ func (c *Controller) getBuildID(server, name string) (string, error) {
 		}
 	}
 	return "", err
+}
+
+// TODO(spxtr): Template this.
+func guberURL(pj kube.ProwJob, build string) string {
+	var url string
+	if pj.Spec.Type == kube.PresubmitJob || pj.Spec.Type == kube.BatchJob {
+		url = guberBasePR
+	} else {
+		url = guberBasePush
+	}
+	if pj.Spec.Refs.Org != "kubernetes" {
+		url = fmt.Sprintf("%s/%s_%s", url, pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
+	} else if pj.Spec.Refs.Repo != "kubernetes" {
+		url = fmt.Sprintf("%s/%s", url, pj.Spec.Refs.Repo)
+	}
+	switch t := pj.Spec.Type; t {
+	case kube.PresubmitJob:
+		return fmt.Sprintf("%s/%s/%s/%s/", url, strconv.Itoa(pj.Spec.Refs.Pulls[0].Number), pj.Spec.Job, build)
+	case kube.PostsubmitJob:
+		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
+	case kube.PeriodicJob:
+		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
+	case kube.BatchJob:
+		return fmt.Sprintf("%s/batch/%s/%s/", url, pj.Spec.Job, build)
+	default:
+		return testInfra
+	}
 }

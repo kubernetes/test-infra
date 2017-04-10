@@ -364,7 +364,7 @@ func (c *testClient) TestPRJenkins() error {
 		c.tryCreateStatus("", github.StatusError, "Error starting build.", testInfra)
 		return err
 	}
-	eq, err := c.JenkinsClient.Enqueued(b)
+	eq, err := c.JenkinsClient.Enqueued(b.QueueURL.String())
 	if err != nil {
 		c.tryCreateStatus("", github.StatusError, "Error queueing build.", testInfra)
 		return err
@@ -372,14 +372,14 @@ func (c *testClient) TestPRJenkins() error {
 	c.tryCreateStatus("", github.StatusPending, "Build queued.", "")
 	for eq { // Wait for it to move out of the queue
 		time.Sleep(10 * time.Second)
-		eq, err = c.JenkinsClient.Enqueued(b)
+		eq, err = c.JenkinsClient.Enqueued(b.QueueURL.String())
 		if err != nil {
 			c.tryCreateStatus("", github.StatusError, "Error in queue.", testInfra)
 			return err
 		}
 	}
 
-	result, err := c.JenkinsClient.Status(b)
+	result, err := c.JenkinsClient.Status(b.JobName, b.ID)
 	if err != nil {
 		c.tryCreateStatus("", github.StatusError, "Error waiting for build.", testInfra)
 		return err
@@ -406,7 +406,7 @@ func (c *testClient) TestPRJenkins() error {
 				break
 			}
 		}
-		result, err = c.JenkinsClient.Status(b)
+		result, err = c.JenkinsClient.Status(b.JobName, b.ID)
 	}
 	return nil
 }

@@ -17,11 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
+	"io/ioutil"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plank"
 )
@@ -29,6 +32,10 @@ import (
 var (
 	totURL   = flag.String("tot-url", "http://tot", "Tot URL")
 	crierURL = flag.String("crier-url", "http://crier", "Crier URL")
+
+	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
+	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 )
 
 func main() {
@@ -36,10 +43,21 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
-	c := plank.NewController(kc, *crierURL, *totURL)
+
+	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Could not read token file.")
+	}
+	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+
+	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+
+	c := plank.NewController(kc, jc, *crierURL, *totURL)
 	for range time.Tick(30 * time.Second) {
+		start := time.Now()
 		if err := c.Sync(); err != nil {
 			logrus.WithError(err).Error("Error syncing.")
 		}
+		logrus.Infof("Sync time: %v", time.Since(start))
 	}
 }
