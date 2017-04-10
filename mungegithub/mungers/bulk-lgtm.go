@@ -62,9 +62,13 @@ type BulkLGTM struct {
 
 	githubUser       string
 	oauthStateString string
+	redirectURL      string
 	// Set the token cookie to secure. This should only be true when testing.
 	disableSecureCookie bool
 	cookieDuration      time.Duration
+
+	// Prefix for serving web pages, e.g. "/bulk-lgtm"
+	prefix string
 }
 
 // Munge implements the Munger interface
@@ -110,9 +114,10 @@ func (b *BulkLGTM) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().IntVar(&b.maxDiff, "bulk-lgtm-max-diff", 10, "The maximum number of differences (additions + deletions) for PRs to include in the bulk LGTM list")
 	cmd.Flags().IntVar(&b.maxChangedFiles, "bulk-lgtm-changed-files", 1, "The maximum number of changed files for PRs to include in the bulk LGTM list")
 	cmd.Flags().IntVar(&b.maxCommits, "bulk-lgtm-max-commits", 1, "The maximum number of commits for PRs to include in the bulk LGTM list")
-	cmd.Flags().StringVar(&b.githubUser, "bulk-lgtm-github-user", "", "Username on github to use for bulk-lgtm")
 	cmd.Flags().DurationVar(&b.cookieDuration, "bulk-lgtm-cookie-duration", 24*time.Hour, "The duration for the cookie used to store github credentials.")
 	cmd.Flags().BoolVar(&b.disableSecureCookie, "bulk-lgtm-insecure-disable-secure-cookie", false, "If true, the cookie storing github credentials will be allowed on http")
+	cmd.Flags().StringVar(&githubOauthConfig.RedirectURL, "bulk-lgtm-github-oauth-redirect-url", "http://localhost:8080/bulkprs/callback", "The URL for the OAuth2 callback")
+	cmd.Flags().StringVar(&b.prefix, "bulk-lgtm-www-prefix", "", "The prefix for web pages served by the bulk-lgtm service")
 }
 
 // Name implements the Munger interface
@@ -130,14 +135,18 @@ func (b *BulkLGTM) Initialize(config *github.Config, features *features.Features
 	b.config = config
 
 	if len(config.Address) > 0 {
-		http.HandleFunc("/bulkprs/prs", b.ServePRs)
-		http.HandleFunc("/bulkprs/prdiff", b.ServePRDiff)
-		http.HandleFunc("/bulkprs/lgtm", b.ServeLGTM)
-		http.HandleFunc("/bulkprs/auth", b.ServeLogin)
-		http.HandleFunc("/bulkprs/callback", b.ServeCallback)
-		http.HandleFunc("/bulkprs/user", b.ServeUser)
+		http.HandleFunc(b.prefix+"/bulkprs/prs", b.ServePRs)
+		http.HandleFunc(b.prefix+"/bulkprs/prdiff", b.ServePRDiff)
+		http.HandleFunc(b.prefix+"/bulkprs/lgtm", b.ServeLGTM)
+		http.HandleFunc(b.prefix+"/bulkprs/auth", b.ServeLogin)
+		http.HandleFunc(b.prefix+"/bulkprs/callback", b.ServeCallback)
+		http.HandleFunc(b.prefix+"/bulkprs/user", b.ServeUser)
 		if len(config.WWWRoot) > 0 {
-			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot))))
+			handler := gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot)))
+			if len(b.prefix) > 0 {
+				handler = http.StripPrefix(b.prefix+"/", handler)
+			}
+			http.Handle(b.prefix+"/", handler)
 		}
 
 		go http.ListenAndServe(config.Address, nil)
@@ -270,7 +279,6 @@ func (b *BulkLGTM) ServePRs(res http.ResponseWriter, req *http.Request) {
 
 var (
 	githubOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8080/bulkprs/callback",
 		ClientID:     "8fcec56965d35fe888cd",
 		ClientSecret: "e203a919d839b212064165855e67a80e86d35470",
 		Scopes:       []string{"user", "public_repo"},
