@@ -58,24 +58,6 @@
   ]
 },
 
-"ci-kubernetes-federation-build-1.4": {
-  "scenario": "kubernetes_build",
-  "args": [
-    "--fast",
-    "--federation=k8s-jkns-e2e-gce-f8n-1-4",
-    "--release=kubernetes-federation-release-1-4"
-  ]
-},
-
-"ci-kubernetes-federation-build-1.5": {
-  "scenario": "kubernetes_build",
-  "args": [
-    "--fast",
-    "--federation=k8s-e2e-gce-f8n-1-5",
-    "--release=kubernetes-federation-release-1-5"
-  ]
-},
-
 "ci-kubernetes-federation-build-1.6": {
   "scenario": "kubernetes_build",
   "args": [
@@ -928,14 +910,6 @@
   ]
 },
 
-"ci-kubernetes-e2e-gci-gce-federation": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gci-gce-federation.env"
-  ]
-},
-
 "ci-kubernetes-e2e-gci-gce-ingress": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -1009,14 +983,6 @@
   ]
 },
 
-"ci-kubernetes-e2e-gce-federation-release-1.4": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1.4.env"
-  ]
-},
-
 "ci-kubernetes-e2e-gce-release-1.5": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -1071,14 +1037,6 @@
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-scalability-release-1.5.env",
     "--cluster=e2e-scalability-1-5"
-  ]
-},
-
-"ci-kubernetes-e2e-gce-federation-release-1.5": {
-  "scenario": "kubernetes_e2e",
-  "args": [
-    "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1.5.env"
   ]
 },
 

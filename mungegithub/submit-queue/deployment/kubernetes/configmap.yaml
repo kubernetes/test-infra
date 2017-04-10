@@ -48,7 +48,6 @@ data:
     ci-kubernetes-e2e-gci-gce-es-logging,\
     ci-kubernetes-e2e-gci-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce-examples,\
-    ci-kubernetes-e2e-gci-gce-federation,\
     ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-e2e-gci-gce-kubenet,\
     ci-kubernetes-e2e-gci-gce-proto,\
