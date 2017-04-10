@@ -176,6 +176,7 @@ func (ja *JobAgent) update() error {
 		if j.Status.KubeJobName != "" && dupJobs[j.Status.KubeJobName] {
 			continue
 		}
+
 		nj := Job{
 			Type:        string(j.Spec.Type),
 			Repo:        fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
@@ -197,7 +198,9 @@ func (ja *JobAgent) update() error {
 		}
 		if !nj.ft.IsZero() {
 			nj.Finished = nj.ft.Format("15:04:05")
-			nj.Duration = nj.ft.Sub(nj.st).String()
+			duration := nj.ft.Sub(nj.st)
+			duration -= duration % time.Second // strip fractional seconds
+			nj.Duration = duration.String()
 		}
 		if len(j.Spec.Refs.Pulls) == 1 {
 			nj.Number = j.Spec.Refs.Pulls[0].Number
