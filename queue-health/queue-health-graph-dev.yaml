@@ -11,7 +11,7 @@ spec:
     spec:  # Test graph, prod history, no poller
       containers:
       - name: grapher
-        image: gcr.io/google-containers/queue-health-graph
+        image: gcr.io/k8s-testimages/queue-health-graph
         command:
         - python
         - /graph.py
