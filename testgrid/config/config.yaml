@@ -168,6 +168,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-autoscaling-migs
 - name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs
+- name: ci-kubernetes-e2e-gce-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
 - name: ci-kubernetes-e2e-gce-container-vm
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-container-vm
 - name: ci-kubernetes-e2e-gce-enormous-cluster
@@ -1000,6 +1002,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-autoscaling-migs
   - name: gci-gce-autoscaling-migs
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+  - name: gce-stackdriver
+    test_group_name: ci-kubernetes-e2e-gce-stackdriver
   - name: gce-container-vm
     test_group_name: ci-kubernetes-e2e-gce-container-vm
   - name: gce-enormous-cluster
