@@ -33,7 +33,7 @@ var (
 	totURL   = flag.String("tot-url", "http://tot", "Tot URL")
 	crierURL = flag.String("crier-url", "http://crier", "Crier URL")
 
-	jenkinsURL       = flag.String("jenkins-url", "http://pull-jenkins-master:8080", "Jenkins URL")
+	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 )
