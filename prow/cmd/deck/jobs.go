@@ -186,12 +186,12 @@ func (ja *JobAgent) update() error {
 			Job:         j.Spec.Job,
 			Context:     j.Spec.Context,
 			Description: j.Spec.Description,
-			URL:         j.Spec.URL,
 			Agent:       string(j.Spec.Agent),
 
 			Started: j.Status.StartTime.Format(time.Stamp),
 			State:   string(j.Status.State),
 			PodName: j.Status.PodName,
+			URL:     j.Status.URL,
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,
