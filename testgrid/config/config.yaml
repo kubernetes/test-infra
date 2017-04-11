@@ -2141,10 +2141,6 @@ dashboards:
     test_group_name: ci-kubernetes-build
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
-  - name: gci-gce
-    test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: gci-gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
   - name: kops-aws
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kubemark-500-gce
@@ -2153,9 +2149,7 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: test-go
     test_group_name: ci-kubernetes-test-go
-  - name: ingress
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: verify 
+  - name: verify
     test_group_name: ci-kubernetes-verify-master
 
 - name: google-non-cri

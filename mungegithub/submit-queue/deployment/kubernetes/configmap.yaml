@@ -43,6 +43,7 @@ data:
     ci-kubernetes-e2e-gce-scalability,\
     ci-kubernetes-e2e-gce-serial,\
     ci-kubernetes-e2e-gce-taint-evict,\
+    ci-kubernetes-e2e-gci-gce,\
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
     ci-kubernetes-e2e-gci-gce-es-logging,\
@@ -54,7 +55,9 @@ data:
     ci-kubernetes-e2e-gci-gce-reboot,\
     ci-kubernetes-e2e-gci-gce-scalability,\
     ci-kubernetes-e2e-gci-gce-serial,\
+    ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gce-statefulset,\
+    ci-kubernetes-e2e-gci-gke,\
     ci-kubernetes-e2e-gci-gke-alpha-features,\
     ci-kubernetes-e2e-gci-gke-autoscaling,\
     ci-kubernetes-e2e-gci-gke-ingress,\
@@ -65,22 +68,21 @@ data:
     ci-kubernetes-e2e-gci-gke-prod-smoke,\
     ci-kubernetes-e2e-gci-gke-reboot,\
     ci-kubernetes-e2e-gci-gke-serial,\
+    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-gci-gke-staging,\
     ci-kubernetes-e2e-gci-gke-staging-parallel,\
     ci-kubernetes-e2e-gci-gke-subnet,\
     ci-kubernetes-e2e-gci-gke-test,\
     ci-kubernetes-e2e-gci-gke-updown,\
-    ci-kubernetes-e2e-gci-gke,\
-    ci-kubernetes-e2e-gci-gke-slow,\
     ci-kubernetes-e2e-gke-large-cluster,\
     ci-kubernetes-e2e-gke-serial,\
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
     ci-kubernetes-e2e-gke-test,\
-    ci-kubernetes-e2e-kops-aws-slow,\
-    ci-kubernetes-e2e-kops-aws-serial,\
     ci-kubernetes-e2e-kops-aws-release-1.5,\
     ci-kubernetes-e2e-kops-aws-release-1.6,\
+    ci-kubernetes-e2e-kops-aws-serial,\
+    ci-kubernetes-e2e-kops-aws-slow,\
     ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-kubemark-5-gce,\
     ci-kubernetes-node-kubelet-serial,\
@@ -96,9 +98,6 @@ data:
   submit-queue.jenkins-jobs: "\
     ci-kubernetes-build,\
     ci-kubernetes-e2e-gce-etcd3,\
-    ci-kubernetes-e2e-gci-gce,\
-    ci-kubernetes-e2e-gci-gce-slow,\
-    ci-kubernetes-e2e-gci-gce-ingress,\
     ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
