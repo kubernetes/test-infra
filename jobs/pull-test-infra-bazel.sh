@@ -40,11 +40,14 @@ buildables=$(bazel query \
     "kind(.*_binary, rdeps(//..., set(${files[@]})))")
 rc=0
 if [[ ! -z "${buildables}" ]]; then
+  echo "bazel build ${buildables}"
   bazel build ${buildables} && rc=$? || rc=$?
 fi
 
-# Clear test.xml so that we don't pick up old results.
-find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+if [[ -e bazel-testlogs ]]; then
+  # Clear test.xml so that we don't pick up old results.
+  find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
+fi
 
 # Run affected tests.
 if [[ "${rc}" == 0 ]]; then
@@ -52,6 +55,7 @@ if [[ "${rc}" == 0 ]]; then
       --keep_going \
       --noshow_progress \
       "kind(test, rdeps(//..., set(${files[@]}))) except attr('tags', 'manual', //...)")
+  echo "bazel test ${tests} //verify:verify-all"
   bazel test --test_output=errors ${tests} //verify:verify-all && rc=$? || rc=$?
   ./images/pull_kubernetes_bazel/coalesce.py
 fi
