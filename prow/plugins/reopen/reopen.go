@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package open
+package reopen
 
 import (
 	"regexp"
@@ -25,9 +25,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "open"
+const pluginName = "reopen"
 
-var openRe = regexp.MustCompile(`(?mi)^\/open\r?$`)
+var reopenRe = regexp.MustCompile(`(?mi)^\/reopen\r?$`)
+
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
@@ -35,7 +36,7 @@ func init() {
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	OpenIssue(owner, repo string, number int) error
+	ReopenIssue(owner, repo string, number int) error
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -48,7 +49,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		return nil
 	}
 
-	if !openRe.MatchString(ic.Comment.Body) {
+	if !reopenRe.MatchString(ic.Comment.Body) {
 		return nil
 	}
 
@@ -59,7 +60,6 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	commentAuthor := ic.Comment.User.Login
 
 	// Allow assignees and authors to re-open issues.
-	log.Infof("Comment author: %v", commentAuthor)
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
 		resp := "you can't re-open an issue unless you authored it or you are assigned to it"
 		log.Infof("Commenting \"%s\".", resp)
@@ -67,5 +67,5 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	}
 
 	log.Info("Re-opening issue.")
-	return gc.OpenIssue(org, repo, number)
+	return gc.ReopenIssue(org, repo, number)
 }

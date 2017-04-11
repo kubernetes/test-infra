@@ -10,7 +10,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["open_test.go"],
+    srcs = ["reopen_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -21,7 +21,7 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["open.go"],
+    srcs = ["reopen.go"],
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package open
+package reopen
 
 import (
 	"testing"
@@ -34,7 +34,7 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 	return nil
 }
 
-func (c *fakeClient) OpenIssue(owner, repo string, number int) error {
+func (c *fakeClient) ReopenIssue(owner, repo string, number int) error {
 	c.open = true
 	return nil
 }
@@ -63,7 +63,7 @@ func TestOpenComment(t *testing.T) {
 			name:          "re-open by author",
 			action:        "created",
 			state:         "closed",
-			body:          "/open",
+			body:          "/reopen",
 			commenter:     "a",
 			shouldReopen:  true,
 			shouldComment: false,
@@ -72,7 +72,7 @@ func TestOpenComment(t *testing.T) {
 			name:          "re-open by reviewer",
 			action:        "created",
 			state:         "closed",
-			body:          "/open",
+			body:          "/reopen",
 			commenter:     "r1",
 			shouldReopen:  true,
 			shouldComment: false,
@@ -81,7 +81,7 @@ func TestOpenComment(t *testing.T) {
 			name:          "re-open edited by author",
 			action:        "edited",
 			state:         "closed",
-			body:          "/open",
+			body:          "/reopen",
 			commenter:     "a",
 			shouldReopen:  false,
 			shouldComment: false,
@@ -90,16 +90,16 @@ func TestOpenComment(t *testing.T) {
 			name:          "open by author on already open issue",
 			action:        "created",
 			state:         "open",
-			body:          "/open",
+			body:          "/reopen",
 			commenter:     "a",
 			shouldReopen:  false,
 			shouldComment: false,
 		},
 		{
-			name:          "reopen by other person",
+			name:          "re-open by other person",
 			action:        "created",
 			state:         "closed",
-			body:          "/open",
+			body:          "/reopen",
 			commenter:     "o",
 			shouldReopen:  false,
 			shouldComment: true,

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -530,8 +530,9 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	return err
 }
 
-func (c *Client) OpenIssue(org, repo string, number int) error {
-	c.log("OpenIssue", org, repo, number)
+// ReopenIssue re-opens the existing, closed issue provided
+func (c *Client) ReopenIssue(org, repo string, number int) error {
+	c.log("ReopenIssue", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number),
