@@ -178,6 +178,10 @@ presubmits:
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
   - name: pull-kubernetes-federation-e2e-gce
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
     always_run: true
     skip_report: true  # Remove this once we are confident about this job
     context: pull-kubernetes-federation-e2e-gce
@@ -354,6 +358,10 @@ presubmits:
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
   - name: pull-security-kubernetes-federation-e2e-gce
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
     always_run: true
     skip_report: true
     context: pull-security-kubernetes-federation-e2e-gce
