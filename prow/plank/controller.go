@@ -157,6 +157,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 	} else {
 		if url := guberURL(pj, strconv.Itoa(status.Number)); pj.Status.URL != url {
 			pj.Status.URL = url
+			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
 		} else if status.Building {
 			// Build still going.
 			return nil
@@ -194,8 +195,9 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 	} else if pj.Status.PodName == "" {
 		// We haven't started the pod yet. Do so.
 		pj.Status.State = kube.PendingState
-		if pn, err := c.startPod(pj); err == nil {
+		if id, pn, err := c.startPod(pj); err == nil {
 			pj.Status.PodName = pn
+			pj.Status.URL = guberURL(pj, id)
 		} else {
 			return fmt.Errorf("error starting pod: %v", err)
 		}
@@ -234,8 +236,6 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
-	} else if url := guberURL(pj, pod.Metadata.Name); pj.Status.URL != url {
-		pj.Status.URL = url
 	} else {
 		// Pod is running. Do nothing.
 		return nil
@@ -265,10 +265,10 @@ func (c *Controller) report(pj kube.ProwJob) error {
 	})
 }
 
-func (c *Controller) startPod(pj kube.ProwJob) (string, error) {
+func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	buildID, err := c.getBuildID(c.totURL, pj.Spec.Job)
 	if err != nil {
-		return "", fmt.Errorf("error getting build ID: %v", err)
+		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
@@ -348,9 +348,9 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, error) {
 	}
 	actual, err := c.kc.CreatePod(p)
 	if err != nil {
-		return "", fmt.Errorf("error creating pod: %v", err)
+		return "", "", fmt.Errorf("error creating pod: %v", err)
 	}
-	return actual.Metadata.Name, nil
+	return buildID, actual.Metadata.Name, nil
 }
 
 func (c *Controller) getBuildID(server, name string) (string, error) {
