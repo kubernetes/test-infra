@@ -180,7 +180,7 @@ presubmits:
   - name: pull-kubernetes-federation-e2e-gce
     always_run: true
     skip_report: true  # Remove this once we are confident about this job
-    context: Jenkins Federation GCE e2e
+    context: pull-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce |federation gce e2e )?test this"
 
@@ -356,7 +356,7 @@ presubmits:
   - name: pull-security-kubernetes-federation-e2e-gce
     always_run: true
     skip_report: true
-    context: Jenkins Federation GCE e2e
+    context: pull-security-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce |federation gce e2e )?test this"
 
