@@ -53,8 +53,8 @@ func getFakeRepo(commentBody, commenter string, repoLabels, issueLabels []string
 	}
 
 	startingLabels := []github.Label{}
-	for _, l := range issueLabels {
-		startingLabels = append(startingLabels, github.Label{Name: l})
+	for _, label := range issueLabels {
+		startingLabels = append(startingLabels, github.Label{Name: label})
 	}
 
 	ice := github.IssueCommentEvent{
