@@ -28,8 +28,9 @@ spec:
     pdName: boskos-storage
     fsType: ext4
 ---
-kind: PersistentVolumeClaim
+# Start of PersistentVolumeClaim
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   labels:
     app: boskos
@@ -41,6 +42,7 @@ spec:
     requests:
       storage: 1Gi
 ---
+# Start of Deployment
 apiVersion: v1
 kind: Deployment
 metadata:

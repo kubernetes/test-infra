@@ -23,7 +23,7 @@ import (
 	"k8s.io/test-infra/boskos/common"
 )
 
-func MakeFakeClient(resources []common.Resource) *Ranch {
+func MakeTestRanch(resources []common.Resource) *Ranch {
 	newRanch := &Ranch{
 		Resources: resources,
 	}
@@ -62,6 +62,27 @@ func TestSyncConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "should not have a type change",
+			oldRes: []common.Resource{
+				{
+					Name: "res",
+					Type: "t",
+				},
+			},
+			newRes: []common.Resource{
+				{
+					Name: "res",
+					Type: "d",
+				},
+			},
+			expect: []common.Resource{
+				{
+					Name: "res",
+					Type: "t",
+				},
+			},
+		},
+		{
 			name: "delete",
 			oldRes: []common.Resource{
 				{
@@ -78,6 +99,7 @@ func TestSyncConfig(t *testing.T) {
 				{
 					Name:  "res",
 					Type:  "t",
+					State: "busy",
 					Owner: "o",
 				},
 			},
@@ -86,14 +108,67 @@ func TestSyncConfig(t *testing.T) {
 				{
 					Name:  "res",
 					Type:  "t",
+					State: "busy",
 					Owner: "o",
+				},
+			},
+		},
+		{
+			name: "append and delete",
+			oldRes: []common.Resource{
+				{
+					Name: "res-1",
+					Type: "t",
+				},
+			},
+			newRes: []common.Resource{
+				{
+					Name: "res-2",
+					Type: "t",
+				},
+			},
+			expect: []common.Resource{
+				{
+					Name:  "res-2",
+					Type:  "t",
+					State: "free",
+				},
+			},
+		},
+		{
+			name: "append and delete busy",
+			oldRes: []common.Resource{
+				{
+					Name:  "res-1",
+					Type:  "t",
+					State: "busy",
+					Owner: "o",
+				},
+			},
+			newRes: []common.Resource{
+				{
+					Name: "res-2",
+					Type: "t",
+				},
+			},
+			expect: []common.Resource{
+				{
+					Name:  "res-1",
+					Type:  "t",
+					State: "busy",
+					Owner: "o",
+				},
+				{
+					Name:  "res-2",
+					Type:  "t",
+					State: "free",
 				},
 			},
 		},
 	}
 
 	for _, tc := range testcases {
-		c := MakeFakeClient(tc.oldRes)
+		c := MakeTestRanch(tc.oldRes)
 		c.syncConfigHelper(tc.newRes)
 		if !reflect.DeepEqual(c.Resources, tc.expect) {
 			t.Errorf("Test %v: got %v, expect %v", tc.name, c.Resources, tc.expect)

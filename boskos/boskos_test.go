@@ -30,7 +30,7 @@ import (
 	"k8s.io/test-infra/boskos/ranch"
 )
 
-func MakeFakeClient(resources []common.Resource) *ranch.Ranch {
+func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	newRanch := &ranch.Ranch{
 		Resources: resources,
 	}
@@ -47,7 +47,7 @@ func TestAcquire(t *testing.T) {
 		method    string
 	}{
 		{
-			name:      "get",
+			name:      "reject get method",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusMethodNotAllowed,
@@ -82,7 +82,7 @@ func TestAcquire(t *testing.T) {
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no resource",
+			name:      "ranch has no resource",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusNotFound,
@@ -147,7 +147,7 @@ func TestAcquire(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeFakeClient(tc.resources)
+		c := MakeTestRanch(tc.resources)
 		handler := handleAcquire(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
@@ -187,7 +187,7 @@ func TestRelease(t *testing.T) {
 		method    string
 	}{
 		{
-			name:      "get",
+			name:      "reject get method",
 			resources: []common.Resource{},
 			path:      "?name=res&dest=d&owner=foo",
 			code:      http.StatusMethodNotAllowed,
@@ -222,7 +222,7 @@ func TestRelease(t *testing.T) {
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no resource",
+			name:      "ranch has no resource",
 			resources: []common.Resource{},
 			path:      "?name=res&dest=d&owner=foo",
 			code:      http.StatusNotFound,
@@ -273,7 +273,7 @@ func TestRelease(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeFakeClient(tc.resources)
+		c := MakeTestRanch(tc.resources)
 		handler := handleRelease(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
@@ -311,7 +311,7 @@ func TestReset(t *testing.T) {
 		method    string
 	}{
 		{
-			name:      "get",
+			name:      "reject get method",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=10m&dest=d",
 			code:      http.StatusMethodNotAllowed,
@@ -360,7 +360,7 @@ func TestReset(t *testing.T) {
 			method:    http.MethodPost,
 		},
 		{
-			name: "empty - has owner",
+			name: "empty - has no owner",
 			resources: []common.Resource{
 				{
 					Name:       "res",
@@ -437,7 +437,7 @@ func TestReset(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeFakeClient(tc.resources)
+		c := MakeTestRanch(tc.resources)
 		handler := handleReset(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {
@@ -481,7 +481,7 @@ func TestUpdate(t *testing.T) {
 		method    string
 	}{
 		{
-			name:      "get",
+			name:      "reject get method",
 			resources: []common.Resource{},
 			path:      "?name=foo",
 			code:      http.StatusMethodNotAllowed,
@@ -495,28 +495,28 @@ func TestUpdate(t *testing.T) {
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no name",
+			name:      "missing name",
 			resources: []common.Resource{},
 			path:      "?state=s&owner=merlin",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no owner",
+			name:      "missing owner",
 			resources: []common.Resource{},
 			path:      "?name=res&state=s",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no state",
+			name:      "missing state",
 			resources: []common.Resource{},
 			path:      "?name=res&owner=merlin",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "no resource",
+			name:      "ranch has no resource",
 			resources: []common.Resource{},
 			path:      "?name=res&state=s&owner=merlin",
 			code:      http.StatusNotFound,
@@ -582,7 +582,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeFakeClient(tc.resources)
+		c := MakeTestRanch(tc.resources)
 		handler := handleUpdate(c)
 		req, err := http.NewRequest(tc.method, "", nil)
 		if err != nil {

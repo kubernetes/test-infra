@@ -209,10 +209,11 @@ func (r *Ranch) LogStatus() {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	for _, res := range r.Resources {
-		resJSON, _ := json.Marshal(res)
-		logrus.Infof("Current Resources : %v", string(resJSON))
+	resJSON, err := json.Marshal(r.Resources)
+	if err != nil {
+		logrus.WithError(err).Errorf("Fail to marshal Resources. %v", r.Resources)
 	}
+	logrus.Infof("Current Resources : %v", string(resJSON))
 }
 
 // SyncConfig updates resource list from a file
@@ -294,12 +295,10 @@ func (r *Ranch) SaveState() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshal ranch")
 	}
-	err = ioutil.WriteFile(r.storagePath+".tmp", buf, 0644)
-	if err != nil {
+	if err = ioutil.WriteFile(r.storagePath+".tmp", buf, 0644); err != nil {
 		logrus.WithError(err).Fatal("Error write file")
 	}
-	err = os.Rename(r.storagePath+".tmp", r.storagePath)
-	if err != nil {
+	if err = os.Rename(r.storagePath+".tmp", r.storagePath); err != nil {
 		logrus.WithError(err).Fatal("Error rename file")
 	}
 }
