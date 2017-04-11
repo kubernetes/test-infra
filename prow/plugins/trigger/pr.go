@@ -24,6 +24,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
+const (
+	needsOkToTest = "needs-ok-to-test"
+)
+
 func handlePR(c client, pr github.PullRequestEvent) error {
 	switch pr.Action {
 	case "opened":
@@ -82,7 +86,12 @@ I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that 
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name
-	return ghc.CreateComment(owner, name, pr.Number, comment)
+	err1 := ghc.AddLabel(owner, name, pr.Number, needsOkToTest)
+	err2 := ghc.CreateComment(owner, name, pr.Number, comment)
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("askToJoin: error adding label: %v, error creating comment: %v", err1, err2)
+	}
+	return nil
 }
 
 // trustedPullRequest returns whether or not the given PR should be tested.

@@ -39,6 +39,7 @@ func init() {
 }
 
 type githubClient interface {
+	AddLabel(org, repo string, number int, label string) error
 	BotName() string
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
@@ -47,6 +48,7 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
+	RemoveLabel(org, repo string, number int, label string) error
 }
 
 type client struct {
