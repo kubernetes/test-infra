@@ -41,7 +41,6 @@ data:
   # munger specific options.
   path-label.path-label-config: ""
   block-path.block-path-config: ""
-  flake-manager.test-owners-csv: ""
   old-test-getter.number-of-old-test-results: "0"
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"

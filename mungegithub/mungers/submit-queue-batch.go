@@ -20,8 +20,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -30,6 +28,7 @@ import (
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
 // xref k8s.io/test-infra/prow/cmd/deck/jobs.go
@@ -45,12 +44,10 @@ type prowJobs []prowJob
 
 // getJobs reads job information as JSON from a given URL.
 func getJobs(url string) (prowJobs, error) {
-	resp, err := http.Get(url)
+	body, err := mungerutil.ReadHTTP(url)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
 
 	jobs := prowJobs{}
 	err = json.Unmarshal(body, &jobs)

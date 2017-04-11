@@ -56,6 +56,8 @@ spec:
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
         - --github-key=$(GITHUB_KEY)
+        - --triage-window-days=$(TRIAGE_WINDOW_DAYS)
+        - --triage-sync-count=$(TRIAGE_SYNC_COUNT)
         image: gcr.io/k8s-testimages/submit-queue:2017-05-02-90fe8836
         env:
           - name: HTTP_CACHE_DIR
@@ -192,7 +194,17 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: @@-sq-config
-                key: flake-manager.test-owners-csv
+                key: issue-creator.test-owners-csv
+          - name: TRIAGE_WINDOW_DAYS
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: triage-filer.window-days
+          - name: TRIAGE_SYNC_COUNT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: triage-filer.sync-count
           - name: NUMBER_OF_OLD_TEST_RESULTS
             valueFrom:
               configMapKeyRef:

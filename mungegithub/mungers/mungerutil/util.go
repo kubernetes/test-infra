@@ -17,7 +17,11 @@ limitations under the License.
 package mungerutil
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -111,4 +115,33 @@ func IsValidUser(u *github.User) bool {
 // IsMungeBot returns true only if given user is this bot.
 func IsMungeBot(u *github.User) bool {
 	return IsValidUser(u) && *u.Login == BotName
+}
+
+// ReadHTTP fetches file contents from a URL with retries.
+func ReadHTTP(url string) ([]byte, error) {
+	var err error
+	retryDelay := time.Duration(2) * time.Second
+	for retryCount := 0; retryCount < 5; retryCount++ {
+		if retryCount > 0 {
+			time.Sleep(retryDelay)
+			retryDelay *= time.Duration(2)
+		}
+
+		resp, err := http.Get(url)
+		if resp != nil && resp.StatusCode >= 500 {
+			// Retry on this type of error.
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			continue
+		}
+		return body, nil
+	}
+	return nil, fmt.Errorf("ran out of retries reading from '%s'. Last error was %v", url, err)
 }
