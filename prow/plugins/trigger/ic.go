@@ -21,6 +21,8 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -97,7 +99,20 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			continue
 		}
 		c.Logger.Infof("Starting %s build.", job.Name)
-		if err := lineStartPRJob(c.KubeClient, job.Name, job.Context, *pr, ref); err != nil {
+		kr := kube.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: pr.Base.Ref,
+			BaseSHA: ref,
+			Pulls: []kube.Pull{
+				kube.Pull{
+					Number: number,
+					Author: author,
+					SHA:    pr.Head.SHA,
+				},
+			},
+		}
+		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
 			errors = append(errors, err)
 		}
 	}

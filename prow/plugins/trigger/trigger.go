@@ -22,7 +22,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/line"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -51,15 +50,16 @@ type githubClient interface {
 	RemoveLabel(org, repo string, number int, label string) error
 }
 
-type client struct {
-	GitHubClient githubClient
-	Config       *config.Config
-	KubeClient   *kube.Client
-	Logger       *logrus.Entry
+type kubeClient interface {
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-var lineStartPRJob = line.StartPRJob
-var lineStartPushJob = line.StartPushJob
+type client struct {
+	GitHubClient githubClient
+	KubeClient   kubeClient
+	Config       *config.Config
+	Logger       *logrus.Entry
+}
 
 func getClient(pc plugins.PluginClient) client {
 	return client{

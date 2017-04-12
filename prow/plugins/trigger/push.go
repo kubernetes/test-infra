@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 )
 
 func handlePE(c client, pe github.PushEvent) error {
@@ -25,7 +27,13 @@ func handlePE(c client, pe github.PushEvent) error {
 		if !j.RunsAgainstBranch(pe.Branch()) {
 			continue
 		}
-		if err := lineStartPushJob(c.KubeClient, j.Name, pe); err != nil {
+		kr := kube.Refs{
+			Org:     pe.Repo.Owner.Name,
+			Repo:    pe.Repo.Name,
+			BaseRef: pe.Branch(),
+			BaseSHA: pe.After,
+		}
+		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PostsubmitSpec(j, kr))); err != nil {
 			return err
 		}
 	}
