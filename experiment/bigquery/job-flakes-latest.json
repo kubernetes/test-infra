@@ -1,0 +1,57 @@
+{
+  "pr:pull-kubernetes-e2e-gce-non-cri": {
+    "flakes": 62,
+    "runs": 873,
+    "consistency": 0.929
+  },
+  "pr:pull-kubernetes-e2e-gce-gci": {
+    "flakes": 26,
+    "runs": 895,
+    "consistency": 0.971
+  },
+  "pr:pull-kubernetes-e2e-gce-etcd3": {
+    "flakes": 22,
+    "runs": 896,
+    "consistency": 0.975
+  },
+  "pr:pull-kubernetes-e2e-gce": {
+    "flakes": 21,
+    "runs": 896,
+    "consistency": 0.977
+  },
+  "pr:pull-kubernetes-verify": {
+    "flakes": 15,
+    "runs": 898,
+    "consistency": 0.983
+  },
+  "pr:pull-kubernetes-unit": {
+    "flakes": 10,
+    "runs": 882,
+    "consistency": 0.989
+  },
+  "pr:pull-kubernetes-node-e2e": {
+    "flakes": 8,
+    "runs": 879,
+    "consistency": 0.991
+  },
+  "pr:pull-kubernetes-bazel": {
+    "flakes": 6,
+    "runs": 848,
+    "consistency": 0.993
+  },
+  "pr:pull-kubernetes-e2e-kops-aws": {
+    "flakes": 6,
+    "runs": 885,
+    "consistency": 0.993
+  },
+  "pr:pull-kubernetes-federation-e2e-gce": {
+    "flakes": 5,
+    "runs": 103,
+    "consistency": 0.951
+  },
+  "pr:pull-kubernetes-kubemark-e2e-gce": {
+    "flakes": 5,
+    "runs": 880,
+    "consistency": 0.994
+  }
+}

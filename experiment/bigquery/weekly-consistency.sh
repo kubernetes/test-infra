@@ -18,19 +18,14 @@
 # The script then filters jobs down to those which flake more than 4x/day
 # And also notes any test in those jobs which flake more than 1x/day
 
-out="/tmp/flakes-$(date +%Y-%m-%d).json"
+out="/tmp/weekly-consistency-$(date +%Y-%m-%d).json"
+sql="$(dirname "${0}")/weekly-consistency.sql"
 if [[ ! -f "${out}" ]]; then
   which bq >/dev/null || (echo 'Cannot find bq on path. Install gcloud' 1>&2 && exit 1)
-  echo "Flakes results will be available at: ${out}" 1>&2
-  cat "$(dirname "${0}")/flakes.sql" | bq query --format=prettyjson > "${out}"
+  echo "Weekly consistency results will be available at: ${out}" 1>&2
+  cat "${sql}" | bq query --format=prettyjson > "${out}"
 fi
 which jq >/dev/null || (echo 'Cannot find jq on path. Install jq' 1>&2 && exit 1)
-echo 'Jobs flaking more than 4x/day:' 1>&2
-cat "${out}" | jq '
-  [(.[] | select(.flakes|tonumber > 28) | {(.job): {
-      consistency: (.commit_consistency|tonumber),
-      flakes: (.flakes|tonumber),
-      flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 7) | {
-        (.name): (.flakes|tonumber)}) ])| add
-  }})] | add'
-echo "Full flake data saved to: ${out}" 1>&2
+echo 'Weekly consistency:' 1>&2
+cat "${out}" | jq '.'
+echo "Raw data: ${out}" 1>&2

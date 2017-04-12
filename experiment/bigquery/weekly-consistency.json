@@ -1,0 +1,27 @@
+[
+  {
+    "commits": "702",
+    "consistency": "0.718",
+    "wk": "2017-03-04"
+  },
+  {
+    "commits": "698",
+    "consistency": "0.779",
+    "wk": "2017-03-11"
+  },
+  {
+    "commits": "640",
+    "consistency": "0.847",
+    "wk": "2017-03-18"
+  },
+  {
+    "commits": "642",
+    "consistency": "0.852",
+    "wk": "2017-03-25"
+  },
+  {
+    "commits": "745",
+    "consistency": "0.815",
+    "wk": "2017-04-01"
+  }
+]
