@@ -299,6 +299,11 @@ def get_reviewers(events):
 
 
 def get_approvers(comments):
+    '''
+    Return approvers requested in comments.
+
+    This MUST be kept in sync with mungegithub's getGubernatorMetadata().
+    '''
     approvers = []
     for comment in comments:
         if comment['author'] == 'k8s-merge-robot':
