@@ -291,14 +291,11 @@ func (r *Ranch) SaveState() {
 	defer r.lock.RUnlock()
 
 	// If fail to save data, fatal and restart the server
-	buf, err := json.Marshal(r)
-	if err != nil {
+	if buf, err := json.Marshal(r); err != nil {
 		logrus.WithError(err).Fatal("Error marshal ranch")
-	}
-	if err = ioutil.WriteFile(r.storagePath+".tmp", buf, 0644); err != nil {
+	} else if err = ioutil.WriteFile(r.storagePath+".tmp", buf, 0644); err != nil {
 		logrus.WithError(err).Fatal("Error write file")
-	}
-	if err = os.Rename(r.storagePath+".tmp", r.storagePath); err != nil {
+	} else if err = os.Rename(r.storagePath+".tmp", r.storagePath); err != nil {
 		logrus.WithError(err).Fatal("Error rename file")
 	}
 }

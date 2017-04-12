@@ -54,28 +54,28 @@ func TestAcquire(t *testing.T) {
 			method:    http.MethodGet,
 		},
 		{
-			name:      "no arg",
+			name:      "reject request no arg",
 			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing type",
+			name:      "reject request missing type",
 			resources: []common.Resource{},
 			path:      "?state=s&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing state",
+			name:      "reject request missing state",
 			resources: []common.Resource{},
 			path:      "?type=t&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing owner",
+			name:      "reject request missing owner",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s",
 			code:      http.StatusBadRequest,
@@ -194,28 +194,28 @@ func TestRelease(t *testing.T) {
 			method:    http.MethodGet,
 		},
 		{
-			name:      "no arg",
+			name:      "reject request no arg",
 			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing name",
+			name:      "reject request missing name",
 			resources: []common.Resource{},
 			path:      "?dest=d&owner=foo",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing dest",
+			name:      "reject request missing dest",
 			resources: []common.Resource{},
 			path:      "?name=res&owner=foo",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing owner",
+			name:      "reject request missing owner",
 			resources: []common.Resource{},
 			path:      "?name=res&dest=d",
 			code:      http.StatusBadRequest,
@@ -304,11 +304,12 @@ func TestRelease(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	var testcases = []struct {
-		name      string
-		resources []common.Resource
-		path      string
-		code      int
-		method    string
+		name       string
+		resources  []common.Resource
+		path       string
+		code       int
+		method     string
+		hasContent bool
 	}{
 		{
 			name:      "reject get method",
@@ -318,42 +319,42 @@ func TestReset(t *testing.T) {
 			method:    http.MethodGet,
 		},
 		{
-			name:      "no arg",
+			name:      "reject request no arg",
 			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing type",
+			name:      "reject request missing type",
 			resources: []common.Resource{},
 			path:      "?state=s&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing state",
+			name:      "reject request missing state",
 			resources: []common.Resource{},
 			path:      "?type=t&expire=10m&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing expire",
+			name:      "reject request missing expire",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&dest=d",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing dest",
+			name:      "reject request missing dest",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=10m",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "bad expire",
+			name:      "reject request bad expire",
 			resources: []common.Resource{},
 			path:      "?type=t&state=s&expire=woooo&dest=d",
 			code:      http.StatusBadRequest,
@@ -430,9 +431,10 @@ func TestReset(t *testing.T) {
 					LastUpdate: time.Now().Add(-time.Minute * 20),
 				},
 			},
-			path:   "?type=t&state=s&expire=10m&dest=d",
-			code:   http.StatusOK,
-			method: http.MethodPost,
+			path:       "?type=t&state=s&expire=10m&dest=d",
+			code:       http.StatusOK,
+			method:     http.MethodPost,
+			hasContent: true,
 		},
 	}
 
@@ -457,7 +459,7 @@ func TestReset(t *testing.T) {
 		if rr.Code == http.StatusOK {
 			rmap := make(map[string]string)
 			json.Unmarshal(rr.Body.Bytes(), &rmap)
-			if strings.HasPrefix(tc.name, "empty") {
+			if !tc.hasContent {
 				if len(rmap) != 0 {
 					t.Errorf("%s - Expect empty map. Got %v", tc.name, rmap)
 				}
@@ -488,28 +490,28 @@ func TestUpdate(t *testing.T) {
 			method:    http.MethodGet,
 		},
 		{
-			name:      "no arg",
+			name:      "reject request no arg",
 			resources: []common.Resource{},
 			path:      "",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing name",
+			name:      "reject request missing name",
 			resources: []common.Resource{},
 			path:      "?state=s&owner=merlin",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing owner",
+			name:      "reject request missing owner",
 			resources: []common.Resource{},
 			path:      "?name=res&state=s",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
-			name:      "missing state",
+			name:      "reject request missing state",
 			resources: []common.Resource{},
 			path:      "?name=res&owner=merlin",
 			code:      http.StatusBadRequest,
