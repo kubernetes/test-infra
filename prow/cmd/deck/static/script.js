@@ -24,7 +24,7 @@ window.onload = function() {
     for (var i = 0; i < allBuilds.length; i++) {
         repos[allBuilds[i].repo] = true;
         jobs[allBuilds[i].job] = true;
-        if (allBuilds[i].type === "pr") {
+        if (allBuilds[i].type === "presubmit") {
             authors[allBuilds[i].author] = true;
             pulls[allBuilds[i].number] = true;
             states[allBuilds[i].state] = true;
@@ -109,15 +109,12 @@ function redraw() {
 
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
-        if (build.type !== "pr" && selectedType === "presubmit") continue;
-        if (build.type !== "push" && selectedType === "postsubmit") continue;
-        if (build.type !== "periodic" && selectedType === "periodic") continue;
-        if (build.type !== "batch" && selectedType === "batch") continue;
+        if (build.type !== selectedType) continue;
 
         if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
         if (!equalSelected(stateSel, build.state)) continue;
         if (!equalSelected(jobSel, build.job)) continue;
-        if (build.type === "pr") {
+        if (build.type === "presubmit") {
             if (!equalSelected(pullSel, build.number)) continue;
             if (!equalSelected(authorSel, build.author)) continue;
         }
@@ -135,11 +132,11 @@ function redraw() {
         } else {
             r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
         }
-        if (build.type === "pr") {
+        if (build.type === "presubmit") {
             r.appendChild(prRevisionCell(build));
         } else if (build.type === "batch") {
             r.appendChild(batchRevisionCell(build));
-        } else if (build.type === "push") {
+        } else if (build.type === "postsubmit") {
             r.appendChild(pushRevisionCell(build));
         } else if (build.type === "periodic") {
             r.appendChild(createTextCell(""));
