@@ -296,8 +296,6 @@ def get_reviewers(events):
                 reviewers.add(body['requested_reviewer']['login'])
             elif action == 'review_request_removed':
                 reviewers -= {body['requested_reviewer']['login']}
-        elif event == 'pull_request_review' and action == 'submitted':
-            reviewers.add(body['sender']['login'])
     return reviewers
 
 
