@@ -6,12 +6,12 @@ Command | Implemented By | Who can run it | Description
 --- | --- | --- | ---
 `/assign [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | kubernetes org members | Assigns specified people (or yourself if no one is specified)
 `/unassign [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | kubernetes org members | Unassigns specified people (or yourself if no one is specified)
-`/area` | prow [label](./prow/plugins/label) | anyone | adds an area/<> label if it exists
-`/remove-area` | prow [label](./prow/plugins/label) | anyone | removes an area/<> label if it exists
-`/kind` | prow [label](./prow/plugins/label) | anyone | adds a kind/<> label if it exists
-`/remove-kind` | prow [label](./prow/plugins/label) | anyone | removes a kind/<> label if it exists
-`/priority` | prow [label](./prow/plugins/label) | anyone | adds a priority/<> label if it exists
-`/remove-priority` | prow [label](./prow/plugins/label) | anyone | removes a priority/<> label if it exists
+`/area [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds an area/<> label(s) if it exists
+`/remove-area [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes an area/<> label(s) if it exists
+`/kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a kind/<> label(s) if it exists
+`/remove-kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a kind/<> label(s) if it exists
+`/priority [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a priority/<> label(s) if it exists
+`/remove-priority [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a priority/<> label(s) if it exists
 `/remove-do-not-merge` | prow [label](./prow/plugins/label) | anyone | removes do-not-merge label if it exists
 `/lgtm` | prow [lgtm](./prow/plugins/lgtm) | assignees | adds the `lgtm` label
 `/lgtm cancel` | prow [lgtm](./prow/plugins/lgtm) | authors and assignees | removes the `lgtm` label
