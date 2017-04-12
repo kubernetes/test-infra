@@ -26,6 +26,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//boskos:all-srcs",
         "//experiment:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
