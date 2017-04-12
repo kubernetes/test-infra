@@ -34,9 +34,6 @@ type kubeClient interface {
 	ListPods(labels map[string]string) ([]kube.Pod, error)
 	DeletePod(name string) error
 
-	ListJobs(labels map[string]string) ([]kube.Job, error)
-	DeleteJob(name string) error
-
 	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
 	DeleteProwJob(name string) error
 }
@@ -71,36 +68,6 @@ func clean(kc kubeClient) {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
 			} else {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
-			}
-		}
-	}
-
-	// Then old jobs.
-	jobs, err := kc.ListJobs(nil)
-	if err != nil {
-		logrus.WithError(err).Error("Error listing jobs.")
-		return
-	}
-	for _, job := range jobs {
-		if job.Complete() && time.Since(job.Status.StartTime) > maxAge {
-			// Delete successful jobs. Don't quit if we fail to delete one.
-			if err := kc.DeleteJob(job.Metadata.Name); err == nil {
-				logrus.WithField("job", job.Metadata.Name).Info("Deleted old completed job.")
-			} else {
-				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error deleting job.")
-				continue
-			}
-			pods, err := kc.ListPods(map[string]string{"job-name": job.Metadata.Name})
-			if err != nil {
-				logrus.WithField("job", job.Metadata.Name).WithError(err).Error("Error listing pods for job.")
-				continue
-			}
-			for _, pod := range pods {
-				if err := kc.DeletePod(pod.Metadata.Name); err == nil {
-					logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old pod for old job.")
-				} else {
-					logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting old pod for old job.")
-				}
 			}
 		}
 	}

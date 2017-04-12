@@ -47,7 +47,6 @@ type Client struct {
 	baseURL string
 	user    string
 	token   string
-	dry     bool
 }
 
 type BuildRequest struct {
@@ -71,17 +70,6 @@ func NewClient(url, user, token string) *Client {
 		user:    user,
 		token:   token,
 		client:  &http.Client{},
-		dry:     false,
-	}
-}
-
-func NewDryRunClient(url, user, token string) *Client {
-	return &Client{
-		baseURL: url,
-		user:    user,
-		token:   token,
-		client:  &http.Client{},
-		dry:     true,
 	}
 }
 
@@ -116,9 +104,6 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
 func (c *Client) Build(br BuildRequest) (*Build, error) {
-	if c.dry {
-		return &Build{}, nil
-	}
 	buildID := uuid.NewV1().String()
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
 	if err != nil {
@@ -159,9 +144,6 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.
 func (c *Client) Enqueued(queueURL string) (bool, error) {
-	if c.dry {
-		return false, nil
-	}
 	u := fmt.Sprintf("%sapi/json", queueURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
@@ -197,12 +179,6 @@ func (c *Client) Enqueued(queueURL string) (bool, error) {
 
 // Status returns the current status of the build.
 func (c *Client) Status(job, id string) (*Status, error) {
-	if c.dry {
-		return &Status{
-			Building: false,
-			Success:  true,
-		}, nil
-	}
 	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
@@ -253,9 +229,6 @@ func (c *Client) Status(job, id string) (*Status, error) {
 }
 
 func (c *Client) GetLog(job string, build int) ([]byte, error) {
-	if c.dry {
-		return []byte("fake log"), nil
-	}
 	u := fmt.Sprintf("%s/job/%s/%d/consoleText", c.baseURL, job, build)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {

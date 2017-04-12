@@ -26,11 +26,9 @@ import (
 
 type fakeClient struct {
 	Pods     []kube.Pod
-	Jobs     []kube.Job
 	ProwJobs []kube.ProwJob
 
 	DeletedPods     []kube.Pod
-	DeletedJobs     []kube.Job
 	DeletedProwJobs []kube.ProwJob
 }
 
@@ -42,16 +40,6 @@ func (c *fakeClient) ListPods(labels map[string]string) ([]kube.Pod, error) {
 		}
 	}
 	return pl, nil
-}
-
-func (c *fakeClient) ListJobs(labels map[string]string) ([]kube.Job, error) {
-	jl := make([]kube.Job, 0, len(c.Jobs))
-	for _, j := range c.Jobs {
-		if labelsMatch(labels, j.Metadata.Labels) {
-			jl = append(jl, j)
-		}
-	}
-	return jl, nil
 }
 
 func (c *fakeClient) ListProwJobs(labels map[string]string) ([]kube.ProwJob, error) {
@@ -73,17 +61,6 @@ func (c *fakeClient) DeleteProwJob(name string) error {
 		}
 	}
 	return fmt.Errorf("prowjob %s not found", name)
-}
-
-func (c *fakeClient) DeleteJob(name string) error {
-	for i, j := range c.Jobs {
-		if j.Metadata.Name == name {
-			c.Jobs = append(c.Jobs[:i], c.Jobs[i+1:]...)
-			c.DeletedJobs = append(c.DeletedJobs, j)
-			return nil
-		}
-	}
-	return fmt.Errorf("job %s not found", name)
 }
 
 func (c *fakeClient) DeletePod(name string) error {
@@ -151,110 +128,10 @@ func TestClean(t *testing.T) {
 				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
 			},
 		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "old, running with job",
-				Labels: map[string]string{
-					"job-name": "old, aborted with pod",
-				},
-			},
-			Status: kube.PodStatus{
-				Phase:     kube.PodRunning,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
-			},
-		},
 	}
 	deletedPods := []string{
 		"old, failed",
 		"old, succeeded",
-		"old, running with job",
-	}
-	zero := 0
-	jobs := []kube.Job{
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "old, complete",
-			},
-			Status: kube.JobStatus{
-				Active:    0,
-				Succeeded: 1,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "old, deleted",
-			},
-			Spec: kube.JobSpec{
-				Parallelism: &zero,
-			},
-			Status: kube.JobStatus{
-				Active:    0,
-				Succeeded: 0,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "old, active",
-			},
-			Status: kube.JobStatus{
-				Active:    1,
-				Succeeded: 0,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "new, active",
-			},
-			Status: kube.JobStatus{
-				Active:    1,
-				Succeeded: 0,
-				StartTime: time.Now(),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "new, complete",
-			},
-			Status: kube.JobStatus{
-				Active:    0,
-				Succeeded: 1,
-				StartTime: time.Now(),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "new, deleted",
-			},
-			Spec: kube.JobSpec{
-				Parallelism: &zero,
-			},
-			Status: kube.JobStatus{
-				Active:    0,
-				Succeeded: 0,
-				StartTime: time.Now(),
-			},
-		},
-		{
-			Metadata: kube.ObjectMeta{
-				Name: "old, aborted with pod",
-			},
-			Spec: kube.JobSpec{
-				Parallelism: &zero,
-			},
-			Status: kube.JobStatus{
-				Active:    0,
-				Succeeded: 0,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
-			},
-		},
-	}
-	deletedJobs := []string{
-		"old, complete",
-		"old, deleted",
-		"old, aborted with pod",
 	}
 	prowJobs := []kube.ProwJob{
 		{
@@ -288,7 +165,6 @@ func TestClean(t *testing.T) {
 	}
 	kc := &fakeClient{
 		Pods:     pods,
-		Jobs:     jobs,
 		ProwJobs: prowJobs,
 	}
 	clean(kc)
@@ -304,20 +180,6 @@ func TestClean(t *testing.T) {
 		}
 		if !found {
 			t.Errorf("Did not delete pod %s", n)
-		}
-	}
-	if len(deletedJobs) != len(kc.DeletedJobs) {
-		t.Errorf("Deleted wrong number of jobs: got %v expected %v", kc.DeletedJobs, deletedJobs)
-	}
-	for _, n := range deletedJobs {
-		found := false
-		for _, j := range kc.DeletedJobs {
-			if j.Metadata.Name == n {
-				found = true
-			}
-		}
-		if !found {
-			t.Errorf("Did not delete job %s", n)
 		}
 	}
 	if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
