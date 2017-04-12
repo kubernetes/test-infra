@@ -290,6 +290,9 @@ def get_reviewers(events):
         action = body.get('action')
         if event == 'pull_request':
             if action == 'review_requested':
+                if 'requested_reviewer' not in body:
+                    logging.warning('no reviewer present -- self-review?')
+                    continue
                 reviewers.add(body['requested_reviewer']['login'])
             elif action == 'review_request_removed':
                 reviewers -= {body['requested_reviewer']['login']}

@@ -95,7 +95,7 @@ tr.pr-version th {
 }
 table.pr td {
     padding: 5px;
-    white-space: nowrap;
+    max-width: 30vw;
 }
 .build-success {
     background-color: lightgreen;
