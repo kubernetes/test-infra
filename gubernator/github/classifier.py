@@ -22,6 +22,7 @@ import models
 
 
 XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
+APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 
 class Deduper(object):
@@ -207,7 +208,9 @@ def classify(events, statuses=None):
     '''
     merged = get_merged(events)
     labels = get_labels(events)
-    xrefs = get_xrefs(get_comments(events), merged)
+    comments = get_comments(events)
+    xrefs = get_xrefs(comments, merged)
+    approvers = get_approvers(comments)
     reviewers = get_reviewers(events)
 
     is_pr = 'head' in merged or 'pull_request' in merged
@@ -234,6 +237,9 @@ def classify(events, statuses=None):
 
     if statuses:
         payload['status'] = statuses
+
+    if approvers:
+        payload['approvers'] = approvers
 
     payload['attn'] = calculate_attention(distill_events(events), payload)
 
@@ -290,6 +296,16 @@ def get_reviewers(events):
         elif event == 'pull_request_review' and action == 'submitted':
             reviewers.add(body['sender']['login'])
     return reviewers
+
+
+def get_approvers(comments):
+    approvers = []
+    for comment in comments:
+        if comment['author'] == 'k8s-merge-robot':
+            m = APPROVERS_RE.search(comment['comment'])
+            if m:
+                approvers = m.group(1).replace('"', '').split(',')
+    return approvers
 
 
 def distill_events(events):
@@ -396,6 +412,9 @@ def calculate_attention(distilled_events, payload):
     if any(state == 'failure' for state, _url, _desc
            in payload.get('status', {}).values()):
         notify(author, 'fix tests')
+
+    for approver in payload.get('approvers', []):
+        notify(approver, 'needs approval')
 
     for assignee in assignees:
         assignee_state, first, last = get_assignee_state(assignee, author, distilled_events)

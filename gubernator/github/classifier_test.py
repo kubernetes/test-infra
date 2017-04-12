@@ -133,16 +133,18 @@ class CalculateTest(unittest.TestCase):
                 ('pull_request', {
                     'action': 'labeled',
                     'label': {'name': 'release-note-none', 'color': 'orange'},
-                }, 3)
+                }, 3),
+                make_comment_event(2, 'k8s-merge-robot', '<!-- META={"approvers":["o"]} -->', ts=4),
             ], {'e2e': ['failure', None, 'stuff is broken']}
         ),
         (True, True, ['a', 'b'],
          {
             'author': 'a',
+            'approvers': ['o'],
             'assignees': ['b'],
             'additions': 1,
             'deletions': 1,
-            'attn': {'a': 'fix tests', 'b': 'needs review#0#0'},
+            'attn': {'a': 'fix tests', 'b': 'needs review#0#0', 'o': 'needs approval'},
             'title': 'some fix',
             'labels': {'release-note-none': 'orange'},
             'head': 'abcdef',
@@ -193,6 +195,9 @@ class CalculateTest(unittest.TestCase):
 
         expect(make_payload('alpha', ['alpha']), [('comment', 'other', 1)],
             {'alpha': 'address comments#1#1'})
+
+        expect(make_payload('alpha', approvers=['owner']), [],
+            {'owner': 'needs approval'})
 
     def test_author_state(self):
         def expect(events, result):
@@ -246,13 +251,26 @@ class CalculateTest(unittest.TestCase):
 
         expect([], set())
 
-        reviewer_a = {'requested_reviewer': {'login': 'a'}}
-        reviewer_b = {'requested_reviewer': {'login': 'b'}}
-        expect(mk(('pull_request', 'review_requested', reviewer_a)), {'a'})
-        expect(mk(('pull_request', 'review_request_removed', reviewer_a)), set())
-        expect(mk(('pull_request', 'review_requested', reviewer_a),
-                  ('pull_request', 'review_request_removed', reviewer_a)), set())
+        user_a = {'requested_reviewer': {'login': 'a'}}
+        expect(mk(('pull_request', 'review_requested', user_a)), {'a'})
+        expect(mk(('pull_request', 'review_request_removed', user_a)), set())
+        expect(mk(('pull_request', 'review_requested', user_a),
+                  ('pull_request', 'review_request_removed', user_a)), set())
         expect(mk(('pull_request_review', 'submitted', {'sender': {'login': 'b'}})), {'b'})
+
+    def test_approvers(self):
+        def expect(comment, result):
+            self.assertEqual(result, classifier.get_approvers([{
+                'author': 'k8s-merge-robot', 'comment': comment}]))
+
+        expect('nothing', [])
+        expect('before\n<!-- META={approvers:[someone]} -->', ['someone'])
+        expect('<!-- META={approvers:[someone,else]} -->', ['someone', 'else'])
+        expect('<!-- META={approvers:[someone,else]} -->', ['someone', 'else'])
+
+        # The META format is *supposed* to be JSON, but a recent change broke it.
+        # Support both formats so it can be fixed in the future.
+        expect('<!-- META={"approvers":["username"]} -->\n', ['username'])
 
 
 class CommentsTest(unittest.TestCase):
