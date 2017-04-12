@@ -18,6 +18,9 @@ View
 
 % for title, pred, search in cats
 	% set sub_prs = prs | select(pred)
+	% if title == 'Approvable' and not sub_prs
+		% continue
+	% endif
 	<h3 class="pr-section">
 	% if search
 	<a href="https://github.com/pulls?q={{search|quote_plus}}">{{title}}</a>

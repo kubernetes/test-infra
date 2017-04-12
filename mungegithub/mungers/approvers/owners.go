@@ -18,6 +18,7 @@ package approvers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"path/filepath"
@@ -472,8 +473,9 @@ Needs approval from an approver in each of these OWNERS Files:
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}
 You can indicate your approval by writing `+"`/approve`"+` in a comment
 You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
-</details>
-<!-- META={approvers:{{js .ap.GetCCs}}} -->`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
+</details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
+
+	*message += getGubernatorMetadata(ap.GetCCs())
 
 	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
 
@@ -483,4 +485,14 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 
 	notif := (&c.Notification{ApprovalNotificationName, *title, *message}).String()
 	return &notif
+}
+
+// getGubernatorMetadata returns a JSON string with machine-readable information about approvers.
+// This MUST be kept in sync with gubernator/github/classifier.py, particularly get_approvers.
+func getGubernatorMetadata(toBeAssigned []string) string {
+	bytes, err := json.Marshal(map[string][]string{"approvers": toBeAssigned})
+	if err == nil {
+		return fmt.Sprintf("\n<!-- META=%s -->", bytes)
+	}
+	return ""
 }

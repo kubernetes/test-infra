@@ -22,6 +22,7 @@ import models
 
 
 XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
+APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 
 class Deduper(object):
@@ -207,12 +208,15 @@ def classify(events, statuses=None):
     '''
     merged = get_merged(events)
     labels = get_labels(events)
-    xrefs = get_xrefs(get_comments(events), merged)
+    comments = get_comments(events)
+    xrefs = get_xrefs(comments, merged)
+    approvers = get_approvers(comments)
+    reviewers = get_reviewers(events)
 
     is_pr = 'head' in merged or 'pull_request' in merged
     is_open = merged['state'] != 'closed'
     author = merged['user']['login']
-    assignees = sorted(assignee['login'] for assignee in merged['assignees'])
+    assignees = sorted({assignee['login'] for assignee in merged['assignees']} | reviewers)
     involved = [author] + assignees
 
     payload = {
@@ -233,6 +237,9 @@ def classify(events, statuses=None):
 
     if statuses:
         payload['status'] = statuses
+
+    if approvers:
+        payload['approvers'] = approvers
 
     payload['attn'] = calculate_attention(distill_events(events), payload)
 
@@ -272,6 +279,38 @@ def get_comments(events):
             }
             for c in sorted(comments.values(), key=lambda c: c['created_at'])
     ]
+
+
+def get_reviewers(events):
+    '''
+    Return the set of users that have a code review requested or completed.
+    '''
+    reviewers = set()
+    for event, body, _timestamp in events:
+        action = body.get('action')
+        if event == 'pull_request':
+            if action == 'review_requested':
+                reviewers.add(body['requested_reviewer']['login'])
+            elif action == 'review_request_removed':
+                reviewers -= {body['requested_reviewer']['login']}
+        elif event == 'pull_request_review' and action == 'submitted':
+            reviewers.add(body['sender']['login'])
+    return reviewers
+
+
+def get_approvers(comments):
+    '''
+    Return approvers requested in comments.
+
+    This MUST be kept in sync with mungegithub's getGubernatorMetadata().
+    '''
+    approvers = []
+    for comment in comments:
+        if comment['author'] == 'k8s-merge-robot':
+            m = APPROVERS_RE.search(comment['comment'])
+            if m:
+                approvers = m.group(1).replace('"', '').split(',')
+    return approvers
 
 
 def distill_events(events):
@@ -378,6 +417,9 @@ def calculate_attention(distilled_events, payload):
     if any(state == 'failure' for state, _url, _desc
            in payload.get('status', {}).values()):
         notify(author, 'fix tests')
+
+    for approver in payload.get('approvers', []):
+        notify(approver, 'needs approval')
 
     for assignee in assignees:
         assignee_state, first, last = get_assignee_state(assignee, author, distilled_events)
