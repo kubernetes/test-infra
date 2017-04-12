@@ -15,7 +15,6 @@ describe('makeBuckets', () => {
 
 describe('Clusters', () => {
     describe('refilter', () => {
-        console.log("DE1 " + assert.deepEqual);
         function expect(name, expected, clustered, opts) {
             it(name, function() {
                 var c = new model.Clusters(clustered);
