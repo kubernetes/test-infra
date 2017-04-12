@@ -596,9 +596,13 @@ func TestBatch(t *testing.T) {
 	}
 	jc.status = jenkins.Status{
 		Building: false,
+		Number:   42,
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fifth sync: %v", err)
+	}
+	if fc.prowjobs[0].Status.PodName != "pr-some-job-42" {
+		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
 	}
 	if fc.prowjobs[0].Status.State != kube.FailureState {
 		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
