@@ -48,6 +48,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//boskos/client:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/ranch:all-srcs",
     ],

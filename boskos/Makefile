@@ -21,6 +21,9 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 boskos:
 	go build k8s.io/test-infra/boskos/
 
+client:
+	go build k8s.io/test-infra/boskos/client/
+
 image:
 	CGO_ENABLED=0 go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
