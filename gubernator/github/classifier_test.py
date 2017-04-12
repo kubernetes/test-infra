@@ -232,6 +232,28 @@ class CalculateTest(unittest.TestCase):
         expect(fail('/a/b/34/'), [fail('/a/b/34]')], ['/a/b/34'])
         expect(fail('/a/b/34/)'), [fail('/a/b/35]')], ['/a/b/34', '/a/b/35'])
 
+    def test_reviewers(self):
+        def expect(events, result):
+            self.assertEqual(result, classifier.get_reviewers(events))
+
+        def mk(*specs):
+            out = []
+            for event, action, body in specs:
+                body = dict(body)  # copy
+                body['action'] = action
+                out.append((event, body, 0))
+            return out
+
+        expect([], set())
+
+        reviewer_a = {'requested_reviewer': {'login': 'a'}}
+        reviewer_b = {'requested_reviewer': {'login': 'b'}}
+        expect(mk(('pull_request', 'review_requested', reviewer_a)), {'a'})
+        expect(mk(('pull_request', 'review_request_removed', reviewer_a)), set())
+        expect(mk(('pull_request', 'review_requested', reviewer_a),
+                  ('pull_request', 'review_request_removed', reviewer_a)), set())
+        expect(mk(('pull_request_review', 'submitted', {'sender': {'login': 'b'}})), {'b'})
+
 
 class CommentsTest(unittest.TestCase):
     def test_basic(self):

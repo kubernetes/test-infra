@@ -208,11 +208,12 @@ def classify(events, statuses=None):
     merged = get_merged(events)
     labels = get_labels(events)
     xrefs = get_xrefs(get_comments(events), merged)
+    reviewers = get_reviewers(events)
 
     is_pr = 'head' in merged or 'pull_request' in merged
     is_open = merged['state'] != 'closed'
     author = merged['user']['login']
-    assignees = sorted(assignee['login'] for assignee in merged['assignees'])
+    assignees = sorted({assignee['login'] for assignee in merged['assignees']} | reviewers)
     involved = [author] + assignees
 
     payload = {
@@ -272,6 +273,23 @@ def get_comments(events):
             }
             for c in sorted(comments.values(), key=lambda c: c['created_at'])
     ]
+
+
+def get_reviewers(events):
+    '''
+    Return the set of users that have a code review requested or completed.
+    '''
+    reviewers = set()
+    for event, body, _timestamp in events:
+        action = body.get('action')
+        if event == 'pull_request':
+            if action == 'review_requested':
+                reviewers.add(body['requested_reviewer']['login'])
+            elif action == 'review_request_removed':
+                reviewers -= {body['requested_reviewer']['login']}
+        elif event == 'pull_request_review' and action == 'submitted':
+            reviewers.add(body['sender']['login'])
+    return reviewers
 
 
 def distill_events(events):
