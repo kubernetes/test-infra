@@ -76,7 +76,7 @@ func TestJokes(t *testing.T) {
 		body          string
 		state         string
 		joke          fakeJoke
-		pr            *struct{}
+		pr            *github.PullRequest
 		shouldComment bool
 		shouldError   bool
 	}{
@@ -95,7 +95,7 @@ func TestJokes(t *testing.T) {
 			action:        "created",
 			body:          "@k8s-bot tell me a joke",
 			joke:          "this? that.",
-			pr:            &struct{}{},
+			pr:            &github.PullRequest{},
 			shouldComment: true,
 			shouldError:   false,
 		},

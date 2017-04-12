@@ -13,6 +13,7 @@ go_test(
     srcs = [
         "ic_test.go",
         "pr_test.go",
+        "rebase_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],

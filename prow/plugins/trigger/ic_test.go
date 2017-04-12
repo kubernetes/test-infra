@@ -159,9 +159,9 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		})
 
-		var pr *struct{}
+		var pr *github.PullRequest
 		if tc.IsPR {
-			pr = &struct{}{}
+			pr = &github.PullRequest{}
 		}
 		if tc.HasOkToTest {
 			g.IssueComments[0] = []github.IssueComment{{

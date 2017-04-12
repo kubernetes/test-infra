@@ -158,7 +158,7 @@ func TestLGTMComment(t *testing.T) {
 				User:        github.User{Login: "a"},
 				Number:      5,
 				State:       "open",
-				PullRequest: &struct{}{},
+				PullRequest: &github.PullRequest{},
 				Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			},
 		}

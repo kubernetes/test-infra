@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"fmt"
+	"net/url"
+	"time"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -26,7 +28,9 @@ import (
 )
 
 const (
-	needsOkToTest = "needs-ok-to-test"
+	needsOkToTest                    = "needs-ok-to-test"
+	needsRebaseLabel                 = "needs-rebase"
+	sleepWhileGithubUpdatesMergeable = 2 * time.Minute
 )
 
 func handlePR(c client, pr github.PullRequestEvent) error {
@@ -67,6 +71,51 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
 				return buildAll(c, pr.PullRequest)
+			}
+		}
+	case "closed":
+		if pr.PullRequest.Merged && pr.PullRequest.Base.Ref == "master" {
+			return handleMergedPR(c, pr.PullRequest)
+		}
+	}
+	return nil
+}
+
+func handleMergedPR(c client, pr github.PullRequest) error {
+	// FIXME: Need to test it on real github API call
+	// We're checking and setting Label (needs-rebase) on PR's Issue - is this OK?
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+
+	if pr.State != "skip_sleep" {
+		time.Sleep(sleepWhileGithubUpdatesMergeable)
+	}
+	foundIssues, err := c.GitHubClient.FindIssues(url.QueryEscape(fmt.Sprintf("repo:%s/%s is:open is:pr is:unmerged", org, repo)))
+	if err != nil {
+		c.Logger.Info("Could not find Issues: %s", err)
+		return err
+	}
+	for _, issue := range foundIssues {
+		if issue.PullRequest == nil {
+			continue
+		}
+
+		issuePr := issue.PullRequest
+		if issuePr.Merged || issuePr.Mergeable == nil {
+			continue
+		}
+
+		mergeable := *issuePr.Mergeable
+		number := issue.Number
+		if mergeable && issue.HasLabel(needsRebaseLabel) {
+			if err := c.GitHubClient.RemoveLabel(org, repo, number, needsRebaseLabel); err != nil {
+				c.Logger.Info("Github failed to remove the following label: %s on Issue: %s/%s:#%d", needsRebaseLabel, org, repo, number)
+			}
+		}
+
+		if !mergeable && !issue.HasLabel(needsRebaseLabel) {
+			if err := c.GitHubClient.AddLabel(org, repo, number, needsRebaseLabel); err != nil {
+				c.Logger.Info("Github failed to add the following label: %s on Issue: %s/%s:#%d", needsRebaseLabel, org, repo, number)
 			}
 		}
 	}
