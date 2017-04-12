@@ -1,10 +1,10 @@
 # Prow
 
 Prow is the system that handles GitHub events and commands for Kubernetes. It
-currently comprises several related pieces that live in a GKE cluster.
+currently comprises several related pieces that live in a Kubernetes cluster.
 
-* `cmd/hook` is the most important piece. It is a server that listens for
-  GitHub webhooks and dispatches them to the appropriate handlers.
+* `cmd/hook` is the most important piece. It is a stateless server that listens
+  for GitHub webhooks and dispatches them to the appropriate handlers.
 * `cmd/plank` is the controller that manages Jenkins jobs and k8s pods.
 * `cmd/sinker` cleans up old jobs and pods.
 * `cmd/splice` regularly schedules batch jobs.
@@ -98,7 +98,7 @@ hard requirement.
  gcloud -q container node-pools create build-pool --project "${PROJECT}" --cluster "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
  ```
 
-1. Create the secrets that allow prow to talk to GitHub. The `hmac-token` is
+2. Create the secrets that allow prow to talk to GitHub. The `hmac-token` is
 the token that you set on GitHub webhooks, and the `oauth-token` is an OAuth2
 token that has read and write access to the bot account.
 
@@ -107,7 +107,7 @@ token that has read and write access to the bot account.
  kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
  ```
 
-1. Create the secrets that allow prow to talk to Jenkins. The `jenkins-token`
+3. Create the secrets that allow prow to talk to Jenkins. The `jenkins-token`
 is the API token that matches your Jenkins account. The `jenkins-address` is
 Jenkins' URL, such as `http://pull-jenkins-master:8080`.
 
@@ -116,14 +116,20 @@ Jenkins' URL, such as `http://pull-jenkins-master:8080`.
  kubectl create configmap jenkins-address --from-file=jenkins-address=/path/to/address
  ```
 
-1. Create the prow configs.
+4. Create the prow configs.
 
  ```
  kubectl create configmap config --from-file=config=config.yaml
  kubectl create configmap plugins --from-file=plugins=plugins.yaml
  ```
 
-1. *Optional*: Create service account and SSH keys for your pods to run as.
+5. Create the ProwJob ThirdPartyResource.
+
+ ```
+ kubectl create -f cluster/prow_job.yaml
+ ```
+
+6. *Optional*: Create service account and SSH keys for your pods to run as.
 This shouldn't be necessary for most use cases.
 
  ```
@@ -131,7 +137,7 @@ This shouldn't be necessary for most use cases.
  kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
  ```
 
-1. Run the prow components that you desire. I recommend `hook`, `plank`,
+7. Run the prow components that you desire. I recommend `hook`, `plank`,
 `sinker`, and `deck` to start out with. You'll need some way for ingress
 traffic to reach your hook and deck deployments.
 
@@ -151,4 +157,4 @@ traffic to reach your hook and deck deployments.
  kubectl apply -f cluster/ingress.yaml
  ```
 
-1. Add the webhook to GitHub.
+8. Add the webhook to GitHub.
