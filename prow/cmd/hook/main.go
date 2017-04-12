@@ -21,7 +21,6 @@ import (
 	"flag"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -51,6 +50,7 @@ var (
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
+	dry   = flag.Bool("dry", false, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -97,15 +97,10 @@ func main() {
 		}
 		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-		dry, err := strconv.ParseBool(os.Getenv("DRY_RUN"))
-		if err != nil {
-			logrus.WithError(err).Fatal("Failed to parse DRY_RUN environment variable.")
-		}
-
 		if *githubBotName == "" {
 			logrus.Fatal("Must specify --github-bot-name.")
 		}
-		if dry {
+		if *dry {
 			githubClient = github.NewDryRunClient(*githubBotName, oauthSecret)
 		} else {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)

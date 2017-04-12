@@ -193,6 +193,9 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		if url := guberURL(pj, strconv.Itoa(status.Number)); pj.Status.URL != url {
 			pj.Status.URL = url
 			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
+			if err := c.report(pj); err != nil {
+				return fmt.Errorf("error reporting to crier: %v", err)
+			}
 		} else if status.Building {
 			// Build still going.
 			return nil

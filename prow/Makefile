@@ -15,7 +15,7 @@
 all: build test
 
 
-HOOK_VERSION       = 0.97
+HOOK_VERSION       = 0.98
 SINKER_VERSION     = 0.6
 DECK_VERSION       = 0.22
 SPLICE_VERSION     = 0.17
@@ -23,7 +23,7 @@ MARQUE_VERSION     = 0.1
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.8
+PLANK_VERSION      = 0.9
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
