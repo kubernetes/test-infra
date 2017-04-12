@@ -241,6 +241,9 @@ func main() {
 
 		running := []string{}
 		for _, job := range currentJobs {
+			if job.Spec.Type != kube.BatchJob {
+				continue
+			}
 			if job.Complete() && job.Status.State == kube.SuccessState {
 				ref := job.Spec.Refs.String()
 				context := job.Spec.Context

@@ -32,7 +32,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
-	author := ic.Comment.User.Login
+	commentAuthor := ic.Comment.User.Login
 	// Only take action when a comment is first created.
 	if ic.Action != "created" {
 		return nil
@@ -45,7 +45,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// Skip bot comments.
-	if author == c.GitHubClient.BotName() {
+	if commentAuthor == c.GitHubClient.BotName() {
 		return nil
 	}
 
@@ -66,7 +66,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	// Skip untrusted users.
-	orgMember, err := c.GitHubClient.IsMember(trustedOrg, author)
+	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
 	if err != nil {
 		return err
 	} else if !orgMember {
@@ -107,7 +107,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			Pulls: []kube.Pull{
 				kube.Pull{
 					Number: number,
-					Author: author,
+					Author: pr.User.Login,
 					SHA:    pr.Head.SHA,
 				},
 			},
