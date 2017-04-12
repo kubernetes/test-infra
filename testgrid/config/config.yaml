@@ -270,6 +270,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1.5
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
+- name: ci-kubernetes-e2e-gci-gce-ip-alias
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1.4
@@ -1072,6 +1074,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
   - name: gci-gce-scalability-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+  - name: gci-gce-ip-alias
+    test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-serial
   - name: gci-gce-serial
@@ -1171,6 +1175,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1.4
   - name: release-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1.5
+  - name: ip-alias
+    test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: serial
