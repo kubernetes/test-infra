@@ -5,23 +5,28 @@
     "wk": "2017-03-04"
   },
   {
-    "commits": "698",
+    "commits": "697",
     "consistency": "0.779",
     "wk": "2017-03-11"
   },
   {
-    "commits": "640",
+    "commits": "639",
     "consistency": "0.847",
     "wk": "2017-03-18"
   },
   {
-    "commits": "642",
+    "commits": "640",
     "consistency": "0.852",
     "wk": "2017-03-25"
   },
   {
-    "commits": "745",
-    "consistency": "0.815",
+    "commits": "746",
+    "consistency": "0.818",
     "wk": "2017-04-01"
+  },
+  {
+    "commits": "388",
+    "consistency": "0.853",
+    "wk": "2017-04-08"
   }
 ]
