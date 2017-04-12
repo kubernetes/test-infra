@@ -20,7 +20,8 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/line"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -178,7 +179,20 @@ func buildAll(c client, pr github.PullRequest) error {
 			}
 			ref = r
 		}
-		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr, ref); err != nil {
+		kr := kube.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: pr.Base.Ref,
+			BaseSHA: ref,
+			Pulls: []kube.Pull{
+				kube.Pull{
+					Number: pr.Number,
+					Author: pr.User.Login,
+					SHA:    pr.Head.SHA,
+				},
+			},
+		}
+		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
 			return err
 		}
 	}

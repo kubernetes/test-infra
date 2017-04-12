@@ -27,6 +27,15 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+type fkc struct {
+	started []string
+}
+
+func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	c.started = append(c.started, pj.Metadata.Name)
+	return pj, nil
+}
+
 func TestHandleIssueComment(t *testing.T) {
 	var testcases = []struct {
 		Author      string
@@ -131,8 +140,10 @@ func TestHandleIssueComment(t *testing.T) {
 				},
 			},
 		}
+		kc := &fkc{}
 		c := client{
 			GitHubClient: g,
+			KubeClient:   kc,
 			Config:       &config.Config{},
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
@@ -174,21 +185,12 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		}
 
-		oldLineStartPRJob := lineStartPRJob
-		defer func() {
-			lineStartPRJob = oldLineStartPRJob
-		}()
-		var startedJobs []string
-		lineStartPRJob = func(k *kube.Client, jobName, context string, pr github.PullRequest, ref string) error {
-			startedJobs = append(startedJobs, jobName)
-			return nil
-		}
 		if err := handleIC(c, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
-		if len(startedJobs) > 0 && !tc.ShouldBuild {
+		if len(kc.started) > 0 && !tc.ShouldBuild {
 			t.Errorf("Built but should not have: %+v", tc)
-		} else if len(startedJobs) == 0 && tc.ShouldBuild {
+		} else if len(kc.started) == 0 && tc.ShouldBuild {
 			t.Errorf("Not built but should have: %+v", tc)
 		}
 	}

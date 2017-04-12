@@ -80,6 +80,9 @@ func (c *Controller) Sync() error {
 		pm[pod.Metadata.Name] = pod
 	}
 	var errs []error
+	if err := c.terminateDupes(pjs); err != nil {
+		errs = append(errs, err)
+	}
 	for _, pj := range pjs {
 		if pj.Spec.Agent == kube.KubernetesAgent {
 			if err := c.syncKubernetesJob(pj, pm); err != nil {
@@ -98,6 +101,34 @@ func (c *Controller) Sync() error {
 	} else {
 		return fmt.Errorf("errors syncing: %v", errs)
 	}
+}
+
+// terminateDupes aborts presubmits that have a newer version.
+func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
+	// "job org/repo#number" -> newest job
+	dupes := make(map[string]kube.ProwJob)
+	for _, pj := range pjs {
+		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
+			continue
+		}
+		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
+		prev, ok := dupes[n]
+		if !ok {
+			dupes[n] = pj
+			continue
+		}
+		toCancel := pj
+		if prev.Status.StartTime.Before(pj.Status.StartTime) {
+			toCancel = prev
+			dupes[n] = pj
+		}
+		toCancel.Status.CompletionTime = time.Now()
+		toCancel.Status.State = kube.AbortedState
+		if _, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
@@ -122,10 +153,12 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
+			pj.Status.Description = "Error starting Jenkins job."
 		} else {
 			pj.Status.JenkinsQueueURL = build.QueueURL.String()
 			pj.Status.JenkinsBuildID = build.ID
 			pj.Status.JenkinsEnqueued = true
+			pj.Status.Description = "Jenkins job triggered."
 		}
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
@@ -137,6 +170,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
+			pj.Status.Description = "Error checking queue status."
 			if err := c.report(pj); err != nil {
 				return fmt.Errorf("error reporting to crier: %v", err)
 			}
@@ -151,6 +185,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
+		pj.Status.Description = "Error checking job status."
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
@@ -165,6 +200,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		if !status.Building && status.Success {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.SuccessState
+			pj.Status.Description = "Jenkins job succeeded."
 			if err := c.report(pj); err != nil {
 				return fmt.Errorf("error reporting to crier: %v", err)
 			}
@@ -176,6 +212,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		} else if !status.Building {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
+			pj.Status.Description = "Jenkins job failed."
 			if err := c.report(pj); err != nil {
 				return fmt.Errorf("error reporting to crier: %v", err)
 			}
@@ -201,6 +238,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		} else {
 			return fmt.Errorf("error starting pod: %v", err)
 		}
+		pj.Status.Description = "Job triggered."
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
@@ -221,6 +259,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		// Pod succeeded. Update ProwJob, talk to crier, and start next jobs.
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.SuccessState
+		pj.Status.Description = "Job succeeded."
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
@@ -233,6 +272,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		// Pod failed. Update ProwJob, talk to crier.
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.FailureState
+		pj.Status.Description = "Job failed."
 		if err := c.report(pj); err != nil {
 			return fmt.Errorf("error reporting to crier: %v", err)
 		}
@@ -259,8 +299,8 @@ func (c *Controller) report(pj kube.ProwJob) error {
 		Commit:       pj.Spec.Refs.Pulls[0].SHA,
 		Context:      pj.Spec.Context,
 		State:        string(pj.Status.State),
-		Description:  pj.Spec.Description,
 		RerunCommand: pj.Spec.RerunCommand,
+		Description:  pj.Status.Description,
 		URL:          pj.Status.URL,
 	})
 }

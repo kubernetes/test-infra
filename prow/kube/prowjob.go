@@ -61,7 +61,6 @@ type ProwJobSpec struct {
 
 	Report       bool   `json:"report,omitempty"`
 	Context      string `json:"context,omitempty"`
-	Description  string `json:"description,omitempty"`
 	RerunCommand string `json:"rerun_command,omitempty"`
 
 	PodSpec PodSpec `json:"pod_spec,omitempty"`
@@ -73,6 +72,7 @@ type ProwJobStatus struct {
 	StartTime      time.Time    `json:"startTime,omitempty"`
 	CompletionTime time.Time    `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
+	Description    string       `json:"description,omitempty"`
 	URL            string       `json:"url,omitempty"`
 	PodName        string       `json:"pod_name,omitempty"`
 	// TODO(spxtr): Remove this once migration is complete.

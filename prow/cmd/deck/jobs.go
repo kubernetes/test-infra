@@ -178,20 +178,20 @@ func (ja *JobAgent) update() error {
 		}
 
 		nj := Job{
-			Type:        string(j.Spec.Type),
-			Repo:        fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
-			Refs:        j.Spec.Refs.String(),
-			BaseRef:     j.Spec.Refs.BaseRef,
-			BaseSHA:     j.Spec.Refs.BaseSHA,
-			Job:         j.Spec.Job,
-			Context:     j.Spec.Context,
-			Description: j.Spec.Description,
-			Agent:       string(j.Spec.Agent),
+			Type:    string(j.Spec.Type),
+			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
+			Refs:    j.Spec.Refs.String(),
+			BaseRef: j.Spec.Refs.BaseRef,
+			BaseSHA: j.Spec.Refs.BaseSHA,
+			Job:     j.Spec.Job,
+			Context: j.Spec.Context,
+			Agent:   string(j.Spec.Agent),
 
-			Started: j.Status.StartTime.Format(time.Stamp),
-			State:   string(j.Status.State),
-			PodName: j.Status.PodName,
-			URL:     j.Status.URL,
+			Started:     j.Status.StartTime.Format(time.Stamp),
+			State:       string(j.Status.State),
+			Description: j.Status.Description,
+			PodName:     j.Status.PodName,
+			URL:         j.Status.URL,
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,

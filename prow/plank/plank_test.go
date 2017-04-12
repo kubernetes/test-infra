@@ -73,6 +73,89 @@ func (f *fkc) DeletePod(name string) error {
 	return fmt.Errorf("did not find pod %s", name)
 }
 
+func TestTerminateDupes(t *testing.T) {
+	now := time.Now()
+	var testcases = []struct {
+		name      string
+		job       string
+		startTime time.Time
+		complete  bool
+
+		shouldTerminate bool
+	}{
+		{
+			name:            "newest",
+			job:             "j1",
+			startTime:       now.Add(-time.Minute),
+			complete:        false,
+			shouldTerminate: false,
+		},
+		{
+			name:            "old",
+			job:             "j1",
+			startTime:       now.Add(-time.Hour),
+			complete:        false,
+			shouldTerminate: true,
+		},
+		{
+			name:            "older",
+			job:             "j1",
+			startTime:       now.Add(-2 * time.Hour),
+			complete:        false,
+			shouldTerminate: true,
+		},
+		{
+			name:            "complete",
+			job:             "j1",
+			startTime:       now.Add(-3 * time.Hour),
+			complete:        true,
+			shouldTerminate: false,
+		},
+		{
+			name:            "newest j2",
+			job:             "j2",
+			startTime:       now.Add(-time.Minute),
+			complete:        false,
+			shouldTerminate: false,
+		},
+		{
+			name:            "old j2",
+			job:             "j2",
+			startTime:       now.Add(-time.Hour),
+			complete:        false,
+			shouldTerminate: true,
+		},
+	}
+	fkc := &fkc{}
+	c := Controller{kc: fkc}
+	for _, tc := range testcases {
+		var pj = kube.ProwJob{
+			Metadata: kube.ObjectMeta{Name: tc.name},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Job:  tc.job,
+				Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: tc.startTime,
+			},
+		}
+		if tc.complete {
+			pj.Status.CompletionTime = now
+		}
+		fkc.prowjobs = append(fkc.prowjobs, pj)
+	}
+	if err := c.terminateDupes(fkc.prowjobs); err != nil {
+		t.Fatalf("Error terminating dupes: %v", err)
+	}
+	for i := range testcases {
+		terminated := fkc.prowjobs[i].Status.State == kube.AbortedState
+		if terminated != testcases[i].shouldTerminate {
+			t.Errorf("Wrong termination for %s", testcases[i].name)
+		}
+	}
+}
+
 type fjc struct {
 	built    bool
 	enqueued bool
