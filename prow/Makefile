@@ -16,7 +16,6 @@ all: build test
 
 
 HOOK_VERSION       = 0.96
-LINE_VERSION       = 0.86
 SINKER_VERSION     = 0.6
 DECK_VERSION       = 0.21
 SPLICE_VERSION     = 0.17
@@ -58,11 +57,6 @@ hook-deployment:
 
 hook-service:
 	kubectl create -f cluster/hook_service.yaml
-
-line-image:
-	CGO_ENABLED=0 go build -o cmd/line/line k8s.io/test-infra/prow/cmd/line
-	docker build -t "gcr.io/$(PROJECT)/line:$(LINE_VERSION)" cmd/line
-	gcloud docker -- push "gcr.io/$(PROJECT)/line:$(LINE_VERSION)"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker

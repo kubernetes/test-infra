@@ -22,11 +22,6 @@ spec:
           readOnly: true
         args:
         - -log-json
-        env:
-        - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.86"
-        - name: DRY_RUN
-          value: "false"
       volumes:
       - name: config
         configMap:

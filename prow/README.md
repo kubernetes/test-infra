@@ -5,7 +5,7 @@ currently comprises several related pieces that live in a GKE cluster.
 
 * `cmd/hook` is the most important piece. It is a server that listens for
   GitHub webhooks and dispatches them to the appropriate handlers.
-* `cmd/line` is the piece that starts Jenkins jobs or k8s pods.
+* `cmd/plank` is the controller that manages Jenkins jobs and k8s pods.
 * `cmd/sinker` cleans up old jobs and pods.
 * `cmd/splice` regularly schedules batch jobs.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.
@@ -75,7 +75,7 @@ effect within a minute.
 The Jenkins job itself should have no trigger. It will be called with string
 parameters `PULL_NUMBER` and `PULL_BASE_REF` which it can use to checkout the
 appropriate revision. It needs to accept the `buildId` parameter which the
-`line` job uses to track its progress.
+`plank` controller uses to track its progress.
 
 ## Bots home
 
@@ -131,18 +131,19 @@ This shouldn't be necessary for most use cases.
  kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
  ```
 
-1. Run the prow components that you desire. I recommend `hook`, `line`,
+1. Run the prow components that you desire. I recommend `hook`, `plank`,
 `sinker`, and `deck` to start out with. You'll need some way for ingress
 traffic to reach your hook and deck deployments.
 
  ```
  make hook-image
- make line-image
+ make plank-image
  make sinker-image
  make deck-image
 
  make hook-deployment
  make hook-service
+ make plank-deployment
  make sinker-deployment
  make deck-deployment
  make deck-service

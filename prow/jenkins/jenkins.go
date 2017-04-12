@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -194,44 +193,6 @@ func (c *Client) Enqueued(queueURL string) (bool, error) {
 		return false, nil
 	}
 	return true, nil
-}
-
-// QueueSize returns how much is in the queue.
-func (c *Client) QueueSize() (int, error) {
-	if c.dry {
-		return 0, nil
-	}
-	u := fmt.Sprintf("%s/queue/api/json?tree=items[task[name]]", c.baseURL)
-	resp, err := c.request(http.MethodGet, u)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return 0, fmt.Errorf("response not 2XX: %s", resp.Status)
-	}
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, err
-	}
-	queue := struct {
-		Items []struct {
-			Task struct {
-				Name string `json:"name"`
-			} `json:"task"`
-		} `json:"items"`
-	}{}
-	err = json.Unmarshal(buf, &queue)
-	if err != nil {
-		return 0, err
-	}
-	count := 0
-	for _, item := range queue.Items {
-		if !strings.HasPrefix(item.Task.Name, "maintenance-") {
-			count++
-		}
-	}
-	return count, nil
 }
 
 // Status returns the current status of the build.

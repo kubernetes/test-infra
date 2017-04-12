@@ -31,11 +31,6 @@ spec:
       containers:
       - name: horologium
         image: gcr.io/k8s-prow/horologium:0.3
-        env:
-        - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.86"
-        - name: DRY_RUN
-          value: "false"
         volumeMounts:
         - name: config
           mountPath: /etc/config
