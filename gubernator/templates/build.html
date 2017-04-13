@@ -18,8 +18,7 @@
 % endblock
 % block content
 <div id="summary">
-	<table border=0 align="center" style="text-align: left;">
-	<style>tr:nth-child(even){background:#ddd} td{padding:2px 5px 2px 5px}</style>
+	<table class="build-meta">
 	% if pr and pr_digest
 		% set pl = pr_digest.payload
 		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}

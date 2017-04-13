@@ -68,6 +68,10 @@ tr {
     border-top: 1px solid #f4f4f4;
 }
 
+tr.changed {
+    border-top: 1px solid #a4a4a4;
+}
+
 td:first-child, th:first-child {
     padding-left: 16px;
 }

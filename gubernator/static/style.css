@@ -38,6 +38,7 @@ h3 {
 }
 pre {
     white-space: pre-wrap;
+    word-break: break-word;
 }
 pre.nowrap{
     white-space: pre;
@@ -130,6 +131,20 @@ table.pr-dash tbody tr:hover {
 #userBox {
     width: 10em;
 }
+table.build-meta {
+    text-align: left;
+    word-break: break-word;
+    margin: 0 auto;  /* center */
+}
+table.build-meta tr:nth-child(even) {
+    background: #ddd;
+}
+table.build-meta td:nth-child(2) {
+    max-width: 60vw;
+}
+table.build-meta td {
+    padding:2px 5px 2px 5px;
+}
 h3.pr-section {
     margin: 1em 0 0 1em;
 }
@@ -177,4 +192,13 @@ ul.log {
 li.log {
     padding: 5px;
     display: inline-block;
+}
+
+/* weak mobile support */
+@media (max-device-width: 500px) {
+    body { font-size: xx-large; }
+    pre { font-size: x-small; }
+    pre.cmd { display: none; }
+    pre.error { font-size: medium; }
+    button { font-size: xx-large; }
 }
