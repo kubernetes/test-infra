@@ -193,3 +193,12 @@ li.log {
     padding: 5px;
     display: inline-block;
 }
+
+/* weak mobile support */
+@media (max-device-width: 500px) {
+    body { font-size: xx-large; }
+    pre { font-size: x-small; }
+    pre.cmd { display: none; }
+    pre.error { font-size: medium; }
+    button { font-size: xx-large; }
+}
