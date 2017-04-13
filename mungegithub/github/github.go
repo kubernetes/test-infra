@@ -1971,6 +1971,7 @@ func (obj *MungeObject) WriteComment(msg string) error {
 		glog.Info("Comment in %d was larger than %d and was truncated", prNum, maxCommentLen)
 		msg = msg[:maxCommentLen]
 	}
+	obj.comments = append(obj.comments, &github.IssueComment{Body: &msg})
 	if _, _, err := config.client.Issues.CreateComment(config.Org, config.Project, prNum, &github.IssueComment{Body: &msg}); err != nil {
 		glog.Errorf("%v", err)
 		return err

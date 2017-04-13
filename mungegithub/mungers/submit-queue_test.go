@@ -91,6 +91,10 @@ func LGTMApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel}, true)
 }
 
+func LGTMApprovedReleaseNoteNeededIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
+}
+
 func CriticalFixLGTMApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{criticalFixLabel, claYesLabel, lgtmLabel, approvedLabel}, true)
 }
@@ -521,6 +525,22 @@ func TestSubmitQueue(t *testing.T) {
 			reason:          merged,
 			state:           "success",
 			isMerged:        true,
+		},
+		{
+			name:            "Test1 + releaseNoteNeededLabel",
+			pr:              ValidPR(),
+			issue:           LGTMApprovedReleaseNoteNeededIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noReleaseNote,
+			state:           "pending",
+			isMerged:        false,
 		},
 		{
 			name:            "Test1+NoLgtm",
