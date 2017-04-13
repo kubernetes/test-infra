@@ -30,14 +30,14 @@ import (
 const pluginName = "label"
 
 type assignEvent struct {
-	action string
-	body   string
-	login  string
-	org    string
-	repo   string
-	url    string
-	number int
-	issue  github.Issue
+	action  string
+	body    string
+	login   string
+	org     string
+	repo    string
+	url     string
+	number  int
+	issue   github.Issue
 	comment github.IssueComment
 }
 
@@ -63,14 +63,14 @@ type githubClient interface {
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	ae := assignEvent{
-		action: ic.Action,
-		body:   ic.Comment.Body,
-		login:  ic.Comment.User.Login,
-		org:    ic.Repo.Owner.Login,
-		repo:   ic.Repo.Name,
-		url:    ic.Comment.HTMLURL,
-		number: ic.Issue.Number,
-		issue:  ic.Issue,
+		action:  ic.Action,
+		body:    ic.Comment.Body,
+		login:   ic.Comment.User.Login,
+		org:     ic.Repo.Owner.Login,
+		repo:    ic.Repo.Name,
+		url:     ic.Comment.HTMLURL,
+		number:  ic.Issue.Number,
+		issue:   ic.Issue,
 		comment: ic.Comment,
 	}
 	return handle(pc.GitHubClient, pc.Logger, ae)
@@ -161,13 +161,13 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 		}
 
 	}
-	
+
 	if len(nonexistent) > 0 {
 		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
-		if err := gc.CreateComment(owner, repo, number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {	
+		if err := gc.CreateComment(owner, repo, number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
 	}
-	
+
 	return nil
 }

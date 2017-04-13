@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
-	
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -81,14 +81,14 @@ func getFakeRepoIssueComment(commentBody, commenter string, repoLabels []string)
 	}
 
 	ae := assignEvent{
-		action: ice.Action,
-		body:   ice.Comment.Body,
-		login:  ice.Comment.User.Login,
-		org:    ice.Repo.Owner.Login,
-		repo:   ice.Repo.Name,
-		url:    ice.Comment.HTMLURL,
-		number: ice.Issue.Number,
-		issue:  ice.Issue,
+		action:  ice.Action,
+		body:    ice.Comment.Body,
+		login:   ice.Comment.User.Login,
+		org:     ice.Repo.Owner.Login,
+		repo:    ice.Repo.Name,
+		url:     ice.Comment.HTMLURL,
+		number:  ice.Issue.Number,
+		issue:   ice.Issue,
 		comment: ice.Comment,
 	}
 
@@ -97,7 +97,7 @@ func getFakeRepoIssueComment(commentBody, commenter string, repoLabels []string)
 
 func getFakeRepoIssue(commentBody, commenter string, repoLabels []string) (*fakegithub.FakeClient, assignEvent) {
 	fakeCli := &fakegithub.FakeClient{
-		Issues:  make([]github.Issue, 1),
+		Issues:         make([]github.Issue, 1),
 		IssueComments:  make(map[int][]github.IssueComment),
 		ExistingLabels: repoLabels,
 		OrgMembers:     []string{orgMember},
@@ -113,7 +113,7 @@ func getFakeRepoIssue(commentBody, commenter string, repoLabels []string) (*fake
 			User:        github.User{Login: "a"},
 			Number:      prNumber,
 			PullRequest: &struct{}{},
-			Body: commentBody,
+			Body:        commentBody,
 			Labels:      startingLabels,
 		},
 		Action: "created",
@@ -125,7 +125,7 @@ func getFakeRepoIssue(commentBody, commenter string, repoLabels []string) (*fake
 		login:  ie.Issue.User.Login,
 		org:    ie.Repo.Owner.Login,
 		repo:   ie.Repo.Name,
-		url:	ie.Issue.HTMLURL,
+		url:    ie.Issue.HTMLURL,
 		number: ie.Issue.Number,
 		issue:  ie.Issue,
 		comment: github.IssueComment{
@@ -139,7 +139,7 @@ func getFakeRepoIssue(commentBody, commenter string, repoLabels []string) (*fake
 
 func getFakeRepoPullRequest(commentBody, commenter string, repoLabels []string) (*fakegithub.FakeClient, assignEvent) {
 	fakeCli := &fakegithub.FakeClient{
-		PullRequests:  make(map[int]*github.PullRequest),
+		PullRequests:   make(map[int]*github.PullRequest),
 		IssueComments:  make(map[int][]github.IssueComment),
 		ExistingLabels: repoLabels,
 		OrgMembers:     []string{orgMember},
@@ -148,23 +148,23 @@ func getFakeRepoPullRequest(commentBody, commenter string, repoLabels []string) 
 
 	pre := github.PullRequestEvent{
 		PullRequest: github.PullRequest{
-			User: github.User{Login: commenter},
+			User:   github.User{Login: commenter},
 			Number: prNumber,
 			Base: github.PullRequestBranch{
 				Repo: github.Repo{
 					Owner: github.User{Login: fakeRepoOrg},
-					Name: fakeRepoName,
+					Name:  fakeRepoName,
 				},
 			},
 			Body: commentBody,
 			Head: github.PullRequestBranch{
 				Repo: github.Repo{
 					Owner: github.User{Login: fakeRepoOrg},
-					Name: fakeRepoName,
+					Name:  fakeRepoName,
 				},
 			},
 		},
-		Label: startingLabel,
+		Label:  startingLabel,
 		Number: prNumber,
 		Action: "created",
 	}
@@ -175,7 +175,7 @@ func getFakeRepoPullRequest(commentBody, commenter string, repoLabels []string) 
 		login:  pre.PullRequest.User.Login,
 		org:    pre.PullRequest.Base.Repo.Owner.Login,
 		repo:   pre.PullRequest.Base.Repo.Name,
-		url:	pre.PullRequest.HTMLURL,
+		url:    pre.PullRequest.HTMLURL,
 		number: pre.Number,
 		comment: github.IssueComment{
 			Body: pre.PullRequest.Body,
