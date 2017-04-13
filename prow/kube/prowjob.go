@@ -48,9 +48,11 @@ const (
 )
 
 type ProwJob struct {
-	Metadata ObjectMeta    `json:"metadata,omitempty"`
-	Spec     ProwJobSpec   `json:"spec,omitempty"`
-	Status   ProwJobStatus `json:"status,omitempty"`
+	APIVersion string        `json:"apiVersion,omitempty"`
+	Kind       string        `json:"kind,omitempty"`
+	Metadata   ObjectMeta    `json:"metadata,omitempty"`
+	Spec       ProwJobSpec   `json:"spec,omitempty"`
+	Status     ProwJobStatus `json:"status,omitempty"`
 }
 
 type ProwJobSpec struct {
