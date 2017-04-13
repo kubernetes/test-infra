@@ -74,6 +74,10 @@ function encodedText(sel) {
     return encodeURIComponent(sel.options[sel.selectedIndex].text);
 }
 
+function groupKey(build) {
+    return build.repo + " " + build.number + " " + build.refs;
+}
+
 function redraw() {
     var builds = document.getElementById("builds").getElementsByTagName("tbody")[0];
     while (builds.firstChild)
@@ -107,6 +111,7 @@ function redraw() {
         }
     }
 
+    var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
         if (build.type !== selectedType) continue;
@@ -127,18 +132,29 @@ function redraw() {
         } else {
             r.appendChild(createTextCell(""));
         }
-        if (build.type === "periodic") {
-            r.appendChild(createTextCell(""));
+        var key = groupKey(build);
+        if (key !== lastKey) {
+            // This is a different PR or commit than the previous row.
+            lastKey = key;
+            r.className = "changed";
+
+            if (build.type === "periodic") {
+                r.appendChild(createTextCell(""));
+            } else {
+                r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
+            }
+            if (build.type === "presubmit") {
+                r.appendChild(prRevisionCell(build));
+            } else if (build.type === "batch") {
+                r.appendChild(batchRevisionCell(build));
+            } else if (build.type === "postsubmit") {
+                r.appendChild(pushRevisionCell(build));
+            } else if (build.type === "periodic") {
+                r.appendChild(createTextCell(""));
+            }
         } else {
-            r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
-        }
-        if (build.type === "presubmit") {
-            r.appendChild(prRevisionCell(build));
-        } else if (build.type === "batch") {
-            r.appendChild(batchRevisionCell(build));
-        } else if (build.type === "postsubmit") {
-            r.appendChild(pushRevisionCell(build));
-        } else if (build.type === "periodic") {
+            // Don't render identical cells for the same PR/commit.
+            r.appendChild(createTextCell(""));
             r.appendChild(createTextCell(""));
         }
         if (build.url === "" || build.type === "periodic") {
