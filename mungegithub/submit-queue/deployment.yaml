@@ -58,6 +58,7 @@ spec:
         - --github-key=$(GITHUB_KEY)
         - --triage-window-days=$(TRIAGE_WINDOW_DAYS)
         - --triage-sync-count=$(TRIAGE_SYNC_COUNT)
+        - --flakyjob-count=$(FLAKYJOB_COUNT)
         image: gcr.io/k8s-testimages/submit-queue:2017-05-02-90fe8836
         env:
           - name: HTTP_CACHE_DIR
@@ -190,6 +191,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: gitrepo.enable-md-yaml
+          - name: FLAKYJOB_COUNT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: flakyjob.count
           - name: TEST_OWNERS_CSV
             valueFrom:
               configMapKeyRef:
