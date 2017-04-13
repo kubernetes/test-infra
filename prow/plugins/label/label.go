@@ -54,6 +54,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
+// Get Lables from Regexp matches
 func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	for _, match := range matches {
 		for _, label := range strings.Split(match[0], " ")[1:] {
@@ -156,6 +157,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		}
 	}
 
+	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
 		msg := fmt.Sprintf(nonExistentLabelOnIssue, strings.Join(noSuchLabelsOnIssue, ", "))
 		if err := gc.CreateComment(owner, repo, number, plugins.FormatICResponse(ic.Comment, msg)); err != nil {
