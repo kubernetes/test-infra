@@ -14,6 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+'''
+Summarize groups failed tests together by finding edit distances between their failure strings,
+and emits JSON for rendering in a browser.
+'''
+
+# pylint: disable=invalid-name,missing-docstring
+
 
 import argparse
 import functools
@@ -31,12 +38,12 @@ editdist = berghelroach.dist
 flakeReasonDateRE = re.compile(
     r'[A-Z][a-z]{2}, \d+ \w+ 2\d{3} [\d.-: ]*([-+]\d+)?|'
     r'\w{3}\s+\d{1,2} \d+:\d+:\d+(\.\d+)?|(\d{4}-\d\d-\d\d.|.\d{4} )\d\d:\d\d:\d\d(.\d+)?')
-# Find random noisy strings that should be renumberedplaced with renumbered strings, for more similar messages.
+# Find random noisy strings that should be replaced with renumbered strings, for more similarity.
 flakeReasonOrdinalRE = re.compile(
-        r'0x[0-9a-fA-F]+' # hex constants
-        r'|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?' # IPs + optional port
-        r'|[0-9a-fA-F]{8}-\S{4}-\S{4}-\S{4}-\S{12}(-\d+)?' # UUIDs + trailing digits
-        r'|[0-9a-f]{12,32}' # hex garbage
+    r'0x[0-9a-fA-F]+' # hex constants
+    r'|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?' # IPs + optional port
+    r'|[0-9a-fA-F]{8}-\S{4}-\S{4}-\S{4}-\S{12}(-\d+)?' # UUIDs + trailing digits
+    r'|[0-9a-f]{12,32}' # hex garbage
 )
 
 
@@ -69,8 +76,8 @@ def normalize(s):
     if 'map[' in s:
         # Go's maps are in a random order. Try to sort them to reduce diffs.
         s = re.sub(r'map\[([^][]*)\]',
-            lambda m: 'map[%s]' % ' '.join(sorted(m.group(1).split()))
-            , s)
+                   lambda m: 'map[%s]' % ' '.join(sorted(m.group(1).split())),
+                   s)
 
     return flakeReasonOrdinalRE.sub(repl, s)
 
@@ -84,6 +91,10 @@ def make_ngram_counts(s, ngram_counts={}):
     Instead of counting each ngram individually, they are hashed into buckets.
     This makes the output count size constant.
     """
+
+    # Yes, I'm intentionally memoizing here.
+    # pylint: disable=dangerous-default-value
+
     size = 64
     if s not in ngram_counts:
         counts = [0] * size
@@ -117,10 +128,16 @@ def ngram_editdist(a, b):
 
 
 def make_ngram_counts_digest(s):
+    """
+    Returns a hashed version of the ngram counts.
+    """
     return hashlib.sha1(str(make_ngram_counts(s))).hexdigest()[:20]
 
 
 def file_memoize(description, name):
+    """
+    Decorator to save a function's results to a file.
+    """
     def inner(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -206,10 +223,10 @@ def cluster_test(tests):
 
 
 @file_memoize('clustering inside each test', 'failed_clusters_local.json')
-def cluster_local(builds, failed_tests):
+def cluster_local(failed_tests):
     """Cluster together the failures for each test. """
     clustered = {}
-    for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x:len(x[1]), reverse=True):
+    for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x: len(x[1]), reverse=True):
         print len(tests), test_name
         clustered[test_name] = cluster_test(tests)
     return clustered
@@ -231,15 +248,16 @@ def cluster_global(clustered, previous_clustered):
 
     if previous_clustered:
         # seed clusters using output from the previous run
-        for key, _key_id, _ftext, _clusters in previous_clustered:
+        for key, _id, _ftext, _clusters in previous_clustered:
             clusters[key] = {}
 
     for n, (test_name, cluster) in enumerate(
-            sorted(clustered.iteritems(), key=lambda (k, v): sum(len(x) for x in v.itervalues()), reverse=True),
+            sorted(clustered.iteritems(),
+                   key=lambda (k, v): sum(len(x) for x in v.itervalues()),
+                   reverse=True),
             1):
         print '%d/%d %d %s' % (n, len(clustered), len(cluster), test_name)
         for key, tests in sorted(cluster.iteritems(), key=lambda x: len(x[1]), reverse=True):
-            test_cluster_tuple = (test_name, tests)
             if key in clusters:
                 clusters[key].setdefault(test_name, []).extend(tests)
             else:
@@ -273,19 +291,19 @@ def tests_group_by_job(tests, builds):
 def clusters_to_display(clustered, builds):
     """Transpose and sort the output of cluster_global."""
     return [{
-            "key": key,
-            "id": key_id,
-            "text": clusters[0][1][0]['failure_text'],
-            "tests": [{
-                "name": test_name,
-                "jobs": [{"name": n, "builds": b}
-                         for n, b in tests_group_by_job(tests, builds)]
-                }
-                for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
-            ]
+        "key": key,
+        "id": key_id,
+        "text": clusters[0][1][0]['failure_text'],
+        "tests": [{
+            "name": test_name,
+            "jobs": [{"name": n, "builds": b}
+                     for n, b in tests_group_by_job(tests, builds)]
+            }
+                  for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
+                 ]
         }
-        for key, key_id, clusters in clustered
-    ]
+            for key, key_id, clusters in clustered
+           ]
 
 
 def builds_to_columns(builds):
@@ -324,14 +342,17 @@ def builds_to_columns(builds):
     return out
 
 
-def render(builds, failed_tests, clustered):
-    clustered_sorted = sorted(clustered.iteritems(), key=lambda (k, v): (-sum(len(ts) for ts in v.itervalues()), k))
+def render(builds, clustered):
+    clustered_sorted = sorted(
+        clustered.iteritems(),
+        key=lambda (k, v): (-sum(len(ts) for ts in v.itervalues()), k))
     clustered_tuples = [(k,
                          make_ngram_counts_digest(k),
                          sorted(clusters.items(), key=lambda (n, t): (-len(t), n)))
-                         for k, clusters in clustered_sorted]
+                        for k, clusters in clustered_sorted]
 
-    return {'clustered': clusters_to_display(clustered_tuples, builds), 'builds': builds_to_columns(builds)}
+    return {'clustered': clusters_to_display(clustered_tuples, builds),
+            'builds': builds_to_columns(builds)}
 
 
 def parse_args(args):
@@ -345,7 +366,7 @@ def parse_args(args):
 
 def main(args):
     builds, failed_tests = load_failures(args.builds, args.tests)
-    clustered_local = cluster_local(builds, failed_tests)
+    clustered_local = cluster_local(failed_tests)
 
     previous_clustered = None
     if args.previous:
@@ -354,7 +375,7 @@ def main(args):
 
     print '%d clusters' % len(clustered)
 
-    json.dump(render(builds, failed_tests, clustered), open(args.output, 'w'),
+    json.dump(render(builds, clustered), open(args.output, 'w'),
               sort_keys=True)
 
 

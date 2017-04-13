@@ -29,6 +29,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+# pylint: disable=missing-docstring,invalid-name
 
 import random
 import unittest
@@ -50,12 +51,13 @@ MAGNA = (
 # A small set of words for testing, including at least some of
 # each of these: empty, very short, more than 32/64 character,
 # punctuation, non-ASCII characters
-words = [ "", "a", "b", "c", "ab", "ace",
-    "fortressing",      "inadequately", "prank",        "authored",
-    "fortresing",       "inadeqautely", "prang",        "awthered",
-    "cruller's",        "fanatic",      "Laplace",      "recollections",
-    "Kevlar",           "underpays",    "jalape\u00f1o","ch\u00e2telaine",
-    "kevlar",           "overpaid",     "jalapeno",     "chatelaine",
+words = [
+    "", "a", "b", "c", "ab", "ace",
+    "fortressing", "inadequately", "prank", "authored",
+    "fortresing", "inadeqautely", "prang", "awthered",
+    "cruller's", "fanatic", "Laplace", "recollections",
+    "Kevlar", "underpays", u"jalape\u00f1o", u"ch\u00e2telaine",
+    "kevlar", "overpaid", "jalapeno", "chatelaine",
     "A survey of algorithms for running text search by Navarro appeared",
     "in ACM Computing Surveys 33#1: http://portal.acm.org/citation.cfm?...",
     "Another algorithm (Four Russians) that Navarro",
@@ -75,10 +77,10 @@ def dynamicProgrammingLevenshtein(s1, s2):
     for j in range(0, len(s2)):
         thisRow = [0] * len(lastRow)
         thisRow[0] = j + 1
-        s2c = s2[j]
         for i in range(1, len(thisRow)):
-            thisRow[i] = min(lastRow[i] + 1, thisRow[i - 1] + 1,
-                                             lastRow[i - 1] + int(s2[j] != s1[i-1]))
+            thisRow[i] = min(lastRow[i] + 1,
+                             thisRow[i - 1] + 1,
+                             lastRow[i - 1] + int(s2[j] != s1[i-1]))
         lastRow = thisRow
     return lastRow[-1]
 
@@ -88,21 +90,21 @@ for wordA in words:
 
 
 class AbstractLevenshteinTestCase(object):
+    # pylint: disable=no-member
+
     # Tests a Levenshtein engine against the DP-based computation
     # for a bunch of string pairs.
     def testLevenshteinOnWords(self):
         for a in words:
             for b in words:
                 ed = self.getInstance(a)
-                self.specificAlgorithmVerify(ed,
-                                                                a, b,
-                                                                wordDistances[a, b])
+                self.specificAlgorithmVerify(ed, a, b, wordDistances[a, b])
 
     # Tests Levenshtein edit distance on a longer pattern
     def testLongerPattern(self):
         self.genericLevenshteinVerify("abcdefghijklmnopqrstuvwxyz",
-                                                         "abcefghijklMnopqrStuvwxyz..",
-                                                         5)  # dMS..
+                                      "abcefghijklMnopqrStuvwxyz..",
+                                      5)  # dMS..
 
     # Tests Levenshtein edit distance on a very short pattern
     def testShortPattern(self):
@@ -124,7 +126,8 @@ class AbstractLevenshteinTestCase(object):
     # @param replaces how many single-character replacements to try
     # @param inserts how many characters to insert
     # @return the number of edits actually performed, the new string
-    def performSomeEdits(self, b, alphabet, replaces, inserts):
+    @staticmethod
+    def performSomeEdits(b, alphabet, replaces, inserts):
         r = random.Random(768614336404564651L)
         edits = 0
         b = list(b)
@@ -144,7 +147,8 @@ class AbstractLevenshteinTestCase(object):
     # @param size desired string length
     # @param seed random number generator seed
     # @return random alphabetic string of the requested length
-    def generateRandomString(self, size, seed):
+    @staticmethod
+    def generateRandomString(size, seed):
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
         # Create a (repeatable) random string from the alphabet
@@ -168,7 +172,7 @@ class AbstractLevenshteinTestCase(object):
             for k in range(max(4, expectedResult - 4), expectedResult + 4):
                 self.verifyResult(s1, s2, expectedResult, k, ed.getDistance(s2, k))
             self.verifyResult(s1, s2, expectedResult, len(s2),
-                                     ed.getDistance(s2, len(s2)))
+                              ed.getDistance(s2, len(s2)))
 
         # Always try near MAX_VALUE
         self.assertEquals(ed.getDistance(s2, 2**63 - 1), expectedResult)
@@ -192,7 +196,8 @@ class AbstractLevenshteinTestCase(object):
         self.specificAlgorithmVerify(self.getInstance(modified), modified, original, edits)
 
         # we don't have duplicate() in Python, so...
-        # self.specificAlgorithmVerify(self.getInstance(modified).duplicate(), modified, original, edits)
+        # self.specificAlgorithmVerify(self.getInstance(modified).duplicate(),
+        #                              modified, original, edits)
 
     # Verifies a single edit distance result.
     # If the expected distance is within limit, result must b
@@ -205,11 +210,13 @@ class AbstractLevenshteinTestCase(object):
     # @param d distance computed
     def verifyResult(self, s1, s2, expectedResult, k, d):
         if k >= expectedResult:
-            self.assertEquals(expectedResult, d,
+            self.assertEquals(
+                expectedResult, d,
                 'Distance from %r to %r should be %d (within limit=%d) but was %d' %
                 (s1, s2, expectedResult, k, d))
         else:
-            self.assertTrue(d > k,
+            self.assertTrue(
+                d > k,
                 'Distance from %r to %r should be %d (exceeding limit=%d) but was %d' %
                 (s1, s2, expectedResult, k, d))
 
