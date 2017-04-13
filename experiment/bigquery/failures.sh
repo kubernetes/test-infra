@@ -18,12 +18,16 @@
 # The script then filters jobs down to those which flake more than 4x/day
 # And also notes any test in those jobs which flake more than 1x/day
 
-set -o pipefail
-set -o errexit
-set -o xtrace
-
-dir="$(dirname "${0}")"
-"${dir}/failures.sh" | tee "${dir}/failures-latest.json"
-"${dir}/flakes.sh" | tee "${dir}/flakes-latest.json"
-"${dir}/job-flakes.sh" | tee "${dir}/job-flakes-latest.json"
-"${dir}/weekly-consistency.sh" | tee "${dir}/weekly-consistency.json"
+out="/tmp/failures-$(date +%Y-%m-%d).json"
+if [[ ! -f "${out}" ]]; then
+  which bq >/dev/null || (echo 'Cannot find bq on path. Install gcloud' 1>&2 && exit 1)
+  echo "Failure results will be available at: ${out}" 1>&2
+  cat "$(dirname "${0}")/failures.sql" | bq query --format=prettyjson > "${out}"
+fi
+which jq >/dev/null || (echo 'Cannot find jq on path. Install jq' 1>&2 && exit 1)
+echo 'Jobs that ran this week, have been running for over a month and never passed:' 1>&2
+cat "${out}" | jq '
+  [(.[] | {(.job): {
+      failing_since: (.first_run)
+  }})] | add'
+echo "Full flake data saved to: ${out}" 1>&2

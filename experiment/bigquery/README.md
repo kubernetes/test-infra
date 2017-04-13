@@ -20,13 +20,19 @@ example suppose we run a build of a job 5 times at the same commit:
 
 ## Scripts
 
+Run [`daily.sh`](daily.sh) to do all the following:
+
+* `failures.sh` - find jobs that have been failing the longest
+    - Uses `failures.sql`
+    - Usage: `flakes.sh | tee failures-latest.json`
+    - Latest results: [failures-latest.json](failures-latest.json)
 * `flakes.sh` - find the flakiest jobs this week (and the flakiest tests in each job).
     - Uses `flakes.sql` to extract and group data from BigQuery
-    - Usage: `flakes.sh | tee flakes-$(date %Y-%m-%d).json`
+    - Usage: `flakes.sh | tee flakes-latest.json`
     - Latest results: [flakes-latest.json](flakes-latest.json)
 * `job-flakes.sh` - compute consistency of all jobs
     - Uses `job-flakes.sql` to compute this data
-    - Usage: `job-flakes.sh | tee job-flakes-$(date %Y-%m-%d).json`
+    - Usage: `job-flakes.sh | tee job-flakes-latest.json`
     - Latest results: [job-flakes-latest.json](job-flakes-latest.json)
 * `weekly-consistency.sh` - compute overall weekly consistency for PRs
     - Uses `weekly-consistency.sql` to compute this data
