@@ -54,6 +54,16 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
+func getLabelsFromREMatches(matches [][]string) (labels []string) {
+	for _, match := range matches {
+		for _, label := range strings.Split(match[0], " ")[1:] {
+			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
+			labels = append(labels, label)
+		}
+	}
+	return
+}
+
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	commenter := ic.Comment.User.Login
 	owner := ic.Repo.Owner.Login
@@ -84,21 +94,44 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	var (
 		nonexistent         []string
 		noSuchLabelsOnIssue []string
+		labelsToAdd         []string
+		labelsToRemove      []string
 	)
 
-	for _, match := range labelMatches {
-		for _, newLabel := range strings.Split(match[0], " ")[1:] {
-			newLabel = strings.ToLower(match[1] + "/" + strings.TrimSpace(newLabel))
-			if ic.Issue.HasLabel(newLabel) {
-				continue
-			}
-			if _, ok := existingLabels[newLabel]; !ok {
-				nonexistent = append(nonexistent, newLabel)
-				continue
-			}
-			if err := gc.AddLabel(owner, repo, number, existingLabels[newLabel]); err != nil {
-				log.WithError(err).Errorf("Github failed to add the following label: %s", newLabel)
-			}
+	// Get labels to add and labels to remove from regexp matches
+	labelsToAdd = getLabelsFromREMatches(labelMatches)
+	labelsToRemove = getLabelsFromREMatches(removeLabelMatches)
+
+	// Add labels
+	for _, labelToAdd := range labelsToAdd {
+		if ic.Issue.HasLabel(labelToAdd) {
+			continue
+		}
+
+		if _, ok := existingLabels[labelToAdd]; !ok {
+			nonexistent = append(nonexistent, labelToAdd)
+			continue
+		}
+
+		if err := gc.AddLabel(owner, repo, number, existingLabels[labelToAdd]); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
+		}
+	}
+
+	// Remove labels
+	for _, labelToRemove := range labelsToRemove {
+		if !ic.Issue.HasLabel(labelToRemove) {
+			noSuchLabelsOnIssue = append(noSuchLabelsOnIssue, labelToRemove)
+			continue
+		}
+
+		if _, ok := existingLabels[labelToRemove]; !ok {
+			nonexistent = append(nonexistent, labelToRemove)
+			continue
+		}
+
+		if err := gc.RemoveLabel(owner, repo, number, labelToRemove); err != nil {
+			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
 		}
 	}
 
@@ -113,30 +146,6 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		}
 		if err := gc.AddLabel(owner, repo, number, sigLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
-		}
-	}
-
-	labelsToRemove := []string{}
-	for _, match := range removeLabelMatches {
-		for _, removeLabel := range strings.Split(match[0], " ")[1:] {
-			removeLabel = strings.ToLower(match[1] + "/" + strings.TrimSpace(removeLabel))
-			labelsToRemove = append(labelsToRemove, removeLabel)
-		}
-	}
-
-	for _, labelToRemove := range labelsToRemove {
-		if !ic.Issue.HasLabel(labelToRemove) {
-			noSuchLabelsOnIssue = append(noSuchLabelsOnIssue, labelToRemove)
-			continue
-		}
-
-		if _, ok := existingLabels[labelToRemove]; !ok {
-			nonexistent = append(nonexistent, labelToRemove)
-			continue
-		}
-
-		if err := gc.RemoveLabel(owner, repo, number, labelToRemove); err != nil {
-			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
 		}
 	}
 
