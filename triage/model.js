@@ -71,8 +71,8 @@ function sum(arr, keyFunc) {
   return arr.map(keyFunc).reduce((a, b) => a + b);
 }
 
-function clustersSum(clusters) {
-  return sum(clusters, c => sum(c[1], t => t[1].length));
+function clustersSum(tests) {
+  return sum(tests, t => sum(t.jobs, j => j.builds.length));
 }
 
 // Return arr sotred by value according to keyFunc, which
@@ -92,11 +92,10 @@ function sortByKey(arr, keyFunc) {
 // Return a build for each test run that failed in the given cluster.
 // Builds will be duplicated if it has multiple failed tests in the cluster.
 function *buildsForCluster(entry) {
-  let [key, keyId, text, clusters] = entry;
-  for (let [testName, testsGrouped] of clusters) {
-    for (let [job, buildNumbers] of testsGrouped) {
-      for (let number of buildNumbers) {
-        let build = builds.get(job, number);
+  for (let test of entry.tests) {
+    for (let job of test.jobs) {
+      for (let number of job.builds) {
+        let build = builds.get(job.name, number);
         if (build) {
           yield build;
         }
@@ -126,11 +125,11 @@ class Clusters {
   constructor(clustered) {
     this.data = clustered;
     this.length = this.data.length;
-    this.sum = sum(this.data, c => clustersSum(c[3]));
+    this.sum = sum(this.data, c => clustersSum(c.tests));
     this.sumRecent = sum(this.data, c => c.dayHits || 0);
     this.byId = {};
     for (let cluster of this.data) {
-      let keyId = cluster[1];
+      let keyId = cluster.id;
       if (!this.byId[keyId]) {
         this.byId[keyId] = cluster;
       }
@@ -155,43 +154,42 @@ class Clusters {
   // Return a new Clusters object, with the given filters applied.
   refilter(opts) {
     var out = [];
-    for (let [key, keyId, text, clusters] of this.data) {
-      if (opts.reText && !opts.reText.test(text)) {
+    for (let cluster of this.data) {
+      if (opts.reText && !opts.reText.test(cluster.text)) {
         continue;
       }
-      var clustersOut = [];
-      for (let [testName, testsGrouped] of clusters) {
-        if (opts.reTest && !opts.reTest.test(testName)) {
+      var testsOut = [];
+      for (let test of cluster.tests) {
+        if (opts.reTest && !opts.reTest.test(test.name)) {
           continue;
         }
-        var groupOut = [];
-        for (let group of testsGrouped) {
-          let [job, buildNumbers] = group;
-          if (opts.reJob && !opts.reJob.test(job)) {
+        var jobsOut = [];
+        for (let job of test.jobs) {
+          if (opts.reJob && !opts.reJob.test(job.name)) {
             continue;
           }
-          if (job.startsWith("pr:")) {
-            if (opts.pr) groupOut.push(group);
-          } else if (job.indexOf(":") === -1) {
-            if (opts.ci) groupOut.push(group);
+          if (job.name.startsWith("pr:")) {
+            if (opts.pr) jobsOut.push(job);
+          } else if (job.name.indexOf(":") === -1) {
+            if (opts.ci) jobsOut.push(job);
           }
         }
-        if (groupOut.length > 0) {
-          groupOut = sortByKey(groupOut, g => [-g[1].length, g[0]]);
-          clustersOut.push([testName, groupOut]);
+        if (jobsOut.length > 0) {
+          jobsOut = sortByKey(jobsOut, j => [-j.builds.length, j.name]);
+          testsOut.push({name: test.name, jobs: jobsOut});
         }
       }
-      if (clustersOut.length > 0) {
-        clustersOut = sortByKey(clustersOut, c => [-sum(c[1], t => t[1].length)]);
-        out.push([key, keyId, text, clustersOut]);
+      if (testsOut.length > 0) {
+        testsOut = sortByKey(testsOut, t => [-sum(t.jobs, j => j.builds.length)]);
+        out.push({key: cluster.key, id: cluster.id, text: cluster.text, tests: testsOut});
       }
     }
 
     if (opts.sort) {
       var keyFunc = {
-        total: c => [-clustersSum(c[3])],
+        total: c => [-clustersSum(c.tests)],
         message: c => [c[0]],
-        day: c => [-getHitsInLastDay(c), -clustersSum(c[3])],
+        day: c => [-getHitsInLastDay(c), -clustersSum(c.tests)],
       }[opts.sort];
       out = sortByKey(out, keyFunc);
     }

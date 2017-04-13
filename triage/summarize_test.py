@@ -165,32 +165,41 @@ class IntegrationTest(unittest.TestCase):
 		# import pprint; pprint.pprint(output)
 
 		self.assertEqual(output['builds'],
-			{'cols': {'elapsed': [8, 8, 4, 4, 4, 4],
-                      'executor': [None, None, None, None, None, None],
-                      'pr': [None, None, None, None, None, None],
-                      'result': ['SUCCESS',
-                                 'FAILURE',
-                                 'SUCCESS',
-                                 'SUCCESS',
-                                 'SUCCESS',
-                                 'SUCCESS'],
-                      'started': [1234, 1234, 1234, 1234, 1234, 1234],
-                      'tests_failed': [1, 1, 1, 1, 1, 1],
-                      'tests_run': [2, 2, 2, 2, 2, 2]},
-             'job_paths': {'other-job': 'gs://logs/other-job',
-                            'some-job': 'gs://logs/some-job'},
-             'jobs': {'other-job': {'5': 0, '7': 1},
-                       'some-job': [1, 4, 2]}})
+            {'cols': {'elapsed': [8, 8, 4, 4, 4, 4],
+                     'executor': [None, None, None, None, None, None],
+                     'pr': [None, None, None, None, None, None],
+                     'result': ['SUCCESS',
+                                'FAILURE',
+                                'SUCCESS',
+                                'SUCCESS',
+                                'SUCCESS',
+                                'SUCCESS'],
+                     'started': [1234, 1234, 1234, 1234, 1234, 1234],
+                     'tests_failed': [1, 1, 1, 1, 1, 1],
+                     'tests_run': [2, 2, 2, 2, 2, 2]},
+            'job_paths': {'other-job': 'gs://logs/other-job',
+                          'some-job': 'gs://logs/some-job'},
+            'jobs': {'other-job': {'5': 0, '7': 1}, 'some-job': [1, 4, 2]}})
 
-		random_hash_1 = output['clustered'][0][1]
-		random_hash_2 = output['clustered'][1][1]
+		random_hash_1 = output['clustered'][0]['id']
+		random_hash_2 = output['clustered'][1]['id']
 		self.assertEqual(output['clustered'],
-			[['some awful stack trace exit 1', random_hash_1, 'some awful stack trace exit 1',
-              [['example test', [['some-job', [1, 2, 3, 4]]]]]],
-             ['some other error message', random_hash_2, 'some other error message',
-              [['unrelated test', [['other-job', [5, 7]]]],
-               ['example test', [['some-job', [4]]]]]]]
+            [{'id': random_hash_1,
+                        'key': 'some awful stack trace exit 1',
+                        'tests': [{'jobs': [{'builds': [1, 2, 3, 4],
+                                             'name': 'some-job'}],
+                                   'name': 'example test'}],
+                        'text': 'some awful stack trace exit 1'},
+           {'id': random_hash_2,
+            'key': 'some other error message',
+            'tests': [{'jobs': [{'builds': [5, 7],
+                                 'name': 'other-job'}],
+                       'name': 'unrelated test'},
+                      {'jobs': [{'builds': [4], 'name': 'some-job'}],
+                       'name': 'example test'}],
+            'text': 'some other error message'}]
         )
+
 
 
 if __name__ == '__main__':

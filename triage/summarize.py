@@ -272,13 +272,18 @@ def tests_group_by_job(tests, builds):
 
 def clusters_to_display(clustered, builds):
     """Transpose and sort the output of cluster_global."""
-    return [
-        [key, key_id, clusters[0][1][0]['failure_text'],
-            [
-                [test_name, tests_group_by_job(tests, builds)]
+    return [{
+            "key": key,
+            "id": key_id,
+            "text": clusters[0][1][0]['failure_text'],
+            "tests": [{
+                "name": test_name,
+                "jobs": [{"name": n, "builds": b}
+                         for n, b in tests_group_by_job(tests, builds)]
+                }
                 for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
             ]
-        ]
+        }
         for key, key_id, clusters in clustered
     ]
 
