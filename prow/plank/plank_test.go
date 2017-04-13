@@ -618,7 +618,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 func TestBatch(t *testing.T) {
 	pre := config.Presubmit{
 		Name:    "pr-some-job",
-		Context: "pr-some-job",
+		Context: "Some Job Context",
 	}
 	crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
 	defer crierServ.Close()
@@ -689,6 +689,11 @@ func TestBatch(t *testing.T) {
 	}
 	if fc.prowjobs[0].Status.State != kube.FailureState {
 		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
+	}
+
+	// This is what the SQ reads.
+	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
+		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
 	}
 }
 

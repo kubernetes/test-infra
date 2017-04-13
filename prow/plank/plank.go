@@ -103,9 +103,10 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
 func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
-		Type: kube.BatchJob,
-		Job:  p.Name,
-		Refs: refs,
+		Type:    kube.BatchJob,
+		Job:     p.Name,
+		Refs:    refs,
+		Context: p.Context, // The Submit Queue's getCompleteBatches needs this.
 	}
 	if p.Spec == nil {
 		pjs.Agent = kube.JenkinsAgent
