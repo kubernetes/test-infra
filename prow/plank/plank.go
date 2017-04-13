@@ -25,6 +25,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+// NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
 	return kube.ProwJob{
 		Metadata: kube.ObjectMeta{
@@ -39,6 +40,49 @@ func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
 	}
 }
 
+// PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
+func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
+	pjs := kube.ProwJobSpec{
+		Type: kube.PresubmitJob,
+		Job:  p.Name,
+		Refs: refs,
+
+		Report:       !p.SkipReport,
+		Context:      p.Context,
+		RerunCommand: p.RerunCommand,
+	}
+	if p.Spec == nil {
+		pjs.Agent = kube.JenkinsAgent
+	} else {
+		pjs.Agent = kube.KubernetesAgent
+		pjs.PodSpec = *p.Spec
+	}
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PresubmitSpec(nextP, refs))
+	}
+	return pjs
+}
+
+// PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
+func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
+	pjs := kube.ProwJobSpec{
+		Type: kube.PostsubmitJob,
+		Job:  p.Name,
+		Refs: refs,
+	}
+	if p.Spec == nil {
+		pjs.Agent = kube.JenkinsAgent
+	} else {
+		pjs.Agent = kube.KubernetesAgent
+		pjs.PodSpec = *p.Spec
+	}
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PostsubmitSpec(nextP, refs))
+	}
+	return pjs
+}
+
+// PeriodicSpec initializes a ProwJobSpec for a given periodic job.
 func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type: kube.PeriodicJob,
@@ -52,6 +96,25 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
+	}
+	return pjs
+}
+
+// BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
+func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
+	pjs := kube.ProwJobSpec{
+		Type: kube.BatchJob,
+		Job:  p.Name,
+		Refs: refs,
+	}
+	if p.Spec == nil {
+		pjs.Agent = kube.JenkinsAgent
+	} else {
+		pjs.Agent = kube.KubernetesAgent
+		pjs.PodSpec = *p.Spec
+	}
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
 	}
 	return pjs
 }

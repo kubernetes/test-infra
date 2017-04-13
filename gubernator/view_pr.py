@@ -156,6 +156,9 @@ class PRDashboard(view_base.BaseHandler):
                     return filters.do_get_latest(p.payload, user) <= acks.get(p.key.id(), 0)
                 cats = [
                     ('Needs Attention', lambda p: user in p.payload['attn'] and not acked(p), ''),
+                    ('Approvable', lambda p: user in p.payload.get('approvers', []),
+                     'is:open is:pr ("additional approvers: {0}" ' +
+                     'OR "additional approver: {0}")'.format(user)),
                     ('Incoming', lambda p: user in p.payload['assignees'],
                      'is:open is:pr user:kubernetes assignee:%s' % user),
                     ('Outgoing', lambda p: user == p.payload['author'],

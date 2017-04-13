@@ -250,28 +250,6 @@ func TestConditionalPresubmits(t *testing.T) {
 	}
 }
 
-func TestGetPresubmits(t *testing.T) {
-	pres := []Presubmit{
-		{
-			Name: "a",
-			RunAfterSuccess: []Presubmit{
-				{Name: "aa"},
-				{Name: "ab"},
-			},
-		},
-		{Name: "b"},
-	}
-	if p := getPresubmit(pres, "b"); p == nil {
-		t.Error("Missed root level presubmit.")
-	}
-	if p := getPresubmit(pres, "ab"); p == nil {
-		t.Error("Missed child presubmit.")
-	}
-	if p := getPresubmit(pres, "c"); p != nil {
-		t.Error("Whaa!? Found a presubmit that shouldn't exist.")
-	}
-}
-
 func TestListJobNames(t *testing.T) {
 	c := &Config{
 		Presubmits: map[string][]Presubmit{

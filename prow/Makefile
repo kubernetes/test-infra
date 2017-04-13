@@ -15,16 +15,15 @@
 all: build test
 
 
-HOOK_VERSION       = 0.97
-LINE_VERSION       = 0.86
+HOOK_VERSION       = 0.100
 SINKER_VERSION     = 0.6
-DECK_VERSION       = 0.19
-SPLICE_VERSION     = 0.16
+DECK_VERSION       = 0.23
+SPLICE_VERSION     = 0.18
 MARQUE_VERSION     = 0.1
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.4
+PLANK_VERSION      = 0.9
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
@@ -58,11 +57,6 @@ hook-deployment:
 
 hook-service:
 	kubectl create -f cluster/hook_service.yaml
-
-line-image:
-	CGO_ENABLED=0 go build -o cmd/line/line k8s.io/test-infra/prow/cmd/line
-	docker build -t "gcr.io/$(PROJECT)/line:$(LINE_VERSION)" cmd/line
-	gcloud docker -- push "gcr.io/$(PROJECT)/line:$(LINE_VERSION)"
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker

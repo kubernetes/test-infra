@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -48,7 +47,6 @@ type Client struct {
 	baseURL string
 	user    string
 	token   string
-	dry     bool
 }
 
 type BuildRequest struct {
@@ -61,10 +59,9 @@ type BuildRequest struct {
 }
 
 type Build struct {
-	jobName  string
-	refs     string
-	id       string
-	queueURL *url.URL
+	JobName  string
+	ID       string
+	QueueURL *url.URL
 }
 
 func NewClient(url, user, token string) *Client {
@@ -73,17 +70,6 @@ func NewClient(url, user, token string) *Client {
 		user:    user,
 		token:   token,
 		client:  &http.Client{},
-		dry:     false,
-	}
-}
-
-func NewDryRunClient(url, user, token string) *Client {
-	return &Client{
-		baseURL: url,
-		user:    user,
-		token:   token,
-		client:  &http.Client{},
-		dry:     true,
 	}
 }
 
@@ -118,9 +104,6 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
 func (c *Client) Build(br BuildRequest) (*Build, error) {
-	if c.dry {
-		return &Build{}, nil
-	}
 	buildID := uuid.NewV1().String()
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
 	if err != nil {
@@ -153,19 +136,15 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 		return nil, err
 	}
 	return &Build{
-		jobName:  br.JobName,
-		refs:     br.Refs,
-		id:       buildID,
-		queueURL: loc,
+		JobName:  br.JobName,
+		ID:       buildID,
+		QueueURL: loc,
 	}, nil
 }
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.
-func (c *Client) Enqueued(b *Build) (bool, error) {
-	if c.dry {
-		return false, nil
-	}
-	u := fmt.Sprintf("%sapi/json", b.queueURL)
+func (c *Client) Enqueued(queueURL string) (bool, error) {
+	u := fmt.Sprintf("%sapi/json", queueURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return false, err
@@ -198,53 +177,9 @@ func (c *Client) Enqueued(b *Build) (bool, error) {
 	return true, nil
 }
 
-// QueueSize returns how much is in the queue.
-func (c *Client) QueueSize() (int, error) {
-	if c.dry {
-		return 0, nil
-	}
-	u := fmt.Sprintf("%s/queue/api/json?tree=items[task[name]]", c.baseURL)
-	resp, err := c.request(http.MethodGet, u)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return 0, fmt.Errorf("response not 2XX: %s", resp.Status)
-	}
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, err
-	}
-	queue := struct {
-		Items []struct {
-			Task struct {
-				Name string `json:"name"`
-			} `json:"task"`
-		} `json:"items"`
-	}{}
-	err = json.Unmarshal(buf, &queue)
-	if err != nil {
-		return 0, err
-	}
-	count := 0
-	for _, item := range queue.Items {
-		if !strings.HasPrefix(item.Task.Name, "maintenance-") {
-			count++
-		}
-	}
-	return count, nil
-}
-
 // Status returns the current status of the build.
-func (c *Client) Status(b *Build) (*Status, error) {
-	if c.dry {
-		return &Status{
-			Building: false,
-			Success:  true,
-		}, nil
-	}
-	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, b.jobName)
+func (c *Client) Status(job, id string) (*Status, error) {
+	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
 		return nil, err
@@ -276,7 +211,7 @@ func (c *Client) Status(b *Build) (*Status, error) {
 	for _, build := range builds.Builds {
 		for _, action := range build.Actions {
 			for _, p := range action.Parameters {
-				if p.Name == "buildId" && p.Value == b.id {
+				if p.Name == "buildId" && p.Value == id {
 					if build.Result == nil {
 						return &Status{Building: true, Number: build.Number}, nil
 					} else {
@@ -290,13 +225,10 @@ func (c *Client) Status(b *Build) (*Status, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("did not find build %s", b.id)
+	return nil, fmt.Errorf("did not find build %s", id)
 }
 
 func (c *Client) GetLog(job string, build int) ([]byte, error) {
-	if c.dry {
-		return []byte("fake log"), nil
-	}
 	u := fmt.Sprintf("%s/job/%s/%d/consoleText", c.baseURL, job, build)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {

@@ -124,80 +124,37 @@ func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
 
 func (ja *JobAgent) update() error {
-	js, err := ja.kc.ListJobs(nil)
-	if err != nil {
-		return err
-	}
 	pjs, err := ja.kc.ListProwJobs(nil)
 	if err != nil {
 		return err
 	}
 	var njs []Job
 	njsMap := map[string]Job{}
-	dupJobs := map[string]bool{}
-
-	// TODO(spxtr): Remove this block once we switch to ProwJobs.
-	for _, j := range js {
-		nj := Job{
-			Type:        j.Metadata.Labels["type"],
-			Repo:        fmt.Sprintf("%s/%s", j.Metadata.Labels["owner"], j.Metadata.Labels["repo"]),
-			Refs:        j.Metadata.Annotations["refs"],
-			BaseRef:     j.Metadata.Annotations["base-ref"],
-			BaseSHA:     j.Metadata.Annotations["base-sha"],
-			PullSHA:     j.Metadata.Annotations["pull-sha"],
-			Author:      j.Metadata.Annotations["author"],
-			Job:         j.Metadata.Labels["jenkins-job-name"],
-			Context:     j.Metadata.Annotations["context"],
-			Started:     j.Status.StartTime.Format(time.Stamp),
-			State:       j.Metadata.Annotations["state"],
-			Description: j.Metadata.Annotations["description"],
-			URL:         j.Metadata.Annotations["url"],
-			PodName:     j.Metadata.Annotations["pod-name"],
-			Agent:       j.Metadata.Annotations["agent"],
-
-			st: j.Status.StartTime,
-			ft: j.Status.CompletionTime,
-		}
-		if !nj.ft.IsZero() {
-			nj.Finished = nj.ft.Format("15:04:05")
-			nj.Duration = nj.ft.Sub(nj.st).String()
-		}
-		if pr, err := strconv.Atoi(j.Metadata.Labels["pr"]); err == nil {
-			nj.Number = pr
-		}
-		njs = append(njs, nj)
-		if nj.PodName != "" {
-			njsMap[nj.PodName] = nj
-		}
-		dupJobs[j.Metadata.Name] = true
-	}
 	for _, j := range pjs {
-		// If we have both a ProwJob and a Job, don't duplicate.
-		if j.Status.KubeJobName != "" && dupJobs[j.Status.KubeJobName] {
-			continue
-		}
 		nj := Job{
-			Type:        string(j.Spec.Type),
-			Repo:        fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
-			Refs:        j.Spec.Refs.String(),
-			BaseRef:     j.Spec.Refs.BaseRef,
-			BaseSHA:     j.Spec.Refs.BaseSHA,
-			Job:         j.Spec.Job,
-			Context:     j.Spec.Context,
-			Description: j.Spec.Description,
-			URL:         j.Spec.URL,
-			Agent:       string(j.Spec.Agent),
+			Type:    string(j.Spec.Type),
+			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
+			Refs:    j.Spec.Refs.String(),
+			BaseRef: j.Spec.Refs.BaseRef,
+			BaseSHA: j.Spec.Refs.BaseSHA,
+			Job:     j.Spec.Job,
+			Context: j.Spec.Context,
+			Agent:   string(j.Spec.Agent),
 
-			Started: j.Status.StartTime.Format(time.Stamp),
-			State:   string(j.Status.State),
-			PodName: j.Status.PodName,
+			Started:     j.Status.StartTime.Format(time.Stamp),
+			State:       string(j.Status.State),
+			Description: j.Status.Description,
+			PodName:     j.Status.PodName,
+			URL:         j.Status.URL,
 
 			st: j.Status.StartTime,
 			ft: j.Status.CompletionTime,
 		}
 		if !nj.ft.IsZero() {
 			nj.Finished = nj.ft.Format("15:04:05")
-			nj.Duration = nj.ft.Sub(nj.st).String()
+			duration := nj.ft.Sub(nj.st)
+			duration -= duration % time.Second // strip fractional seconds
+			nj.Duration = duration.String()
 		}
 		if len(j.Spec.Refs.Pulls) == 1 {
 			nj.Number = j.Spec.Refs.Pulls[0].Number

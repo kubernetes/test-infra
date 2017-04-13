@@ -572,7 +572,7 @@ Needs approval from an approver in each of these OWNERS Files:
 You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
-<!-- META={approvers:[Alice]} -->`
+<!-- META={"approvers":["Alice"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
@@ -606,7 +606,7 @@ Needs approval from an approver in each of these OWNERS Files:
 You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
-<!-- META={approvers:[]} -->`
+<!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {

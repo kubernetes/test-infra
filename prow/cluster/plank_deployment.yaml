@@ -29,9 +29,13 @@ spec:
         role: prow
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.4
-        env:
-        - name: LINE_IMAGE
-          value: "gcr.io/k8s-prow/line:0.86"
-        - name: DRY_RUN
-          value: "false"
+        image: gcr.io/k8s-prow/plank:0.9
+        volumeMounts:
+        - mountPath: /etc/jenkins
+          name: jenkins
+          readOnly: true
+      volumes:
+      - name: jenkins
+        secret:
+          defaultMode: 420
+          secretName: jenkins-token

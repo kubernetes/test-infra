@@ -89,47 +89,6 @@ type Brancher struct {
 	Branches []string `json:"branches"`
 }
 
-func (c *Config) GetPresubmit(repo, job string) *Presubmit {
-	return getPresubmit(c.Presubmits[repo], job)
-}
-
-func getPresubmit(jobs []Presubmit, job string) *Presubmit {
-	for _, j := range jobs {
-		if j.Name == job {
-			return &j
-		}
-		if p := getPresubmit(j.RunAfterSuccess, job); p != nil {
-			return p
-		}
-	}
-	return nil
-}
-
-func (c *Config) GetPostsubmit(repo, job string) *Postsubmit {
-	return getPostsubmit(c.Postsubmits[repo], job)
-}
-
-func getPostsubmit(jobs []Postsubmit, job string) *Postsubmit {
-	for _, j := range jobs {
-		if j.Name == job {
-			return &j
-		}
-		if p := getPostsubmit(j.RunAfterSuccess, job); p != nil {
-			return p
-		}
-	}
-	return nil
-}
-
-func (c *Config) GetPeriodic(job string) *Periodic {
-	for _, j := range c.Periodics {
-		if j.Name == job {
-			return &j
-		}
-	}
-	return nil
-}
-
 func (br Brancher) RunsAgainstBranch(branch string) bool {
 	// Favor SkipBranches over Branches
 	if len(br.SkipBranches) == 0 && len(br.Branches) == 0 {

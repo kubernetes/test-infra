@@ -20,8 +20,13 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/line"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
+)
+
+const (
+	needsOkToTest = "needs-ok-to-test"
 )
 
 func handlePR(c client, pr github.PullRequestEvent) error {
@@ -82,7 +87,12 @@ I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that 
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name
-	return ghc.CreateComment(owner, name, pr.Number, comment)
+	err1 := ghc.AddLabel(owner, name, pr.Number, needsOkToTest)
+	err2 := ghc.CreateComment(owner, name, pr.Number, comment)
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("askToJoin: error adding label: %v, error creating comment: %v", err1, err2)
+	}
+	return nil
 }
 
 // trustedPullRequest returns whether or not the given PR should be tested.
@@ -169,7 +179,20 @@ func buildAll(c client, pr github.PullRequest) error {
 			}
 			ref = r
 		}
-		if err := line.StartPRJob(c.KubeClient, job.Name, job.Context, pr, ref); err != nil {
+		kr := kube.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: pr.Base.Ref,
+			BaseSHA: ref,
+			Pulls: []kube.Pull{
+				kube.Pull{
+					Number: pr.Number,
+					Author: pr.User.Login,
+					SHA:    pr.Head.SHA,
+				},
+			},
+		}
+		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
 			return err
 		}
 	}

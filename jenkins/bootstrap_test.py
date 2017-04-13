@@ -1482,7 +1482,7 @@ class JobTest(unittest.TestCase):
             Check, use_json=True)
 
     def testBootstrapPullYaml(self):
-        bads = ['kubernetes-e2e', 'kops-e2e', 'federation-e2e', 'kubemark-e2e']
+        bads = ['kops', 'federation-e2e']
         is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
@@ -1502,7 +1502,7 @@ class JobTest(unittest.TestCase):
             Check, use_json=is_modern)
 
     def testBootstrapSecurityPullYaml(self):
-        bads = ['kops', 'federation-e2e', 'kubemark-e2e']
+        bads = ['kops', 'federation-e2e']
         is_modern = lambda n: all(b not in n for b in bads)
         def Check(job, name):
             job_name = 'pull-%s' % name
@@ -1533,7 +1533,7 @@ class JobTest(unittest.TestCase):
                     if attr != 'repo-name':
                         self.assertEquals(job[attr], job2[attr], job)
         for name, job in jobs2.iteritems():
-            if job.get('json') and 'kubernetes-e2e' in name:
+            if job.get('json') and any(n in name for n in ['kubernetes-e2e', 'kubemark-e2e']):
                 jobs = json_jobs
                 skip_json = True
             else:
@@ -1691,7 +1691,7 @@ class JobTest(unittest.TestCase):
             self.assertEquals(1, len(job), job)
             name = job.keys()[0]
             real_job = job[name]
-            self.assertNotIn(name, real_jobs)
+            self.assertNotIn(name, real_jobs, 'duplicate job: %s' % name)
             real_jobs[name] = real_job
             real_name = real_job.get('job-name', 'unset-%s' % name)
             if real_name not in self.realjobs:
@@ -1828,10 +1828,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
-            'ci-kubernetes-federation-build-1.5.sh': 'ci-kubernetes-federation-1.5-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.5.env': 'ci-kubernetes-federation-1.5-*',
-            'ci-kubernetes-federation-build-1.4.sh': 'ci-kubernetes-federation-1.4-*',
-            'ci-kubernetes-e2e-gce-federation-release-1.4.env': 'ci-kubernetes-federation-1.4-*',
             'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
             'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
             'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',

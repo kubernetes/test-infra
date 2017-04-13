@@ -22,7 +22,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/line"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -39,6 +38,7 @@ func init() {
 }
 
 type githubClient interface {
+	AddLabel(org, repo string, number int, label string) error
 	BotName() string
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
@@ -47,17 +47,19 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
+	RemoveLabel(org, repo string, number int, label string) error
+}
+
+type kubeClient interface {
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 type client struct {
 	GitHubClient githubClient
+	KubeClient   kubeClient
 	Config       *config.Config
-	KubeClient   *kube.Client
 	Logger       *logrus.Entry
 }
-
-var lineStartPRJob = line.StartPRJob
-var lineStartPushJob = line.StartPushJob
 
 func getClient(pc plugins.PluginClient) client {
 	return client{

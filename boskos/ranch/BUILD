@@ -4,45 +4,24 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
 )
 
-go_binary(
-    name = "line",
-    library = ":go_default_library",
-    tags = ["automanaged"],
-)
-
 go_test(
     name = "go_default_test",
-    srcs = [
-        "main_test.go",
-        "tot_test.go",
-    ],
+    srcs = ["ranch_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = [
-        "//prow/config:go_default_library",
-        "//prow/line:go_default_library",
-    ],
+    deps = ["//boskos/common:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "main.go",
-        "tot.go",
-    ],
+    srcs = ["ranch.go"],
     tags = ["automanaged"],
     deps = [
-        "//prow/config:go_default_library",
-        "//prow/crier:go_default_library",
-        "//prow/github:go_default_library",
-        "//prow/jenkins:go_default_library",
-        "//prow/kube:go_default_library",
-        "//prow/line:go_default_library",
+        "//boskos/common:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )

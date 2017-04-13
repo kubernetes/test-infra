@@ -28,9 +28,9 @@ which jq >/dev/null || (echo 'Cannot find jq on path. Install jq' 1>&2 && exit 1
 echo 'Jobs flaking more than 4x/day:' 1>&2
 cat "${out}" | jq '
   [(.[] | select(.flakes|tonumber > 28) | {(.job): {
-      consistency: .commit_consistency,
-      flakes: .flakes,
+      consistency: (.commit_consistency|tonumber),
+      flakes: (.flakes|tonumber),
       flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 7) | {
-        (.name): .flakes}) ])| add
+        (.name): (.flakes|tonumber)}) ])| add
   }})] | add'
 echo "Full flake data saved to: ${out}" 1>&2

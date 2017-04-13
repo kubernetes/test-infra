@@ -3,7 +3,8 @@
 var rightArrow = "\u25ba";
 var downArrow = "\u25bc";
 
-const kGraphHeight = 200;     // keep synchronized with style.css:div.graph
+const kGraphHeight = 200;      // keep synchronized with style.css:div.graph
+const kCollapseThreshold = 5;  // maximum number of entries before being collapsed
 
 if (Object.entries === undefined) {
   // Simple polyfill for Safari compatibility.
@@ -119,11 +120,19 @@ function renderJobs(parent, buildsIterator) {
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
 function renderCluster(top, key, keyId, text, clusters) {
+  function pickArrow(count) {
+    return count > kCollapseThreshold ? rightArrow : downArrow;
+  }
+
+  function plural(count, word, suffix) {
+    return count == 1 ? count + ' ' + word : count + ' ' + word + suffix;
+  }
+
   var clusterSum = clustersSum(clusters);
   var recentCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
     createElement('h2',
-      {innerHTML: `${clusterSum} FAILURE${clusterSum > 1 ? "S" : ""} (${recentCount} RECENT) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
+      {innerHTML: `${plural(clusterSum, 'FAILURE', 'S')} (${recentCount} RECENT) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
@@ -132,11 +141,21 @@ function renderCluster(top, key, keyId, text, clusters) {
 
   var jobSet = new Set();
 
+  var testList = createElement('ul');
+
+  addElement(list, 'li', null, [`${plural(clusters.length, 'Test', 's')} ${pickArrow(clusters.length)}`, testList]);
+  if (clusters.length > kCollapseThreshold) {
+    testList.style.display = 'none';
+  }
+
+  // If we expanded all the tests and jobs, how many rows would it take?
+  var jobCount = sum(clusters, c => c[1].length);
+
   for (var [testName, testsGrouped] of clusters) {
     var testCount = sum(testsGrouped, t => t[1].length);
-    var el = addElement(list, 'li', null, `${testCount} ${testName} ${rightArrow}`);
+    var el = addElement(testList, 'li', null, `${testCount} ${testName} ${pickArrow(jobCount)}`);
     var jobList = addElement(el, 'ul');
-    if (clusterSum > 5) {
+    if (jobCount > kCollapseThreshold) {
       jobList.style.display = 'none';
     }
     for (var [job, buildNumbers] of testsGrouped) {
@@ -145,7 +164,7 @@ function renderCluster(top, key, keyId, text, clusters) {
     }
   }
 
-  clusterJobs.innerHTML = `<li>${jobSet.size} Jobs ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
+  clusterJobs.innerHTML = `<li>${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
   if (jobSet.size <= 10) {  // automatically expand small job lists to save clicking
     expand(clusterJobs.children[0]);
   }

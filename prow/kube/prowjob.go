@@ -61,9 +61,7 @@ type ProwJobSpec struct {
 
 	Report       bool   `json:"report,omitempty"`
 	Context      string `json:"context,omitempty"`
-	Description  string `json:"description,omitempty"`
 	RerunCommand string `json:"rerun_command,omitempty"`
-	URL          string `json:"url,omitempty"`
 
 	PodSpec PodSpec `json:"pod_spec,omitempty"`
 
@@ -71,12 +69,15 @@ type ProwJobSpec struct {
 }
 
 type ProwJobStatus struct {
-	StartTime      time.Time    `json:"startTime,omitempty"`
-	CompletionTime time.Time    `json:"completionTime,omitempty"`
-	State          ProwJobState `json:"state,omitempty"`
-	PodName        string       `json:"pod_name,omitempty"`
-	// TODO(spxtr): Remove this once migration is complete.
-	KubeJobName string `json:"kube_job_name,omitempty"`
+	StartTime       time.Time    `json:"startTime,omitempty"`
+	CompletionTime  time.Time    `json:"completionTime,omitempty"`
+	State           ProwJobState `json:"state,omitempty"`
+	Description     string       `json:"description,omitempty"`
+	URL             string       `json:"url,omitempty"`
+	PodName         string       `json:"pod_name,omitempty"`
+	JenkinsQueueURL string       `json:"jenkins_queue_url,omitempty"`
+	JenkinsEnqueued bool         `json:"jenkins_enqueued,omitempty"`
+	JenkinsBuildID  string       `json:"jenkins_build_id,omitempty"`
 }
 
 func (j *ProwJob) Complete() bool {

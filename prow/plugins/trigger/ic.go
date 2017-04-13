@@ -21,6 +21,8 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -30,7 +32,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
-	author := ic.Comment.User.Login
+	commentAuthor := ic.Comment.User.Login
 	// Only take action when a comment is first created.
 	if ic.Action != "created" {
 		return nil
@@ -43,10 +45,15 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// Skip bot comments.
-	if author == c.GitHubClient.BotName() {
+	if commentAuthor == c.GitHubClient.BotName() {
 		return nil
 	}
 
+	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
+			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+		}
+	}
 	// Which jobs does the comment want us to run?
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
 	if len(requestedJobs) == 0 {
@@ -59,7 +66,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	// Skip untrusted users.
-	orgMember, err := c.GitHubClient.IsMember(trustedOrg, author)
+	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
 	if err != nil {
 		return err
 	} else if !orgMember {
@@ -92,7 +99,20 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			continue
 		}
 		c.Logger.Infof("Starting %s build.", job.Name)
-		if err := lineStartPRJob(c.KubeClient, job.Name, job.Context, *pr, ref); err != nil {
+		kr := kube.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: pr.Base.Ref,
+			BaseSHA: ref,
+			Pulls: []kube.Pull{
+				kube.Pull{
+					Number: number,
+					Author: pr.User.Login,
+					SHA:    pr.Head.SHA,
+				},
+			},
+		}
+		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
 			errors = append(errors, err)
 		}
 	}

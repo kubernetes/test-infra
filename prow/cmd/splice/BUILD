@@ -29,7 +29,7 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/line:go_default_library",
+        "//prow/plank:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )
