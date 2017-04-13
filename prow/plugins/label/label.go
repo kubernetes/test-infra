@@ -31,7 +31,7 @@ const pluginName = "label"
 
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)|(do-not-merge)\s*$`)
+	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
 	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
@@ -118,10 +118,6 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	labelsToRemove := []string{}
 	for _, match := range removeLabelMatches {
-		if len(match) > 0 && match[0] == "do-not-merge" {
-			labelsToRemove = append(labelsToRemove, "do-not-merge")
-			continue
-		}
 		for _, removeLabel := range strings.Split(match[0], " ")[1:] {
 			removeLabel = strings.ToLower(match[1] + "/" + strings.TrimSpace(removeLabel))
 			labelsToRemove = append(labelsToRemove, removeLabel)
