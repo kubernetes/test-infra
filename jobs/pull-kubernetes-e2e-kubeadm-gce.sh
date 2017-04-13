@@ -26,18 +26,17 @@ readonly testinfra="$(dirname "${0}")/.."
 
 export PROJECT="k8s-jkns-pr-kubeadm"
 export KUBERNETES_PROVIDER=kubernetes-anywhere
-
-# This job only runs against the kubernetes repo, and bootstrap.py leaves the
-# current working directory at the repository root. Grab the SCM_REVISION so we
-# can use the .debs built during the bazel-build job that should have already
-# succeeded.
-export SCM_VERSION=$(./hack/print-workspace-status.sh | grep ^STABLE_BUILD_SCM_REVISION | cut -d' ' -f2)
+# These deliberately do not use the :- syntax so that the nounset flag produces
+# succinct errors if either is unset. This job depends on the artifacts created
+# during pull-kubernetes-bazel, so these env vars must be set correctly to find
+# this pull's build artifacts.
+export VERSION=${PULL_NUMBER}/${PULL_REFS}
 
 export E2E_NAME="e2e-kubeadm-${BUILD_NUMBER:-0}"
 export E2E_OPT="--deployment kubernetes-anywhere --kubernetes-anywhere-path /workspace/kubernetes-anywhere"
 export E2E_OPT+=" --kubernetes-anywhere-phase2-provider kubeadm --kubernetes-anywhere-cluster ${E2E_NAME}"
 # The gs:// path given here should match jobs/pull-kubernetes-bazel.sh
-export E2E_OPT+=" --kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/${SCM_VERSION}/build/debs/"
+export E2E_OPT+=" --kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/${VERSION}/build/debs/"
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Conformance\]"
 
 # Resource leak detection is disabled because prow runs multiple instances of
