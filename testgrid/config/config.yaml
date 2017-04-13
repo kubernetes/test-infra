@@ -606,24 +606,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
 - name: ci-kubernetes-node-kubelet-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
-- name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
-- name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
 - name: ci-kubernetes-e2e-gke-large-deploy
@@ -2045,27 +2027,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-reboot-release-1.4
   - name: gci-gke-reboot-1.4
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1.4
-
-- name: upgrades-gce-cvm-and-gci
-  dashboard_tab:
-  - name: gce-debian-latest-1.4-gci-latest-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-master
-  - name: gce-gci-latest-1.4-debian-latest-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-master
-  - name: gce-gci-latest-1.4-gci-latest-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-master
-  - name: gce-debian-latest-1.4-gci-latest-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster
-  - name: gce-gci-latest-1.4-debian-latest-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster
-  - name: gce-gci-latest-1.4-gci-latest-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster
-  - name: gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-debian-latest-1.4-gci-latest-upgrade-cluster-new
-  - name: gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-debian-latest-upgrade-cluster-new
-  - name: gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-1.4-gci-latest-upgrade-cluster-new
 
 - name: misc
   dashboard_tab:
