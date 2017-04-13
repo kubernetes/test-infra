@@ -32,6 +32,7 @@ from ( /* For each week, count whether a (num, commit) flaked */
         started > date_add(current_timestamp(), -90, "DAY")
         and version != "unknown"
         and (metadata.key = 'repos' or left(job, 3) == "ci-")
+        and job != 'pr:pull-kubernetes-federation-e2e-gce'
       having kind=='pull'
     )
     group by wk, job, num, commit
