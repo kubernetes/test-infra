@@ -53,6 +53,7 @@ filegroup(
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/releasenote:all-srcs",
+        "//prow/plugins/reopen:all-srcs",
         "//prow/plugins/trigger:all-srcs",
         "//prow/plugins/yuks:all-srcs",
     ],

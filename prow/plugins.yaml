@@ -25,6 +25,7 @@ kubernetes:
 - assign
 - cla
 - close
+- reopen
 - heart
 - label
 - lgtm
