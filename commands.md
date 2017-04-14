@@ -17,6 +17,7 @@ Command | Implemented By | Who can run it | Description
 `/approve` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve all the files for which you are an approver
 `/approve cancel` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | removes your approval on this pull-request
 `/close` | prow [close](./prow/plugins/close) | authors and assignees | closes the issue
+`/reopen` | prow [reopen](./prow/plugins/reopen) | authors and assignees | reopens a closed issue
 `/release-note` | prow [releasenote](./prow/plugins/releasenote) | authors and assignees | adds the `release-note` label
 `/release-note-none` | prow [releasenote](./prow/plugins/releasenote) | authors and assignees | adds the `release-note-none` label
 `/sig-<some-github-team>` | prow [label](./prow/plugins/label) | kubernetes org members| adds the corresponding `sig` label
