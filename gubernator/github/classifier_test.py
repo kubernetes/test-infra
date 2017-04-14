@@ -137,7 +137,7 @@ class CalculateTest(unittest.TestCase):
                 make_comment_event(2, 'k8s-merge-robot', '<!-- META={"approvers":["o"]} -->', ts=4),
             ], {'e2e': ['failure', None, 'stuff is broken']}
         ),
-        (True, True, ['a', 'b'],
+        (True, True, ['a', 'b', 'o'],
          {
             'author': 'a',
             'approvers': ['o'],

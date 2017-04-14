@@ -217,7 +217,7 @@ def classify(events, statuses=None):
     is_open = merged['state'] != 'closed'
     author = merged['user']['login']
     assignees = sorted({assignee['login'] for assignee in merged['assignees']} | reviewers)
-    involved = [author] + assignees
+    involved = sorted(set([author] + assignees + approvers))
 
     payload = {
         'author': author,
