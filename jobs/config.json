@@ -1296,6 +1296,14 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-gci-qa-m59": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m59.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-gci-qa-m58": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -1360,6 +1368,14 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-gci-qa-serial-m59": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m59.env"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-gci-qa-serial-m58": {
   "scenario": "kubernetes_e2e",
   "args": [
@@ -1413,6 +1429,14 @@
   "args": [
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-master.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-gci-qa-slow-m59": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m59.env"
   ]
 },
 
