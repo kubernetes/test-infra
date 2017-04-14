@@ -62,10 +62,10 @@ func TestFetchIssues(t *testing.T) {
 func TestFetchEventsAndComments(t *testing.T) {
 	tests := []struct {
 		events          []interface{}
-		lastEvent       int
-		lastComment     int
-		wantLastEvent   int
-		wantLastComment int
+		lastEvent       time.Time
+		lastComment     time.Time
+		wantLastEvent   time.Time
+		wantLastComment time.Time
 		wantCount       int
 	}{
 		// Mixed events and comments
@@ -82,11 +82,11 @@ func TestFetchEventsAndComments(t *testing.T) {
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
 				&sql.Comment{ID: "6", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
-			lastEvent:       2,
-			lastComment:     2,
-			wantLastEvent:   4,
-			wantLastComment: 5,
-			wantCount:       5,
+			lastEvent:       time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+			lastComment:     time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC),
+			wantLastEvent:   time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC),
+			wantLastComment: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC),
+			wantCount:       3,
 		},
 		// Only comments
 		{
@@ -98,11 +98,11 @@ func TestFetchEventsAndComments(t *testing.T) {
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
-			lastEvent:       10,
-			lastComment:     2,
-			wantLastEvent:   10,
-			wantLastComment: 5,
-			wantCount:       3,
+			lastEvent:       time.Date(1990, time.January, 0, 0, 0, 0, 0, time.UTC),
+			lastComment:     time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC),
+			wantLastEvent:   time.Date(1990, time.January, 0, 0, 0, 0, 0, time.UTC),
+			wantLastComment: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC),
+			wantCount:       2,
 		},
 	}
 
@@ -126,11 +126,11 @@ func TestFetchEventsAndComments(t *testing.T) {
 		if err := fetchRecentEventsAndComments(db, "ok", &lastEvent, &lastComment, out); err != nil {
 			t.Fatal("Failed to fetch recent events:", err)
 		}
-		if lastEvent != test.wantLastEvent {
-			t.Errorf("LastEvent event should be %d, not %d", test.wantLastEvent, lastEvent)
+		if !lastEvent.Equal(test.wantLastEvent) {
+			t.Errorf("LastEvent event should be %s, not %s", test.wantLastEvent, lastEvent)
 		}
-		if lastComment != test.wantLastComment {
-			t.Errorf("LastComment event should be %d, not %d", test.wantLastComment, lastComment)
+		if !lastComment.Equal(test.wantLastComment) {
+			t.Errorf("LastComment event should be %s, not %s", test.wantLastComment, lastComment)
 		}
 		if len(out) != test.wantCount {
 			t.Errorf("%d events should have been fetched, not %d", test.wantCount, len(out))

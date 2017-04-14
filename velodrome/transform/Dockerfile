@@ -13,6 +13,6 @@
 # limitations under the License.
 
 FROM alpine:3.5
-RUN apk add ca-certificates && update-ca-certificates
+RUN apk add --no-cache ca-certificates && update-ca-certificates
 COPY transform /
 ENTRYPOINT ["/transform"]

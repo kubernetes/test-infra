@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"k8s.io/test-infra/velodrome/sql"
@@ -53,14 +52,14 @@ func fetchRecentIssues(db *gorm.DB, repository string, last *time.Time, out chan
 }
 
 // fetchRecentEventsAndComments retrieves events from DB, but only fetches events created since last call
-func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int, lastComment *int, out chan interface{}) error {
-	glog.Infof("Fetching issue-events with id bigger than %d", *lastEvent)
-	glog.Infof("Fetching comments with id bigger than %d", *lastComment)
+func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *time.Time, lastComment *time.Time, out chan interface{}) error {
+	glog.Infof("Fetching issue-events with id bigger than %s", *lastEvent)
+	glog.Infof("Fetching comments with id bigger than %s", *lastComment)
 
 	eventRows, err := db.
 		Model(sql.IssueEvent{}).
-		Where("id > ?", strconv.Itoa(*lastEvent)).
 		Where("repository = ?", repository).
+		Where("event_created_at > ?", *lastEvent).
 		Order("event_created_at asc").
 		Rows()
 	if err != nil {
@@ -69,8 +68,8 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 
 	commentRows, err := db.
 		Model(sql.Comment{}).
-		Where("id > ?", strconv.Itoa(*lastComment)).
 		Where("repository = ?", repository).
+		Where("comment_created_at > ?", *lastComment).
 		Order("comment_created_at asc").
 		Rows()
 	if err != nil {
@@ -94,10 +93,7 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 	for event != nil || comment != nil {
 		if event == nil || (comment != nil && comment.CommentCreatedAt.Before(event.EventCreatedAt)) {
 			out <- *comment
-			*lastComment, err = strconv.Atoi(comment.ID)
-			if err != nil {
-				return err
-			}
+			*lastComment = comment.CommentCreatedAt
 			if commentRows.Next() {
 				db.ScanRows(commentRows, comment)
 			} else {
@@ -105,10 +101,7 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 			}
 		} else {
 			out <- *event
-			*lastEvent, err = strconv.Atoi(event.ID)
-			if err != nil {
-				return err
-			}
+			*lastEvent = event.EventCreatedAt
 			if eventRows.Next() {
 				db.ScanRows(eventRows, event)
 			} else {
@@ -125,34 +118,30 @@ func fetchRecentEventsAndComments(db *gorm.DB, repository string, lastEvent *int
 
 // Fetcher is a utility class used to Fetch all types of events
 type Fetcher struct {
-	lastIssue             time.Time
-	lastEvent             int
-	lastComment           int
-	issuesChannel         chan sql.Issue
-	eventsCommentsChannel chan interface{}
-	repository            string
+	IssuesChannel         chan sql.Issue
+	EventsCommentsChannel chan interface{}
+
+	lastIssue   time.Time
+	lastEvent   time.Time
+	lastComment time.Time
+	repository  string
 }
 
 // NewFetcher creates a new Fetcher and initializes the output channels
 func NewFetcher(repository string) *Fetcher {
 	return &Fetcher{
-		issuesChannel:         make(chan sql.Issue, 100),
-		eventsCommentsChannel: make(chan interface{}, 100),
+		IssuesChannel:         make(chan sql.Issue, 100),
+		EventsCommentsChannel: make(chan interface{}, 100),
 		repository:            repository,
 	}
 }
 
-// GetChannels returns the list of output channels used
-func (f *Fetcher) GetChannels() (chan sql.Issue, chan interface{}) {
-	return f.issuesChannel, f.eventsCommentsChannel
-}
-
 // Fetch retrieves all types of events, and push them to output channels
 func (f *Fetcher) Fetch(db *gorm.DB) error {
-	if err := fetchRecentIssues(db, f.repository, &f.lastIssue, f.issuesChannel); err != nil {
+	if err := fetchRecentIssues(db, f.repository, &f.lastIssue, f.IssuesChannel); err != nil {
 		return err
 	}
-	if err := fetchRecentEventsAndComments(db, f.repository, &f.lastEvent, &f.lastComment, f.eventsCommentsChannel); err != nil {
+	if err := fetchRecentEventsAndComments(db, f.repository, &f.lastEvent, &f.lastComment, f.EventsCommentsChannel); err != nil {
 		return err
 	}
 	return nil

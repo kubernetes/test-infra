@@ -60,12 +60,33 @@ def main():
                 patch_configuration("grafana-config",
                                     project['grafana'],
                                     { "PROJECT": project_name })
-            for repository in project['repositories']:
-                print_deployments(["fetcher", "transform"], {
+            for repository, transforms in project['repositories'].items():
+                print_deployments(["fetcher"], {
                     "GH_ORGANIZATION": repository.split("/")[0],
                     "GH_REPOSITORY": repository.split("/")[1],
                     "PROJECT": project_name,
                 })
+                for metric, transformer in (transforms or {}).items():
+                    plugin = metric
+                    if "plugin" in transformer:
+                        plugin = transformer["plugin"]
+                    args = []
+                    if "args" in transformer:
+                        args = transformer["args"]
+                    apply_transform(args, {
+                        "GH_ORGANIZATION": repository.split("/")[0],
+                        "GH_REPOSITORY": repository.split("/")[1],
+                        "PROJECT": project_name,
+                        "TRANSFORM_PLUGIN": plugin,
+                        "TRANSFORM_METRIC": metric,
+                    })
+
+
+def apply_transform(new_args, env):
+    with open(get_absolute_path(DEPLOYMENTS["transform"])) as f:
+        config = yaml.load(f)
+        config['spec']['template']['spec']['containers'][0]['args'] += new_args
+    print_deployment(yaml.dump(config, default_flow_style=False), env)
 
 
 def patch_configuration(component, values, env):
