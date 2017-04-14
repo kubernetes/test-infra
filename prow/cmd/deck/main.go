@@ -27,9 +27,11 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/Sirupsen/logrus"
+	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plank"
 )
 
 const (
@@ -43,7 +45,7 @@ var (
 )
 
 // Matches letters, numbers, hyphens, and underscores.
-var podReg = regexp.MustCompile(`^[\w-]+$`)
+var objReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
 	flag.Parse()
@@ -74,6 +76,7 @@ func main() {
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
+	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
 }
@@ -107,18 +110,48 @@ func handleLog(lc logClient) http.HandlerFunc {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		pod := r.URL.Query().Get("pod")
-		if !podReg.MatchString(pod) {
+		if !objReg.MatchString(pod) {
 			http.Error(w, "Invalid pod query", http.StatusBadRequest)
 			return
 		}
 		log, err := lc.GetLog(pod)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Log not found: %s", err), http.StatusNotFound)
+			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning("Error returned.")
 			return
 		}
 		if _, err = w.Write(log); err != nil {
 			logrus.WithError(err).Warning("Error writing log.")
+		}
+	}
+}
+
+type pjClient interface {
+	GetProwJob(string) (kube.ProwJob, error)
+}
+
+func handleRerun(kc pjClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("prowjob")
+		if !objReg.MatchString(name) {
+			http.Error(w, "Invalid ProwJob query", http.StatusBadRequest)
+			return
+		}
+		pj, err := kc.GetProwJob(name)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
+			logrus.WithError(err).Warning("Error returned.")
+			return
+		}
+		npj := plank.NewProwJob(pj.Spec)
+		b, err := yaml.Marshal(&npj)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
+			logrus.WithError(err).Error("Error marshaling jobs.")
+			return
+		}
+		if _, err := w.Write(b); err != nil {
+			logrus.WithError(err).Error("Error writing log.")
 		}
 	}
 }

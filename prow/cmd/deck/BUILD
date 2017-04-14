@@ -20,6 +20,10 @@ go_test(
     srcs = ["main_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor:github.com/ghodss/yaml",
+    ],
 )
 
 go_library(
@@ -32,8 +36,10 @@ go_library(
     deps = [
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/plank:go_default_library",
         "//vendor:github.com/NYTimes/gziphandler",
         "//vendor:github.com/Sirupsen/logrus",
+        "//vendor:github.com/ghodss/yaml",
     ],
 )
 

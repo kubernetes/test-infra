@@ -23,6 +23,10 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/ghodss/yaml"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 type flc int
@@ -96,5 +100,50 @@ func TestHandleLog(t *testing.T) {
 				t.Errorf("Unexpected body: got %s.", string(body))
 			}
 		}
+	}
+}
+
+type fpjc kube.ProwJob
+
+func (fc *fpjc) GetProwJob(name string) (kube.ProwJob, error) {
+	return kube.ProwJob(*fc), nil
+}
+
+// TestRerun just checks that the result can be unmarshaled properly, has an
+// updated status, and has equal spec.
+func TestRerun(t *testing.T) {
+	fc := fpjc(kube.ProwJob{
+		Spec: kube.ProwJobSpec{
+			Job: "whoa",
+		},
+		Status: kube.ProwJobStatus{
+			State: kube.PendingState,
+		},
+	})
+	handler := handleRerun(&fc)
+	req, err := http.NewRequest(http.MethodGet, "/rerun?prowjob=wowsuch", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var res kube.ProwJob
+	if err := yaml.Unmarshal(body, &res); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if res.Spec.Job != "whoa" {
+		t.Errorf("Wrong job, expected \"whoa\", got \"%s\"", res.Spec.Job)
+	}
+	if res.Status.State != kube.TriggeredState {
+		t.Errorf("Wrong state, expected \"%v\", got \"%v\"", kube.TriggeredState, res.Status.State)
 	}
 }
