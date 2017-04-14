@@ -240,10 +240,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m58
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m54
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m55
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m56
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m56
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m57
@@ -1133,10 +1129,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m58
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: qa-serial-m54
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m54
-  - name: qa-serial-m55
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m55
   - name: qa-serial-m56
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m56
   - name: qa-serial-m57
