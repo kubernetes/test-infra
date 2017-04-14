@@ -17,10 +17,16 @@ py_test(
     ],
 )
 
-#mocha_test(
-#    name = "script_test",
-#    main = "script_test.js",
-#)
+mocha_test(
+    name = "script_test",
+    data = ["js-srcs"],
+    main = "script_test.js",
+)
+
+filegroup(
+    name = "js-srcs",
+    srcs = glob(["*.js"]),
+)
 
 filegroup(
     name = "package-srcs",

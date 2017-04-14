@@ -21,18 +21,18 @@ describe('Clusters', () => {
                 assert.deepEqual(c.refilter(opts).data, expected);
             });
         }
-        let ham = ['ham', '', 'ham', [
-            ['volume', [['cure', [1, 2]]]],
-        ]];
-        let spam = ['spam', '', 'spam', [
-            ['networking', [['g', [2]]]]
-        ]];
-        let pr = ['bam', '', 'bam', [
-            ['new', [['pr:verify', [3]]]],
-        ]];
-        let first = ['afirst', '', 'afirst', [
-            ['something', [['firstjob', [5, 6]]]],
-        ]];
+        let ham = {text: 'ham', key: 'ham', id: '1234', tests: [
+            {name: 'volume', jobs: [{name: 'cure', builds: [1, 2]}]},
+        ]};
+        let spam = {text: 'spam', key: 'spam', id: '5678', tests: [
+            {name: 'networking', jobs: [{name: 'g', builds: [2]}]},
+        ]};
+        let pr = {text: 'bam', key: 'bam', id: '9abc', tests: [
+            {name: 'new', jobs: [{name: 'pr:verify', builds: [3]}]},
+        ]};
+        let first = {text: 'afirst', key: 'afirst', id: 'def0', tests: [
+            {name: 'something', jobs: [{name: 'firstjob', builds: [5, 6]}]},
+        ]};
         expect('filters by text', [ham], [ham, spam], {reText: /ham/im, ci: true});
         expect('filters by test', [ham], [ham, spam], {reTest: /volume/im, ci: true});
         expect('filters by job', [ham], [ham, spam], {reJob: /cure/im, ci: true});

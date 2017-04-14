@@ -188,7 +188,7 @@ class Clusters {
     if (opts.sort) {
       var keyFunc = {
         total: c => [-clustersSum(c.tests)],
-        message: c => [c[0]],
+        message: c => [c.text],
         day: c => [-getHitsInLastDay(c), -clustersSum(c.tests)],
       }[opts.sort];
       out = sortByKey(out, keyFunc);
