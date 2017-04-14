@@ -53,6 +53,7 @@ type Job struct {
 	URL         string `json:"url"`
 	PodName     string `json:"pod_name"`
 	Agent       string `json:"agent"`
+	ProwJob     string `json:"prow_job"`
 
 	st time.Time
 	ft time.Time
@@ -140,6 +141,7 @@ func (ja *JobAgent) update() error {
 			Job:     j.Spec.Job,
 			Context: j.Spec.Context,
 			Agent:   string(j.Spec.Agent),
+			ProwJob: j.Metadata.Name,
 
 			Started:     j.Status.StartTime.Format(time.Stamp),
 			State:       string(j.Status.State),

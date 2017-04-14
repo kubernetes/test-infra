@@ -238,6 +238,16 @@ func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
+func (c *Client) GetProwJob(name string) (ProwJob, error) {
+	c.log("GetProwJob", name)
+	var pj ProwJob
+	err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
+	}, &pj)
+	return pj, err
+}
+
 func (c *Client) ListProwJobs(labels map[string]string) ([]ProwJob, error) {
 	c.log("ListProwJobs", labels)
 	var jl struct {
