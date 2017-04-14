@@ -398,8 +398,8 @@ func TestAssignIssue(t *testing.T) {
 	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle", "not-in-the-org"}); err == nil {
 		t.Errorf("Expected an error")
 	} else if merr, ok := err.(MissingUsers); ok {
-		if len(merr) != 1 || merr[0] != "not-in-the-org" {
-			t.Errorf("Expected [not-in-the-org], not %v", merr)
+		if len(merr.Users) != 1 || merr.Users[0] != "not-in-the-org" {
+			t.Errorf("Expected [not-in-the-org], not %v", merr.Users)
 		}
 	} else {
 		t.Errorf("Expected MissingUsers error")
@@ -447,8 +447,122 @@ func TestUnassignIssue(t *testing.T) {
 	if err := c.UnassignIssue("k8s", "kuber", 5, []string{"george", "jungle", "perma-assignee"}); err == nil {
 		t.Errorf("Expected an error")
 	} else if merr, ok := err.(ExtraUsers); ok {
-		if len(merr) != 1 || merr[0] != "perma-assignee" {
-			t.Errorf("Expected [perma-assignee], not %v", merr)
+		if len(merr.Users) != 1 || merr.Users[0] != "perma-assignee" {
+			t.Errorf("Expected [perma-assignee], not %v", merr.Users)
+		}
+	} else {
+		t.Errorf("Expected ExtraUsers error")
+	}
+}
+
+func TestRequestReview(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string][]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Fatalf("Could not unmarshal request: %v", err)
+		}
+		if len(ps) != 1 {
+			t.Fatalf("Wrong length patch: %v", ps)
+		}
+		switch len(ps["reviewers"]) {
+		case 3:
+			if ps["reviewers"][0] != "george" || ps["reviewers"][1] != "jungle" || ps["reviewers"][2] != "not-a-collaborator" {
+				t.Errorf("Wrong reviewers: %v", ps)
+			}
+			//fall out of switch statement to bad reviewer case
+		case 2:
+			if ps["reviewers"][0] != "george" || ps["reviewers"][1] != "jungle" {
+				t.Errorf("Wrong reviewers: %v", ps)
+			}
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(PullRequest{
+				RequestedReviewers: []User{{Login: "george"}, {Login: "jungle"}, {Login: "ignore-other"}},
+			})
+			return
+		case 1:
+			if ps["reviewers"][0] != "not-a-collaborator" {
+				w.WriteHeader(http.StatusCreated)
+				json.NewEncoder(w).Encode(PullRequest{
+					RequestedReviewers: []User{{Login: ps["reviewers"][0]}, {Login: "ignore-other"}},
+				})
+				return
+			}
+			//fall out of switch statement to bad reviewer case
+		default:
+			t.Errorf("Wrong reviewers length: %v", ps)
+		}
+		//bad reviewer case
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(struct{ message, documentation_url string }{message: "Reviews may only be requested of collaborators.", documentation_url: "https://developer.github.com/v3/"})
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.RequestReview("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if err := c.RequestReview("k8s", "kuber", 5, []string{"george", "jungle", "not-a-collaborator"}); err == nil {
+		t.Errorf("Expected an error")
+	} else if merr, ok := err.(MissingUsers); ok {
+		if len(merr.Users) != 1 || merr.Users[0] != "not-a-collaborator" {
+			t.Errorf("Expected [not-a-collaborator], not %v", merr.Users)
+		}
+	} else {
+		t.Errorf("Expected MissingUsers error")
+	}
+}
+
+func TestUnrequestReview(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string][]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 1 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if len(ps["reviewers"]) == 3 {
+			if ps["reviewers"][0] != "george" || ps["reviewers"][1] != "jungle" || ps["reviewers"][2] != "perma-reviewer" {
+				t.Errorf("Wrong reviewers: %v", ps)
+			}
+		} else if len(ps["reviewers"]) == 2 {
+			if ps["reviewers"][0] != "george" || ps["reviewers"][1] != "jungle" {
+				t.Errorf("Wrong reviewers: %v", ps)
+			}
+		} else {
+			t.Errorf("Wrong reviewers length: %v", ps)
+		}
+		json.NewEncoder(w).Encode(PullRequest{
+			RequestedReviewers: []User{{Login: "perma-reviewer"}, {Login: "ignore-other"}},
+		})
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.UnrequestReview("k8s", "kuber", 5, []string{"george", "jungle"}); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if err := c.UnrequestReview("k8s", "kuber", 5, []string{"george", "jungle", "perma-reviewer"}); err == nil {
+		t.Errorf("Expected an error")
+	} else if merr, ok := err.(ExtraUsers); ok {
+		if len(merr.Users) != 1 || merr.Users[0] != "perma-reviewer" {
+			t.Errorf("Expected [perma-reviewer], not %v", merr.Users)
 		}
 	} else {
 		t.Errorf("Expected ExtraUsers error")

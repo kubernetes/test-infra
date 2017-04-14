@@ -205,6 +205,8 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 	req.Header.Set("Authorization", "Token "+c.token)
 	if strings.HasSuffix(path, "reactions") {
 		req.Header.Add("Accept", "application/vnd.github.squirrel-girl-preview")
+	} else if strings.HasSuffix(path, "requested_reviewers") {
+		req.Header.Add("Accept", "application/vnd.github.black-cat-preview+json")
 	} else {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	}
@@ -451,10 +453,13 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return err
 }
 
-type MissingUsers []string
+type MissingUsers struct {
+	Users  []string
+	action string
+}
 
 func (m MissingUsers) Error() string {
-	return fmt.Sprintf("cannot assign %s", strings.Join(m, ", "))
+	return fmt.Sprintf("could not %s the following user(s): %s.", m.action, strings.Join(m.Users, ", "))
 }
 
 func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
@@ -473,22 +478,25 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 	for _, assignee := range i.Assignees {
 		assigned[assignee.Login] = true
 	}
-	var missing MissingUsers
+	missing := MissingUsers{action: "assign"}
 	for _, login := range logins {
 		if !assigned[login] {
-			missing = append(missing, login)
+			missing.Users = append(missing.Users, login)
 		}
 	}
-	if len(missing) > 0 {
+	if len(missing.Users) > 0 {
 		return missing
 	}
 	return nil
 }
 
-type ExtraUsers []string
+type ExtraUsers struct {
+	Users  []string
+	action string
+}
 
 func (e ExtraUsers) Error() string {
-	return fmt.Sprintf("cannot unassign %s", strings.Join(e, ", "))
+	return fmt.Sprintf("could not %s the following user(s): %s.", e.action, strings.Join(e.Users, ", "))
 }
 
 func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
@@ -507,14 +515,89 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 	for _, assignee := range i.Assignees {
 		assigned[assignee.Login] = true
 	}
-	var extra ExtraUsers
+	extra := ExtraUsers{action: "unassign"}
 	for _, login := range logins {
 		if assigned[login] {
-			extra = append(extra, login)
+			extra.Users = append(extra.Users, login)
 		}
 	}
-	if len(extra) > 0 {
+	if len(extra.Users) > 0 {
 		return extra
+	}
+	return nil
+}
+
+func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
+	c.log("RequestReview", org, repo, number, logins)
+	var pr PullRequest
+	return c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		requestBody: map[string][]string{"reviewers": logins},
+		exitCodes:   []int{http.StatusCreated /*201*/},
+	}, &pr)
+}
+
+// RequestReview tries to add the users listed in 'logins' as requested reviewers of the specified PR.
+// If any user in the 'logins' slice is not a contributor of the repo, the entire POST will fail
+// without adding any reviewers. The github API response does not specify which user(s) were invalid
+// so if we fail to request reviews from the members of 'logins' we try to request reviews from
+// each member individually. We try first with all users in 'logins' for efficiency in the common case.
+func (c *Client) RequestReview(org, repo string, number int, logins []string) error {
+	statusCode, err := c.tryRequestReview(org, repo, number, logins)
+	if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
+		// Failed to set all members of 'logins' as reviewers, try individually.
+		missing := MissingUsers{action: "request a PR review from"}
+		for _, user := range logins {
+			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
+			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
+				// User is not a contributor.
+				missing.Users = append(missing.Users, user)
+			} else if err != nil {
+				return fmt.Errorf("failed to add reviewer to PR. Status code: %d, errmsg: %v", statusCode, err)
+			}
+		}
+		if len(missing.Users) > 0 {
+			return missing
+		}
+		return nil
+	}
+	return err
+}
+
+// UnrequestReview tries to remove the users listed in 'logins' from the requested reviewers of the
+// specified PR. The github API treats deletions of review requests differently than creations. Specifically, if
+// 'logins' contains a user that isn't a requested reviewer, other users that are valid are still removed.
+// Furthermore, the API response lists the set of requested reviewers after the deletion (unlike request creations),
+// so we can determine if each deletion was successful.
+// The API responds with http status code 200 no matter what the content of 'logins' is.
+func (c *Client) UnrequestReview(org, repo string, number int, logins []string) error {
+	c.log("UnrequestReview", org, repo, number, logins)
+	var pr PullRequest
+	_, err := c.request(&request{
+		method:      http.MethodDelete,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		requestBody: map[string][]string{"reviewers": logins},
+		exitCodes:   []int{http.StatusOK /*200*/},
+	}, &pr)
+	if err != nil {
+		return err
+	}
+	extras := ExtraUsers{action: "remove the PR review request for"}
+	for _, user := range pr.RequestedReviewers {
+		found := false
+		for _, toDelete := range logins {
+			if user.Login == toDelete {
+				found = true
+				break
+			}
+		}
+		if found {
+			extras.Users = append(extras.Users, user.Login)
+		}
+	}
+	if len(extras.Users) > 0 {
+		return extras
 	}
 	return nil
 }

@@ -66,12 +66,13 @@ type PullRequestEvent struct {
 
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
-	Number  int               `json:"number"`
-	HTMLURL string            `json:"html_url"`
-	User    User              `json:"user"`
-	Base    PullRequestBranch `json:"base"`
-	Head    PullRequestBranch `json:"head"`
-	Body    string            `json:"body"`
+	Number             int               `json:"number"`
+	HTMLURL            string            `json:"html_url"`
+	User               User              `json:"user"`
+	Base               PullRequestBranch `json:"base"`
+	Head               PullRequestBranch `json:"head"`
+	Body               string            `json:"body"`
+	RequestedReviewers []User            `json:"requested_reviewers"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
