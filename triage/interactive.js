@@ -102,9 +102,9 @@ function renderSubset(start, count) {
   var top = document.getElementById('clusters');
   var n = 0;
   var shown = 0;
-  for (let [key, keyId, text, clusters] of clustered.data) {
+  for (let c of clustered.data) {
     if (n++ < start) continue;
-    shown += renderCluster(top, key, keyId, text, clusters);
+    shown += renderCluster(top, c.key, c.id, c.text, c.tests);
     lastClusterRendered = n;
     if (shown >= count) break;
   }
@@ -230,7 +230,7 @@ function load() {
   var setLoading = t => document.getElementById("loading-progress").innerText = t;
   var toMB = b => Math.round(b / 1024 / 1024 * 100) / 100;
 
-  get('/k8s-gubernator/triage/failure_data.json',
+  get('/k8s-gubernator/triage/failure_data.json' && 'failure_data.json',
     req => {
       setLoading(`parsing ${toMB(req.response.length)}MB.`);
       var data = JSON.parse(req.response);

@@ -119,7 +119,7 @@ function renderJobs(parent, buildsIterator) {
 
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
-function renderCluster(top, key, keyId, text, clusters) {
+function renderCluster(top, key, keyId, text, tests) {
   function pickArrow(count) {
     return count > kCollapseThreshold ? rightArrow : downArrow;
   }
@@ -128,7 +128,7 @@ function renderCluster(top, key, keyId, text, clusters) {
     return count == 1 ? count + ' ' + word : count + ' ' + word + suffix;
   }
 
-  var clusterSum = clustersSum(clusters);
+  var clusterSum = clustersSum(tests);
   var recentCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
     createElement('h2',
@@ -143,24 +143,24 @@ function renderCluster(top, key, keyId, text, clusters) {
 
   var testList = createElement('ul');
 
-  addElement(list, 'li', null, [`${plural(clusters.length, 'Test', 's')} ${pickArrow(clusters.length)}`, testList]);
-  if (clusters.length > kCollapseThreshold) {
+  addElement(list, 'li', null, [`${plural(tests.length, 'Test', 's')} ${pickArrow(tests.length)}`, testList]);
+  if (tests.length > kCollapseThreshold) {
     testList.style.display = 'none';
   }
 
   // If we expanded all the tests and jobs, how many rows would it take?
-  var jobCount = sum(clusters, c => c[1].length);
+  var jobCount = sum(tests, t => t.jobs.length);
 
-  for (var [testName, testsGrouped] of clusters) {
-    var testCount = sum(testsGrouped, t => t[1].length);
-    var el = addElement(testList, 'li', null, `${testCount} ${testName} ${pickArrow(jobCount)}`);
+  for (var test of tests) {
+    var testCount = sum(test.jobs, j => j.builds.length);
+    var el = addElement(testList, 'li', null, `${testCount} ${test.name} ${pickArrow(jobCount)}`);
     var jobList = addElement(el, 'ul');
     if (jobCount > kCollapseThreshold) {
       jobList.style.display = 'none';
     }
-    for (var [job, buildNumbers] of testsGrouped) {
-      jobSet.add(job);
-      addBuildListItem(jobList, job, buildNumbers);
+    for (var job of test.jobs) {
+      jobSet.add(job.name);
+      addBuildListItem(jobList, job.name, job.builds);
     }
   }
 

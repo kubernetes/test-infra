@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=invalid-name,missing-docstring
+
 # Ported from Java com.google.gwt.dev.util.editdistance, which is:
 # Copyright 2010 Google Inc.
 #
@@ -194,6 +196,8 @@ class BerghelRoach(object):
         self.priorRight = []
 
     def getDistance(self, target, limit):
+        # pylint: disable=too-many-branches
+
         # Compute the main diagonal number.
         # The final result lies on this diagonal.
         main = len(self.pattern) - len(target)
@@ -281,7 +285,7 @@ class BerghelRoach(object):
 
             # We are done if the main diagonal has distance in the last row.
             mainRow = computeRow(main, distance, self.pattern, target,
-                immediateLeft, self.lastLeft[0], immediateRight)
+                                 immediateLeft, self.lastLeft[0], immediateRight)
 
             if mainRow == len(target):
                 break

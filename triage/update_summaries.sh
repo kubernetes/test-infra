@@ -40,5 +40,5 @@ gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
 }
 
-gsutil_cp failure_data.json index.html {interactive,model,render}.js style.css gs://k8s-gubernator/triage/
+gsutil_cp failure_data.json gs://k8s-gubernator/triage/
 gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"

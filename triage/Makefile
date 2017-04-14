@@ -25,6 +25,9 @@ push:
 	gcloud docker -- push $(IMG):latest
 	echo Pushed $(IMG):latest and $(IMG):$(TAG)
 
-.PHONY: all build push
+push_static:
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read index.html interactive.js model.js render.js style.css gs://k8s-gubernator/triage/
+
+.PHONY: all build push push_static
 
 all: build
