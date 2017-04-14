@@ -168,9 +168,11 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return DumpClusterLogs(o.dump)
 		}))
-		errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
-			return DumpFederationLogs(o.dump)
-		}))
+		if o.federation {
+			errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
+				return DumpFederationLogs(o.dump)
+			}))
+		}
 	}
 
 	if o.checkLeaks {
@@ -392,8 +394,15 @@ func DumpClusterLogs(location string) error {
 }
 
 func DumpFederationLogs(location string) error {
-	log.Printf("Dumping Federation logs to: %v", location)
-	return finishRunning(exec.Command("./federation/cluster/log-dump.sh", location))
+	logDumpPath := "./federation/cluster/log-dump.sh"
+	// federation/cluster/log-dump.sh only exists in the Kubernetes tree
+	// post-1.6. If it doesn't exist, do nothing and do not report an error.
+	if _, err := os.Stat(logDumpPath); err == nil {
+		log.Printf("Dumping Federation logs to: %v", location)
+		return finishRunning(exec.Command(logDumpPath, location))
+	}
+	log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.6 or older tree.", logDumpPath)
+	return nil
 }
 
 func ChartsTest() error {
