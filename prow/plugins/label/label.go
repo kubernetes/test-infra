@@ -29,6 +29,18 @@ import (
 
 const pluginName = "label"
 
+type assignEvent struct {
+	action  string
+	body    string
+	login   string
+	org     string
+	repo    string
+	url     string
+	number  int
+	issue   github.Issue
+	comment github.IssueComment
+}
+
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)$`)
@@ -39,6 +51,8 @@ var (
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+	plugins.RegisterIssueHandler(pluginName, handleIssue)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
 }
 
 type githubClient interface {
@@ -51,7 +65,45 @@ type githubClient interface {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, ic)
+	ae := assignEvent{
+		action:  ic.Action,
+		body:    ic.Comment.Body,
+		login:   ic.Comment.User.Login,
+		org:     ic.Repo.Owner.Login,
+		repo:    ic.Repo.Name,
+		url:     ic.Comment.HTMLURL,
+		number:  ic.Issue.Number,
+		issue:   ic.Issue,
+		comment: ic.Comment,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
+}
+
+func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
+	ae := assignEvent{
+		action: i.Action,
+		body:   i.Issue.Body,
+		login:  i.Issue.User.Login,
+		org:    i.Repo.Owner.Login,
+		repo:   i.Repo.Name,
+		url:    i.Issue.HTMLURL,
+		number: i.Issue.Number,
+		issue:  i.Issue,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
+}
+
+func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+	ae := assignEvent{
+		action: pr.Action,
+		body:   pr.PullRequest.Body,
+		login:  pr.PullRequest.User.Login,
+		org:    pr.PullRequest.Base.Repo.Owner.Login,
+		repo:   pr.PullRequest.Base.Repo.Name,
+		url:    pr.PullRequest.HTMLURL,
+		number: pr.Number,
+	}
+	return handle(pc.GitHubClient, pc.Logger, ae)
 }
 
 // Get Lables from Regexp matches
@@ -65,25 +117,20 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	return
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
-	commenter := ic.Comment.User.Login
-	owner := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
-	number := ic.Issue.Number
-
+func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	// only parse newly created comments and if non bot author
-	if commenter == gc.BotName() || ic.Action != "created" {
+	if ae.login == gc.BotName() || ae.action != "created" {
 		return nil
 	}
 
-	labelMatches := labelRegex.FindAllStringSubmatch(ic.Comment.Body, -1)
-	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(ic.Comment.Body, -1)
-	sigMatches := sigMatcher.FindAllStringSubmatch(ic.Comment.Body, -1)
+	labelMatches := labelRegex.FindAllStringSubmatch(ae.body, -1)
+	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(ae.body, -1)
+	sigMatches := sigMatcher.FindAllStringSubmatch(ae.body, -1)
 	if len(labelMatches) == 0 && len(sigMatches) == 0 && len(removeLabelMatches) == 0 {
 		return nil
 	}
 
-	labels, err := gc.GetLabels(owner, repo)
+	labels, err := gc.GetLabels(ae.org, ae.repo)
 	if err != nil {
 		return err
 	}
@@ -105,7 +152,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
-		if ic.Issue.HasLabel(labelToAdd) {
+		if ae.issue.HasLabel(labelToAdd) {
 			continue
 		}
 
@@ -114,14 +161,14 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 			continue
 		}
 
-		if err := gc.AddLabel(owner, repo, number, existingLabels[labelToAdd]); err != nil {
+		if err := gc.AddLabel(ae.org, ae.repo, ae.number, existingLabels[labelToAdd]); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
 		}
 	}
 
 	// Remove labels
 	for _, labelToRemove := range labelsToRemove {
-		if !ic.Issue.HasLabel(labelToRemove) {
+		if !ae.issue.HasLabel(labelToRemove) {
 			noSuchLabelsOnIssue = append(noSuchLabelsOnIssue, labelToRemove)
 			continue
 		}
@@ -131,28 +178,28 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 			continue
 		}
 
-		if err := gc.RemoveLabel(owner, repo, number, labelToRemove); err != nil {
+		if err := gc.RemoveLabel(ae.org, ae.repo, ae.number, labelToRemove); err != nil {
 			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
 		}
 	}
 
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + strings.TrimSpace(sigMatch[1]))
-		if ic.Issue.HasLabel(sigLabel) {
+		if ae.issue.HasLabel(sigLabel) {
 			continue
 		}
 		if _, ok := existingLabels[sigLabel]; !ok {
 			nonexistent = append(nonexistent, sigLabel)
 			continue
 		}
-		if err := gc.AddLabel(owner, repo, number, sigLabel); err != nil {
+		if err := gc.AddLabel(ae.org, ae.repo, ae.number, sigLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
 		}
 	}
 
 	if len(nonexistent) > 0 {
 		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
-		if err := gc.CreateComment(owner, repo, number, plugins.FormatICResponse(ic.Comment, msg)); err != nil {
+		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
 	}
@@ -160,7 +207,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
 		msg := fmt.Sprintf(nonExistentLabelOnIssue, strings.Join(noSuchLabelsOnIssue, ", "))
-		if err := gc.CreateComment(owner, repo, number, plugins.FormatICResponse(ic.Comment, msg)); err != nil {
+		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
 	}
