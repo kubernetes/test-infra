@@ -1,93 +1,74 @@
 {
-  "pr:pull-kubernetes-e2e-gce-non-cri": {
-    "consistency": 0.929,
-    "flakes": 62,
+  "pr:pull-kubernetes-federation-e2e-gce": {
+    "consistency": 0.942,
+    "flakes": 50,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 28
+      "[k8s.io] Federated Services [Feature:Federation] with clusters DNS should be able to discover a federated service": 42,
+      "Federation Up": 20,
+      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should create and update matching ingresses in underlying clusters": 18
     }
   },
-  "ci-kubernetes-e2e-non-cri-gce-etcd3": {
-    "consistency": 0.863,
-    "flakes": 43,
+  "ci-kubernetes-e2e-non-cri-gke": {
+    "consistency": 0.892,
+    "flakes": 40,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 24,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 7
+      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 9
     }
   },
   "ci-kubernetes-e2e-non-cri-gce": {
-    "consistency": 0.864,
-    "flakes": 42,
+    "consistency": 0.88,
+    "flakes": 37,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 24,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 10
-    }
-  },
-  "ci-kubernetes-e2e-gce-container-vm": {
-    "consistency": 0.863,
-    "flakes": 42,
-    "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 10,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 8
-    }
-  },
-  "ci-kubernetes-e2e-non-cri-gce-proto": {
-    "consistency": 0.865,
-    "flakes": 41,
-    "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 22
-    }
-  },
-  "ci-kubernetes-e2e-gce-gci-ci-master": {
-    "consistency": 0.868,
-    "flakes": 41,
-    "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 16,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 8
-    }
-  },
-  "ci-kubernetes-e2e-gce-etcd3": {
-    "consistency": 0.876,
-    "flakes": 40,
-    "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 14,
       "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 7
     }
   },
-  "ci-kubernetes-e2e-gce-proto": {
-    "consistency": 0.872,
-    "flakes": 40,
+  "ci-kubernetes-e2e-gci-gke": {
+    "consistency": 0.911,
+    "flakes": 33,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 15,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 11
+      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 12
+    }
+  },
+  "ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd": {
+    "consistency": 0.845,
+    "flakes": 32,
+    "flakiest": {
+      "UpgradeTest": 32,
+      "[k8s.io] etcd Upgrade [Feature:EtcdUpgrade] [k8s.io] etcd upgrade should maintain a functioning cluster": 31
+    }
+  },
+  "ci-kubernetes-e2e-gke": {
+    "consistency": 0.909,
+    "flakes": 32,
+    "flakiest": {
+      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 9,
+      "[k8s.io] Projected should update annotations on modification [Conformance] [Volume]": 7
     }
   },
   "ci-kubernetes-e2e-gci-gce-proto": {
-    "consistency": 0.875,
-    "flakes": 39,
+    "consistency": 0.898,
+    "flakes": 32,
+    "flakiest": null
+  },
+  "ci-kubernetes-e2e-gce-multizone": {
+    "consistency": 0.876,
+    "flakes": 31,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 16,
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 7
+      "[k8s.io] Firewall rule should have correct firewall rules for e2e cluster": 34
     }
   },
-  "ci-kubernetes-e2e-gci-gce-etcd3": {
-    "consistency": 0.874,
-    "flakes": 39,
+  "ci-kubernetes-e2e-non-cri-gce-etcd3": {
+    "consistency": 0.9,
+    "flakes": 31,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 9
+      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 11
     }
   },
-  "ci-kubernetes-e2e-gci-gce": {
-    "consistency": 0.892,
-    "flakes": 36,
+  "ci-kubernetes-e2e-gce-etcd3": {
+    "consistency": 0.905,
+    "flakes": 30,
     "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 11
-    }
-  },
-  "ci-kubernetes-e2e-gce": {
-    "consistency": 0.894,
-    "flakes": 35,
-    "flakiest": {
-      "[k8s.io] Volumes [Volume] [k8s.io] PD should be mountable": 12
+      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 8
     }
   }
 }
