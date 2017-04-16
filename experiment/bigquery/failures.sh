@@ -28,6 +28,6 @@ which jq >/dev/null || (echo 'Cannot find jq on path. Install jq' 1>&2 && exit 1
 echo 'Jobs that ran this week, have been running for over a month and never passed:' 1>&2
 cat "${out}" | jq '
   [(.[] | {(.job): {
-      failing_since: (.first_run)
+      failing_days: (.broken_days)
   }})] | add'
 echo "Full flake data saved to: ${out}" 1>&2
