@@ -41,7 +41,7 @@ data = r.json()
 
 jobs = {}
 for job in data:
-    if job['type'] != 'pr':
+    if job['type'] != 'presubmit':
         continue
     if job['repo'] != 'kubernetes/kubernetes':
         continue
