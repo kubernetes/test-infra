@@ -40,32 +40,33 @@ func TestFetchIssues(t *testing.T) {
 	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "ok"})
 	db.Create(&sql.Issue{IssueUpdatedAt: time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC), Repository: "notok"})
 
-	out := make(chan sql.Issue, 10)
+	fetcher := NewFetcher("ok")
+	fetcher.lastIssue = time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)
+	fetcher.IssuesChannel = make(chan sql.Issue, 10)
 
-	last := time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC)
-	if err := fetchRecentIssues(db, "ok", &last, out); err != nil {
+	if err := fetcher.fetchRecentIssues(db); err != nil {
 		t.Fatal("Failed to fetch recent issues:", err)
 	}
-	if last != time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC) {
+	if fetcher.lastIssue != time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC) {
 		t.Errorf(
 			"Last issue should be %s, not %s",
 			time.Date(2000, time.January, 4, 0, 0, 0, 0, time.UTC),
-			last,
+			fetcher.lastIssue,
 		)
 	}
 	// Last is included in the response set
-	if len(out) != 3 {
-		t.Error("Only 3 issues should have been fetched, not ", len(out))
+	if len(fetcher.IssuesChannel) != 3 {
+		t.Error("Only 3 issues should have been fetched, not ", len(fetcher.IssuesChannel))
 	}
 }
 
 func TestFetchEventsAndComments(t *testing.T) {
 	tests := []struct {
 		events          []interface{}
-		lastEvent       int
-		lastComment     int
-		wantLastEvent   int
-		wantLastComment int
+		lastEvent       time.Time
+		lastComment     time.Time
+		wantLastEvent   time.Time
+		wantLastComment time.Time
 		wantCount       int
 	}{
 		// Mixed events and comments
@@ -82,11 +83,11 @@ func TestFetchEventsAndComments(t *testing.T) {
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
 				&sql.Comment{ID: "6", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
-			lastEvent:       2,
-			lastComment:     2,
-			wantLastEvent:   4,
-			wantLastComment: 5,
-			wantCount:       5,
+			lastEvent:       time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+			lastComment:     time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC),
+			wantLastEvent:   time.Date(2000, time.January, 3, 0, 0, 0, 0, time.UTC),
+			wantLastComment: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC),
+			wantCount:       3,
 		},
 		// Only comments
 		{
@@ -98,11 +99,11 @@ func TestFetchEventsAndComments(t *testing.T) {
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "ok"},
 				&sql.Comment{ID: "5", CommentCreatedAt: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC), Repository: "notok"},
 			},
-			lastEvent:       10,
-			lastComment:     2,
-			wantLastEvent:   10,
-			wantLastComment: 5,
-			wantCount:       3,
+			lastEvent:       time.Date(1990, time.January, 0, 0, 0, 0, 0, time.UTC),
+			lastComment:     time.Date(2000, time.January, 2, 0, 0, 0, 0, time.UTC),
+			wantLastEvent:   time.Date(1990, time.January, 0, 0, 0, 0, 0, time.UTC),
+			wantLastComment: time.Date(2000, time.January, 5, 0, 0, 0, 0, time.UTC),
+			wantCount:       2,
 		},
 	}
 
@@ -118,28 +119,28 @@ func TestFetchEventsAndComments(t *testing.T) {
 			db.Create(event)
 		}
 
-		out := make(chan interface{}, len(test.events))
+		fetcher := NewFetcher("ok")
+		fetcher.lastEvent = test.lastEvent
+		fetcher.lastComment = test.lastComment
+		fetcher.EventsCommentsChannel = make(chan interface{}, len(test.events))
 
-		lastEvent := test.lastEvent
-		lastComment := test.lastComment
-
-		if err := fetchRecentEventsAndComments(db, "ok", &lastEvent, &lastComment, out); err != nil {
+		if err := fetcher.fetchRecentEventsAndComments(db); err != nil {
 			t.Fatal("Failed to fetch recent events:", err)
 		}
-		if lastEvent != test.wantLastEvent {
-			t.Errorf("LastEvent event should be %d, not %d", test.wantLastEvent, lastEvent)
+		if !fetcher.lastEvent.Equal(test.wantLastEvent) {
+			t.Errorf("LastEvent event should be %s, not %s", test.wantLastEvent, fetcher.lastEvent)
 		}
-		if lastComment != test.wantLastComment {
-			t.Errorf("LastComment event should be %d, not %d", test.wantLastComment, lastComment)
+		if !fetcher.lastComment.Equal(test.wantLastComment) {
+			t.Errorf("LastComment event should be %s, not %s", test.wantLastComment, fetcher.lastComment)
 		}
-		if len(out) != test.wantCount {
-			t.Errorf("%d events should have been fetched, not %d", test.wantCount, len(out))
+		if len(fetcher.EventsCommentsChannel) != test.wantCount {
+			t.Errorf("%d events should have been fetched, not %d", test.wantCount, len(fetcher.EventsCommentsChannel))
 		}
 
-		close(out)
+		close(fetcher.EventsCommentsChannel)
 
 		lastDate := time.Time{}
-		for item := range out {
+		for item := range fetcher.EventsCommentsChannel {
 			date := time.Time{}
 			switch item := item.(type) {
 			case sql.IssueEvent:

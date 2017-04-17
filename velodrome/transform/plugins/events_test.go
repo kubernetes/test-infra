@@ -14,37 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package plugins
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
-func TestTagsToWhere(t *testing.T) {
+func TestNewEvent(t *testing.T) {
 	tests := []struct {
-		tags map[string]string
-		want string
+		description string
+		matcher     EventMatcher
 	}{
-		{
-			tags: map[string]string{},
-			want: "",
-		},
-		{
-			tags: map[string]string{
-				"key1": "value1",
-			},
-			want: `WHERE "key1" = 'value1'`,
-		},
-		{
-			tags: map[string]string{
-				"key1": "value1",
-				"key2": "value2",
-			},
-			want: `WHERE "key1" = 'value1' AND "key2" = 'value2'`,
-		},
+		{"", FalseEvent{}},
+		{"labeled:something", LabelEvent{Label: "something"}},
+		{"unlabeled:something", UnlabelEvent{Label: "something"}},
+		{"merged", MergeEvent{}},
+		{"closed", CloseEvent{}},
+		{"reopened", ReopenEvent{}},
+		{"opened", OpenEvent{}},
 	}
 
 	for _, test := range tests {
-		if got := tagsToWhere(test.tags); got != test.want {
-			t.Errorf("tagsToWhere(%+v) = %+v, want %+v", test.tags, got, test.want)
+		got := NewEventMatcher(test.description)
+		want := test.matcher
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("NewEvent(%s) = %#v, want %#v",
+				test.description, got, want)
 		}
 	}
 }

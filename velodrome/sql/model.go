@@ -54,11 +54,11 @@ func (issue *Issue) FindLabels(regex *regexp.Regexp) []Label {
 // IssueEvent is an event associated to a specific issued.
 // It's format fits into the ORM
 type IssueEvent struct {
-	Repository     string `gorm:"primary_key"`
+	Repository     string `gorm:"primary_key;index:repo_created"`
 	ID             string `gorm:"primary_key"`
 	Label          *string
 	Event          string
-	EventCreatedAt time.Time
+	EventCreatedAt time.Time `gorm:"index:repo_created"`
 	IssueId        string
 	Assignee       *string
 	Actor          *string
@@ -80,12 +80,12 @@ type Assignee struct {
 
 // Comment is either a pull-request comment or an issue comment.
 type Comment struct {
-	Repository       string `gorm:"primary_key"`
+	Repository       string `gorm:"primary_key;index:repo_created"`
 	ID               string `gorm:"primary_key"`
 	IssueID          string
 	Body             string `gorm:"type:text"`
 	User             string
-	CommentCreatedAt time.Time
+	CommentCreatedAt time.Time `gorm:"index:repo_created"`
 	CommentUpdatedAt time.Time
 	PullRequest      bool
 }
