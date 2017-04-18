@@ -65,7 +65,7 @@ function addElement(parent, type, opts, children) {
 
 // Turn a build object into a link with information.
 function buildToHtml(build) {
-  let started = new Date(build.started * 1000).toLocaleString();
+  let started = tsToString(build.started);
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
   if (build.pr) {
@@ -179,15 +179,17 @@ function renderCluster(top, key, keyId, text, tests) {
   var counts = clustered.makeCounts(keyId);
 
   var clusterSum = clustersSum(tests);
-  var recentCount = clustered.getHitsInLastDayById(keyId);
+  var todayCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
     createElement('h2',
-      {innerHTML: `${plural(clusterSum, 'FAILURE', 'S')} (${recentCount} RECENT) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
+      {innerHTML: `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
   var list = addElement(failureNode, 'ul', null, [
-    createElement('li', {innerText: `Recent Failures ${rightArrow}`})
+    createElement('li', {innerText: `Latest Failures ${rightArrow}`}, [
+      createElement('div', {className: 'latest', dataset: {cluster: keyId}})
+    ]),
   ]);
 
   var clusterJobs = addElement(list, 'li');
@@ -293,6 +295,22 @@ function renderGraph(element, buildsIterator) {
   chart.draw(data, options);
 }
 
+// Show the most recent few results in a cluster
+function renderLatest(element, clusterId) {
+  if (element.children.length > 0) {
+    return;  // already done
+  }
+  var ctxs = [];
+  for (let ctx of clustered.buildsWithContextForClusterById(clusterId)) {
+    ctxs.push(ctx);
+  }
+  ctxs.sort((a, b) => { return b[0].started - a[0].started; })
+  var list = addElement(element, 'ul');
+  for (let [build, job, test] of ctxs.slice(0, 5)) {
+    addElement(list, 'li', {innerHTML: `${job} ${buildToHtml(build)} ${test}`});
+  }
+}
+
 // When someone clicks on an expandable element, render the sub content as necessary.
 function expand(target) {
   while (target.nodeName !== "LI" && target.parentNode) {
@@ -315,6 +333,8 @@ function expand(target) {
           renderGraph(child, clustered.buildsForClusterById(cluster));
         } else if (child.className === 'jobs') {
           renderJobs(child, cluster);
+        } else if (child.className === 'latest') {
+          renderLatest(child, cluster);
         }
       }
 

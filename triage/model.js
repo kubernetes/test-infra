@@ -12,6 +12,10 @@ function minMaxArray(arr) {
   return [min, max];
 }
 
+function tsToString(ts) {
+  return new Date(ts * 1000).toLocaleString();
+}
+
 // Store information about individual builds.
 class Builds {
   constructor(dict) {
@@ -57,11 +61,11 @@ class Builds {
   }
 
   getStartTime() {
-    return new Date(this.timespan[0] * 1000);
+    return tsToString(this.timespan[0]);
   }
 
   getEndTime() {
-    return new Date(this.timespan[1] * 1000);
+    return tsToString(this.timespan[1]);
   }
 }
 
@@ -149,8 +153,12 @@ class Clusters {
     }
   }
 
-  *buildsForClusterById(clusterId) {
-    yield *buildsForCluster(this.byId[clusterId]);
+  buildsForClusterById(clusterId) {
+    return buildsForCluster(this.byId[clusterId]);
+  }
+
+  buildsWithContextForClusterById(clusterId) {
+    return buildsWithContextForCluster(this.byId[clusterId]);
   }
 
   getHitsInLastDayById(clusterId) {
@@ -229,7 +237,7 @@ class Clusters {
       counts[key][bucket]++;
     }
 
-    for (let [build, job, test] of buildsWithContextForCluster(this.byId[clusterId])) {
+    for (let [build, job, test] of this.buildsWithContextForClusterById(clusterId)) {
       let bucket = pickBucket(build.started);
       incr(job, bucket);
       incr(test, bucket);

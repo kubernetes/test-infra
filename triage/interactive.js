@@ -128,7 +128,7 @@ function rerender(maxCount) {
     summaryText += ` (${clustered.sumRecent} in last day)`;
   }
 
-  summaryText += ` out of ${builds.runCount} builds from ${builds.getStartTime().toLocaleString()} to ${builds.getEndTime().toLocaleString()}.`
+  summaryText += ` out of ${builds.runCount} builds from ${builds.getStartTime()} to ${builds.getEndTime()}.`
 
   summary.innerText = summaryText;
 
