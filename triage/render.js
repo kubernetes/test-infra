@@ -172,22 +172,18 @@ function renderCluster(top, key, keyId, text, tests) {
   return 1;
 }
 
-// Convert a sorted array of integers into a histogram array of two-element arrays.
+// Convert an array of integers into a histogram array of two-element arrays.
 function makeBuckets(hits, width, start, end) {
-  // Bucket into 4 hour chunks
   var cur = start;
-  cur -= (cur % width);
-  var buckets = [[cur, 0]];
+  cur -= (cur % width);  // align to width
+  var counts = new Uint32Array(Math.floor((end - cur) / width) + 1);
   for (var hit of hits) {
-    while (hit >= cur + width) {
-      cur += width;
-      buckets.push([cur, 0]);
-    }
-    buckets[buckets.length - 1][1] += 1;
+    counts[Math.floor((hit - cur) / width)] += 1;
   }
-  while (cur + width <= end) {
+  var buckets = [];
+  for (var c of counts) {
+    buckets.push([cur, c]);
     cur += width;
-    buckets.push([cur, 0]);
   }
   return buckets;
 }
@@ -212,8 +208,6 @@ function renderGraph(element, buildsIterator) {
       buildTimes.push(build.started);
     }
   }
-  hits.sort();
-  buildTimes.sort();
 
   var width = 60 * 60; // Bucket into 1 hour chunks
   var widthRecip = 60 * 60 / width;
