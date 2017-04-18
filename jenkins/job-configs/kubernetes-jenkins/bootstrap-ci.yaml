@@ -1160,12 +1160,6 @@
         timeout: 320
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         trigger-job: 'ci-kubernetes-build-1.4'
-    - kubernetes-e2e-gci-gke-alpha-features-release-1.4:
-        job-name: ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: 'ci-kubernetes-build-1.4'
     - kubernetes-e2e-gci-gke-slow-release-1.4:
         job-name: ci-kubernetes-e2e-gci-gke-slow-release-1.4
         jenkins-timeout: 270
