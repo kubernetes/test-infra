@@ -326,6 +326,14 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 
 	for i := range spec.Containers {
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
+		// Set the HostPort to 9999 for all build pods so that they are forced
+		// onto different nodes. Once pod affinity is GA, use that instead.
+		spec.Containers[i].Ports = append(spec.Containers[i].Ports,
+			kube.Port{
+				ContainerPort: 9999,
+				HostPort:      9999,
+			},
+		)
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "JOB_NAME",
@@ -372,14 +380,6 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 			kube.EnvVar{
 				Name:  "PULL_PULL_SHA",
 				Value: pj.Spec.Refs.Pulls[0].SHA,
-			},
-		)
-		// Set the HostPort to 9999 for all build pods so that they are forced
-		// onto different nodes. Once pod affinity is GA, use that instead.
-		spec.Containers[i].Ports = append(spec.Containers[i].Ports,
-			kube.Port{
-				ContainerPort: 9999,
-				HostPort:      9999,
 			},
 		)
 	}
