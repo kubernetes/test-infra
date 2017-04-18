@@ -781,9 +781,10 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:0.3
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094
       args:
-      - "--timeout=60"
+      - --bare
+      - --timeout=60
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
