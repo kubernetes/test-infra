@@ -25,13 +25,15 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
+const orgMember = "m"
+
 func TestReleaseNoteComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		action        string
 		body          string
+		isMember      bool
 		isAuthor      bool
-		isReviewer    bool
 		currentLabels []string
 
 		deletedLabels []string
@@ -55,9 +57,9 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    releaseNoteNone,
 		},
 		{
-			name:          "reviewer release-note",
+			name:          "member release-note",
 			action:        "created",
-			isReviewer:    true,
+			isMember:      true,
 			body:          "/release-note",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
 
@@ -69,29 +71,29 @@ func TestReleaseNoteComment(t *testing.T) {
 			action:        "created",
 			body:          "/release-note",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
-
 			shouldComment: true,
 		},
 		{
 			name:          "already has release-note",
 			action:        "created",
 			body:          "/release-note",
+			isMember:      true,
 			currentLabels: []string{releaseNote, "other"},
 		},
 		{
 			name:          "delete multiple labels",
 			action:        "created",
-			isReviewer:    true,
+			isMember:      true,
 			body:          "/release-note",
 			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteNone, "other"},
 
 			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteNone},
 		},
 		{
-			name:       "no label present",
-			action:     "created",
-			isReviewer: true,
-			body:       "/release-note-none",
+			name:     "no label present",
+			action:   "created",
+			isMember: true,
+			body:     "/release-note-none",
 
 			addedLabel: releaseNoteNone,
 		},
@@ -99,6 +101,7 @@ func TestReleaseNoteComment(t *testing.T) {
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
+			OrgMembers:    []string{orgMember},
 		}
 		ice := github.IssueCommentEvent{
 			Action: tc.action,
@@ -115,8 +118,8 @@ func TestReleaseNoteComment(t *testing.T) {
 		}
 		if tc.isAuthor {
 			ice.Comment.User.Login = "a"
-		} else if tc.isReviewer {
-			ice.Comment.User.Login = "r"
+		} else if tc.isMember {
+			ice.Comment.User.Login = "m"
 		}
 		for _, l := range tc.currentLabels {
 			ice.Issue.Labels = append(ice.Issue.Labels, github.Label{Name: l})

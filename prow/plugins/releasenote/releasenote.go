@@ -52,6 +52,7 @@ func init() {
 }
 
 type githubClient interface {
+	IsMember(org, user string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
@@ -81,11 +82,16 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 		return nil
 	}
 
-	// Only allow authors and assignees to add labels.
-	isAssignee := ic.Issue.IsAssignee(ic.Comment.User.Login)
+	// Only allow authors and org members to add labels.
+	isMember, err := gc.IsMember(ic.Repo.Owner.Login, ic.Comment.User.Login)
+	if err != nil {
+		return err
+	}
+
 	isAuthor := ic.Issue.IsAuthor(ic.Comment.User.Login)
-	if !isAssignee && !isAuthor {
-		resp := "you can only set release notes if you are the author or an assignee"
+
+	if !isMember && !isAuthor {
+		resp := "you can only set release notes if you are the author or an org member"
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
