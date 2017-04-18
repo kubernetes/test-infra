@@ -18,12 +18,12 @@ package label
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"reflect"
 )
 
 const (
@@ -33,6 +33,17 @@ const (
 	nonOrgMember = "Bob"
 	prNumber     = 1
 )
+
+type testCase struct {
+	name                  string
+	body                  string
+	commenter             string
+	expectedNewLabels     []string
+	expectedRemovedLabels []string
+	repoLabels            []string
+	issueLabels           []string
+	isPr                  bool
+}
 
 func formatLabels(labels ...string) []string {
 	r := []string{}
@@ -45,7 +56,7 @@ func formatLabels(labels ...string) []string {
 	return r
 }
 
-func getFakeRepo(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, github.IssueCommentEvent) {
+func getFakeRepoIssueComment(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
 	fakeCli := &fakegithub.FakeClient{
 		IssueComments:  make(map[int][]github.IssueComment),
 		ExistingLabels: repoLabels,
@@ -74,22 +85,130 @@ func getFakeRepo(commentBody, commenter string, repoLabels, issueLabels []string
 		},
 		Action: "created",
 	}
-	return fakeCli, ice
+
+	ae := assignEvent{
+		action:  ice.Action,
+		body:    ice.Comment.Body,
+		login:   ice.Comment.User.Login,
+		org:     ice.Repo.Owner.Login,
+		repo:    ice.Repo.Name,
+		url:     ice.Comment.HTMLURL,
+		number:  ice.Issue.Number,
+		issue:   ice.Issue,
+		comment: ice.Comment,
+	}
+
+	return fakeCli, ae
+}
+
+func getFakeRepoIssue(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
+	fakeCli := &fakegithub.FakeClient{
+		Issues:         make([]github.Issue, 1),
+		IssueComments:  make(map[int][]github.IssueComment),
+		ExistingLabels: repoLabels,
+		OrgMembers:     []string{orgMember},
+	}
+
+	startingLabels := []github.Label{}
+	for _, label := range issueLabels {
+		startingLabels = append(startingLabels, github.Label{Name: label})
+	}
+
+	ie := github.IssueEvent{
+		Repo: github.Repo{
+			Owner: github.User{Login: fakeRepoOrg},
+			Name:  fakeRepoName,
+		},
+		Issue: github.Issue{
+			User:        github.User{Login: "a"},
+			Number:      prNumber,
+			PullRequest: &struct{}{},
+			Body:        commentBody,
+			Labels:      startingLabels,
+		},
+		Action: "created",
+	}
+
+	ae := assignEvent{
+		action: ie.Action,
+		body:   ie.Issue.Body,
+		login:  ie.Issue.User.Login,
+		org:    ie.Repo.Owner.Login,
+		repo:   ie.Repo.Name,
+		url:    ie.Issue.HTMLURL,
+		number: ie.Issue.Number,
+		issue:  ie.Issue,
+		comment: github.IssueComment{
+			Body: ie.Issue.Body,
+			User: ie.Issue.User,
+		},
+	}
+
+	return fakeCli, ae
+}
+
+func getFakeRepoPullRequest(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
+	fakeCli := &fakegithub.FakeClient{
+		PullRequests:   make(map[int]*github.PullRequest),
+		IssueComments:  make(map[int][]github.IssueComment),
+		ExistingLabels: repoLabels,
+		OrgMembers:     []string{orgMember},
+	}
+
+	startingLabels := []github.Label{}
+	for _, label := range issueLabels {
+		startingLabels = append(startingLabels, github.Label{Name: label})
+	}
+
+	pre := github.PullRequestEvent{
+		PullRequest: github.PullRequest{
+			User:   github.User{Login: commenter},
+			Number: prNumber,
+			Base: github.PullRequestBranch{
+				Repo: github.Repo{
+					Owner: github.User{Login: fakeRepoOrg},
+					Name:  fakeRepoName,
+				},
+			},
+			Body: commentBody,
+			Head: github.PullRequestBranch{
+				Repo: github.Repo{
+					Owner: github.User{Login: fakeRepoOrg},
+					Name:  fakeRepoName,
+				},
+			},
+		},
+		Number: prNumber,
+		Action: "created",
+	}
+
+	ae := assignEvent{
+		action: pre.Action,
+		body:   pre.PullRequest.Body,
+		login:  pre.PullRequest.User.Login,
+		org:    pre.PullRequest.Base.Repo.Owner.Login,
+		repo:   pre.PullRequest.Base.Repo.Name,
+		url:    pre.PullRequest.HTMLURL,
+		number: pre.Number,
+		issue: github.Issue{
+			User:   pre.PullRequest.User,
+			Number: pre.Number,
+			Body:   pre.PullRequest.Body,
+			Labels: startingLabels,
+		},
+		comment: github.IssueComment{
+			Body: pre.PullRequest.Body,
+			User: pre.PullRequest.User,
+		},
+	}
+
+	return fakeCli, ae
 }
 
 func TestLabel(t *testing.T) {
 	// "a" is the author, "a", "r1", and "r2" are reviewers.
 
-	var testcases = []struct {
-		name                  string
-		body                  string
-		commenter             string
-		expectedNewLabels     []string
-		expectedRemovedLabels []string
-		repoLabels            []string
-		issueLabels           []string
-		isPr                  bool
-	}{
+	testcases := []testCase{
 		{
 			name:                  "Irrelevant comment",
 			body:                  "irrelelvant",
@@ -375,7 +494,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: []string{},
+			expectedRemovedLabels: formatLabels("area/infra"),
 			commenter:             orgMember,
 		},
 		{
@@ -389,19 +508,48 @@ func TestLabel(t *testing.T) {
 		},
 	}
 
+	fakeRepoFunctions := []func(string, string, []string, []string) (*fakegithub.FakeClient, assignEvent){
+		getFakeRepoIssueComment,
+		getFakeRepoIssue,
+		getFakeRepoPullRequest,
+	}
+
 	for _, tc := range testcases {
-		fakeClient, ice := getFakeRepo(tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
-		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ice); err != nil {
-			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
-			continue
-		}
+		sort.Strings(tc.expectedNewLabels)
 
-		if len(tc.expectedNewLabels) > 0 && !reflect.DeepEqual(tc.expectedNewLabels, fakeClient.LabelsAdded) {
-			t.Errorf("For test %v,\n\tExpected Added %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
-		}
+		for i := 0; i < len(fakeRepoFunctions); i++ {
+			fakeClient, ae := fakeRepoFunctions[i](tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
 
-		if len(tc.expectedRemovedLabels) > 0 && !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
-			t.Errorf("For test %v,\n\tExpected Removed %+v \n\tFound %+v", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae); err != nil {
+				t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
+				return
+			}
+
+			if len(tc.expectedNewLabels) != len(fakeClient.LabelsAdded) {
+				t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
+				return
+			}
+
+			sort.Strings(fakeClient.LabelsAdded)
+
+			for i := range tc.expectedNewLabels {
+				if tc.expectedNewLabels[i] != fakeClient.LabelsAdded[i] {
+					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
+					break
+				}
+			}
+
+			if len(tc.expectedRemovedLabels) != len(fakeClient.LabelsRemoved) {
+				t.Errorf("For test %v,\n\tExpected Removed %+v \n\tFound %+v", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+				return
+			}
+
+			for i := range tc.expectedRemovedLabels {
+				if tc.expectedRemovedLabels[i] != fakeClient.LabelsRemoved[i] {
+					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+					break
+				}
+			}
 		}
 	}
 }
