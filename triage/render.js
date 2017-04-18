@@ -63,36 +63,43 @@ function addElement(parent, type, opts, children) {
   return el;
 }
 
+// Creates a urlsafe slug out of a string-- MUST match Gubernator's slugify function.
+function slugify(inp) {
+  return inp.replace(/[^\w\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+}
+
 // Turn a build object into a link with information.
-function buildToHtml(build) {
+function buildToHtml(build, test) {
   let started = tsToString(build.started);
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
   if (build.pr) {
     gubernatorURL = gubernatorURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }
-  return `<a href="${gubernatorURL}">${build.number} ${started}</a>`;
+  if (test) {
+    gubernatorURL += '#' + slugify(test);
+  }
+  return `<a href="${gubernatorURL}" target="_blank" rel="noopener">${build.number} ${started}</a>`;
 }
 
 // Turn a job and array of build numbers into a list of build links.
-function buildNumbersToHtml(job, buildNumbers) {
+function buildNumbersToHtml(job, buildNumbers, test) {
   var buildCount = builds.count(job);
   var pct = buildNumbers.length / builds.count(job);
   var out = `Failed in ${Math.round(pct * 100)}% (${buildNumbers.length}/${buildCount}) of builds: <ul>`;
-  out += ''
   for (let number of buildNumbers) {
-    out += '\n<li>' + buildToHtml(builds.get(job, number));
+    out += '\n<li>' + buildToHtml(builds.get(job, number), test);
   }
   out += '\n</ul>';
   return out;
 }
 
 // Append a list item containing information about a job's runs.
-function addBuildListItem(jobList, job, buildNumbers, hits) {
+function addBuildListItem(jobList, job, buildNumbers, hits, test) {
   var jobEl = addElement(jobList, 'li', null, [sparkLineSVG(hits), ` ${buildNumbers.length} ${job} ${rightArrow}`,
     createElement('p', {
       style: {display: 'none'},
-      dataset: {job: job, buildNumbers: JSON.stringify(buildNumbers)},
+      dataset: {job: job, test: test, buildNumbers: JSON.stringify(buildNumbers)},
     })
   ]);
 }
@@ -218,7 +225,7 @@ function renderCluster(top, key, keyId, text, tests) {
     }
     for (var job of test.jobs) {
       jobSet.add(job.name);
-      addBuildListItem(jobList, job.name, job.builds, counts[job.name + ' ' + test.name]);
+      addBuildListItem(jobList, job.name, job.builds, counts[job.name + ' ' + test.name], test.name);
     }
   }
 
@@ -307,7 +314,7 @@ function renderLatest(element, clusterId) {
   ctxs.sort((a, b) => { return b[0].started - a[0].started; })
   var list = addElement(element, 'ul');
   for (let [build, job, test] of ctxs.slice(0, 5)) {
-    addElement(list, 'li', {innerHTML: `${job} ${buildToHtml(build)} ${test}`});
+    addElement(list, 'li', {innerHTML: `${buildToHtml(build, test)} ${job} ${test}`});
   }
 }
 
@@ -325,8 +332,9 @@ function expand(target) {
 
       if (child.dataset.buildNumbers) {
         var job = child.dataset.job;
+        var test = child.dataset.test;
         var buildNumbers = JSON.parse(child.dataset.buildNumbers);
-        child.innerHTML = buildNumbersToHtml(job, buildNumbers);
+        child.innerHTML = buildNumbersToHtml(job, buildNumbers, test);
       } else if (child.dataset.cluster) {
         var cluster = child.dataset.cluster;
         if (child.className === 'graph') {
