@@ -104,6 +104,19 @@ function *buildsForCluster(entry) {
   }
 }
 
+function *buildsWithContextForCluster(entry) {
+  for (let test of entry.tests) {
+    for (let job of test.jobs) {
+      for (let number of job.builds) {
+        let build = builds.get(job.name, number);
+        if (build) {
+          yield [build, job.name, test.name];
+        }
+      }
+    }
+  }
+}
+
 // Return the number of builds that completed in the last day's worth of data.
 function getHitsInLastDay(entry) {
   if (entry.dayHits) {
@@ -195,6 +208,35 @@ class Clusters {
     }
 
     return new Clusters(out);
+  }
+
+  makeCounts(clusterId) {
+    let start = builds.timespan[0];
+    let width = 60 * 60 * 8;  // 8 hours
+
+    function pickBucket(ts) {
+      return ((ts - start) / width) | 0;
+    }
+
+    let size = pickBucket(builds.timespan[1]) + 1;
+
+    let counts = {};
+
+    function incr(key, bucket) {
+      if (counts[key] === undefined) {
+        counts[key] = new Uint32Array(size);
+      }
+      counts[key][bucket]++;
+    }
+
+    for (let [build, job, test] of buildsWithContextForCluster(this.byId[clusterId])) {
+      let bucket = pickBucket(build.started);
+      incr(job, bucket);
+      incr(test, bucket);
+      incr(job + " " + test, bucket);
+    }
+
+    return counts;
   }
 }
 
