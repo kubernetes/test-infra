@@ -18,7 +18,6 @@ data:
 
   # test-options feature options.
   test-options.required-retest-contexts: "\
-    \"Jenkins GCE e2e\",\
     \"Jenkins unit/integration\",\
     \"Jenkins verification\",\
     \"Jenkins GCE Node e2e\",\
