@@ -540,18 +540,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
 - name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
 - name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
@@ -574,18 +566,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
 - name: ci-kubernetes-node-kubelet-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
 - name: ci-kubernetes-node-kubelet-conformance
@@ -1443,18 +1427,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
   - name: gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
-  - name: gke-gci-1.4-container_vm-1.5-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster
   - name: gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
-  - name: gke-gci-1.4-container_vm-1.5-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-master
-  - name: gke-gci-1.4-gci-1.5-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster
   - name: gke-gci-1.4-gci-1.5-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
-  - name: gke-gci-1.4-gci-1.5-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-master
 
 - name: google-gke-latest-upgrade
   dashboard_tab:
@@ -1462,18 +1438,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
   - name: container_vm-1.4-gci-latest-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
-  - name: gci-1.4-container_vm-latest-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster
   - name: gci-1.4-container_vm-latest-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new
-  - name: gci-1.4-container_vm-latest-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-master
-  - name: gci-1.4-gci-latest-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster
   - name: gci-1.4-gci-latest-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
-  - name: gci-1.4-gci-latest-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-master
 
 - name: latest-upgrades
   dashboard_tab:
