@@ -10,6 +10,7 @@ py_test(
         "//jenkins/job-configs/kubernetes-jenkins:configs",
         "//jenkins/job-configs/kubernetes-jenkins-pull:configs",
         "//jobs",
+        "//prow:config.yaml",
     ],
     deps = ["@yaml//:yaml"],
 )

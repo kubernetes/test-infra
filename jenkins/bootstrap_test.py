@@ -1397,6 +1397,8 @@ class JobTest(unittest.TestCase):
         'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml' : 'dockerpush-suffix'
     }
 
+    prow_config = '../prow/config.yaml'
+
     realjobs = {}
 
     def testJobScriptExpandsVars(self):
@@ -1650,6 +1652,43 @@ class JobTest(unittest.TestCase):
         else:
             self.assertIn('--upload=\'gs://kubernetes-jenkins/logs\'', cmd)
 
+    def AddProwJob(self, job):
+        name = job.get('name')
+        real_job = {}
+        real_job['name'] = name
+        if 'spec' in job:
+            spec = job.get('spec')
+            for container in spec.get('containers'):
+                if 'args' in container:
+                    for arg in container.get('args'):
+                        match = re.match(r'--timeout=(\d+)', arg)
+                        if match:
+                            real_job['timeout'] = match.group(1)
+        if name not in self.realjobs:
+            self.realjobs[name] = real_job
+        if 'run_after_success' in job:
+            for sub in job.get('run_after_success'):
+                self.AddProwJob(sub)
+
+    def LoadProwYaml(self, path):
+        with open(os.path.join(
+            os.path.dirname(__file__), path)) as fp:
+            doc = yaml.safe_load(fp)
+
+        if 'periodics' not in doc:
+            self.fail('No periodics in prow config!')
+
+        for item in doc.get('periodics'):
+            self.AddProwJob(item)
+
+        if 'postsubmits' not in doc:
+            self.fail('No postsubmits in prow config!')
+
+        postsubmits = doc.get('postsubmits')
+        for repo in postsubmits:
+            for job in postsubmits.get(repo):
+                self.AddProwJob(job)
+
     def LoadBootstrapYaml(self, path):
         with open(os.path.join(
             os.path.dirname(__file__), path)) as fp:
@@ -1737,6 +1776,7 @@ class JobTest(unittest.TestCase):
         if not key in self.realjobs:
             for yaml in self.yaml_suffix:
                 self.LoadBootstrapYaml(yaml)
+            self.LoadProwYaml(self.prow_config)
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
 
@@ -1753,15 +1793,7 @@ class JobTest(unittest.TestCase):
                 'kops-e2e-',
             ]
 
-            # Skip prow e2e for now. Fix this while we move from Jenkins to Prow.
-            skip = [
-                'kubernetes-e2e-prow-canary',
-                'kubernetes-e2e-kubeadm-gce'
-            ]
-
             if not re.search('|'.join(valids), job):
-                continue
-            if re.search('|'.join(skip), job):
                 continue
             found_timeout = False
             with open(job_path) as fp:
@@ -1786,6 +1818,7 @@ class JobTest(unittest.TestCase):
                     mat = re.match(r'KUBEKINS_TIMEOUT=(\d+)m.*', line)
                     realjob = self.GetRealBootstrapJob(job)
                     self.assertTrue(realjob)
+                    self.assertIn('timeout', realjob, job)
                     docker_timeout = realjob['timeout']
                     self.assertGreater(docker_timeout, 0)
                 self.assertTrue(mat, line)
