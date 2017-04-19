@@ -75,6 +75,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Also check prow postsubmit and periodic jobs
+	for _, job := range prowConfig.AllPostsubmits() {
+		jenkinsjobs[job] = false
+	}
+
+	for _, job := range prowConfig.AllPeriodics() {
+		jenkinsjobs[job] = false
+	}
+
 	// For now anything outsite k8s-jenkins/logs are considered to be fine
 	testgroups := make(map[string]bool)
 	for _, testgroup := range config.TestGroups {
@@ -90,14 +99,6 @@ func main() {
 		if _, ok := testgroups[jenkinsjob]; ok {
 			testgroups[jenkinsjob] = true
 			jenkinsjobs[jenkinsjob] = true
-		}
-	}
-
-	// Also check prow jobs
-	for _, job := range prowConfig.AllJobNames() {
-		if _, ok := testgroups[job]; ok {
-			testgroups[job] = true
-			jenkinsjobs[job] = true
 		}
 	}
 
