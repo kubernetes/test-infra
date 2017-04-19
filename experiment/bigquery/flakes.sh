@@ -25,9 +25,9 @@ if [[ ! -f "${out}" ]]; then
   cat "$(dirname "${0}")/flakes.sql" | bq query --format=prettyjson > "${out}"
 fi
 which jq >/dev/null || (echo 'Cannot find jq on path. Install jq' 1>&2 && exit 1)
-echo 'Jobs flaking more than 4x/day:' 1>&2
+echo 'Jobs flaking more than 3x/day:' 1>&2
 cat "${out}" | jq '
-  [(.[] | select(.flakes|tonumber > 28) | {(.job): {
+  [(.[] | select(.flakes|tonumber > 21) | {(.job): {
       consistency: (.commit_consistency|tonumber),
       flakes: (.flakes|tonumber),
       flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 7) | {

@@ -1,74 +1,80 @@
 {
   "pr:pull-kubernetes-federation-e2e-gce": {
-    "consistency": 0.942,
-    "flakes": 50,
+    "consistency": 0.944,
+    "flakes": 46,
     "flakiest": {
       "[k8s.io] Federated Services [Feature:Federation] with clusters DNS should be able to discover a federated service": 42,
-      "Federation Up": 20,
-      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should create and update matching ingresses in underlying clusters": 18
+      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should create and update matching ingresses in underlying clusters": 15,
+      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should not be deleted from underlying clusters when OrphanDependents is nil": 12
     }
   },
   "ci-kubernetes-e2e-non-cri-gke": {
-    "consistency": 0.892,
-    "flakes": 40,
+    "consistency": 0.905,
+    "flakes": 35,
     "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 9
+      "[k8s.io] Projected should update annotations on modification [Conformance] [Volume]": 7,
+      "[k8s.io] Port forwarding [k8s.io] With a server listening on 0.0.0.0 should support forwarding over websockets": 7,
+      "[k8s.io] Downward API volume should update annotations on modification [Conformance] [Volume]": 7
     }
   },
-  "ci-kubernetes-e2e-non-cri-gce": {
-    "consistency": 0.88,
-    "flakes": 37,
-    "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 7
-    }
-  },
-  "ci-kubernetes-e2e-gci-gke": {
-    "consistency": 0.911,
+  "pr:pull-kubernetes-e2e-gce": {
+    "consistency": 0.963,
     "flakes": 33,
     "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 12
+      "[k8s.io] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic] should provide basic identity": 11,
+      "TearDown": 8,
+      "[k8s.io] Kubectl client [k8s.io] Kubectl describe should check if kubectl describe prints relevant information for rc and pods [Conformance]": 8
     }
   },
-  "ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd": {
-    "consistency": 0.845,
-    "flakes": 32,
-    "flakiest": {
-      "UpgradeTest": 32,
-      "[k8s.io] etcd Upgrade [Feature:EtcdUpgrade] [k8s.io] etcd upgrade should maintain a functioning cluster": 31
-    }
-  },
-  "ci-kubernetes-e2e-gke": {
-    "consistency": 0.909,
-    "flakes": 32,
-    "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 9,
-      "[k8s.io] Projected should update annotations on modification [Conformance] [Volume]": 7
-    }
-  },
-  "ci-kubernetes-e2e-gci-gce-proto": {
-    "consistency": 0.898,
-    "flakes": 32,
+  "pr:pull-kubernetes-bazel": {
+    "consistency": 0.966,
+    "flakes": 30,
     "flakiest": null
   },
-  "ci-kubernetes-e2e-gce-multizone": {
-    "consistency": 0.876,
-    "flakes": 31,
-    "flakiest": {
-      "[k8s.io] Firewall rule should have correct firewall rules for e2e cluster": 34
-    }
+  "ci-kubernetes-e2e-non-cri-gce": {
+    "consistency": 0.906,
+    "flakes": 28,
+    "flakiest": null
   },
-  "ci-kubernetes-e2e-non-cri-gce-etcd3": {
-    "consistency": 0.9,
-    "flakes": 31,
+  "ci-kubernetes-e2e-gce-container-vm": {
+    "consistency": 0.916,
+    "flakes": 25,
+    "flakiest": null
+  },
+  "ci-kubernetes-e2e-gke": {
+    "consistency": 0.929,
+    "flakes": 25,
     "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 11
+      "[k8s.io] Projected should update labels on modification [Conformance] [Volume]": 7
     }
   },
   "ci-kubernetes-e2e-gce-etcd3": {
-    "consistency": 0.905,
-    "flakes": 30,
+    "consistency": 0.925,
+    "flakes": 24,
+    "flakiest": null
+  },
+  "ci-kubernetes-e2e-gce-multizone": {
+    "consistency": 0.915,
+    "flakes": 23,
     "flakiest": {
-      "[k8s.io] Services should preserve source pod IP for traffic thru service cluster IP": 8
+      "[k8s.io] Firewall rule should have correct firewall rules for e2e cluster": 22
+    }
+  },
+  "ci-kubernetes-e2e-gci-gke": {
+    "consistency": 0.936,
+    "flakes": 23,
+    "flakiest": null
+  },
+  "ci-kubernetes-e2e-gci-gce-proto": {
+    "consistency": 0.93,
+    "flakes": 22,
+    "flakiest": null
+  },
+  "ci-kubernetes-e2e-gce-gci-ci-master": {
+    "consistency": 0.927,
+    "flakes": 22,
+    "flakiest": {
+      "[k8s.io] Downward API volume should update labels on modification [Conformance] [Volume]": 7
     }
   }
 }
