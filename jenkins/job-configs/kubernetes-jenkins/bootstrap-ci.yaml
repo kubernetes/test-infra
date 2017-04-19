@@ -1538,25 +1538,6 @@
         frequency: 'H * * * *' # At least every hour
         trigger-job: 'ci-kubernetes-build-1.5'
 
-    - kubernetes-e2e-gce-1.4-1.5-upgrade-master:
-        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-master
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-    - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster:
-        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-    - kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new:
-        job-name: ci-kubernetes-e2e-gce-1.4-1.5-upgrade-cluster-new
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-
     - kubernetes-e2e-gce-1.5-1.6-upgrade-master:
         job-name: ci-kubernetes-e2e-gce-1.5-1.6-upgrade-master
         jenkins-timeout: 1020
