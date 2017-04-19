@@ -113,3 +113,27 @@ a:link {
     text-decoration: none;
     color: blue;
 }
+
+#rerun {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    margin: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#rerun-content {
+    font-family: monospace;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    text-align: center;
+}

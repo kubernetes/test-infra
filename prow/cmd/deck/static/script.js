@@ -1,3 +1,5 @@
+"use strict";
+
 var types = ["presubmit", "postsubmit", "periodic", "batch"];
 var repos = {};
 var jobs = {};
@@ -79,6 +81,13 @@ function groupKey(build) {
 }
 
 function redraw() {
+    var modal = document.getElementById('rerun');
+    var rerun_command = document.getElementById('rerun-content');
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
     var builds = document.getElementById("builds").getElementsByTagName("tbody")[0];
     while (builds.firstChild)
         builds.removeChild(builds.firstChild);
@@ -132,6 +141,7 @@ function redraw() {
         } else {
             r.appendChild(createTextCell(""));
         }
+        r.appendChild(createRerunCell(modal, rerun_command, build.prow_job));
         var key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
@@ -179,6 +189,20 @@ function createLinkCell(text, url) {
     var a = document.createElement("a");
     a.href = url;
     a.appendChild(document.createTextNode(text));
+    c.appendChild(a);
+    return c;
+}
+
+function createRerunCell(modal, rerun_command, prowjob) {
+    var url = "https://" + window.location.hostname + "/rerun?prowjob=" + prowjob;
+    var c = document.createElement("td");
+    var a = document.createElement("a");
+    a.href = "#";
+    a.onclick = function() {
+        modal.style.display = "block";
+        rerun_command.textContent = "kubectl create -f \"" + url + "\"";
+    };
+    a.appendChild(document.createTextNode("\u27F3"));
     c.appendChild(a);
     return c;
 }
