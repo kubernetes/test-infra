@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.3
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 image:
-	docker build -t "gcr.io/k8s-testimages/kubekins-e2e-prow:$(VERSION)" .
+	docker build -t "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)" .
 
 push:
-	gcloud docker -- push "gcr.io/k8s-testimages/kubekins-e2e-prow:$(VERSION)"
+	gcloud docker -- push "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)"
 
 .PHONY: image push
