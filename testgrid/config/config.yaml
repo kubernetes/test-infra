@@ -344,8 +344,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1.4
 - name: ci-kubernetes-e2e-gke-alpha-features-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1.5
-- name: ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
 - name: ci-kubernetes-e2e-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-autoscaling
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
@@ -1144,8 +1142,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1.4
   - name: gke-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1.5
-  - name: gci-gke-alpha-features-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features-release-1.4
   - name: gke-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-autoscaling
   - name: gci-gke-autoscaling
