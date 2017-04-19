@@ -15,14 +15,31 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: ing
+  name: tls-ing
   annotations:
-    "kubernetes.io/ingress.global-static-ip-name": prow
+    kubernetes.io/ingress.global-static-ip-name: prow
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: "gce"
 spec:
   tls:
-  - secretName: prow-k8s-cert
+  - secretName: prow-tls
+    hosts:
+    - prow.k8s.io
+    - prow.kubernetes.io
   rules:
-  - http:
+  - host: prow.k8s.io
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: deck
+          servicePort: 80
+      - path: /hook
+        backend:
+          serviceName: hook
+          servicePort: 8888
+  - host: prow.kubernetes.io
+    http:
       paths:
       - path: /*
         backend:
