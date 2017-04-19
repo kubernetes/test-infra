@@ -1,5 +1,15 @@
 {
 
+"metrics-bigquery" : {
+  "scenario": "bigquery",
+  "args": [
+    "--config=test-infra/metrics/flakes-config.yaml",
+    "--config=test-infra/metrics/failures-config.yaml",
+    "--config=test-infra/metrics/job-flakes-config.yaml",
+    "--config=test-infra/metrics/weekly-consistency-config.yaml"
+  ]
+},
+
 "ci-cadvisor-node-kubelet": {
   "scenario": "execute",
   "args": [
