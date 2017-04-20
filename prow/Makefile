@@ -19,7 +19,6 @@ HOOK_VERSION       = 0.100
 SINKER_VERSION     = 0.6
 DECK_VERSION       = 0.26
 SPLICE_VERSION     = 0.19
-MARQUE_VERSION     = 0.1
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.3
@@ -85,17 +84,6 @@ splice-image:
 splice-deployment:
 	kubectl apply -f cluster/splice_deployment.yaml
 
-marque-image:
-	CGO_ENABLED=0 go build -o cmd/marque/marque k8s.io/test-infra/prow/cmd/marque
-	docker build -t "gcr.io/$(PROJECT)/marque:$(MARQUE_VERSION)" cmd/marque
-	gcloud docker -- push "gcr.io/$(PROJECT)/marque:$(MARQUE_VERSION)"
-
-marque-deployment:
-	kubectl apply -f cluster/marque_deployment.yaml
-
-marque-service:
-	kubectl apply -f cluster/marque_service.yaml
-
 tot-image:
 	CGO_ENABLED=0 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
 	docker build -t "gcr.io/$(PROJECT)/tot:$(TOT_VERSION)" cmd/tot
@@ -134,4 +122,4 @@ plank-image:
 plank-deployment:
 	kubectl apply -f cluster/plank_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment marque-image marque-deployment marque-service tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment
+.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment

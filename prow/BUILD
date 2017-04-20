@@ -20,7 +20,6 @@ filegroup(
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/hook:all-srcs",
         "//prow/cmd/horologium:all-srcs",
-        "//prow/cmd/marque:all-srcs",
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sinker:all-srcs",
