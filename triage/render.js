@@ -188,8 +188,11 @@ function renderCluster(top, key, keyId, text, tests) {
   var clusterSum = clustersSum(tests);
   var todayCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
-    createElement('h2',
-      {innerHTML: `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
+    createElement('h2', null, [
+      `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING `,
+      createElement('a', {href: '#' + keyId}, keyId),
+      createElement('a', {href: 'https://github.com/search?type=Issues&q=' + keyId, target: '_blank', rel: 'noopener'}, 'github search')
+    ]),
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
