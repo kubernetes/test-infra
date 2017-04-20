@@ -991,7 +991,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1.4.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1.4.env",
+    "--mode=local"
   ]
 },
 
