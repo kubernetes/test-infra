@@ -464,7 +464,9 @@ func GenerateTemplateOrFail(templ, name string, data interface{}) *string {
 func GetMessage(ap Approvers, org, project string) *string {
 	message := GenerateTemplateOrFail(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
 {{- if not .ap.IsApproved}}
-We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}@{{$cc}}{{end}}
+We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
+
+Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
 <details {{if not .ap.IsApproved}}open{{end}}>
