@@ -53,6 +53,7 @@ helpers = {}  # People with owners rights to update error projects
 DEFAULT = {
     'roles/editor': [
         'serviceAccount:kubekins@kubernetes-jenkins.iam.gserviceaccount.com',
+        'serviceAccount:pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com',
     ],
 }
 
