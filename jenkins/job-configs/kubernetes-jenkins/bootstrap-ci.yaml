@@ -683,6 +683,12 @@
         timeout: 90
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gce-sd-logging:
+        job-name: ci-kubernetes-e2e-gce-sd-logging
+        jenkins-timeout: 220
+        timeout: 120
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-statefulset:
         job-name: ci-kubernetes-e2e-gce-statefulset
         jenkins-timeout: 170
@@ -707,6 +713,12 @@
         job-name: ci-kubernetes-e2e-gci-gce-es-logging
         jenkins-timeout: 210
         timeout: 110
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gci-gce-sd-logging:
+        job-name: ci-kubernetes-e2e-gci-gce-sd-logging
+        jenkins-timeout: 220
+        timeout: 120
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-statefulset:
@@ -739,6 +751,12 @@
         job-name: ci-kubernetes-e2e-non-cri-gce-es-logging
         jenkins-timeout: 210
         timeout: 110
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-non-cri-gce-sd-logging:
+        job-name: ci-kubernetes-e2e-non-cri-gce-sd-logging
+        jenkins-timeout: 220
+        timeout: 120
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-non-cri-gce-statefulset:

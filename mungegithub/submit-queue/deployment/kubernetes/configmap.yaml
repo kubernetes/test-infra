@@ -47,6 +47,7 @@ data:
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
     ci-kubernetes-e2e-gci-gce-es-logging,\
+    ci-kubernetes-e2e-gci-gce-sd-logging,\
     ci-kubernetes-e2e-gci-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce-examples,\
     ci-kubernetes-e2e-gci-gce-ingress,\
