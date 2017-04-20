@@ -86,6 +86,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-autoscaling-migs
 - name: ci-kubernetes-e2e-non-cri-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-es-logging
+- name: ci-kubernetes-e2e-non-cri-gce-sd-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-sd-logging
 - name: ci-kubernetes-e2e-non-cri-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-non-cri-gce-etcd3
 - name: ci-kubernetes-e2e-non-cri-gce-examples
@@ -178,6 +180,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
+- name: ci-kubernetes-e2e-gce-sd-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-sd-logging
+- name: ci-kubernetes-e2e-gci-gce-sd-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
 - name: ci-kubernetes-e2e-gce-etcd3-release-1.5
@@ -954,6 +960,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-es-logging
   - name: gci-gce-es-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
+  - name: gce-sd-logging
+    test_group_name: ci-kubernetes-e2e-gce-sd-logging
+  - name: gci-gce-sd-logging
+    test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
   - name: gce-etcd3-1.5
@@ -2039,6 +2049,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-non-cri-gce-autoscaling-migs
   - name: gce-es-logging
     test_group_name: ci-kubernetes-e2e-non-cri-gce-es-logging
+  - name: gce-sd-logging
+    test_group_name: ci-kubernetes-e2e-non-cri-gce-sd-logging
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-non-cri-gce-etcd3
   - name: gce-examples
