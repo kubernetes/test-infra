@@ -35,6 +35,7 @@ filegroup(
         "//jobs:all-srcs",
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
+        "//logexporter/cmd:all-srcs",
         "//mungegithub:all-srcs",
         "//prow:all-srcs",
         "//scenarios:all-srcs",

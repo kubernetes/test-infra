@@ -476,7 +476,10 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
         args:
+        - "--pull=$(PULL_REFS)"
         - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
