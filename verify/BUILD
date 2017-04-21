@@ -32,7 +32,10 @@ sh_test(
 sh_test(
     name = "verify-pylint",
     srcs = ["verify-pylint.sh"],
-    data = ["//:all-srcs"],
+    data = [
+        "//:all-srcs",
+        "@pylint//:pylint",
+    ],
     tags = ["manual"],
 )
 
