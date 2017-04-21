@@ -13,6 +13,18 @@ describe('makeBuckets', () => {
     expect('shifts start to match width', [[0, 1], [4, 1]],     [2, 6], 4, 2, 6);
 });
 
+describe('sparkLinePath', () => {
+    function expect(name, expected, ...args) {
+        it(name, function() {
+            assert.deepEqual(render.sparkLinePath(...args), expected);
+        });
+    }
+    expect('draws a zero graph', 'M0,9h5', [0,0,0,0,0], 1, 9);
+    expect('draws a spikey graph', 'M0,9h1V0h1V9h1', [0,1,0], 1, 9);
+    expect('combines adjacents spans', 'M0,9h1V4h2V0h1V9h1', [0,1,1,2,0], 1, 9);
+    expect('handles scaling', 'M0,8h0V7h2V6h1V4h1V0h1V8', [2,4,8,16,32], 1, 8);
+})
+
 describe('Clusters', () => {
     describe('refilter', () => {
         function expect(name, expected, clustered, opts) {

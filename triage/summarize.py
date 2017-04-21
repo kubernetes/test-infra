@@ -285,6 +285,8 @@ def tests_group_by_job(tests, builds):
             continue
         if 'number' in build:
             groups.setdefault(build['job'], []).append(build['number'])
+    for value in groups.itervalues():
+        value.sort(reverse=True)
     return sorted(groups.iteritems(), key=lambda (k, v): (-len(v), k))
 
 

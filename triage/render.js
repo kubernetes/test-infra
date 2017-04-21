@@ -63,43 +63,53 @@ function addElement(parent, type, opts, children) {
   return el;
 }
 
+// Creates a urlsafe slug out of a string-- MUST match Gubernator's slugify function.
+function slugify(inp) {
+  return inp.replace(/[^\w\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+}
+
 // Turn a build object into a link with information.
-function buildToHtml(build) {
-  let started = new Date(build.started * 1000).toLocaleString();
+function buildToHtml(build, test) {
+  let started = tsToString(build.started);
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
   if (build.pr) {
     gubernatorURL = gubernatorURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }
-  return `<a href="${gubernatorURL}">${build.number} ${started}</a>`;
+  if (test) {
+    gubernatorURL += '#' + slugify(test);
+  }
+  return `<a href="${gubernatorURL}" target="_blank" rel="noopener">${build.number} ${started}</a>`;
 }
 
 // Turn a job and array of build numbers into a list of build links.
-function buildNumbersToHtml(job, buildNumbers) {
+function buildNumbersToHtml(job, buildNumbers, test) {
   var buildCount = builds.count(job);
   var pct = buildNumbers.length / builds.count(job);
   var out = `Failed in ${Math.round(pct * 100)}% (${buildNumbers.length}/${buildCount}) of builds: <ul>`;
-  out += ''
   for (let number of buildNumbers) {
-    out += '\n<li>' + buildToHtml(builds.get(job, number));
+    out += '\n<li>' + buildToHtml(builds.get(job, number), test);
   }
   out += '\n</ul>';
   return out;
 }
 
 // Append a list item containing information about a job's runs.
-function addBuildListItem(jobList, job, buildNumbers) {
-  var jobEl = addElement(jobList, 'li', null, `${buildNumbers.length} ${job} ${rightArrow}`);
-  var p = addElement(jobEl, 'p', {
+function addBuildListItem(jobList, job, buildNumbers, hits, test) {
+  var jobEl = addElement(jobList, 'li', null, [sparkLineSVG(hits), ` ${buildNumbers.length} ${job} ${rightArrow}`,
+    createElement('p', {
       style: {display: 'none'},
-      dataset: {job: job, buildNumbers: JSON.stringify(buildNumbers)},
-  });
+      dataset: {job: job, test: test, buildNumbers: JSON.stringify(buildNumbers)},
+    })
+  ]);
 }
 
 // Render a list of builds as a list of jobs with expandable build sections.
-function renderJobs(parent, buildsIterator) {
+function renderJobs(parent, clusterId) {
+  var counts = clustered.makeCounts(clusterId);
+
   var clusterJobs = {};
-  for (let build of buildsIterator) {
+  for (let build of clustered.buildsForClusterById(clusterId)) {
     let job = build.job;
     if (!clusterJobs[job]) {
       clusterJobs[job] = new Set();
@@ -113,8 +123,53 @@ function renderJobs(parent, buildsIterator) {
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of clusterJobs) {
     let buildNumbers = Array.from(buildNumbersSet).sort();
-    addBuildListItem(jobList, job, buildNumbers);
+    addBuildListItem(jobList, job, buildNumbers, counts[job]);
   }
+}
+
+// Return an SVG path displaying the given histogram arr, with width
+// being per element and height being the total height of the graph.
+function sparkLinePath(arr, width, height) {
+  var max = 0;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] > max)
+      max = arr[i];
+  }
+  var scale = max > 0 ? height / max : 1;
+
+  // Full documentation here: https://www.w3.org/TR/SVG/paths.html#PathData
+  // Basics:
+  // 0,0 is the the top left corner
+  // Commands:
+  //    M x y: move to x, y
+  //    h dx: move horizontally +/- dx
+  //    V y: move vertically to y
+  // Here, we're drawing a histogram as a single polygon with right angles.
+  var out = 'M0,' + height;
+  var x = 0, y = height;
+  for (var i = 0; i < arr.length; i++) {
+    var h = height - Math.ceil(arr[i] * scale);
+    if (h != y) {
+      // h2V0 draws horizontally across, then a line to the top of the canvas.
+      out += `h${i * width - x}V${h}`;
+      x = i * width;
+      y = h;
+    }
+  }
+  out += `h${arr.length * width - x}`;
+  if (y != height)
+    out += `V${height}`;
+
+  return out;
+}
+
+function sparkLineSVG(arr) {
+  var width = 4;
+  var height = 16;
+  var path = sparkLinePath(arr, width, height);
+  return createElement('span', {
+    innerHTML: `<svg height=${height} width='${(arr.length) * width}'><path d="${path}" /></svg>`,
+  });
 }
 
 // Render a section for each cluster, including the text, a graph, and expandable sections
@@ -128,43 +183,56 @@ function renderCluster(top, key, keyId, text, tests) {
     return count == 1 ? count + ' ' + word : count + ' ' + word + suffix;
   }
 
+  var counts = clustered.makeCounts(keyId);
+
   var clusterSum = clustersSum(tests);
-  var recentCount = clustered.getHitsInLastDayById(keyId);
+  var todayCount = clustered.getHitsInLastDayById(keyId);
   var failureNode = addElement(top, 'div', {id: keyId}, [
-    createElement('h2',
-      {innerHTML: `${plural(clusterSum, 'FAILURE', 'S')} (${recentCount} RECENT) MATCHING <a href="#${keyId}" class="key">${keyId}</a>`}),
+    createElement('h2', null, [
+      `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING `,
+      createElement('a', {href: '#' + keyId}, keyId),
+      createElement('a', {href: 'https://github.com/search?type=Issues&q=' + keyId, target: '_blank', rel: 'noopener'}, 'github search')
+    ]),
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
-  var clusterJobs = addElement(failureNode, 'ul');
-  var list = addElement(failureNode, 'ul');
+  var list = addElement(failureNode, 'ul', null, [
+    createElement('li', {innerText: `Latest Failures ${rightArrow}`}, [
+      createElement('div', {className: 'latest', dataset: {cluster: keyId}})
+    ]),
+  ]);
+
+  var clusterJobs = addElement(list, 'li');
 
   var jobSet = new Set();
 
   var testList = createElement('ul');
-
-  addElement(list, 'li', null, [`${plural(tests.length, 'Test', 's')} ${pickArrow(tests.length)}`, testList]);
   if (tests.length > kCollapseThreshold) {
     testList.style.display = 'none';
   }
+
+  addElement(list, 'li', null, [`Failed in ${plural(tests.length, 'Test', 's')} ${pickArrow(tests.length)}`, testList]);
 
   // If we expanded all the tests and jobs, how many rows would it take?
   var jobCount = sum(tests, t => t.jobs.length);
 
   for (var test of tests) {
     var testCount = sum(test.jobs, j => j.builds.length);
-    var el = addElement(testList, 'li', null, `${testCount} ${test.name} ${pickArrow(jobCount)}`);
+    var el = addElement(testList, 'li', null, [
+      sparkLineSVG(counts[test.name]),
+      ` ${testCount} ${test.name} ${pickArrow(jobCount)}`,
+    ]);
     var jobList = addElement(el, 'ul');
     if (jobCount > kCollapseThreshold) {
       jobList.style.display = 'none';
     }
     for (var job of test.jobs) {
       jobSet.add(job.name);
-      addBuildListItem(jobList, job.name, job.builds);
+      addBuildListItem(jobList, job.name, job.builds, counts[job.name + ' ' + test.name], test.name);
     }
   }
 
-  clusterJobs.innerHTML = `<li>${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
+  clusterJobs.innerHTML = `Failed in ${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
   if (jobSet.size <= 10) {  // automatically expand small job lists to save clicking
     expand(clusterJobs.children[0]);
   }
@@ -172,22 +240,18 @@ function renderCluster(top, key, keyId, text, tests) {
   return 1;
 }
 
-// Convert a sorted array of integers into a histogram array of two-element arrays.
+// Convert an array of integers into a histogram array of two-element arrays.
 function makeBuckets(hits, width, start, end) {
-  // Bucket into 4 hour chunks
   var cur = start;
-  cur -= (cur % width);
-  var buckets = [[cur, 0]];
+  cur -= (cur % width);  // align to width
+  var counts = new Uint32Array(Math.floor((end - cur) / width) + 1);
   for (var hit of hits) {
-    while (hit >= cur + width) {
-      cur += width;
-      buckets.push([cur, 0]);
-    }
-    buckets[buckets.length - 1][1] += 1;
+    counts[Math.floor((hit - cur) / width)] += 1;
   }
-  while (cur + width <= end) {
+  var buckets = [];
+  for (var c of counts) {
+    buckets.push([cur, c]);
     cur += width;
-    buckets.push([cur, 0]);
   }
   return buckets;
 }
@@ -212,8 +276,6 @@ function renderGraph(element, buildsIterator) {
       buildTimes.push(build.started);
     }
   }
-  hits.sort();
-  buildTimes.sort();
 
   var width = 60 * 60; // Bucket into 1 hour chunks
   var widthRecip = 60 * 60 / width;
@@ -243,10 +305,29 @@ function renderGraph(element, buildsIterator) {
   chart.draw(data, options);
 }
 
+// Show the most recent few results in a cluster
+function renderLatest(element, clusterId) {
+  if (element.children.length > 0) {
+    return;  // already done
+  }
+  var ctxs = [];
+  for (let ctx of clustered.buildsWithContextForClusterById(clusterId)) {
+    ctxs.push(ctx);
+  }
+  ctxs.sort((a, b) => { return b[0].started - a[0].started; })
+  var list = addElement(element, 'ul');
+  for (let [build, job, test] of ctxs.slice(0, 5)) {
+    addElement(list, 'li', {innerHTML: `${buildToHtml(build, test)} ${job} ${test}`});
+  }
+}
+
 // When someone clicks on an expandable element, render the sub content as necessary.
 function expand(target) {
-  var child = target.children[0];
-  var text = target.childNodes[0];
+  while (target.nodeName !== "LI" && target.parentNode) {
+    target = target.parentNode;
+  }
+  var text = target.childNodes[target.childNodes.length - 2];
+  var child = target.children[target.children.length - 1];
   if (target.nodeName == "LI" && child && text) {
     if (text.textContent.includes(rightArrow)) {
       text.textContent = text.textContent.replace(rightArrow, downArrow);
@@ -254,14 +335,17 @@ function expand(target) {
 
       if (child.dataset.buildNumbers) {
         var job = child.dataset.job;
+        var test = child.dataset.test;
         var buildNumbers = JSON.parse(child.dataset.buildNumbers);
-        child.innerHTML = buildNumbersToHtml(job, buildNumbers);
+        child.innerHTML = buildNumbersToHtml(job, buildNumbers, test);
       } else if (child.dataset.cluster) {
         var cluster = child.dataset.cluster;
         if (child.className === 'graph') {
           renderGraph(child, clustered.buildsForClusterById(cluster));
         } else if (child.className === 'jobs') {
-          renderJobs(child, clustered.buildsForClusterById(cluster));
+          renderJobs(child, cluster);
+        } else if (child.className === 'latest') {
+          renderLatest(child, cluster);
         }
       }
 
@@ -279,5 +363,6 @@ if (typeof module !== 'undefined' && module.exports) {
   // enable node.js `require` to work for testing
   module.exports = {
     makeBuckets: makeBuckets,
+    sparkLinePath: sparkLinePath,
   }
 }

@@ -12,6 +12,10 @@ function minMaxArray(arr) {
   return [min, max];
 }
 
+function tsToString(ts) {
+  return new Date(ts * 1000).toLocaleString();
+}
+
 // Store information about individual builds.
 class Builds {
   constructor(dict) {
@@ -57,11 +61,11 @@ class Builds {
   }
 
   getStartTime() {
-    return new Date(this.timespan[0] * 1000);
+    return tsToString(this.timespan[0]);
   }
 
   getEndTime() {
-    return new Date(this.timespan[1] * 1000);
+    return tsToString(this.timespan[1]);
   }
 }
 
@@ -104,6 +108,19 @@ function *buildsForCluster(entry) {
   }
 }
 
+function *buildsWithContextForCluster(entry) {
+  for (let test of entry.tests) {
+    for (let job of test.jobs) {
+      for (let number of job.builds) {
+        let build = builds.get(job.name, number);
+        if (build) {
+          yield [build, job.name, test.name];
+        }
+      }
+    }
+  }
+}
+
 // Return the number of builds that completed in the last day's worth of data.
 function getHitsInLastDay(entry) {
   if (entry.dayHits) {
@@ -136,8 +153,12 @@ class Clusters {
     }
   }
 
-  *buildsForClusterById(clusterId) {
-    yield *buildsForCluster(this.byId[clusterId]);
+  buildsForClusterById(clusterId) {
+    return buildsForCluster(this.byId[clusterId]);
+  }
+
+  buildsWithContextForClusterById(clusterId) {
+    return buildsWithContextForCluster(this.byId[clusterId]);
   }
 
   getHitsInLastDayById(clusterId) {
@@ -195,6 +216,35 @@ class Clusters {
     }
 
     return new Clusters(out);
+  }
+
+  makeCounts(clusterId) {
+    let start = builds.timespan[0];
+    let width = 60 * 60 * 8;  // 8 hours
+
+    function pickBucket(ts) {
+      return ((ts - start) / width) | 0;
+    }
+
+    let size = pickBucket(builds.timespan[1]) + 1;
+
+    let counts = {};
+
+    function incr(key, bucket) {
+      if (counts[key] === undefined) {
+        counts[key] = new Uint32Array(size);
+      }
+      counts[key][bucket]++;
+    }
+
+    for (let [build, job, test] of this.buildsWithContextForClusterById(clusterId)) {
+      let bucket = pickBucket(build.started);
+      incr(job, bucket);
+      incr(test, bucket);
+      incr(job + " " + test, bucket);
+    }
+
+    return counts;
   }
 }
 
