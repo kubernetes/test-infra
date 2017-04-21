@@ -26,7 +26,7 @@ import (
 	"testing"
 )
 
-var podRe = regexp.MustCompile(`[a-z0-9]([-a-z0-9]*[a-z0-9])?`)
+var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
 const testThis = "@k8s-bot test this"
 
