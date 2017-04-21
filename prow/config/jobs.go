@@ -150,9 +150,9 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (c *Config) AllJobNames() []string {
+func (c *Config) AllPresubmits() []string {
+	res := []string{}
 	var listPres func(ps []Presubmit) []string
-	var listPost func(ps []Postsubmit) []string
 	listPres = func(ps []Presubmit) []string {
 		res := []string{}
 		for _, p := range ps {
@@ -161,6 +161,17 @@ func (c *Config) AllJobNames() []string {
 		}
 		return res
 	}
+
+	for _, v := range c.Presubmits {
+		res = append(res, listPres(v)...)
+	}
+
+	return res
+}
+
+func (c *Config) AllPostsubmits() []string {
+	res := []string{}
+	var listPost func(ps []Postsubmit) []string
 	listPost = func(ps []Postsubmit) []string {
 		res := []string{}
 		for _, p := range ps {
@@ -169,15 +180,24 @@ func (c *Config) AllJobNames() []string {
 		}
 		return res
 	}
-	res := []string{}
-	for _, v := range c.Presubmits {
-		res = append(res, listPres(v)...)
-	}
+
 	for _, v := range c.Postsubmits {
 		res = append(res, listPost(v)...)
 	}
-	for _, j := range c.Periodics {
-		res = append(res, j.Name)
-	}
+
 	return res
+}
+
+func (c *Config) AllPeriodics() []string {
+	var listPeriodic func(ps []Periodic) []string
+	listPeriodic = func(ps []Periodic) []string {
+		res := []string{}
+		for _, p := range ps {
+			res = append(res, p.Name)
+			res = append(res, listPeriodic(p.RunAfterSuccess)...)
+		}
+		return res
+	}
+
+	return listPeriodic(c.Periodics)
 }

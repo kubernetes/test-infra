@@ -857,6 +857,18 @@ test_groups:
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
+# prow jobs
+- name: ci-test-infra-triage
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
+- name: ci-kubernetes-e2e-prow-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-6
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-6
+- name: periodic-kubernetes-bazel-test-1-6
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-6
+- name: periodic-kubernetes-bazel-build-1-6
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
+
 # Add New Testgroups Here
 
 #
@@ -1552,6 +1564,12 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
   - name: kops-aws-1.6
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1.6
+  - name: periodic-bazel-test-1.6
+    test_group_name: periodic-kubernetes-bazel-test-1-6
+  - name: periodic-bazel-build-1.6
+    test_group_name: periodic-kubernetes-bazel-build-1-6
+  - name: periodic-kubeadm-gce-1.6
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
 
 # Matches the list on https://github.com/kubernetes/test-infra/issues/2029
 - name: release-1.6-blocking
@@ -2017,6 +2035,16 @@ dashboards:
   - name: kops-aws-canary
     description: Runs a smoke test using the latest e2e image against kops
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: triage
+    description: College results for triage page
+    test_group_name: ci-test-infra-triage
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: prow-canary
+    description: Runs a smoke test using the latest e2e image in prow
+    test_group_name: ci-kubernetes-e2e-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 

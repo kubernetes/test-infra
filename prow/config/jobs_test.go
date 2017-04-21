@@ -250,7 +250,7 @@ func TestConditionalPresubmits(t *testing.T) {
 	}
 }
 
-func TestListJobNames(t *testing.T) {
+func TestListPresubmit(t *testing.T) {
 	c := &Config{
 		Presubmits: map[string][]Presubmit{
 			"r1": {
@@ -265,6 +265,38 @@ func TestListJobNames(t *testing.T) {
 			},
 		},
 		Postsubmits: map[string][]Postsubmit{
+			"r1": {{Name: "c"}},
+		},
+		Periodics: []Periodic{
+			{Name: "d"},
+		},
+	}
+
+	expected := []string{"a", "aa", "ab", "b"}
+	actual := c.AllPresubmits()
+	if len(actual) != len(expected) {
+		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
+	}
+	for _, j1 := range expected {
+		found := false
+		for _, j2 := range actual {
+			if j1 == j2 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Did not find job %s in output", j1)
+		}
+	}
+}
+
+func TestListPostsubmit(t *testing.T) {
+	c := &Config{
+		Presubmits: map[string][]Presubmit{
+			"r1": {{Name: "a"}},
+		},
+		Postsubmits: map[string][]Postsubmit{
 			"r1": {
 				{
 					Name: "c",
@@ -277,9 +309,52 @@ func TestListJobNames(t *testing.T) {
 			},
 			"r2": {{Name: "e"}},
 		},
+		Periodics: []Periodic{
+			{Name: "f"},
+		},
 	}
-	expected := []string{"a", "aa", "ab", "b", "c", "ca", "cb", "d", "e"}
-	actual := c.AllJobNames()
+
+	expected := []string{"c", "ca", "cb", "d", "e"}
+	actual := c.AllPostsubmits()
+	if len(actual) != len(expected) {
+		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
+	}
+	for _, j1 := range expected {
+		found := false
+		for _, j2 := range actual {
+			if j1 == j2 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Did not find job %s in output", j1)
+		}
+	}
+}
+
+func TestListPeriodic(t *testing.T) {
+	c := &Config{
+		Presubmits: map[string][]Presubmit{
+			"r1": {{Name: "a"}},
+		},
+		Postsubmits: map[string][]Postsubmit{
+			"r1": {{Name: "b"}},
+		},
+		Periodics: []Periodic{
+			{
+				Name: "c",
+				RunAfterSuccess: []Periodic{
+					{Name: "ca"},
+					{Name: "cb"},
+				},
+			},
+			{Name: "d"},
+		},
+	}
+
+	expected := []string{"c", "ca", "cb", "d"}
+	actual := c.AllPeriodics()
 	if len(actual) != len(expected) {
 		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
 	}
@@ -346,7 +421,17 @@ func TestValidPodNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not load config: %v", err)
 	}
-	for _, j := range c.AllJobNames() {
+	for _, j := range c.AllPresubmits() {
+		if !podRe.MatchString(j) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
+		}
+	}
+	for _, j := range c.AllPostsubmits() {
+		if !podRe.MatchString(j) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
+		}
+	}
+	for _, j := range c.AllPeriodics() {
 		if !podRe.MatchString(j) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
 		}
