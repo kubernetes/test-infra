@@ -561,7 +561,9 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
-We suggest the following additional approver: @Alice
+We suggest the following additional approver: **Alice**
+
+Assign the PR to them by writing ` + "`/assign @Alice`" + ` in a comment when ready.
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
@@ -607,6 +609,41 @@ You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
+	if got := GetMessage(ap, "org", "project"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+}
+
+func TestGetMessageNoneApproved(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+			}),
+		},
+	)
+
+	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: 
+We suggest the following additional approvers: **Alice**, **Bill**
+
+Assign the PR to them by writing ` + "`/assign @Alice @Bill`" + ` in a comment when ready.
+
+<details open>
+Needs approval from an approver in each of these OWNERS Files:
+
+- **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
+- **[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)**
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["Alice","Bill"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
