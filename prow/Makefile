@@ -22,7 +22,7 @@ SPLICE_VERSION     = 0.19
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.5
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.10
+PLANK_VERSION      = 0.11
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow

@@ -318,13 +318,18 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	spec.NodeSelector = map[string]string{
 		"role": "build",
 	}
-	// keep this synchronized with get_running_build_log in Gubernator!
+	// Keep this synchronized with get_running_build_log in Gubernator!
 	podName := fmt.Sprintf("%s-%s", pj.Spec.Job, buildID)
 	if len(podName) > 60 {
 		podName = podName[len(podName)-60:]
 	}
 
-	for i := range spec.Containers {
+	// Set environment variables in each container in the pod spec. We don't
+	// want to update the spec in place, since that will update the ProwJob
+	// spec. Instead, create a copy.
+	spec.Containers = []kube.Container{}
+	for i := range pj.Spec.PodSpec.Containers {
+		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
 		// Set the HostPort to 9999 for all build pods so that they are forced
 		// onto different nodes. Once pod affinity is GA, use that instead.
