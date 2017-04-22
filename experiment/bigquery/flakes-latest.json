@@ -1,80 +1,78 @@
 {
   "pr:pull-kubernetes-federation-e2e-gce": {
-    "consistency": 0.944,
-    "flakes": 46,
+    "consistency": 0.936,
+    "flakes": 45,
     "flakiest": {
-      "[k8s.io] Federated Services [Feature:Federation] with clusters DNS should be able to discover a federated service": 42,
-      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should create and update matching ingresses in underlying clusters": 15,
-      "[k8s.io] Federated ingresses [Feature:Federation] Federated Ingresses should not be deleted from underlying clusters when OrphanDependents is nil": 12
-    }
-  },
-  "ci-kubernetes-e2e-non-cri-gke": {
-    "consistency": 0.905,
-    "flakes": 35,
-    "flakiest": {
-      "[k8s.io] Projected should update annotations on modification [Conformance] [Volume]": 7,
-      "[k8s.io] Port forwarding [k8s.io] With a server listening on 0.0.0.0 should support forwarding over websockets": 7,
-      "[k8s.io] Downward API volume should update annotations on modification [Conformance] [Volume]": 7
+      "DumpFederationLogs": 22,
+      "[k8s.io] Federated Services [Feature:Federation] with clusters DNS should be able to discover a federated service": 21,
+      "Stage": 14
     }
   },
   "pr:pull-kubernetes-e2e-gce": {
     "consistency": 0.963,
-    "flakes": 33,
+    "flakes": 28,
     "flakiest": {
-      "[k8s.io] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic] should provide basic identity": 11,
-      "TearDown": 8,
-      "[k8s.io] Kubectl client [k8s.io] Kubectl describe should check if kubectl describe prints relevant information for rc and pods [Conformance]": 8
+      "[k8s.io] Service endpoints latency should not be very high [Conformance]": 6,
+      "[k8s.io] PersistentVolumes:GCEPD [Volume] should test that deleting the Namespace of a PVC and Pod causes the successful detach of Persistent Disk": 6,
+      "[k8s.io] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic] should provide basic identity": 6
+    }
+  },
+  "pr:pull-kubernetes-e2e-gce-etcd3": {
+    "consistency": 0.967,
+    "flakes": 25,
+    "flakiest": {
+      "[k8s.io] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic] should provide basic identity": 7,
+      "[k8s.io] PersistentVolumes [Volume] [k8s.io] PersistentVolumes:NFS with multiple PVs and PVCs all in same ns should create 4 PVs and 2 PVCs: test write access": 6,
+      "TearDown": 5
+    }
+  },
+  "pr:pull-kubernetes-unit": {
+    "consistency": 0.977,
+    "flakes": 17,
+    "flakiest": {
+      "k8s.io/kubernetes/federation/pkg/federation-controller/configmap TestConfigMapController": 4
+    }
+  },
+  "pr:pull-kubernetes-e2e-gce-non-cri": {
+    "consistency": 0.979,
+    "flakes": 15,
+    "flakiest": {
+      "[k8s.io] PersistentVolumes:GCEPD [Volume] should test that deleting the Namespace of a PVC and Pod causes the successful detach of Persistent Disk": 5,
+      "[k8s.io] Kubectl client [k8s.io] Kubectl describe should check if kubectl describe prints relevant information for rc and pods [Conformance]": 5,
+      "[k8s.io] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic] should provide basic identity": 5
+    }
+  },
+  "pr:pull-kubernetes-e2e-gce-gci": {
+    "consistency": 0.981,
+    "flakes": 14,
+    "flakiest": {
+      "[k8s.io] PersistentVolumes:GCEPD [Volume] should test that deleting the Namespace of a PVC and Pod causes the successful detach of Persistent Disk": 6,
+      "[k8s.io] Kubectl client [k8s.io] Kubectl describe should check if kubectl describe prints relevant information for rc and pods [Conformance]": 6
     }
   },
   "pr:pull-kubernetes-bazel": {
-    "consistency": 0.966,
-    "flakes": 30,
+    "consistency": 0.985,
+    "flakes": 11,
     "flakiest": null
   },
-  "ci-kubernetes-e2e-non-cri-gce": {
-    "consistency": 0.906,
-    "flakes": 28,
+  "pr:pull-kubernetes-verify": {
+    "consistency": 0.987,
+    "flakes": 10,
     "flakiest": null
   },
-  "ci-kubernetes-e2e-gce-container-vm": {
-    "consistency": 0.916,
-    "flakes": 25,
+  "pr:pull-kubernetes-node-e2e": {
+    "consistency": 0.99,
+    "flakes": 7,
     "flakiest": null
   },
-  "ci-kubernetes-e2e-gke": {
-    "consistency": 0.929,
-    "flakes": 25,
-    "flakiest": {
-      "[k8s.io] Projected should update labels on modification [Conformance] [Volume]": 7
-    }
-  },
-  "ci-kubernetes-e2e-gce-etcd3": {
-    "consistency": 0.925,
-    "flakes": 24,
+  "pr:pull-kubernetes-e2e-kops-aws": {
+    "consistency": 0.993,
+    "flakes": 5,
     "flakiest": null
   },
-  "ci-kubernetes-e2e-gce-multizone": {
-    "consistency": 0.915,
-    "flakes": 23,
-    "flakiest": {
-      "[k8s.io] Firewall rule should have correct firewall rules for e2e cluster": 22
-    }
-  },
-  "ci-kubernetes-e2e-gci-gke": {
-    "consistency": 0.936,
-    "flakes": 23,
+  "pr:pull-kubernetes-kubemark-e2e-gce": {
+    "consistency": 0.993,
+    "flakes": 5,
     "flakiest": null
-  },
-  "ci-kubernetes-e2e-gci-gce-proto": {
-    "consistency": 0.93,
-    "flakes": 22,
-    "flakiest": null
-  },
-  "ci-kubernetes-e2e-gce-gci-ci-master": {
-    "consistency": 0.927,
-    "flakes": 22,
-    "flakiest": {
-      "[k8s.io] Downward API volume should update labels on modification [Conformance] [Volume]": 7
-    }
   }
 }
