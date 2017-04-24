@@ -49,6 +49,13 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	if commentAuthor == c.GitHubClient.BotName() {
 		return nil
 	}
+	var trustedOrg string
+	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
+		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
+		return nil
+	} else if tr != nil {
+		trustedOrg = tr.TrustedOrg
+	}
 
 	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
 		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
@@ -90,7 +97,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	if err != nil {
 		return err
 	} else if !orgMember {
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr)
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
 		if err != nil {
 			return err
 		}

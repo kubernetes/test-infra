@@ -1,4 +1,12 @@
 ---
+triggers:
+- repos:
+  - kubernetes
+  - kubernetes-incubator
+  - kubernetes-security
+  - google/cadvisor
+  trusted_org: kubernetes
+
 presubmits:
   # PR job triggering definitions.
   # Keys: Full repo name: "org/repo".
