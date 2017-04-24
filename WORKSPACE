@@ -83,3 +83,18 @@ py_library(
 )
 """,
 )
+
+new_http_archive(
+    name = "pylint",
+    sha256 = "ef901a34b62ed7a734370ba5b162d890231ba8822abe88c6dda1268e2575f5f1",
+    strip_prefix = "pylint-1.6.4/pylint",
+    urls = ["https://pypi.python.org/packages/4e/4b/2f14a233e6c86bbfff9568d3357860573dea51be7c96eecab9471ab6ca6f/pylint-1.6.4.tar.gz"],
+    build_file_content = """
+py_binary(
+    name = "pylint",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+    main = "__main__.py",
+)
+""",
+)

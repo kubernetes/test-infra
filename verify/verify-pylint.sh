@@ -17,6 +17,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export PYLINTHOME=$(mktemp -d)
+export PATH="${TEST_SRCDIR}/pylint:${PATH}"
+
 # TODO(fejta): all python files
 pylint scenarios/*.py
 pylint jenkins/bootstrap.py
