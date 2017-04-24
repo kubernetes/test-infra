@@ -174,6 +174,9 @@ func TestConfig(t *testing.T) {
 
 	sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
 	for _, sqJob := range sqJobs {
+		if sqJob == "\"\"" { // ignore empty list of jobs
+			continue
+		}
 		found := false
 		for i, job := range sqJobPool {
 			if sqJob == job {
