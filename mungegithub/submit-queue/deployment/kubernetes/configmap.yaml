@@ -34,8 +34,10 @@ data:
   submit-queue.nonblocking-jenkins-jobs: "\
     ci-kubernetes-bazel-build,\
     ci-kubernetes-bazel-test,\
+    ci-kubernetes-build,\
     ci-kubernetes-cross-build,\
     ci-kubernetes-e2e-garbage-gci,\
+    ci-kubernetes-e2e-gce-etcd3,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
@@ -46,7 +48,6 @@ data:
     ci-kubernetes-e2e-gci-gce-autoscaling,\
     ci-kubernetes-e2e-gci-gce-autoscaling-migs,\
     ci-kubernetes-e2e-gci-gce-es-logging,\
-    ci-kubernetes-e2e-gci-gce-sd-logging,\
     ci-kubernetes-e2e-gci-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce-examples,\
     ci-kubernetes-e2e-gci-gce-ingress,\
@@ -54,6 +55,7 @@ data:
     ci-kubernetes-e2e-gci-gce-proto,\
     ci-kubernetes-e2e-gci-gce-reboot,\
     ci-kubernetes-e2e-gci-gce-scalability,\
+    ci-kubernetes-e2e-gci-gce-sd-logging,\
     ci-kubernetes-e2e-gci-gce-serial,\
     ci-kubernetes-e2e-gci-gce-slow,\
     ci-kubernetes-e2e-gci-gce-statefulset,\
@@ -79,30 +81,28 @@ data:
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
     ci-kubernetes-e2e-gke-test,\
+    ci-kubernetes-e2e-kops-aws,\
     ci-kubernetes-e2e-kops-aws-release-1.5,\
     ci-kubernetes-e2e-kops-aws-release-1.6,\
     ci-kubernetes-e2e-kops-aws-serial,\
     ci-kubernetes-e2e-kops-aws-slow,\
     ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-kubemark-5-gce,\
+    ci-kubernetes-kubemark-500-gce,\
+    ci-kubernetes-node-kubelet,\
     ci-kubernetes-node-kubelet-serial,\
     ci-kubernetes-soak-gce-deploy,\
+    ci-kubernetes-verify-master,\
     ci-kubernetes-soak-gce-test,\
     ci-kubernetes-soak-gke-deploy,\
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
-    ci-kubernetes-soak-gke-test"
+    ci-kubernetes-soak-gke-test,\
+    ci-kubernetes-test-go"
   # SQ-Blocking Jobs
   # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
   # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
-  submit-queue.jenkins-jobs: "\
-    ci-kubernetes-build,\
-    ci-kubernetes-e2e-gce-etcd3,\
-    ci-kubernetes-e2e-kops-aws,\
-    ci-kubernetes-kubemark-500-gce,\
-    ci-kubernetes-node-kubelet,\
-    ci-kubernetes-test-go,\
-    ci-kubernetes-verify-master"
+  submit-queue.jenkins-jobs: "\"\""
   submit-queue.presubmit-jobs: "\
     kubernetes-pull-build-test-e2e-gce,\
     kubernetes-pull-build-test-e2e-gke,\

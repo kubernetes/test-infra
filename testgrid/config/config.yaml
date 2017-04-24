@@ -2048,23 +2048,6 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
-- name: sq-blocking
-  dashboard_tab:
-  - name: build
-    test_group_name: ci-kubernetes-build
-  - name: gce-etcd3
-    test_group_name: ci-kubernetes-e2e-gce-etcd3
-  - name: kops-aws
-    test_group_name: ci-kubernetes-e2e-kops-aws
-  - name: kubemark-500-gce
-    test_group_name: ci-kubernetes-kubemark-500-gce
-  - name: node-kubelet
-    test_group_name: ci-kubernetes-node-kubelet
-  - name: test-go
-    test_group_name: ci-kubernetes-test-go
-  - name: verify
-    test_group_name: ci-kubernetes-verify-master
-
 - name: google-non-cri
   dashboard_tab:
   - name: gce
