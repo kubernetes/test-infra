@@ -71,10 +71,20 @@ To add a new job you'll need to add an entry into `config.yaml`. Then run `make
 update-config`. This does not require redeploying any binaries, and will take
 effect within a minute.
 
-The Jenkins job itself should have no trigger. It will be called with string
-parameters `PULL_NUMBER` and `PULL_BASE_REF` which it can use to checkout the
-appropriate revision. It needs to accept the `buildId` parameter which the
-`plank` controller uses to track its progress.
+Prow will inject the following environment variables into every container in
+your pod:
+
+Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
+--- |:---:|:---:|:---:|:---:| --- | ---
+`JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
+`BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
+`REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
+`REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
+`PULL_BASE_REF` | | ✓ | ✓ | ✓ | Ref name of the base branch. | `master`
+`PULL_BASE_SHA` | | ✓ | ✓ | ✓ | Git SHA of the base branch. | `123abc`
+`PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
+`PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
+`PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
 
 ## Bots home
 
