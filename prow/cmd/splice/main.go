@@ -202,6 +202,61 @@ func (s *splicer) makeBuildRefs(org, repo string, prs []int) kube.Refs {
 	return refs
 }
 
+// Filters to the list of jobs which already passed this commit
+func completedJobs(currentJobs []kube.ProwJob, refs kube.Refs) []kube.ProwJob {
+	var skippable []kube.ProwJob
+	rs := refs.String()
+
+	for _, job := range currentJobs {
+		if job.Spec.Type != kube.BatchJob {
+			continue
+		}
+		if !job.Complete() {
+			continue
+		}
+		if job.Status.State != kube.SuccessState {
+			continue
+		}
+		if job.Spec.Refs.String() != rs {
+			continue
+		}
+		skippable = append(skippable, job)
+	}
+	return skippable
+}
+
+// Filters to the list of required presubmits that report
+func requiredPresubmits(presubmits []config.Presubmit) []config.Presubmit {
+	var out []config.Presubmit
+	for _, job := range presubmits {
+		if !job.AlwaysRun { // Ignore manual jobs as these do not block
+			continue
+		}
+		if job.SkipReport { // Ignore silent jobs as these do not block
+			continue
+		}
+		out = append(out, job)
+	}
+	return out
+}
+
+// Filters to the list of required presubmit which have not already passed this commit
+func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob, refs kube.Refs) []config.Presubmit {
+	skippable := make(map[string]bool)
+	for _, job := range completedJobs(currentJobs, refs) {
+		skippable[job.Spec.Context] = true
+	}
+
+	var needed []config.Presubmit
+	for _, job := range requiredPresubmits(presubmits) {
+		if skippable[job.Context] {
+			continue
+		}
+		needed = append(needed, job)
+	}
+	return needed
+}
+
 func main() {
 	flag.Parse()
 
@@ -236,18 +291,10 @@ func main() {
 			continue
 		}
 
-		// Track successful batch runs -- we don't need to repeat them.
-		succeeded := make(map[string]bool)
-
 		running := []string{}
 		for _, job := range currentJobs {
 			if job.Spec.Type != kube.BatchJob {
 				continue
-			}
-			if job.Complete() && job.Status.State == kube.SuccessState {
-				ref := job.Spec.Refs.String()
-				context := job.Spec.Context
-				succeeded[ref+context] = true
 			}
 			if !job.Complete() {
 				running = append(running, job.Spec.Job)
@@ -257,12 +304,14 @@ func main() {
 			log.Infof("Waiting on %d jobs: %v", len(running), running)
 			continue
 		}
+
 		// Start a new batch if the cooldown is 0, otherwise wait. This gives
 		// the SQ some time to merge before we start a new batch.
 		if cooldown > 0 {
 			cooldown--
 			continue
 		}
+
 		queue, err := getQueuedPRs(*submitQueueURL)
 		log.Info("PRs in queue:", queue)
 		if err != nil {
@@ -282,15 +331,10 @@ func main() {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
-		for _, job := range ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)] {
-			if job.AlwaysRun {
-				if succeeded[refs.String()+job.Context] {
-					log.Infof("not triggering job %v (already succeeded previously)", job.Name)
-					continue
-				}
-				if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
-					log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
-				}
+		presubmits := ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
+		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
+			if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
+				log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
 			}
 		}
 		cooldown = 5
