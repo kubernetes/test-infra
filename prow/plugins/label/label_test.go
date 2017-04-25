@@ -382,7 +382,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Infer One Sig Label",
-			body:                  "@sig-node-misc",
+			body:                  "@kubernetes/sig-node-misc",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("sig/node"),
@@ -391,7 +391,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Infer Multiple Sig Labels One Line",
-			body:                  "@sig-node-misc @sig-api-machinery-bugs",
+			body:                  "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
@@ -400,7 +400,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Infer Multiple Sig Labels Different Lines",
-			body:                  "@sig-node-misc\n@sig-api-machinery-bugs",
+			body:                  "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
@@ -409,7 +409,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Infer Multiple Sig Labels Different Lines With Other Text",
-			body:                  "Code Comment.  Design Review\n@sig-node-misc\ncc @sig-api-machinery-bugs",
+			body:                  "Code Comment.  Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
@@ -418,7 +418,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Add Area, Priority Labels and CC a Sig",
-			body:                  "/area infra\n/priority urgent Design Review\n@sig-node-misc\ncc @sig-api-machinery-bugs",
+			body:                  "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra", "priority/urgent", "sig/node", "sig/api-machinery"),
