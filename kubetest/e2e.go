@@ -155,7 +155,7 @@ func run(deploy deployer, o options) error {
 					}))
 				} else {
 					errs = appendError(errs, xmlWrap("Test", func() error {
-						return Test(o.testArgs)
+						return Test(o)
 					}))
 				}
 			}
@@ -542,6 +542,13 @@ func SkewTest(args string, checkSkew bool) error {
 		fmt.Sprintf("--check-version-skew=%t", checkSkew)))
 }
 
-func Test(testArgs string) error {
-	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
+func Test(o options) error {
+	testArgs := o.testArgs
+	if !o.federation {
+		return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
+	}
+	if testArgs == "" {
+		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
+	}
+	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(testArgs)...))
 }

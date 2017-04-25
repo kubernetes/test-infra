@@ -55,6 +55,8 @@ type kops struct {
 	image       string
 	args        string
 	kubecfg     string
+	state       string
+	workdir     string
 }
 
 func NewKops() (*kops, error) {
@@ -74,9 +76,6 @@ func NewKops() (*kops, error) {
 			return nil, err
 		}
 		sshKey = filepath.Join(usr.HomeDir, ".ssh/kube_aws_rsa")
-	}
-	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
-		return nil, err
 	}
 	f, err := ioutil.TempFile("", "kops-kubecfg")
 	if err != nil {
@@ -119,12 +118,14 @@ func NewKops() (*kops, error) {
 		cluster:     *kopsCluster,
 		image:       *kopsImage,
 		args:        *kopsArgs,
+		state:       *kopsState,
 		kubecfg:     kubecfg,
 	}, nil
 }
 
 func (k kops) Up() error {
 	createArgs := []string{
+		"--state", k.state,
 		"create", "cluster",
 		"--name", k.cluster,
 		"--ssh-public-key", k.sshKey,
@@ -143,45 +144,53 @@ func (k kops) Up() error {
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
-	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
+	createCmd := exec.Command(k.path, createArgs...)
+	createCmd.Dir = k.workdir
+	if err := finishRunning(createCmd); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
 	}
-	if err := finishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
+	updateCmd := exec.Command(k.path, "--state", k.state, "update", "cluster", k.cluster, "--yes")
+	updateCmd.Dir = k.workdir
+
+	if err := finishRunning(updateCmd); err != nil {
 		return fmt.Errorf("kops bringup failed: %v", err)
 	}
-	// TODO(zmerlynn): More cluster validation. This should perhaps be
-	// added to kops and not here, but this is a fine place to loop
-	// for now.
-	return waitForNodes(k, k.nodes+1, *kopsUpTimeout)
+
+	validateCmd := exec.Command(k.path, "--state", k.state, "validate", "cluster", k.cluster)
+	validateCmd.Dir = k.workdir
+	return retryFinishRunning(validateCmd, *kopsUpTimeout)
 }
 
 func (k kops) IsUp() error {
-	return isUp(k)
+	validateCmd := exec.Command(k.path, "--state", k.state, "validate", "cluster", k.cluster)
+	validateCmd.Dir = k.workdir
+	return finishRunning(validateCmd)
 }
 
 func (k kops) SetupKubecfg() error {
-	info, err := os.Stat(k.kubecfg)
-	if err != nil {
-		return err
-	}
-	if info.Size() > 0 {
+	if err := useKubeContext(k.cluster); err == nil {
 		// Assume that if we already have it, it's good.
 		return nil
 	}
-	if err := finishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
+	// At this point, kube context does not exist. Assume we need to export it from kops
+	if err := finishRunning(exec.Command(k.path, "--state", k.state, "export", "kubecfg", k.cluster)); err != nil {
 		return fmt.Errorf("Failure exporting kops kubecfg: %v", err)
 	}
-	return nil
+	return useKubeContext(k.cluster)
 }
 
 func (k kops) Down() error {
 	// We do a "kops get" first so the exit status of "kops delete" is
 	// more sensical in the case of a non-existent cluster. ("kops
 	// delete" will exit with status 1 on a non-existent cluster)
-	err := finishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
+	getClusterCmd := exec.Command(k.path, "--state", k.state, "get", "clusters", k.cluster)
+	getClusterCmd.Dir = k.workdir
+	err := finishRunning(getClusterCmd)
 	if err != nil {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
-	return finishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
+	deleteClusterCmd := exec.Command(k.path, "--state", k.state, "delete", "cluster", k.cluster, "--yes")
+	deleteClusterCmd.Dir = k.workdir
+	return finishRunning(deleteClusterCmd)
 }
