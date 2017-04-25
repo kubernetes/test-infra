@@ -44,7 +44,7 @@ type assignEvent struct {
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)$`)
-	sigMatcher              = regexp.MustCompile(`(?m)@sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
+	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
 	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
 )
