@@ -1,57 +1,52 @@
 {
   "pr:pull-kubernetes-federation-e2e-gce": {
-    "flakes": 45,
-    "runs": 708,
-    "consistency": 0.936
-  },
-  "pr:pull-kubernetes-e2e-gce": {
-    "flakes": 28,
-    "runs": 762,
-    "consistency": 0.963
+    "flakes": 40,
+    "runs": 724,
+    "consistency": 0.945
   },
   "pr:pull-kubernetes-e2e-gce-etcd3": {
-    "flakes": 25,
-    "runs": 756,
-    "consistency": 0.967
+    "flakes": 23,
+    "runs": 768,
+    "consistency": 0.97
+  },
+  "pr:pull-kubernetes-e2e-gce": {
+    "flakes": 19,
+    "runs": 591,
+    "consistency": 0.968
   },
   "pr:pull-kubernetes-unit": {
-    "flakes": 17,
-    "runs": 751,
-    "consistency": 0.977
+    "flakes": 16,
+    "runs": 783,
+    "consistency": 0.98
   },
   "pr:pull-kubernetes-e2e-gce-non-cri": {
-    "flakes": 15,
-    "runs": 716,
-    "consistency": 0.979
-  },
-  "pr:pull-kubernetes-e2e-gce-gci": {
-    "flakes": 14,
-    "runs": 742,
-    "consistency": 0.981
-  },
-  "pr:pull-kubernetes-bazel": {
-    "flakes": 11,
-    "runs": 738,
-    "consistency": 0.985
+    "flakes": 12,
+    "runs": 552,
+    "consistency": 0.978
   },
   "pr:pull-kubernetes-verify": {
-    "flakes": 10,
-    "runs": 746,
-    "consistency": 0.987
+    "flakes": 9,
+    "runs": 766,
+    "consistency": 0.988
   },
-  "pr:pull-kubernetes-node-e2e": {
-    "flakes": 7,
-    "runs": 731,
-    "consistency": 0.99
+  "pr:pull-kubernetes-e2e-gce-gci": {
+    "flakes": 8,
+    "runs": 569,
+    "consistency": 0.986
   },
   "pr:pull-kubernetes-e2e-kops-aws": {
-    "flakes": 5,
-    "runs": 736,
-    "consistency": 0.993
+    "flakes": 6,
+    "runs": 755,
+    "consistency": 0.992
   },
-  "pr:pull-kubernetes-kubemark-e2e-gce": {
+  "pr:pull-kubernetes-node-e2e-non-cri": {
     "flakes": 5,
-    "runs": 733,
+    "runs": 569,
+    "consistency": 0.991
+  },
+  "pr:pull-kubernetes-node-e2e": {
+    "flakes": 5,
+    "runs": 752,
     "consistency": 0.993
   }
 }
