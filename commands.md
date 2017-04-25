@@ -20,7 +20,7 @@ Command | Implemented By | Who can run it | Description
 `/reopen` | prow [reopen](./prow/plugins/reopen) | authors and assignees | reopens a closed issue
 `/release-note` | prow [releasenote](./prow/plugins/releasenote) | authors and assignees | adds the `release-note` label
 `/release-note-none` | prow [releasenote](./prow/plugins/releasenote) | authors and assignees | adds the `release-note-none` label
-`/sig-<some-github-team>` | prow [label](./prow/plugins/label) | kubernetes org members| adds the corresponding `sig` label
+`@kubernetes/sig-<some-github-team>` | prow [label](./prow/plugins/label) | kubernetes org members| adds the corresponding `sig` label
 `@k8s-bot test this` | prow [trigger](./prow/plugins/trigger) | kubernetes org members | runs tests defined in [config.yaml](./config.yaml)
 `@k8s-bot ok to test` | prow [trigger](./prow/plugins/trigger) | kubernetes org members | allows the PR author to `@k8s-bot test this`
 `@k8s-bot tell me a joke` | prow [yuks](./prow/plugins/yuks) | anyone | tells a bad joke, sometimes
