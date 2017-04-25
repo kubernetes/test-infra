@@ -310,8 +310,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot
 - name: ci-kubernetes-e2e-gci-gce-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot
-- name: ci-kubernetes-e2e-gce-reboot-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1.4
+- name: ci-kubernetes-e2e-gce-reboot-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1-4
 - name: ci-kubernetes-e2e-gce-reboot-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1.5
 - name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
@@ -1013,7 +1013,7 @@ dashboards:
   - name: gci-gce-reboot
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gce-reboot-1.4
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.4
+    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-4
   - name: gce-reboot-1.5
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.5
   - name: gci-gce-reboot-1.4
@@ -1891,7 +1891,7 @@ dashboards:
   - name: gce-1.4
     test_group_name: ci-kubernetes-e2e-gce-release-1.4
   - name: gce-reboot-1.4
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.4
+    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-4
   - name: gci-gce-reboot-1.4
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
   - name: gci-gce-ingress-1.4
@@ -1950,7 +1950,7 @@ dashboards:
   - name: gce-slow-1.4
     test_group_name: ci-kubernetes-e2e-gce-slow-release-1.4
   - name: gce-reboot-1.4
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.4
+    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-4
   - name: test-go-1.4
     test_group_name: ci-kubernetes-test-go-release-1.4
   - name: gke-1.4
