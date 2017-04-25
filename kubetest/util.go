@@ -17,8 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -287,6 +289,35 @@ func joinUrl(urlPath, path string) (string, error) {
 	}
 	u.Path = filepath.Join(u.Path, path)
 	return u.String(), nil
+}
+
+// Consumes kubernetes version string from 1) KUBERNETES_RELEASE env var or 2) version file in release directory
+// Returns corresponding hyperkube image tag
+func hyperkubeVersion() (string, error) {
+	dockerizeVersionStr := func(semver string) string {
+		return strings.Replace(semver, "+", "_", -1)
+	}
+	versionEnv := os.Getenv("KUBERNETES_RELEASE")
+	if versionEnv != "" {
+		return dockerizeVersionStr(versionEnv), nil
+	}
+
+	versionFilePath := filepath.Join(".", "_output", "federation", "versions")
+
+	versionJSON, err := ioutil.ReadFile(versionFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	versionMap := map[string]interface{}{}
+	if err := json.Unmarshal(versionJSON, &versionMap); err != nil {
+		return "", fmt.Errorf("error unmarshaling version file json: %v", err)
+	}
+	versionStr := versionMap["KUBE_VERSION"]
+	if versionStr == nil {
+		return "", fmt.Errorf("KUBE_VERSION not found in version data: %v", versionMap)
+	}
+	return dockerizeVersionStr(versionStr.(string)), nil
 }
 
 func useKubeContext(contextName string) error {
