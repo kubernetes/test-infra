@@ -49,8 +49,13 @@ def var(path):
     return os.path.expandvars(path)
 
 
-def main(script, properties, branch, ssh, ssh_pub, robot):
+def main(script, properties, branch, ssh, ssh_pub, robot, skip):
     """Test node branch by sending script specified properties and creds."""
+    # pylint: disable=too-many-locals
+    if skip and os.environ.get('PULL_BASE_REF'):
+        if os.environ.get('PULL_BASE_REF') in skip:
+            print >>sys.stderr, 'Test Skipped'
+            return
     mat = re.match(r'master|release-\d+\.\d+', branch)
     if not mat:
         raise ValueError(branch)
@@ -118,6 +123,9 @@ if __name__ == '__main__':
         '--script',
         default='./test/e2e_node/jenkins/e2e-node-jenkins.sh',
         help='Script in kubernetes/kubernetes that runs checks')
+    PARSER.add_argument(
+        '--skip-release',
+        help='Legacy branches that PR node e2e job should disabled for.')
     ARGS = PARSER.parse_args()
     main(
         ARGS.script,
@@ -126,4 +134,5 @@ if __name__ == '__main__':
         ARGS.gce_ssh,
         ARGS.gce_pub,
         ARGS.service_account,
+        ARGS.skip_release,
     )
