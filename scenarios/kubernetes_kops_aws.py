@@ -165,6 +165,19 @@ def main(args):
                (args.cluster, zones, args.state, args.nodes, aws_ssh))
     if args.image:
         e2e_opt += ' --kops-image=%s' % args.image
+    if args.kubefed:
+        e2e_opt += ' --deployment=kops-federation'
+        e2e_opt += ' --kops-federation-name=%s' % args.federation_name
+        e2e_opt += ' --kops-federation-cluster-count=%s' % args.federation_cluster_count
+        e2e_opt += ' --kops-federation-dns-zone-name=%s' % args.federation_dns_zone_name
+        e2e_opt += ' --kops-federation-dns-provider=%s' % args.federation_dns_provider
+        e2e_opt += ' --kops-federation-hyperkube-registry=%s' % args.federation_hyperkube_registry
+        # TODO(chom) Until we figure out allowing traffic from federation
+        # control plane to k8s api endpoints, we m ust allow admin access
+        # from everywhere
+        e2e_opt += ' --kops-admin-access=0.0.0.0/0'
+    else:
+        e2e_opt += ' --deployment=kops'
 
     cmd.extend([
       # Boilerplate envs
@@ -252,6 +265,24 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--state', default='s3://k8s-kops-jenkins/',
         help='Name of the aws state storage')
+    PARSER.add_argument(
+        '--kubefed', default=False,
+        help='Use kubefed to deploy federation of kops clusters')
+    PARSER.add_argument(
+        '--federation-name', default='kops-federation',
+        help='Name of federation kubecontext. (if --kubefed==True)')
+    PARSER.add_argument(
+        '--federation-cluster-count', default=3,
+        help='How many clusters in the federation (if --kubefed==True)')
+    PARSER.add_argument(
+        '--federation-dns-zone-name',
+        help='DNS zone name for kops clusters and federated services (if --kubefed==True)')
+    PARSER.add_argument(
+        '--federation-dns-provider',
+        help='DNS provider for federated services (if --kubefed==True)')
+    PARSER.add_argument(
+        '--federation-hyperkube-registry', default='gcr.io/k8s-jkns-e2e-gce-federation',
+        help='registry for hyperkube-amd64 container image (if --kubefed==True)')
     PARSER.add_argument(
         '--tag', default='v20170314-bb0669b0',
         help='Use a specific kubekins-e2e tag if set')
