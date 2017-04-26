@@ -97,7 +97,7 @@ class ClusterTest(unittest.TestCase):
         t1 = make_test(textNew)
 
         self.assertEqual(
-            self.cluster_global({'test a': {textNew: [t1]}}, [[textOld, None, None, None]]),
+            self.cluster_global({'test a': {textNew: [t1]}}, [{'key': textOld}]),
             {textOld: {'test a': [t1]}})
 
 

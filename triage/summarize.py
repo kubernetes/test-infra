@@ -248,8 +248,9 @@ def cluster_global(clustered, previous_clustered):
 
     if previous_clustered:
         # seed clusters using output from the previous run
-        for key, _id, _ftext, _clusters in previous_clustered:
-            clusters[key] = {}
+        for cluster in previous_clustered:
+            clusters[cluster['key']] = {}
+        print 'Seeding with %d previous clusters' % len(clusters)
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(),
@@ -372,6 +373,7 @@ def main(args):
 
     previous_clustered = None
     if args.previous:
+        print 'loading previous'
         previous_clustered = json.load(open(args.previous))['clustered']
     clustered = cluster_global(clustered_local, previous_clustered)
 
