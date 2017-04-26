@@ -30,8 +30,13 @@
     "wk": "2017-04-08"
   },
   {
-    "commits": "626",
-    "consistency": "0.899",
+    "commits": "639",
+    "consistency": "0.901",
     "wk": "2017-04-15"
+  },
+  {
+    "commits": "310",
+    "consistency": "0.929",
+    "wk": "2017-04-22"
   }
 ]
