@@ -118,11 +118,11 @@ function renderJobs(parent, clusterId) {
   }
 
   var clusterJobs = Object.entries(clusterJobs);
-  clusterJobs.sort();
+  sortByKey(clusterJobs, j => j[1].size);
 
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of clusterJobs) {
-    let buildNumbers = Array.from(buildNumbersSet).sort();
+    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => b - a);
     addBuildListItem(jobList, job, buildNumbers, counts[job]);
   }
 }
