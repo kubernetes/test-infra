@@ -2,6 +2,40 @@ syntax = "proto3";
 
 // Protocol buffer for configuring testgrid.k8s.io
 
+// Specifies the test name.
+message TestNameConfig {
+  // Specifies name elements to be selected from configuration values
+  message NameElement {
+    reserved 1, 3, 4;
+
+    // Configuration value to use.
+    // Valid choice are: 
+    // 'Tests name': The name of a test case
+    // 'Commit': The commit number of the build
+    // 'Context', 'Thread': The info extracted from each junit files:
+    //    - junit_core-os_01.xml -> Context: core-os, Thread: 01
+    //    - junit_runner.xml -> Context: runner
+    //    - junit_01.xml -> Thread: 01
+    // or any metadata key from finished.json, which is copied from your test suite.
+    // 
+    // A valid sample TestNameConfig looks like:
+    // test_name_config:
+    //   name_elements:
+    //   - target_config: Tests name
+    //   - target_config: Context
+    //   name_format: '%s [%s]'
+    string target_config = 2;
+  }
+
+  // The name elements specifying the target test name for this tab.
+  repeated NameElement name_elements = 1;
+
+  // Specifies a printf-style format string for name elements. The format
+  // string should have as many conversions as there are name_elements.
+  // For example, two name_elements could be used with name_format="%s: %s".
+  string name_format = 2;
+}
+
 // A single notification.
 message Notification {
   // Required: Text summary of the issue or notice.
@@ -12,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 4, 5, 7, 8, 10, 12 to 23, 26;
+  reserved 4, 5, 7, 8, 10, 12 to 23, 28;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -51,6 +85,9 @@ message TestGroup {
 
   // deprecated - always set to true
   bool is_external = 25;
+
+  // Specifies the test name for a test.
+  TestNameConfig test_name_config = 26;
 
   // A list of notifications attached to this test group.
   // This is displayed on any dashboard tab backed by this test group.
