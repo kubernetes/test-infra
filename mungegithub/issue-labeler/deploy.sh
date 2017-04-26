@@ -52,7 +52,7 @@ EOF
 
 IMAGE=${1:-gcr.io/google-containers/issue-triager:latest}
 docker build --pull -t "$IMAGE" -f Dockerfile . 
-gcloud docker push "$IMAGE"
+gcloud docker -- push "$IMAGE"
 
 kubectl apply -f - <<EOF
 apiVersion: extensions/v1beta1
