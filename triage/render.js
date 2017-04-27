@@ -99,7 +99,7 @@ function addBuildListItem(jobList, job, buildNumbers, hits, test) {
   var jobEl = addElement(jobList, 'li', null, [sparkLineSVG(hits), ` ${buildNumbers.length} ${job} ${rightArrow}`,
     createElement('p', {
       style: {display: 'none'},
-      dataset: {job: job, test: test, buildNumbers: JSON.stringify(buildNumbers)},
+      dataset: {job: job, test: test || '', buildNumbers: JSON.stringify(buildNumbers)},
     })
   ]);
 }

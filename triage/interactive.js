@@ -118,6 +118,7 @@ function rerender(maxCount) {
   clustered = clusteredAll.refilter(options);
 
   var top = document.getElementById('clusters');
+  var summary = document.getElementById('summary');
   top.removeChildren();
   summary.removeChildren();
 
@@ -130,31 +131,38 @@ function rerender(maxCount) {
 
   summaryText += ` out of ${builds.runCount} builds from ${builds.getStartTime()} to ${builds.getEndTime()}.`
 
-  summary.innerText = summaryText;
+  if (maxCount !== 0) {
+    summary.innerText = summaryText;
 
-  if (clustered.length > 0) {
-    let graph = addElement(summary, 'div');
-    renderGraph(graph, clustered.allBuilds());
+    if (clustered.length > 0) {
+      let graph = addElement(summary, 'div');
+      renderGraph(graph, clustered.allBuilds());
+    }
+
+    renderSubset(0, maxCount || 10);
   }
-
-  renderSubset(0, maxCount || 10);
 
   drawVisibleGraphs();
 }
 
-// Render clusters until a cluster with the given key is found, then scroll to that cluster.
-// Bails out early if no cluster with the given key is known.
-function renderUntilFound(keyId) {
+// Render just the cluster with the given key.
+// Show an error message if no live cluster with that id is found.
+function renderOnly(keyId) {
   var el = null;
+  rerender(0);
+
+  var top = document.getElementById('clusters');
+  top.removeChildren();
+
+  addElement(top, 'h3', null, [createElement('a', {href: ''}, 'View all clusters')]);
+
   if (!clustered.byId[keyId]) {
+    var summary = document.getElementById('summary');
+    summary.innerText = `Cluster ${keyId} not found in the last week of data.`
     return;
   }
-  while ((el = document.getElementById(keyId)) === null) {
-    if (lastClusterRendered >= clustered.length)
-      return;
-    renderSubset(lastClusterRendered, 50);
-  }
-  el.scrollIntoView();
+
+  renderSubset(0, 1);
 
   // expand the graph for the selected failure.
   drawVisibleGraphs();
@@ -222,25 +230,36 @@ function get(uri, callback, onprogress) {
   req.send();
 }
 
-// One-time initialization of the whole page.
-function load() {
-  setOptionsFromURL();
-  google.charts.load('current', {'packages': ['corechart', 'line']});
-  google.charts.setOnLoadCallback(() => { google.charts.loaded = true });
+function getData(clusterId) {
+  var url = '/k8s-gubernator/triage/failure_data.json'
+  if (clusterId) {
+    url = '/k8s-gubernator/triage/slices/failure_data_' + clusterId.slice(0, 2) + '.json';
+  }
 
   var setLoading = t => document.getElementById("loading-progress").innerText = t;
   var toMB = b => Math.round(b / 1024 / 1024 * 100) / 100;
 
-  get('/k8s-gubernator/triage/failure_data.json',
+  get(url,
     req => {
       setLoading(`parsing ${toMB(req.response.length)}MB.`);
       var data = JSON.parse(req.response);
       setTimeout(() => {
         builds = new Builds(data.builds);
+        if (clusterId) {
+          // rendering just one cluster, filter here.
+          for (let c of data.clustered) {
+            if (c.id == clusterId) {
+              data.clustered = [c];
+              break;
+            }
+          }
+        }
         clusteredAll = new Clusters(data.clustered);
-        rerender();
-        if (window.location.hash) {
-          renderUntilFound(window.location.hash.slice(1));
+        if (clusterId) {
+          clusteredAll.slice = true;
+          renderOnly(clusterId);
+        } else {
+          rerender();
         }
       }, 0);
     },
@@ -250,6 +269,23 @@ function load() {
       }
     }
   );
+}
+
+// One-time initialization of the whole page.
+function load() {
+  setOptionsFromURL();
+
+  var clusterId = null;
+  if (/^#[a-f0-9]{20}$/.test(window.location.hash)) {
+    clusterId = window.location.hash.slice(1);
+    // Hide filtering options, since this page has only a single cluster.
+    document.getElementById('options').style.display = 'none';
+  }
+
+  getData(clusterId);
+
+  google.charts.load('current', {'packages': ['corechart', 'line']});
+  google.charts.setOnLoadCallback(() => { google.charts.loaded = true });
 
   document.addEventListener('click', clickHandler, false);
   document.addEventListener('scroll', scrollHandler);
