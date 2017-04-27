@@ -159,7 +159,8 @@ class PRDashboard(view_base.BaseHandler):
                     ('Approvable', lambda p: user in p.payload.get('approvers', []),
                      'is:open is:pr ("additional approvers: {0}" ' +
                      'OR "additional approver: {0}")'.format(user)),
-                    ('Incoming', lambda p: user in p.payload['assignees'],
+                    ('Incoming', lambda p: user != p.payload['author'] and
+                                           user in p.payload['assignees'],
                      'is:open is:pr user:kubernetes assignee:%s' % user),
                     ('Outgoing', lambda p: user == p.payload['author'],
                      'is:open is:pr user:kubernetes author:%s' % user),
