@@ -151,6 +151,8 @@ class PRDashboard(view_base.BaseHandler):
         elif fmt == 'html':
             if user:
                 def acked(p):
+                    if 'lgtm' in p.payload.get('labels', {}):
+                        return True  # LGTM is an implicit Ack
                     if acks is None:
                         return False
                     return filters.do_get_latest(p.payload, user) <= acks.get(p.key.id(), 0)
