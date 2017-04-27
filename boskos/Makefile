@@ -22,16 +22,28 @@ boskos:
 	go build k8s.io/test-infra/boskos/
 
 client:
-	go build k8s.io/test-infra/boskos/client/
+	go build -o client/client k8s.io/test-infra/boskos/client/
 
-image:
-	CGO_ENABLED=0 go build -o boskos k8s.io/test-infra/boskos/
+reaper:
+	go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
+
+server-image:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
 	gcloud docker -- push "gcr.io/k8s-testimages/boskos:$(TAG)"
 	rm boskos
 
-deployment:
+reaper-image:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
+	docker build -t "gcr.io/k8s-testimages/reaper:$(TAG)" reaper
+	gcloud docker -- push "gcr.io/k8s-testimages/reaper:$(TAG)"
+	rm reaper/reaper
+
+server-deployment:
 	kubectl apply -f deployment.yaml
+
+reaper-deployment:
+	kubectl apply -f reaper/deployment.yaml
 
 service:
 	kubectl apply -f service.yaml
@@ -42,4 +54,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: image deployment service update-config get-cluster-credentials
+.PHONY: boskos client reaper server-image reaper-image server-deployment service update-config get-cluster-credentials
