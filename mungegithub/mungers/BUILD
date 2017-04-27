@@ -63,7 +63,7 @@ go_library(
         "cherrypick-must-have-milestone.go",
         "cherrypick-queue.go",
         "cla.go",
-        "close-stale-pr.go",
+        "close-stale.go",
         "comment-deleter.go",
         "comment-deleter-jenkins.go",
         "doc.go",

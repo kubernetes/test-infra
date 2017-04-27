@@ -30,55 +30,56 @@ import (
 )
 
 const (
-	day              = time.Hour * 24
-	keepOpenLabel    = "keep-open"
-	stalePullRequest = 90 * day // Close the PR if no human interaction for `stalePullRequest`
-	startWarning     = 60 * day
-	remindWarning    = 30 * day
-	closingComment   = `This PR hasn't been active in %s. Closing this PR. Please reopen if you would like to work towards merging this change, if/when the PR is ready for the next round of review.
+	day            = time.Hour * 24
+	keepOpenLabel  = "keep-open"
+	kindFlakeLabel = "kind/flake"
+	stalePeriod    = 90 * day // Close the PR/Issue if no human interaction for `stalePeriod`
+	startWarning   = 60 * day
+	remindWarning  = 30 * day
+	closingComment = `This %s hasn't been active in %s. Closing this %s. Please reopen if you would like to work towards merging this change, if/when the %s is ready for the next round of review.
 
 %s
 You can add 'keep-open' label to prevent this from happening again, or add a comment to keep it open another 90 days`
-	warningComment = `This PR hasn't been active in %s. It will be closed in %s (%s).
+	warningComment = `This %s hasn't been active in %s. It will be closed in %s (%s).
 
 %s
 You can add 'keep-open' label to prevent this from happening, or add a comment to keep it open another 90 days`
 )
 
 var (
-	closingCommentRE = regexp.MustCompile(`This PR hasn't been active in \d+ days?\..*label to prevent this from happening again`)
-	warningCommentRE = regexp.MustCompile(`This PR hasn't been active in \d+ days?\..*be closed in \d+ days?`)
+	closingCommentRE = regexp.MustCompile(`This \w hasn't been active in \d+ days?\..*label to prevent this from happening again`)
+	warningCommentRE = regexp.MustCompile(`This \w hasn't been active in \d+ days?\..*be closed in \d+ days?`)
 )
 
-// CloseStalePR will ask the Bot to close any PullRequest that didn't
-// have any human interactions in `stalePullRequest` duration.
+// CloseStale will ask the Bot to close any PR/Issue that didn't
+// have any human interactions in `stalePeriod` duration.
 //
 // This is done by checking both review and issue comments, and by
-// ignoring comments done with a bot name. We also consider re-open on the PR.
-type CloseStalePR struct{}
+// ignoring comments done with a bot name. We also consider re-open on the PR/Issue.
+type CloseStale struct{}
 
 func init() {
-	s := CloseStalePR{}
+	s := CloseStale{}
 	RegisterMungerOrDie(s)
 	RegisterStaleComments(s)
 }
 
 // Name is the name usable in --pr-mungers
-func (CloseStalePR) Name() string { return "close-stale-pr" }
+func (CloseStale) Name() string { return "close-stale" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (CloseStalePR) RequiredFeatures() []string { return []string{} }
+func (CloseStale) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
-func (CloseStalePR) Initialize(config *github.Config, features *features.Features) error {
+func (CloseStale) Initialize(config *github.Config, features *features.Features) error {
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
-func (CloseStalePR) EachLoop() error { return nil }
+func (CloseStale) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
-func (CloseStalePR) AddFlags(cmd *cobra.Command, config *github.Config) {}
+func (CloseStale) AddFlags(cmd *cobra.Command, config *github.Config) {}
 
 func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
 	pr, ok := obj.GetPR()
@@ -159,21 +160,28 @@ func findLastModificationTime(obj *github.MungeObject) (*time.Time, bool) {
 	if !ok {
 		return nil, ok
 	}
-	lastHumanPR, ok := findLastHumanPullRequestUpdate(obj)
-	if !ok {
-		return nil, ok
-	}
+
 	lastInterestingEvent, ok := findLastInterestingEventUpdate(obj)
 	if !ok {
 		return nil, ok
 	}
 
-	lastModif := lastHumanPR
-	if lastHumanIssue.After(*lastModif) {
-		lastModif = lastHumanIssue
-	}
+	var lastModif *time.Time
+	lastModif = lastHumanIssue
+
 	if lastInterestingEvent.After(*lastModif) {
 		lastModif = lastInterestingEvent
+	}
+
+	if obj.IsPR() {
+		lastHumanPR, ok := findLastHumanPullRequestUpdate(obj)
+		if !ok {
+			return lastModif, true
+		}
+
+		if lastHumanPR.After(*lastModif) {
+			lastModif = lastHumanPR
+		}
 	}
 
 	return lastModif, true
@@ -222,7 +230,7 @@ func durationToDays(duration time.Duration) string {
 	return fmt.Sprintf("%d %s", days, dayString)
 }
 
-func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
+func closeObj(obj *github.MungeObject, inactiveFor time.Duration) {
 	mention := mungerutil.GetIssueUsers(obj.Issue).AllUsers().Mention().Join()
 	if mention != "" {
 		mention = "cc " + mention + "\n"
@@ -236,8 +244,21 @@ func closePullRequest(obj *github.MungeObject, inactiveFor time.Duration) {
 		obj.DeleteComment(comment)
 	}
 
-	obj.WriteComment(fmt.Sprintf(closingComment, durationToDays(inactiveFor), mention))
-	obj.ClosePR()
+	var objType string
+
+	if obj.IsPR() {
+		objType = "PR"
+	} else {
+		objType = "Issue"
+	}
+
+	obj.WriteComment(fmt.Sprintf(closingComment, objType, durationToDays(inactiveFor), objType, objType, mention))
+
+	if obj.IsPR() {
+		obj.ClosePR()
+	} else {
+		obj.CloseIssuef("")
+	}
 }
 
 func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, closeIn time.Duration) {
@@ -248,8 +269,17 @@ func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, clos
 
 	closeDate := time.Now().Add(closeIn).Format("Jan 2, 2006")
 
+	var objType string
+
+	if obj.IsPR() {
+		objType = "PR"
+	} else {
+		objType = "Issue"
+	}
+
 	obj.WriteComment(fmt.Sprintf(
 		warningComment,
+		objType,
 		durationToDays(inactiveFor),
 		durationToDays(closeIn),
 		closeDate,
@@ -259,7 +289,7 @@ func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, clos
 
 func checkAndWarn(obj *github.MungeObject, inactiveFor time.Duration, closeIn time.Duration) {
 	if closeIn < day {
-		// We are going to close the PR in less than a day. Too late to warn
+		// We are going to close the PR/Issue in less than a day. Too late to warn
 		return
 	}
 	comment, ok := findLatestWarningComment(obj)
@@ -278,9 +308,9 @@ func checkAndWarn(obj *github.MungeObject, inactiveFor time.Duration, closeIn ti
 	}
 }
 
-// Munge is the workhorse that will actually close the PRs
-func (CloseStalePR) Munge(obj *github.MungeObject) {
-	if !obj.IsPR() {
+// Munge is the workhorse that will actually close the PRs/Issues
+func (CloseStale) Munge(obj *github.MungeObject) {
+	if !obj.IsPR() && !obj.HasLabel(kindFlakeLabel) {
 		return
 	}
 
@@ -293,14 +323,14 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	closeIn := -time.Since(lastModif.Add(stalePullRequest))
+	closeIn := -time.Since(lastModif.Add(stalePeriod))
 	inactiveFor := time.Since(*lastModif)
 	if closeIn <= 0 {
-		closePullRequest(obj, inactiveFor)
+		closeObj(obj, inactiveFor)
 	} else if closeIn <= startWarning {
 		checkAndWarn(obj, inactiveFor, closeIn)
 	} else {
-		// Pull-request is active. Remove previous potential warning
+		// PR/Issue is active. Remove previous potential warning
 		comment, ok := findLatestWarningComment(obj)
 		if comment != nil && ok {
 			obj.DeleteComment(comment)
@@ -308,7 +338,7 @@ func (CloseStalePR) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (CloseStalePR) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (CloseStale) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -321,6 +351,6 @@ func (CloseStalePR) isStaleComment(obj *github.MungeObject, comment *githubapi.I
 }
 
 // StaleComments returns a slice of stale comments
-func (s CloseStalePR) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+func (s CloseStale) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	return forEachCommentTest(obj, comments, s.isStaleComment)
 }
