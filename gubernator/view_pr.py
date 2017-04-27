@@ -151,6 +151,8 @@ class PRDashboard(view_base.BaseHandler):
         elif fmt == 'html':
             if user:
                 def acked(p):
+                    if 'lgtm' in p.payload.get('labels', {}):
+                        return True  # LGTM is an implicit Ack
                     if acks is None:
                         return False
                     return filters.do_get_latest(p.payload, user) <= acks.get(p.key.id(), 0)
@@ -159,7 +161,8 @@ class PRDashboard(view_base.BaseHandler):
                     ('Approvable', lambda p: user in p.payload.get('approvers', []),
                      'is:open is:pr ("additional approvers: {0}" ' +
                      'OR "additional approver: {0}")'.format(user)),
-                    ('Incoming', lambda p: user in p.payload['assignees'],
+                    ('Incoming', lambda p: user != p.payload['author'] and
+                                           user in p.payload['assignees'],
                      'is:open is:pr user:kubernetes assignee:%s' % user),
                     ('Outgoing', lambda p: user == p.payload['author'],
                      'is:open is:pr user:kubernetes author:%s' % user),
