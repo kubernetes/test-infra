@@ -142,7 +142,8 @@ function rerender(maxCount) {
     renderSubset(0, maxCount || 10);
   }
 
-  drawVisibleGraphs();
+  // draw graphs after the current render cycle, to reduce perceived latency.
+  setTimeout(drawVisibleGraphs, 0);
 }
 
 // Render just the cluster with the given key.
@@ -165,7 +166,7 @@ function renderOnly(keyId) {
   renderSubset(0, 1);
 
   // expand the graph for the selected failure.
-  drawVisibleGraphs();
+  setTimeout(drawVisibleGraphs, 0);
 }
 
 // When the user scrolls down, render more clusters to provide infinite scrolling.
@@ -241,27 +242,24 @@ function getData(clusterId) {
 
   get(url,
     req => {
-      setLoading(`parsing ${toMB(req.response.length)}MB.`);
       var data = JSON.parse(req.response);
-      setTimeout(() => {
-        builds = new Builds(data.builds);
-        if (clusterId) {
-          // rendering just one cluster, filter here.
-          for (let c of data.clustered) {
-            if (c.id == clusterId) {
-              data.clustered = [c];
-              break;
-            }
+      builds = new Builds(data.builds);
+      if (clusterId) {
+        // rendering just one cluster, filter here.
+        for (let c of data.clustered) {
+          if (c.id == clusterId) {
+            data.clustered = [c];
+            break;
           }
         }
-        clusteredAll = new Clusters(data.clustered);
-        if (clusterId) {
-          clusteredAll.slice = true;
-          renderOnly(clusterId);
-        } else {
-          rerender();
-        }
-      }, 0);
+      }
+      clusteredAll = new Clusters(data.clustered);
+      if (clusterId) {
+        clusteredAll.slice = true;
+        renderOnly(clusterId);
+      } else {
+        rerender();
+      }
     },
     evt => {
       if (evt.type === "progress") {
