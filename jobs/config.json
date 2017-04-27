@@ -3310,5 +3310,30 @@
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1.6-gci-1.5-downgrade-cluster.env"
   ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-serial.env"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env"
+  ]
 }
+
 }
