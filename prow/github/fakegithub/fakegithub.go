@@ -144,12 +144,12 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	var m github.MissingUsers
 	for _, a := range assignees {
 		if a == "not-in-the-org" {
-			m = append(m, a)
+			m.Users = append(m.Users, a)
 			continue
 		}
 		f.AssigneesAdded = append(f.AssigneesAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, a))
 	}
-	if m == nil {
+	if m.Users == nil {
 		return nil
 	}
 	return m
