@@ -31,3 +31,21 @@ div.graph {
   width: 1200px;
   height: 200px;  /* keep synchronized with script.js:graphHeight */
 }
+
+/* http://stackoverflow.com/a/17579580/3694 */
+span[data-tooltip]:hover {
+  position: relative;
+}
+
+span[data-tooltip]:hover:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1;
+  background: white;
+  white-space: nowrap;
+  padding: 4px 4px;
+  border: 1px solid black;
+  border-radius: 5px;
+}

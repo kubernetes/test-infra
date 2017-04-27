@@ -168,6 +168,7 @@ function sparkLineSVG(arr) {
   var height = 16;
   var path = sparkLinePath(arr, width, height);
   return createElement('span', {
+    dataset: {tooltip: 'hits over last week, newest on the right'},
     innerHTML: `<svg height=${height} width='${(arr.length) * width}'><path d="${path}" /></svg>`,
   });
 }
