@@ -1873,7 +1873,8 @@ class JobTest(unittest.TestCase):
             with open(job_path) as fp:
                 lines = list(fp)
             for line in lines:
-                if 'PROJECT=' not in line:
+                line = line.strip()
+                if not line.startswith('PROJECT='):
                     continue
                 if '-soak-' in job:  # Soak jobs have deploy/test pairs
                     job = job.replace('-test', '-*').replace('-deploy', '-*')
