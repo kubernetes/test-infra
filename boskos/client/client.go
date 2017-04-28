@@ -143,7 +143,7 @@ func (c *Client) popResource() (string, bool) {
 }
 
 func (c *Client) acquire(rtype string, state string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("%v/acquire?type=%v&state=%v&owner=%v", c.url, rtype, state, c.owner))
+	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&owner=%v", c.url, rtype, state, c.owner), "", nil)
 	if err != nil {
 		return "", err
 	}
@@ -167,7 +167,7 @@ func (c *Client) acquire(rtype string, state string) (string, error) {
 }
 
 func (c *Client) release(name string, dest string) error {
-	resp, err := http.Get(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v", c.url, name, dest, c.owner))
+	resp, err := http.Post(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v", c.url, name, dest, c.owner), "", nil)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (c *Client) release(name string, dest string) error {
 }
 
 func (c *Client) update(name string, state string) error {
-	resp, err := http.Get(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v", c.url, name, c.owner, state))
+	resp, err := http.Post(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v", c.url, name, c.owner, state), "", nil)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (c *Client) update(name string, state string) error {
 
 func (c *Client) reset(rtype string, state string, expire time.Duration, dest string) (map[string]string, error) {
 	rmap := make(map[string]string)
-	resp, err := http.Get(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v", c.url, rtype, state, expire.String(), dest))
+	resp, err := http.Post(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v", c.url, rtype, state, expire.String(), dest), "", nil)
 	if err != nil {
 		return rmap, err
 	}
