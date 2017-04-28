@@ -10,29 +10,17 @@ load(
 )
 
 go_binary(
-    name = "boskos",
+    name = "janitor",
     library = ":go_default_library",
     tags = ["automanaged"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["boskos_test.go"],
-    data = ["resources.json"],
-    library = ":go_default_library",
-    tags = ["automanaged"],
-    deps = [
-        "//boskos/common:go_default_library",
-        "//boskos/ranch:go_default_library",
-    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["boskos.go"],
+    srcs = ["janitor.go"],
     tags = ["automanaged"],
     deps = [
-        "//boskos/ranch:go_default_library",
+        "//boskos/client:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )
@@ -46,13 +34,14 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//boskos/client:all-srcs",
-        "//boskos/common:all-srcs",
-        "//boskos/janitor:all-srcs",
-        "//boskos/ranch:all-srcs",
-        "//boskos/reaper:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["janitor_test.go"],
+    library = ":go_default_library",
+    tags = ["automanaged"],
+    deps = ["//boskos/common:go_default_library"],
 )
