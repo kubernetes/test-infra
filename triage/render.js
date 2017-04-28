@@ -99,7 +99,7 @@ function addBuildListItem(jobList, job, buildNumbers, hits, test) {
   var jobEl = addElement(jobList, 'li', null, [sparkLineSVG(hits), ` ${buildNumbers.length} ${job} ${rightArrow}`,
     createElement('p', {
       style: {display: 'none'},
-      dataset: {job: job, test: test, buildNumbers: JSON.stringify(buildNumbers)},
+      dataset: {job: job, test: test || '', buildNumbers: JSON.stringify(buildNumbers)},
     })
   ]);
 }
@@ -118,11 +118,11 @@ function renderJobs(parent, clusterId) {
   }
 
   var clusterJobs = Object.entries(clusterJobs);
-  clusterJobs.sort();
+  sortByKey(clusterJobs, j => j[1].size);
 
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of clusterJobs) {
-    let buildNumbers = Array.from(buildNumbersSet).sort();
+    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => b - a);
     addBuildListItem(jobList, job, buildNumbers, counts[job]);
   }
 }
@@ -168,6 +168,7 @@ function sparkLineSVG(arr) {
   var height = 16;
   var path = sparkLinePath(arr, width, height);
   return createElement('span', {
+    dataset: {tooltip: 'hits over last week, newest on the right'},
     innerHTML: `<svg height=${height} width='${(arr.length) * width}'><path d="${path}" /></svg>`,
   });
 }

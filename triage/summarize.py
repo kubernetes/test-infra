@@ -358,12 +358,31 @@ def render(builds, clustered):
             'builds': builds_to_columns(builds)}
 
 
+def render_slice(data, builds, prefix):
+    clustered = []
+    builds_out = {}
+    jobs = set()
+    for cluster in data['clustered']:
+        # print [cluster['id'], prefix]
+        if cluster['id'].startswith(prefix):
+            clustered.append(cluster)
+            for test in cluster['tests']:
+                for job in test['jobs']:
+                    jobs.add(job['name'])
+    for path, build in builds.iteritems():
+        if build['job'] in jobs:
+            builds_out[path] = build
+    return {'clustered': clustered, 'builds': builds_to_columns(builds_out)}
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('builds', help='builds.json file from BigQuery')
     parser.add_argument('tests', help='tests.json file from BigQuery')
     parser.add_argument('--previous', help='previous output')
     parser.add_argument('--output', default='failure_data.json')
+    parser.add_argument('--output_slices',
+                        help='Output slices to this path (must include PREFIX in template)')
     return parser.parse_args(args)
 
 
@@ -379,8 +398,17 @@ def main(args):
 
     print '%d clusters' % len(clustered)
 
-    json.dump(render(builds, clustered), open(args.output, 'w'),
+    data = render(builds, clustered)
+    json.dump(data, open(args.output, 'w'),
               sort_keys=True)
+
+    if args.output_slices:
+        assert 'PREFIX' in args.output_slices
+        for subset in range(256):
+            id_prefix = '%02x' % subset
+            json.dump(render_slice(data, builds, id_prefix),
+                      open(args.output_slices.replace('PREFIX', id_prefix), 'w'),
+                      sort_keys=True)
 
 
 if __name__ == '__main__':

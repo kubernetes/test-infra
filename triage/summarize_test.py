@@ -164,7 +164,8 @@ class IntegrationTest(unittest.TestCase):
             {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
             {'build': 'gs://logs/other-job/7'},
         ]), open('tests.json', 'w'))
-        summarize.main(summarize.parse_args(['builds.json', 'tests.json']))
+        summarize.main(summarize.parse_args(
+            ['builds.json', 'tests.json', '--output_slices=failure_data_PREFIX.json']))
         output = json_load_byteified(open('failure_data.json'))
 
         # uncomment when output changes
@@ -190,6 +191,7 @@ class IntegrationTest(unittest.TestCase):
 
         random_hash_1 = output['clustered'][0]['id']
         random_hash_2 = output['clustered'][1]['id']
+
         self.assertEqual(
             output['clustered'],
             [{'id': random_hash_1,
@@ -208,6 +210,10 @@ class IntegrationTest(unittest.TestCase):
               'text': 'some other error message'}]
         )
 
+        slice_output = json_load_byteified(open('failure_data_%s.json' % random_hash_1[:2]))
+
+        self.assertEqual(slice_output['clustered'], [output['clustered'][0]])
+        self.assertEqual(slice_output['builds']['cols']['started'], [1234, 1234, 1234, 1234])
 
 
 if __name__ == '__main__':

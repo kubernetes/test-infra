@@ -20,7 +20,7 @@ cd $(dirname $0)
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
   gcloud config set project k8s-gubernator
-  bq show
+  bq show <<< $'\n'
 fi
 
 date
@@ -34,11 +34,16 @@ if [[ ! -e triage_builds.json ]] || [ $(stat -c%Y triage_builds.json) -lt $table
 fi
 #
 gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
-pypy summarize.py triage_builds.json triage_tests.json --previous failure_data_previous.json --output failure_data.json
+
+mkdir -p slices
+
+pypy summarize.py triage_builds.json triage_tests.json \
+  --previous failure_data_previous.json --output failure_data.json --output_slices slices/failure_data_%02x.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
 }
 
 gsutil_cp failure_data.json gs://k8s-gubernator/triage/
+gsutil_cp slices/*.json gs://k8s-gubernator/triage/slices/
 gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"
