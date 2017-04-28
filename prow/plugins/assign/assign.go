@@ -21,6 +21,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -68,7 +70,8 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
-	return combineErrors(handle(newAssignHandler(e, pc.GitHubClient)), handle(newReviewHandler(e, pc.GitHubClient)))
+	return combineErrors(handle(newAssignHandler(e, pc.GitHubClient, pc.Logger)),
+		handle(newReviewHandler(e, pc.GitHubClient, pc.Logger)))
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
@@ -81,7 +84,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		url:    i.Issue.HTMLURL,
 		number: i.Issue.Number,
 	}
-	return handle(newAssignHandler(e, pc.GitHubClient))
+	return handle(newAssignHandler(e, pc.GitHubClient, pc.Logger))
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -95,9 +98,10 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		number: ic.Issue.Number,
 	}
 	if ic.Issue.IsPullRequest() {
-		return combineErrors(handle(newAssignHandler(e, pc.GitHubClient)), handle(newReviewHandler(e, pc.GitHubClient)))
+		return combineErrors(handle(newAssignHandler(e, pc.GitHubClient, pc.Logger)),
+			handle(newReviewHandler(e, pc.GitHubClient, pc.Logger)))
 	}
-	return handle(newAssignHandler(e, pc.GitHubClient))
+	return handle(newAssignHandler(e, pc.GitHubClient, pc.Logger))
 }
 
 func parseLogins(text string) []string {
@@ -152,11 +156,13 @@ func handle(h *handler) error {
 	}
 
 	if len(toRemove) > 0 {
+		h.log.Printf("Removing %s from %s/%s#%d: %v", h.userType, e.org, e.repo, e.number, toRemove)
 		if err := h.remove(e.org, e.repo, e.number, toRemove); err != nil {
 			return err
 		}
 	}
 	if len(toAdd) > 0 {
+		h.log.Printf("Adding %s to %s/%s#%d: %v", h.userType, e.org, e.repo, e.number, toAdd)
 		if err := h.add(e.org, e.repo, e.number, toAdd); err != nil {
 			if mu, ok := err.(github.MissingUsers); ok {
 				msg := h.addFailureResponse(mu)
@@ -192,9 +198,14 @@ type handler struct {
 	regexp *regexp.Regexp
 	// gc is the githubClient to use for creating response comments in the event of a failure.
 	gc githubClient
+
+	// log is a logrus.Entry used to record actions the handler takes.
+	log *logrus.Entry
+	// userType is a string that represents the type of users affected by this handler. (e.g. 'assignees')
+	userType string
 }
 
-func newAssignHandler(e *event, gc githubClient) *handler {
+func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.", strings.Join(mu.Users, ", "), e.org, e.org)
 	}
@@ -214,10 +225,12 @@ func newAssignHandler(e *event, gc githubClient) *handler {
 		event:              e,
 		regexp:             assignRe,
 		gc:                 gc,
+		log:                log,
+		userType:           "assignee(s)",
 	}
 }
 
-func newReviewHandler(e *event, gc githubClient) *handler {
+func newReviewHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only people with write access to %s/%s can review this PR.\n", strings.Join(mu.Users, ", "), e.org, e.repo)
 	}
@@ -230,5 +243,7 @@ func newReviewHandler(e *event, gc githubClient) *handler {
 		event:              e,
 		regexp:             ccRe,
 		gc:                 gc,
+		log:                log,
+		userType:           "reviewer(s)",
 	}
 }
