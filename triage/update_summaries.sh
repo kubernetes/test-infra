@@ -38,7 +38,7 @@ gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.jso
 mkdir -p slices
 
 pypy summarize.py triage_builds.json triage_tests.json \
-  --previous failure_data_previous.json --output failure_data.json --output_slices slices/failure_data_%02x.json
+  --previous failure_data_previous.json --output failure_data.json --output_slices slices/failure_data_PREFIX.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
