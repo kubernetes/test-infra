@@ -29,7 +29,7 @@ import sys
 BRANCH_VERSION = {
     '1.2': '1.4',
     '1.3': '1.4',
-    'master': '1.7',
+    'master': '1.6',
 }
 
 VERSION_TAG = {
