@@ -3316,7 +3316,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu.env",
+    "--mode=local"
   ]
 },
 
@@ -3324,7 +3325,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-serial.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-serial.env",
+    "--mode=local"
   ]
 },
 
@@ -3332,7 +3334,8 @@
   "scenario": "kubernetes_e2e",
   "args": [
     "--env-file=platforms/gce.env",
-    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env"
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env",
+    "--mode=local"
   ]
 }
 
