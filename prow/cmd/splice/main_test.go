@@ -23,6 +23,10 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
+
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func expectEqual(t *testing.T, msg string, have interface{}, want interface{}) {
@@ -159,4 +163,204 @@ func TestFindMergeable(t *testing.T) {
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2})
 
+}
+
+func fakeRefs(ref, sha string) kube.Refs {
+	return kube.Refs{
+		BaseRef: ref,
+		BaseSHA: sha,
+	}
+}
+
+func fakeProwJob(context string, jobType kube.ProwJobType, completed bool, state kube.ProwJobState, refs kube.Refs) kube.ProwJob {
+	pj := kube.ProwJob{
+		Status: kube.ProwJobStatus{
+			State: state,
+		},
+		Spec: kube.ProwJobSpec{
+			Context: context,
+			Refs:    refs,
+			Type:    jobType,
+		},
+	}
+	if completed {
+		pj.Status.CompletionTime = time.Now()
+	}
+	return pj
+}
+
+func TestCompletedJobs(t *testing.T) {
+	refs := fakeRefs("ref", "sha")
+	other := fakeRefs("otherref", "othersha")
+	tests := []struct {
+		name      string
+		jobs      []kube.ProwJob
+		refs      kube.Refs
+		completed []string
+	}{
+		{
+			name: "completed when passed",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("passed-b", kube.BatchJob, true, kube.SuccessState, refs),
+			},
+			refs:      refs,
+			completed: []string{"passed-a", "passed-b"},
+		},
+		{
+			name: "ignore bad ref",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, other),
+			},
+			refs: refs,
+		},
+		{
+			name: "only complete good refs",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("passed-b-bad-ref", kube.BatchJob, true, kube.SuccessState, other),
+			},
+			refs:      refs,
+			completed: []string{"passed-a"},
+		},
+		{
+			name: "completed when good and bad ref",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, other),
+			},
+			refs:      refs,
+			completed: []string{"passed-a"},
+		},
+		{
+			name: "ignore incomplete",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("pending-b", kube.BatchJob, false, kube.PendingState, refs),
+			},
+			refs:      refs,
+			completed: []string{"passed-a"},
+		},
+		{
+			name: "ignore failed",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("failed-b", kube.BatchJob, true, kube.FailureState, refs),
+			},
+			refs:      refs,
+			completed: []string{"passed-a"},
+		},
+		{
+			name: "ignore non-batch",
+			jobs: []kube.ProwJob{
+				fakeProwJob("passed-a", kube.BatchJob, true, kube.SuccessState, refs),
+				fakeProwJob("non-batch-b", kube.PresubmitJob, true, kube.SuccessState, refs),
+			},
+			refs:      refs,
+			completed: []string{"passed-a"},
+		},
+	}
+
+	for _, tc := range tests {
+		completed := completedJobs(tc.jobs, tc.refs)
+		var completedContexts []string
+		for _, job := range completed {
+			completedContexts = append(completedContexts, job.Spec.Context)
+		}
+		expectEqual(t, "completed contexts", completedContexts, tc.completed)
+	}
+}
+
+func TestRequiredPresubmits(t *testing.T) {
+	tests := []struct {
+		name     string
+		possible []config.Presubmit
+		required []string
+	}{
+		{
+			name: "basic",
+			possible: []config.Presubmit{
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name:      "optional",
+					AlwaysRun: false,
+				},
+				{
+					Name:       "hidden",
+					AlwaysRun:  true,
+					SkipReport: true,
+				},
+			},
+			required: []string{"always"},
+		},
+	}
+
+	for _, tc := range tests {
+		var names []string
+		for _, job := range requiredPresubmits(tc.possible) {
+			names = append(names, job.Name)
+		}
+		expectEqual(t, tc.name, names, tc.required)
+	}
+}
+
+func TestNeededPresubmits(t *testing.T) {
+	tests := []struct {
+		name     string
+		possible []config.Presubmit
+		current  []kube.ProwJob
+		refs     kube.Refs
+		required []string
+	}{
+		{
+			name: "basic",
+			possible: []config.Presubmit{
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name:      "optional",
+					AlwaysRun: false,
+				},
+				{
+					Name:       "hidden",
+					AlwaysRun:  true,
+					SkipReport: true,
+				},
+			},
+			required: []string{"always"},
+		},
+		{
+			name: "skip already passed",
+			possible: []config.Presubmit{
+				{
+					Name:      "new",
+					Context:   "brandnew",
+					AlwaysRun: true,
+				},
+				{
+					Name:      "passed",
+					Context:   "already-ran",
+					AlwaysRun: true,
+				},
+			},
+			current: []kube.ProwJob{
+				fakeProwJob("already-ran", kube.BatchJob, true, kube.SuccessState, fakeRefs("ref", "sha")),
+			},
+			refs:     fakeRefs("ref", "sha"),
+			required: []string{"new"},
+		},
+	}
+
+	for _, tc := range tests {
+		var names []string
+		for _, job := range neededPresubmits(tc.possible, tc.current, tc.refs) {
+			names = append(names, job.Name)
+		}
+		expectEqual(t, tc.name, names, tc.required)
+	}
 }
