@@ -44,7 +44,7 @@ build:
 test:
 	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: update-config update-plugins clean build test get-cluster-credentials
+.PHONY: update-config update-plugins build test get-cluster-credentials
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
@@ -122,4 +122,4 @@ plank-image:
 plank-deployment:
 	kubectl apply -f cluster/plank_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service test-pr-image sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment
