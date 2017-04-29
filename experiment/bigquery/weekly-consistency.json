@@ -1,42 +1,47 @@
 [
   {
-    "commits": "698",
-    "consistency": "0.807",
+    "commits": "697",
+    "consistency": "0.811",
     "wk": "2017-03-04"
   },
   {
-    "commits": "693",
-    "consistency": "0.844",
+    "commits": "695",
+    "consistency": "0.83",
     "wk": "2017-03-11"
   },
   {
     "commits": "638",
-    "consistency": "0.906",
+    "consistency": "0.895",
     "wk": "2017-03-18"
   },
   {
-    "commits": "638",
-    "consistency": "0.909",
+    "commits": "639",
+    "consistency": "0.897",
     "wk": "2017-03-25"
   },
   {
-    "commits": "742",
-    "consistency": "0.922",
+    "commits": "745",
+    "consistency": "0.921",
     "wk": "2017-04-01"
   },
   {
-    "commits": "747",
-    "consistency": "0.885",
+    "commits": "748",
+    "consistency": "0.888",
     "wk": "2017-04-08"
   },
   {
-    "commits": "639",
-    "consistency": "0.901",
+    "commits": "638",
+    "consistency": "0.903",
     "wk": "2017-04-15"
   },
   {
-    "commits": "574",
-    "consistency": "0.918",
+    "commits": "761",
+    "consistency": "0.867",
     "wk": "2017-04-22"
+  },
+  {
+    "commits": "97",
+    "consistency": "0.928",
+    "wk": "2017-04-29"
   }
 ]

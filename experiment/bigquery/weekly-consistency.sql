@@ -36,7 +36,7 @@ from ( /* For each week, count whether a (num, commit) flaked */
           'pr:pull-kubernetes-bazel',
           'pr:pull-kubernetes-unit',
           'pr:pull-kubernetes-verify',
-          'pr:pull-kubernetes-e2e-gce',
+          'pr:pull-kubernetes-e2e-gce-etcd3',
           'pr:pull-kubernetes-e2e-kops-aws',
           'pr:pull-kubernetes-kubemark-e2e-gce',
           'pr:pull-kubernetes-node-e2e',
