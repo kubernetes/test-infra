@@ -1030,6 +1030,18 @@ class BootstrapTest(unittest.TestCase):
             with stub:  # Leaving with restores things
                 pass
 
+    def testSetupCredsWhenSetupRootFails(self):
+        """We should still call setup_credentials even if setup_root blows up."""
+        called = set()
+        with Stub(bootstrap, 'setup_root', Bomb):
+            with Stub(bootstrap, 'setup_credentials', lambda *a, **kw: called.add('setup_credentials')):
+                with Stub(bootstrap, 'finish', lambda *a, **kw: called.add('finish')):
+                    with self.assertRaises(AssertionError):
+                        test_bootstrap()
+
+        for needed in ['setup_credentials', 'finish']:
+            self.assertIn(needed, called)
+
     def testEmptyRepo(self):
         repo = None
         with Stub(bootstrap, 'checkout', Bomb):

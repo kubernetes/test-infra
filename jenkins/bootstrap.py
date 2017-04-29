@@ -857,6 +857,7 @@ def bootstrap(args):
 
     version = 'unknown'
     exc_type = None
+    setup_creds = False
 
     try:
         setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
@@ -867,6 +868,7 @@ def bootstrap(args):
             version = ''
         setup_magic_environment(job)
         setup_credentials(call, args.service_account, upload)
+        setup_creds = True
         logging.info('Start %s at %s...', build, version)
         if upload:
             start(gsutil, paths, started, node(), version, repos)
@@ -881,6 +883,8 @@ def bootstrap(args):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         logging.exception('unexpected error')
         success = False
+    if not setup_creds:
+        setup_credentials(call, args.service_account, upload)
     if upload:
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
