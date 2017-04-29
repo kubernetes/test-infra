@@ -222,7 +222,7 @@ func createComment(r Report, entries []string) string {
 	lines = append(lines, entries...)
 	lines = append(lines, []string{
 		"",
-		fmt.Sprintf("[Full PR test history](%s). [Your PR dashboard](%s). Please help us cut down on flakes by linking to an [open issue](https://github.com/%s/%s/issues?q=is:issue+is:open) when you hit one in your PR.", prLink(r), dashLink(r), r.RepoOwner, r.RepoName),
+		fmt.Sprintf("[Full PR test history](%s). [Your PR dashboard](%s). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/%s/%s/issues?q=is:issue+is:open) when you hit one in your PR.", prLink(r), dashLink(r), r.RepoOwner, r.RepoName),
 		"",
 		"<details>",
 		"",
