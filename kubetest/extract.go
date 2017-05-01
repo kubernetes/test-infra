@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type extractMode int
@@ -198,6 +199,10 @@ func getTestBinaries(url, version string) error {
 	return nil
 }
 
+var (
+	sleep = time.Sleep
+)
+
 // Calls KUBERNETES_RELASE_URL=url KUBERNETES_RELEASE=version get-kube.sh.
 // This will download version from the specified url subdir and extract
 // the tarballs.
@@ -227,8 +232,17 @@ func getKube(url, version string) error {
 		return err
 	}
 	log.Printf("U=%s R=%s get-kube.sh", url, version)
-	if err := finishRunning(exec.Command(k)); err != nil {
-		return fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
+	for i := 0; i < 3; i++ {
+		err = finishRunning(exec.Command(k))
+		if err == nil {
+			break
+		}
+		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
+		if i == 2 {
+			return err
+		}
+		log.Println(err)
+		sleep(time.Duration(i) * time.Second)
 	}
 	i, err := os.Stat("./kubernetes/cluster/get-kube-binaries.sh")
 	if err != nil || i.IsDir() {
