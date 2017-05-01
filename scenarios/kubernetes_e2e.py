@@ -62,7 +62,7 @@ def kubekins(tag):
 
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
-    def __init__(self, workspace):
+    def __init__(self, workspace, user):
         self.workspace = workspace
         self.env = []
         self.env_files = []
@@ -70,6 +70,7 @@ class LocalMode(object):
             'HOME=%s' % workspace,
             'WORKSPACE=%s' % workspace,
             'PATH=%s' % os.getenv('PATH'),
+            'USER=%s' % user,
         )
 
     @staticmethod
@@ -277,7 +278,7 @@ def main(args):
         sudo = args.docker_in_docker or args.build
         mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
-        mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
+        mode = LocalMode(workspace, args.user)  # pylint: disable=redefined-variable-type
     else:
         raise ValueError(args.mode)
     if args.env_file:
@@ -437,6 +438,9 @@ def create_parser():
     parser.add_argument(
         '--kubeadm', action='store_true', help='If the test is a kubeadm job')
     parser.add_argument(
+        '--multiple-federations', default=False, action='store_true',
+        help='If we need to run multiple federation control planes in parallel')
+    parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
         '--tag', default='v20170421-c719a74d', help='Use a specific kubekins-e2e tag if set')
@@ -445,8 +449,7 @@ def create_parser():
     parser.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
     parser.add_argument(
-        '--multiple-federations', default=False, action='store_true',
-        help='If we need to run multiple federation control planes in parallel')
+        '--user', default='prow', help='Username used for ssh in local mode')
     return parser
 
 if __name__ == '__main__':
