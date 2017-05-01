@@ -684,6 +684,7 @@
 "ci-kubernetes-e2e-gci-gce-reboot": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot.env"
   ]
@@ -814,6 +815,7 @@
 "ci-kubernetes-e2e-gce-reboot-release-1-4": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1-4.env",
     "--mode=local"
@@ -1731,6 +1733,7 @@
 "ci-kubernetes-e2e-gke-updown": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-updown.env"
   ]
@@ -1857,6 +1860,7 @@
 "ci-kubernetes-e2e-gke-alpha-features-release-1.5": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-alpha-features-release-1.5.env"
   ]
@@ -2420,6 +2424,7 @@
 "ci-kubernetes-e2e-gce-reboot-release-1.6": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gce.env",
     "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1.6.env"
   ]
@@ -2534,6 +2539,7 @@
 "ci-kubernetes-e2e-gke-release-1.6": {
   "scenario": "kubernetes_e2e",
   "args": [
+    "--cluster=err-e2e",
     "--env-file=platforms/gke.env",
     "--env-file=jobs/ci-kubernetes-e2e-gke-release-1.6.env"
   ]
