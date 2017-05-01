@@ -701,7 +701,9 @@ func TestBatch(t *testing.T) {
 func TestPeriodic(t *testing.T) {
 	per := config.Periodic{
 		Name: "ci-periodic-job",
-		Spec: &kube.PodSpec{},
+		Spec: &kube.PodSpec{
+			Containers: []kube.Container{{}},
+		},
 		RunAfterSuccess: []config.Periodic{
 			config.Periodic{
 				Name: "ci-periodic-job-2",
@@ -726,11 +728,20 @@ func TestPeriodic(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
+	if fc.prowjobs[0].Spec.PodSpec.Containers[0].Name != "" {
+		t.Fatal("Sync step updated the TPR spec.")
+	}
 	if len(fc.pods) != 1 {
 		t.Fatal("Didn't create pod on first sync.")
 	}
 	if fc.pods[0].Metadata.Name != "ci-periodic-job-42" {
 		t.Fatalf("Wrong pod name: %s", fc.pods[0].Metadata.Name)
+	}
+	if len(fc.pods[0].Spec.Containers) != 1 {
+		t.Fatal("Wiped container list.")
+	}
+	if len(fc.pods[0].Spec.Containers[0].Env) == 0 {
+		t.Fatal("Container has no env set.")
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
