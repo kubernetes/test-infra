@@ -100,11 +100,12 @@ func NewRanch(config string, storage string) (*Ranch, error) {
 
 // Acquire checks out a type of resource in certain state without an owner
 // In: rtype - name of the target resource
-//     state - destination state of the resource
+//     state - current state of the requested resource
+//     dest - destination state of the requested resource
 //     owner - requester of the resource
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
-func (r *Ranch) Acquire(rtype string, state string, owner string) (*common.Resource, error) {
+func (r *Ranch) Acquire(rtype string, state string, dest string, owner string) (*common.Resource, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -113,6 +114,7 @@ func (r *Ranch) Acquire(rtype string, state string, owner string) (*common.Resou
 		if rtype == res.Type && state == res.State && res.Owner == "" {
 			res.LastUpdate = time.Now()
 			res.Owner = owner
+			res.State = dest
 			return res, nil
 		}
 	}

@@ -32,10 +32,11 @@ State is a string that tells the current status of the resource.
 	Method: POST
 	URL Params: 
 		Required: type=[string]  : type of requested resource
-		Required: state=[string] : state of the requested resource
+		Required: state=[string] : current state of the requested resource
+		Required: dest=[string] : destination state of the requested resource
 		Required: owner=[string] : requester of the resource
-	Return: error code or 200 with a valid Resource JSON object.
-	Example: /acquire?type=project&state=free&owner=user
+	Return: error code or 200 with a valid Resource JSON object
+	Example: /acquire?type=project&state=free&dest=busy&owner=user
 
 2.	URL: /release
 	Desc: use /done when you finish use some resource. Owner need to match current owner.
@@ -43,7 +44,7 @@ State is a string that tells the current status of the resource.
 	URL Params:
 		Required: name=[string]  : name of finished resource
 		Required: owner=[string] : owner of the resource
-		Required: dest=[string]  : dest state
+		Required: dest=[string]  : destination state of the released resource
 	Return: status code
 	Example: /release?name=k8s-jkns-foo&dest=dirty&owner=user
 
@@ -62,12 +63,12 @@ State is a string that tells the current status of the resource.
 	Method: POST
 	URL Params:
 		Required: type=[string] : type of resource in interest
-		Required: state=[string] : original state
-		Required: dest=[string] : dest state, for expired resource
+		Required: state=[string] : current state of the expired resource
+		Required: dest=[string] : destination state of the expired resource
 		Required: expire=[durationStr*] resource has not been updated since before {expire}. 
 			*durationStr is any string can be parsed by [time.ParseDuration()](https://golang.org/pkg/time/#ParseDuration)
 	Return: status code with a list of [Owner:Resource] pairs, which can be unmarshal into map[string]string
-	Example: /reset?name=k8s-jkns-foo&state=free&dest=dirty&expire=20m
+	Example: /reset?name=k8s-jkns-foo&state=busy&dest=dirty&expire=20m
 
 5.	URL: /metric
 	Method: GET
@@ -123,7 +124,7 @@ Newly deleted resource will be removed in a future update cycle if the resource 
 
 1. Sent some local requests to boskos:
 ```
-curl 'http://127.0.0.1:8080/start?type=project&state=free&owner=user'
+curl 'http://127.0.0.1:8080/acquire?type=project&state=free&dest=busy&owner=user'
 ```
 
 ## K8s test:
@@ -142,5 +143,5 @@ curl 'http://127.0.0.1:8080/start?type=project&state=free&owner=user'
 kubectl run curl --image=radial/busyboxplus:curl -i --tty
 Waiting for pod default/curl-XXXXX to be running, status is Pending, pod ready: false
 If you don't see a command prompt, try pressing enter.
-[ root@curl-XXXXX:/ ]$ curl 'http://boskos/request?type=project&state=free&owner=user'
+[ root@curl-XXXXX:/ ]$ curl 'http://boskos/acquire?type=project&state=free&dest=busy&owner=user'
 ````

@@ -49,7 +49,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name:      "reject get method",
 			resources: []common.Resource{},
-			path:      "?type=t&state=s&owner=o",
+			path:      "?type=t&state=s&dest=d&owner=o",
 			code:      http.StatusMethodNotAllowed,
 			method:    http.MethodGet,
 		},
@@ -63,28 +63,35 @@ func TestAcquire(t *testing.T) {
 		{
 			name:      "reject request missing type",
 			resources: []common.Resource{},
-			path:      "?state=s&owner=o",
+			path:      "?state=s&dest=d&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "reject request missing state",
 			resources: []common.Resource{},
-			path:      "?type=t&owner=o",
+			path:      "?type=t&dest=d&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "reject request missing owner",
 			resources: []common.Resource{},
-			path:      "?type=t&state=s",
+			path:      "?type=t&state=s&dest=d",
+			code:      http.StatusBadRequest,
+			method:    http.MethodPost,
+		},
+		{
+			name:      "reject request missing dest",
+			resources: []common.Resource{},
+			path:      "?type=t&state=s&owner=o",
 			code:      http.StatusBadRequest,
 			method:    http.MethodPost,
 		},
 		{
 			name:      "ranch has no resource",
 			resources: []common.Resource{},
-			path:      "?type=t&state=s&owner=o",
+			path:      "?type=t&state=s&dest=d&owner=o",
 			code:      http.StatusNotFound,
 			method:    http.MethodPost,
 		},
@@ -98,7 +105,7 @@ func TestAcquire(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path:   "?type=t&state=s&owner=o",
+			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
@@ -112,7 +119,7 @@ func TestAcquire(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path:   "?type=t&state=s&owner=o",
+			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
@@ -126,7 +133,7 @@ func TestAcquire(t *testing.T) {
 					Owner: "user",
 				},
 			},
-			path:   "?type=t&state=s&owner=o",
+			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusNotFound,
 			method: http.MethodPost,
 		},
@@ -140,7 +147,7 @@ func TestAcquire(t *testing.T) {
 					Owner: "",
 				},
 			},
-			path:   "?type=t&state=s&owner=o",
+			path:   "?type=t&state=s&dest=d&owner=o",
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
@@ -169,6 +176,10 @@ func TestAcquire(t *testing.T) {
 			json.Unmarshal(rr.Body.Bytes(), &data)
 			if data.Name != "res" {
 				t.Errorf("%s - Got res %v, expect res", tc.name, data.Name)
+			}
+
+			if data.State != "d" {
+				t.Errorf("%s - Got state %v, expect d", tc.name, data.State)
 			}
 
 			if c.Resources[0].Owner != "o" {
