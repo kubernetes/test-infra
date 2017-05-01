@@ -105,6 +105,12 @@
         timeout: 40
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-weave: #justinsb
+        job-name: ci-kubernetes-e2e-kops-aws-weave
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@daily'
+        trigger-job: ''
     # END AWS
 
     # START GCE
