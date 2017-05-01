@@ -39,6 +39,10 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
 	kc, err := kube.NewClientInCluster("default")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
