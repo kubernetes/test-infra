@@ -1,113 +1,152 @@
 {
   "ci-heapster-canarypush": {
-    "failing_days": "107"
+    "failing_days": "111"
   },
   "ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew": {
-    "failing_days": "106"
+    "failing_days": "110"
   },
   "ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew": {
-    "failing_days": "106"
+    "failing_days": "110"
   },
   "ci-kubernetes-e2e-gci-gke-flaky": {
-    "failing_days": "82"
+    "failing_days": "86"
   },
   "ci-kubernetes-e2e-gci-gce-flaky": {
-    "failing_days": "82"
+    "failing_days": "86"
   },
   "ci-kubernetes-soak-gce-gci-test": {
-    "failing_days": "79"
+    "failing_days": "83"
   },
   "ci-kubernetes-e2e-gci-gce-examples": {
-    "failing_days": "78"
+    "failing_days": "82"
   },
   "ci-kubernetes-e2e-gce-examples": {
-    "failing_days": "78"
+    "failing_days": "82"
   },
   "ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
-    "failing_days": "71"
+    "failing_days": "75"
+  },
+  "ci-kubernetes-e2e-non-cri-gke-flaky": {
+    "failing_days": "73"
+  },
+  "ci-kubernetes-e2e-non-cri-gce-flaky": {
+    "failing_days": "73"
+  },
+  "ci-kubernetes-e2e-non-cri-gce-federation": {
+    "failing_days": "73"
+  },
+  "ci-kubernetes-e2e-non-cri-gce-examples": {
+    "failing_days": "73"
+  },
+  "ci-kubernetes-e2e-non-cri-gce-serial": {
+    "failing_days": "73"
+  },
+  "ci-kubernetes-soak-gce-non-cri-test": {
+    "failing_days": "73"
   },
   "ci-kubernetes-e2e-gci-gke-pre-release": {
-    "failing_days": "69"
+    "failing_days": "73"
   },
   "ci-kubernetes-e2e-gke-pre-release": {
-    "failing_days": "65"
+    "failing_days": "69"
   },
   "ci-kubernetes-e2e-kops-aws-slow": {
-    "failing_days": "52"
+    "failing_days": "56"
   },
   "ci-kubernetes-e2e-gce-federation-release-1.6": {
-    "failing_days": "52"
+    "failing_days": "56"
   },
   "ci-kubernetes-e2e-kops-aws-serial": {
-    "failing_days": "52"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-cluster": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-cluster": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.5-container_vm-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-cluster": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-cluster": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-cluster": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-master": {
-    "failing_days": "51"
-  },
-  "ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster": {
-    "failing_days": "51"
+    "failing_days": "56"
   },
   "ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.6-upgrade-cluster": {
-    "failing_days": "51"
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-cluster": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-cluster": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-cluster": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.5-gci-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-cluster": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.4-gci-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.5-container_vm-1.6-upgrade-cluster": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.5-container_vm-1.6-upgrade-master": {
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.6-upgrade-master": {
+    "failing_days": "55"
   },
   "ci-kubernetes-e2e-gke-container_vm-1.5-container_vm-1.6-upgrade-cluster": {
-    "failing_days": "51"
+    "failing_days": "55"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.5-gci-1.6-upgrade-cluster": {
+    "failing_days": "55"
   },
   "ci-kubernetes-e2e-gce-1.5-1.6-upgrade-cluster": {
-    "failing_days": "51"
+    "failing_days": "55"
   },
   "ci-kubernetes-e2e-gce-1.5-1.6-upgrade-master": {
-    "failing_days": "51"
+    "failing_days": "55"
   },
   "ci-kubernetes-e2e-gce-1.5-1.6-upgrade-cluster-new": {
-    "failing_days": "51"
+    "failing_days": "55"
   },
   "ci-kubernetes-e2e-gce-1.6-1.5-downgrade-cluster": {
-    "failing_days": "40"
+    "failing_days": "44"
   },
   "pr:pull-kubernetes-e2e-kubeadm-gce": {
-    "failing_days": "29"
+    "failing_days": "33"
   },
-  "ci-kubernetes-e2e-gce-reboot-release-1-4": {
-    "failing_days": "2"
+  "ci-kubernetes-soak-gke-test": {
+    "failing_days": "33"
   },
-  "metrics-bigquery": {
-    "failing_days": "0"
+  "ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new": {
+    "failing_days": "33"
+  },
+  "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new": {
+    "failing_days": "33"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.4-container_vm-latest-upgrade-cluster-new": {
+    "failing_days": "32"
+  },
+  "ci-kubernetes-e2e-gci-gce-serial": {
+    "failing_days": "32"
+  },
+  "ci-kubernetes-e2e-gci-gke-test": {
+    "failing_days": "31"
+  },
+  "ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new": {
+    "failing_days": "31"
+  },
+  "ci-kubernetes-e2e-gci-gke-subnet": {
+    "failing_days": "31"
+  },
+  "ci-kubernetes-e2e-gce-ubuntu-serial": {
+    "failing_days": "3"
   }
 }
