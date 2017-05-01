@@ -352,6 +352,7 @@
 "pull-kubernetes-node-e2e": {
   "scenario": "kubernetes_kubelet",
   "args": [
+    "--branch=${PULL_BASE_REF}",
     "--properties=test/e2e_node/jenkins/jenkins-pull.properties"
   ]
 },
