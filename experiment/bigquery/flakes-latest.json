@@ -53,10 +53,5 @@
     "consistency": 0.994,
     "flakes": 5,
     "flakiest": null
-  },
-  "pr:pull-kubernetes-e2e-gce-non-cri": {
-    "consistency": 0.987,
-    "flakes": 4,
-    "flakiest": null
   }
 }

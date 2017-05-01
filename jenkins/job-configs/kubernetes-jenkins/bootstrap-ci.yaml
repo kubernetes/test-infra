@@ -330,86 +330,6 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 
-    # gce-master with non-cri
-    - kubernetes-e2e-non-cri-gce:
-        job-name: ci-kubernetes-e2e-non-cri-gce
-        jenkins-timeout: 270
-        timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-slow:
-        job-name: ci-kubernetes-e2e-non-cri-gce-slow
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-serial:
-        job-name: ci-kubernetes-e2e-non-cri-gce-serial
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-reboot:
-        job-name: ci-kubernetes-e2e-non-cri-gce-reboot
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-autoscaling:
-        job-name: ci-kubernetes-e2e-non-cri-gce-autoscaling
-        jenkins-timeout: 330
-        timeout: 230
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-autoscaling-migs:
-        job-name: ci-kubernetes-e2e-non-cri-gce-autoscaling-migs
-        jenkins-timeout: 330
-        timeout: 230
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-alpha-features:
-        job-name: ci-kubernetes-e2e-non-cri-gce-alpha-features
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-flaky:
-        job-name: ci-kubernetes-e2e-non-cri-gce-flaky
-        jenkins-timeout: 300
-        timeout: 200
-        trigger-job: 'ci-kubernetes-build'
-        frequency: 'H/5 * * * *' # At least every 30m
-    - kubernetes-e2e-non-cri-gce-scalability:
-        job-name: ci-kubernetes-e2e-non-cri-gce-scalability
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/12 * * *'
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-etcd3:
-        job-name: ci-kubernetes-e2e-non-cri-gce-etcd3
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-proto:
-        job-name: ci-kubernetes-e2e-non-cri-gce-proto
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-examples:
-        job-name: ci-kubernetes-e2e-non-cri-gce-examples
-        jenkins-timeout: 220
-        timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-federation:
-        job-name: ci-kubernetes-e2e-non-cri-gce-federation
-        jenkins-timeout: 1020
-        timeout: 920
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-
     # gce-1.4
     - kubernetes-e2e-gce-release-1.4:
         job-name: ci-kubernetes-e2e-gce-release-1.4
@@ -733,38 +653,6 @@
         timeout: 70
         frequency: 'H H/6 * * *'
         trigger-job: ''
-
-    # cri-gce-features
-    - kubernetes-e2e-non-cri-gce-ingress:
-        job-name: ci-kubernetes-e2e-non-cri-gce-ingress
-        jenkins-timeout: 210
-        timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-es-logging:
-        job-name: ci-kubernetes-e2e-non-cri-gce-es-logging
-        jenkins-timeout: 210
-        timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-sd-logging:
-        job-name: ci-kubernetes-e2e-non-cri-gce-sd-logging
-        jenkins-timeout: 220
-        timeout: 120
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-statefulset:
-        job-name: ci-kubernetes-e2e-non-cri-gce-statefulset
-        jenkins-timeout: 210
-        timeout: 110
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gce-garbage:
-        job-name: ci-kubernetes-e2e-non-cri-gce-garbage
-        jenkins-timeout: 720
-        timeout: 620
-        frequency: 'H H/6 * * *'
-        trigger-job: ''
     # END GCE
 
     # START GCE-GCI
@@ -1086,68 +974,6 @@
         job-name: ci-kubernetes-e2e-gke-gci-ci-master
         jenkins-timeout: 270
         timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-
-    # cri-gke-master with CRI
-    - kubernetes-e2e-non-cri-gke:
-        job-name: ci-kubernetes-e2e-non-cri-gke
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-slow:
-        job-name: ci-kubernetes-e2e-non-cri-gke-slow
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-multizone:
-        job-name: ci-kubernetes-e2e-non-cri-gke-multizone
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-alpha-features:
-        job-name: ci-kubernetes-e2e-non-cri-gke-alpha-features
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-autoscaling:
-        job-name: ci-kubernetes-e2e-non-cri-gke-autoscaling
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-flaky:
-        job-name: ci-kubernetes-e2e-non-cri-gke-flaky
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-reboot:
-        job-name: ci-kubernetes-e2e-non-cri-gke-reboot
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-serial:
-        job-name: ci-kubernetes-e2e-non-cri-gke-serial
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-updown:
-        job-name: ci-kubernetes-e2e-non-cri-gke-updown
-        jenkins-timeout: 150
-        timeout: 50
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-non-cri-gke-ingress:
-        job-name: ci-kubernetes-e2e-non-cri-gke-ingress
-        jenkins-timeout: 420
-        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 

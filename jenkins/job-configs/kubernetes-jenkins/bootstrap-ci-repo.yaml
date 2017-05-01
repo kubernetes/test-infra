@@ -157,24 +157,6 @@
         job-name: ci-kubernetes-node-kubelet-conformance
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-non-cri:  # yjhong
-        branch: master
-        frequency: 'H/30 * * * *'
-        job-name: ci-kubernetes-node-kubelet-non-cri
-        repo-name: k8s.io/kubernetes
-        timeout: 90
-    - kubernetes-node-kubelet-non-cri-serial:  # lantaol
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-non-cri-serial
-        repo-name: k8s.io/kubernetes
-        timeout: 240
-    - kubernetes-node-kubelet-non-cri-benchmark:  # lantaol
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-non-cri-benchmark
-        repo-name: k8s.io/kubernetes
-        timeout: 90
     - kubernetes-node-kubelet-1.4:  # dawnchen
         branch: release-1.4
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.

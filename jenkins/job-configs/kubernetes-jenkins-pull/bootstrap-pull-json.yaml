@@ -81,11 +81,6 @@
         job-name: pull-kubernetes-e2e-gce
         repo-name: 'k8s.io/kubernetes'
         timeout: 75
-    - kubernetes-e2e-gce-non-cri:
-        max-total: 12
-        job-name: pull-kubernetes-e2e-gce-non-cri
-        repo-name: 'k8s.io/kubernetes'
-        timeout: 75
     - kubernetes-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-gci

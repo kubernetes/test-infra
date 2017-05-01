@@ -43,10 +43,5 @@
     "flakes": 5,
     "runs": 797,
     "consistency": 0.994
-  },
-  "pr:pull-kubernetes-e2e-gce-non-cri": {
-    "flakes": 4,
-    "runs": 299,
-    "consistency": 0.987
   }
 }
