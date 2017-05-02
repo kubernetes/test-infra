@@ -86,11 +86,12 @@ func RegisterMungers(requestedMungers []string) error {
 // InitializeMungers will call munger.Initialize() for the requested mungers.
 func InitializeMungers(config *github.Config, features *features.Features) error {
 	for _, munger := range mungers {
+		m := munger.Name()
 		if err := munger.Initialize(config, features); err != nil {
-			return err
+			return fmt.Errorf("could not initialize %s: %v", m, err)
 		}
 		glog.Infof(mungerutil.PrettyString(munger))
-		glog.Infof("Initialized munger: %s", munger.Name())
+		glog.Infof("Initialized munger: %s", m)
 	}
 	return nil
 }

@@ -19,6 +19,7 @@ package testowner
 import (
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"io"
 	"math/rand"
 	"os"
@@ -179,9 +180,13 @@ func NewReloadingOwnerList(path string) (*ReloadingOwnerList, error) {
 	ownerList := &ReloadingOwnerList{path: path}
 	err := ownerList.reload()
 	if err != nil {
-		return nil, err
+		if _, ok := err.(BadCsv); !ok {
+			return nil, err // Error is not a bad csv file
+		}
+		glog.Errorf("Unable to load test owners at %s: %v", path, err)
+		ownerList.ownerList = NewOwnerList(nil)
 	}
-	return ownerList, nil
+	return ownerList, err // err != nil if BadCsv (but can recover)
 }
 
 // TestOwner returns the owner for a test, or the empty string if none is found.
@@ -204,6 +209,12 @@ func (o *ReloadingOwnerList) TestSIG(testName string) string {
 	return o.ownerList.TestSIG(testName)
 }
 
+type BadCsv string
+
+func (b BadCsv) Error() string {
+	return string(b)
+}
+
 func (o *ReloadingOwnerList) reload() error {
 	info, err := os.Stat(o.path)
 	if err != nil {
@@ -219,7 +230,7 @@ func (o *ReloadingOwnerList) reload() error {
 	defer file.Close()
 	ownerList, err := NewOwnerListFromCsv(file)
 	if err != nil {
-		return err
+		return BadCsv(fmt.Sprintf("could not parse owner list: %v", err))
 	}
 	o.ownerList = ownerList
 	o.mtime = info.ModTime()
