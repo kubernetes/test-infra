@@ -65,6 +65,27 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-cos-docker-validation": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-cos-docker-validation-serial": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-serial.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-cos-docker-validation-slow": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-slow.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-e2e-gce": {
     "args": [
       "--env-file=platforms/gce.env", 
@@ -2279,6 +2300,12 @@
       "--test=false"
     ], 
     "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-node-cos-docker-validation": {
+    "args": [
+      "--properties=test/e2e_node/jenkins/docker_validation/cos-docker-validation.properties"
+    ], 
+    "scenario": "kubernetes_kubelet"
   }, 
   "ci-kubernetes-node-docker": {
     "args": [
