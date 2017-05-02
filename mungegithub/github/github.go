@@ -1562,12 +1562,11 @@ func (obj *MungeObject) GetPR() (*github.PullRequest, bool) {
 		return obj.pr, true
 	}
 	if !obj.IsPR() {
-		glog.Errorf("Issue: %d is not a PR", *obj.Issue.Number)
 		return nil, false
 	}
 	pr, err := obj.config.getPR(*obj.Issue.Number)
 	if err != nil {
-		glog.Errorf("Error in GetPR")
+		glog.Errorf("Error in GetPR: %v", err)
 		return nil, false
 	}
 	obj.pr = pr
