@@ -9,7 +9,7 @@ message TestNameConfig {
     reserved 1, 3, 4;
 
     // Configuration value to use.
-    // Valid choice are: 
+    // Valid choice are:
     // 'Tests name': The name of a test case
     // 'Commit': The commit number of the build
     // 'Context', 'Thread': The info extracted from each junit files:
@@ -17,7 +17,7 @@ message TestNameConfig {
     //    - junit_runner.xml -> Context: runner
     //    - junit_01.xml -> Thread: 01
     // or any metadata key from finished.json, which is copied from your test suite.
-    // 
+    //
     // A valid sample TestNameConfig looks like:
     // test_name_config:
     //   name_elements:
@@ -123,7 +123,7 @@ message LinkOptionsTemplate {
 
 // A single tab on a dashboard.
 message DashboardTab {
-  reserved 5, 6;
+  reserved 5;
 
   // The name of the dashboard tab to display in the client.
   string name = 1;
@@ -136,6 +136,13 @@ message DashboardTab {
 
   // Default code search path for changelist search links
   string code_search_path = 4;
+
+  // Base options to always include, for example:
+  // width=20&include-filter-by-regex=level_tests
+  // This is taken from the #fragment part of the testgrid url.
+  // Best way to create these is to setup the options on testgrid and then
+  // copy the #fragment part.
+  string base_options = 6;
 
   // The URL template to visit after clicking on a cell.
   LinkTemplate open_test_template = 7;
@@ -175,4 +182,3 @@ message DefaultConfiguration {
   // A default dashboard with default initialization data
   DashboardTab default_dashboard_tab = 2;
 }
-
