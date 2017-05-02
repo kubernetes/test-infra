@@ -3024,6 +3024,20 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-ubuntu-node": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-ci-ubuntu.properties"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-node-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--properties=test/e2e_node/jenkins/jenkins-serial-ubuntu.properties"
+  ]
+},
+
 "ci-kubernetes-e2e-gce-ubuntu": {
   "scenario": "kubernetes_e2e",
   "args": [

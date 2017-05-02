@@ -194,3 +194,16 @@
         job-name: ci-kubernetes-node-docker-benchmark
         repo-name: k8s.io/kubernetes
         timeout: 90
+
+    - kubernetes-e2e-gce-ubuntu-node:  # @kubernetes/ubuntu-image on github
+        branch: master
+        frequency: 'H/30 * * * *'
+        job-name: ci-kubernetes-e2e-gce-ubuntu-node
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-e2e-gce-ubuntu-node-serial:  # @kubernetes/ubuntu-image on github
+        branch: master
+        frequency: 'H H/2 * * *'
+        job-name: ci-kubernetes-e2e-gce-ubuntu-node-serial
+        repo-name: k8s.io/kubernetes
+        timeout: 240
