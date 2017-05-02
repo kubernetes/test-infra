@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -54,6 +55,98 @@ func FedUp() error {
 
 func FedDown() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-down.sh"))
+}
+
+func reuseFederatedClusters(o *options) bool {
+	return o.federation && o.up && o.deployment == "none"
+}
+
+func recycleFederatedClusters(o *options) bool {
+	return !o.federation && o.up && o.deployment != "none"
+}
+
+func prepareFederation(o *options) error {
+	var l *gcsLock
+	var err error
+
+	if reuseFederatedClusters(o) || recycleFederatedClusters(o) {
+		l, err = newLock(o.save, lockFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If we are reusing the federated clusters, we need to lock them
+	// to ensure that they won't be recycled in the background by a
+	// different "deploy" job.
+	if reuseFederatedClusters(o) {
+		buildNum := os.Getenv("BUILD_NUMBER")
+		err = l.lock(buildNum)
+		if err != nil {
+			return err
+		}
+
+		// Only restore .kube/config from previous --up, use the regular
+		// extraction strategy to restore version.
+		log.Printf("Load kubeconfig from %s", o.save)
+		loadKubeconfig(o.save)
+	}
+
+	if recycleFederatedClusters(o) {
+		err = l.addBarrier()
+		if err != nil {
+			return err
+		}
+		err = l.waitForEmptyBarrier()
+		if err != nil {
+			return err
+		}
+	}
+
+	if o.multipleFederations {
+		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
+		// specific environment variables. So this doesn't work
+		// when we move away from Jenkins.
+		execNum := os.Getenv("EXECUTOR_NUMBER")
+		if execNum == "" {
+			execNum = "0"
+		}
+		suffix := fmt.Sprintf("%s-%s", os.Getenv("NODE_NAME"), execNum)
+		federationName := fmt.Sprintf("e2e-f8n-%s", suffix)
+		federationSystemNamespace := fmt.Sprintf("f8n-system-%s", suffix)
+		err := os.Setenv("FEDERATION_NAME", federationName)
+		if err != nil {
+			return err
+		}
+		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
+	}
+	return nil
+}
+
+func cleanupFederation(o *options) error {
+	var l *gcsLock
+	var err error
+
+	if reuseFederatedClusters(o) || recycleFederatedClusters(o) {
+		l, err = newLock(o.save, lockFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	if reuseFederatedClusters(o) {
+		buildNum := os.Getenv("BUILD_NUMBER")
+		err = l.unlock(buildNum)
+		if err != nil {
+			return err
+		}
+	}
+
+	if recycleFederatedClusters(o) {
+		return l.removeBarrier()
+	}
+
+	return nil
 }
 
 func parseBucketObject(base, name string) (string, string) {
