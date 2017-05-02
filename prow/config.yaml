@@ -1063,3 +1063,40 @@ periodics:
     - hostPath:
         path: /mnt/disks/ssd0
       name: cache-ssd
+
+- name: ci-perf-tests-e2e-gce-clusterloader
+  interval: 30m
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--repo=k8s.io/perf-tests=master"
+      - "--timeout=60"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name:  JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name:  JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0

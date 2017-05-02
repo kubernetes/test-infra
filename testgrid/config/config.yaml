@@ -816,6 +816,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
+# perf tests
+- name: ci-perf-tests-e2e-gce-clusterloader
+  gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
 # Add New Testgroups Here
 
 #
@@ -2051,3 +2054,8 @@ dashboards:
   dashboard_tab:
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
+
+- name: perf-tests
+  dashboard_tab:
+  - name: cluster-loader
+    test_group_name: ci-perf-tests-e2e-gce-clusterloader
