@@ -814,7 +814,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-6
 - name: periodic-kubernetes-bazel-build-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
-
+- name: metrics-bigquery
+  gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 # Add New Testgroups Here
 
 #
@@ -1989,6 +1990,11 @@ dashboards:
   - name: prow-canary
     description: Runs a smoke test using the latest e2e image in prow
     test_group_name: ci-kubernetes-e2e-prow-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: metrics-bigquery
+    description: Runs BigQuery queries to generate data for metrics.
+    test_group_name: metrics-bigquery
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 

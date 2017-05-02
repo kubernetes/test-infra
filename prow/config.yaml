@@ -712,6 +712,23 @@ postsubmits:
 
 
 periodics:
+- name: metrics-bigquery
+  interval: 24h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bigquery:0.1
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: triage-service-account
+
 - name: ci-test-infra-bazel
   interval: 1h
   spec:
