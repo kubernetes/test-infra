@@ -137,6 +137,28 @@ func TestOwnerListFromCsv(t *testing.T) {
 }
 
 func TestReloadingOwnerList(t *testing.T) {
+	cases := []struct {
+		name   string
+		csv    string
+		lookup string
+		owner  string
+		sig    string
+		err    bool
+	}{
+		{
+			name:   "owner and sig",
+			csv:    "owner,name,sig\nfoo,flake,Scheduling\n",
+			lookup: "flake",
+			owner:  "foo",
+			sig:    "Scheduling",
+		},
+		{
+			name:   "missing sig returns BadCsv",
+			csv:    "owner,name,sig\nfoo,flake\n",
+			lookup: "flake",
+			err:    true,
+		},
+	}
 	tempfile, err := ioutil.TempFile(os.TempDir(), "ownertest")
 	if err != nil {
 		t.Error(err)
@@ -144,46 +166,44 @@ func TestReloadingOwnerList(t *testing.T) {
 	defer os.Remove(tempfile.Name())
 	defer tempfile.Close()
 	writer := bufio.NewWriter(tempfile)
-	_, err = writer.WriteString("owner,name,sig\nfoo,flake,Scheduling\n")
-	if err != nil {
-		t.Error(err)
-	}
-	err = writer.Flush()
-	if err != nil {
-		t.Error(err)
-	}
-	list, err := NewReloadingOwnerList(tempfile.Name())
-	if err != nil {
-		t.Error(err)
-	}
-	if owner := list.TestOwner("flake"); owner != "foo" {
-		t.Error("unexpected owner for 'flake': ", owner)
-	}
-	if sig := list.TestSIG("flake"); sig != "Scheduling" {
-		t.Error("unexpected sig value ", sig)
-	}
 
-	// Assuming millisecond resolution on our FS, this sleep
-	// ensures the mtime will change with the next write.
-	time.Sleep(5 * time.Millisecond)
-
-	// Clear file and reset writing offset
-	tempfile.Truncate(0)
-	tempfile.Seek(0, os.SEEK_SET)
-	writer.Reset(tempfile)
-	_, err = writer.WriteString("owner,name,sig\nbar,flake,AWS\n")
-	if err != nil {
-		t.Error(err)
-	}
-	err = writer.Flush()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if owner := list.TestOwner("flake"); owner != "bar" {
-		t.Error("unexpected owner for 'flake': ", owner)
-	}
-	if sig := list.TestSIG("flake"); sig != "AWS" {
-		t.Error("unexpected sig value ", sig)
+	for _, tc := range cases {
+		// Assuming millisecond resolution on our FS, this sleep
+		// ensures the mtime will change with the next write.
+		time.Sleep(5 * time.Millisecond)
+		// Clear file and reset writing offset
+		tempfile.Truncate(0)
+		tempfile.Seek(0, os.SEEK_SET)
+		writer.Reset(tempfile)
+		_, err = writer.WriteString(tc.csv)
+		if err != nil {
+			t.Error(err)
+		}
+		err = writer.Flush()
+		if err != nil {
+			t.Error(err)
+		}
+		list, err := NewReloadingOwnerList(tempfile.Name())
+		if err != nil && !tc.err {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		}
+		if tc.err {
+			if err == nil {
+				t.Errorf("%s: expected an error", tc.name)
+			}
+			_, ok := err.(BadCsv)
+			if !ok {
+				t.Errorf("%s: error type is not BadCsv: %v", tc.name, err)
+			}
+			if list == nil {
+				t.Errorf("%s: did not return a list during BadCsv", tc.name)
+			}
+		}
+		if owner := list.TestOwner(tc.lookup); owner != tc.owner {
+			t.Errorf("%s: bad owner %s != %s", tc.name, owner, tc.owner)
+		}
+		if sig := list.TestSIG(tc.lookup); sig != tc.sig {
+			t.Errorf("%s: bad sig %s != %s", tc.name, sig, tc.sig)
+		}
 	}
 }

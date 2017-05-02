@@ -109,7 +109,10 @@ func (p *FlakeManager) Initialize(config *github.Config, features *features.Feat
 	if p.OwnerPath != "" {
 		owner, err = testowner.NewReloadingOwnerList(p.OwnerPath)
 		if err != nil {
-			return err
+			// Ignore BadCsv errors on load
+			if _, ok := err.(testowner.BadCsv); !ok {
+				return err
+			}
 		}
 	}
 	p.syncer = sync.NewIssueSyncer(config, p.finder, owner)
