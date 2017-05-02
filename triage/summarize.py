@@ -285,10 +285,9 @@ def tests_group_by_job(tests, builds):
         except KeyError:
             continue
         if 'number' in build:
-            groups.setdefault(build['job'], []).append(build['number'])
-    for value in groups.itervalues():
-        value.sort(reverse=True)
-    return sorted(groups.iteritems(), key=lambda (k, v): (-len(v), k))
+            groups.setdefault(build['job'], set()).add(build['number'])
+    return sorted(((key, sorted(value, reverse=True)) for key, value in groups.iteritems()),
+                  key=lambda (k, v): (-len(v), k))
 
 
 def clusters_to_display(clustered, builds):
