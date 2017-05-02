@@ -32,6 +32,7 @@ type Issue struct {
 	User           string
 	State          string
 	Comments       int
+	Milestone      string
 	IsPR           bool
 	IssueClosedAt  *time.Time
 	IssueCreatedAt time.Time

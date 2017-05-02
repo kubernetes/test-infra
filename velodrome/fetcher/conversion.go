@@ -73,6 +73,7 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 		IssueClosedAt:  closedAt,
 		IssueCreatedAt: *gIssue.CreatedAt,
 		IssueUpdatedAt: *gIssue.UpdatedAt,
+		Milestone:      *gIssue.Milestone,
 		Repository:     strings.ToLower(repository),
 	}, nil
 }
