@@ -76,6 +76,7 @@ func TestAcquire(t *testing.T) {
 		owner     string
 		rtype     string
 		state     string
+		dest      string
 		expectErr error
 	}{
 		{
@@ -84,6 +85,7 @@ func TestAcquire(t *testing.T) {
 			owner:     "user",
 			rtype:     "t",
 			state:     "s",
+			dest:      "d",
 			expectErr: &ResourceNotFound{"t"},
 		},
 		{
@@ -100,6 +102,7 @@ func TestAcquire(t *testing.T) {
 			owner:     "user",
 			rtype:     "t",
 			state:     "s",
+			dest:      "d",
 			expectErr: &ResourceNotFound{"t"},
 		},
 		{
@@ -116,6 +119,7 @@ func TestAcquire(t *testing.T) {
 			owner:     "user",
 			rtype:     "t",
 			state:     "s",
+			dest:      "d",
 			expectErr: &ResourceNotFound{"t"},
 		},
 		{
@@ -132,6 +136,7 @@ func TestAcquire(t *testing.T) {
 			owner:     "user",
 			rtype:     "t",
 			state:     "s",
+			dest:      "d",
 			expectErr: &ResourceNotFound{"t"},
 		},
 		{
@@ -148,19 +153,23 @@ func TestAcquire(t *testing.T) {
 			owner:     "user",
 			rtype:     "t",
 			state:     "s",
+			dest:      "d",
 			expectErr: nil,
 		},
 	}
 
 	for _, tc := range testcases {
 		c := MakeTestRanch(tc.resources)
-		res, err := c.Acquire(tc.rtype, tc.state, tc.owner)
+		res, err := c.Acquire(tc.rtype, tc.state, tc.dest, tc.owner)
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
 			continue
 		}
 
 		if err == nil {
+			if res.State != tc.dest {
+				t.Errorf("%s - Wrong final state. Got %v, expect %v", tc.name, res.State, tc.dest)
+			}
 			if *res != c.Resources[0] {
 				t.Errorf("%s - Wrong resource. Got %v, expect %v", tc.name, res, c.Resources[0])
 			} else if !res.LastUpdate.After(FakeNow) {

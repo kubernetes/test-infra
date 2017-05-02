@@ -91,7 +91,8 @@ func handleDefault(r *ranch.Ranch) http.HandlerFunc {
 //  Method: POST
 // 	URLParams:
 //		Required: type=[string]  : type of requested resource
-//		Required: state=[string] : state of the requested resource
+//		Required: state=[string] : current state of the requested resource
+//		Required: dest=[string] : destination state of the requested resource
 //		Required: owner=[string] : requester of the resource
 func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -107,17 +108,18 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		// TODO(krzyzacy) - sanitize user input
 		rtype := req.URL.Query().Get("type")
 		state := req.URL.Query().Get("state")
+		dest := req.URL.Query().Get("dest")
 		owner := req.URL.Query().Get("owner")
-		if rtype == "" || state == "" || owner == "" {
-			msg := fmt.Sprintf("Type: %v, state: %v, owner: %v, all of them must be set in the request.", rtype, state, owner)
+		if rtype == "" || state == "" || dest == "" || owner == "" {
+			msg := fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner)
 			logrus.Warning(msg)
 			http.Error(res, msg, http.StatusBadRequest)
 			return
 		}
 
-		logrus.Infof("Request for a %v %v from %v", state, rtype, owner)
+		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
-		resource, err := r.Acquire(rtype, state, owner)
+		resource, err := r.Acquire(rtype, state, dest, owner)
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
