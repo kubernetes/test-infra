@@ -56,7 +56,7 @@ spec:
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
         - --github-key=$(GITHUB_KEY)
-        image: gcr.io/google_containers/submit-queue:2016-05-24-86f86cd
+        image: gcr.io/k8s-testimages/submit-queue:2017-05-02-90fe8836
         env:
           - name: HTTP_CACHE_DIR
             valueFrom:
