@@ -162,6 +162,7 @@ class IntegrationTest(unittest.TestCase):
             {'build': 'gs://logs/some-job/4'},
             {'failure_text': 'some other error message'},
             {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
+            {},  # intentional dupe
             {'build': 'gs://logs/other-job/7'},
         ]), open('tests.json', 'w'))
         summarize.main(summarize.parse_args(
