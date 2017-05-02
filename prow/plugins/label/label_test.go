@@ -425,6 +425,15 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
+			name:                  "Add SIG Label and CC a Sig",
+			body:                  "/sig testing\ncc @kubernetes/sig-api-machinery-misc\n",
+			repoLabels:            []string{"area/infra", "sig/testing", "sig/api-machinery"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("sig/testing", "sig/api-machinery"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
 			name:                  "Remove Area Label when no such Label on Repo",
 			body:                  "/remove-area infra",
 			repoLabels:            []string{},
@@ -467,6 +476,15 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "priority/high"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/high"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove SIG Label",
+			body:                  "/remove-sig testing",
+			repoLabels:            []string{"area/infra", "sig/testing"},
+			issueLabels:           []string{"area/infra", "sig/testing"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("sig/testing"),
 			commenter:             orgMember,
 		},
 		{
