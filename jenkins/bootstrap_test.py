@@ -1393,6 +1393,7 @@ class JobTest(unittest.TestCase):
     excludes = [
         'BUILD',  # For bazel
         'config.json',  # For --json mode
+        'config_sort.py', # Tool script to sort config.json
     ]
 
     yaml_suffix = {
@@ -2010,6 +2011,14 @@ class JobTest(unittest.TestCase):
                             suffix,
                             any('--stage-suffix=' in a for a in config[job]['args']),
                             ('--stage-suffix=', suffix, job, config[job]['args']))
+
+    def testConfigIsSorted(self):
+        """Test jobs/config.json is sorted."""
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            original = fp.read()
+            expect = json.dumps(json.loads(original), sort_keys=True, indent=2)
+            if original != expect:
+                self.fail('config.json is not sorted, please run jobs/config_sort.py')
 
 
 if __name__ == '__main__':
