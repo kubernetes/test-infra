@@ -5,7 +5,9 @@ licenses(["notice"])
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "cgo_genrule",
+    "go_binary",
     "go_library",
+    "go_test",
 )
 
 go_library(
@@ -27,8 +29,15 @@ go_library(
 
 go_library(
     name = "cloud.google.com/go/internal",
-    srcs = ["cloud.google.com/go/internal/cloud.go"],
+    srcs = [
+        "cloud.google.com/go/internal/cloud.go",
+        "cloud.google.com/go/internal/retry.go",
+    ],
     tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/googleapis/gax-go",
+        "//vendor:golang.org/x/net/context",
+    ],
 )
 
 go_library(
@@ -586,8 +595,8 @@ go_library(
     srcs = [
         "golang.org/x/net/http2/client_conn_pool.go",
         "golang.org/x/net/http2/configure_transport.go",
+        "golang.org/x/net/http2/databuffer.go",
         "golang.org/x/net/http2/errors.go",
-        "golang.org/x/net/http2/fixed_buffer.go",
         "golang.org/x/net/http2/flow.go",
         "golang.org/x/net/http2/frame.go",
         "golang.org/x/net/http2/go16.go",
@@ -754,7 +763,9 @@ go_library(
         "google.golang.org/api/gensupport/backoff.go",
         "google.golang.org/api/gensupport/buffer.go",
         "google.golang.org/api/gensupport/doc.go",
+        "google.golang.org/api/gensupport/header.go",
         "google.golang.org/api/gensupport/json.go",
+        "google.golang.org/api/gensupport/jsonfloat.go",
         "google.golang.org/api/gensupport/media.go",
         "google.golang.org/api/gensupport/params.go",
         "google.golang.org/api/gensupport/resumable.go",
@@ -958,8 +969,13 @@ go_library(
         "//vendor:google.golang.org/grpc/credentials",
         "//vendor:google.golang.org/grpc/grpclog",
         "//vendor:google.golang.org/grpc/internal",
+        "//vendor:google.golang.org/grpc/keepalive",
         "//vendor:google.golang.org/grpc/metadata",
         "//vendor:google.golang.org/grpc/naming",
+        "//vendor:google.golang.org/grpc/peer",
+        "//vendor:google.golang.org/grpc/stats",
+        "//vendor:google.golang.org/grpc/status",
+        "//vendor:google.golang.org/grpc/tap",
         "//vendor:google.golang.org/grpc/transport",
     ],
 )
@@ -977,7 +993,7 @@ go_library(
     name = "google.golang.org/grpc/credentials",
     srcs = [
         "google.golang.org/grpc/credentials/credentials.go",
-        "google.golang.org/grpc/credentials/credentials_util_go17.go",
+        "google.golang.org/grpc/credentials/credentials_util_go18.go",
     ],
     tags = ["automanaged"],
     deps = ["//vendor:golang.org/x/net/context"],
@@ -1044,15 +1060,20 @@ go_library(
     ],
     tags = ["automanaged"],
     deps = [
+        "//vendor:github.com/golang/protobuf/proto",
         "//vendor:golang.org/x/net/context",
         "//vendor:golang.org/x/net/http2",
         "//vendor:golang.org/x/net/http2/hpack",
-        "//vendor:golang.org/x/net/trace",
+        "//vendor:google.golang.org/genproto/googleapis/rpc/status",
         "//vendor:google.golang.org/grpc/codes",
         "//vendor:google.golang.org/grpc/credentials",
         "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/keepalive",
         "//vendor:google.golang.org/grpc/metadata",
         "//vendor:google.golang.org/grpc/peer",
+        "//vendor:google.golang.org/grpc/stats",
+        "//vendor:google.golang.org/grpc/status",
+        "//vendor:google.golang.org/grpc/tap",
     ],
 )
 
@@ -1148,4 +1169,710 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+)
+
+go_library(
+    name = "cloud.google.com/go/iam",
+    srcs = ["cloud.google.com/go/iam/iam.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/genproto/googleapis/iam/v1",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "cloud.google.com/go/iam/admin/apiv1",
+    srcs = [
+        "cloud.google.com/go/iam/admin/apiv1/doc.go",
+        "cloud.google.com/go/iam/admin/apiv1/iam_client.go",
+        "cloud.google.com/go/iam/admin/apiv1/policy_methods.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:cloud.google.com/go/iam",
+        "//vendor:cloud.google.com/go/internal/version",
+        "//vendor:github.com/googleapis/gax-go",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/api/iterator",
+        "//vendor:google.golang.org/api/option",
+        "//vendor:google.golang.org/api/transport",
+        "//vendor:google.golang.org/genproto/googleapis/iam/v1",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/metadata",
+    ],
+)
+
+go_library(
+    name = "cloud.google.com/go/internal/optional",
+    srcs = ["cloud.google.com/go/internal/optional/optional.go"],
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "cloud.google.com/go/internal/version",
+    srcs = ["cloud.google.com/go/internal/version/version.go"],
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "cloud.google.com/go/storage",
+    srcs = [
+        "cloud.google.com/go/storage/acl.go",
+        "cloud.google.com/go/storage/bucket.go",
+        "cloud.google.com/go/storage/copy.go",
+        "cloud.google.com/go/storage/doc.go",
+        "cloud.google.com/go/storage/iam.go",
+        "cloud.google.com/go/storage/invoke.go",
+        "cloud.google.com/go/storage/reader.go",
+        "cloud.google.com/go/storage/storage.go",
+        "cloud.google.com/go/storage/writer.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:cloud.google.com/go/iam",
+        "//vendor:cloud.google.com/go/internal",
+        "//vendor:cloud.google.com/go/internal/optional",
+        "//vendor:cloud.google.com/go/internal/version",
+        "//vendor:github.com/googleapis/gax-go",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/api/googleapi",
+        "//vendor:google.golang.org/api/iterator",
+        "//vendor:google.golang.org/api/option",
+        "//vendor:google.golang.org/api/storage/v1",
+        "//vendor:google.golang.org/api/transport",
+        "//vendor:google.golang.org/genproto/googleapis/iam/v1",
+    ],
+)
+
+go_library(
+    name = "github.com/golang/protobuf/protoc-gen-go/descriptor",
+    srcs = ["github.com/golang/protobuf/protoc-gen-go/descriptor/descriptor.pb.go"],
+    tags = ["automanaged"],
+    deps = ["//vendor:github.com/golang/protobuf/proto"],
+)
+
+go_library(
+    name = "github.com/golang/protobuf/ptypes/any",
+    srcs = ["github.com/golang/protobuf/ptypes/any/any.pb.go"],
+    tags = ["automanaged"],
+    deps = ["//vendor:github.com/golang/protobuf/proto"],
+)
+
+go_library(
+    name = "github.com/googleapis/gax-go",
+    srcs = [
+        "github.com/googleapis/gax-go/call_option.go",
+        "github.com/googleapis/gax-go/gax.go",
+        "github.com/googleapis/gax-go/header.go",
+        "github.com/googleapis/gax-go/invoke.go",
+        "github.com/googleapis/gax-go/path_template.go",
+        "github.com/googleapis/gax-go/path_template_parser.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+    ],
+)
+
+go_binary(
+    name = "golang.org/x/net/http2/h2i_bin",
+    library = ":golang.org/x/net/http2/h2i",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "golang.org/x/net/http2/h2i",
+    srcs = ["golang.org/x/net/http2/h2i/h2i.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/http2",
+        "//vendor:golang.org/x/net/http2/hpack",
+    ],
+)
+
+go_test(
+    name = "google.golang.org/api/gensupport_test",
+    srcs = [
+        "google.golang.org/api/gensupport/backoff_test.go",
+        "google.golang.org/api/gensupport/buffer_test.go",
+        "google.golang.org/api/gensupport/header_test.go",
+        "google.golang.org/api/gensupport/json_test.go",
+        "google.golang.org/api/gensupport/jsonfloat_test.go",
+        "google.golang.org/api/gensupport/media_test.go",
+        "google.golang.org/api/gensupport/resumable_test.go",
+        "google.golang.org/api/gensupport/retry_test.go",
+        "google.golang.org/api/gensupport/util_test.go",
+    ],
+    library = ":google.golang.org/api/gensupport",
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/api/googleapi",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/api/storage/v1",
+    srcs = ["google.golang.org/api/storage/v1/storage-gen.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:golang.org/x/net/context/ctxhttp",
+        "//vendor:google.golang.org/api/gensupport",
+        "//vendor:google.golang.org/api/googleapi",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/genproto/googleapis/api/annotations",
+    srcs = [
+        "google.golang.org/genproto/googleapis/api/annotations/annotations.pb.go",
+        "google.golang.org/genproto/googleapis/api/annotations/http.pb.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:github.com/golang/protobuf/protoc-gen-go/descriptor",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/genproto/googleapis/iam/v1",
+    srcs = [
+        "google.golang.org/genproto/googleapis/iam/v1/iam_policy.pb.go",
+        "google.golang.org/genproto/googleapis/iam/v1/policy.pb.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/genproto/googleapis/api/annotations",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/genproto/googleapis/rpc/status",
+    srcs = ["google.golang.org/genproto/googleapis/rpc/status/status.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:github.com/golang/protobuf/ptypes/any",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark",
+    srcs = ["google.golang.org/grpc/benchmark/benchmark.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/benchmark/grpc_testing",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/benchmark/client_bin",
+    library = ":google.golang.org/grpc/benchmark/client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark/client",
+    srcs = ["google.golang.org/grpc/benchmark/client/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/benchmark",
+        "//vendor:google.golang.org/grpc/benchmark/grpc_testing",
+        "//vendor:google.golang.org/grpc/benchmark/stats",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark/grpc_testing",
+    srcs = [
+        "google.golang.org/grpc/benchmark/grpc_testing/control.pb.go",
+        "google.golang.org/grpc/benchmark/grpc_testing/messages.pb.go",
+        "google.golang.org/grpc/benchmark/grpc_testing/payloads.pb.go",
+        "google.golang.org/grpc/benchmark/grpc_testing/services.pb.go",
+        "google.golang.org/grpc/benchmark/grpc_testing/stats.pb.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/benchmark/server_bin",
+    library = ":google.golang.org/grpc/benchmark/server",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark/server",
+    srcs = ["google.golang.org/grpc/benchmark/server/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:google.golang.org/grpc/benchmark",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark/stats",
+    srcs = [
+        "google.golang.org/grpc/benchmark/stats/histogram.go",
+        "google.golang.org/grpc/benchmark/stats/stats.go",
+        "google.golang.org/grpc/benchmark/stats/util.go",
+    ],
+    tags = ["automanaged"],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/benchmark/worker_bin",
+    library = ":google.golang.org/grpc/benchmark/worker",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/benchmark/worker",
+    srcs = [
+        "google.golang.org/grpc/benchmark/worker/benchmark_client.go",
+        "google.golang.org/grpc/benchmark/worker/benchmark_server.go",
+        "google.golang.org/grpc/benchmark/worker/main.go",
+        "google.golang.org/grpc/benchmark/worker/util.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/benchmark",
+        "//vendor:google.golang.org/grpc/benchmark/grpc_testing",
+        "//vendor:google.golang.org/grpc/benchmark/stats",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/examples/helloworld/greeter_client_bin",
+    library = ":google.golang.org/grpc/examples/helloworld/greeter_client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/helloworld/greeter_client",
+    srcs = ["google.golang.org/grpc/examples/helloworld/greeter_client/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/examples/helloworld/helloworld",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/examples/helloworld/greeter_server_bin",
+    library = ":google.golang.org/grpc/examples/helloworld/greeter_server",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/helloworld/greeter_server",
+    srcs = ["google.golang.org/grpc/examples/helloworld/greeter_server/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/examples/helloworld/helloworld",
+        "//vendor:google.golang.org/grpc/reflection",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/helloworld/helloworld",
+    srcs = ["google.golang.org/grpc/examples/helloworld/helloworld/helloworld.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/helloworld/mock/mock_helloworld",
+    srcs = ["google.golang.org/grpc/examples/helloworld/mock/mock_helloworld/hw_mock.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/mock/gomock",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/examples/helloworld/helloworld",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/examples/route_guide/client_bin",
+    library = ":google.golang.org/grpc/examples/route_guide/client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/route_guide/client",
+    srcs = ["google.golang.org/grpc/examples/route_guide/client/client.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/examples/route_guide/routeguide",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/route_guide/routeguide",
+    srcs = ["google.golang.org/grpc/examples/route_guide/routeguide/route_guide.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/examples/route_guide/server_bin",
+    library = ":google.golang.org/grpc/examples/route_guide/server",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/examples/route_guide/server",
+    srcs = ["google.golang.org/grpc/examples/route_guide/server/server.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/examples/route_guide/routeguide",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/grpclb",
+    srcs = ["google.golang.org/grpc/grpclb/grpclb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/grpclb/grpc_lb_v1",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/metadata",
+        "//vendor:google.golang.org/grpc/naming",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/grpclb/grpc_lb_v1",
+    srcs = ["google.golang.org/grpc/grpclb/grpc_lb_v1/grpclb.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/grpclog/glogger",
+    srcs = ["google.golang.org/grpc/grpclog/glogger/glogger.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/glog",
+        "//vendor:google.golang.org/grpc/grpclog",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/health",
+    srcs = ["google.golang.org/grpc/health/health.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/health/grpc_health_v1",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/health/grpc_health_v1",
+    srcs = ["google.golang.org/grpc/health/grpc_health_v1/health.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/interop",
+    srcs = ["google.golang.org/grpc/interop/test_utils.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:golang.org/x/oauth2",
+        "//vendor:golang.org/x/oauth2/google",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/interop/grpc_testing",
+        "//vendor:google.golang.org/grpc/metadata",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/interop/client_bin",
+    library = ":google.golang.org/grpc/interop/client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/interop/client",
+    srcs = ["google.golang.org/grpc/interop/client/client.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/credentials/oauth",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/interop",
+        "//vendor:google.golang.org/grpc/interop/grpc_testing",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/interop/grpc_testing",
+    srcs = ["google.golang.org/grpc/interop/grpc_testing/test.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/interop/http2_bin",
+    library = ":google.golang.org/grpc/interop/http2",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/interop/http2",
+    srcs = ["google.golang.org/grpc/interop/http2/negative_http2_client.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/interop",
+        "//vendor:google.golang.org/grpc/interop/grpc_testing",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/interop/server_bin",
+    library = ":google.golang.org/grpc/interop/server",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/interop/server",
+    srcs = ["google.golang.org/grpc/interop/server/server.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/interop",
+        "//vendor:google.golang.org/grpc/interop/grpc_testing",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/keepalive",
+    srcs = ["google.golang.org/grpc/keepalive/keepalive.go"],
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/reflection",
+    srcs = ["google.golang.org/grpc/reflection/serverreflection.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:github.com/golang/protobuf/protoc-gen-go/descriptor",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/reflection/grpc_reflection_v1alpha",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/reflection/grpc_reflection_v1alpha",
+    srcs = ["google.golang.org/grpc/reflection/grpc_reflection_v1alpha/reflection.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/reflection/grpc_testing",
+    srcs = [
+        "google.golang.org/grpc/reflection/grpc_testing/proto2.pb.go",
+        "google.golang.org/grpc/reflection/grpc_testing/proto2_ext.pb.go",
+        "google.golang.org/grpc/reflection/grpc_testing/proto2_ext2.pb.go",
+        "google.golang.org/grpc/reflection/grpc_testing/test.pb.go",
+    ],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/stats",
+    srcs = [
+        "google.golang.org/grpc/stats/handlers.go",
+        "google.golang.org/grpc/stats/stats.go",
+    ],
+    tags = ["automanaged"],
+    deps = ["//vendor:golang.org/x/net/context"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/stats/grpc_testing",
+    srcs = ["google.golang.org/grpc/stats/grpc_testing/test.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/status",
+    srcs = ["google.golang.org/grpc/status/status.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:google.golang.org/genproto/googleapis/rpc/status",
+        "//vendor:google.golang.org/grpc/codes",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/stress/client_bin",
+    library = ":google.golang.org/grpc/stress/client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/stress/client",
+    srcs = ["google.golang.org/grpc/stress/client/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/codes",
+        "//vendor:google.golang.org/grpc/credentials",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/interop",
+        "//vendor:google.golang.org/grpc/interop/grpc_testing",
+        "//vendor:google.golang.org/grpc/stress/grpc_testing",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/stress/grpc_testing",
+    srcs = ["google.golang.org/grpc/stress/grpc_testing/metrics.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
+)
+
+go_binary(
+    name = "google.golang.org/grpc/stress/metrics_client_bin",
+    library = ":google.golang.org/grpc/stress/metrics_client",
+    tags = ["automanaged"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/stress/metrics_client",
+    srcs = ["google.golang.org/grpc/stress/metrics_client/main.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+        "//vendor:google.golang.org/grpc/grpclog",
+        "//vendor:google.golang.org/grpc/stress/grpc_testing",
+    ],
+)
+
+go_library(
+    name = "google.golang.org/grpc/tap",
+    srcs = ["google.golang.org/grpc/tap/tap.go"],
+    tags = ["automanaged"],
+    deps = ["//vendor:golang.org/x/net/context"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/test/codec_perf",
+    srcs = ["google.golang.org/grpc/test/codec_perf/perf.pb.go"],
+    tags = ["automanaged"],
+    deps = ["//vendor:github.com/golang/protobuf/proto"],
+)
+
+go_library(
+    name = "google.golang.org/grpc/test/grpc_testing",
+    srcs = ["google.golang.org/grpc/test/grpc_testing/test.pb.go"],
+    tags = ["automanaged"],
+    deps = [
+        "//vendor:github.com/golang/protobuf/proto",
+        "//vendor:golang.org/x/net/context",
+        "//vendor:google.golang.org/grpc",
+    ],
 )
