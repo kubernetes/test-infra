@@ -25,7 +25,7 @@ import (
 	"time"
 )
 
-var FAKE_RES = "{\"name\": \"res\", \"type\": \"t\", \"state\": \"s\"}"
+var FAKE_RES = "{\"name\": \"res\", \"type\": \"t\", \"state\": \"d\"}"
 var FAKE_MAP = "{\"res\":\"user\"}"
 
 func AreErrorsEqual(got error, expect error) bool {
@@ -68,7 +68,7 @@ func TestAcquire(t *testing.T) {
 		defer ts.Close()
 
 		c := NewClient("user", ts.URL)
-		name, err := c.Acquire("t", "s")
+		name, err := c.Acquire("t", "s", "d")
 
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("Test %v, got error %v, expect error %v", tc.name, err, tc.expectErr)

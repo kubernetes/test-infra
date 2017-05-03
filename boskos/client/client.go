@@ -46,10 +46,10 @@ func NewClient(owner string, url string) *Client {
 
 // public method
 
-// Acquire asks boskos for a resource of certain type in certain state.
+// Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
 // Returns name of the resource on success.
-func (c *Client) Acquire(rtype string, state string) (string, error) {
-	r, err := c.acquire(rtype, state)
+func (c *Client) Acquire(rtype string, state string, dest string) (string, error) {
+	r, err := c.acquire(rtype, state, dest)
 	if err != nil {
 		return "", err
 	}
@@ -142,8 +142,8 @@ func (c *Client) popResource() (string, bool) {
 	return r, true
 }
 
-func (c *Client) acquire(rtype string, state string) (string, error) {
-	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&owner=%v", c.url, rtype, state, c.owner), "", nil)
+func (c *Client) acquire(rtype string, state string, dest string) (string, error) {
+	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v", c.url, rtype, state, dest, c.owner), "", nil)
 	if err != nil {
 		return "", err
 	}

@@ -27,8 +27,8 @@ func NewClient(url string, owner string) *Client
 # API Reference
 
 ```
-// Acquire asks boskos for a resource of certain type in certain state.
-func (c *Client) Acquire(rtype string, state string) (string, error)
+// Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
+func (c *Client) Acquire(rtype string, state string, dest string) (string, error)
 
 // ReleaseAll returns all resource hold by the client back to boskos and set them to dest state.
 func (c *Client) ReleaseAll(dest string) error
