@@ -993,7 +993,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=300
+      - --timeout=420
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
