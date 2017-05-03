@@ -1405,6 +1405,55 @@ dashboards:
   - name: gke-master
     test_group_name: ci-kubernetes-e2e-gke-latest-upgrade-master
 
+- name: sig-cli
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl e2e tests for master branch'
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-release-1.6
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl e2e tests for 1.6 branch'
+  - name: gce-1.5
+    test_group_name: ci-kubernetes-e2e-gce-release-1.5
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl e2e tests for 1.5 branch'
+  - name: gce-1.4
+    test_group_name: ci-kubernetes-e2e-gce-release-1.4
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl e2e tests for 1.4 branch'
+  - name: gce-flaky
+    test_group_name: ci-kubernetes-e2e-gce-flaky
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl flaky e2e tests for master branch'
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl slow e2e tests for master branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=Kubectl%20client'
+    description: 'kubectl serial e2e tests for master branch'
+  - name: unit
+    test_group_name: ci-kubernetes-test-go
+    # test-cmd, test-integration do not produce xml data right now
+    # So we have to rely on the Overall result until then
+    base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
+    description: 'unit and integration tests for master branch'
+  - name: unit-1.6
+    test_group_name: ci-kubernetes-test-go-release-1.6
+    base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
+    description: 'unit and integration tests for 1.6 branch'
+  - name: unit-1.5
+    test_group_name: ci-kubernetes-test-go-release-1.5
+    base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
+    description: 'unit and integration tests for 1.5 branch'
+  - name: unit-1.4
+    test_group_name: ci-kubernetes-test-go-release-1.4
+    base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
+    description: 'unit and integration tests for 1.4 branch'
+
 - name: etcd-upgrades
   dashboard_tab:
   - name: gce-latest
