@@ -3094,6 +3094,49 @@
   ]
 },
 
+"ci-kubernetes-e2e-gce-ubuntu-1-6-node": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.6",
+    "--properties=test/e2e_node/jenkins/jenkins-ci-ubuntu.properties"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial": {
+  "scenario": "kubernetes_kubelet",
+  "args": [
+    "--branch=release-1.6",
+    "--properties=test/e2e_node/jenkins/jenkins-serial-ubuntu.properties"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-1-6": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6.env",
+    "--mode=local"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-1-6-serial": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6-serial.env",
+    "--mode=local"
+  ]
+},
+
+"ci-kubernetes-e2e-gce-ubuntu-1-6-slow": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6-slow.env",
+    "--mode=local"
+  ]
+},
+
 "ci-perf-tests-e2e-gce-clusterloader": {
   "scenario": "kubernetes_e2e",
   "args": [
