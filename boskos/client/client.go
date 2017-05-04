@@ -150,6 +150,11 @@ func (c *Client) Reset(rtype string, state string, expire time.Duration, dest st
 	return c.reset(rtype, state, expire, dest)
 }
 
+// HasResource tells if current client holds any resources
+func (c *Client) HasResource() bool {
+	return len(c.resources) > 0
+}
+
 // private methods
 
 func (c *Client) popResource() (string, bool) {

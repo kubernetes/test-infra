@@ -30,6 +30,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/boskos/client"
 )
 
 var (
@@ -41,6 +43,7 @@ var (
 	terminated   = false
 	verbose      = false
 	timeout      = time.Duration(0)
+	boskos       = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
 )
 
 // Joins os.Getwd() and path
@@ -187,7 +190,15 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	o := defineFlags()
 	flag.Parse()
-	if err := complete(o); err != nil {
+	err := complete(o)
+
+	if boskos.HasResource() {
+		if berr := boskos.ReleaseAll("dirty"); berr != nil {
+			log.Fatalf("[Boskos] Fail To Release: %v, kubetest err: %v", berr, err)
+		}
+	}
+
+	if err != nil {
 		log.Fatalf("Something went wrong: %v", err)
 	}
 }
@@ -403,7 +414,18 @@ func prepareGcp(kubernetesProvider string) error {
 	// Ensure project is set
 	p := os.Getenv("PROJECT")
 	if p == "" {
-		return fmt.Errorf("KUBERNETES_PROVIDER=%s requires setting PROJECT", kubernetesProvider)
+		p, err := boskos.Acquire("project", "free", "busy")
+		if err != nil {
+			return fmt.Errorf("KUBERNETES_PROVIDER=%s boskos fail to acquire PROJECT:%s", kubernetesProvider, err)
+		}
+
+		go func(c *client.Client, proj string) {
+			for range time.Tick(time.Minute * 5) {
+				if err := c.UpdateOne(p, "busy"); err != nil {
+					log.Printf("[Boskos] Update %p failed with %v", p, err)
+				}
+			}
+		}(boskos, p)
 	}
 
 	// gcloud creds may have changed
