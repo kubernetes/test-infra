@@ -17,7 +17,7 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 image:
 	docker build -t "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)" .
 
-push:
+push: image
 	gcloud docker -- push "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)"
 
 .PHONY: image push
