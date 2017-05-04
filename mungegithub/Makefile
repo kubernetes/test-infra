@@ -57,7 +57,7 @@ deployment:
 	# update the deployment.yaml with the current date and git hash
 	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/deployment.yaml > $(APP)/local.deployment.yaml
 	# update the deployment.yaml with the current repo (if not gcr.io
-	sed -i -e 's|gcr.io/google_containers|$(REPO)|g' $(APP)/local.deployment.yaml
+	sed -i -e 's|gcr.io/k8s-testimages|$(REPO)|g' $(APP)/local.deployment.yaml
 ifeq ($(READONLY),false)
 	# update the deployment.yaml with --dry-run=false
 	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.deployment.yaml
