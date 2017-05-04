@@ -164,6 +164,10 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("Helm Charts", ChartsTest))
 	}
 
+	if o.perfTests {
+		errs = appendError(errs, xmlWrap("Perf Tests", PerfTest))
+	}
+
 	if len(errs) > 0 && o.dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return DumpClusterLogs(o.dump)
@@ -402,12 +406,19 @@ func DumpFederationLogs(location string) error {
 	return nil
 }
 
+func PerfTest() error {
+	// Run perf tests.
+	if err := finishRunning(exec.Command("/src/k8s.io/perf-tests/clusterloader/run-e2e.sh")); err != nil {
+		return err
+	}
+	return nil
+}
+
 func ChartsTest() error {
 	// Run helm tests.
 	if err := finishRunning(exec.Command("/src/k8s.io/charts/test/helm-test-e2e.sh")); err != nil {
 		return err
 	}
-
 	return nil
 }
 

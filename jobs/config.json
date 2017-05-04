@@ -3093,6 +3093,16 @@
     "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env",
     "--mode=local"
   ]
+},
+
+"ci-perf-tests-e2e-gce-clusterloader": {
+  "scenario": "kubernetes_e2e",
+  "args": [
+    "--env-file=platforms/gce.env",
+    "--env-file=jobs/ci-perf-tests-e2e-gce-clusterloader.env",
+    "--test=false",
+    "--mount-paths=$GOPATH/src/k8s.io/perf-tests:/src/k8s.io/perf-tests"
+  ]
 }
 
 }

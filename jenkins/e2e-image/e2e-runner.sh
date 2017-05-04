@@ -163,6 +163,10 @@ if [[ "${CHARTS_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--charts=true)
 fi
 
+if [[ "${PERF_TESTS:-}" == "true" ]]; then
+  e2e_go_args+=(--perf-tests=true)
+fi
+
 if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
   e2e_go_args+=(--timeout="${KUBEKINS_TIMEOUT}")
 fi
