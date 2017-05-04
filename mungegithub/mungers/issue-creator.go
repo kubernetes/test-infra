@@ -292,10 +292,11 @@ func (c *IssueCreator) Sync(issue Issue) {
 	}
 	labels = c.filterValidLabels(labels)
 
+	glog.Infof("Create Issue:\nTitle:%s\nBody:\n%s\nLabels:%v\nAssigned to:%v\n", title, body, labels, owners)
 	if c.config.isDryRun() {
-		glog.Infof("DryRun--Create Issue:\nTitle:%s\nBody:\n%s\nLabels:%v\nAssigned to:%s\n", title, body, labels, owners)
 		return
 	}
+
 	obj, err := c.config.NewIssue(title, body, labels, owners)
 	if err != nil {
 		glog.Errorf("Failed to create a new github issue for issue ID '%s'.\n", id)
