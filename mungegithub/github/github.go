@@ -693,26 +693,25 @@ func (config *Config) GetObject(num int) (*MungeObject, error) {
 }
 
 // NewIssue will file a new issue and return an object for it.
-// If "owner" is not empty, the issue will be assigned to "owner".
-func (config *Config) NewIssue(title, body string, labels []string, owner string) (*MungeObject, error) {
+// If "owners" is not empty, the issue will be assigned to the owners.
+func (config *Config) NewIssue(title, body string, labels []string, owners []string) (*MungeObject, error) {
 	config.analytics.CreateIssue.Call(config, nil)
 	glog.Infof("Creating an issue: %q", title)
 	if config.DryRun {
 		return nil, fmt.Errorf("can't make issues in dry-run mode")
 	}
-	var assignee *string
-	if owner != "" {
-		assignee = &owner
+	if len(owners) == 0 {
+		owners = []string{}
 	}
 	if len(body) > maxCommentLen {
 		body = body[:maxCommentLen]
 	}
 
 	issue, _, err := config.client.Issues.Create(config.Org, config.Project, &github.IssueRequest{
-		Title:    &title,
-		Body:     &body,
-		Labels:   &labels,
-		Assignee: assignee,
+		Title:     &title,
+		Body:      &body,
+		Labels:    &labels,
+		Assignees: &owners,
 	})
 	if err != nil {
 		glog.Errorf("createIssue: %v", err)
