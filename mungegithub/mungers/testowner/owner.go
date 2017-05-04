@@ -105,7 +105,7 @@ func (o *OwnerList) TestOwner(testName string) (owner string) {
 		ownerSet := strings.Split(owner, "/")
 		owner = ownerSet[o.rng.Intn(len(ownerSet))]
 	}
-	return owner
+	return strings.TrimSpace(owner)
 }
 
 // TestSIG returns the SIG assigned to a test, or else the empty string if none is found.
@@ -114,7 +114,7 @@ func (o *OwnerList) TestSIG(testName string) string {
 	if ownerInfo == nil {
 		return ""
 	}
-	return ownerInfo.SIG
+	return strings.TrimSpace(ownerInfo.SIG)
 }
 
 // NewOwnerList constructs an OwnerList given a mapping from test names to test owners.

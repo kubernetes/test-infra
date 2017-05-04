@@ -117,7 +117,7 @@ func TestOwnerListFromCsv(t *testing.T) {
 	r := bytes.NewReader([]byte(",,,header nonsense,\n" +
 		",owner,suggested owner,name,sig\n" +
 		",foo,other,Test name,Node\n" +
-		",bar,foo,other test,Windows\n"))
+		", bar,foo,other test, Windows\n"))
 	list, err := NewOwnerListFromCsv(r)
 	if err != nil {
 		t.Error(err)
