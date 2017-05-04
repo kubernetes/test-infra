@@ -759,6 +759,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-serial
 - name: ci-kubernetes-e2e-gce-ubuntu-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-slow
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-serial
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-slow
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
@@ -838,6 +848,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-serial
   - name: gce-ubuntu-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-slow
+  - name: gce-ubuntu-1.6-node
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
+  - name: gce-ubuntu-1.6-node-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  - name: gce-ubuntu-1.6
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6
+  - name: gce-ubuntu-1.6-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
+  - name: gce-ubuntu-1.6-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
 
 - name: kopeio
   dashboard_tab:
