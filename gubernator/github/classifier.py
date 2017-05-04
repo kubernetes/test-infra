@@ -388,14 +388,14 @@ def get_author_state(author, distilled_events):
     ])
 
 
-def get_assignee_state(assignee, author, distilled_events):
+def get_assignee_state(assignee, author, labels, distilled_events):
     '''
     Determine the state of an assignee given a series of distilled events.
     '''
     return evaluate_fsm(distilled_events, start='needs review', transitions=[
         # before, after, condition
         ('needs review', 'waiting', lambda a, u: u == assignee and a in ('comment', 'label lgtm')),
-        (None, 'needs review', 'push'),
+        (None, 'needs review', lambda a, u: a == 'push' and 'lgtm' not in labels),
         (None, 'needs review', lambda a, u: a == 'comment' and u == author),
     ])
 
@@ -423,7 +423,7 @@ def calculate_attention(distilled_events, payload):
         notify(approver, 'needs approval')
 
     for assignee in assignees:
-        assignee_state, first, last = get_assignee_state(assignee, author, distilled_events)
+        assignee_state, first, last = get_assignee_state(assignee, author, payload['labels'], distilled_events)
         if assignee_state != 'waiting':
             notify(assignee, '%s#%s#%s' % (assignee_state, first, last))
 

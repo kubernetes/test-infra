@@ -211,17 +211,19 @@ class CalculateTest(unittest.TestCase):
         expect([('comment', 'other', 1), ('comment', 'other', 2)], ('address comments', 1, 2))
 
     def test_assignee_state(self):
-        def expect(events, result):
-            self.assertEqual(classifier.get_assignee_state('me', 'author', events),
+        def expect(events, labels, result):
+            self.assertEqual(classifier.get_assignee_state('me', 'author', labels, events),
                              result)
-        expect([], ('needs review', 0, 0))
-        expect([('comment', 'other', 1)], ('needs review', 0, 0))
-        expect([('comment', 'me', 1)], ('waiting', 1, 1))
-        expect([('label lgtm', 'other', 1)], ('needs review', 0, 0))
-        expect([('label lgtm', 'me', 1)], ('waiting', 1, 1))
-        expect([('comment', 'me', 1), ('push', 'author', 2)], ('needs review', 2, 2))
-        expect([('comment', 'me', 1), ('comment', 'author', 2)], ('needs review', 2, 2))
-        expect([('comment', 'me', 1), ('comment', 'author', 2), ('comment', 'author', 3)],
+        expect([], [], ('needs review', 0, 0))
+        expect([('comment', 'other', 1)], [], ('needs review', 0, 0))
+        expect([('comment', 'me', 1)], [], ('waiting', 1, 1))
+        expect([('label lgtm', 'other', 1)], [], ('needs review', 0, 0))
+        expect([('label lgtm', 'me', 1)], [], ('waiting', 1, 1))
+        expect([('comment', 'me', 1), ('push', 'author', 2)], [], ('needs review', 2, 2))
+        expect([('comment', 'me', 1), ('push', 'author', 2)], ['label'], ('needs review', 2, 2))
+        expect([('comment', 'me', 1), ('push', 'author', 2)], ['lgtm'], ('waiting', 1, 1))
+        expect([('comment', 'me', 1), ('comment', 'author', 2)], [], ('needs review', 2, 2))
+        expect([('comment', 'me', 1), ('comment', 'author', 2), ('comment', 'author', 3)], [],
                ('needs review', 2, 3))
 
     def test_xrefs(self):
