@@ -43,16 +43,20 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "quick", "release":
+	case "bazel", "quick", "release", "federation":
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("Bad build strategy: %v (use: bash, quick, release)", value)
+	return fmt.Errorf("Bad build strategy: %v (use: bash, quick, release, federation)", value)
 }
 
 // True when this kubetest invocation wants to build a release
 func (b *buildStrategy) Enabled() bool {
 	return *b != ""
+}
+
+func (b *buildStrategy) Type() string {
+	return string(*b)
 }
 
 // Build kubernetes according to specified strategy.
@@ -66,6 +70,8 @@ func (b *buildStrategy) Build() error {
 		target = "quick-release"
 	case "release":
 		target = "release"
+	case "federation":
+		return buildFederation()
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
 	}
@@ -74,4 +80,8 @@ func (b *buildStrategy) Build() error {
 	// The build-release script needs stdin to ask the user whether
 	// it's OK to download the docker image.
 	return finishRunning(exec.Command("make", "-C", k8s("kubernetes"), target))
+}
+
+func buildFederation() error {
+	return finishRunning(exec.Command("make", "-C", k8s("kubernetes", "federation"), "package_test"))
 }
