@@ -85,20 +85,11 @@ func (o *OwnerList) get(testName string) (owner *OwnerInfo) {
 	return
 }
 
-// TestOwner returns the owner for a test, an owner from default if present,
-// or else the empty string if none is found.
+// TestOwner returns the owner for a test or the empty string if none is found.
 func (o *OwnerList) TestOwner(testName string) (owner string) {
 	ownerInfo := o.get(testName)
 	if ownerInfo != nil {
 		owner = ownerInfo.User
-	}
-
-	// falls into default
-	if owner == "" {
-		ownerInfo, _ = o.mapping["default"]
-		if ownerInfo != nil {
-			owner = ownerInfo.User
-		}
 	}
 
 	if strings.Contains(owner, "/") {

@@ -86,18 +86,6 @@ func TestOwnerGlob(t *testing.T) {
 	}
 }
 
-func TestOwnerListDefault(t *testing.T) {
-	list := NewOwnerList(map[string]*OwnerInfo{"DEFAULT": {
-		User: "elves",
-		SIG:  "group",
-	}})
-
-	owner := list.TestOwner("some random new test")
-	if owner != "elves" {
-		t.Error("Unexpected return value ", owner)
-	}
-}
-
 func TestOwnerListRandom(t *testing.T) {
 	list := NewOwnerList(map[string]*OwnerInfo{"testname": {
 		User: "a/b/c/d",
