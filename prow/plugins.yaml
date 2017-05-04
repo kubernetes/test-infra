@@ -37,3 +37,10 @@ kubernetes-incubator:
 
 kubernetes-security/kubernetes:
 - trigger
+
+spxtr/envoy:
+- assign
+- close
+- reopen
+- lgtm
+- trigger
