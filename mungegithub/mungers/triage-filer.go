@@ -64,7 +64,7 @@ func init() {
 }
 
 // Name returns the string identifier of this munger, usable in --pr-mungers flag.
-func (f *TriageFiler) Name() string { return "triagefiler" }
+func (f *TriageFiler) Name() string { return "triage-filer" }
 
 // RequiredFeatures is a slice of 'features' that must be provided for this munger to run.
 // The TriageFiler has no required features.
