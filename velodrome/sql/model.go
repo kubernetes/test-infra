@@ -32,7 +32,7 @@ type Issue struct {
 	User           string
 	State          string
 	Comments       int
-	Milestone      string
+	Milestone_ID   string
 	IsPR           bool
 	IssueClosedAt  *time.Time
 	IssueCreatedAt time.Time
@@ -89,4 +89,16 @@ type Comment struct {
 	CommentCreatedAt time.Time `gorm:"index:repo_created"`
 	CommentUpdatedAt time.Time
 	PullRequest      bool
+}
+
+// Milestone contains information about github milestons and can be added to issues and prs
+type Milestone struct {
+	Repository   string `gorm:"primary_key;index:repo_created"`
+	ID           string `gorm:"primary_key"`
+	Title        string `json:"title,omitempty"`
+	State        string
+	OpenIssues   int       `json:"open_issues,omitempty"`
+	ClosedIssues int       `json:"closed_issues,omitempty"`
+	CreatedAt    time.Time `gorm:"index:repo_created"`
+	ClosedAt     time.Time `json:"closed_at,omitempty"`
 }
