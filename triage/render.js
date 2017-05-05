@@ -106,6 +106,10 @@ function addBuildListItem(jobList, job, buildNumbers, hits, test) {
 
 // Render a list of builds as a list of jobs with expandable build sections.
 function renderJobs(parent, clusterId) {
+  if (parent.children.length > 0) {
+    return;  // already done
+  }
+
   var counts = clustered.makeCounts(clusterId);
 
   var clusterJobs = {};
@@ -197,11 +201,19 @@ function renderCluster(top, key, keyId, text, tests) {
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
+  var latest = createElement('ul', {className: 'latest', dataset: {cluster: keyId}});
   var list = addElement(failureNode, 'ul', null, [
-    createElement('li', {innerText: `Latest Failures ${rightArrow}`}, [
-      createElement('div', {className: 'latest', dataset: {cluster: keyId}})
-    ]),
+    createElement('li', {innerText: `Latest Failures ${downArrow}`}, [latest]),
   ]);
+
+  var ctxs = [];
+  for (let ctx of clustered.buildsWithContextForClusterById(keyId)) {
+    ctxs.push(ctx);
+  }
+  ctxs.sort((a, b) => { return b[0].started - a[0].started; })
+  for (let [build, job, test] of ctxs.slice(0, 5)) {
+    addElement(latest, 'li', {innerHTML: `${buildToHtml(build, test)} ${job} ${test}`});
+  }
 
   var clusterJobs = addElement(list, 'li');
 
@@ -306,22 +318,6 @@ function renderGraph(element, buildsIterator) {
   chart.draw(data, options);
 }
 
-// Show the most recent few results in a cluster
-function renderLatest(element, clusterId) {
-  if (element.children.length > 0) {
-    return;  // already done
-  }
-  var ctxs = [];
-  for (let ctx of clustered.buildsWithContextForClusterById(clusterId)) {
-    ctxs.push(ctx);
-  }
-  ctxs.sort((a, b) => { return b[0].started - a[0].started; })
-  var list = addElement(element, 'ul');
-  for (let [build, job, test] of ctxs.slice(0, 5)) {
-    addElement(list, 'li', {innerHTML: `${buildToHtml(build, test)} ${job} ${test}`});
-  }
-}
-
 // When someone clicks on an expandable element, render the sub content as necessary.
 function expand(target) {
   while (target.nodeName !== "LI" && target.parentNode) {
@@ -345,8 +341,6 @@ function expand(target) {
           renderGraph(child, clustered.buildsForClusterById(cluster));
         } else if (child.className === 'jobs') {
           renderJobs(child, cluster);
-        } else if (child.className === 'latest') {
-          renderLatest(child, cluster);
         }
       }
 
