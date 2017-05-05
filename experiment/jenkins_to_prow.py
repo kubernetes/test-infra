@@ -116,7 +116,7 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             job_names.append(real_job['job-name'])
 
     if prow_path:
-        yaml.safe_dump(dump, file(prow_path, 'w'), default_flow_style=False)
+        yaml.safe_dump(dump, file(prow_path, 'a'), default_flow_style=False)
     else:
         print yaml.safe_dump(dump, default_flow_style=False)
 

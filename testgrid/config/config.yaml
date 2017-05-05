@@ -98,8 +98,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1.4
 - name: ci-kubernetes-e2e-gce-alpha-features-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1.5
-- name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5
 - name: ci-kubernetes-e2e-gce-autoscaling
@@ -208,8 +208,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m59
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
-- name: ci-kubernetes-e2e-gci-gce-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1.5
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -218,22 +218,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
-- name: ci-kubernetes-e2e-gci-gce-serial-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1.5
 - name: ci-kubernetes-e2e-gci-gce-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow
-- name: ci-kubernetes-e2e-gci-gce-slow-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-slow-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1.5
 - name: ci-kubernetes-e2e-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ingress
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
-- name: ci-kubernetes-e2e-gci-gce-ingress-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-ingress-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1.5
 - name: ci-kubernetes-e2e-gce-multizone
@@ -254,8 +254,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1-4
 - name: ci-kubernetes-e2e-gce-reboot-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1.5
-- name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1.4
+- name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-reboot-release-1.5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1.5
 - name: ci-kubernetes-e2e-gce-release-1.4
@@ -929,7 +929,7 @@ dashboards:
   - name: gce-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1.5
   - name: gci-gce-alpha-features-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
   - name: gci-gce-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5
   - name: gce-autoscaling
@@ -973,7 +973,7 @@ dashboards:
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gci-gce-ingress-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
   - name: gci-gce-ingress-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1.5
   - name: gce-multizone
@@ -995,7 +995,7 @@ dashboards:
   - name: gce-reboot-1.5
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1.5
   - name: gci-gce-reboot-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
   - name: gci-gce-reboot-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.5
   - name: gce-1.4
@@ -1110,7 +1110,7 @@ dashboards:
   - name: examples
     test_group_name: ci-kubernetes-e2e-gci-gce-examples
   - name: release-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1-4
   - name: release-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1.5
   - name: ip-alias
@@ -1120,13 +1120,13 @@ dashboards:
   - name: serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
   - name: serial-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   - name: serial-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1.5
   - name: slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
   - name: slow-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
   - name: slow-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1.5
 
@@ -1898,7 +1898,7 @@ dashboards:
   - name: gce-alpha-features-1.4
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1.4
   - name: gci-gce-alpha-features-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
   - name: test-go-1.4
     test_group_name: ci-kubernetes-test-go-release-1.4
   - name: gce-slow-1.4
@@ -1910,9 +1910,9 @@ dashboards:
   - name: gce-reboot-1.4
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-4
   - name: gci-gce-reboot-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
   - name: gci-gce-ingress-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
   - name: gke-slow-1.4
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1.4
   - name: gci-gke-slow-1.4
@@ -1932,11 +1932,11 @@ dashboards:
   - name: gci-gke-ingress-1.4
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1.4
   - name: gci-slow-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
   - name: gci-serial-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   - name: gci-1.4
-    test_group_name: ci-kubernetes-e2e-gci-gce-release-1.4
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1-4
   - name: gci-ci-slow-1.4
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4
   - name: gci-ci-serial-1.4
