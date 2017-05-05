@@ -47,8 +47,8 @@ You can add 'keep-open' label to prevent this from happening, or add a comment t
 )
 
 var (
-	closingCommentRE = regexp.MustCompile(`This \w hasn't been active in \d+ days?\..*label to prevent this from happening again`)
-	warningCommentRE = regexp.MustCompile(`This \w hasn't been active in \d+ days?\..*be closed in \d+ days?`)
+	closingCommentRE = regexp.MustCompile(`This \w+ hasn't been active in \d+ days?\..*label to prevent this from happening again`)
+	warningCommentRE = regexp.MustCompile(`This \w+ hasn't been active in \d+ days?\..*be closed in \d+ days?`)
 )
 
 // CloseStale will ask the Bot to close any PR/Issue that didn't
