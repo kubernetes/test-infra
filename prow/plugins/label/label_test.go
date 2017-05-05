@@ -34,17 +34,6 @@ const (
 	prNumber     = 1
 )
 
-type testCase struct {
-	name                  string
-	body                  string
-	commenter             string
-	expectedNewLabels     []string
-	expectedRemovedLabels []string
-	repoLabels            []string
-	issueLabels           []string
-	isPr                  bool
-}
-
 func formatLabels(labels ...string) []string {
 	r := []string{}
 	for _, l := range labels {
@@ -101,7 +90,7 @@ func getFakeRepoIssueComment(commentBody, commenter string, repoLabels, issueLab
 	return fakeCli, ae
 }
 
-func getFakeRepoIssue(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
+func getFakeRepoIssue(commentBody, creator string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
 	fakeCli := &fakegithub.FakeClient{
 		Issues:         make([]github.Issue, 1),
 		IssueComments:  make(map[int][]github.IssueComment),
@@ -120,7 +109,7 @@ func getFakeRepoIssue(commentBody, commenter string, repoLabels, issueLabels []s
 			Name:  fakeRepoName,
 		},
 		Issue: github.Issue{
-			User:        github.User{Login: "a"},
+			User:        github.User{Login: creator},
 			Number:      prNumber,
 			PullRequest: &struct{}{},
 			Body:        commentBody,
@@ -208,6 +197,16 @@ func getFakeRepoPullRequest(commentBody, commenter string, repoLabels, issueLabe
 func TestLabel(t *testing.T) {
 	// "a" is the author, "a", "r1", and "r2" are reviewers.
 
+	type testCase struct {
+		name                  string
+		body                  string
+		commenter             string
+		expectedNewLabels     []string
+		expectedRemovedLabels []string
+		repoLabels            []string
+		issueLabels           []string
+		isPr                  bool
+	}
 	testcases := []testCase{
 		{
 			name:                  "Irrelevant comment",
@@ -550,6 +549,124 @@ func TestLabel(t *testing.T) {
 					break
 				}
 			}
+		}
+	}
+}
+
+//Make sure we are repeating sig mentions for non org members (and only non org members)
+func TestRepeat(t *testing.T) {
+
+	type testCase struct {
+		name                   string
+		body                   string
+		commenter              string
+		expectedRepeatedLabels []string
+		issueLabels            []string
+		repoLabels             []string
+	}
+	testcases := []testCase{
+		{
+			name: "Dont repeat when org member adds one sig label",
+			body: "@kubernetes/sig-node-misc",
+			expectedRepeatedLabels: []string{},
+			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node"},
+			issueLabels:            []string{},
+			commenter:              orgMember,
+		},
+		{
+			name: "Repeat when non org adds one sig label",
+			body: "@kubernetes/sig-node-misc",
+			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc"},
+			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/node"},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+		{
+			name: "Don't repeat non existent labels",
+			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{},
+			repoLabels:             []string{},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+		{
+			name: "Dont repeat multiple if org member",
+			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{},
+			repoLabels:             []string{"sig/node", "sig/api-machinery"},
+			issueLabels:            []string{},
+			commenter:              orgMember,
+		},
+		{
+			name: "Repeat multiple valid labels from non org member",
+			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			repoLabels:             []string{"sig/node", "sig/api-machinery"},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+		{
+			name: "Repeat multiple valid labels with a line break from non org member.",
+			body: "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			repoLabels:             []string{"sig/node", "sig/api-machinery"},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+		{
+			name: "Repeat Multiple Sig Labels Different Lines With Other Text",
+			body: "Code Comment.  Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+		{
+			name: "Repeat when multiple label adding commands",
+			body: "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
+			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
+			issueLabels:            []string{},
+			commenter:              nonOrgMember,
+		},
+	}
+
+	//Test that this functionality works on comments, newly opened issues and newly opened PRs
+	fakeRepoFunctions := []func(string, string, []string, []string) (*fakegithub.FakeClient, assignEvent){
+		getFakeRepoIssueComment,
+		getFakeRepoIssue,
+		getFakeRepoPullRequest,
+	}
+
+	for _, tc := range testcases {
+		sort.Strings(tc.expectedRepeatedLabels)
+
+		for i := 0; i < len(fakeRepoFunctions); i++ {
+			fakeClient, ae := fakeRepoFunctions[i](tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
+			m := map[string]string{}
+			for _, l := range tc.repoLabels {
+				m[l] = ""
+			}
+
+			member, _ := fakeClient.IsMember(ae.org, ae.login)
+			toRepeat := []string{}
+			if !member {
+				toRepeat = ae.getRepeats(sigMatcher.FindAllStringSubmatch(tc.body, -1), m)
+			}
+
+			sort.Strings(toRepeat)
+			if len(tc.expectedRepeatedLabels) != len(toRepeat) {
+				t.Errorf("For test %v and case %v,\n\tExpected %+v \n\tFound %+v", tc.name, i, tc.expectedRepeatedLabels, toRepeat)
+				continue
+			}
+
+			for i := range tc.expectedRepeatedLabels {
+				if tc.expectedRepeatedLabels[i] != toRepeat[i] {
+					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedRepeatedLabels, toRepeat)
+					break
+				}
+			}
+
 		}
 	}
 }
