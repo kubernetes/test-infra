@@ -894,10 +894,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -979,10 +979,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-ingress-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-ingress-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1022,10 +1022,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-reboot-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-reboot-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1043,10 +1043,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1102,10 +1102,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-serial-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-serial-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1130,10 +1130,10 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gci-gce-slow-release-1.4": {
+  "ci-kubernetes-e2e-gci-gce-slow-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1-4.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
