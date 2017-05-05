@@ -61,7 +61,7 @@ func (b *buildStrategy) Build() error {
 	var target string
 	switch *b {
 	case "bazel":
-		target = "bazel-build"
+		target = "bazel-release"
 	case "quick":
 		target = "quick-release"
 	case "release":
