@@ -85,27 +85,18 @@ func (o *OwnerList) get(testName string) (owner *OwnerInfo) {
 	return
 }
 
-// TestOwner returns the owner for a test, an owner from default if present,
-// or else the empty string if none is found.
+// TestOwner returns the owner for a test or the empty string if none is found.
 func (o *OwnerList) TestOwner(testName string) (owner string) {
 	ownerInfo := o.get(testName)
 	if ownerInfo != nil {
 		owner = ownerInfo.User
 	}
 
-	// falls into default
-	if owner == "" {
-		ownerInfo, _ = o.mapping["default"]
-		if ownerInfo != nil {
-			owner = ownerInfo.User
-		}
-	}
-
 	if strings.Contains(owner, "/") {
 		ownerSet := strings.Split(owner, "/")
 		owner = ownerSet[o.rng.Intn(len(ownerSet))]
 	}
-	return owner
+	return strings.TrimSpace(owner)
 }
 
 // TestSIG returns the SIG assigned to a test, or else the empty string if none is found.
@@ -114,7 +105,7 @@ func (o *OwnerList) TestSIG(testName string) string {
 	if ownerInfo == nil {
 		return ""
 	}
-	return ownerInfo.SIG
+	return strings.TrimSpace(ownerInfo.SIG)
 }
 
 // NewOwnerList constructs an OwnerList given a mapping from test names to test owners.
