@@ -533,6 +533,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
+- name: maintenance-ci-prow-config-upload
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-prow-config-upload
 - name: maintenance-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
@@ -2042,6 +2044,10 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
     test_group_name: maintenance-ci-testgrid-config-upload
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: prow-config-upload
+    test_group_name: maintenance-ci-prow-config-upload
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: gce-canary
