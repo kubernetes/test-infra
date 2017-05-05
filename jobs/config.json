@@ -2112,7 +2112,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env", 
-      "--kubeadm", 
+      "--kubeadm=ci", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2122,7 +2122,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-6.env", 
-      "--kubeadm", 
+      "--kubeadm=ci", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2705,7 +2705,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/periodic-kubernetes-e2e-kubeadm-gce-1-6.env", 
-      "--kubeadm", 
+      "--kubeadm=periodic", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2799,6 +2799,16 @@
       "--stage=gs://kubernetes-release-dev/ci", 
       "--stage-suffix=pull-gke-gci", 
       "--cluster="
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "pull-kubernetes-e2e-kubeadm-gce": {
+    "args": [
+      "--cluster=", 
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/pull-kubernetes-e2e-kubeadm-gce.env", 
+      "--kubeadm=pull", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
