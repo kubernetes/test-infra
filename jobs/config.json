@@ -2445,6 +2445,25 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-soak-cos-docker-validation-deploy": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-deploy.env", 
+      "--test=false", 
+      "--down=false"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-soak-cos-docker-validation-test": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-test.env", 
+      "--soak-test", 
+      "--up=false", 
+      "--down=false"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-soak-gce-1.4-deploy": {
     "args": [
       "--env-file=platforms/gce.env", 
