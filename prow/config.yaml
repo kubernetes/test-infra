@@ -181,6 +181,7 @@ presubmits:
     - release-1.5
     - release-1.6
     always_run: true
+    skip_report: true  # Remove this once we are confident about this job
     context: pull-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce )?test this"
@@ -341,6 +342,7 @@ presubmits:
     - release-1.5
     - release-1.6
     always_run: true
+    skip_report: true
     context: pull-security-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce )?test this"
