@@ -1639,8 +1639,8 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 // CloseIssuef will close the given issue with a message
 func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
 	config := obj.config
-	if format != "" {
-		msg := fmt.Sprintf(format, args...)
+	msg := fmt.Sprintf(format, args...)
+	if msg != "" {
 		if err := obj.WriteComment(msg); err != nil {
 			return fmt.Errorf("failed to write comment to %v: %q: %v", *obj.Issue.Number, msg, err)
 		}
