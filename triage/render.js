@@ -69,7 +69,7 @@ function slugify(inp) {
 }
 
 // Turn a build object into a link with information.
-function buildToHtml(build, test) {
+function buildToHtml(build, test, skipNumber) {
   let started = tsToString(build.started);
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
@@ -79,7 +79,7 @@ function buildToHtml(build, test) {
   if (test) {
     gubernatorURL += '#' + slugify(test);
   }
-  return `<a href="${gubernatorURL}" target="_blank" rel="noopener">${build.number} ${started}</a>`;
+  return `<a href="${gubernatorURL}" target="_blank" rel="noopener">${skipNumber ? "" : build.number} ${started}</a>`;
 }
 
 // Turn a job and array of build numbers into a list of build links.
@@ -122,7 +122,7 @@ function renderJobs(parent, clusterId) {
   }
 
   var clusterJobs = Object.entries(clusterJobs);
-  sortByKey(clusterJobs, j => j[1].size);
+  clusterJobs = sortByKey(clusterJobs, j => [-dayCounts[counts[j[0]]], -j[1].size]);
 
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of clusterJobs) {
@@ -177,6 +177,38 @@ function sparkLineSVG(arr) {
   });
 }
 
+function dayCounts(arr) {
+  var l = arr.length;
+  return arr[l-1]+arr[l-2]+arr[l-3]+arr[l-4];
+}
+
+function renderLatest(el, keyId) {
+  var ctxs = [];
+  for (let ctx of clustered.buildsWithContextForClusterById(keyId)) {
+    ctxs.push(ctx);
+  }
+  ctxs.sort((a, b) => { return (b[0].started - a[0].started) || (b[2] < a[2]); })
+  var n = 0;
+  addElement(el, 'tr', null, [
+    createElement('th', null, 'Time'),
+    createElement('th', null, 'Job'),
+    createElement('th', null, 'Test')
+  ]);
+  var buildsEmitted = new Set();
+  var n = 0;
+  for (let [build, job, test] of ctxs) {
+    var key = job + build.number;
+    if (buildsEmitted.has(key)) continue;
+    buildsEmitted.add(key);
+    addElement(el, 'tr', null, [
+      createElement('td', {innerHTML: `${buildToHtml(build, test, true)}`}),
+      createElement('td', null, job),
+      createElement('td', null, test),
+    ]);
+    if (++n >= 5) break;
+  }
+}
+
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
 function renderCluster(top, key, keyId, text, tests) {
@@ -201,19 +233,12 @@ function renderCluster(top, key, keyId, text, tests) {
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
   ]);
-  var latest = createElement('ul', {className: 'latest', dataset: {cluster: keyId}});
+  var latest = createElement('table');
   var list = addElement(failureNode, 'ul', null, [
-    createElement('li', {innerText: `Latest Failures ${downArrow}`}, [latest]),
+    createElement('span', null, [`Latest Failures`, latest]),
   ]);
 
-  var ctxs = [];
-  for (let ctx of clustered.buildsWithContextForClusterById(keyId)) {
-    ctxs.push(ctx);
-  }
-  ctxs.sort((a, b) => { return b[0].started - a[0].started; })
-  for (let [build, job, test] of ctxs.slice(0, 5)) {
-    addElement(latest, 'li', {innerHTML: `${buildToHtml(build, test)} ${job} ${test}`});
-  }
+  renderLatest(latest, keyId);
 
   var clusterJobs = addElement(list, 'li');
 
@@ -229,17 +254,38 @@ function renderCluster(top, key, keyId, text, tests) {
   // If we expanded all the tests and jobs, how many rows would it take?
   var jobCount = sum(tests, t => t.jobs.length);
 
+  // Sort tests by descending [last day hits, total hits]
+  var tests = sortByKey(tests, t => [-dayCounts(counts[t.name]), -sum(t.jobs, j => j.builds.length)]);
+
+  var daySection = false, allSection = false;
+
   for (var test of tests) {
     var testCount = sum(test.jobs, j => j.builds.length);
+
+    if (tests.length > kCollapseThreshold) {
+      var testDayCount = dayCounts(counts[test.name]);
+      if (testDayCount > 0 && !daySection) {
+        addElement(testList, 'div', null, "Latest failure today:")
+        daySection = true;
+      } else if (testDayCount == 0 && !allSection) {
+        addElement(testList, 'div', null, "Latest failure before today:")
+        allSection = true;
+      }
+    }
+
     var el = addElement(testList, 'li', null, [
       sparkLineSVG(counts[test.name]),
       ` ${testCount} ${test.name} ${pickArrow(jobCount)}`,
     ]);
+
     var jobList = addElement(el, 'ul');
     if (jobCount > kCollapseThreshold) {
       jobList.style.display = 'none';
     }
-    for (var job of test.jobs) {
+
+    var jobs = sortByKey(test.jobs, j => [-dayCounts(counts[j.name + ' ' + test.name]), -j.builds.length]);
+
+    for (var job of jobs) {
       jobSet.add(job.name);
       addBuildListItem(jobList, job.name, job.builds, counts[job.name + ' ' + test.name], test.name);
     }

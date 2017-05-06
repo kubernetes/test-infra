@@ -1,4 +1,7 @@
-li {
+li > * {
+  cursor: default;
+}
+li, li > span {
   cursor: pointer;
 }
 
@@ -48,4 +51,16 @@ span[data-tooltip]:hover:after {
   padding: 4px 4px;
   border: 1px solid black;
   border-radius: 5px;
+}
+
+td {
+  padding: 0 1.5em 0 0;
+}
+
+table {
+  margin: 5px;
+}
+
+ul {
+  padding-left: 20px;
 }
