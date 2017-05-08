@@ -127,7 +127,7 @@ func TestTerminateDupes(t *testing.T) {
 		},
 	}
 	fkc := &fkc{}
-	c := Controller{kc: fkc}
+	c := Controller{kc: fkc, pkc: fkc}
 	for _, tc := range testcases {
 		var pj = kube.ProwJob{
 			Metadata: kube.ObjectMeta{Name: tc.name},
@@ -612,6 +612,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		}
 		c := Controller{
 			kc:       fc,
+			pkc:      fc,
 			totURL:   totServ.URL,
 			crierURL: crierServ.URL,
 		}
@@ -667,6 +668,7 @@ func TestBatch(t *testing.T) {
 	jc := &fjc{}
 	c := Controller{
 		kc:       fc,
+		pkc:      fc,
 		jc:       jc,
 		crierURL: crierServ.URL,
 	}
@@ -745,6 +747,7 @@ func TestPeriodic(t *testing.T) {
 	}
 	c := Controller{
 		kc:       fc,
+		pkc:      fc,
 		totURL:   totServ.URL,
 		crierURL: crierServ.URL,
 	}

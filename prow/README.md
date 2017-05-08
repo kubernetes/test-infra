@@ -138,15 +138,22 @@ Jenkins' URL, such as `http://pull-jenkins-master:8080`.
  kubectl create -f cluster/prow_job.yaml
  ```
 
-6. *Optional*: Create service account and SSH keys for your pods to run as.
-This shouldn't be necessary for most use cases.
+6. Create a namespace for test pods named "test-pods".
 
  ```
- kubectl create secret generic service-account --from-file=service-account.json=/path/to/service-account/secret
- kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
+ kubectl create -f cluster/test_pods_namespace.yaml
  ```
 
-7. Run the prow components that you desire. I recommend `hook`, `plank`,
+7. *Optional*: Create service account and SSH keys for your pods to run as.
+This shouldn't be necessary for most use cases. They'll need to be in the same
+namespace as the pods.
+
+ ```
+ kubectl create secret generic service-account --namespace=test-pods --from-file=service-account.json=/path/to/service-account/secret
+ kubectl create secret generic ssh-key-secret --namespace=test-pods --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
+ ```
+
+8. Run the prow components that you desire. I recommend `hook`, `plank`,
 `sinker`, and `deck` to start out with. You'll need some way for ingress
 traffic to reach your hook and deck deployments.
 
@@ -166,4 +173,4 @@ traffic to reach your hook and deck deployments.
  kubectl apply -f cluster/ingress.yaml
  ```
 
-8. Add the webhook to GitHub.
+9. Add the webhook to GitHub.

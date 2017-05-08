@@ -167,7 +167,7 @@ func TestClean(t *testing.T) {
 		Pods:     pods,
 		ProwJobs: prowJobs,
 	}
-	clean(kc)
+	clean(kc, kc)
 	if len(deletedPods) != len(kc.DeletedPods) {
 		t.Errorf("Deleted wrong number of pods: got %v expected %v", kc.DeletedPods, deletedPods)
 	}

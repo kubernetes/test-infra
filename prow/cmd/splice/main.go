@@ -276,7 +276,7 @@ func main() {
 		log.WithError(err).Fatal("Could not start config agent.")
 	}
 
-	kc, err := kube.NewClientInCluster("default")
+	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
 	if err != nil {
 		log.WithError(err).Fatal("Error getting kube client.")
 	}

@@ -39,7 +39,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	kc, err := kube.NewClientInCluster("default")
+	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}

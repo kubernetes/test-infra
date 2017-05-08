@@ -96,7 +96,7 @@ func (ja *JobAgent) GetLog(name string) ([]byte, error) {
 	}
 	if job.Agent == "" || job.Agent == "kubernetes" {
 		// running on Kubernetes
-		return ja.kc.GetLog(name)
+		return ja.kc.Namespace(kube.TestPodNamespace).GetLog(name)
 	} else if ja.jc != nil && job.Agent == "jenkins" {
 		// running on Jenkins
 		m := jobNameRE.FindStringSubmatch(name)

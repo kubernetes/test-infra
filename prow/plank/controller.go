@@ -52,6 +52,7 @@ type jenkinsClient interface {
 
 type Controller struct {
 	kc       kubeClient
+	pkc      kubeClient
 	jc       jenkinsClient
 	crierURL string
 	totURL   string
@@ -60,6 +61,7 @@ type Controller struct {
 func NewController(kc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
 	return &Controller{
 		kc:       kc,
+		pkc:      kc.Namespace(kube.TestPodNamespace),
 		jc:       jc,
 		crierURL: crierURL,
 		totURL:   totURL,
@@ -71,7 +73,7 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	pods, err := c.kc.ListPods(nil)
+	pods, err := c.pkc.ListPods(nil)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
 	}
@@ -400,7 +402,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		},
 		Spec: spec,
 	}
-	actual, err := c.kc.CreatePod(p)
+	actual, err := c.pkc.CreatePod(p)
 	if err != nil {
 		return "", "", fmt.Errorf("error creating pod: %v", err)
 	}
