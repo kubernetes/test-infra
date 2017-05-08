@@ -112,22 +112,33 @@ function renderJobs(parent, clusterId) {
 
   var counts = clustered.makeCounts(clusterId);
 
-  var clusterJobs = {};
+  var jobs = {};
   for (let build of clustered.buildsForClusterById(clusterId)) {
     let job = build.job;
-    if (!clusterJobs[job]) {
-      clusterJobs[job] = new Set();
+    if (!jobs[job]) {
+      jobs[job] = new Set();
     }
-    clusterJobs[job].add(build.number);
+    jobs[job].add(build.number);
   }
 
-  var clusterJobs = Object.entries(clusterJobs);
-  clusterJobs = sortByKey(clusterJobs, j => [-dayCounts[counts[j[0]]], -j[1].size]);
+  var jobs = Object.entries(jobs);
+  jobs = sortByKey(jobs, j => [-dayCounts(counts[j[0]]), -j[1].size]);
+
+  var jobAllSection = false;
+  var dayCount = dayCounts(counts['']);
+  var countSum = 0;
 
   var jobList = addElement(parent, 'ul');
-  for (let [job, buildNumbersSet] of clusterJobs) {
+  for (let [job, buildNumbersSet] of jobs) {
     let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => b - a);
-    addBuildListItem(jobList, job, buildNumbers, counts[job]);
+    var count = counts[job];
+    if (jobs.length > kCollapseThreshold && !jobAllSection && countSum > 0.8 * dayCount) {
+      addElement(jobList, 'button', {className: 'rest', title: 'Show Daily Bottom 20%'}, 'More');
+      addElement(jobList, 'hr');
+      jobAllSection = true;
+    }
+    countSum += dayCounts(count);
+    addBuildListItem(jobList, job, buildNumbers, count);
   }
 }
 
@@ -212,12 +223,12 @@ function renderLatest(el, keyId) {
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
 function renderCluster(top, key, keyId, text, tests) {
-  function pickArrow(count) {
-    return count > kCollapseThreshold ? rightArrow : downArrow;
-  }
-
   function plural(count, word, suffix) {
     return count == 1 ? count + ' ' + word : count + ' ' + word + suffix;
+  }
+
+  function swapArrow(el) {
+    el.textContent = el.textContent.replace(downArrow, rightArrow);
   }
 
   var counts = clustered.makeCounts(keyId);
@@ -245,11 +256,8 @@ function renderCluster(top, key, keyId, text, tests) {
   var jobSet = new Set();
 
   var testList = createElement('ul');
-  if (tests.length > kCollapseThreshold) {
-    testList.style.display = 'none';
-  }
 
-  addElement(list, 'li', null, [`Failed in ${plural(tests.length, 'Test', 's')} ${pickArrow(tests.length)}`, testList]);
+  var expander = addElement(list, 'li', null, [`Failed in ${plural(tests.length, 'Test', 's')} ${downArrow}`, testList]);
 
   // If we expanded all the tests and jobs, how many rows would it take?
   var jobCount = sum(tests, t => t.jobs.length);
@@ -257,38 +265,59 @@ function renderCluster(top, key, keyId, text, tests) {
   // Sort tests by descending [last day hits, total hits]
   var tests = sortByKey(tests, t => [-dayCounts(counts[t.name]), -sum(t.jobs, j => j.builds.length)]);
 
-  var daySection = false, allSection = false;
+  var allTestsDayCount = dayCounts(counts['']);
+  var testsDayCountSum = 0;
+
+  var allSection = false;
+  var testsShown = 0;
+  var i = 0;
 
   for (var test of tests) {
+    i++;
     var testCount = sum(test.jobs, j => j.builds.length);
 
+    var testDayCount = dayCounts(counts[test.name]);
+
     if (tests.length > kCollapseThreshold) {
-      var testDayCount = dayCounts(counts[test.name]);
-      if (testDayCount > 0 && !daySection) {
-        addElement(testList, 'div', null, "Latest failure today:")
-        daySection = true;
-      } else if (testDayCount == 0 && !allSection) {
-        addElement(testList, 'div', null, "Latest failure before today:")
+      if (!allSection && testsDayCountSum > 0.8 * allTestsDayCount) {
+        testsShown = i;
+        addElement(testList, 'button', {className: 'rest', title: 'Show Daily Bottom 20% Tests'}, 'More');
+        addElement(testList, 'hr');
         allSection = true;
       }
     }
 
+    var testDayCountSum = 0;
+    testsDayCountSum += testDayCount;
+
     var el = addElement(testList, 'li', null, [
       sparkLineSVG(counts[test.name]),
-      ` ${testCount} ${test.name} ${pickArrow(jobCount)}`,
+      ` ${testCount} ${test.name} ${rightArrow}`,
     ]);
 
-    var jobList = addElement(el, 'ul');
-    if (jobCount > kCollapseThreshold) {
-      jobList.style.display = 'none';
-    }
+    var jobList = addElement(el, 'ul', {style: {display: 'none'}});
 
     var jobs = sortByKey(test.jobs, j => [-dayCounts(counts[j.name + ' ' + test.name]), -j.builds.length]);
 
+    var jobAllSection = false;
+
+    var j = 0;
     for (var job of jobs) {
+      var jobCount = counts[job.name + ' ' + test.name];
+      if (jobs.length > kCollapseThreshold && !jobAllSection && testDayCountSum > 0.8 * testDayCount) {
+        addElement(jobList, 'button', {className: 'rest', title: 'Show Daily Bottom 20% Jobs'}, 'More');
+        addElement(jobList, 'hr');
+        jobAllSection = true;
+      }
       jobSet.add(job.name);
-      addBuildListItem(jobList, job.name, job.builds, counts[job.name + ' ' + test.name], test.name);
+      addBuildListItem(jobList, job.name, job.builds, jobCount, test.name);
+      testDayCountSum += dayCounts(jobCount);
     }
+  }
+
+  if ((testsShown === 0 && tests.length > kCollapseThreshold) || testsShown > kCollapseThreshold) {
+    testList.style.display = 'none';
+    swapArrow(expander.firstChild);
   }
 
   clusterJobs.innerHTML = `Failed in ${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
@@ -366,6 +395,10 @@ function renderGraph(element, buildsIterator) {
 
 // When someone clicks on an expandable element, render the sub content as necessary.
 function expand(target) {
+  if (target.nodeName === "BUTTON" && target.className === "rest") {
+    target.remove();
+    return true;
+  }
   while (target.nodeName !== "LI" && target.parentNode) {
     target = target.parentNode;
   }

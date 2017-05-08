@@ -64,3 +64,11 @@ table {
 ul {
   padding-left: 20px;
 }
+
+button.rest {
+  width: 20em;
+}
+
+button.rest ~ * {
+  display: none;
+}

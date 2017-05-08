@@ -239,6 +239,7 @@ class Clusters {
 
     for (let [build, job, test] of this.buildsWithContextForClusterById(clusterId)) {
       let bucket = pickBucket(build.started);
+      incr('', bucket);
       incr(job, bucket);
       incr(test, bucket);
       incr(job + " " + test, bucket);
