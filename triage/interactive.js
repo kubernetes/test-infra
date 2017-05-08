@@ -242,24 +242,27 @@ function getData(clusterId) {
 
   get(url,
     req => {
-      var data = JSON.parse(req.response);
-      builds = new Builds(data.builds);
-      if (clusterId) {
-        // rendering just one cluster, filter here.
-        for (let c of data.clustered) {
-          if (c.id == clusterId) {
-            data.clustered = [c];
-            break;
+      setLoading(`parsing ${toMB(req.response.length)}MB.`);
+      setTimeout(() => {
+        var data = JSON.parse(req.response);
+        builds = new Builds(data.builds);
+        if (clusterId) {
+          // rendering just one cluster, filter here.
+          for (let c of data.clustered) {
+            if (c.id == clusterId) {
+              data.clustered = [c];
+              break;
+            }
           }
         }
-      }
-      clusteredAll = new Clusters(data.clustered);
-      if (clusterId) {
-        clusteredAll.slice = true;
-        renderOnly(clusterId);
-      } else {
-        rerender();
-      }
+        clusteredAll = new Clusters(data.clustered);
+        if (clusterId) {
+          clusteredAll.slice = true;
+          renderOnly(clusterId);
+        } else {
+          rerender();
+        }
+      }, 0);
     },
     evt => {
       if (evt.type === "progress") {
