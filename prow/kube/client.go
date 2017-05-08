@@ -51,6 +51,13 @@ type Client struct {
 	fake      bool
 }
 
+// Namespace returns a copy of the client pointing at the specified namespace.
+func (c *Client) Namespace(ns string) *Client {
+	nc := *c
+	nc.namespace = ns
+	return &nc
+}
+
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.Logger == nil {
 		return
