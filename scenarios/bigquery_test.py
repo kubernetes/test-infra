@@ -17,6 +17,7 @@
 """Tests for bigquery.py"""
 
 import os
+import argparse
 import unittest
 import tempfile
 import shutil
@@ -24,20 +25,6 @@ import bigquery
 
 class TestBigquery(unittest.TestCase):
     """Tests the bigquery scenario."""
-    out_filename = "out.json"
-    data_filename = "data.json"
-    sample_sql = "#standardSQL\n select job from `k8s-gubernator.build.all`"
-
-    def test_query(self):
-        """Test that the do query function can execute a query without failing."""
-        tests = [[self.sample_sql, self.out_filename, "k8s-gubernator"]]
-        for test in tests:
-            bigquery.do_query(*test)
-            with open(self.out_filename) as out_file:
-                contents = out_file.read()
-                if "error" in contents.split("\n")[0].lower():
-                    raise ValueError("query should have thrown an error because the"
-                                     " bq command failed.")
 
     def test_jq(self):
         """Test that the do_jq function can execute a jq filter properly."""
@@ -47,7 +34,7 @@ class TestBigquery(unittest.TestCase):
         for test in tests:
             with open(self.data_filename, "w") as data_file:
                 data_file.write(test[1])
-            bigquery.do_jq(test[0], self.data_filename, self.out_filename)
+            bigquery.do_jq(test[0], self.data_filename, self.out_filename, jq_bin=ARGS.jq)
             with open(self.out_filename) as out_file:
                 actual = out_file.read().replace(" ", "").replace("\n", "")
                 self.assertEqual(actual, test[2], msg="expected jq '{}' on data: {} to output {}"
@@ -61,11 +48,23 @@ class TestBigquery(unittest.TestCase):
             self.assertRaises(ValueError, bigquery.validate_metric_name, test)
 
     def setUp(self):
+        self.assertTrue(ARGS.jq)
         self.tmpdir = tempfile.mkdtemp(prefix="bigquery_test_")
-        os.chdir(self.tmpdir)
+        self.out_filename = os.path.join(self.tmpdir, "out.json")
+        self.data_filename = os.path.join(self.tmpdir, "data.json")
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
 if __name__ == "__main__":
-    unittest.main()
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument("--jq",
+                        required=True,
+                        type=str,
+                        help="The path to the 'jq' command.")
+    ARGS = PARSER.parse_args()
+
+    RESULTS = unittest.TextTestRunner().run(
+        unittest.TestLoader().loadTestsFromTestCase(TestBigquery))
+    if len(RESULTS.errors) > 0:
+        raise ValueError(RESULTS.errors)

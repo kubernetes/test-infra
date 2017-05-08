@@ -25,3 +25,13 @@ py_test(
         "kubernetes_e2e_test.py",
     ],
 )
+
+py_test(
+    name = "bigquery_test",
+    srcs = [
+        "bigquery.py",
+        "bigquery_test.py",
+    ],
+    args = ["--jq=$(location @jq//file)"],
+    data = ["@jq//file"],
+)

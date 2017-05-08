@@ -98,3 +98,10 @@ py_binary(
 )
 """,
 )
+
+http_file(
+    name = "jq",
+    urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"],
+    sha256 = "c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d",
+    executable = 1,
+)

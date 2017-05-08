@@ -51,10 +51,10 @@ def do_query(query, out_filename, project):
         check(["bq", "query", "--format=prettyjson", "--project_id="+project], stdin=query,
               stdout=out_file)
 
-def do_jq(jqfilter, data_filename, out_filename):
+def do_jq(jqfilter, data_filename, out_filename, jq_bin='jq'):
     """Executes a jq command on a data file and outputs the results to a file."""
     with open(out_filename, "w") as out_file:
-        check(["jq", jqfilter, data_filename], stdout=out_file)
+        check([jq_bin, jqfilter, data_filename], stdout=out_file)
 
 def run_metric(project, bucket_path, metric, query, jqfilter):
     """Executes a query, filters the results, and uploads filtered and complete results to GCS."""
