@@ -780,6 +780,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-slow
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-serial
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
 
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
@@ -1251,6 +1261,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-serial
   - name: ubuntu-gke-slow
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-slow
+  - name: ubuntu-gke-1.6
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6
+  - name: ubuntu-gke-1.6-ingress
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
+  - name: ubuntu-gke-1.6-reboot
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
+  - name: ubuntu-gke-1.6-serial
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
+  - name: ubuntu-gke-1.6-slow
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
 
 - name: google-gke-staging
   dashboard_tab:
