@@ -96,6 +96,10 @@ const (
 	PodUnknown   PodPhase = "Unknown"
 )
 
+const (
+	Evicted = "Evicted"
+)
+
 type PodStatus struct {
 	Phase     PodPhase  `json:"phase,omitempty"`
 	Message   string    `json:"message,omitempty"`
