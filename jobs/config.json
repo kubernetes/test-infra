@@ -2134,6 +2134,46 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-ubuntu-gke": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-ingress": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-ingress.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-reboot": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-reboot.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-serial": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-serial.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-slow": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-slow.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-federation-build": {
     "args": [
       "--fast", 

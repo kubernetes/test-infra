@@ -769,6 +769,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-serial
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+# Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
+- name: ci-kubernetes-e2e-ubuntu-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke
+- name: ci-kubernetes-e2e-ubuntu-gke-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-ingress
+- name: ci-kubernetes-e2e-ubuntu-gke-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-reboot
+- name: ci-kubernetes-e2e-ubuntu-gke-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-serial
+- name: ci-kubernetes-e2e-ubuntu-gke-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-slow
+
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
@@ -1228,6 +1240,17 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
+    # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
+  - name: ubuntu-gke
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke
+  - name: ubuntu-gke-ingress
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
+  - name: ubuntu-gke-reboot
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-reboot
+  - name: ubuntu-gke-serial
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-serial
+  - name: ubuntu-gke-slow
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-slow
 
 - name: google-gke-staging
   dashboard_tab:
