@@ -1501,17 +1501,17 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-serial
     base_options: 'include-filter-by-regex=Kubectl%20client'
     description: 'kubectl gke serial e2e tests for master branch'
-  - name: unit&integration&cmd
+  - name: unit-integration-cmd
     test_group_name: ci-kubernetes-test-go
     # test-cmd, test-integration do not produce xml data right now
     # So we have to rely on the Overall result until then
     base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
     description: 'unit, integration and cmd tests for master branch'
-  - name: unit&integration&cmd-1.6
+  - name: unit-integration-cmd-1.6
     test_group_name: ci-kubernetes-test-go-release-1.6
     base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
     description: 'unit, integration and cmd tests for 1.6 branch'
-  - name: unit&integration&cmd-1.5
+  - name: unit-integration-cmd-1.5
     test_group_name: ci-kubernetes-test-go-release-1.5
     base_options: 'include-filter-by-regex=pkg/kubectl%7COverall'
     description: 'unit, integration and cmd tests for 1.5 branch'
