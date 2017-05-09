@@ -790,6 +790,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+# Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
+- name: canonical-kubernetes-e2e-gce
+  gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
 
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
@@ -880,6 +883,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
   - name: gce-ubuntu-1.6-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+  - name: cdk-gce-node
+    test_group_name: canonical-kubernetes-e2e-gce
 
 - name: kopeio
   dashboard_tab:
