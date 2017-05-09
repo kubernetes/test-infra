@@ -54,6 +54,7 @@ func main() {
 	}
 	req.Header.Set("X-GitHub-Event", *event)
 	req.Header.Set("X-Hub-Signature", github.PayloadSignature(body, []byte(*hmac)))
+	req.Header.Set("content-type", "application/json")
 
 	c := &http.Client{}
 	resp, err := c.Do(req)

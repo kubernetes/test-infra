@@ -55,6 +55,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "403 Forbidden: Missing X-Hub-Signature", http.StatusForbidden)
 		return
 	}
+	contentType := r.Header.Get("content-type")
+	if contentType != "application/json" {
+		http.Error(w, "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub", http.StatusBadRequest)
+		return
+	}
 
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {

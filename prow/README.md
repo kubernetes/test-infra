@@ -174,3 +174,7 @@ traffic to reach your hook and deck deployments.
  ```
 
 9. Add the webhook to GitHub.
+
+Hook processes the following events: issues, issue_comment, pull_request, push, status so github web hooks should be configured to send these event types. We suggest configuring your webhooks to send everything so that future event types are covered.
+
+The content-type for all webhooks type must be application/json.  This is selectable via a dropdown in the webhook configuration page.
