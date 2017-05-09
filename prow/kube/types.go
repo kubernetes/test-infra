@@ -30,6 +30,11 @@ type ObjectMeta struct {
 	UID             string `json:"uid,omitempty"`
 }
 
+const (
+	ProwNamespace    = "default"
+	TestPodNamespace = "test-pods"
+)
+
 type Secret struct {
 	Metadata ObjectMeta        `json:"metadata,omitempty"`
 	Data     map[string]string `json:"data,omitempty"`

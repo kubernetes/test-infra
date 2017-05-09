@@ -25,9 +25,8 @@ import (
 )
 
 const (
-	period    = time.Hour
-	maxAge    = 24 * time.Hour
-	namespace = "default"
+	period = time.Hour
+	maxAge = 24 * time.Hour
 )
 
 type kubeClient interface {
@@ -41,21 +40,22 @@ type kubeClient interface {
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	kc, err := kube.NewClientInCluster(namespace)
+	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
 	if err != nil {
 		logrus.WithError(err).Error("Error getting client.")
 		return
 	}
+	pkc := kc.Namespace(kube.TestPodNamespace)
 
 	// Clean now and regularly from now on.
-	clean(kc)
+	clean(kc, pkc)
 	t := time.Tick(period)
 	for range t {
-		clean(kc)
+		clean(kc, pkc)
 	}
 }
 
-func clean(kc kubeClient) {
+func clean(kc, pkc kubeClient) {
 	// Clean up old prow jobs first.
 	prowJobs, err := kc.ListProwJobs(nil)
 	if err != nil {
@@ -73,7 +73,7 @@ func clean(kc kubeClient) {
 	}
 
 	// Now clean up old pods.
-	pods, err := kc.ListPods(nil)
+	pods, err := pkc.ListPods(nil)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing pods.")
 		return
@@ -82,7 +82,7 @@ func clean(kc kubeClient) {
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
 			time.Since(pod.Status.StartTime) > maxAge {
 			// Delete old completed pods. Don't quit if we fail to delete one.
-			if err := kc.DeletePod(pod.Metadata.Name); err == nil {
+			if err := pkc.DeletePod(pod.Metadata.Name); err == nil {
 				logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
 			} else {
 				logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")

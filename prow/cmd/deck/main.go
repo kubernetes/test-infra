@@ -34,10 +34,6 @@ import (
 	"k8s.io/test-infra/prow/plank"
 )
 
-const (
-	namespace = "default"
-)
-
 var (
 	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -52,7 +48,7 @@ func main() {
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	kc, err := kube.NewClientInCluster(namespace)
+	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
@@ -104,7 +100,7 @@ type logClient interface {
 	GetLog(name string) ([]byte, error)
 }
 
-// TODO(spxtr): Cache, rate limit, and limit which pods can be logged.
+// TODO(spxtr): Cache, rate limit.
 func handleLog(lc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")

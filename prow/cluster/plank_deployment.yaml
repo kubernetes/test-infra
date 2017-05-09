@@ -29,7 +29,7 @@ spec:
         role: prow
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.13
+        image: gcr.io/k8s-prow/plank:0.14
         volumeMounts:
         - mountPath: /etc/jenkins
           name: jenkins

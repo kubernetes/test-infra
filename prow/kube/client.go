@@ -51,6 +51,13 @@ type Client struct {
 	fake      bool
 }
 
+// Namespace returns a copy of the client pointing at the specified namespace.
+func (c *Client) Namespace(ns string) *Client {
+	nc := *c
+	nc.namespace = ns
+	return &nc
+}
+
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.Logger == nil {
 		return
@@ -151,7 +158,7 @@ func (c *Client) doRequest(method, urlPath string, query map[string]string, body
 // NewFakeClient creates a client that doesn't do anything.
 func NewFakeClient() *Client {
 	return &Client{
-		namespace: "default",
+		namespace: ProwNamespace,
 		fake:      true,
 	}
 }

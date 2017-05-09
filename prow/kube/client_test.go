@@ -32,6 +32,23 @@ func getClient(url string) *Client {
 	}
 }
 
+func TestNamespace(t *testing.T) {
+	c1 := &Client{
+		baseURL:   "a",
+		namespace: "ns1",
+	}
+	c2 := c1.Namespace("ns2")
+	if c1 == c2 {
+		t.Error("Namespace modified in place.")
+	}
+	if c2.baseURL != c1.baseURL {
+		t.Error("Didn't copy over struct members.")
+	}
+	if c2.namespace != "ns2" {
+		t.Errorf("Got wrong namespace. Got %s, expected ns2", c2.namespace)
+	}
+}
+
 func TestListPods(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
