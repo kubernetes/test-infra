@@ -151,6 +151,8 @@ restore_vendor() {
     godep restore
     # need to remove the Godeps folder, otherwise godep won't save source code to vendor/
     rm -rf ./Godeps
+    # otherwise `godep save` might fail, see https://github.com/kubernetes/test-infra/issues/2684
+    rm -rf ./vendor
     godep save ./...
     if [ "${is_library}" = "true" ]; then
         echo "remove k8s.io/* and glog from vendor/"
