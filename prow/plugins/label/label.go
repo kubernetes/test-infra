@@ -134,8 +134,8 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 }
 
 func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
-	// only parse newly created comments and if non bot author
-	if ae.login == gc.BotName() || ae.action != "created" {
+	// only parse newly created comments/issues/PRs and if non bot author
+	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
 		return nil
 	}
 

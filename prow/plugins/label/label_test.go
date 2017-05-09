@@ -115,7 +115,7 @@ func getFakeRepoIssue(commentBody, creator string, repoLabels, issueLabels []str
 			Body:        commentBody,
 			Labels:      startingLabels,
 		},
-		Action: "created",
+		Action: "opened",
 	}
 
 	ae := assignEvent{
@@ -168,7 +168,7 @@ func getFakeRepoPullRequest(commentBody, commenter string, repoLabels, issueLabe
 			},
 		},
 		Number: prNumber,
-		Action: "created",
+		Action: "opened",
 	}
 
 	ae := assignEvent{
