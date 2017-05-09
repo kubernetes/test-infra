@@ -26,7 +26,7 @@ to merge.
 * [Test history](https://go.k8s.io/test-history) is a deprecated tool
   - Use the triage dashboard instead
   - Summarizes the last 24 hours of testing.
-  - See [Kettle](kettle) and the corresponding [bigquery queries](experiment/bigquery) that largely supplement this information.
+  - See [Kettle](kettle) and the corresponding [bigquery metrics](metrics) that largely supplement this information.
 
 
 ## Automated testing
