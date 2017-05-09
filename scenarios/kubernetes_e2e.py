@@ -20,12 +20,15 @@
 """Runs kubernetes e2e test with specified config"""
 
 import argparse
+import json
 import os
 import re
 import shutil
 import signal
 import subprocess
 import sys
+import time
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -59,6 +62,55 @@ def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
+class BoskosProject(object): # pylint: disable=too-few-public-methods
+    """Loan/Return a gcp project from boskos service."""
+    def __init__(self, job, timeout):
+        self._job = job
+        self._timeout = timeout
+        self._project = None
+
+    def __enter__(self):
+        self._project = self._request(self._job, self._timeout)
+        return self._project
+
+    def __exit__(self, *args):
+        if self._project and self._job:
+            self._return(self._job)
+
+    @property
+    def project(self):
+        """Getter for project name."""
+        return self._project
+
+    @staticmethod
+    def _request(job, timeout):
+        """Load a project from boskos."""
+        if not job or not timeout:
+            return None
+        url = 'http://boskos/request?job=%s&duration=%s' % (job, timeout)
+        for attempt in range(0, 3):
+            res = urllib2.urlopen(url)
+            if res.getcode() == 200:
+                data = json.loads(res)
+                return data['Name']
+            elif res.getcode() == 204: # StatusNoContent, no available projects
+                time.sleep(60) # Wait a min and try our luck later.
+            else:
+                print >>sys.stderr, 'Request return with %d' % res.getcode()
+                raise ValueError(res.getcode(), 'Failed request project!')
+            print >>sys.stderr, 'Will retry %d times' % (3-attempt)
+        return None
+
+    @staticmethod
+    def _return(job):
+        """Return the loaner back to boskos."""
+        url = "http://boskos/return?job=%s" % job
+        for attempt in range(0, 3):
+            res = urllib2.urlopen(url)
+            if res.getcode() != 200:
+                print >>sys.stderr, 'Request return with %d' % res.getcode()
+                raise ValueError(res.getcode(), 'Failed return project!')
+            print >>sys.stderr, 'Will retry %d times' % (3-attempt)
 
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
@@ -144,6 +196,15 @@ class LocalMode(object):
         """Add specified k8s.io repos (noop)."""
         pass
 
+    def run(self, env, args, project):
+        """Run runner with args and env, in a gcp project."""
+        try:
+            if project:
+                check('gcloud', 'config', 'set', 'project', project)
+        except subprocess.CalledProcessError:
+            print >>sys.stderr, 'Fail to set project %r', project
+        check_env(env, self.runner, *args)
+
     def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
@@ -153,14 +214,16 @@ class LocalMode(object):
         self.install_prerequisites()
         # Do not interfere with the local project
         project = env.get('PROJECT')
+
         if project:
-            try:
-                check('gcloud', 'config', 'set', 'project', env['PROJECT'])
-            except subprocess.CalledProcessError:
-                print >>sys.stderr, 'Fail to set project %r', project
+            self.run(env, args, project)
         else:
-            print >>sys.stderr, 'PROJECT not set in job, will use local project'
-        check_env(env, self.runner, *args)
+            with BoskosProject(env.get('JOB_NAME'), env.get('KUBEKINS_TIMEOUT')) as boskos_project:
+                if not boskos_project:
+                    print >>sys.stderr, 'PROJECT not set in job, will use local project'
+                else:
+                    env['PROJECT'] = boskos_project
+                self.run(env, args, boskos_project)
 
 
 class DockerMode(object):
