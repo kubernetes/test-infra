@@ -45,6 +45,7 @@ var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
+	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
 	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
 )
@@ -112,6 +113,21 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 		for _, label := range strings.Split(match[0], " ")[1:] {
 			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
 			labels = append(labels, label)
+		}
+	}
+	return
+}
+
+func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[string]string) (toRepeat []string) {
+
+	toRepeat = []string{}
+	for _, sigMatch := range sigMatches {
+		sigLabel := strings.ToLower("sig" + "/" + strings.TrimSpace(sigMatch[1]))
+		if ae.issue.HasLabel(sigLabel) {
+			continue
+		}
+		if _, ok := existingLabels[sigLabel]; ok {
+			toRepeat = append(toRepeat, sigMatch[0])
 		}
 	}
 	return
@@ -195,6 +211,22 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 		if err := gc.AddLabel(ae.org, ae.repo, ae.number, sigLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
 		}
+	}
+
+	toRepeat := []string{}
+	if len(sigMatches) > 0 {
+		isMember, _ := gc.IsMember(ae.org, ae.login)
+		if !isMember {
+			toRepeat = ae.getRepeats(sigMatches, existingLabels)
+		}
+	}
+
+	if len(toRepeat) > 0 {
+		msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
+		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
+			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+		}
+
 	}
 
 	if len(nonexistent) > 0 {
