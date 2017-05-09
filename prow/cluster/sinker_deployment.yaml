@@ -15,4 +15,4 @@ spec:
         role: prow
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:0.6
+        image: gcr.io/k8s-prow/sinker:0.7
