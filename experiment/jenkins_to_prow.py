@@ -20,6 +20,8 @@ import argparse
 import copy
 import fileinput
 import json
+import os
+import subprocess
 import sys
 import yaml
 
@@ -96,6 +98,7 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     jenkins_jobs = project.get(suffix)
     dump = []
     job_names = []
+    job_replace = {}
     for jenkins_job in jenkins_jobs:
         name = jenkins_job.keys()[0]
         real_job = jenkins_job[name]
@@ -114,6 +117,10 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
                     args.append('--branch=%s' % real_job['branch'])
             dump.append(output)
             job_names.append(real_job['job-name'])
+
+    for job in job_names:
+        if '.' in job:
+            job_replace[job] = job.replace('.', '-')
 
     if prow_path:
         yaml.safe_dump(dump, file(prow_path, 'a'), default_flow_style=False)
@@ -144,6 +151,17 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             fp.seek(0)
             fp.write(json.dumps(configs, sort_keys=True, indent=2))
             fp.truncate()
+
+    for oldName, newName in job_replace.iteritems():
+        files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
+        for fname in files:
+            with open(fname) as f:
+                s = f.read()
+            s = s.replace(oldName, newName)
+            with open(fname, "w") as f:
+                f.write(s)
+        subprocess.check_call(['git', 'mv', 'jobs/%s.env' % oldName, 'jobs/%s.env' % newName])
+
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
