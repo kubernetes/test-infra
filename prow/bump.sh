@@ -18,15 +18,25 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
+# darwin is great
+SED=sed
+if which gsed &>/dev/null; then
+  SED=gsed
+fi
+if ! ($SED --version 2>&1 | grep -q GNU); then
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'."
+  exit 1
+fi
+
 cd $(dirname $0)
 
-makefile_version_re="^\(${1^^}_VERSION.*=\s*\)"
-version=$(sed -n "s/$makefile_version_re//p" Makefile)
+makefile_version_re="^\(${1}_VERSION.*=\s*\)"
+version=$($SED -n "s/$makefile_version_re//Ip" Makefile)
 new_version=$(awk -F. '{print $1 "." $2+1}' <<< $version)
 
 echo "program: $1"
 echo "old version: $version"
 echo "new version: $new_version"
 
-sed -i "s/$makefile_version_re.*/\1$new_version/" Makefile
-sed -i "s/\(${1,,}:\)[0-9.]*/\1$new_version/" cluster/*.yaml
+$SED -i "s/$makefile_version_re.*/\1$new_version/I" Makefile
+$SED -i "s/\(${1}:\)[0-9.]*/\1$new_version/I" cluster/*.yaml
