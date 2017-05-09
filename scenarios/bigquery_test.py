@@ -29,39 +29,39 @@ class TestBigquery(unittest.TestCase):
     def test_jq(self):
         """Test that the do_jq function can execute a jq filter properly."""
         # [filter, data, expected output]
-        tests = [[".", '{ "field": "value" }', '{"field":"value"}'],
-                 [".field", '{ "field": "value" }', '"value"']]
+        tests = [['.', '{ "field": "value" }', '{"field":"value"}'],
+                 ['.field', '{ "field": "value" }', '"value"']]
         for test in tests:
-            with open(self.data_filename, "w") as data_file:
+            with open(self.data_filename, 'w') as data_file:
                 data_file.write(test[1])
             bigquery.do_jq(test[0], self.data_filename, self.out_filename, jq_bin=ARGS.jq)
             with open(self.out_filename) as out_file:
-                actual = out_file.read().replace(" ", "").replace("\n", "")
-                self.assertEqual(actual, test[2], msg="expected jq '{}' on data: {} to output {}"
-                                 " but got {}".format(test[0], test[1], test[2], actual))
+                actual = out_file.read().replace(' ', '').replace('\n', '')
+                self.assertEqual(actual, test[2], msg='expected jq "{}" on data: {} to output {}'
+                                 ' but got {}'.format(test[0], test[1], test[2], actual))
 
     def test_validate_metric_name(self):
         """Test the the validate_metric_name function rejects invalid metric names."""
-        tests = ["invalid#metric", "invalid/metric", "in\\valid", "invalid?yes", "*invalid",
-                 "[metric]", "metric\n", "met\ric"]
+        tests = ['invalid#metric', 'invalid/metric', 'in\\valid', 'invalid?yes', '*invalid',
+                 '[metric]', 'metric\n', 'met\ric']
         for test in tests:
             self.assertRaises(ValueError, bigquery.validate_metric_name, test)
 
     def setUp(self):
         self.assertTrue(ARGS.jq)
-        self.tmpdir = tempfile.mkdtemp(prefix="bigquery_test_")
-        self.out_filename = os.path.join(self.tmpdir, "out.json")
-        self.data_filename = os.path.join(self.tmpdir, "data.json")
+        self.tmpdir = tempfile.mkdtemp(prefix='bigquery_test_')
+        self.out_filename = os.path.join(self.tmpdir, 'out.json')
+        self.data_filename = os.path.join(self.tmpdir, 'data.json')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
-    PARSER.add_argument("--jq",
+    PARSER.add_argument('--jq',
                         required=True,
                         type=str,
-                        help="The path to the 'jq' command.")
+                        help='The path to the "jq" command.')
     ARGS = PARSER.parse_args()
 
     RESULTS = unittest.TextTestRunner().run(
