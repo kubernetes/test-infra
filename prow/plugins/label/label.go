@@ -42,8 +42,8 @@ type assignEvent struct {
 }
 
 var (
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind)\s*(.*)$`)
+	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
+	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
 	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
 	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
@@ -134,8 +134,8 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 }
 
 func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
-	// only parse newly created comments and if non bot author
-	if ae.login == gc.BotName() || ae.action != "created" {
+	// only parse newly created comments/issues/PRs and if non bot author
+	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
 		return nil
 	}
 

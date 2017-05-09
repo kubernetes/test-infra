@@ -14,6 +14,8 @@ Command | Implemented By | Who can run it | Description
 `/remove-kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a kind/<> label(s) if it exists
 `/priority [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a priority/<> label(s) if it exists
 `/remove-priority [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a priority/<> label(s) if it exists
+`/sig [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a sig/<> label(s) if it exists
+`/remove-sig [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a sig/<> label(s) if it exists
 `/lgtm` | prow [lgtm](./prow/plugins/lgtm) | assignees | adds the `lgtm` label
 `/lgtm cancel` | prow [lgtm](./prow/plugins/lgtm) | authors and assignees | removes the `lgtm` label
 `/approve` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve all the files for which you are an approver
