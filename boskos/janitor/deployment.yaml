@@ -15,4 +15,3 @@ spec:
       containers:
       - name: boskos-janitor
         image: gcr.io/k8s-testimages/janitor:v20170502-b59bddad
-        imagePullPolicy: IfNotPresent

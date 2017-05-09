@@ -15,4 +15,3 @@ spec:
       containers:
       - name: boskos-reaper
         image: gcr.io/k8s-testimages/reaper:v20170502-1897e866
-        imagePullPolicy: IfNotPresent
