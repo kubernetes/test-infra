@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"k8s.io/test-infra/boskos/common"
@@ -28,9 +29,11 @@ import (
 
 // Public Boskos client object
 type Client struct {
-	url       string
+	owner string
+	url   string
+
+	lock      sync.Mutex
 	resources []string
-	owner     string
 }
 
 // NewClient creates a boskos client, with boskos url and owner of the client.
@@ -54,15 +57,21 @@ func (c *Client) Acquire(rtype string, state string, dest string) (string, error
 		return "", err
 	}
 
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	c.resources = append(c.resources, r)
 	return r, nil
 }
 
 // ReleaseAll returns all resource hold by the client back to boskos and set them to dest state.
 func (c *Client) ReleaseAll(dest string) error {
+	c.lock.Lock()
+
 	if len(c.resources) == 0 {
+		c.lock.Unlock()
 		return fmt.Errorf("No holding resource")
 	}
+	c.lock.Unlock()
 
 	for {
 		r, ok := c.popResource()
@@ -80,6 +89,8 @@ func (c *Client) ReleaseAll(dest string) error {
 
 // ReleaseOne returns one of owned resource back to boskos and set it to dest state.
 func (c *Client) ReleaseOne(name string, dest string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
 	for idx, r := range c.resources {
 		if r == name {
@@ -97,6 +108,9 @@ func (c *Client) ReleaseOne(name string, dest string) error {
 
 // UpdateAll signals update for all resources hold by the client.
 func (c *Client) UpdateAll(state string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	if len(c.resources) == 0 {
 		return fmt.Errorf("No holding resource")
 	}
@@ -112,6 +126,9 @@ func (c *Client) UpdateAll(state string) error {
 
 // UpdateOne signals update for one of the resource hold by the client.
 func (c *Client) UpdateOne(name string, state string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	for _, r := range c.resources {
 		if r == name {
 			if err := c.update(r, state); err != nil {
@@ -133,6 +150,9 @@ func (c *Client) Reset(rtype string, state string, expire time.Duration, dest st
 // private methods
 
 func (c *Client) popResource() (string, bool) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	if len(c.resources) == 0 {
 		return "", false
 	}
