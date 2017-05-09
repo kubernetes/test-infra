@@ -272,12 +272,18 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			}
 		}
 	} else if pod.Status.Phase == kube.PodFailed {
-		// Pod failed. Update ProwJob, talk to crier.
-		pj.Status.CompletionTime = time.Now()
-		pj.Status.State = kube.FailureState
-		pj.Status.Description = "Job failed."
-		if err := c.report(pj); err != nil {
-			return fmt.Errorf("error reporting to crier: %v", err)
+		if pod.Status.Reason == kube.Evicted {
+			// Pod was evicted. Restart it.
+			pj.Status.PodName = ""
+			pj.Status.State = kube.PendingState
+		} else {
+			// Pod failed. Update ProwJob, talk to crier.
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.FailureState
+			pj.Status.Description = "Job failed."
+			if err := c.report(pj); err != nil {
+				return fmt.Errorf("error reporting to crier: %v", err)
+			}
 		}
 	} else {
 		// Pod is running. Do nothing.

@@ -548,6 +548,30 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedNumPods:  1,
 		},
 		{
+			name: "evicted pod",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase:  kube.PodFailed,
+						Reason: kube.Evicted,
+					},
+				},
+			},
+			expectedComplete: false,
+			expectedState:    kube.PendingState,
+			expectedPodName:  "",
+			expectedNumPods:  1,
+		},
+		{
 			name: "running pod",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
