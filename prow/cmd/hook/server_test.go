@@ -43,6 +43,7 @@ func TestServeHTTPErrors(t *testing.T) {
 			Header: map[string]string{
 				"X-GitHub-Event":  "ping",
 				"X-Hub-Signature": hmac,
+				"content-type":    "application/json",
 			},
 			Body: body,
 			Code: http.StatusMethodNotAllowed,
@@ -52,6 +53,7 @@ func TestServeHTTPErrors(t *testing.T) {
 			Method: http.MethodPost,
 			Header: map[string]string{
 				"X-Hub-Signature": hmac,
+				"content-type":    "application/json",
 			},
 			Body: body,
 			Code: http.StatusBadRequest,
@@ -71,6 +73,7 @@ func TestServeHTTPErrors(t *testing.T) {
 			Header: map[string]string{
 				"X-GitHub-Event":  "ping",
 				"X-Hub-Signature": "this doesn't work",
+				"content-type":    "application/json",
 			},
 			Body: body,
 			Code: http.StatusForbidden,
@@ -81,6 +84,7 @@ func TestServeHTTPErrors(t *testing.T) {
 			Header: map[string]string{
 				"X-GitHub-Event":  "ping",
 				"X-Hub-Signature": hmac,
+				"content-type":    "application/json",
 			},
 			Body: body,
 			Code: http.StatusOK,
