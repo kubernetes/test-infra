@@ -239,7 +239,7 @@ function renderCluster(top, key, keyId, text, tests) {
     createElement('h2', null, [
       `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING `,
       createElement('a', {href: '#' + keyId}, keyId),
-      createElement('a', {href: 'https://github.com/search?type=Issues&q=' + keyId, target: '_blank', rel: 'noopener'}, 'github search')
+      createElement('a', {href: 'https://github.com/search?type=Issues&q=user:kubernetes%20' + keyId, target: '_blank', rel: 'noopener'}, 'github search')
     ]),
     createElement('pre', null, options.showNormalize ? key : text),
     createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
