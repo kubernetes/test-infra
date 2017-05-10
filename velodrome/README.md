@@ -120,7 +120,7 @@ New project deployments
 -----------------------
 
 - Create [secret for InfluxDB](grafana-stack/#first-time-only)
-- Deploy everything: `./config.py | kubectl apply -f -l project=${NEW_PROJECT_NAME}`
+- Deploy everything: `./config.py | kubectl apply -f - -l project=${NEW_PROJECT_NAME}`
 - Once the kubernetes service has its public IP, connect to the grafana instance, and add the
   default dashboard, star the dashboard, set-it as the default dashboard in the
   org preference.
