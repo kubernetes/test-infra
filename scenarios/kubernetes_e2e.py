@@ -94,6 +94,7 @@ class LocalMode(object):
     def __init__(self, workspace):
         self.workspace = workspace
         self.env = []
+        self.os_env = []
         self.env_files = []
         self.add_environment(
             'HOME=%s' % workspace,
@@ -105,15 +106,18 @@ class LocalMode(object):
         """Adds FOO=BAR to the list of environment overrides."""
         self.env.extend(parse_env(e) for e in envs)
 
-    def add_files(self, env_files):
-        """Reads all FOO=BAR lines from each path in env_files seq."""
-        for env_file in env_files:
-            with open(test_infra(env_file)) as fp:
-                for line in fp:
-                    line = line.rstrip()
-                    if not line or line.startswith('#'):
-                        continue
-                    self.env_files.append(parse_env(line))
+    def add_os_environment(self, *envs):
+        """Adds FOO=BAR to the list of os environment overrides."""
+        self.os_env.extend(parse_env(e) for e in envs)
+
+    def add_file(self, env_file):
+        """Reads all FOO=BAR lines from env_file."""
+        with open(env_file) as fp:
+            for line in fp:
+                line = line.rstrip()
+                if not line or line.startswith('#'):
+                    continue
+                self.env_files.append(parse_env(line))
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
@@ -172,6 +176,7 @@ class LocalMode(object):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
         env = {}
+        env.update(self.os_env)
         env.update(self.env_files)
         env.update(self.env)
         self.install_prerequisites()
@@ -234,16 +239,19 @@ class DockerMode(object):
             else:
                 self._add_env_var(env)
 
+    def add_os_environment(self, *envs):
+        """Adds os envs as FOO=BAR to the -e list for docker."""
+        self.add_environment(*envs)
+
     def _add_env_var(self, env):
         """Adds a single environment variable to the -e list for docker.
 
         Does not check against any blacklists."""
         self.cmd.extend(['-e', env])
 
-    def add_files(self, env_files):
-        """Adds each file to the --env-file list."""
-        for env_file in env_files:
-            self.cmd.extend(['--env-file', test_infra(env_file)])
+    def add_file(self, env_file):
+        """Adds the file to the --env-file list."""
+        self.cmd.extend(['--env-file', env_file])
 
     def add_k8s(self, k8s, *repos):
         """Add the specified k8s.io repos into container."""
@@ -325,8 +333,10 @@ def main(args):
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:
         raise ValueError(args.mode)
+
     if args.env_file:
-        mode.add_files(args.env_file)
+        for env_file in args.env_file:
+            mode.add_file(test_infra(env_file))
 
     if args.aws:
         # Enforce aws credential/keys exists
@@ -370,7 +380,7 @@ def main(args):
         mode.add_environment('E2E_OPT=%s' % opt)
 
     # TODO(fejta): delete this?
-    mode.add_environment(*(
+    mode.add_os_environment(*(
         '%s=%s' % (k, v) for (k, v) in os.environ.items()))
 
     mode.add_environment(
