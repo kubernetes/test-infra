@@ -271,8 +271,8 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-serial:
         job-name: ci-kubernetes-e2e-gci-gce-serial
-        jenkins-timeout: 420
-        timeout: 320
+        jenkins-timeout: 620
+        timeout: 520
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-reboot:
