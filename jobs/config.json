@@ -171,10 +171,11 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gce-alpha-features-release-1.4": {
+  "ci-kubernetes-e2e-gce-alpha-features-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features-release-1-4.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -677,10 +678,11 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gce-release-1.4": {
+  "ci-kubernetes-e2e-gce-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-release-1-4.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -736,10 +738,11 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gce-serial-release-1.4": {
+  "ci-kubernetes-e2e-gce-serial-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1-4.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -764,10 +767,11 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
-  "ci-kubernetes-e2e-gce-slow-release-1.4": {
+  "ci-kubernetes-e2e-gce-slow-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-slow-release-1.4.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-slow-release-1-4.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
