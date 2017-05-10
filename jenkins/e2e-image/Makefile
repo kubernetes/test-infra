@@ -18,8 +18,7 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 all: build
 
 kubetest:
-	go build -o kubetest ../../kubetest
-
+	GOOS=linux GOARCH=amd64 go build -o kubetest ../../kubetest
 
 build: kubetest
 	docker build -t $(IMG):$(TAG) .
