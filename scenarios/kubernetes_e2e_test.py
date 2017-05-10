@@ -129,6 +129,15 @@ class LocalTest(ScenarioTest):
                 called = True
         self.assertTrue(called)
 
+    def test_include_host_env(self):
+        """Ensure that host variables (such as GOPATH) are included."""
+        mode = kubernetes_e2e.LocalMode('/orig-workspace')
+        mode.add_environment(*('FOO=BAR', 'GOPATH=/go/path',
+                               'WORKSPACE=/new/workspace'))
+        self.assertIn(['FOO', 'BAR'], mode.env)
+        self.assertIn(['WORKSPACE', '/new/workspace'], mode.env)
+        self.assertIn(['GOPATH', '/go/path'], mode.env)
+
 class DockerTest(ScenarioTest):
     """Class for testing e2e scenario in docker mode."""
     def test_docker(self):
@@ -152,6 +161,16 @@ class DockerTest(ScenarioTest):
         data = json.loads(urllib.urlopen(url).read())
         self.assertNotIn('errors', data)
         self.assertIn('name', data)
+
+    def test_exclude_host_env(self):
+        """Ensure that host variables (such as GOPATH) are excluded."""
+        mode = kubernetes_e2e.DockerMode(
+            'fake-container', '/host-workspace', False, 'fake-tag', [])
+        mode.add_environment(*('FOO=BAR', 'GOPATH=/something/else',
+                               'WORKSPACE=/new/workspace'))
+        self.assertIn('FOO=BAR', mode.cmd)
+        self.assertIn('WORKSPACE=/workspace', mode.cmd)
+        self.assertNotIn('GOPATH=/something/else', mode.cmd)
 
 if __name__ == '__main__':
     unittest.main()
