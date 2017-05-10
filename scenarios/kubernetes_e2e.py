@@ -59,6 +59,9 @@ def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
+def parse_env(env):
+    """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
+    return env.split('=', 1)
 
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
@@ -72,14 +75,9 @@ class LocalMode(object):
             'PATH=%s' % os.getenv('PATH'),
         )
 
-    @staticmethod
-    def parse_env(env):
-        """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
-        return env.split('=', 1)
-
     def add_environment(self, *envs):
         """Adds FOO=BAR to the list of environment overrides."""
-        self.env.extend(self.parse_env(e) for e in envs)
+        self.env.extend(parse_env(e) for e in envs)
 
     def add_files(self, env_files):
         """Reads all FOO=BAR lines from each path in env_files seq."""
@@ -89,7 +87,7 @@ class LocalMode(object):
                     line = line.rstrip()
                     if not line or line.startswith('#'):
                         continue
-                    self.env_files.append(self.parse_env(line))
+                    self.env_files.append(parse_env(line))
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
@@ -186,14 +184,35 @@ class DockerMode(object):
 
         if sudo:
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self.add_environment(
-            'HOME=/workspace',
-            'WORKSPACE=/workspace')
+        self._add_env_var('HOME=/workspace')
+        self._add_env_var('WORKSPACE=/workspace')
 
     def add_environment(self, *envs):
-        """Adds FOO=BAR to the -e list for docker."""
+        """Adds FOO=BAR to the -e list for docker.
+
+        Host-specific environment variables are ignored."""
+        # TODO(krzyzacy) change this to a whitelist?
+        docker_env_ignore = [
+            'GOOGLE_APPLICATION_CREDENTIALS',
+            'GOPATH',
+            'GOROOT',
+            'HOME',
+            'PATH',
+            'PWD',
+            'WORKSPACE'
+        ]
         for env in envs:
-            self.cmd.extend(['-e', env])
+            key, _value = parse_env(env)
+            if key in docker_env_ignore:
+                print >>sys.stderr, 'Skipping environment variable %s' % env
+            else:
+                self._add_env_var(env)
+
+    def _add_env_var(self, env):
+        """Adds a single environment variable to the -e list for docker.
+
+        Does not check against any blacklists."""
+        self.cmd.extend(['-e', env])
 
     def add_files(self, env_files):
         """Adds each file to the --env-file list."""
@@ -337,22 +356,9 @@ def main(args):
             # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
         mode.add_environment('E2E_OPT=%s' % opt)
 
-    # env blacklist.
-    # TODO(krzyzacy) change this to a whitelist
-    docker_env_ignore = [
-      'GOOGLE_APPLICATION_CREDENTIALS',
-      'GOPATH',
-      'GOROOT',
-      'HOME',
-      'PATH',
-      'PWD',
-      'WORKSPACE'
-    ]
-
-    # TODO(fejta): delete this
+    # TODO(fejta): delete this?
     mode.add_environment(*(
-        '%s=%s' % (k, v) for (k, v) in os.environ.items()
-        if k not in docker_env_ignore))
+        '%s=%s' % (k, v) for (k, v) in os.environ.items()))
 
     mode.add_environment(
       # Boilerplate envs
