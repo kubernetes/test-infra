@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -71,31 +70,19 @@ func janitorClean(proj string) error {
 
 type boskosClient interface {
 	Acquire(rtype string, state string, dest string) (string, error)
-	UpdateOne(name string, state string) error
 	ReleaseOne(name string, dest string) error
 }
 
-func janitorUpdate(c boskosClient, proj string, stop chan bool, errChan chan error, wg *sync.WaitGroup) {
-	tickChan := time.NewTicker(time.Minute * 5).C
-	for {
-		select {
-		case <-stop:
-			wg.Done()
-			return
-		case <-tickChan:
-			if err := c.UpdateOne(proj, "cleaning"); err != nil {
-				errChan <- err
-			}
-		}
-	}
-}
-
 func janitor(c boskosClient, proj string, sem semaphore, errChan chan error) {
-	stop := make(chan bool)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	if err := sem.P(); err != nil {
+		errChan <- err
+		// put it back to dirty
 
-	go janitorUpdate(c, proj, stop, errChan, &wg)
+		if err := c.ReleaseOne(proj, "dirty"); err != nil {
+			errChan <- err
+		}
+		return
+	}
 
 	dest := "free"
 	if err := clean(proj); err != nil {
@@ -107,8 +94,6 @@ func janitor(c boskosClient, proj string, sem semaphore, errChan chan error) {
 		errChan <- err
 	}
 
-	stop <- true
-	wg.Wait()
 	sem.V()
 }
 
@@ -120,15 +105,6 @@ func update(c boskosClient, sem semaphore, errChan chan error) error {
 		} else if proj == "" {
 			break
 		} else {
-			if err := sem.P(); err != nil {
-				errChan <- err
-				// put it back to dirty
-
-				if err := c.ReleaseOne(proj, "dirty"); err != nil {
-					errChan <- err
-				}
-				break
-			}
 			go janitor(c, proj, sem, errChan)
 		}
 	}
@@ -139,7 +115,6 @@ CheckError:
 		select {
 		case err := <-errChan:
 			errstrings = append(errstrings, err.Error())
-			break CheckError
 		default:
 			break CheckError
 		}

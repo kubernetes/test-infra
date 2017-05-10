@@ -48,20 +48,6 @@ func (fb *fakeBoskos) Acquire(rtype string, state string, dest string) (string, 
 	return "", nil
 }
 
-func (fb *fakeBoskos) UpdateOne(name string, state string) error {
-	fb.lock.Lock()
-	defer fb.lock.Unlock()
-
-	for idx := range fb.resources {
-		r := &fb.resources[idx]
-		if r.Name == name {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("No resource %v", name)
-}
-
 func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 	fb.lock.Lock()
 	defer fb.lock.Unlock()

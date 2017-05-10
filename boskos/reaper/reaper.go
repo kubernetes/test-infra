@@ -35,14 +35,14 @@ func main() {
 
 func sync(c *client.Client) {
 	// kubetest busted
-	if owners, err := c.Reset("project", "busy", time.Hour*2, "dirty"); err != nil {
+	if owners, err := c.Reset("project", "busy", 2*time.Hour, "dirty"); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
 		logrus.Infof("Reset busy to dirty! Proj-owner: %v", owners)
 	}
 
 	// janitor busted
-	if owners, err := c.Reset("project", "cleaning", time.Hour*2, "dirty"); err != nil {
+	if owners, err := c.Reset("project", "cleaning", 2*time.Hour, "dirty"); err != nil {
 		logrus.WithError(err).Error("Reset cleaning failed!")
 	} else {
 		logrus.Infof("Reset cleaning to dirty! Proj-owner: %v", owners)
