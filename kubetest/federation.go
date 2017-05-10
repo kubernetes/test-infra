@@ -18,10 +18,18 @@ package main
 
 import (
 	"os/exec"
+	"strings"
 )
 
 func FedUp() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
+}
+
+func FederationTest(testArgs string) error {
+	if testArgs == "" {
+		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
+	}
+	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(testArgs)...))
 }
 
 func FedDown() error {

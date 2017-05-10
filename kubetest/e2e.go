@@ -149,9 +149,15 @@ func run(deploy deployer, o options) error {
 			if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
 				errs = appendError(errs, err)
 			} else {
-				errs = appendError(errs, xmlWrap("Test", func() error {
-					return Test(o.testArgs)
-				}))
+				if o.federation {
+					errs = appendError(errs, xmlWrap("FederationTest", func() error {
+						return FederationTest(o.testArgs)
+					}))
+				} else {
+					errs = appendError(errs, xmlWrap("Test", func() error {
+						return Test(o.testArgs)
+					}))
+				}
 			}
 		}
 	}
@@ -527,13 +533,5 @@ func SkewTest(args string, checkSkew bool) error {
 }
 
 func Test(testArgs string) error {
-	// TODO(fejta): add a --federated or something similar
-	if os.Getenv("FEDERATION") != "true" {
-		return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
-	}
-
-	if testArgs == "" {
-		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
-	}
-	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(testArgs)...))
+	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
 }
