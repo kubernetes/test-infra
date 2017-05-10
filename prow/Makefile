@@ -51,10 +51,10 @@ hook-image:
 	docker build -t "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)" cmd/hook
 	gcloud docker -- push "gcr.io/$(PROJECT)/hook:$(HOOK_VERSION)"
 
-hook-deployment:
+hook-deployment: get-cluster-credentials
 	kubectl apply -f cluster/hook_deployment.yaml
 
-hook-service:
+hook-service: get-cluster-credentials
 	kubectl create -f cluster/hook_service.yaml
 
 sinker-image:
@@ -62,7 +62,7 @@ sinker-image:
 	docker build -t "gcr.io/$(PROJECT)/sinker:$(SINKER_VERSION)" cmd/sinker
 	gcloud docker -- push "gcr.io/$(PROJECT)/sinker:$(SINKER_VERSION)"
 
-sinker-deployment:
+sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/sinker_deployment.yaml
 
 deck-image:
@@ -70,10 +70,10 @@ deck-image:
 	docker build -t "gcr.io/$(PROJECT)/deck:$(DECK_VERSION)" cmd/deck
 	gcloud docker -- push "gcr.io/$(PROJECT)/deck:$(DECK_VERSION)"
 
-deck-deployment:
+deck-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deck_deployment.yaml
 
-deck-service:
+deck-service: get-cluster-credentials
 	kubectl create -f cluster/deck_service.yaml
 
 splice-image:
@@ -81,7 +81,7 @@ splice-image:
 	docker build -t "gcr.io/$(PROJECT)/splice:$(SPLICE_VERSION)" cmd/splice
 	gcloud docker -- push "gcr.io/$(PROJECT)/splice:$(SPLICE_VERSION)"
 
-splice-deployment:
+splice-deployment: get-cluster-credentials
 	kubectl apply -f cluster/splice_deployment.yaml
 
 tot-image:
@@ -89,10 +89,10 @@ tot-image:
 	docker build -t "gcr.io/$(PROJECT)/tot:$(TOT_VERSION)" cmd/tot
 	gcloud docker -- push "gcr.io/$(PROJECT)/tot:$(TOT_VERSION)"
 
-tot-deployment:
+tot-deployment: get-cluster-credentials
 	kubectl apply -f cluster/tot_deployment.yaml
 
-tot-service:
+tot-service: get-cluster-credentials
 	kubectl apply -f cluster/tot_service.yaml
 
 crier-image:
@@ -100,10 +100,10 @@ crier-image:
 	docker build -t "gcr.io/$(PROJECT)/crier:$(CRIER_VERSION)" cmd/crier
 	gcloud docker -- push "gcr.io/$(PROJECT)/crier:$(CRIER_VERSION)"
 
-crier-deployment:
+crier-deployment: get-cluster-credentials
 	kubectl apply -f cluster/crier_deployment.yaml
 
-crier-service:
+crier-service: get-cluster-credentials
 	kubectl apply -f cluster/crier_service.yaml
 
 horologium-image:
@@ -111,7 +111,7 @@ horologium-image:
 	docker build -t "gcr.io/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" cmd/horologium
 	gcloud docker -- push "gcr.io/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)"
 
-horologium-deployment:
+horologium-deployment: get-cluster-credentials
 	kubectl apply -f cluster/horologium_deployment.yaml
 
 plank-image:
@@ -119,7 +119,7 @@ plank-image:
 	docker build -t "gcr.io/$(PROJECT)/plank:$(PLANK_VERSION)" cmd/plank
 	gcloud docker -- push "gcr.io/$(PROJECT)/plank:$(PLANK_VERSION)"
 
-plank-deployment:
+plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
 .PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment
