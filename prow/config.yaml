@@ -1564,6 +1564,7 @@ periodics:
       args:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
+      - "--root=$(WORKSPACE)/src/k8s.io"
       - "--timeout=60"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
