@@ -216,9 +216,12 @@ func complete(o *options) error {
 	if err := prepare(); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)
 	}
+
 	if err := prepareFederation(o); err != nil {
 		return fmt.Errorf("failed to prepare federation test environment: %v", err)
 	}
+	defer cleanupFederation(o)
+
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
@@ -262,7 +265,7 @@ func complete(o *options) error {
 	// Save the state if we upped a new cluster without downing it
 	// or we are turning up federated clusters without turning up
 	// the federation control plane.
-	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
+	if o.save != "" && ((!o.down && o.up) || recycleFederatedClusters(o)) {
 		if err := saveState(o.save); err != nil {
 			return err
 		}
@@ -303,11 +306,6 @@ func acquireKubernetes(o *options) error {
 					// Restore version and .kube/config from --up
 					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
 					o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
-				} else if o.federation && o.up && o.deployment == "none" {
-					// Only restore .kube/config from previous --up, use the regular
-					// extraction strategy to restore version.
-					log.Printf("Load kubeconfig from %s", o.save)
-					loadKubeconfig(o.save)
 				}
 			}
 			// New deployment, extract new version
@@ -516,27 +514,6 @@ func prepare() error {
 		if err := insertPath(p); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func prepareFederation(o *options) error {
-	if o.multipleFederations {
-		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
-		// specific environment variables. So this doesn't work
-		// when we move away from Jenkins.
-		execNum := os.Getenv("EXECUTOR_NUMBER")
-		if execNum == "" {
-			execNum = "0"
-		}
-		suffix := fmt.Sprintf("%s-%s", os.Getenv("NODE_NAME"), execNum)
-		federationName := fmt.Sprintf("e2e-f8n-%s", suffix)
-		federationSystemNamespace := fmt.Sprintf("f8n-system-%s", suffix)
-		err := os.Setenv("FEDERATION_NAME", federationName)
-		if err != nil {
-			return err
-		}
-		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
 	}
 	return nil
 }

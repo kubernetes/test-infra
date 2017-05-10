@@ -31,6 +31,10 @@ go_library(
         "util.go",
     ],
     tags = ["automanaged"],
+    deps = [
+        "//vendor:cloud.google.com/go/storage",
+        "//vendor:google.golang.org/api/googleapi",
+    ],
 )
 
 filegroup(
@@ -51,8 +55,10 @@ go_test(
     srcs = [
         "anywhere_test.go",
         "extract_test.go",
+        "federation_test.go",
         "util_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
+    deps = ["//vendor:cloud.google.com/go/storage"],
 )
