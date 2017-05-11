@@ -77,7 +77,7 @@ func main() {
 		}
 		githubClient = github.NewFakeClient(*githubBotName)
 		githubClient.Logger = logrus.StandardLogger()
-		githubClient.SetTrustedOrgs(trustedOrgs)
+		githubClient.SetTrustedOrgs(*trustedOrgs)
 
 		kubeClient = kube.NewFakeClient()
 		kubeClient.Logger = logrus.StandardLogger()
@@ -109,7 +109,7 @@ func main() {
 		} else {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)
 		}
-		githubClient.SetTrustedOrgs(trustedOrgs)
+		githubClient.SetTrustedOrgs(*trustedOrgs)
 		
 		kubeClient, err = kube.NewClientInCluster(kube.ProwNamespace)
 		if err != nil {
