@@ -91,6 +91,8 @@ presubmits:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
+        - "--timeout=75"
+        - "--json"
         - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -251,6 +253,8 @@ presubmits:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
+        - "--timeout=75"
+        - "--json"
         - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS

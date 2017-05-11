@@ -63,6 +63,32 @@ def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
     return env.split('=', 1)
 
+def kubeadm_version(mode):
+    """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
+    version = ''
+    if mode in ['ci', 'periodic']:
+        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
+        # current working directory at the repository root. Grab the SCM_REVISION so we
+        # can use the .debs built during the bazel-build job that should have already
+        # succeeded.
+        status = re.search(
+            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
+            check_output('hack/print-workspace-status.sh')
+        )
+        if not status:
+            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
+        version = status.group(1)
+
+    elif mode == 'pull':
+        version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
+
+    else:
+        raise ValueError("Unknown kubeadm mode given: %s" % mode)
+
+    # The path given here should match jobs/ci-kubernetes-bazel-build.sh
+    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+
+
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
     def __init__(self, workspace):
@@ -335,25 +361,12 @@ def main(args):
     if args.kubeadm:
         # Not from Jenkins
         cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
-
-        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
-        # current working directory at the repository root. Grab the SCM_REVISION so we
-        # can use the .debs built during the bazel-build job that should have already
-        # succeeded.
-        status = re.search(
-            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
-            check_output('hack/print-workspace-status.sh')
-        )
-        if not status:
-            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
-
+        version = kubeadm_version(args.kubeadm)
         opt = '--deployment kubernetes-anywhere' \
             ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
             ' --kubernetes-anywhere-phase2-provider kubeadm' \
             ' --kubernetes-anywhere-cluster %s' \
-            ' --kubernetes-anywhere-kubeadm-version' \
-            ' gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
-            # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
+            ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
         mode.add_environment('E2E_OPT=%s' % opt)
 
     # TODO(fejta): delete this?
@@ -441,7 +454,7 @@ def create_parser():
     parser.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     parser.add_argument(
-        '--kubeadm', action='store_true', help='If the test is a kubeadm job')
+        '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(

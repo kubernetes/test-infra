@@ -1692,15 +1692,20 @@ class JobTest(unittest.TestCase):
         if 'periodics' not in doc:
             self.fail('No periodics in prow config!')
 
+        if 'presubmits' not in doc:
+            self.fail('No presubmits in prow config!')
+
         for item in doc.get('periodics'):
             self.AddProwJob(item)
 
         if 'postsubmits' not in doc:
             self.fail('No postsubmits in prow config!')
 
+        presubmits = doc.get('presubmits')
         postsubmits = doc.get('postsubmits')
-        for repo in postsubmits:
-            for job in postsubmits.get(repo):
+
+        for repo, joblist in presubmits.items() + postsubmits.items():
+            for job in joblist:
                 self.AddProwJob(job)
 
     def LoadBootstrapYaml(self, path):
@@ -2002,6 +2007,10 @@ class JobTest(unittest.TestCase):
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
+                        elif 'kubeadm' in job:
+                            # kubeadm-based jobs use out-of-band .deb artifacts,
+                            # not the --stage flag.
+                            continue
                         else:
                             stage = 'gs://kubernetes-release-pull/ci/%s' % job
                             suffix = False
