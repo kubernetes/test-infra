@@ -1568,7 +1568,7 @@ periodics:
       args:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
-      - "--root=${GOPATH}/src"
+      - "--root=/go/src"
       - "--timeout=60"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
