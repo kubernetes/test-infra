@@ -498,9 +498,8 @@ presubmits:
     trigger: "@k8s-bot (pull-test-infra-bazel |bazel )?test this"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
-        - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
@@ -815,9 +814,8 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.11
+      - image: gcr.io/k8s-testimages/bazelbuild:0.12
         args:
-        - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
@@ -888,9 +886,8 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.11
+    - image: gcr.io/k8s-testimages/bazelbuild:0.12
       args:
-      - "--branch=master"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
