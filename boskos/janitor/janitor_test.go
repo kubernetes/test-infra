@@ -96,15 +96,15 @@ func TestDrainAll(t *testing.T) {
 		},
 	}
 	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexpect error from first update: %v", err)
+		t.Fatalf("Unexpect error from update: %v", err)
 	}
 
 	// Make sure all clean route finishes
 	fb.wg.Wait()
 
-	// check error from previous executions
-	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexpect error from second update: %v", err)
+	// check error from janitor routines
+	if errs := checkErr(errors); len(errs) != 0 {
+		t.Fatalf("Unexpect error from janitor: %v", errs)
 	}
 
 	for _, r := range fb.resources {
@@ -144,14 +144,17 @@ func TestDrainTwice(t *testing.T) {
 			},
 		},
 	}
-	if err := update(fb, sem, errors); err == nil {
-		t.Fatal("Expect error, got nil")
-	} else if err.Error() != "channel is full" {
-		t.Fatalf("Unexpect error from first update: %v", err)
+
+	if err := update(fb, sem, errors); err != nil {
+		t.Fatalf("Unexped error from first update: %v", err)
 	}
 
 	// Make sure first two clean route finishes
 	fb.wg.Wait()
+
+	if errs := checkErr(errors); len(errs) != 1 {
+		t.Fatalf("Expect 1 error from janitor, got errors: %v", errs)
+	}
 
 	// check error from previous executions
 	if err := update(fb, sem, errors); err != nil {
@@ -161,9 +164,8 @@ func TestDrainTwice(t *testing.T) {
 	// Make sure the third clean route finishes
 	fb.wg.Wait()
 
-	// check error from previous executions
-	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexpect error from third update: %v", err)
+	if errs := checkErr(errors); len(errs) != 0 {
+		t.Fatalf("Expect 0 error from janitor, got errors: %v", errs)
 	}
 
 	for _, r := range fb.resources {

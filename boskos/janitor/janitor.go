@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -57,7 +56,11 @@ func main() {
 	errChan := make(chan error)
 	for range time.Tick(time.Minute * 10) {
 		if err := update(boskos, sem, errChan); err != nil {
-			logrus.WithError(err).Error("Update has error!")
+			logrus.WithError(err).Error("Update error.")
+		}
+
+		for _, err := range checkErr(errChan) {
+			logrus.WithError(err).Error("Janitor error.")
 		}
 	}
 }
@@ -73,6 +76,7 @@ type boskosClient interface {
 	ReleaseOne(name string, dest string) error
 }
 
+// async janitor goroutine
 func janitor(c boskosClient, proj string, sem semaphore, errChan chan error) {
 	if err := sem.P(); err != nil {
 		errChan <- err
@@ -97,11 +101,23 @@ func janitor(c boskosClient, proj string, sem semaphore, errChan chan error) {
 	sem.V()
 }
 
+func checkErr(errChan chan error) []error {
+	var errs []error
+	for {
+		select {
+		case err := <-errChan:
+			errs = append(errs, err)
+		default:
+			return errs
+		}
+	}
+}
+
 func update(c boskosClient, sem semaphore, errChan chan error) error {
 	// Try to acquire all dirty projects, until none are available.
 	for {
 		if proj, err := c.Acquire("project", "dirty", "cleaning"); err != nil {
-			errChan <- err
+			return err
 		} else if proj == "" {
 			break
 		} else {
@@ -109,20 +125,5 @@ func update(c boskosClient, sem semaphore, errChan chan error) error {
 		}
 	}
 
-	var errstrings []string
-CheckError:
-	for {
-		select {
-		case err := <-errChan:
-			errstrings = append(errstrings, err.Error())
-		default:
-			break CheckError
-		}
-	}
-
-	if len(errstrings) == 0 {
-		return nil
-	}
-
-	return fmt.Errorf(strings.Join(errstrings, "\n"))
+	return nil
 }
