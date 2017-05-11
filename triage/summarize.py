@@ -44,6 +44,7 @@ flakeReasonOrdinalRE = re.compile(
     r'|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?' # IPs + optional port
     r'|[0-9a-fA-F]{8}-\S{4}-\S{4}-\S{4}-\S{12}(-\d+)?' # UUIDs + trailing digits
     r'|[0-9a-f]{12,32}' # hex garbage
+    r'|(?<=minion-group-|default-pool-)[-0-9a-z]{4,}'  # node names
 )
 
 
@@ -188,10 +189,7 @@ def find_match(fnorm, clusters):
         if limit <= 1 and other != fnorm:  # no chance
             continue
 
-        if len(fnorm) < 1000 and len(other) < 1000:
-            dist = editdist(fnorm, other, limit)
-        else:
-            dist = ngram_dist
+        dist = editdist(fnorm, other, limit)
 
         if dist < limit:
             return other
@@ -248,9 +246,20 @@ def cluster_global(clustered, previous_clustered):
 
     if previous_clustered:
         # seed clusters using output from the previous run
+        n = 0
         for cluster in previous_clustered:
+            key = cluster['key']
+            if key != normalize(key):
+                print 'WTF'
+                print key
+                print normalize(key)
+                n += 1
+                continue
             clusters[cluster['key']] = {}
         print 'Seeding with %d previous clusters' % len(clusters)
+        if n:
+            print '!!! %d clusters lost from different normalization! !!!' % n
+
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(),
@@ -290,11 +299,53 @@ def tests_group_by_job(tests, builds):
                   key=lambda (k, v): (-len(v), k))
 
 
+SPAN_RE = re.compile(r'\w+|\W+')
+
+def common_spans(xs):
+    """
+    Finds something similar to the longest common subsequence of xs, but much faster.
+
+    Returns a list of [matchlen_1, mismatchlen_2, matchlen_2, mismatchlen_2, ...], representing
+    sequences of the first element of the list that are present in all members.
+    """
+    common = None
+    for x in xs:
+        x_split = SPAN_RE.findall(x)
+        if common is None:  # first iteration
+            common = set(x_split)
+        else:
+            common.intersection_update(x_split)
+
+    spans = []
+    match = True
+    span_len = 0
+    for x in SPAN_RE.findall(xs[0]):
+        if x in common:
+            if not match:
+                match = True
+                spans.append(span_len)
+                span_len = 0
+            span_len += len(x)
+        else:
+            if match:
+                match = False
+                spans.append(span_len)
+                span_len = 0
+            span_len += len(x)
+
+    if span_len:
+        spans.append(span_len)
+
+    return spans
+
+
 def clusters_to_display(clustered, builds):
     """Transpose and sort the output of cluster_global."""
+
     return [{
         "key": key,
         "id": key_id,
+        "spans": common_spans([f['failure_text'] for _, fs in clusters for f in fs]),
         "text": clusters[0][1][0]['failure_text'],
         "tests": [{
             "name": test_name,
@@ -304,7 +355,7 @@ def clusters_to_display(clustered, builds):
                   for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
                  ]
         }
-            for key, key_id, clusters in clustered
+            for key, key_id, clusters in clustered if sum(len(x[1]) for x in clusters) > 1
            ]
 
 

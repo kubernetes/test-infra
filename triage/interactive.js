@@ -104,7 +104,7 @@ function renderSubset(start, count) {
   var shown = 0;
   for (let c of clustered.data) {
     if (n++ < start) continue;
-    shown += renderCluster(top, c.key, c.id, c.text, c.tests);
+    shown += renderCluster(top, c.key, c.id, c.text, c.tests, c.spans);
     lastClusterRendered = n;
     if (shown >= count) break;
   }

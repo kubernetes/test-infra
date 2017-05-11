@@ -59,6 +59,14 @@ class StringsTest(unittest.TestCase):
     def test_ngram_editdist(self):
         self.assertEqual(summarize.ngram_editdist('example text', 'exampl text'), 1)
 
+    def test_common_spans(self):
+        for a, b, expected in [
+                ('an exact match', 'an exact match', [14]),
+                ('some example string', 'some other string', [5, 7, 7]),
+                ('a problem with a common set', 'a common set', [2, 7, 1, 4, 13]),
+        ]:
+            self.assertEqual(summarize.common_spans([a, b]), expected)
+
 
 class ClusterTest(unittest.TestCase):
     def test_cluster_test(self):
@@ -200,6 +208,7 @@ class IntegrationTest(unittest.TestCase):
               'tests': [{'jobs': [{'builds': [4, 3, 2, 1],
                                    'name': 'some-job'}],
                          'name': 'example test'}],
+              'spans': [29],
               'text': 'some awful stack trace exit 1'},
              {'id': random_hash_2,
               'key': 'some other error message',
@@ -208,6 +217,7 @@ class IntegrationTest(unittest.TestCase):
                          'name': 'unrelated test'},
                         {'jobs': [{'builds': [4], 'name': 'some-job'}],
                          'name': 'example test'}],
+              'spans': [24],
               'text': 'some other error message'}]
         )
 
