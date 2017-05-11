@@ -16,15 +16,31 @@
 
 """Tests for bigquery.py"""
 
-import os
 import argparse
-import unittest
-import tempfile
+import glob
+import os
 import shutil
+import sys
+import tempfile
+import unittest
+
+import yaml
+
 import bigquery
 
 class TestBigquery(unittest.TestCase):
     """Tests the bigquery scenario."""
+
+    def test_configs(self):
+        """Test that the yaml config files in test-infra/metrics/ are valid metric config files."""
+        for path in glob.glob('metrics/*.yaml'):
+            with open(path) as config_file:
+                config = yaml.safe_load(config_file)
+                self.assertTrue(config)
+                self.assertTrue(config['metric'])
+                self.assertTrue(config['query'])
+                self.assertTrue(config['jqfilter'])
+                bigquery.validate_metric_name(config['metric'].strip())
 
     def test_jq(self):
         """Test that the do_jq function can execute a jq filter properly."""
@@ -43,7 +59,7 @@ class TestBigquery(unittest.TestCase):
     def test_validate_metric_name(self):
         """Test the the validate_metric_name function rejects invalid metric names."""
         tests = ['invalid#metric', 'invalid/metric', 'in\\valid', 'invalid?yes', '*invalid',
-                 '[metric]', 'metric\n', 'met\ric']
+                 '[metric]', 'metric\n', 'met\ric', 'metric& invalid']
         for test in tests:
             self.assertRaises(ValueError, bigquery.validate_metric_name, test)
 
@@ -60,11 +76,16 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument('--jq',
                         required=True,
-                        type=str,
                         help='The path to the "jq" command.')
-    ARGS = PARSER.parse_args()
+    ARGS, _ = PARSER.parse_known_args()
 
-    RESULTS = unittest.TextTestRunner().run(
-        unittest.TestLoader().loadTestsFromTestCase(TestBigquery))
-    if len(RESULTS.errors) > 0:
-        raise ValueError(RESULTS.errors)
+    # Remove the --jq flag and its value so that unittest.main can parse the remaining args without
+    # complaining about an unknown flag.
+    for i in xrange(len(sys.argv)):
+        if sys.argv[i].startswith('--jq'):
+            arg = sys.argv.pop(i)
+            if '=' not in arg:
+                del sys.argv[i]
+            break
+
+    unittest.main()

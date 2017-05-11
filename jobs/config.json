@@ -2654,12 +2654,6 @@
     "scenario": "kubernetes_janitor"
   }, 
   "metrics-bigquery": {
-    "args": [
-      "--config=test-infra/metrics/flakes-config.yaml", 
-      "--config=test-infra/metrics/failures-config.yaml", 
-      "--config=test-infra/metrics/job-flakes-config.yaml", 
-      "--config=test-infra/metrics/weekly-consistency-config.yaml"
-    ], 
     "scenario": "bigquery"
   }, 
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {

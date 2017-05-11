@@ -33,5 +33,8 @@ py_test(
         "bigquery_test.py",
     ],
     args = ["--jq=$(location @jq//file)"],
-    data = ["@jq//file"],
+    data = [
+        "//metrics:configs",
+        "@jq//file",
+    ],
 )
