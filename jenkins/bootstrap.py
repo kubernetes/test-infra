@@ -225,6 +225,7 @@ def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
         except OSError:
             pass
         call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
+        call(['rm', '-f', '%s/index.lock' % cache_dir])
     else:
         call([git, 'init', repo])
     os.chdir(repo)
