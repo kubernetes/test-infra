@@ -58,8 +58,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
-- name: ci-kubernetes-node-memcg-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-memcg-serial
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: ci-kubernetes-build-1.4
@@ -1332,8 +1330,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
-  - name: kubelet-memcg-serial-gce-e2e
-    test_group_name: ci-kubernetes-node-memcg-serial
   - name: kubelet-flaky-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-flaky
   - name: kubelet-conformance-gce-e2e

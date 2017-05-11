@@ -133,12 +133,6 @@
         job-name: ci-kubernetes-node-kubelet-serial
         repo-name: k8s.io/kubernetes
         timeout: 240
-    - kubernetes-node-memcg-serial: # dashpole
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-memcg-serial
-        repo-name: k8s.io/kubernetes
-        timeout: 60
     - kubernetes-node-kubelet-benchmark:  # zhoufang
         branch: master
         frequency: 'H H/2 * * *'

@@ -2367,12 +2367,6 @@
     ], 
     "scenario": "kubernetes_kubelet"
   }, 
-  "ci-kubernetes-node-memcg-serial": {
-    "args": [
-      "--properties=test/e2e_node/jenkins/jenkins-memcg-serial.properties"
-    ], 
-    "scenario": "kubernetes_kubelet"
-  }, 
   "ci-kubernetes-pull-gce-federation-deploy": {
     "args": [
       "--env-file=platforms/gce.env", 
