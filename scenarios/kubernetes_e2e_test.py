@@ -23,6 +23,7 @@ import json
 import re
 import shutil
 import string
+import tempfile
 import urllib
 import unittest
 
@@ -129,14 +130,28 @@ class LocalTest(ScenarioTest):
                 called = True
         self.assertTrue(called)
 
-    def test_include_host_env(self):
-        """Ensure that host variables (such as GOPATH) are included."""
+    def test_local_env(self):
+        """
+            Ensure that host variables (such as GOPATH) are included,
+            and added envs/env files overwrite os environment.
+        """
         mode = kubernetes_e2e.LocalMode('/orig-workspace')
         mode.add_environment(*('FOO=BAR', 'GOPATH=/go/path',
                                'WORKSPACE=/new/workspace'))
-        self.assertIn(['FOO', 'BAR'], mode.env)
-        self.assertIn(['WORKSPACE', '/new/workspace'], mode.env)
-        self.assertIn(['GOPATH', '/go/path'], mode.env)
+        mode.add_os_environment(*('USER=jenkins', 'FOO=BAZ', 'GOOS=linux'))
+        with tempfile.NamedTemporaryFile() as temp:
+            temp.write('USER=prow')
+            temp.flush()
+            mode.add_file(temp.name)
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            mode.start([])
+        self.assertIn(('FOO', 'BAR'), self.envs.viewitems())
+        self.assertIn(('WORKSPACE', '/new/workspace'), self.envs.viewitems())
+        self.assertIn(('GOPATH', '/go/path'), self.envs.viewitems())
+        self.assertIn(('USER', 'prow'), self.envs.viewitems())
+        self.assertIn(('GOOS', 'linux'), self.envs.viewitems())
+        self.assertNotIn(('USER', 'jenkins'), self.envs.viewitems())
+        self.assertNotIn(('FOO', 'BAZ'), self.envs.viewitems())
 
 class DockerTest(ScenarioTest):
     """Class for testing e2e scenario in docker mode."""
@@ -162,15 +177,20 @@ class DockerTest(ScenarioTest):
         self.assertNotIn('errors', data)
         self.assertIn('name', data)
 
-    def test_exclude_host_env(self):
-        """Ensure that host variables (such as GOPATH) are excluded."""
+    def test_docker_env(self):
+        """
+            Ensure that host variables (such as GOPATH) are excluded,
+            and OS envs are included.
+        """
         mode = kubernetes_e2e.DockerMode(
             'fake-container', '/host-workspace', False, 'fake-tag', [])
         mode.add_environment(*('FOO=BAR', 'GOPATH=/something/else',
                                'WORKSPACE=/new/workspace'))
+        mode.add_os_environment('USER=jenkins')
         self.assertIn('FOO=BAR', mode.cmd)
         self.assertIn('WORKSPACE=/workspace', mode.cmd)
         self.assertNotIn('GOPATH=/something/else', mode.cmd)
+        self.assertIn('USER=jenkins', mode.cmd)
 
 if __name__ == '__main__':
     unittest.main()
