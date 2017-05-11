@@ -202,7 +202,7 @@ class Clusters {
       }
       if (testsOut.length > 0) {
         testsOut = sortByKey(testsOut, t => [-sum(t.jobs, j => j.builds.length)]);
-        out.push({key: cluster.key, id: cluster.id, text: cluster.text, tests: testsOut});
+        out.push(Object.assign({}, cluster, {tests: testsOut}));
       }
     }
 

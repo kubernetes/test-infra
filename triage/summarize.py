@@ -287,11 +287,53 @@ def tests_group_by_job(tests, builds):
                   key=lambda (k, v): (-len(v), k))
 
 
+SPAN_RE = re.compile(r'\w+|\W+')
+
+def common_spans(xs):
+    """
+    Finds something similar to the longest common subsequence of xs, but much faster.
+
+    Returns a list of [matchlen_1, mismatchlen_2, matchlen_2, mismatchlen_2, ...], representing
+    sequences of the first element of the list that are present in all members.
+    """
+    common = None
+    for x in xs:
+        x_split = SPAN_RE.findall(x)
+        if common is None:  # first iteration
+            common = set(x_split)
+        else:
+            common.intersection_update(x_split)
+
+    spans = []
+    match = True
+    span_len = 0
+    for x in SPAN_RE.findall(xs[0]):
+        if x in common:
+            if not match:
+                match = True
+                spans.append(span_len)
+                span_len = 0
+            span_len += len(x)
+        else:
+            if match:
+                match = False
+                spans.append(span_len)
+                span_len = 0
+            span_len += len(x)
+
+    if span_len:
+        spans.append(span_len)
+
+    return spans
+
+
 def clusters_to_display(clustered, builds):
     """Transpose and sort the output of cluster_global."""
+
     return [{
         "key": key,
         "id": key_id,
+        "spans": common_spans([f['failure_text'] for _, fs in clusters for f in fs]),
         "text": clusters[0][1][0]['failure_text'],
         "tests": [{
             "name": test_name,

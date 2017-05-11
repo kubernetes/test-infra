@@ -13,6 +13,10 @@ pre {
   max-height: 800px;
 }
 
+pre span.mm {
+  color: grey;
+}
+
 h2 {
   position: sticky;
   top: 0px;
