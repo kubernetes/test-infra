@@ -6,3 +6,4 @@
 /bazel-*
 /_artifacts
 token
+.DS_Store
