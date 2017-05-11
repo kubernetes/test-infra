@@ -686,3 +686,7 @@ func (c *Client) IsTrustedMember(user string) (bool, error) {
 	}
 	return false, nil
 }
+
+func (c *Client) GetTrustedOrgs() []string {
+	return c.trustedOrgs
+}

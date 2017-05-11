@@ -44,7 +44,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			return buildAll(c, pr.PullRequest)
 		} else {
 			c.Logger.Info("Asking PR author to join the org.")
-			if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
+			if err := askToJoin(c.GitHubClient, pr.PullRequest, c.GitHubClient.GetTrustedOrgs()); err != nil {
 				return fmt.Errorf("could not ask to join: %s", err)
 			}
 		}
@@ -74,7 +74,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func askToJoin(ghc githubClient, pr github.PullRequest) error {
+func askToJoin(ghc githubClient, pr github.PullRequest, trustedOrgs []string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`@k8s-bot ok to test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
@@ -84,7 +84,7 @@ I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that 
 %s
 </details>
 `
-	comment := fmt.Sprintf(commentTemplate, pr.User.Login, strings.Join(ghc.trustedOrgs, ","), strings.Join(ghc.trustedOrgs, ","), plugins.AboutThisBot)
+	comment := fmt.Sprintf(commentTemplate, pr.User.Login, strings.Join(trustedOrgs, ","), strings.Join(trustedOrgs, ","), plugins.AboutThisBot)
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name

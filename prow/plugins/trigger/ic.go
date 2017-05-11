@@ -76,7 +76,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member", strings.Join(c.GitHubClient.trustedOrgs, ","), strings.Join(c.GitHubClient.trustedOrgs, ","))
+			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member", strings.Join(c.GitHubClient.GetTrustedOrgs(), ","), strings.Join(c.GitHubClient.GetTrustedOrgs(), ","))
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}
