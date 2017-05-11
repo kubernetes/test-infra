@@ -48,8 +48,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
 - name: ci-cadvisor-node-kubelet
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
-- name: ci-heapster-canarypush
-  gcs_prefix: kubernetes-jenkins/logs/ci-heapster-canarypush
 - name: ci-test-infra-test-history
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-test-history
 - name: ci-kubernetes-node-kubelet-benchmark
@@ -1322,8 +1320,6 @@ dashboards:
     test_group_name: ci-cadvisor-canarypush
   - name: cadvisor-kubelet
     test_group_name: ci-cadvisor-node-kubelet
-  - name: heapster-push
-    test_group_name: ci-heapster-canarypush
   - name: kubelet-benchmark-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-benchmark
   - name: kubelet
