@@ -204,4 +204,22 @@ func TestConfig(t *testing.T) {
 	for _, testgridJob := range sqJobPool {
 		t.Errorf("Err : testgrid job %v not found in SQ config", testgridJob)
 	}
+
+	sqNonBlockingJobs := strings.Split(sqData.Data["submit-queue.nonblocking-jenkins-jobs"], ",")
+	for _, sqJob := range sqNonBlockingJobs {
+		if sqJob == "\"\"" { // ignore empty list of jobs
+			continue
+		}
+		found := false
+		for _, testgroup := range config.TestGroups {
+			if testgroup.Name == sqJob {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			t.Errorf("Err : %v not found in testgrid config", sqJob)
+		}
+	}
 }

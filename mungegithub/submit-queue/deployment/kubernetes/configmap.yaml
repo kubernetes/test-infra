@@ -36,7 +36,7 @@ data:
     ci-kubernetes-bazel-test,\
     ci-kubernetes-build,\
     ci-kubernetes-cross-build,\
-    ci-kubernetes-e2e-garbage-gci,\
+    ci-kubernetes-e2e-gci-gce-garbage,\
     ci-kubernetes-e2e-gce-etcd3,\
     ci-kubernetes-e2e-gce-examples,\
     ci-kubernetes-e2e-gce-federation,\
@@ -51,7 +51,6 @@ data:
     ci-kubernetes-e2e-gci-gce-etcd3,\
     ci-kubernetes-e2e-gci-gce-examples,\
     ci-kubernetes-e2e-gci-gce-ingress,\
-    ci-kubernetes-e2e-gci-gce-kubenet,\
     ci-kubernetes-e2e-gci-gce-proto,\
     ci-kubernetes-e2e-gci-gce-reboot,\
     ci-kubernetes-e2e-gci-gce-scalability,\
