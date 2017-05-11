@@ -188,10 +188,7 @@ def find_match(fnorm, clusters):
         if limit <= 1 and other != fnorm:  # no chance
             continue
 
-        if len(fnorm) < 1000 and len(other) < 1000:
-            dist = editdist(fnorm, other, limit)
-        else:
-            dist = ngram_dist
+        dist = editdist(fnorm, other, limit)
 
         if dist < limit:
             return other
@@ -304,7 +301,7 @@ def clusters_to_display(clustered, builds):
                   for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
                  ]
         }
-            for key, key_id, clusters in clustered
+            for key, key_id, clusters in clustered if sum(len(x[1]) for x in clusters) > 1
            ]
 
 
