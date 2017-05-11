@@ -44,6 +44,7 @@ flakeReasonOrdinalRE = re.compile(
     r'|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?' # IPs + optional port
     r'|[0-9a-fA-F]{8}-\S{4}-\S{4}-\S{4}-\S{12}(-\d+)?' # UUIDs + trailing digits
     r'|[0-9a-f]{12,32}' # hex garbage
+    r'|(?<=minion-group-|default-pool-)[-0-9a-z]{4,}'  # node names
 )
 
 
@@ -245,9 +246,20 @@ def cluster_global(clustered, previous_clustered):
 
     if previous_clustered:
         # seed clusters using output from the previous run
+        n = 0
         for cluster in previous_clustered:
+            key = cluster['key']
+            if key != normalize(key):
+                print 'WTF'
+                print key
+                print normalize(key)
+                n += 1
+                continue
             clusters[cluster['key']] = {}
         print 'Seeding with %d previous clusters' % len(clusters)
+        if n:
+            print '!!! %d clusters lost from different normalization! !!!' % n
+
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(),
