@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -32,6 +33,7 @@ class TestBigquery(unittest.TestCase):
 
     def test_configs(self):
         """All yaml files in metrics are valid."""
+        config_metrics = set()
         for path in bigquery.all_configs(search='**'):
             name = os.path.basename(path)
             if name in ['BUILD', 'README.md']:
@@ -46,10 +48,40 @@ class TestBigquery(unittest.TestCase):
                 self.assertIn('metric', config)
                 self.assertIn('query', config)
                 self.assertIn('jqfilter', config)
-                bigquery.validate_metric_name(config['metric'].strip())
+                metric = config['metric'].strip()
+                bigquery.validate_metric_name(metric)
+                config_metrics.add(metric)
         configs = bigquery.all_configs()
         self.assertTrue(all(p.endswith('.yaml') for p in configs), configs)
 
+        # Check that the '**' search finds the same number of yaml
+        # files as the default search.
+        self.assertEqual(len(configs), len(config_metrics))
+
+        # Check that config files correlate with metrics listed in
+        # test-infra/metrics/README.md.
+        with open('metrics/README.md') as readme_file:
+            readme = readme_file.read()
+
+        readme_metrics = set(re.findall(
+            r'\(http://storage\.googleapis\.com/k8s-metrics/([\w-]+)-latest\.json\)',
+            readme,
+        ))
+        missing = config_metrics - readme_metrics
+        if missing:
+            self.fail(
+                'test-infra/metrics/README.md is missing entries for metrics: %s.'
+                % missing,
+            )
+        extra = readme_metrics - config_metrics
+        if extra:
+            self.fail(
+                'test-infra/metrics/README.md includes metrics that are missing config files: %s.'
+                % extra,
+            )
+
+        # Check that all configs are linked in readme.
+        self.assertTrue(all(os.path.basename(p) in readme for p in configs))
 
     def test_jq(self):
         """do_jq executes a jq filter properly."""

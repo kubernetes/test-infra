@@ -32,8 +32,8 @@ k8s-metrics bucket and named with the format 'METRICNAME-latest.json'.
 
 To add a new metric, create a PR that adds a new yaml config file
 specifying the metric name, the bigquery query to execute, and a
-jq filter to filter the data for the `METRICNAME-latest.json`
-file. Find the new metrics on GCS 24 hours after merging.
+jq filter to filter the data for the daily and latest files. Find
+the new metric on GCS 24 hours after merging.
 
 ## Consistency
 
