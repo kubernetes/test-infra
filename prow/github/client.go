@@ -36,12 +36,13 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
-	client  *http.Client
-	botName string
-	token   string
-	base    string
-	dry     bool
-	fake    bool
+	client      *http.Client
+	botName     string
+	token       string
+	base        string
+	dry         bool
+	fake        bool
+	trustedOrgs []string
 }
 
 const (
@@ -650,4 +651,38 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 		exitCodes: []int{200},
 	}, &issSearchResult)
 	return issSearchResult.Issues, err
+}
+
+// set the trusted orgs
+func (c *Client) SetTrustedOrgs(trustedOrgsList string) {
+	c.trustedOrgs = strings.Split(trustedOrgsList, ",")
+}
+
+// return true if an org is in the trusted list
+func (c *Client) IsTrustedOrg(org string) bool {
+
+	if c.trustedOrgs == nil {
+		return false
+	}
+	for _, trustedOrg := range c.trustedOrgs {
+		if trustedOrg == org {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Client) IsTrustedMember(user string) (bool, error) {
+
+	for _, trustedOrg := range c.trustedOrgs {
+		trusted, err := c.IsMember(trustedOrg, user)
+		if err != nil {
+			return trusted, err
+		}
+		if trusted {
+			return true, nil
+		}
+
+	}
+	return false, nil
 }
