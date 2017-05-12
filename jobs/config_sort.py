@@ -31,6 +31,7 @@ def sort():
         configs = json.loads(fp.read())
         fp.seek(0)
         fp.write(json.dumps(configs, sort_keys=True, indent=2))
+        fp.write('\n')
         fp.truncate()
 
 if __name__ == '__main__':
