@@ -764,6 +764,12 @@ test_groups:
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-ubuntu-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke
+- name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-alpha-features
+- name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-autoscaling
+- name: ci-kubernetes-e2e-ubuntu-gke-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-flaky
 - name: ci-kubernetes-e2e-ubuntu-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-ingress
 - name: ci-kubernetes-e2e-ubuntu-gke-reboot
@@ -772,8 +778,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-slow
+- name: ci-kubernetes-e2e-ubuntu-gke-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-updown
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
@@ -782,6 +796,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -1250,6 +1266,12 @@ dashboards:
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
   - name: ubuntu-gke
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
+  - name: ubuntu-gke-alpha-features
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
+  - name: ubuntu-gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
+  - name: ubuntu-gke-flaky
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-flaky
   - name: ubuntu-gke-ingress
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
   - name: ubuntu-gke-reboot
@@ -1258,8 +1280,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-serial
   - name: ubuntu-gke-slow
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-slow
+  - name: ubuntu-gke-updown
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-updown
   - name: ubuntu-gke-1.6
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6
+  - name: ubuntu-gke-1.6-alpha-features
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+  - name: ubuntu-gke-1.6-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  - name: ubuntu-gke-1.6-flaky
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
   - name: ubuntu-gke-1.6-ingress
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
   - name: ubuntu-gke-1.6-reboot
@@ -1268,6 +1298,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
   - name: ubuntu-gke-1.6-slow
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+  - name: ubuntu-gke-1.6-updown
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
 
 - name: google-gke-staging
   dashboard_tab:

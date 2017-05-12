@@ -2132,6 +2132,30 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-flaky": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-flaky.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-e2e-ubuntu-gke-1-6-ingress": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-ingress.env", 
@@ -2164,6 +2188,38 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-updown": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-alpha-features": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-alpha-features.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-autoscaling": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-autoscaling.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-flaky": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-flaky.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-e2e-ubuntu-gke-ingress": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-ingress.env", 
@@ -2191,6 +2247,14 @@
   "ci-kubernetes-e2e-ubuntu-gke-slow": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-slow.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-updown": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-updown.env", 
       "--env-file=platforms/gke.env", 
       "--mode=local"
     ], 
