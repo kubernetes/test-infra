@@ -414,7 +414,7 @@ func DumpFederationLogs(location string) error {
 
 func PerfTest() error {
 	// Run perf tests.
-	if err := finishRunning(exec.Command("/src/k8s.io/perf-tests/clusterloader/run-e2e.sh")); err != nil {
+	if err := finishRunning(exec.Command("./../perf-tests/clusterloader/run-e2e.sh")); err != nil {
 		return err
 	}
 	return nil
