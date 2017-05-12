@@ -155,7 +155,7 @@ restore_vendor() {
     rm -rf ./vendor
     godep save ./...
     if [ "${is_library}" = "true" ]; then
-        echo "remove k8s.io/* and glog from vendor/"
+        echo "remove k8s.io/*, gofuzz, and glog from vendor/"
         # glog uses global variables, it panics when multiple copies are compiled.
         rm -rf ./vendor/github.com/golang/glog
         # this ensures users who get the repository via `go get` won't end up with
@@ -164,6 +164,8 @@ restore_vendor() {
         # Godeps.json has a complete, up-to-date list of dependencies, so
         # Godeps.json will be the ground truth for users using godep/glide/dep.
         rm -rf ./vendor/k8s.io
+        # see https://github.com/kubernetes/kubernetes/issues/45693
+        rm -rf ./vendor/github.com/google/gofuzz
     fi
     git add --all
     # check if there are new contents 
