@@ -408,6 +408,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
 - name: ci-kubernetes-kubemark-high-density-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-high-density-100-gce
+- name: ci-kubernetes-soak-cos-docker-validation-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-test
 - name: ci-kubernetes-soak-gce-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-test
 - name: ci-kubernetes-soak-gce-1.4-test
@@ -426,6 +428,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-test
 - name: ci-kubernetes-soak-gke-gci-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-test
+- name: ci-kubernetes-soak-cos-docker-validation-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-deploy
 - name: ci-kubernetes-soak-gce-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-deploy
 - name: ci-kubernetes-soak-gce-1.4-deploy
@@ -964,6 +968,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
   - name: node-cos
     test_group_name: ci-kubernetes-node-cos-docker-validation
+  - name: soak-cos-test
+    test_group_name: ci-kubernetes-soak-cos-docker-validation-test
+  - name: soak-cos-deploy
+    test_group_name: ci-kubernetes-soak-cos-docker-validation-deploy
 
 - name: google-gce
   dashboard_tab:

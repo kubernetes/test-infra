@@ -45,6 +45,20 @@
     - 'ci-{soak-suffix}'
     name: bootstrap-ci-soak
     soak-suffix:
+    - kubernetes-soak-cos-docker-validation-deploy:
+        blocker: ci-kubernetes-soak-cos-docker-validation-test
+        job-name: ci-kubernetes-soak-cos-docker-validation-deploy
+        frequency: 'H 0 * * 2'
+        scan: DISABLED
+        timeout: 110
+        soak-repos: '--bare'
+    - kubernetes-soak-cos-docker-validation-test:
+        blocker: ci-kubernetes-soak-cos-docker-validation-deploy
+        job-name: ci-kubernetes-soak-cos-docker-validation-test
+        frequency: 'H/30 * * * *'
+        scan: ALL
+        timeout: 620
+        soak-repos: '--bare'
     - kubernetes-soak-gce-deploy:
         blocker: ci-kubernetes-soak-gce-test
         job-name: ci-kubernetes-soak-gce-deploy
