@@ -39,6 +39,7 @@ DEMOLISH_ORDER = [
     Resource('url-maps', None, None),
     Resource('backend-services', 'region', None),
     Resource('health-checks', None, None),
+    Resource('http-health-checks', None, None),
     Resource('target-pools', 'region', None),
     Resource('instance-groups', 'zone', 'Yes'),
     Resource('instance-groups', 'zone', 'No'),
