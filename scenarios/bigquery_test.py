@@ -17,7 +17,6 @@
 """Tests for bigquery.py"""
 
 import argparse
-import glob
 import os
 import shutil
 import sys
@@ -32,36 +31,70 @@ class TestBigquery(unittest.TestCase):
     """Tests the bigquery scenario."""
 
     def test_configs(self):
-        """Test that the yaml config files in test-infra/metrics/ are valid metric config files."""
-        for path in glob.glob('metrics/*.yaml'):
+        """All yaml files in metrics are valid."""
+        for path in bigquery.all_configs(search='**'):
+            name = os.path.basename(path)
+            if name in ['BUILD', 'README.md']:
+                continue
+            if not path.endswith('.yaml'):
+                self.fail('Only .yaml files allowed: %s' % path)
+
             with open(path) as config_file:
                 config = yaml.safe_load(config_file)
-                self.assertTrue(config)
-                self.assertTrue(config['metric'])
-                self.assertTrue(config['query'])
-                self.assertTrue(config['jqfilter'])
+                if not config:
+                    self.fail(path)
+                self.assertIn('metric', config)
+                self.assertIn('query', config)
+                self.assertIn('jqfilter', config)
                 bigquery.validate_metric_name(config['metric'].strip())
+        configs = bigquery.all_configs()
+        self.assertTrue(all(p.endswith('.yaml') for p in configs), configs)
+
 
     def test_jq(self):
-        """Test that the do_jq function can execute a jq filter properly."""
-        # [filter, data, expected output]
-        tests = [['.', '{ "field": "value" }', '{"field":"value"}'],
-                 ['.field', '{ "field": "value" }', '"value"']]
-        for test in tests:
+        """do_jq executes a jq filter properly."""
+        def check(expr, data, expected):
+            """Check a test scenario."""
             with open(self.data_filename, 'w') as data_file:
-                data_file.write(test[1])
-            bigquery.do_jq(test[0], self.data_filename, self.out_filename, jq_bin=ARGS.jq)
+                data_file.write(data)
+            bigquery.do_jq(
+                expr,
+                self.data_filename,
+                self.out_filename,
+                jq_bin=ARGS.jq,
+            )
             with open(self.out_filename) as out_file:
                 actual = out_file.read().replace(' ', '').replace('\n', '')
-                self.assertEqual(actual, test[2], msg='expected jq "{}" on data: {} to output {}'
-                                 ' but got {}'.format(test[0], test[1], test[2], actual))
+                self.assertEqual(actual, expected)
+
+        check(
+            expr='.',
+            data='{ "field": "value" }',
+            expected='{"field":"value"}',
+        )
+        check(
+            expr='.field',
+            data='{ "field": "value" }',
+            expected='"value"',
+        )
 
     def test_validate_metric_name(self):
-        """Test the the validate_metric_name function rejects invalid metric names."""
-        tests = ['invalid#metric', 'invalid/metric', 'in\\valid', 'invalid?yes', '*invalid',
-                 '[metric]', 'metric\n', 'met\ric', 'metric& invalid']
-        for test in tests:
+        """validate_metric_name rejects invalid metric names."""
+        bigquery.validate_metric_name('normal')
+
+        def check(test):
+            """Check invalid names."""
             self.assertRaises(ValueError, bigquery.validate_metric_name, test)
+
+        check('invalid#metric')
+        check('invalid/metric')
+        check('in\\valid')
+        check('invalid?yes')
+        check('*invalid')
+        check('[metric]')
+        check('metric\n')
+        check('met\ric')
+        check('metric& invalid')
 
     def setUp(self):
         self.assertTrue(ARGS.jq)
@@ -74,9 +107,7 @@ class TestBigquery(unittest.TestCase):
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
-    PARSER.add_argument('--jq',
-                        required=True,
-                        help='The path to the "jq" command.')
+    PARSER.add_argument('--jq', default='jq', help='path to jq binary')
     ARGS, _ = PARSER.parse_known_args()
 
     # Remove the --jq flag and its value so that unittest.main can parse the remaining args without
