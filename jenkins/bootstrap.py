@@ -101,7 +101,6 @@ def _call(end, cmd, stdin=None, check=True, output=None):
     begin = time.time()
     if end:
         end = max(end, time.time() + 60)  # Allow at least 60s per command
-        logging.info('Limiting call to %.1f minutes', (end - begin) / 60)
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE if stdin is not None else None,
