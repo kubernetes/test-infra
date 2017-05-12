@@ -34,11 +34,11 @@ if [[ "${rc}" == 0 ]]; then
 fi
 
 if [[ "${rc}" == 0 ]]; then
-  if [[ -z "${PULL_NUMBER:-}" || -z "${PULL_REFS:-}" ]]; then
-    echo "\$PULL_NUMBER or \$PULL_REFS is empty; not uploading ci artifacts."
+  if [[ -z "${PULL_REFS:-}" ]]; then
+    echo "\$PULL_REFS is empty; not uploading ci artifacts."
     rc=1
   else
-    version=${PULL_NUMBER:-}/${PULL_REFS:-}
+    version="${PULL_NUMBER:-batch}/${PULL_REFS:-}"
     bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
   fi
 fi
