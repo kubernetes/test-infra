@@ -351,6 +351,28 @@ func TestAssignAndReview(t *testing.T) {
 			requested:   []string{"cjwagner"},
 			unrequested: []string{"merlin"},
 		},
+		{
+			name:      "request review self",
+			action:    "opened",
+			body:      "/cc",
+			commenter: "cjwagner",
+			requested: []string{"cjwagner"},
+		},
+		{
+			name:        "unrequest review self",
+			action:      "opened",
+			body:        "/uncc",
+			commenter:   "cjwagner",
+			unrequested: []string{"cjwagner"},
+		},
+		{
+			name:        "request review self with unrequest friend",
+			action:      "opened",
+			body:        "/cc \n/uncc @spxtr ",
+			commenter:   "cjwagner",
+			requested:   []string{"cjwagner"},
+			unrequested: []string{"spxtr"},
+		},
 	}
 	for _, tc := range testcases {
 		fc := NewFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})

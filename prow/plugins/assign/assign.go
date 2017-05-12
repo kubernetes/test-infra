@@ -31,7 +31,7 @@ const pluginName = "assign"
 
 var (
 	assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @[-\w]+?)*)\s*\r?$`)
-	ccRe     = regexp.MustCompile(`(?mi)^/(un)?cc(( +@[-\w]+?)+)\s*\r?$`)
+	ccRe     = regexp.MustCompile(`(?mi)^/(un)?cc(( +@[-\w]+?)*)\s*\r?$`)
 )
 
 func init() {
@@ -142,8 +142,12 @@ func handle(h *handler) error {
 	users := make(map[string]bool)
 	for _, re := range matches {
 		add := re[1] != "un" // un<cmd> == !add
-		for _, login := range h.affectedLogins(re[2]) {
-			users[login] = add
+		if re[2] == "" {
+			users[e.login] = add
+		} else {
+			for _, login := range parseLogins(re[2]) {
+				users[login] = add
+			}
 		}
 	}
 	var toAdd, toRemove []string
@@ -188,8 +192,6 @@ type handler struct {
 	remove func(org, repo string, number int, users []string) error
 	// add is the function that is called on the affected logins for a command with no 'un' prefix.
 	add func(org, repo string, number int, users []string) error
-	// affectedLogins extracts the user logins that a command is refering to from the command arg string.
-	affectedLogins func(argString string) []string
 
 	// event is a pointer to an event struct describing the event that triggered the handler.
 	event *event
@@ -207,21 +209,13 @@ type handler struct {
 
 func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.", strings.Join(mu.Users, ", "), e.org, e.org)
-	}
-
-	affectedLogins := func(text string) []string {
-		if text == "" {
-			return []string{e.login}
-		}
-		return parseLogins(text)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned", strings.Join(mu.Users, ", "), e.org, e.org)
 	}
 
 	return &handler{
 		addFailureResponse: addFailureResponse,
 		remove:             gc.UnassignIssue,
 		add:                gc.AssignIssue,
-		affectedLogins:     affectedLogins,
 		event:              e,
 		regexp:             assignRe,
 		gc:                 gc,
@@ -232,14 +226,13 @@ func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 
 func newReviewHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only people with write access to %s/%s can review this PR.\n", strings.Join(mu.Users, ", "), e.org, e.repo)
+		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only people with write access to %s/%s can review this PR and authors cannot review their own PRs", strings.Join(mu.Users, ", "), e.org, e.repo)
 	}
 
 	return &handler{
 		addFailureResponse: addFailureResponse,
 		remove:             gc.UnrequestReview,
 		add:                gc.RequestReview,
-		affectedLogins:     parseLogins,
 		event:              e,
 		regexp:             ccRe,
 		gc:                 gc,
