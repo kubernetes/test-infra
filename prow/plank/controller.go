@@ -237,7 +237,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			return nil
 		} else if _, ok := pm[pj.Status.PodName]; ok {
 			// Delete the old pod.
-			if err := c.kc.DeletePod(pj.Status.PodName); err != nil {
+			if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
 				return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
 			}
 		}
@@ -263,7 +263,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 	} else if pod.Status.Phase == kube.PodUnknown {
 		// Pod is in Unknown state. This can happen if there is a problem with
 		// the node. Delete the old pod, we'll start a new one next loop.
-		if err := c.kc.DeletePod(pj.Status.PodName); err != nil {
+		if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
 			return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
 		}
 		pj.Status.PodName = ""
