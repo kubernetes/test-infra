@@ -595,6 +595,46 @@
         timeout: 70
         frequency: 'H H/6 * * *'
         trigger-job: ''
+
+    # gce-ubuntu-master
+    - kubernetes-e2e-gce-ubuntu:
+        job-name: ci-kubernetes-e2e-gce-ubuntu
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gce-ubuntu-slow:
+        job-name: ci-kubernetes-e2e-gce-ubuntu-slow
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-gce-ubuntu-serial:
+        job-name: ci-kubernetes-e2e-gce-ubuntu-serial
+        jenkins-timeout: 620
+        timeout: 520
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+
+    # gce-ubuntu-1.6
+    - kubernetes-e2e-gce-ubuntu-1-6:
+        job-name: ci-kubernetes-e2e-gce-ubuntu-1-6
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gce-ubuntu-1-6-serial:
+        job-name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-gce-ubuntu-1-6-slow:
+        job-name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
     # END GCE
 
     # START GCE-GCI
@@ -1214,6 +1254,70 @@
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build-1.4'
+
+    # ubuntu-gke-master
+    - kubernetes-e2e-ubuntu-gke:
+        job-name: ci-kubernetes-e2e-ubuntu-gke
+        jenkins-timeout: 270
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-ubuntu-gke-slow:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-slow
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-ubuntu-gke-reboot:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-reboot
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-ubuntu-gke-serial:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-serial
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-ubuntu-gke-ingress:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-ingress
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+
+    # ubuntu-gke-1.6
+    - kubernetes-e2e-ubuntu-gke-1-6:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-1-6
+        jenkins-timeout: 170
+        timeout: 70
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-ubuntu-gke-1-6-serial:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-ubuntu-gke-1-6-slow:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+        jenkins-timeout: 270
+        timeout: 170
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-ubuntu-gke-1-6-reboot:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
+        jenkins-timeout: 300
+        timeout: 200
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
+    - kubernetes-e2e-ubuntu-gke-1-6-ingress:
+        job-name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
+        jenkins-timeout: 420
+        timeout: 320
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build-1.6'
     # END GKE
 
     # START KUBEMARK
