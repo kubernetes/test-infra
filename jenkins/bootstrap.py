@@ -240,7 +240,7 @@ def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
     retries = 3
     for attempt in range(retries):
         try:
-            call([git, 'fetch', '--tags', repository(repo, ssh)] + refs)
+            call([git, 'fetch', '--quiet', '--tags', repository(repo, ssh)] + refs)
             break
         except subprocess.CalledProcessError as cpe:
             if attempt >= retries - 1:
