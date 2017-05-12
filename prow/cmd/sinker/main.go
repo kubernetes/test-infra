@@ -25,8 +25,9 @@ import (
 )
 
 const (
-	period = time.Hour
-	maxAge = 24 * time.Hour
+	period        = time.Hour
+	maxProwJobAge = 24 * time.Hour
+	maxPodAge     = 3 * time.Hour
 )
 
 type kubeClient interface {
@@ -63,7 +64,7 @@ func clean(kc, pkc kubeClient) {
 		return
 	}
 	for _, prowJob := range prowJobs {
-		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxAge {
+		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
 			} else {
@@ -80,7 +81,7 @@ func clean(kc, pkc kubeClient) {
 	}
 	for _, pod := range pods {
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
-			time.Since(pod.Status.StartTime) > maxAge {
+			time.Since(pod.Status.StartTime) > maxPodAge {
 			// Delete old completed pods. Don't quit if we fail to delete one.
 			if err := pkc.DeletePod(pod.Metadata.Name); err == nil {
 				logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
