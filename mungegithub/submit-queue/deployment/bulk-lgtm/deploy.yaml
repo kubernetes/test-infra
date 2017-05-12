@@ -10,7 +10,7 @@ spec:
         app: bulk-lgtm
     spec:
       containers:
-      - name: submit-queue
+      - name: bulk-lgtm
         command:
         - /mungegithub
         - --organization=kubernetes
