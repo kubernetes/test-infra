@@ -13,14 +13,6 @@
     ], 
     "scenario": "execute"
   }, 
-  "ci-heapster-canarypush": {
-    "args": [
-      "--owner=pszczesniak@google.com", 
-      "--target=kubernetes/heapster:canary", 
-      "--file=deploy/docker/canary/Dockerfile"
-    ], 
-    "scenario": "canarypush"
-  }, 
   "ci-kops-build": {
     "args": [
       "--script=make gcs-publish-ci", 
