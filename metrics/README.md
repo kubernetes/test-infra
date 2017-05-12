@@ -1,7 +1,17 @@
 # Bigquery metrics
 
-This folder contains config files describing metrics that summarize data in our Bigquery test result
-database. The config files are consumed by the metrics-bigquery periodic prow job that runs the bigquery image and scenario. Each metric consists of a bigquery query and a jq filter.  The query is run every 24 hours to produce a json data file containing the complete query results named with the format METRICNAME-yyyy-mm-dd.json. These files persist for a year after their creation. Additionally, every time a query completes the associated jq filter is applied to the complete query results and the output is stored in the METRICNAME-latest.json file.
+This folder contains config files describing metrics that summarize data
+in our Bigquery test result database. Config files are consumed
+by the `metrics-bigquery` periodic prow job that runs the bigquery
+image and scenario.  Each metric consists of a bigquery query and
+a jq filter. The query is run every 24 hours to produce a json data
+file containing the complete raw query results named with the format
+'raw-yyyy-mm-dd.json'. The raw file is then filtered with the associated
+jq filter and the results are stored in 'daily-yyyy-mm-dd.json'.  These
+files are stored in the k8s-metrics GCS bucket in a directory named with
+the metric name and persist for a year after their creation. Additionally,
+the latest filtered results for a metric are stored in the root of the
+k8s-metrics bucket and named with the format 'METRICNAME-latest.json'.
 
 ## Metrics
 

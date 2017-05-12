@@ -40,7 +40,7 @@ def check(*cmd, **keyargs):
     subprocess.check_call(*cmd, **keyargs)
 
 def validate_metric_name(name):
-    """Raise if name is non-trivial."""
+    """Raise ValueError if name is non-trivial."""
     # Regex '$' symbol matches an optional terminating new line
     # so we have to check that the name
     # doesn't have one if the regex matches.
@@ -51,7 +51,9 @@ def do_query(query, out_filename, project):
     """Executes a bigquery query, outputting the results to a file."""
     with open(out_filename, 'w') as out_file:
         cmd = [
-            'bq', 'query', '-n100000', '--format=prettyjson', '--project_id=%s' % project]
+            'bq', 'query', '--format=prettyjson', '--project_id=%s' % project,
+            '-n100000',  # Results may have more than 100 rows
+        ]
         check(cmd, stdin=query, stdout=out_file)
 
 def do_jq(jqfilter, data_filename, out_filename, jq_bin='jq'):
@@ -77,7 +79,12 @@ def run_metric(project, prefix, metric, query, jqfilter):
     copy(filtered, os.path.join(prefix, metric, filtered))
     copy(filtered, os.path.join(prefix, latest))
 
-def main(configs, project, bucket_path, nonsense=True):
+def all_configs(search='**.yaml'):
+    """Returns config files in the metrics dir."""
+    return glob.glob(os.path.join(
+        os.path.dirname(__file__), '../metrics', search))
+
+def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
     if not project:
         raise ValueError('project', project)
@@ -87,12 +94,11 @@ def main(configs, project, bucket_path, nonsense=True):
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
     # when the service account in use has access to multiple projects.
-    if nonsense:
+    if not sys.__stdin__.isatty():
         check(['bq', 'show'], stdin='\n')
 
     errs = []
-    root = os.path.join(os.path.dirname(__file__), '../metrics/*.yaml')
-    for path in configs or glob.glob(root):
+    for path in configs or all_configs():
         try:
             with open(path) as config_raw:
                 config = yaml.safe_load(config_raw)
@@ -128,8 +134,6 @@ if __name__ == '__main__':
         '--bucket',
         default='gs://k8s-metrics',
         help='Upload results to the specified gcs bucket.')
-    PARSER.add_argument(
-        '--human', action='store_true', help='Add this for more fast.')
 
     ARGS = PARSER.parse_args()
-    main(ARGS.config, ARGS.project, ARGS.bucket, not ARGS.human)
+    main(ARGS.config, ARGS.project, ARGS.bucket)
