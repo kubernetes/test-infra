@@ -137,10 +137,10 @@ func init() {
 
 	sampleOwnerCSV = []byte(
 		`name,owner,auto-assigned,sig
-DEFAULT,rmmh/spxtr/ixdy/apelisse/fejta,0,
 Sysctls should support sysctls,Random-Liu,1,node
 Sysctls should support unsafe sysctls which are actually whitelisted,deads2k,1,node
-testname1,cjwagner,1,sigarea
+testname1,cjwagner ,1,sigarea
+testname2,spxtr,1,sigarea
 ThirdParty resources Simple Third Party creating/deleting thirdparty objects works,luxas,1,api-machinery
 Upgrade cluster upgrade should maintain a functioning cluster,luxas,1,cluster-lifecycle
 Upgrade master upgrade should maintain a functioning cluster,xiang90,1,cluster-lifecycle
@@ -355,6 +355,17 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	}
 	if !foundUser {
 		t.Errorf("Failed to get the owner for cluster: %s\n", clusters[0].Id)
+	}
+	// Check that the body contains a table that correctly explains why users and sig areas were assigned.
+	body := clusters[0].Body(nil)
+	if !strings.Contains(body, "| cjwagner | testname1 |") {
+		t.Errorf("Body should contain a table row to explain that 'cjwagner' was assigned due to ownership of 'testname1'.")
+	}
+	if !strings.Contains(body, "| spxtr | testname2 |") {
+		t.Errorf("Body should contain a table row to explain that 'spxtr' was assigned due to ownership of 'testname2'.")
+	}
+	if !strings.Contains(body, "| sig/sigarea | testname1; testname2 |") {
+		t.Errorf("Body should contain a table row to explain that 'sigarea' was set as a SIG due to ownership of 'testname1' and 'testname2'.")
 	}
 }
 

@@ -471,6 +471,31 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 		}
 		fmt.Fprint(&buf, "\n")
 	}
+	// Explanations of assignees and sigs
+	testNames := make([]string, len(c.Tests))
+	for i, test := range c.topTestsFailed(len(c.Tests)) {
+		testNames[i] = test.Name
+	}
+	assignees := c.filer.creator.TestsOwners(testNames)
+	sigs := c.filer.creator.TestsSIGs(testNames)
+	if len(assignees) > 0 || len(sigs) > 0 {
+		fmt.Fprint(&buf, "\n<details><summary>Rationale for assignments:</summary>\n")
+		fmt.Fprint(&buf, "\n| Assignee or SIG area | Owns test(s) |\n| --- | --- |\n")
+		for assignee, tests := range assignees {
+			if len(tests) > 3 {
+				tests = tests[0:3]
+			}
+			fmt.Fprintf(&buf, "| %s | %s |\n", assignee, strings.Join(tests, "; "))
+		}
+		for sig, tests := range sigs {
+			if len(tests) > 3 {
+				tests = tests[0:3]
+			}
+			fmt.Fprintf(&buf, "| sig/%s | %s |\n", sig, strings.Join(tests, "; "))
+		}
+		fmt.Fprint(&buf, "\n</details><br>\n")
+	}
+
 	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Id)
 
 	return buf.String()
@@ -491,7 +516,7 @@ func (c *Cluster) Labels() []string {
 	for i, test := range c.topTestsFailed(len(c.Tests)) {
 		topTests[i] = test.Name
 	}
-	for _, sig := range c.filer.creator.TestsSIGs(topTests) {
+	for sig, _ := range c.filer.creator.TestsSIGs(topTests) {
 		labels = append(labels, "sig/"+sig)
 	}
 
@@ -504,7 +529,12 @@ func (c *Cluster) Owners() []string {
 	for i, test := range c.topTestsFailed(len(c.Tests)) {
 		topTests[i] = test.Name
 	}
-	return c.filer.creator.TestsOwners(topTests)
+	ownersMap := c.filer.creator.TestsOwners(topTests)
+	owners := make([]string, 0, len(ownersMap))
+	for user, _ := range ownersMap {
+		owners = append(owners, user)
+	}
+	return owners
 }
 
 // Priority calculates and returns the priority of this issue.
