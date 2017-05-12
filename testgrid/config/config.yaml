@@ -816,6 +816,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker-benchmark
 - name: ci-kubernetes-node-docker
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker
+- name: ci-kubernetes-e2e-cos-docker-validation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation
+- name: ci-kubernetes-e2e-cos-docker-validation-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-serial
+- name: ci-kubernetes-e2e-cos-docker-validation-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-slow
+- name: ci-kubernetes-node-cos-docker-validation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-cos-docker-validation
 # garbage collector tests
 - name: ci-kubernetes-e2e-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-garbage
@@ -948,6 +956,14 @@ dashboards:
     test_group_name: ci-kubernetes-node-docker-benchmark
   - name: kubelet
     test_group_name: ci-kubernetes-node-docker
+  - name: e2e-cos
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation
+  - name: e2e-cos-serial
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation-serial
+  - name: e2e-cos-slow
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
+  - name: node-cos
+    test_group_name: ci-kubernetes-node-cos-docker-validation
 
 - name: google-gce
   dashboard_tab:
