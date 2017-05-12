@@ -476,25 +476,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 	for i, test := range c.topTestsFailed(len(c.Tests)) {
 		testNames[i] = test.Name
 	}
-	assignees := c.filer.creator.TestsOwners(testNames)
-	sigs := c.filer.creator.TestsSIGs(testNames)
-	if len(assignees) > 0 || len(sigs) > 0 {
-		fmt.Fprint(&buf, "\n<details><summary>Rationale for assignments:</summary>\n")
-		fmt.Fprint(&buf, "\n| Assignee or SIG area | Owns test(s) |\n| --- | --- |\n")
-		for assignee, tests := range assignees {
-			if len(tests) > 3 {
-				tests = tests[0:3]
-			}
-			fmt.Fprintf(&buf, "| %s | %s |\n", assignee, strings.Join(tests, "; "))
-		}
-		for sig, tests := range sigs {
-			if len(tests) > 3 {
-				tests = tests[0:3]
-			}
-			fmt.Fprintf(&buf, "| sig/%s | %s |\n", sig, strings.Join(tests, "; "))
-		}
-		fmt.Fprint(&buf, "\n</details><br>\n")
-	}
+	fmt.Fprint(&buf, c.filer.creator.ExplainTestAssignments(testNames))
 
 	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Id)
 

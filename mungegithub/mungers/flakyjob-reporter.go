@@ -236,7 +236,6 @@ func (fj *FlakyJob) Body(closedIssues []*githubapi.Issue) string {
 			fmt.Fprintf(&buf, "| %s | %d |\n", testName, fj.FlakyTests[testName])
 		}
 	}
-
 	// List previously closed issues if there are any.
 	if len(closedIssues) > 0 {
 		fmt.Fprint(&buf, "\n#### Previously closed issues for this job flaking:\n")
@@ -245,6 +244,8 @@ func (fj *FlakyJob) Body(closedIssues []*githubapi.Issue) string {
 		}
 		fmt.Fprint(&buf, "\n")
 	}
+	// Explain why assignees were assigned and why sig labels were applied.
+	fmt.Fprintf(&buf, "\n%s", fj.reporter.creator.ExplainTestAssignments(fj.TestsSorted()))
 
 	fmt.Fprintf(&buf, "\n[Flakiest Jobs](%s)\n", fj.reporter.flakyJobDataURL)
 	return buf.String()
