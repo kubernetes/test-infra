@@ -27,7 +27,7 @@ import (
 const (
 	period        = time.Hour
 	maxProwJobAge = 24 * time.Hour
-	maxPodAge     = 3 * time.Hour
+	maxPodAge     = 12 * time.Hour
 )
 
 type kubeClient interface {
