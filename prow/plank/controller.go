@@ -232,8 +232,16 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 
 func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
 	if pj.Complete() {
-		// ProwJob is complete. Do nothing.
-		return nil
+		if pj.Status.PodName == "" {
+			// Completed ProwJob, already cleaned up the pod. Nothing to do.
+			return nil
+		} else if _, ok := pm[pj.Status.PodName]; ok {
+			// Delete the old pod.
+			if err := c.kc.DeletePod(pj.Status.PodName); err != nil {
+				return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
+			}
+		}
+		pj.Status.PodName = ""
 	} else if pj.Status.PodName == "" {
 		// We haven't started the pod yet. Do so.
 		pj.Status.State = kube.PendingState
