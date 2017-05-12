@@ -2649,7 +2649,6 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-perf-tests-e2e-gce-clusterloader.env", 
       "--test=false", 
-      "--mount-paths=$GOPATH/src/k8s.io/perf-tests:/src/k8s.io/perf-tests", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
