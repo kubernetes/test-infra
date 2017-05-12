@@ -1310,7 +1310,7 @@ dashboards:
   - name: high-density-100-gce
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
 
-- name: google-node
+- name: sig-node
   dashboard_tab:
   - name: cadvisor-push
     test_group_name: ci-cadvisor-canarypush
@@ -1330,6 +1330,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.4
   - name: kubelet-1.5
     test_group_name: ci-kubernetes-node-kubelet-1.5
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6  
   - name: docker-kubelet
     test_group_name: ci-kubernetes-node-docker
   - name: docker-e2e
