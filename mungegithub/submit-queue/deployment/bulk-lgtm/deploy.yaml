@@ -22,7 +22,7 @@ spec:
         - --dry-run=false
         - --bulk-lgtm-github-oauth-redirect-url=https://kubernetes.submit-queue.k8s.io/bulk-lgtm/bulkprs/callback
         - --bulk-lgtm-www-prefix=/bulk-lgtm
-        image: gcr.io/k8s-testimages/submit-queue:v20170409
+        image: gcr.io/kubernetes-jenkins/submit-queue:2017-05-12-1f256fcd
         ports:
         - name: status
           containerPort: 8080
