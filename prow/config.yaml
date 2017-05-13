@@ -1868,7 +1868,7 @@ periodics:
   interval: 30m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170512-9fbaa08d
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170513-a4e15944
       args:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
