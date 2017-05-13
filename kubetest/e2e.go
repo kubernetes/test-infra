@@ -414,29 +414,15 @@ func DumpFederationLogs(location string) error {
 
 func PerfTest() error {
 	// TODO(wojtek-t): Remove once #2744 is debugged.
-	if out, err := output(exec.Command("ls ${GOPATH}/src")); err != nil {
-		log.Printf("ls ${GOPATH}/src: %s", string(out))
-	} else {
-		log.Printf("ls ${GOPATH}/src error: %v", err)
-	}
-	if out, err := output(exec.Command("ls /go/src")); err != nil {
-		log.Printf("ls /go/src: %s", string(out))
-	} else {
-		log.Printf("ls /go/src error: %v", err)
-	}
-	if out, err := output(exec.Command("ls /go/src/k8s.io")); err != nil {
-		log.Printf("ls /go/src/k8s.io: %s", string(out))
-	} else {
-		log.Printf("ls /go/src/k8s.io error: %v", err)
-	}
-	if out, err := output(exec.Command("ls /go/src/k8s.io/perf-tests")); err != nil {
+	if out, err := output(exec.Command("ls", "/go/src/k8s.io/perf-tests")); err == nil {
 		log.Printf("ls /go/src/k8s.io/perf-tests: %s", string(out))
 	} else {
 		log.Printf("ls /go/src/k8s.io/perf-tests error: %v", err)
 	}
 
-	// Run perf tests.
-	if err := finishRunning(exec.Command("${GOPATH}/src/k8s.io/perf-tests/clusterloader/run-e2e.sh")); err != nil {
+	// Run perf tests
+	cmdline := fmt.Sprintf("%s/src/k8s.io/perf-tests/clusterloader/run-e2e.sh", os.Getenv("GOPATH"))
+	if err := finishRunning(exec.Command(cmdline)); err != nil {
 		return err
 	}
 	return nil
