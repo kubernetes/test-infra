@@ -179,6 +179,9 @@ class Clusters {
       if (opts.reText && !opts.reText.test(cluster.text)) {
         continue;
       }
+      if (opts.sig && cluster.owner !== opts.sig) {
+        continue;
+      }
       var testsOut = [];
       for (let test of cluster.tests) {
         if (opts.reTest && !opts.reTest.test(test.name)) {

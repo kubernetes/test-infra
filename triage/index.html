@@ -8,6 +8,25 @@
 <body>
 <h1>Kubernetes Aggregated Failures</h1>
 <form id="options" onchange="rerender();">
+Show clusters for sig-<select id="sig">
+	<option value="">(all)</option>
+	<option value="api-machinery">api-machinery</option>
+	<option value="apps">apps</option>
+	<option value="autoscaling">autoscaling</option>
+	<option value="big-data">big-data</option>
+	<option value="cli">cli</option>
+	<option value="cluster-cycle">cluster-lifecycle</option>
+	<option value="federation">federation</option>
+	<option value="instrumentation">instrumentation</option>
+	<option value="network">network</option>
+	<option value="node">node</option>
+	<option value="scalability">scalability</option>
+	<option value="scheduling">scheduling</option>
+	<option value="storage">storage</option>
+	<option value="ui">ui</option>
+	<option value="testing">testing</option>
+</select>
+<br><br>
 Sort by
 <label><input id="sort" name="sort" type="radio" value="total">total count</label>
 <label><input name="sort" type="radio" value="day" checked>count in last day</label>

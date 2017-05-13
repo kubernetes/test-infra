@@ -18,6 +18,7 @@ function readOptions() {
     let el = document.getElementById(id);
     if (el.type === "checkbox") return el.checked;
     if (el.type === "radio") return el.form[el.name].value;
+    if (el.type === "select-one") return el.value;
     if (el.type === "text") {
       if (id.startsWith("filter")) {
         if (el.value === "") {
@@ -43,11 +44,15 @@ function readOptions() {
     reTest: read('filter-test'),
     showNormalize: read('show-normalize'),
     sort: read('sort'),
-  }
+    sig: read('sig'),
+  };
+
+  console.log(opts.sig);
 
   var url = '';
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
+  if (opts.sig) url += '&sig=' + opts.sig;
   for (var name of ["text", "job", "test"]) {
     var re = opts['re' + name[0].toUpperCase() + name.slice(1)];
     if (re) {
@@ -88,13 +93,14 @@ function setOptionsFromURL() {
     if (!value) return;
     var el = document.getElementById(id);
     if (el.type === "checkbox") el.checked = (value === "1");
-    if (el.type === "text") el.value = value;
+    else el.value = value;
   }
   write('job-ci', qs.ci);
   write('job-pr', qs.pr);
   write('filter-text', qs.text);
   write('filter-job', qs.job);
   write('filter-test', qs.test);
+  write('sig', qs.sig);
 }
 
 // Render up to `count` clusters, with `start` being the first for consideration.
@@ -104,7 +110,7 @@ function renderSubset(start, count) {
   var shown = 0;
   for (let c of clustered.data) {
     if (n++ < start) continue;
-    shown += renderCluster(top, c.key, c.id, c.text, c.tests, c.spans);
+    shown += renderCluster(top, c);
     lastClusterRendered = n;
     if (shown >= count) break;
   }

@@ -34,6 +34,31 @@ h2 > a {
   padding: 10px 0 0 10px;
 }
 
+span.owner {
+  margin: 10px;
+  padding: 0 10px 0 10px;
+  border: 1px solid black;
+  border-radius: 4px;
+  background: var(--color, #eee);
+}
+
+/* colors from http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12 */
+.sig-api-machinery      { --color: #bc80bd; }
+.sig-apps               { --color: #ffffb3; }
+.sig-autoscaling        { --color: #bebada; }
+.sig-big-data           { --color: #fb8072; }
+.sig-cli                { --color: #80b1d3; }
+.sig-cluster-lifecycle  { --color: #fdb462; }
+.sig-federation         { --color: #b3de69; }
+.sig-instrumentation    { --color: #fccde5; }
+.sig-network            { --color: #d9d9d9; }
+.sig-node               { --color: #8dd3c7; }
+.sig-scalability        { --color: #ccebc5; }
+.sig-scheduling         { --color: #ffed6f; }
+.sig-storage            { --color: #aaf; }
+.sig-ui                 { --color: #afa; }
+.sig-testing            { --color: #faa; }
+
 div.graph {
   width: 1200px;
   height: 200px;  /* keep synchronized with script.js:graphHeight */

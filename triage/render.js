@@ -243,7 +243,9 @@ function renderSpans(text, spans) {
 
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
-function renderCluster(top, key, keyId, text, tests, spans) {
+function renderCluster(top, cluster) {
+  let {key, id, text, tests, spans, owner} = cluster;
+
   function plural(count, word, suffix) {
     return count + ' ' + word + (count == 1 ? '' : suffix);
   }
@@ -252,25 +254,35 @@ function renderCluster(top, key, keyId, text, tests, spans) {
     el.textContent = el.textContent.replace(downArrow, rightArrow);
   }
 
-  var counts = clustered.makeCounts(keyId);
+  var counts = clustered.makeCounts(id);
 
   var clusterSum = clustersSum(tests);
-  var todayCount = clustered.getHitsInLastDayById(keyId);
-  var failureNode = addElement(top, 'div', {id: keyId}, [
+  var todayCount = clustered.getHitsInLastDayById(id);
+  var ownerTag = createElement('span', {className: 'owner sig-' + (owner || ''), dataset: {tooltip: 'inferred owner'}});
+  var failureNode = addElement(top, 'div', {id: id}, [
     createElement('h2', null, [
       `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING `,
-      createElement('a', {href: '#' + keyId}, keyId),
-      createElement('a', {href: 'https://github.com/search?type=Issues&q=org:kubernetes%20' + keyId, target: '_blank', rel: 'noopener'}, 'github search')
+      createElement('a', {href: '#' + id}, id),
+      createElement('a', {href: 'https://github.com/search?type=Issues&q=org:kubernetes%20' + id, target: '_blank', rel: 'noopener'}, 'github search'),
+      ownerTag,
     ]),
     createElement('pre', null, options.showNormalize ? key : renderSpans(text, spans)),
-    createElement('div', {className: 'graph', dataset: {cluster: keyId}}),
+    createElement('div', {className: 'graph', dataset: {cluster: id}}),
   ]);
+
+  if (owner) {
+    ownerTag.innerText = owner;
+  } else {
+    ownerTag.remove();
+  }
+
+
   var latest = createElement('table');
   var list = addElement(failureNode, 'ul', null, [
     createElement('span', null, [`Latest Failures`, latest]),
   ]);
 
-  renderLatest(latest, keyId);
+  renderLatest(latest, id);
 
   var clusterJobs = addElement(list, 'li');
 
@@ -284,7 +296,7 @@ function renderCluster(top, key, keyId, text, tests, spans) {
   var jobCount = sum(tests, t => t.jobs.length);
 
   // Sort tests by descending [last day hits, total hits]
-  var tests = sortByKey(tests, t => [-dayCounts(counts[t.name]), -sum(t.jobs, j => j.builds.length)]);
+  var testsSorted = sortByKey(tests, t => [-dayCounts(counts[t.name]), -sum(t.jobs, j => j.builds.length)]);
 
   var allTestsDayCount = dayCounts(counts['']);
   var testsDayCountSum = 0;
@@ -293,7 +305,7 @@ function renderCluster(top, key, keyId, text, tests, spans) {
   var testsShown = 0;
   var i = 0;
 
-  for (var test of tests) {
+  for (var test of testsSorted) {
     i++;
     var testCount = sum(test.jobs, j => j.builds.length);
 
@@ -341,7 +353,7 @@ function renderCluster(top, key, keyId, text, tests, spans) {
     swapArrow(expander.firstChild);
   }
 
-  clusterJobs.innerHTML = `Failed in ${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${keyId}">`;
+  clusterJobs.innerHTML = `Failed in ${plural(jobSet.size, 'Job', 's')} ${rightArrow}<div style="display:none" class="jobs" data-cluster="${id}">`;
   if (jobSet.size <= 10) {  // automatically expand small job lists to save clicking
     expand(clusterJobs.children[0]);
   }
