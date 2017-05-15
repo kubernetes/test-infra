@@ -547,6 +547,13 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-gce-gpu": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-e2e-gce-ha-master": {
     "args": [
       "--env-file=platforms/gce.env", 
