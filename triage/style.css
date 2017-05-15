@@ -17,6 +17,10 @@ pre span.mm {
   color: grey;
 }
 
+.clearoptions {
+  cursor: pointer;
+}
+
 h2 {
   position: sticky;
   top: 0px;

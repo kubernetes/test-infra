@@ -179,11 +179,14 @@ function toggle(target) {
     target.classList.toggle("active");
     // rerender after repainting the clicked button, to improve responsiveness.
     setTimeout(rerender, 0);
-    return true;
   } else if (target.matches('span.owner')) {
     document.getElementById('btn-sig-' + target.textContent).click();
+  } else if (target.matches('.clearoptions')) {
+    document.location = document.location.pathname;
+  } else {
+    return false;
   }
-  return false;
+  return true;
 }
 
 // Render just the cluster with the given key.
