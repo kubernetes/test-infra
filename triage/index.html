@@ -7,26 +7,25 @@
 </head>
 <body>
 <h1>Kubernetes Aggregated Failures</h1>
-<form id="options" onchange="rerender();">
-Show clusters for sig-<select id="sig">
-	<option value="">(all)</option>
-	<option value="api-machinery">api-machinery</option>
-	<option value="apps">apps</option>
-	<option value="autoscaling">autoscaling</option>
-	<option value="big-data">big-data</option>
-	<option value="cli">cli</option>
-	<option value="cluster-cycle">cluster-lifecycle</option>
-	<option value="federation">federation</option>
-	<option value="instrumentation">instrumentation</option>
-	<option value="network">network</option>
-	<option value="node">node</option>
-	<option value="scalability">scalability</option>
-	<option value="scheduling">scheduling</option>
-	<option value="storage">storage</option>
-	<option value="ui">ui</option>
-	<option value="testing">testing</option>
-</select>
+<b>Show clusters for SIG:</b><span id="btn-sig-group">
+	<button id="btn-sig-api-machinery" class="toggle sig-api-machinery">api-machinery</button>
+	<button id="btn-sig-apps" class="toggle sig-apps">apps</button>
+	<button id="btn-sig-autoscaling" class="toggle sig-autoscaling">autoscaling</button>
+	<button id="btn-sig-big-data" class="toggle sig-big-data">big-data</button>
+	<button id="btn-sig-cli" class="toggle sig-cli">cli</button>
+	<button id="btn-sig-cluster-lifecycle" class="toggle sig-cluster-lifecycle">cluster-lifecycle</button>
+	<button id="btn-sig-federation" class="toggle sig-federation">federation</button>
+	<button id="btn-sig-instrumentation" class="toggle sig-instrumentation">instrumentation</button>
+	<button id="btn-sig-network" class="toggle sig-network">network</button>
+	<button id="btn-sig-node" class="toggle sig-node">node</button>
+	<button id="btn-sig-scalability" class="toggle sig-scalability">scalability</button>
+	<button id="btn-sig-scheduling" class="toggle sig-scheduling">scheduling</button>
+	<button id="btn-sig-storage" class="toggle sig-storage">storage</button>
+	<button id="btn-sig-testing" class="toggle sig-testing">testing</button>
+	<button id="btn-sig-ui" class="toggle sig-ui">ui</button>
+</span>
 <br><br>
+<form id="options" onchange="rerender();">
 Sort by
 <label><input id="sort" name="sort" type="radio" value="total">total count</label>
 <label><input name="sort" type="radio" value="day" checked>count in last day</label>
