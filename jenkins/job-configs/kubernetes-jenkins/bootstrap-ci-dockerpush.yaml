@@ -58,9 +58,3 @@
         repo-name: github.com/google/cadvisor
         frequency: '@daily'
         timeout: 30
-    - heapster-canarypush:
-        branch: master
-        job-name: ci-heapster-canarypush
-        repo-name: k8s.io/heapster
-        frequency: '@daily'
-        timeout: 30

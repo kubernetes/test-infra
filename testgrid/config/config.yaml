@@ -48,8 +48,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
 - name: ci-cadvisor-node-kubelet
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
-- name: ci-heapster-canarypush
-  gcs_prefix: kubernetes-jenkins/logs/ci-heapster-canarypush
 - name: ci-test-infra-test-history
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-test-history
 - name: ci-kubernetes-node-kubelet-benchmark
@@ -410,6 +408,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
 - name: ci-kubernetes-kubemark-high-density-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-high-density-100-gce
+- name: ci-kubernetes-soak-cos-docker-validation-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-test
 - name: ci-kubernetes-soak-gce-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-test
 - name: ci-kubernetes-soak-gce-1.4-test
@@ -428,6 +428,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-test
 - name: ci-kubernetes-soak-gke-gci-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-test
+- name: ci-kubernetes-soak-cos-docker-validation-deploy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-deploy
 - name: ci-kubernetes-soak-gce-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-deploy
 - name: ci-kubernetes-soak-gce-1.4-deploy
@@ -486,10 +488,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
 - name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
 - name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
@@ -770,6 +768,12 @@ test_groups:
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-ubuntu-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke
+- name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-alpha-features
+- name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-autoscaling
+- name: ci-kubernetes-e2e-ubuntu-gke-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-flaky
 - name: ci-kubernetes-e2e-ubuntu-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-ingress
 - name: ci-kubernetes-e2e-ubuntu-gke-reboot
@@ -778,8 +782,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-slow
+- name: ci-kubernetes-e2e-ubuntu-gke-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-updown
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
@@ -788,6 +800,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-serial
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+- name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -806,6 +820,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker-benchmark
 - name: ci-kubernetes-node-docker
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker
+- name: ci-kubernetes-e2e-cos-docker-validation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation
+- name: ci-kubernetes-e2e-cos-docker-validation-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-serial
+- name: ci-kubernetes-e2e-cos-docker-validation-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-slow
+- name: ci-kubernetes-node-cos-docker-validation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-cos-docker-validation
 # garbage collector tests
 - name: ci-kubernetes-e2e-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-garbage
@@ -938,6 +960,18 @@ dashboards:
     test_group_name: ci-kubernetes-node-docker-benchmark
   - name: kubelet
     test_group_name: ci-kubernetes-node-docker
+  - name: e2e-cos
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation
+  - name: e2e-cos-serial
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation-serial
+  - name: e2e-cos-slow
+    test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
+  - name: node-cos
+    test_group_name: ci-kubernetes-node-cos-docker-validation
+  - name: soak-cos-test
+    test_group_name: ci-kubernetes-soak-cos-docker-validation-test
+  - name: soak-cos-deploy
+    test_group_name: ci-kubernetes-soak-cos-docker-validation-deploy
 
 - name: google-gce
   dashboard_tab:
@@ -1256,6 +1290,12 @@ dashboards:
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
   - name: ubuntu-gke
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
+  - name: ubuntu-gke-alpha-features
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
+  - name: ubuntu-gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
+  - name: ubuntu-gke-flaky
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-flaky
   - name: ubuntu-gke-ingress
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
   - name: ubuntu-gke-reboot
@@ -1264,8 +1304,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-serial
   - name: ubuntu-gke-slow
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-slow
+  - name: ubuntu-gke-updown
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-updown
   - name: ubuntu-gke-1.6
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6
+  - name: ubuntu-gke-1.6-alpha-features
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
+  - name: ubuntu-gke-1.6-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  - name: ubuntu-gke-1.6-flaky
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
   - name: ubuntu-gke-1.6-ingress
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
   - name: ubuntu-gke-1.6-reboot
@@ -1274,6 +1322,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
   - name: ubuntu-gke-1.6-slow
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
+  - name: ubuntu-gke-1.6-updown
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
 
 - name: google-gke-staging
   dashboard_tab:
@@ -1316,14 +1366,12 @@ dashboards:
   - name: high-density-100-gce
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
 
-- name: google-node
+- name: sig-node
   dashboard_tab:
   - name: cadvisor-push
     test_group_name: ci-cadvisor-canarypush
   - name: cadvisor-kubelet
     test_group_name: ci-cadvisor-node-kubelet
-  - name: heapster-push
-    test_group_name: ci-heapster-canarypush
   - name: kubelet-benchmark-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-benchmark
   - name: kubelet
@@ -1338,6 +1386,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.4
   - name: kubelet-1.5
     test_group_name: ci-kubernetes-node-kubelet-1.5
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6  
   - name: docker-kubelet
     test_group_name: ci-kubernetes-node-docker
   - name: docker-e2e
@@ -1434,10 +1484,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
   - name: gke-1.5-1.4-gci
     test_group_name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
-  - name: gce-1.4-latest-cvm
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew
-  - name: gce-1.4-latest-gci
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew
 
 - name: google-1.4-1.5-upgrade
   dashboard_tab:

@@ -188,6 +188,12 @@
         job-name: ci-kubernetes-node-docker-benchmark
         repo-name: k8s.io/kubernetes
         timeout: 90
+    - kubernetes-node-cos-docker-validation:  
+        branch: master
+        frequency: '@hourly'
+        job-name: ci-kubernetes-node-cos-docker-validation
+        repo-name: k8s.io/kubernetes
+        timeout: 90
 
     - kubernetes-e2e-gce-ubuntu-node:  # @kubernetes/ubuntu-image on github
         branch: master

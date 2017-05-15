@@ -13,14 +13,6 @@
     ], 
     "scenario": "execute"
   }, 
-  "ci-heapster-canarypush": {
-    "args": [
-      "--owner=pszczesniak@google.com", 
-      "--target=kubernetes/heapster:canary", 
-      "--file=deploy/docker/canary/Dockerfile"
-    ], 
-    "scenario": "canarypush"
-  }, 
   "ci-kops-build": {
     "args": [
       "--script=make gcs-publish-ci", 
@@ -70,6 +62,27 @@
       "--env-file=jobs/ci-kubernetes-e2e-aws-release-1.5.env", 
       "--aws", 
       "--cluster=e2e-aws-1-5"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-cos-docker-validation": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-cos-docker-validation-serial": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-serial.env"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-cos-docker-validation-slow": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-slow.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -559,20 +572,6 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew.env"
-    ], 
-    "scenario": "kubernetes_e2e"
-  }, 
-  "ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.4-latest-cvm-kubectl-skew.env"
-    ], 
-    "scenario": "kubernetes_e2e"
-  }, 
-  "ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew": {
-    "args": [
-      "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.4-latest-gci-kubectl-skew.env"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -2112,7 +2111,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env", 
-      "--kubeadm", 
+      "--kubeadm=ci", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2122,7 +2121,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-6.env", 
-      "--kubeadm", 
+      "--kubeadm=ci", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2149,6 +2148,30 @@
   "ci-kubernetes-e2e-ubuntu-gke-1-6": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-flaky": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-flaky.env", 
       "--env-file=platforms/gke.env", 
       "--mode=local"
     ], 
@@ -2186,6 +2209,38 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-e2e-ubuntu-gke-1-6-updown": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-alpha-features": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-alpha-features.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-autoscaling": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-autoscaling.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-flaky": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-flaky.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
   "ci-kubernetes-e2e-ubuntu-gke-ingress": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-ingress.env", 
@@ -2213,6 +2268,14 @@
   "ci-kubernetes-e2e-ubuntu-gke-slow": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-slow.env", 
+      "--env-file=platforms/gke.env", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-e2e-ubuntu-gke-updown": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-ubuntu-gke-updown.env", 
       "--env-file=platforms/gke.env", 
       "--mode=local"
     ], 
@@ -2302,6 +2365,12 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-kubernetes-node-cos-docker-validation": {
+    "args": [
+      "--properties=test/e2e_node/jenkins/docker_validation/cos-docker-validation.properties"
+    ], 
+    "scenario": "kubernetes_kubelet"
+  }, 
   "ci-kubernetes-node-docker": {
     "args": [
       "--properties=test/e2e_node/jenkins/docker_validation/jenkins-validation.properties"
@@ -2372,6 +2441,25 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy.env", 
       "--test=false", 
+      "--down=false"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-soak-cos-docker-validation-deploy": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-deploy.env", 
+      "--test=false", 
+      "--down=false"
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "ci-kubernetes-soak-cos-docker-validation-test": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-test.env", 
+      "--soak-test", 
+      "--up=false", 
       "--down=false"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2671,7 +2759,6 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-perf-tests-e2e-gce-clusterloader.env", 
       "--test=false", 
-      "--mount-paths=$GOPATH/src/k8s.io/perf-tests:/src/k8s.io/perf-tests", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2692,12 +2779,6 @@
     "scenario": "kubernetes_janitor"
   }, 
   "metrics-bigquery": {
-    "args": [
-      "--config=test-infra/metrics/flakes-config.yaml", 
-      "--config=test-infra/metrics/failures-config.yaml", 
-      "--config=test-infra/metrics/job-flakes-config.yaml", 
-      "--config=test-infra/metrics/weekly-consistency-config.yaml"
-    ], 
     "scenario": "bigquery"
   }, 
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {
@@ -2705,7 +2786,7 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/periodic-kubernetes-e2e-kubeadm-gce-1-6.env", 
-      "--kubeadm", 
+      "--kubeadm=periodic", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
@@ -2799,6 +2880,16 @@
       "--stage=gs://kubernetes-release-dev/ci", 
       "--stage-suffix=pull-gke-gci", 
       "--cluster="
+    ], 
+    "scenario": "kubernetes_e2e"
+  }, 
+  "pull-kubernetes-e2e-kubeadm-gce": {
+    "args": [
+      "--cluster=", 
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/pull-kubernetes-e2e-kubeadm-gce.env", 
+      "--kubeadm=pull", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 

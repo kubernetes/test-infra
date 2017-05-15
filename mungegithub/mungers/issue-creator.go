@@ -323,28 +323,24 @@ func (c *IssueCreator) TestOwner(testName string) string {
 
 // TestSIG uses the IssueCreator's OwnerMapper to look up the SIGs for a list of tests.
 // The number of SIGs returned is limited by maxSIGCount.
-func (c *IssueCreator) TestsSIGs(testNames []string) []string {
+// The return value is a map from sigs to the tests from testNames that each sig owns.
+func (c *IssueCreator) TestsSIGs(testNames []string) map[string][]string {
 	if c.owners == nil {
-		return []string{}
+		return nil
 	}
-	var sigs []string
+	sigs := make(map[string][]string)
 	for _, test := range testNames {
 		sig := c.owners.TestSIG(test)
 		if sig == "" {
 			continue
 		}
-		found := false
-		for _, oldsig := range sigs {
-			if sig == oldsig {
-				found = true
-				break
+
+		if len(sigs) >= c.maxSIGCount {
+			if tests, ok := sigs[sig]; ok {
+				sigs[sig] = append(tests, test)
 			}
-		}
-		if !found {
-			sigs = append(sigs, sig)
-			if len(sigs) >= c.maxSIGCount {
-				break
-			}
+		} else {
+			sigs[sig] = append(sigs[sig], test)
 		}
 	}
 	return sigs
@@ -352,28 +348,24 @@ func (c *IssueCreator) TestsSIGs(testNames []string) []string {
 
 // TestOwner uses the IssueCreator's OwnerMapper to look up the users assigned to a list of tests.
 // The number of users returned is limited by maxAssignees.
-func (c *IssueCreator) TestsOwners(testNames []string) []string {
+// The return value is a map from users to the test names from testNames that each user owns.
+func (c *IssueCreator) TestsOwners(testNames []string) map[string][]string {
 	if c.owners == nil {
-		return []string{}
+		return nil
 	}
-	var users []string
+	users := make(map[string][]string)
 	for _, test := range testNames {
 		user := c.owners.TestOwner(test)
 		if user == "" {
 			continue
 		}
-		found := false
-		for _, olduser := range users {
-			if olduser == user {
-				found = true
-				break
+
+		if len(users) >= c.maxAssignees {
+			if tests, ok := users[user]; ok {
+				users[user] = append(tests, test)
 			}
-		}
-		if !found {
-			users = append(users, user)
-			if len(users) >= c.maxAssignees {
-				break
-			}
+		} else {
+			users[user] = append(users[user], test)
 		}
 	}
 	return users

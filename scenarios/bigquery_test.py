@@ -16,56 +16,107 @@
 
 """Tests for bigquery.py"""
 
+import argparse
 import os
-import unittest
-import tempfile
 import shutil
+import sys
+import tempfile
+import unittest
+
+import yaml
+
 import bigquery
 
 class TestBigquery(unittest.TestCase):
     """Tests the bigquery scenario."""
-    out_filename = "out.json"
-    data_filename = "data.json"
-    sample_sql = "#standardSQL\n select job from `k8s-gubernator.build.all`"
 
-    def test_query(self):
-        """Test that the do query function can execute a query without failing."""
-        tests = [[self.sample_sql, self.out_filename, "k8s-gubernator"]]
-        for test in tests:
-            bigquery.do_query(*test)
-            with open(self.out_filename) as out_file:
-                contents = out_file.read()
-                if "error" in contents.split("\n")[0].lower():
-                    raise ValueError("query should have thrown an error because the"
-                                     " bq command failed.")
+    def test_configs(self):
+        """All yaml files in metrics are valid."""
+        for path in bigquery.all_configs(search='**'):
+            name = os.path.basename(path)
+            if name in ['BUILD', 'README.md']:
+                continue
+            if not path.endswith('.yaml'):
+                self.fail('Only .yaml files allowed: %s' % path)
+
+            with open(path) as config_file:
+                config = yaml.safe_load(config_file)
+                if not config:
+                    self.fail(path)
+                self.assertIn('metric', config)
+                self.assertIn('query', config)
+                self.assertIn('jqfilter', config)
+                bigquery.validate_metric_name(config['metric'].strip())
+        configs = bigquery.all_configs()
+        self.assertTrue(all(p.endswith('.yaml') for p in configs), configs)
+
 
     def test_jq(self):
-        """Test that the do_jq function can execute a jq filter properly."""
-        # [filter, data, expected output]
-        tests = [[".", '{ "field": "value" }', '{"field":"value"}'],
-                 [".field", '{ "field": "value" }', '"value"']]
-        for test in tests:
-            with open(self.data_filename, "w") as data_file:
-                data_file.write(test[1])
-            bigquery.do_jq(test[0], self.data_filename, self.out_filename)
+        """do_jq executes a jq filter properly."""
+        def check(expr, data, expected):
+            """Check a test scenario."""
+            with open(self.data_filename, 'w') as data_file:
+                data_file.write(data)
+            bigquery.do_jq(
+                expr,
+                self.data_filename,
+                self.out_filename,
+                jq_bin=ARGS.jq,
+            )
             with open(self.out_filename) as out_file:
-                actual = out_file.read().replace(" ", "").replace("\n", "")
-                self.assertEqual(actual, test[2], msg="expected jq '{}' on data: {} to output {}"
-                                 " but got {}".format(test[0], test[1], test[2], actual))
+                actual = out_file.read().replace(' ', '').replace('\n', '')
+                self.assertEqual(actual, expected)
+
+        check(
+            expr='.',
+            data='{ "field": "value" }',
+            expected='{"field":"value"}',
+        )
+        check(
+            expr='.field',
+            data='{ "field": "value" }',
+            expected='"value"',
+        )
 
     def test_validate_metric_name(self):
-        """Test the the validate_metric_name function rejects invalid metric names."""
-        tests = ["invalid#metric", "invalid/metric", "in\\valid", "invalid?yes", "*invalid",
-                 "[metric]", "metric\n", "met\ric"]
-        for test in tests:
+        """validate_metric_name rejects invalid metric names."""
+        bigquery.validate_metric_name('normal')
+
+        def check(test):
+            """Check invalid names."""
             self.assertRaises(ValueError, bigquery.validate_metric_name, test)
 
+        check('invalid#metric')
+        check('invalid/metric')
+        check('in\\valid')
+        check('invalid?yes')
+        check('*invalid')
+        check('[metric]')
+        check('metric\n')
+        check('met\ric')
+        check('metric& invalid')
+
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="bigquery_test_")
-        os.chdir(self.tmpdir)
+        self.assertTrue(ARGS.jq)
+        self.tmpdir = tempfile.mkdtemp(prefix='bigquery_test_')
+        self.out_filename = os.path.join(self.tmpdir, 'out.json')
+        self.data_filename = os.path.join(self.tmpdir, 'data.json')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument('--jq', default='jq', help='path to jq binary')
+    ARGS, _ = PARSER.parse_known_args()
+
+    # Remove the --jq flag and its value so that unittest.main can parse the remaining args without
+    # complaining about an unknown flag.
+    for i in xrange(len(sys.argv)):
+        if sys.argv[i].startswith('--jq'):
+            arg = sys.argv.pop(i)
+            if '=' not in arg:
+                del sys.argv[i]
+            break
+
     unittest.main()

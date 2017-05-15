@@ -98,7 +98,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodFailed,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
 			},
 		},
 		{
@@ -107,7 +107,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodSucceeded,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
 			},
 		},
 		{
@@ -125,7 +125,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodRunning,
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
 			},
 		},
 	}
@@ -139,7 +139,7 @@ func TestClean(t *testing.T) {
 				Name: "old, complete",
 			},
 			Status: kube.ProwJobStatus{
-				StartTime:      time.Now().Add(-maxAge).Add(-time.Second),
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
 				CompletionTime: time.Now().Add(-time.Second),
 			},
 		},
@@ -148,7 +148,7 @@ func TestClean(t *testing.T) {
 				Name: "old, incomplete",
 			},
 			Status: kube.ProwJobStatus{
-				StartTime: time.Now().Add(-maxAge).Add(-time.Second),
+				StartTime: time.Now().Add(-maxProwJobAge).Add(-time.Second),
 			},
 		},
 		{

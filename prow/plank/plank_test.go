@@ -448,6 +448,44 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedComplete: true,
 		},
 		{
+			name: "completed prow job, clean up pod",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					CompletionTime: time.Now(),
+					State:          kube.FailureState,
+					PodName:        "boop-41",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-41",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodFailed,
+					},
+				},
+			},
+			expectedState:    kube.FailureState,
+			expectedNumPods:  0,
+			expectedPodName:  "",
+			expectedComplete: true,
+		},
+		{
+			name: "completed prow job, missing pod",
+			pj: kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					CompletionTime: time.Now(),
+					State:          kube.FailureState,
+					PodName:        "boop-41",
+				},
+			},
+			expectedState:    kube.FailureState,
+			expectedNumPods:  0,
+			expectedPodName:  "",
+			expectedComplete: true,
+		},
+		{
 			name: "start new pod",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
@@ -608,11 +646,13 @@ func TestSyncKubernetesJob(t *testing.T) {
 		}
 		fc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
-			pods:     tc.pods,
+		}
+		fpc := &fkc{
+			pods: tc.pods,
 		}
 		c := Controller{
 			kc:       fc,
-			pkc:      fc,
+			pkc:      fpc,
 			totURL:   totServ.URL,
 			crierURL: crierServ.URL,
 		}
@@ -627,7 +667,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		if actual.Status.PodName != tc.expectedPodName {
 			t.Errorf("for case %s got pod name %s", tc.name, actual.Status.PodName)
 		}
-		if len(fc.pods) != tc.expectedNumPods {
+		if len(fpc.pods) != tc.expectedNumPods {
 			t.Errorf("for case %s got %d pods", tc.name, len(fc.pods))
 		}
 		if actual.Complete() != tc.expectedComplete {
@@ -792,7 +832,7 @@ func TestPeriodic(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fourth sync: %v", err)
 	}
-	if len(fc.pods) != 2 {
+	if len(fc.pods) != 1 {
 		t.Fatalf("Wrong number of pods: %d", len(fc.pods))
 	}
 }

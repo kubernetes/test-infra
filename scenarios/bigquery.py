@@ -14,112 +14,126 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Runs a bigquery query, filters the results, and uploads the filtered and complete data to GCS."""
+"""Runs bigquery metrics and uploads the result to GCS."""
 
 import argparse
+import glob
+import os
+import re
 import subprocess
 import sys
 import time
-import yaml
+import traceback
 
-DEFAULT_BUCKET = "gs://k8s-metrics"
-DEFAULT_PROJECT = "k8s-gubernator"
+import yaml
 
 def check(*cmd, **keyargs):
     """Logs and runs the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
-    # If "stdin_string" keyword arg is present run command and communicate string to stdin
-    if "stdin" in keyargs and isinstance(keyargs["stdin"], str):
-        in_string = keyargs["stdin"]
-        keyargs["stdin"] = subprocess.PIPE
+    # If 'stdin' keyword arg is a string run command and communicate string to stdin
+    if 'stdin' in keyargs and isinstance(keyargs['stdin'], str):
+        in_string = keyargs['stdin']
+        keyargs['stdin'] = subprocess.PIPE
         proc = subprocess.Popen(*cmd, **keyargs)
         proc.communicate(input=in_string)
         return
     subprocess.check_call(*cmd, **keyargs)
 
 def validate_metric_name(name):
-    """Validates that a string is useable as a metric name (Can be used as GCS object name)."""
-    if len(name) == 0:
-        raise ValueError("metric-name cannot be an empty string.")
-    if any(char in name for char in "\r\n[]*?#/\\"):
-        raise ValueError("metric-name cannot contain any line feeds, carriage returns, or the "
-                         "following characters: []*?#/\\")
+    """Raise ValueError if name is non-trivial."""
+    # Regex '$' symbol matches an optional terminating new line
+    # so we have to check that the name
+    # doesn't have one if the regex matches.
+    if not re.match(r'^[\w-]+$', name) or name[-1] == '\n':
+        raise ValueError(name)
 
 def do_query(query, out_filename, project):
     """Executes a bigquery query, outputting the results to a file."""
-    with open(out_filename, "w") as out_file:
-        check(["bq", "query", "--format=prettyjson", "--project_id="+project], stdin=query,
-              stdout=out_file)
+    with open(out_filename, 'w') as out_file:
+        cmd = [
+            'bq', 'query', '--format=prettyjson', '--project_id=%s' % project,
+            '-n100000',  # Results may have more than 100 rows
+        ]
+        check(cmd, stdin=query, stdout=out_file)
 
-def do_jq(jqfilter, data_filename, out_filename):
-    """Executes a jq command on a data file and outputs the results to a file."""
-    with open(out_filename, "w") as out_file:
-        check(["jq", jqfilter, data_filename], stdout=out_file)
+def do_jq(jqfilter, data_filename, out_filename, jq_bin='jq'):
+    """Executes jq on a data file and outputs the results to a file."""
+    with open(out_filename, 'w') as out_file:
+        check([jq_bin, jqfilter, data_filename], stdout=out_file)
 
-def run_metric(project, bucket_path, metric, query, jqfilter):
-    """Executes a query, filters the results, and uploads filtered and complete results to GCS."""
-    fulldata_filename = metric + time.strftime("-%Y-%m-%d.json")
-    latest_filename = metric + "-latest.json"
+def run_metric(project, prefix, metric, query, jqfilter):
+    """Runs query and filters results, uploading data to GCS."""
+    stamp = time.strftime('%Y-%m-%d')
+    raw = 'raw-%s.json' % stamp
+    filtered = 'daily-%s.json' % stamp
+    latest = '%s-latest.json' % metric
 
-    do_query(query, fulldata_filename, project)
-    do_jq(jqfilter, fulldata_filename, latest_filename)
-    check(["gsutil", "-h", "Cache-Control:private, max-age=0, no-transform", "cp",
-           fulldata_filename, latest_filename, bucket_path + metric + "/"])
+    do_query(query, raw, project)
+    do_jq(jqfilter, raw, filtered)
+    def copy(src, dst):
+        """Use gsutil to copy src to test with minimal caching."""
+        check([
+            'gsutil', '-h', 'Cache-Control:max-age=60', 'cp', src, dst])
+
+    copy(raw, os.path.join(prefix, metric, raw))
+    copy(filtered, os.path.join(prefix, metric, filtered))
+    copy(filtered, os.path.join(prefix, latest))
+
+def all_configs(search='**.yaml'):
+    """Returns config files in the metrics dir."""
+    return glob.glob(os.path.join(
+        os.path.dirname(__file__), '../metrics', search))
 
 def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
     if not project:
-        raise ValueError("project-id cannot be an empty string.")
+        raise ValueError('project', project)
     if not bucket_path:
-        raise ValueError("bucket cannot be an empty string.")
-    if bucket_path[-1] != '/':
-        bucket_path += '/'
+        raise ValueError('bucket_path', bucket_path)
 
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
     # when the service account in use has access to multiple projects.
-    check(["bq", "show"], stdin="\n")
+    if not sys.__stdin__.isatty():
+        check(['bq', 'show'], stdin='\n')
 
     errs = []
-    for config_raw in configs:
+    for path in configs or all_configs():
         try:
-            config = yaml.load(config_raw)
+            with open(path) as config_raw:
+                config = yaml.safe_load(config_raw)
             if not config:
-                raise ValueError("{} does not contain a valid yaml document."
-                                 "".format(config_raw.name))
+                raise ValueError('invalid yaml: %s.' % path)
+            metric = config['metric'].strip()
+            validate_metric_name(metric)
+            run_metric(
+                project,
+                bucket_path,
+                metric,
+                config['query'],
+                config['jqfilter'],
+            )
+        except (ValueError, KeyError, IOError, subprocess.CalledProcessError):
+            print >>sys.stderr, traceback.format_exc()
+            errs += path
 
-            validate_metric_name(config["metric"])
-            run_metric(project, bucket_path, config["metric"], config["query"], config["jqfilter"])
-        except Exception as exception: # pylint: disable=broad-except
-            errs += exception
-        finally:
-            config_raw.close()
-
-    if len(errs) > 0:
-        raise Exception(*errs)
+    if errs:
+        print 'Failed %d configs: %s' % (len(errs), ', '.join(errs))
+        sys.exit(1)
 
 
 if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(description=
-                                     "Run BigQuery query and output filtered JSON to file.")
-    PARSER.add_argument("--config",
-                        required=True,
-                        action="append",
-                        type=argparse.FileType('r'),
-                        help="A JSON config file describing a metric. This option may be listed "
-                        "multiple times to run multiple metrics.")
-    PARSER.add_argument("--project-id",
-                        required=False,
-                        type=str,
-                        default=DEFAULT_PROJECT,
-                        help="The GCS project id to use for the bigquery query.")
-    PARSER.add_argument("--bucket",
-                        required=False,
-                        type=str,
-                        default=DEFAULT_BUCKET,
-                        help='The GCS bucket path to upload output to. Files will be uploaded to a'
-                        ' subdir rooted at this path and named with the metric name. Defaults to "'
-                        + DEFAULT_BUCKET + '".')
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument(
+        '--config', action='append', help='yaml file describing a metric.')
+    PARSER.add_argument(
+        '--project',
+        default='k8s-gubernator',
+        help='Charge the specified account for bigquery usage')
+    PARSER.add_argument(
+        '--bucket',
+        default='gs://k8s-metrics',
+        help='Upload results to the specified gcs bucket.')
 
     ARGS = PARSER.parse_args()
-    main(ARGS.config, ARGS.project_id, ARGS.bucket)
+    main(ARGS.config, ARGS.project, ARGS.bucket)

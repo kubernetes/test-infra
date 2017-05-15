@@ -101,7 +101,6 @@ def _call(end, cmd, stdin=None, check=True, output=None):
     begin = time.time()
     if end:
         end = max(end, time.time() + 60)  # Allow at least 60s per command
-        logging.info('Limiting call to %.1f minutes', (end - begin) / 60)
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE if stdin is not None else None,
@@ -225,6 +224,7 @@ def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
         except OSError:
             pass
         call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
+        call(['rm', '-f', '%s/index.lock' % cache_dir])
     else:
         call([git, 'init', repo])
     os.chdir(repo)
@@ -240,7 +240,7 @@ def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
     retries = 3
     for attempt in range(retries):
         try:
-            call([git, 'fetch', '--tags', repository(repo, ssh)] + refs)
+            call([git, 'fetch', '--quiet', '--tags', repository(repo, ssh)] + refs)
             break
         except subprocess.CalledProcessError as cpe:
             if attempt >= retries - 1:

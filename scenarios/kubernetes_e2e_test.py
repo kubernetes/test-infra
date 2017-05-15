@@ -20,9 +20,11 @@
 """Test for kubernetes_e2e.py"""
 
 import json
+import os
 import re
 import shutil
 import string
+import tempfile
 import urllib
 import unittest
 
@@ -111,17 +113,18 @@ class LocalTest(ScenarioTest):
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
 
-    def test_kubeadm(self):
-        """Make sure kubeadm mode is fine overall."""
-        args = self.parser.parse_args(['--mode=local', '--kubeadm'])
+    def test_kubeadm_ci(self):
+        """Make sure kubeadm ci mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=ci'])
         self.assertEqual(args.mode, 'local')
-        self.assertEqual(args.kubeadm, True)
+        self.assertEqual(args.kubeadm, 'ci')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
                 kubernetes_e2e.main(args)
 
         self.assertIn('E2E_OPT', self.envs)
-        self.assertIn('v1.7.0-alpha.0.1320+599539dc0b9997', self.envs['E2E_OPT'])
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      'v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/', self.envs['E2E_OPT'])
         called = False
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
@@ -129,14 +132,68 @@ class LocalTest(ScenarioTest):
                 called = True
         self.assertTrue(called)
 
-    def test_include_host_env(self):
-        """Ensure that host variables (such as GOPATH) are included."""
+    def test_local_env(self):
+        """
+            Ensure that host variables (such as GOPATH) are included,
+            and added envs/env files overwrite os environment.
+        """
         mode = kubernetes_e2e.LocalMode('/orig-workspace')
         mode.add_environment(*('FOO=BAR', 'GOPATH=/go/path',
                                'WORKSPACE=/new/workspace'))
-        self.assertIn(['FOO', 'BAR'], mode.env)
-        self.assertIn(['WORKSPACE', '/new/workspace'], mode.env)
-        self.assertIn(['GOPATH', '/go/path'], mode.env)
+        mode.add_os_environment(*('USER=jenkins', 'FOO=BAZ', 'GOOS=linux'))
+        with tempfile.NamedTemporaryFile() as temp:
+            temp.write('USER=prow')
+            temp.flush()
+            mode.add_file(temp.name)
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            mode.start([])
+        self.assertIn(('FOO', 'BAR'), self.envs.viewitems())
+        self.assertIn(('WORKSPACE', '/new/workspace'), self.envs.viewitems())
+        self.assertIn(('GOPATH', '/go/path'), self.envs.viewitems())
+        self.assertIn(('USER', 'prow'), self.envs.viewitems())
+        self.assertIn(('GOOS', 'linux'), self.envs.viewitems())
+        self.assertNotIn(('USER', 'jenkins'), self.envs.viewitems())
+        self.assertNotIn(('FOO', 'BAZ'), self.envs.viewitems())
+
+    def test_kubeadm_periodic(self):
+        """Make sure kubeadm periodic mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=periodic'])
+        self.assertEqual(args.mode, 'local')
+        self.assertEqual(args.kubeadm, 'periodic')
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
+                kubernetes_e2e.main(args)
+
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      'v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/', self.envs['E2E_OPT'])
+        called = False
+        for call in self.callstack:
+            self.assertFalse(call.startswith('docker'))
+            if call == 'hack/print-workspace-status.sh':
+                called = True
+        self.assertTrue(called)
+
+    def test_kubeadm_pull(self):
+        """Make sure kubeadm pull mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=pull'])
+        self.assertEqual(args.mode, 'local')
+        self.assertEqual(args.kubeadm, 'pull')
+        fake_env = {'PULL_NUMBER': 1234, 'PULL_REFS': 'master:abcd'}
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(os, 'environ', fake_env):
+                kubernetes_e2e.main(args)
+
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      '1234/master:abcd/bin/linux/amd64/', self.envs['E2E_OPT'])
+
+    def test_kubeadm_invalid(self):
+        """Make sure kubeadm invalid mode exits unsuccessfully."""
+        with self.assertRaises(SystemExit) as sysexit:
+            self.parser.parse_args(['--mode=local', '--kubeadm=deploy'])
+
+        self.assertEqual(sysexit.exception.code, 2)
 
 class DockerTest(ScenarioTest):
     """Class for testing e2e scenario in docker mode."""
@@ -162,15 +219,20 @@ class DockerTest(ScenarioTest):
         self.assertNotIn('errors', data)
         self.assertIn('name', data)
 
-    def test_exclude_host_env(self):
-        """Ensure that host variables (such as GOPATH) are excluded."""
+    def test_docker_env(self):
+        """
+            Ensure that host variables (such as GOPATH) are excluded,
+            and OS envs are included.
+        """
         mode = kubernetes_e2e.DockerMode(
             'fake-container', '/host-workspace', False, 'fake-tag', [])
         mode.add_environment(*('FOO=BAR', 'GOPATH=/something/else',
                                'WORKSPACE=/new/workspace'))
+        mode.add_os_environment('USER=jenkins')
         self.assertIn('FOO=BAR', mode.cmd)
         self.assertIn('WORKSPACE=/workspace', mode.cmd)
         self.assertNotIn('GOPATH=/something/else', mode.cmd)
+        self.assertIn('USER=jenkins', mode.cmd)
 
 if __name__ == '__main__':
     unittest.main()

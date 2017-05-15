@@ -63,11 +63,38 @@ def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
     return env.split('=', 1)
 
+def kubeadm_version(mode):
+    """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
+    version = ''
+    if mode in ['ci', 'periodic']:
+        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
+        # current working directory at the repository root. Grab the SCM_REVISION so we
+        # can use the .debs built during the bazel-build job that should have already
+        # succeeded.
+        status = re.search(
+            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
+            check_output('hack/print-workspace-status.sh')
+        )
+        if not status:
+            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
+        version = status.group(1)
+
+    elif mode == 'pull':
+        version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
+
+    else:
+        raise ValueError("Unknown kubeadm mode given: %s" % mode)
+
+    # The path given here should match jobs/ci-kubernetes-bazel-build.sh
+    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+
+
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
     def __init__(self, workspace):
         self.workspace = workspace
         self.env = []
+        self.os_env = []
         self.env_files = []
         self.add_environment(
             'HOME=%s' % workspace,
@@ -79,15 +106,18 @@ class LocalMode(object):
         """Adds FOO=BAR to the list of environment overrides."""
         self.env.extend(parse_env(e) for e in envs)
 
-    def add_files(self, env_files):
-        """Reads all FOO=BAR lines from each path in env_files seq."""
-        for env_file in env_files:
-            with open(test_infra(env_file)) as fp:
-                for line in fp:
-                    line = line.rstrip()
-                    if not line or line.startswith('#'):
-                        continue
-                    self.env_files.append(parse_env(line))
+    def add_os_environment(self, *envs):
+        """Adds FOO=BAR to the list of os environment overrides."""
+        self.os_env.extend(parse_env(e) for e in envs)
+
+    def add_file(self, env_file):
+        """Reads all FOO=BAR lines from env_file."""
+        with open(env_file) as fp:
+            for line in fp:
+                line = line.rstrip()
+                if not line or line.startswith('#'):
+                    continue
+                self.env_files.append(parse_env(line))
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
@@ -146,6 +176,7 @@ class LocalMode(object):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
         env = {}
+        env.update(self.os_env)
         env.update(self.env_files)
         env.update(self.env)
         self.install_prerequisites()
@@ -208,16 +239,19 @@ class DockerMode(object):
             else:
                 self._add_env_var(env)
 
+    def add_os_environment(self, *envs):
+        """Adds os envs as FOO=BAR to the -e list for docker."""
+        self.add_environment(*envs)
+
     def _add_env_var(self, env):
         """Adds a single environment variable to the -e list for docker.
 
         Does not check against any blacklists."""
         self.cmd.extend(['-e', env])
 
-    def add_files(self, env_files):
-        """Adds each file to the --env-file list."""
-        for env_file in env_files:
-            self.cmd.extend(['--env-file', test_infra(env_file)])
+    def add_file(self, env_file):
+        """Adds the file to the --env-file list."""
+        self.cmd.extend(['--env-file', env_file])
 
     def add_k8s(self, k8s, *repos):
         """Add the specified k8s.io repos into container."""
@@ -299,8 +333,10 @@ def main(args):
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:
         raise ValueError(args.mode)
+
     if args.env_file:
-        mode.add_files(args.env_file)
+        for env_file in args.env_file:
+            mode.add_file(test_infra(env_file))
 
     if args.aws:
         # Enforce aws credential/keys exists
@@ -335,29 +371,16 @@ def main(args):
     if args.kubeadm:
         # Not from Jenkins
         cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
-
-        # This job only runs against the kubernetes repo, and bootstrap.py leaves the
-        # current working directory at the repository root. Grab the SCM_REVISION so we
-        # can use the .debs built during the bazel-build job that should have already
-        # succeeded.
-        status = re.search(
-            r'STABLE_BUILD_SCM_REVISION ([^\n]+)',
-            check_output('hack/print-workspace-status.sh')
-        )
-        if not status:
-            raise ValueError('STABLE_BUILD_SCM_REVISION not found')
-
+        version = kubeadm_version(args.kubeadm)
         opt = '--deployment kubernetes-anywhere' \
             ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
             ' --kubernetes-anywhere-phase2-provider kubeadm' \
             ' --kubernetes-anywhere-cluster %s' \
-            ' --kubernetes-anywhere-kubeadm-version' \
-            ' gs://kubernetes-release-dev/bazel/%s/build/debs/' % (cluster, status.group(1))
-            # The gs:// path given here should match jobs/ci-kubernetes-bazel-build.sh
+            ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
         mode.add_environment('E2E_OPT=%s' % opt)
 
     # TODO(fejta): delete this?
-    mode.add_environment(*(
+    mode.add_os_environment(*(
         '%s=%s' % (k, v) for (k, v) in os.environ.items()))
 
     mode.add_environment(
@@ -441,7 +464,7 @@ def create_parser():
     parser.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     parser.add_argument(
-        '--kubeadm', action='store_true', help='If the test is a kubeadm job')
+        '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
