@@ -673,7 +673,7 @@ func (c *Client) IsTrustedOrg(org string) bool {
 }
 
 func (c *Client) IsTrustedMember(user string) (bool, error) {
-
+	c.log("IsTrustedMember", c.trustedOrgs, user)
 	for _, trustedOrg := range c.trustedOrgs {
 		trusted, err := c.IsMember(trustedOrg, user)
 		if err != nil {
