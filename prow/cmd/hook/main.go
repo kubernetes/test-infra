@@ -56,7 +56,7 @@ var (
 	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-	trustedOrgs       = flag.String("trustedOrgs", "kubernetes", "comma deliminated list of trusted github orders")
+	trustedOrgs       = flag.String("trustedOrgs", "kubernetes", "comma deliminated list of trusted github organizations")
 )
 
 func main() {
