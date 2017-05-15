@@ -33,12 +33,15 @@ if [[ ! -e triage_builds.json ]] || [ $(stat -c%Y triage_builds.json) -lt $table
   rm -f failed*.json
 fi
 #
+
 gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
+curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/test_owners.json
 
 mkdir -p slices
 
 pypy summarize.py triage_builds.json triage_tests.json \
-  --previous failure_data_previous.json --output failure_data.json --output_slices slices/failure_data_PREFIX.json
+  --previous failure_data_previous.json --owners test_owners.json \
+  --output failure_data.json --output_slices slices/failure_data_PREFIX.json
 
 gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
