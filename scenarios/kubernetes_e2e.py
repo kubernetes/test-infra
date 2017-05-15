@@ -79,6 +79,12 @@ def kubeadm_version(mode):
             raise ValueError('STABLE_BUILD_SCM_REVISION not found')
         version = status.group(1)
 
+        # Work-around for release-1.6 jobs, which still upload debs to an older
+        # location (without os/arch prefixes).
+        # TODO(pipejakob): remove this when we no longer support 1.6.x.
+        if version.startswith("v1.6."):
+            return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
+
     elif mode == 'pull':
         version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
 
