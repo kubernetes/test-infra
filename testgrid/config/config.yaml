@@ -2258,3 +2258,22 @@ dashboards:
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
   - name: kubemark-100-benchmark
     test_group_name: ci-perf-tests-kubemark-100-benchmark
+
+- name: release-1.7-kubectl-skew
+  dashboard_tab:
+  - name: gce-1.6-master-cvm
+    test_group_name: ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew
+  - name: gce-1.6-master-gci
+    test_group_name: ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew
+  - name: gce-master-1.6-cvm
+    test_group_name: ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew
+  - name: gce-master-1.6-gci
+    test_group_name: ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew
+  - name: gke-1.6-master-cvm
+    test_group_name: ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew
+  - name: gke-1.6-master-gci
+    test_group_name: ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew
+  - name: gke-master-1.6-cvm
+    test_group_name: ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew
+  - name: gke-master-1.6-gci
+    test_group_name: ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew
