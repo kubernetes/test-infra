@@ -53,4 +53,16 @@ query: |
   order by wk
 
 jqfilter: |
-  .
+  [(.[] | {commits: (.commits|tonumber), consistency: (.consistency|tonumber), wk: .wk})]
+
+jqmeasurements: |
+  add | [{
+    measurement: "weekly_consistency",
+    tags: {
+      week: (.wk)
+    },
+    fields: {
+      consistency: (.consistency|tonumber),
+      commits: (.commits|tonumber)
+    }
+  }]

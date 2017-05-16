@@ -4155,7 +4155,10 @@
     ]
   }, 
   "metrics-bigquery": {
-    "scenario": "bigquery", 
+    "args": [
+      "test-infra/metrics/bigquery.py"
+    ], 
+    "scenario": "execute", 
     "sigOwners": [
       "UNKNOWN"
     ]
