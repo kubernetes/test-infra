@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os/exec"
 	"time"
@@ -26,21 +25,11 @@ import (
 	"k8s.io/test-infra/boskos/client"
 )
 
-var (
-	clean = janitorClean
-)
-
 type semaphore chan bool
 
 // acquire 1 resources
-func (s semaphore) P() error {
-	select {
-	case s <- true:
-	default:
-		return errors.New("channel is full")
-	}
-
-	return nil
+func (s semaphore) P() {
+	s <- true
 }
 
 // release 1 resources
@@ -48,19 +37,23 @@ func (s semaphore) V() {
 	<-s
 }
 
+var (
+	clean       = janitorClean
+	janitorPool = make(semaphore, 10)
+)
+
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
 	logrus.Info("Initialized boskos client!")
-	sem := make(semaphore, 10)
-	errChan := make(chan error)
-	for range time.Tick(time.Minute * 10) {
-		if err := update(boskos, sem, errChan); err != nil {
-			logrus.WithError(err).Error("Update error.")
-		}
-
-		for _, err := range checkErr(errChan) {
-			logrus.WithError(err).Error("Janitor error.")
+	for {
+		if proj, err := boskos.Acquire("project", "dirty", "cleaning"); err != nil {
+			logrus.WithError(err).Error("Boskos acquire failed!")
+			time.Sleep(time.Minute)
+		} else if proj == "" {
+			time.Sleep(time.Minute)
+		} else {
+			go janitor(boskos, proj)
 		}
 	}
 }
@@ -77,53 +70,18 @@ type boskosClient interface {
 }
 
 // async janitor goroutine
-func janitor(c boskosClient, proj string, sem semaphore, errChan chan error) {
-	if err := sem.P(); err != nil {
-		errChan <- err
-		// put it back to dirty
-
-		if err := c.ReleaseOne(proj, "dirty"); err != nil {
-			errChan <- err
-		}
-		return
-	}
+func janitor(c boskosClient, proj string) {
+	janitorPool.P()
 
 	dest := "free"
 	if err := clean(proj); err != nil {
-		errChan <- err
+		logrus.WithError(err).Error("janitor.py failed!")
 		dest = "dirty"
 	}
 
 	if err := c.ReleaseOne(proj, dest); err != nil {
-		errChan <- err
+		logrus.WithError(err).Error("Boskos release failed!")
 	}
 
-	sem.V()
-}
-
-func checkErr(errChan chan error) []error {
-	var errs []error
-	for {
-		select {
-		case err := <-errChan:
-			errs = append(errs, err)
-		default:
-			return errs
-		}
-	}
-}
-
-func update(c boskosClient, sem semaphore, errChan chan error) error {
-	// Try to acquire all dirty projects, until none are available.
-	for {
-		if proj, err := c.Acquire("project", "dirty", "cleaning"); err != nil {
-			return err
-		} else if proj == "" {
-			break
-		} else {
-			go janitor(c, proj, sem, errChan)
-		}
-	}
-
-	return nil
+	janitorPool.V()
 }

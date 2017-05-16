@@ -39,7 +39,6 @@ func (fb *fakeBoskos) Acquire(rtype string, state string, dest string) (string, 
 		r := &fb.resources[idx]
 		if r.State == state {
 			r.State = dest
-			fmt.Print("fb.wg.Add\n")
 			fb.wg.Add(1)
 			return r.Name, nil
 		}
@@ -56,7 +55,6 @@ func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 		r := &fb.resources[idx]
 		if r.Name == name {
 			r.State = dest
-			fmt.Print("fb.wg.Done\n")
 			fb.wg.Done()
 			return nil
 		}
@@ -65,56 +63,7 @@ func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 	return fmt.Errorf("No resource %v", name)
 }
 
-func TestDrainAll(t *testing.T) {
-	oldClean := clean
-	defer func() { clean = oldClean }()
-	clean = func(p string) error {
-		time.Sleep(3 * time.Second)
-		return nil
-	}
-
-	sem := make(semaphore, 3)
-	errors := make(chan error, 0)
-
-	fb := &fakeBoskos{
-		resources: []common.Resource{
-			{
-				Name:  "res-1",
-				Type:  "project",
-				State: "dirty",
-			},
-			{
-				Name:  "res-2",
-				Type:  "project",
-				State: "dirty",
-			},
-			{
-				Name:  "res-3",
-				Type:  "project",
-				State: "dirty",
-			},
-		},
-	}
-	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexpect error from update: %v", err)
-	}
-
-	// Make sure all clean route finishes
-	fb.wg.Wait()
-
-	// check error from janitor routines
-	if errs := checkErr(errors); len(errs) != 0 {
-		t.Fatalf("Unexpect error from janitor: %v", errs)
-	}
-
-	for _, r := range fb.resources {
-		if r.State != "free" {
-			t.Errorf("Resource %v, expect state free, got state %v", r.Name, r.State)
-		}
-	}
-}
-
-func TestDrainTwice(t *testing.T) {
+func TestDrain(t *testing.T) {
 	oldClean := clean
 	defer func() { clean = oldClean }()
 	clean = func(p string) error {
@@ -122,8 +71,8 @@ func TestDrainTwice(t *testing.T) {
 		return nil
 	}
 
-	sem := make(semaphore, 2)
-	errors := make(chan error, 1)
+	start := time.Now()
+	janitorPool = make(semaphore, 2)
 
 	fb := &fakeBoskos{
 		resources: []common.Resource{
@@ -145,27 +94,19 @@ func TestDrainTwice(t *testing.T) {
 		},
 	}
 
-	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexped error from first update: %v", err)
+	for {
+		if proj, err := fb.Acquire("project", "dirty", "cleaning"); err != nil {
+			t.Fatalf("Acquire failed with %v", err)
+		} else if proj == "" {
+			break
+		} else {
+			go janitor(fb, proj)
+		}
 	}
 
-	// Make sure first two clean route finishes
 	fb.wg.Wait()
-
-	if errs := checkErr(errors); len(errs) != 1 {
-		t.Fatalf("Expect 1 error from janitor, got errors: %v", errs)
-	}
-
-	// check error from previous executions
-	if err := update(fb, sem, errors); err != nil {
-		t.Fatalf("Unexpect error from second update: %v", err)
-	}
-
-	// Make sure the third clean route finishes
-	fb.wg.Wait()
-
-	if errs := checkErr(errors); len(errs) != 0 {
-		t.Fatalf("Expect 0 error from janitor, got errors: %v", errs)
+	if time.Since(start) <= 2*time.Second {
+		t.Errorf("Expect to use more than 2 sec sleep cycles")
 	}
 
 	for _, r := range fb.resources {
