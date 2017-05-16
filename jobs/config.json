@@ -550,7 +550,8 @@
   "ci-kubernetes-e2e-gce-gpu": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
