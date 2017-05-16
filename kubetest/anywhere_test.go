@@ -32,11 +32,13 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		kubeletCIVersion  string
 		kubeletVersion    string
 		kubernetesVersion string
+		cni               string
 		expectConfigLines []string
 	}{
 		{
 			name:   "kubeadm defaults",
 			phase2: "kubeadm",
+			cni:    "weave",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase2.kubeadm.version=\"\"",
@@ -53,6 +55,23 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.provider=\"ignition\"",
 				".phase2.kubernetes_version=\"\"",
 				".phase3.weave_net=n",
+			},
+		},
+		{
+			name:   "flannel on kubeadm",
+			phase2: "kubeadm",
+			cni:    "flannel",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase3.cni=\"flannel\"",
+			},
+		},
+		{
+			name:   "kubeadm uses weave by default",
+			phase2: "kubeadm",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -161,6 +180,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereKubeletVersion = tc.kubeletVersion
 		*kubernetesAnywhereKubeletCIVersion = tc.kubeletCIVersion
 		*kubernetesAnywhereUpgradeMethod = tc.kubeadmUpgrade
+		*kubernetesAnywhereCNI = tc.cni
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {
