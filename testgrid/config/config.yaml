@@ -144,8 +144,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: ci-kubernetes-federation-build-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.6
-- name: ci-kubernetes-federation-build-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-soak
 - name: ci-kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce-flaky
@@ -1680,8 +1678,6 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build
   - name: build-1.6
     test_group_name: ci-kubernetes-federation-build-1.6
-  - name: build-soak
-    test_group_name: ci-kubernetes-federation-build-soak
 
 - name: release-1.6-all
   dashboard_tab:

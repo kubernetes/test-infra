@@ -2305,14 +2305,6 @@
     ], 
     "scenario": "kubernetes_build"
   }, 
-  "ci-kubernetes-federation-build-soak": {
-    "args": [
-      "--fast", 
-      "--federation=k8s-jkns-gce-federation-soak", 
-      "--release=kubernetes-federation-release"
-    ], 
-    "scenario": "kubernetes_build"
-  }, 
   "ci-kubernetes-kubemark-100-gce": {
     "args": [
       "--env-file=platforms/gce.env", 
