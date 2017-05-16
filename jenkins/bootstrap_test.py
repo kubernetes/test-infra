@@ -1880,8 +1880,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
-            'ci-kubernetes-federation-build-soak.sh': 'ci-kubernetes-federation-soak-*',
-            'ci-kubernetes-soak-gce-federation-*.sh': 'ci-kubernetes-federation-soak-*',
             'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce.env': 'pull-kubernetes-e2e-gce-*',
