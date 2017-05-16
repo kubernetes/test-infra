@@ -124,6 +124,7 @@ class TestInfluxPusher(unittest.TestCase):
                   for num in xrange(110)]
         pusher = influxdb.Pusher(
             'localhost:%d' % self.port,
+            None,
             'username',
             'pass123',
         )
