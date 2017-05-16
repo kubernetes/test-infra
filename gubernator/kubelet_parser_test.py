@@ -27,35 +27,35 @@ filters = {"UID": "", "pod": "", "Namespace": ""}
 class KubeletParserTest(unittest.TestCase):
     def test_parse_error_re(self):
         """Test for build-log.txt filtering by error_re"""
-        matched_lines, hilight_words = kubelet_parser.parse(lines,
+        matched_lines, highlight_words = kubelet_parser.parse(lines,
             ["error", "fatal", "failed", "build timed out"], filters, {})
         self.assertEqual(matched_lines, [4])
-        self.assertEqual(hilight_words, ["error", "fatal", "failed", "build timed out"])
+        self.assertEqual(highlight_words, ["error", "fatal", "failed", "build timed out"])
 
     def test_parse_empty_lines(self):
         """Test that it doesn't fail when files are empty"""
-        matched_lines, hilight_words = kubelet_parser.parse([],
+        matched_lines, highlight_words = kubelet_parser.parse([],
             ["error", "fatal", "failed", "build timed out"], filters, {})
         self.assertEqual(matched_lines, [])
-        self.assertEqual(hilight_words, ["error", "fatal", "failed", "build timed out"])
+        self.assertEqual(highlight_words, ["error", "fatal", "failed", "build timed out"])
 
     def test_parse_pod_RE(self):
         """Test for initial pod filtering"""
         filters["pod"] = "pod"
-        matched_lines, hilight_words = kubelet_parser.parse(lines,
+        matched_lines, highlight_words = kubelet_parser.parse(lines,
             ["pod"], filters, {})
         self.assertEqual(matched_lines, [1])
-        self.assertEqual(hilight_words, ["pod"])
+        self.assertEqual(highlight_words, ["pod"])
 
     def test_parse_filters(self):
         """Test for filters"""
         filters["pod"] = "pod"
         filters["UID"] = "on"
         filters["Namespace"] = "on"
-        matched_lines, hilight_words = kubelet_parser.parse(lines,
+        matched_lines, highlight_words = kubelet_parser.parse(lines,
             ["pod"], filters, {"UID":"uid", "Namespace":"podName", "ContainerID":""})
         self.assertEqual(matched_lines, [1, 2, 5, 6])
-        self.assertEqual(hilight_words, ["pod", "podName", "uid"])
+        self.assertEqual(highlight_words, ["pod", "podName", "uid"])
 
     def test_make_dict(self):
         """Test make_dict works"""
