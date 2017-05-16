@@ -10,8 +10,8 @@ go_repositories()
 
 git_repository(
     name = "org_pubref_rules_node",
+    commit = "1cc80c1980407663b6840fb14e7a541e953d6f7c",
     remote = "https://github.com/pubref/rules_node.git",
-    tag = "v0.3.3",
 )
 
 load("@org_pubref_rules_node//node:rules.bzl", "node_repositories", "npm_repository")
