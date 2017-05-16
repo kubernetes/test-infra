@@ -179,7 +179,7 @@ class Clusters {
       if (opts.reText && !opts.reText.test(cluster.text)) {
         continue;
       }
-      if (opts.sig.length && opts.sig.indexOf(cluster.owner) < 0) {
+      if (opts.sig && opts.sig.length && opts.sig.indexOf(cluster.owner) < 0) {
         continue;
       }
       var testsOut = [];
