@@ -1734,6 +1734,57 @@ dashboards:
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl e2e tests in gke-master-1.6-gci-kubectl-skew-serial'
 
+- name: sig-storage
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce e2e tests for master branch'
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gke
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke e2e tests for master branch'
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-release-1-6
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce e2e tests for 1.6 branch'
+  - name: gke-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1.6
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke e2e tests for 1.6 branch'
+  - name: gce-1.5
+    test_group_name: ci-kubernetes-e2e-gce-release-1-5
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce e2e tests for 1.5 branch'
+  - name: gke-1.5
+    test_group_name: ci-kubernetes-e2e-gke-release-1.5
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke e2e tests for 1.5 branch'
+  - name: gce-flaky
+    test_group_name: ci-kubernetes-e2e-gce-flaky
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce flaky e2e tests for master branch'
+  - name: gke-flaky
+    test_group_name: ci-kubernetes-e2e-gke-flaky
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke flaky e2e tests for master branch'
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce slow e2e tests for master branch'
+  - name: gke-slow
+    test_group_name: ci-kubernetes-e2e-gke-slow
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke slow e2e tests for master branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gce serial e2e tests for master branch'
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+    base_options: 'include-filter-by-regex=Volume'
+    description: 'storage gke serial e2e tests for master branch'
+
 - name: etcd-upgrades
   dashboard_tab:
   - name: gce-latest
