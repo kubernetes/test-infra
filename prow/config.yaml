@@ -1902,6 +1902,34 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0
 
+- name: ci-perf-tests-kubemark-100-benchmark
+  interval: 2h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
+      args:
+      - "--repo=k8s.io/perf-tests=master"
+      - "--root=/go/src"
+      - "--timeout=10"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-release-1-4
   spec:

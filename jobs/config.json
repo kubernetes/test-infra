@@ -2763,6 +2763,12 @@
     ], 
     "scenario": "kubernetes_e2e"
   }, 
+  "ci-perf-tests-kubemark-100-benchmark": {
+    "args": [
+      "./benchmark/runner.sh"
+    ], 
+    "scenario": "execute"
+  }, 
   "ci-test-infra-test-history": {
     "args": [
       "./jenkins/test_history/gen_history"

@@ -874,6 +874,8 @@ test_groups:
 # perf tests
 - name: ci-perf-tests-e2e-gce-clusterloader
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
+- name: ci-perf-tests-kubemark-100-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
 # Add New Testgroups Here
 
 #
@@ -2249,3 +2251,5 @@ dashboards:
   dashboard_tab:
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
+  - name: kubemark-100-benchmark
+    test_group_name: ci-perf-tests-kubemark-100-benchmark
