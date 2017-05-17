@@ -1413,6 +1413,7 @@ class JobTest(unittest.TestCase):
     prow_config = '../prow/config.yaml'
 
     realjobs = {}
+    prowjobs = []
 
     def testJobScriptExpandsVars(self):
         fake = {
@@ -1680,6 +1681,7 @@ class JobTest(unittest.TestCase):
                             real_job['timeout'] = match.group(1)
         if name not in self.realjobs:
             self.realjobs[name] = real_job
+            self.prowjobs.append(name)
         if 'run_after_success' in job:
             for sub in job.get('run_after_success'):
                 self.AddProwJob(sub)
@@ -1975,6 +1977,7 @@ class JobTest(unittest.TestCase):
 
     def testValidJobEnvs(self):
         """Validate jobs/config.json."""
+        self.LoadProwYaml(self.prow_config)
         with open(bootstrap.test_infra('jobs/config.json')) as fp:
             config = json.loads(fp.read())
             for job in config:
@@ -1983,7 +1986,12 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 hasMatchingEnv = False
+                rightMode = True
+                if job in self.prowjobs:
+                    rightMode = False
                 for arg in config[job].get('args', []):
+                    if arg == '--mode=local':
+                        rightMode = True
                     m = re.match(r'--env-file=jobs/([^\"]+)\.env', arg)
                     if m:
                         env = m.group(1)
@@ -2000,6 +2008,7 @@ class JobTest(unittest.TestCase):
                             self.assertLessEqual(len(cluster), 20, 'Job %r, --cluster should be 20 chars or fewer' % job)
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     self.assertTrue(hasMatchingEnv, job)
+                    self.assertTrue(rightMode, job)
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', config[job]['args'])
                         if 'gke' in job:
