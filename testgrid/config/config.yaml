@@ -52,10 +52,25 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-test-history
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: ci-kubernetes-build-1.4
@@ -502,8 +517,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-latest-upgrade-cluster-new
 - name: ci-kubernetes-node-kubelet-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-e2e-gce-enormous-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
 - name: ci-kubernetes-e2e-gke-large-deploy
@@ -528,6 +553,11 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-non-cri-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1.6
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: ci-kubernetes-e2e-gce-enormous-deploy
@@ -810,7 +840,6 @@ test_groups:
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
-
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
