@@ -107,7 +107,10 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    highlight_words = ["error", "fatal", "fail", "failed", "build timed out"]
+    highlight_words = [
+        "build timed out", "error", "fail", "failed", "fatal", "undefined"
+    ]
+
     if filters["pod"]:
         highlight_words = [filters["pod"]]
 
