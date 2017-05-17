@@ -118,10 +118,6 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             dump.append(output)
             job_names.append(real_job['job-name'])
 
-    for job in job_names:
-        if '.' in job:
-            job_replace[job] = job.replace('.', '-')
-
     if prow_path:
         yaml.safe_dump(dump, file(prow_path, 'a'), default_flow_style=False)
     else:
@@ -152,15 +148,18 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             fp.write(json.dumps(configs, sort_keys=True, indent=2))
             fp.truncate()
 
-    for oldName, newName in job_replace.iteritems():
-        files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
-        for fname in files:
-            with open(fname) as f:
-                s = f.read()
-            s = s.replace(oldName, newName)
-            with open(fname, "w") as f:
-                f.write(s)
-        subprocess.check_call(['git', 'mv', 'jobs/%s.env' % oldName, 'jobs/%s.env' % newName])
+    for oldName in job_names:
+        if '.' in oldName:
+            newName = oldName.replace('.', '-')        
+            
+            files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
+            for fname in files:
+                with open(fname) as f:
+                    s = f.read()
+                s = s.replace(oldName, newName)
+                with open(fname, "w") as f:
+                    f.write(s)
+            subprocess.check_call(['git', 'mv', 'jobs/%s.env' % oldName, 'jobs/%s.env' % newName])
 
 
 if __name__ == '__main__':
