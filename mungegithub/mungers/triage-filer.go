@@ -124,8 +124,8 @@ func (f *TriageFiler) FileIssues() error {
 
 // AddFlags will add any requested flags to the cobra `cmd`.
 func (f *TriageFiler) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&f.topClustersCount, "triage-sync-count", 3, "The number of clusters to sync issues for on github.")
-	cmd.Flags().IntVar(&f.windowDays, "triage-window-days", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
+	cmd.Flags().IntVar(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
+	cmd.Flags().IntVar(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
 }
 
 // Munge is unused by the TriageFiler.

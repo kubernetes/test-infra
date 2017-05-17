@@ -131,8 +131,8 @@ data:
   gitrepo.repo-dir: /gitrepos
   gitrepo.enable-md-yaml: "false"
   issue-creator.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
-  triage-filer.window-days: "1"
-  triage-filer.sync-count: "10"
+  triage.window: "1"
+  triage.count: "10"
   flakyjob.count: "3"
   old-test-getter.number-of-old-test-results: "5"
   assign-fixes.fixes-issue-reassign: "false"
