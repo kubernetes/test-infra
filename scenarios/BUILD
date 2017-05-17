@@ -34,7 +34,7 @@ py_test(
     ],
     args = ["--jq=$(location @jq//file)"],
     data = [
-        "//metrics:configs",
+        "//metrics:all-srcs",
         "@jq//file",
     ],
 )
