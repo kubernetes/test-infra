@@ -20,37 +20,37 @@ import jinja2
 
 import regex
 
-def parse(lines, hilight_words, filters, objref_dict):
+def parse(lines, highlight_words, filters, objref_dict):
     """
     Given filters returns indeces of wanted lines from log
 
     Args:
         lines: array of log lines
-        hilight_words: array of words that need to be bolded
+        highlight_words: array of words that need to be bolded
         filters: dictionary of which filters to apply
         objref_dict: a dictionary where the keys are possible filters
-        and the values are the words to be hilighted
+        and the values are the words to be highlighted
     Returns:
         matched_lines: ordered array of indeces of lines to display
-        hilight_words: updated hilight_words
+        highlight_words: updated highlight_words
     """
     matched_lines = []
 
     if not filters["pod"] and objref_dict:
-        hilight_words = []
+        highlight_words = []
 
     # If the filter is on, look for it in the objref_dict
     for k in filters:
         if k != "pod" and filters[k] and k in objref_dict:
-            hilight_words.append(objref_dict[k])
+            highlight_words.append(objref_dict[k])
 
-    words_re = regex.combine_wordsRE(hilight_words)
+    words_re = regex.combine_wordsRE(highlight_words)
 
     for n, line in enumerate(lines):
         if words_re.search(line):
             matched_lines.append(n)
 
-    return matched_lines, hilight_words
+    return matched_lines, highlight_words
 
 
 def make_dict(data, pod_re, objref_dict):

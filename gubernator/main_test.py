@@ -173,7 +173,7 @@ class AppTest(TestBase):
         write(kubeapi_filepath,
             '0101 01:01:01.000 kubeapi\n0101 01:01:01.002 pod\n01-01T01:01:01.005Z last line')
         expected = ('0101 01:01:01.000 kubeapi\n'
-                    '<span class="hilight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
+                    '<span class="highlight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
                     '&#34;<span class="keyword">abc</span>&#34;, UID:&#34;podabc&#34;})</span>\n'
                     '0101 01:01:01.002 pod\n'
                     '01-01T01:01:01.005Z last line')
@@ -199,7 +199,7 @@ class AppTest(TestBase):
         write(proxy_filepath,
             '0101 01:01:01.000 proxy\n0101 01:01:01.002 pod\n01-01T01:01:01.005Z last line')
         expected = ('0101 01:01:01.000 proxy\n'
-                    '<span class="hilight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
+                    '<span class="highlight">abc0101 01:01:01.001 Event(api.ObjectReference{Name:'
                     '&#34;<span class="keyword">abc</span>&#34;, UID:&#34;podabc&#34;})</span>\n'
                     '0101 01:01:01.002 pod\n'
                     '01-01T01:01:01.005Z last line')

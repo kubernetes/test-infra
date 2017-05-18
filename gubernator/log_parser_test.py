@@ -65,23 +65,23 @@ class LogParserTest(unittest.TestCase):
 
     def test_html(self):
         self.assertEqual(digest('error-blah', strip=False), ''
-                         '<span class="hilight"><span class="keyword">'
+                         '<span class="highlight"><span class="keyword">'
                          'error</span>-blah</span>')
 
     def test_html_range(self):
         self.assertEqual(digest('error 1 2 3 4 5 6 7 8', strip=False),
-            '<span class="hilight"><span class="keyword">error</span></span>'
+            '<span class="highlight"><span class="keyword">error</span></span>'
             ' 1 2 3 4 <span class="skip" data-range="5-9">s4</span>')
 
     def test_unicode(self):
         self.assertEqual(log_parser.digest(u'error \xb5s'),
-            u'<span class="hilight"><span class="keyword">'
+            u'<span class="highlight"><span class="keyword">'
             u'error</span> \xb5s</span>\n')
 
     def test_pod(self):
         self.assertEqual(digest(
             'pod-blah', error_re=regex.wordRE("pod"), strip=False),
-            '<span class="hilight">pod-blah</span>')
+            '<span class="highlight">pod-blah</span>')
         self.assertEqual(digest('0 1 2 3 4 5 pod 6 7 8 9 10',
             error_re=regex.wordRE("pod"),
             filters={"pod": "pod", "UID": "", "Namespace": "", "ContainerID":""}),

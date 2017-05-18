@@ -60,7 +60,7 @@ pre.cmd {
 pre.cmd::before {
     content: "Command: ";  /* This text isn't selectable */
 }
-span.hilight {
+span.highlight {
     background-color: palegoldenrod;
 }
 span.keyword {

@@ -24,24 +24,24 @@ CONTEXT_DEFAULT = 6
 MAX_BUFFER = 5000000  # GAE has RAM limits.
 
 
-def hilight(line, hilight_words):
+def highlight(line, highlight_words):
     # Join all the words that need to be bolded into one regex
-    words_re = regex.combine_wordsRE(hilight_words)
+    words_re = regex.combine_wordsRE(highlight_words)
     line = words_re.sub(r'<span class="keyword">\1</span>', line)
-    return '<span class="hilight">%s</span>' % line
+    return '<span class="highlight">%s</span>' % line
 
 
-def log_html(lines, matched_lines, hilight_words, skip_fmt):
+def log_html(lines, matched_lines, highlight_words, skip_fmt):
     """
     Constructs the html for the filtered log
     Given:
         lines: list of all lines in the log
         matched_lines: list of lines that have a filtered string in them
-        hilight_words: list of words to be bolded
+        highlight_words: list of words to be bolded
         skip_fmt: function producing string to replace the skipped lines
     Returns:
         output: list of a lines HTML code suitable for inclusion in a <pre>
-        tag, with "interesting" errors hilighted
+        tag, with "interesting" errors highlighted
     """
     output = []
 
@@ -70,7 +70,7 @@ def log_html(lines, matched_lines, hilight_words, skip_fmt):
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - context_lines): match])
-        output.append(hilight(lines[match], hilight_words))
+        output.append(highlight(lines[match], highlight_words))
         last_match = match
 
     return output
@@ -96,7 +96,7 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     # pylint: disable=too-many-arguments
     """
     Given a build log, return a chunk of HTML code suitable for
-    inclusion in a <pre> tag, with "interesting" errors hilighted.
+    inclusion in a <pre> tag, with "interesting" errors highlighted.
 
     This is similar to the output of `grep -C4` with an appropriate regex.
     """
@@ -107,17 +107,20 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    hilight_words = ["error", "fatal", "fail", "failed", "build timed out"]
+    highlight_words = [
+        "build timed out", "error", "fail", "failed", "fatal", "undefined"
+    ]
+
     if filters["pod"]:
-        hilight_words = [filters["pod"]]
+        highlight_words = [filters["pod"]]
 
     if not (filters["UID"] or filters["Namespace"] or filters["ContainerID"]):
         matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
-        matched_lines, hilight_words = kubelet_parser.parse(lines,
-            hilight_words, filters, objref_dict)
+        matched_lines, highlight_words = kubelet_parser.parse(lines,
+            highlight_words, filters, objref_dict)
 
-    output = log_html(lines, matched_lines, hilight_words, skip_fmt)
+    output = log_html(lines, matched_lines, highlight_words, skip_fmt)
     output.append('')
 
     return '\n'.join(output)
