@@ -25,10 +25,8 @@ export KOPS_VERSION="pull-$(git describe --always)"
 export KOPS_BASE_URL="${GCS_LOCATION/gs:\/\//https:\/\/storage.googleapis.com\/}/${KOPS_VERSION}"
 make gcs-publish-ci "VERSION=${KOPS_VERSION}"
 
-# TODO(zmerlynn): Change this to stable.txt (which is kops default
-# anyways) after 1.5 becomes stable.txt. (Some AWS test deflaking was
-# in 1.5.)
-export JENKINS_PUBLISHED_VERSION=release/latest-1.5
+# Using latest stable k8s release
+export JENKINS_PUBLISHED_VERSION=release/stable
 export KUBERNETES_RELEASE=$(gsutil cat "gs://kubernetes-release/${JENKINS_PUBLISHED_VERSION}.txt")
 
 export KUBERNETES_PROVIDER="kops-aws"
