@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"k8s.io/test-infra/boskos/common"
 )
@@ -67,12 +66,10 @@ func TestDrain(t *testing.T) {
 	oldClean := clean
 	defer func() { clean = oldClean }()
 	clean = func(p string) error {
-		time.Sleep(time.Second)
 		return nil
 	}
 
-	start := time.Now()
-	janitorPool = make(semaphore, 2)
+	janitorPool := make(chan string, 1)
 
 	fb := &fakeBoskos{
 		resources: []common.Resource{
@@ -91,8 +88,24 @@ func TestDrain(t *testing.T) {
 				Type:  "project",
 				State: "dirty",
 			},
+			{
+				Name:  "res-4",
+				Type:  "project",
+				State: "dirty",
+			},
+			{
+				Name:  "res-5",
+				Type:  "project",
+				State: "dirty",
+			},
 		},
 	}
+
+	for i := 0; i < 2; i++ {
+		go janitor(fb, janitorPool)
+	}
+
+	var totalAcquire int
 
 	for {
 		if proj, err := fb.Acquire("project", "dirty", "cleaning"); err != nil {
@@ -100,14 +113,16 @@ func TestDrain(t *testing.T) {
 		} else if proj == "" {
 			break
 		} else {
-			go janitor(fb, proj)
+			totalAcquire++
+			janitorPool <- proj // will block until pool has a free slot
 		}
 	}
 
-	fb.wg.Wait()
-	if time.Since(start) <= 2*time.Second {
-		t.Errorf("Expect to use more than 2 sec sleep cycles")
+	if totalAcquire != len(fb.resources) {
+		t.Errorf("Expect to acquire all resources(5) from fake boskos, got %d", totalAcquire)
 	}
+
+	fb.wg.Wait()
 
 	for _, r := range fb.resources {
 		if r.State != "free" {

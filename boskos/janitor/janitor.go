@@ -25,27 +25,21 @@ import (
 	"k8s.io/test-infra/boskos/client"
 )
 
-type semaphore chan bool
-
-// acquire 1 resources
-func (s semaphore) P() {
-	s <- true
-}
-
-// release 1 resources
-func (s semaphore) V() {
-	<-s
-}
-
 var (
-	clean       = janitorClean
-	janitorPool = make(semaphore, 10)
+	clean    = janitorClean
+	POOLSIZE = 10 // Maximum concurrent janitor goroutines
 )
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
 	logrus.Info("Initialized boskos client!")
+	janitorPool := make(chan string, 1)
+
+	for i := 0; i < POOLSIZE; i++ {
+		go janitor(boskos, janitorPool)
+	}
+
 	for {
 		if proj, err := boskos.Acquire("project", "dirty", "cleaning"); err != nil {
 			logrus.WithError(err).Error("Boskos acquire failed!")
@@ -53,7 +47,7 @@ func main() {
 		} else if proj == "" {
 			time.Sleep(time.Minute)
 		} else {
-			go janitor(boskos, proj)
+			janitorPool <- proj // will block until pool has a free slot
 		}
 	}
 }
@@ -70,18 +64,18 @@ type boskosClient interface {
 }
 
 // async janitor goroutine
-func janitor(c boskosClient, proj string) {
-	janitorPool.P()
+func janitor(c boskosClient, pool chan string) {
+	for {
+		proj := <-pool
 
-	dest := "free"
-	if err := clean(proj); err != nil {
-		logrus.WithError(err).Error("janitor.py failed!")
-		dest = "dirty"
+		dest := "free"
+		if err := clean(proj); err != nil {
+			logrus.WithError(err).Error("janitor.py failed!")
+			dest = "dirty"
+		}
+
+		if err := c.ReleaseOne(proj, dest); err != nil {
+			logrus.WithError(err).Error("Boskos release failed!")
+		}
 	}
-
-	if err := c.ReleaseOne(proj, dest); err != nil {
-		logrus.WithError(err).Error("Boskos release failed!")
-	}
-
-	janitorPool.V()
 }
