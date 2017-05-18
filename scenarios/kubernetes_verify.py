@@ -54,10 +54,12 @@ def check(*cmd):
 
 def main(branch, script, force):
     """Test branch using script, optionally forcing verify checks."""
-    verify_branch = re.match(r'.*(master|\d+\.\d+)', branch)
+    # If branch has 3-part version, only take first 2 parts.
+    verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
     if not verify_branch:
         raise ValueError(branch)
-    ver = verify_branch.group(1)
+    # Extract version if any.
+    ver = verify_branch.group(1) or verify_branch.group(0)
     tag = VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
     force = 'y' if force else 'n'
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']

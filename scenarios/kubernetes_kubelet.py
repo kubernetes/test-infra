@@ -52,10 +52,11 @@ def var(path):
 
 def main(script, properties, branch, ssh, ssh_pub, robot):
     """Test node branch by sending script specified properties and creds."""
+    # If branch has 3-part version, only take first 2 parts.
     mat = re.match(r'master|release-\d+\.\d+', branch)
     if not mat:
         raise ValueError(branch)
-    tag = VERSION_TAG[BRANCH_VERSION.get(branch, branch)]
+    tag = VERSION_TAG[BRANCH_VERSION.get(mat.group(0), mat.group(0))]
     img = 'gcr.io/k8s-testimages/kubekins-node:%s' % tag
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     if not os.path.isdir(artifacts):
