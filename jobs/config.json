@@ -96,21 +96,24 @@
   "ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gce-1-6-master-upgrade-master": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-master.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1670,42 +1673,48 @@
   "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
@@ -1719,42 +1728,48 @@
   "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
   "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master": {
     "args": [
       "--env-file=platforms/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e"
   }, 
