@@ -227,13 +227,3 @@
         scan: ALL
         timeout: 620
         soak-repos: '--bare'
-    # Although this job is a dependency for a pull job, this is
-    # being deployed as a CI soak job to periodically bring up
-    # and tear down the clusters for the federation pull job.
-    - kubernetes-pull-gce-federation-deploy:
-        blocker: pull-kubernetes-federation-e2e-gce
-        job-name: ci-kubernetes-pull-gce-federation-deploy
-        frequency: 'H 0 * * *'
-        scan: DISABLED
-        timeout: 90
-        soak-repos: '--bare'
