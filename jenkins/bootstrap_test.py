@@ -1393,6 +1393,7 @@ class JobTest(unittest.TestCase):
     excludes = [
         'BUILD',  # For bazel
         'config.json',  # For --json mode
+        'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
     ]
 
@@ -1978,9 +1979,20 @@ class JobTest(unittest.TestCase):
     def testValidJobEnvs(self):
         """Validate jobs/config.json."""
         self.LoadProwYaml(self.prow_config)
-        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+        with open(bootstrap.test_infra('jobs/config.json')) as fp, open(bootstrap.test_infra('jobs/validOwners.json')) as ownfp:
             config = json.loads(fp.read())
+            validOwners = json.loads(ownfp.read())
             for job in config:
+                # onwership assertions
+                self.assertIn('sigOwners', config[job], job)
+                self.assertIsInstance(config[job]['sigOwners'], list, job)
+                self.assertTrue(config[job]['sigOwners'], job) # non-empty
+                owners = config[job]['sigOwners']
+                for owner in owners:
+                    self.assertIsInstance(owner, basestring, job)
+                    self.assertIn(owner, validOwners, job)
+
+                # env assertions
                 self.assertTrue('scenario' in config[job], job)
                 scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
