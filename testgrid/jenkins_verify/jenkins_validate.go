@@ -106,8 +106,10 @@ func main() {
 	badjobs := []string{}
 	for jenkinsjob, valid := range jenkinsjobs {
 		if !valid {
-			badjobs = append(badjobs, jenkinsjob)
-			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
+			if !strings.HasPrefix(jenkinsjob, "ci-security") {
+				badjobs = append(badjobs, jenkinsjob)
+				fmt.Printf("Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
+			}
 		}
 	}
 

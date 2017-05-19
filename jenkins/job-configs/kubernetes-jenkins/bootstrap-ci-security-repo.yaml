@@ -1,0 +1,76 @@
+- job-template:
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' \
+            --branch='{branch}' \
+            --job='{job-name}' \
+            --json \
+            --repo='{repo-name}' \
+            --root="${{GOPATH}}/src" \
+            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
+            --upload='gs://kubernetes-security-jenkins/logs' \
+            --ssh="${{K8S_SECURITY_SSH_PRIVATE_KEY_FILE}}"
+    disabled: false
+    name: 'ci-security-{repo-suffix}'
+    node: 'build'
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+    triggers:
+    - pollscm:
+        cron: '{commit-frequency}'
+    wrappers:
+    - e2e-credentials-binding
+    - credentials-binding:
+      - file:
+          credential-id: 'k8s-security-repo-git-ssh-key'
+          variable: 'K8S_SECURITY_SSH_PRIVATE_KEY_FILE'
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - timeout:
+        timeout: 700
+        fail: true
+    - workspace-cleanup:  # cleanup before the job starts, for clean build.
+        dirmatch: true
+        exclude:
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+    - workspace-cleanup:  # cleanup after job finishes, to not waste space.
+        dirmatch: true
+        exclude:
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    jobs:
+    - 'ci-security-{repo-suffix}'
+    name: bootstrap-ci-security-repo
+    repo-suffix:
+
+    - kubernetes-verify-release-1.5:
+        branch: release-1.5
+        commit-frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.5
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 80
+
+    - kubernetes-test-go-release-1.5:
+        branch: release-1.5
+        commit-frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.5
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 100
+
+    - kubernetes-node-kubelet-1.5:  # dawnchen
+        branch: release-1.5
+        commit-frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-1.5
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 90

@@ -1,0 +1,83 @@
+# Bootstrap jobs that trigger on commits
+
+- job-template:
+    builders:
+    - shell: |
+        # TODO(fejta): consider a stable tag instead of master
+        git clone https://github.com/kubernetes/test-infra -b master
+        './test-infra/jenkins/bootstrap.py' \
+            --branch='{branch}' \
+            --job='{job-name}' \
+            --json \
+            --repo='{repo-name}' \
+            --root="${{GOPATH}}/src" \
+            --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
+            --upload='gs://kubernetes-security-jenkins/logs' \
+            --ssh="${{K8S_SECURITY_SSH_PRIVATE_KEY_FILE}}"
+    disabled: false
+    name: 'ci-security-{commit-suffix}'
+    node: 'build'
+    properties:
+    - build-discarder:
+        num-to-keep: 200
+    scm:  # TODO(fejta): migrate scm monitoring to prow.
+    - git:
+        url: '{giturl}'
+        basedir: 'go/src/{repo-name}'  # Must match GOPATH below
+        branches:
+        - '{branch}'
+        skip-tag: true
+        wipe-workspace: false
+    triggers:
+    - pollscm:
+        cron: '{commit-frequency}'
+    wrappers:
+    - e2e-credentials-binding
+    - credentials-binding:
+      - file:
+          credential-id: 'k8s-security-repo-git-ssh-key'
+          variable: 'K8S_SECURITY_SSH_PRIVATE_KEY_FILE'
+    - inject:
+        properties-content: |
+            GOROOT=/usr/local/go
+            GOPATH=$WORKSPACE/go
+            PATH=$PATH:$GOROOT/bin:$WORKSPACE/go/bin
+    - timeout:
+        timeout: 700
+        fail: true
+    - workspace-cleanup:  # cleanup before the job starts, for clean build.
+        dirmatch: true
+        exclude:
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+    publishers:
+    - workspace-cleanup:  # cleanup after job finishes, to not waste space.
+        dirmatch: true
+        exclude:
+        - '**/.git/'
+        external-deletion-command: 'sudo rm -rf %s'
+
+- project:
+    jobs:
+    - 'ci-security-{commit-suffix}'
+    name: bootstrap-ci-security-commit
+
+    commit-suffix:
+
+    - kubernetes-build-1.5:
+        branch: release-1.5
+        commit-frequency: 'H/5 * * * *'
+        giturl: 'https://github.com/kubernetes-security/kubernetes'
+        job-name: ci-kubernetes-build-1.5
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 50
+
+    - kubernetes-federation-build-1.5:
+        branch: release-1.5
+        giturl: 'https://github.com/kubernetes-security/kubernetes'
+        job-name: ci-kubernetes-federation-build-1.5
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        commit-frequency: 'H/5 * * * *'
+        timeout: 50
+
