@@ -146,6 +146,7 @@ def main(args):
         configs[job]['sigOwners'] = ['UNKNOWN']
         configs[job]['args'] = ['--env-file=plarforms/%s.env' % args.platform]
         configs[job]['args'].append('--env-file=jobs/%s.env' % job)
+        configs[job]['args'].append('--mode=local')
         fp.seek(0)
         fp.write(json.dumps(configs, sort_keys=True, indent=2))
         fp.write('\n')
