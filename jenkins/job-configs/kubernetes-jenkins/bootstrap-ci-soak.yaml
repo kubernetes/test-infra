@@ -76,7 +76,7 @@
     - kubernetes-soak-gce-federation-deploy:
         blocker: ci-kubernetes-soak-gce-federation-test
         job-name: ci-kubernetes-soak-gce-federation-deploy
-        frequency: 'H 0 * * *'
+        frequency: 'H 0 * * 2'
         scan: DISABLED
         timeout: 110
         soak-repos: '--repo=k8s.io/kubernetes --repo=k8s.io/release'
