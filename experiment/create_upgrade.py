@@ -77,7 +77,7 @@ DESC_MAP = {
 
 PROW_CONFIG = {
     'name': '',
-    'interval': '6h',
+    'interval': '24h',
     'spec': {
         'containers': [{
             'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094',
@@ -90,9 +90,6 @@ PROW_CONFIG = {
                 'readOnly': True,
                 'mountPath': '/etc/ssh-key-secret',
                 'name': 'ssh'
-            }, {
-                'mountPath': '/root/.cache',
-                'name': 'cache-ssd'
             }],
             'env': [{
                 'name': 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -119,11 +116,6 @@ PROW_CONFIG = {
                 'secretName': 'ssh-key-secret'
             },
             'name': 'ssh'
-        }, {
-            'hostPath': {
-                'path': '/mnt/disks/ssd0'
-            },
-            'name': 'cache-ssd'
         }]
     }
 }
