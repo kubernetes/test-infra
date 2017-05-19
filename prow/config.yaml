@@ -70,6 +70,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -284,6 +287,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999   
       volumes:
       - name: service
         secret:
@@ -498,6 +504,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -525,6 +534,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -557,6 +569,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -591,6 +606,9 @@ postsubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -619,6 +637,9 @@ postsubmits:
             readOnly: true
           - name: cache-ssd
             mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999  
         volumes:
         - name: service
           secret:
@@ -665,6 +686,7 @@ postsubmits:
           - name: cache-ssd
             hostPath:
               path: /mnt/disks/ssd0
+
   - name: ci-kubernetes-bazel-build-1-6
     branches:
     - release-1.6
@@ -688,6 +710,9 @@ postsubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -716,6 +741,9 @@ postsubmits:
             readOnly: true
           - name: cache-ssd
             mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999  
         volumes:
         - name: service
           secret:
@@ -857,6 +885,9 @@ periodics:
         readOnly: true
       - name: cache-ssd
         mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999  
     volumes:
     - name: service
       secret:
@@ -889,6 +920,9 @@ periodics:
         readOnly: true
       - name: cache-ssd
         mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999  
     volumes:
     - name: service
       secret:
@@ -971,6 +1005,9 @@ periodics:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
