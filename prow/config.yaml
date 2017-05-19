@@ -762,7 +762,7 @@ periodics:
         path: /mnt/disks/ssd0
 
 - name: ci-kubernetes-e2e-prow-canary
-  interval: 1h
+  interval: 24h
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094
@@ -914,7 +914,7 @@ periodics:
           hostPath:
             path: /mnt/disks/ssd0
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-reboot-release-1-4
   spec:
     containers:
@@ -991,7 +991,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-serial
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1029,7 +1029,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-slow
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1105,7 +1105,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1143,7 +1143,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1219,7 +1219,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1257,7 +1257,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-gpu
-  interval: 30m
+  interval: 2h
   spec:
     containers:
     - args:
@@ -1295,7 +1295,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1333,7 +1333,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-flaky
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1371,7 +1371,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-ingress
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1409,7 +1409,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-reboot
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1447,7 +1447,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-serial
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1485,7 +1485,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-slow
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1523,7 +1523,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-updown
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1599,7 +1599,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1637,7 +1637,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1675,7 +1675,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1713,7 +1713,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1751,7 +1751,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1789,7 +1789,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1827,7 +1827,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1865,7 +1865,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
-  interval: 30m
+  interval: 6h
   spec:
     containers:
     - args:
@@ -1903,7 +1903,7 @@ periodics:
       name: cache-ssd
 
 - name: ci-perf-tests-e2e-gce-clusterloader
-  interval: 30m
+  interval: 2h
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
@@ -1970,7 +1970,7 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-release-1-4
   spec:
     containers:
@@ -2008,7 +2008,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
   spec:
     containers:
@@ -2046,7 +2046,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
   spec:
     containers:
@@ -2084,7 +2084,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   spec:
     containers:
@@ -2122,7 +2122,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
   spec:
     containers:
@@ -2160,7 +2160,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
   spec:
     containers:
@@ -2198,7 +2198,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-4
   spec:
     containers:
@@ -2236,7 +2236,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-serial-release-1-4
   spec:
     containers:
@@ -2274,7 +2274,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-slow-release-1-4
   spec:
     containers:
@@ -2312,7 +2312,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-release-1-4
   spec:
     containers:
@@ -2350,7 +2350,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster
   spec:
     containers:
@@ -2388,7 +2388,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-master
   spec:
     containers:
@@ -2426,7 +2426,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new
   spec:
     containers:
@@ -2464,7 +2464,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster
   spec:
     containers:
@@ -2502,7 +2502,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master
   spec:
     containers:
@@ -2540,7 +2540,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new
   spec:
     containers:
@@ -2578,7 +2578,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster
   spec:
     containers:
@@ -2616,7 +2616,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master
   spec:
     containers:
@@ -2654,7 +2654,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new
   spec:
     containers:
@@ -2692,7 +2692,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster
   spec:
     containers:
@@ -2730,7 +2730,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master
   spec:
     containers:
@@ -2768,7 +2768,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new
   spec:
     containers:
@@ -2806,7 +2806,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster
   spec:
     containers:
@@ -2844,7 +2844,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master
   spec:
     containers:
@@ -2882,7 +2882,7 @@ periodics:
         path: /mnt/disks/ssd0
       name: cache-ssd
 
-- interval: 2h
+- interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new
   spec:
     containers:
