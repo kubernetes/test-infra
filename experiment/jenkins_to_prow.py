@@ -40,9 +40,6 @@ TEMPLATE = {
                 'readOnly': True,
                 'mountPath': '/etc/ssh-key-secret',
                 'name': 'ssh'
-            }, {
-                'mountPath': '/root/.cache',
-                'name': 'cache-ssd'
             }],
             'env': [{
                 'name': 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -69,11 +66,6 @@ TEMPLATE = {
                 'secretName': 'ssh-key-secret'
             },
             'name': 'ssh'
-        }, {
-            'hostPath': {
-                'path': '/mnt/disks/ssd0'
-            },
-            'name': 'cache-ssd'
         }]
     }
 }

@@ -113,6 +113,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999   
       volumes:
       - name: service
         secret:
@@ -230,6 +233,9 @@ presubmits:
           readOnly: true
         - mountPath: /root/.cache
           name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -330,6 +336,9 @@ presubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -447,6 +456,9 @@ presubmits:
           readOnly: true
         - mountPath: /root/.cache
           name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -675,6 +687,9 @@ postsubmits:
               readOnly: true
             - name: cache-ssd
               mountPath: /root/.cache
+            ports:
+            - containerPort: 9999
+              hostPort: 9999 
           volumes:
           - name: service
             secret:
@@ -779,6 +794,9 @@ postsubmits:
               readOnly: true
             - name: cache-ssd
               mountPath: /root/.cache
+            ports:
+            - containerPort: 9999
+              hostPort: 9999 
           volumes:
           - name: service
             secret:
@@ -815,6 +833,9 @@ postsubmits:
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999  
       volumes:
       - name: service
         secret:
@@ -918,11 +939,6 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999  
     volumes:
     - name: service
       secret:
@@ -931,9 +947,6 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: ci-test-infra-triage
   interval: 1h
@@ -976,6 +989,9 @@ periodics:
         readOnly: true
       - name: cache-ssd
         mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
     volumes:
     - name: service
       secret:
@@ -1043,6 +1059,9 @@ periodics:
             readOnly: true
           - name: cache-ssd
             mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999  
         volumes:
         - name: service
           secret:
@@ -1079,8 +1098,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1089,9 +1106,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu
   interval: 30m
@@ -1117,8 +1131,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1127,9 +1139,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-serial
   interval: 6h
@@ -1155,8 +1164,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1165,9 +1172,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-slow
   interval: 6h
@@ -1193,8 +1197,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1203,9 +1205,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6
   interval: 30m
@@ -1231,8 +1230,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1241,9 +1238,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
   interval: 6h
@@ -1269,8 +1263,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1279,9 +1271,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
   interval: 6h
@@ -1307,8 +1296,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1317,9 +1304,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke
   interval: 30m
@@ -1345,8 +1329,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1355,9 +1337,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
   interval: 6h
@@ -1383,8 +1362,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1393,9 +1370,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-gce-gpu
   interval: 2h
@@ -1421,8 +1395,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1431,9 +1403,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
   interval: 6h
@@ -1459,8 +1428,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1469,9 +1436,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-flaky
   interval: 6h
@@ -1497,8 +1461,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1507,9 +1469,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-ingress
   interval: 6h
@@ -1535,8 +1494,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1545,9 +1502,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-reboot
   interval: 6h
@@ -1573,8 +1527,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1583,9 +1535,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-serial
   interval: 6h
@@ -1611,8 +1560,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1621,9 +1568,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-slow
   interval: 6h
@@ -1649,8 +1593,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1659,9 +1601,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-updown
   interval: 6h
@@ -1687,8 +1626,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1697,9 +1634,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6
   interval: 30m
@@ -1725,8 +1659,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1735,9 +1667,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
   interval: 6h
@@ -1763,8 +1692,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1773,9 +1700,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
   interval: 6h
@@ -1801,8 +1725,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1811,9 +1733,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
   interval: 6h
@@ -1839,8 +1758,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1849,9 +1766,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
   interval: 6h
@@ -1877,8 +1791,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1887,9 +1799,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
   interval: 6h
@@ -1915,8 +1824,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1925,9 +1832,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
   interval: 6h
@@ -1953,8 +1857,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -1963,9 +1865,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   interval: 6h
@@ -1991,8 +1890,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2001,10 +1898,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
-
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
   interval: 6h
   spec:
@@ -2029,8 +1922,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2039,9 +1930,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
@@ -2069,8 +1957,6 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      - name: cache-ssd
-        mountPath: /root/.cache
     volumes:
     - name: service
       secret:
@@ -2079,9 +1965,6 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
@@ -2101,15 +1984,10 @@ periodics:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
-      - name: cache-ssd
-        mountPath: /root/.cache
     volumes:
     - name: service
       secret:
         secretName: service-account
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-release-1-4
@@ -2135,8 +2013,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2145,9 +2021,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
@@ -2173,8 +2046,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2183,9 +2054,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
@@ -2211,8 +2079,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2221,9 +2087,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
@@ -2249,8 +2112,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2259,9 +2120,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
@@ -2287,8 +2145,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2297,9 +2153,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
@@ -2325,8 +2178,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2335,9 +2186,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-4
@@ -2363,8 +2211,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2373,9 +2219,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-serial-release-1-4
@@ -2401,8 +2244,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2411,9 +2252,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-slow-release-1-4
@@ -2439,8 +2277,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2449,9 +2285,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-release-1-4
@@ -2477,8 +2310,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2487,9 +2318,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster
@@ -2515,8 +2343,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2525,9 +2351,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-master
@@ -2553,8 +2376,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2563,9 +2384,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new
@@ -2591,8 +2409,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2601,9 +2417,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster
@@ -2629,8 +2442,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2639,9 +2450,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master
@@ -2667,8 +2475,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2677,9 +2483,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new
@@ -2705,8 +2508,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2715,9 +2516,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster
@@ -2743,8 +2541,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2753,9 +2549,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master
@@ -2781,8 +2574,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2791,9 +2582,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new
@@ -2819,8 +2607,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2829,9 +2615,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster
@@ -2857,8 +2640,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2867,9 +2648,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master
@@ -2895,8 +2673,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2905,9 +2681,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new
@@ -2933,8 +2706,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2943,9 +2714,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster
@@ -2971,8 +2739,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -2981,9 +2747,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master
@@ -3009,8 +2772,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -3019,9 +2780,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - interval: 24h
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new
@@ -3047,8 +2805,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -3057,9 +2813,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
 
 - name: ci-kubernetes-pull-gce-federation-deploy-canary
   interval: 24h
@@ -3085,8 +2838,6 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
     volumes:
     - name: service
       secret:
@@ -3095,6 +2846,3 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
