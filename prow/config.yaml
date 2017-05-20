@@ -44,7 +44,7 @@ presubmits:
 
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel
-    context: Jenkins Bazel Build
+    context: pull-kubernetes-bazel
     always_run: true
     rerun_command: "@k8s-bot bazel test this"
     trigger: "@k8s-bot (bazel )?test this"
@@ -206,7 +206,7 @@ presubmits:
 
   kubernetes-security/kubernetes: # TODO(fejta, spxr): find way to not duplicate these
   - name: pull-security-kubernetes-bazel
-    context: Jenkins Bazel Build
+    context: pull-security-kubernetes-bazel
     always_run: true
     rerun_command: "@k8s-bot bazel test this"
     trigger: "@k8s-bot (bazel )?test this"
