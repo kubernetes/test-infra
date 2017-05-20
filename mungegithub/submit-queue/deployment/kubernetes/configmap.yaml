@@ -18,13 +18,13 @@ data:
 
   # test-options feature options.
   test-options.required-retest-contexts: "\
-    \"Jenkins unit/integration\",\
-    \"Jenkins verification\",\
-    \"Jenkins GCE Node e2e\",\
-    \"Jenkins Kubemark GCE e2e\",\
-    \"Jenkins GCE etcd3 e2e\",\
+    \"pull-kubernetes-unit\",\
+    \"pull-kubernetes-verify\",\
+    \"pull-kubernetes-node-e2e\",\
+    \"pull-kubernetes-kubemark-e2e-gce\",\
+    \"pull-kubernetes-e2e-gce-etcd3\",\
     \"pull-kubernetes-bazel\",\
-    \"Jenkins kops AWS e2e\""
+    \"pull-kubernetes-e2e-kops-aws\""
 
   submit-queue.protected-branches: "master"
   submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
