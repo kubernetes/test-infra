@@ -84,7 +84,7 @@ func TestMoveMode(t *testing.T) {
 	desc := "Context retired. Status moved to \"context B\"."
 
 	tests := []*modeTest{
-		&modeTest{
+		{
 			name: "simple",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -94,7 +94,7 @@ func TestMoveMode(t *testing.T) {
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts",
 			start: []github.RepoStatus{
 				*makeStatus("also not related", "error", "description 4", "url 4"),
@@ -106,7 +106,7 @@ func TestMoveMode(t *testing.T) {
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts; missing context A",
 			start: []github.RepoStatus{
 				*makeStatus("also not related", "error", "description 4", "url 4"),
@@ -114,7 +114,7 @@ func TestMoveMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts; already have context A and B",
 			start: []github.RepoStatus{
 				*makeStatus("also not related", "error", "description 4", "url 4"),
@@ -124,7 +124,7 @@ func TestMoveMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts; already have context B; no context A",
 			start: []github.RepoStatus{
 				*makeStatus("also not related", "error", "description 4", "url 4"),
@@ -133,7 +133,7 @@ func TestMoveMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name:          "no contexts",
 			start:         []github.RepoStatus{},
 			expectedDiffs: []*github.RepoStatus{},
@@ -154,7 +154,7 @@ func TestCopyMode(t *testing.T) {
 	contextB := "context B"
 
 	tests := []*modeTest{
-		&modeTest{
+		{
 			name: "simple",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -163,7 +163,7 @@ func TestCopyMode(t *testing.T) {
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -174,7 +174,7 @@ func TestCopyMode(t *testing.T) {
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
-		&modeTest{
+		{
 			name: "already have context B",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -182,7 +182,7 @@ func TestCopyMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "already have updated context B",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -190,7 +190,7 @@ func TestCopyMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts already have updated context B",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -200,14 +200,14 @@ func TestCopyMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "only have context B",
 			start: []github.RepoStatus{
 				*makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts; context B but not A",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -216,7 +216,7 @@ func TestCopyMode(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name:          "no contexts",
 			start:         []github.RepoStatus{},
 			expectedDiffs: []*github.RepoStatus{},
@@ -238,7 +238,7 @@ func TestRetireModeReplacement(t *testing.T) {
 	desc := "Context retired. Status moved to \"context B\"."
 
 	tests := []*modeTest{
-		&modeTest{
+		{
 			name: "simple",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -248,7 +248,7 @@ func TestRetireModeReplacement(t *testing.T) {
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts;updated context B",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -260,14 +260,14 @@ func TestRetireModeReplacement(t *testing.T) {
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
-		&modeTest{
+		{
 			name: "missing context B",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts;missing context B",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -276,14 +276,14 @@ func TestRetireModeReplacement(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "missing context A",
 			start: []github.RepoStatus{
 				*makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts;missing context A",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -292,7 +292,7 @@ func TestRetireModeReplacement(t *testing.T) {
 			},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name:          "no contexts",
 			start:         []github.RepoStatus{},
 			expectedDiffs: []*github.RepoStatus{},
@@ -313,7 +313,7 @@ func TestRetireModeNoReplacement(t *testing.T) {
 	desc := "Context retired without replacement."
 
 	tests := []*modeTest{
-		&modeTest{
+		{
 			name: "simple",
 			start: []github.RepoStatus{
 				*makeStatus(contextA, "failure", "description 1", "url 1"),
@@ -322,7 +322,7 @@ func TestRetireModeNoReplacement(t *testing.T) {
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),
@@ -333,12 +333,12 @@ func TestRetireModeNoReplacement(t *testing.T) {
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
-		&modeTest{
+		{
 			name:          "missing context A",
 			start:         []github.RepoStatus{},
 			expectedDiffs: []*github.RepoStatus{},
 		},
-		&modeTest{
+		{
 			name: "unrelated contexts;missing context A",
 			start: []github.RepoStatus{
 				*makeStatus("unrelated context", "success", "description 2", "url 2"),

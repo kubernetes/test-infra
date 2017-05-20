@@ -115,8 +115,9 @@ func (c *Client) retry(action string, call func() (*github.Response, error)) err
 
 // CreateStatus creates or updates a status context on the indicated reference.
 // This function limits rate and does retries if needed.
-func (c *Client) CreateStatus(owner, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
-	glog.Infof("CreateStatus for ref '%s': %s:%s (%s)\n", ref, *status.Context, *status.State, *status.Description)
+func (c *Client) CreateStatus(owner, repo string, pr *github.PullRequest, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
+	ref := *pr.Head.SHA
+	glog.Infof("CreateStatus(dry=%t) %d:%s: %s:%s", c.dryRun, *pr.Number, ref, *status.Context, *status.State)
 	if c.dryRun {
 		return nil, nil, nil
 	}
