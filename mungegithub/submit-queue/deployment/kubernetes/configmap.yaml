@@ -23,7 +23,7 @@ data:
     \"Jenkins GCE Node e2e\",\
     \"Jenkins Kubemark GCE e2e\",\
     \"Jenkins GCE etcd3 e2e\",\
-    \"Jenkins Bazel Build\",\
+    \"pull-kubernetes-bazel\",\
     \"Jenkins kops AWS e2e\""
 
   submit-queue.protected-branches: "master"
