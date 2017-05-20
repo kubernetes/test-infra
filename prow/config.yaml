@@ -17,28 +17,28 @@ presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
     always_run: true
-    context: Jenkins GCE e2e
+    context: pull-cadvisor-e2e
     rerun_command: "@k8s-bot test this"
     trigger: "@k8s-bot test this"
 
   kubernetes/charts:
   - name: pull-charts-e2e
     always_run: true
-    context: Jenkins Charts e2e
+    context: pull-charts-e2e
     rerun_command: "@k8s-bot e2e test this"
     trigger: "@k8s-bot (e2e )?test this"
 
   kubernetes/heapster:
   - name: pull-heapster-e2e
     always_run: true
-    context: Jenkins GCE e2e
+    context: pull-heapster-e2e
     rerun_command: "@k8s-bot test this"
     trigger: "@k8s-bot test this"
 
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     always_run: true
-    context: Jenkins Kubernetes AWS e2e
+    context: pull-kops-e2e-kubernetes-aws
     rerun_command: "@k8s-bot aws e2e test this"
     trigger: "@k8s-bot (aws )?(e2e )?test this"
 
@@ -79,7 +79,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-e2e-kubeadm-gce
-    context: Jenkins kubeadm e2e
+    context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
     rerun_command: "@k8s-bot kubeadm e2e test this"
@@ -130,13 +130,13 @@ presubmits:
 
   - name: pull-kubernetes-unit
     always_run: true
-    context: Jenkins unit/integration
+    context: pull-kubernetes-unit
     rerun_command: "@k8s-bot unit test this"
     trigger: "@k8s-bot (unit )?test this"
 
   - name: pull-kubernetes-verify
     always_run: true
-    context: Jenkins verification
+    context: pull-kubernetes-verify
     rerun_command: "@k8s-bot verify test this"
     trigger: "@k8s-bot (verify )?test this"
 
@@ -152,7 +152,7 @@ presubmits:
 
   - name: pull-kubernetes-e2e-gce-etcd3
     always_run: true
-    context: Jenkins GCE etcd3 e2e
+    context: pull-kubernetes-e2e-gce-etcd3
     rerun_command: "@k8s-bot gce etcd3 e2e test this"
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
@@ -173,7 +173,7 @@ presubmits:
 
   - name: pull-kubernetes-e2e-kops-aws
     always_run: true
-    context: Jenkins kops AWS e2e
+    context: pull-kubernetes-e2e-kops-aws
     rerun_command: "@k8s-bot kops aws e2e test this"
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
@@ -190,7 +190,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"
     always_run: true
-    context: Jenkins Kubemark GCE e2e
+    context: pull-kubernetes-kubemark-e2e-gce
     rerun_command: "@k8s-bot kubemark e2e test this"
 
   - name: pull-kubernetes-kubemark-e2e-gce-gci
@@ -200,7 +200,7 @@ presubmits:
 
   - name: pull-kubernetes-node-e2e
     always_run: true
-    context: Jenkins GCE Node e2e
+    context: pull-kubernetes-node-e2e
     rerun_command: "@k8s-bot node e2e test this"
     trigger: "@k8s-bot (node )?(e2e )?test this"
 
@@ -241,7 +241,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-e2e-kubeadm-gce
-    context: Jenkins kubeadm e2e
+    context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
     rerun_command: "@k8s-bot kubeadm e2e test this"
@@ -292,13 +292,13 @@ presubmits:
 
   - name: pull-security-kubernetes-unit
     always_run: true
-    context: Jenkins unit/integration
+    context: pull-security-kubernetes-unit
     rerun_command: "@k8s-bot unit test this"
     trigger: "@k8s-bot (unit )?test this"
 
   - name: pull-security-kubernetes-verify
     always_run: true
-    context: Jenkins verification
+    context: pull-security-kubernetes-verify
     rerun_command: "@k8s-bot verify test this"
     trigger: "@k8s-bot (verify )?test this"
 
@@ -314,7 +314,7 @@ presubmits:
 
   - name: pull-security-kubernetes-e2e-gce-etcd3
     always_run: true
-    context: Jenkins GCE etcd3 e2e
+    context: pull-security-kubernetes-e2e-gce-etcd3
     rerun_command: "@k8s-bot gce etcd3 e2e test this"
     trigger: "@k8s-bot (gce )?(etcd3 )?(e2e )?test this"
 
@@ -335,7 +335,7 @@ presubmits:
 
   - name: pull-security-kubernetes-e2e-kops-aws
     always_run: true
-    context: Jenkins kops AWS e2e
+    context: pull-security-kubernetes-e2e-kops-aws
     rerun_command: "@k8s-bot kops aws e2e test this"
     trigger: "@k8s-bot (kops )?(aws )?(e2e )?test this"
 
@@ -352,7 +352,7 @@ presubmits:
   - name: pull-security-kubernetes-kubemark-e2e-gce
     trigger: "@k8s-bot (kubemark )?(e2e )?test this"
     always_run: true
-    context: Jenkins Kubemark GCE e2e
+    context: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: "@k8s-bot kubemark e2e test this"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce-gci
@@ -362,13 +362,13 @@ presubmits:
 
   - name: pull-security-kubernetes-node-e2e
     always_run: true
-    context: Jenkins GCE Node e2e
+    context: pull-security-kubernetes-node-e2e
     rerun_command: "@k8s-bot node e2e test this"
     trigger: "@k8s-bot (node )?(e2e )?test this"
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
-    context: Bazel test
+    context: pull-test-infra-bazel
     branches:
     - master
     always_run: true
@@ -403,7 +403,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-gubernator
-    context: Gubernator tests
+    context: pull-test-infra-gubernator
     branches:
     - master
     rerun_command: "@k8s-bot gubernator test this"
@@ -430,7 +430,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-bazel
-    context: verify-bazel
+    context: pull-test-infra-verify-bazel
     branches:
     - master
     rerun_command: "@k8s-bot verify test this"

@@ -57,3 +57,9 @@ filegroup(
     srcs = glob(["*.txt"]),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "configmaps",
+    srcs = glob(["**/configmap.yaml"]),
+    visibility = ["//visibility:public"],
+)
