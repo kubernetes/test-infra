@@ -90,7 +90,9 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
-messages defined in [config.yaml](config.yaml).
+messages defined in [config.yaml](config.yaml). Here is a
+[command list](https://github.com/kubernetes/test-infra/blob/master/commands.md)
+for them. 
 
 ## How to turn up a new cluster
 
