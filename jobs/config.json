@@ -4237,7 +4237,8 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce", 
       "--cluster=", 
-      "--multiple-federations"
+      "--multiple-federations", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
