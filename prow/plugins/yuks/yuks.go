@@ -34,7 +34,8 @@ var (
 )
 
 const (
-	jokeUrl    = realJoke("https://tambal.azurewebsites.net/joke/random")
+	// Previously: https://tambal.azurewebsites.net/joke/random
+	jokeUrl    = realJoke("https://icanhazdadjoke.com")
 	pluginName = "yuks"
 )
 
@@ -52,21 +53,31 @@ type joker interface {
 
 type realJoke string
 
+var client = http.Client{}
+
+type jokeResult struct {
+	Joke string `json:"joke"`
+}
+
 func (url realJoke) readJoke() (string, error) {
-	resp, err := http.Get(string(url))
+	req, err := http.NewRequest("GET", string(url), nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not create request %s: %v", url, err)
+	}
+	req.Header.Add("Accept", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("Could not read joke from %s: %v", url, err)
 	}
 	defer resp.Body.Close()
-	var a map[string]string
+	var a jokeResult
 	if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
 		return "", err
 	}
-	j, ok := a["joke"]
-	if !ok {
-		return "", fmt.Errorf("result does not contain a joke key: %v", a)
+	if a.Joke == "" {
+		return "", fmt.Errorf("result from %s did not contain a joke", url)
 	}
-	return j, nil
+	return a.Joke, nil
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {

@@ -17,6 +17,7 @@ limitations under the License.
 package yuks
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -31,8 +32,21 @@ import (
 
 type fakeJoke string
 
+var human = flag.Bool("human", false, "Enable to run additional manual tests")
+
 func (j fakeJoke) readJoke() (string, error) {
 	return string(j), nil
+}
+
+func TestRealJoke(t *testing.T) {
+	if !*human {
+		t.Skip("Real jokes disabled for automation. Manual users can add --human")
+	}
+	if joke, err := jokeUrl.readJoke(); err != nil {
+		t.Errorf("Could not read joke from %s: %v", jokeUrl, err)
+	} else {
+		fmt.Println(joke)
+	}
 }
 
 // Medium integration test (depends on ability to open a TCP port)
