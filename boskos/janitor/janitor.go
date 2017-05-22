@@ -55,7 +55,7 @@ func main() {
 // Clean by janitor script
 func janitorClean(proj string) error {
 	script := "../../jenkins/janitor.py"
-	return exec.Command(fmt.Sprintf("%s --project=%s --hour=0", script, proj)).Run()
+	return exec.Command(script, fmt.Sprintf("--project=%s", proj), "--hour=0").Run()
 }
 
 type boskosClient interface {
