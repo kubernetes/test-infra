@@ -70,6 +70,10 @@ type githubClient interface {
 	BotName() string
 }
 
+type slackClient interface {
+	WriteMessage(msg string, channel string) error
+}
+
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	ae := assignEvent{
 		action:  ic.Action,
@@ -82,7 +86,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		issue:   ic.Issue,
 		comment: ic.Comment,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient)
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
@@ -96,7 +100,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		number: i.Issue.Number,
 		issue:  i.Issue,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
@@ -109,7 +113,7 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient)
 }
 
 // Get Lables from Regexp matches
@@ -138,7 +142,7 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 	return
 }
 
-func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
+func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) error {
 	// only parse newly created comments/issues/PRs and if non bot author
 	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
 		return nil
@@ -226,19 +230,32 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	}
 
 	toRepeat := []string{}
+	isMember := false
 	if len(sigMatches) > 0 {
-		isMember, _ := gc.IsMember(ae.org, ae.login)
-		if !isMember {
-			toRepeat = ae.getRepeats(sigMatches, existingLabels)
+		isMember, err = gc.IsMember(ae.org, ae.login)
+		if err != nil {
+			log.WithError(err).Errorf("Github error occurred when checking if the user: %s is a member of org: %s.", ae.login, ae.org)
 		}
+		toRepeat = ae.getRepeats(sigMatches, existingLabels)
 	}
 
 	if len(toRepeat) > 0 {
-		msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
-		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
-			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+		if !isMember {
+			msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
+			if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
+				log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+			}
 		}
 
+		if sc != nil {
+			//if sig matches then send a notification on slack
+			for _, sig := range sigMatches {
+				msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
+				if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
+					log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
+				}
+			}
+		}
 	}
 
 	//TODO(grodrigues3): Once labels are standardized, make this reply with a comment.

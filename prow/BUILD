@@ -31,6 +31,7 @@ filegroup(
         "//prow/kube:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/plugins:all-srcs",
+        "//prow/slack:all-srcs",
     ],
     tags = ["automanaged"],
 )

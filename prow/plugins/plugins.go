@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/slack"
 )
 
 var (
@@ -65,6 +66,7 @@ func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
 type PluginClient struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
+	SlackClient  *slack.Client // This might be nil.
 	Config       *config.Config
 	Logger       *logrus.Entry
 }
