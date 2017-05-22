@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = [
         "assign-fixes_test.go",
-        "assign-unassign-handler_test.go",
         "check-labels_test.go",
         "cherrypick-auto-approve_test.go",
         "cla_test.go",
@@ -53,7 +52,6 @@ go_library(
     srcs = [
         "approval-handler.go",
         "assign-fixes.go",
-        "assign-unassign-handler.go",
         "block_paths.go",
         "blunderbuss.go",
         "bulk-lgtm.go",
