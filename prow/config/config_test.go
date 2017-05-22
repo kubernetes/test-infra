@@ -79,6 +79,26 @@ func TestContextMatches(t *testing.T) {
 	}
 }
 
+func CheckRetest(t *testing.T, repo string, presubmits []Presubmit) {
+	for _, p := range presubmits {
+		expected := fmt.Sprintf("@k8s-bot %s test this", p.Name)
+		if p.RerunCommand != expected {
+			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
+		}
+		CheckRetest(t, repo, p.RunAfterSuccess)
+	}
+}
+
+func TestRetestMatchJobsName(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+	for repo, presubmits := range c.Presubmits {
+		CheckRetest(t, repo, presubmits)
+	}
+}
+
 type SubmitQueueConfig struct {
 	Data map[string]string `json:"data"`
 }
