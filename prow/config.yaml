@@ -2932,17 +2932,10 @@ periodics:
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
         readOnly: true
       - mountPath: /root/.cache
         name: cache-ssd
@@ -2950,10 +2943,6 @@ periodics:
     - name: service
       secret:
         secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
     - hostPath:
         path: /mnt/disks/ssd0
       name: cache-ssd
