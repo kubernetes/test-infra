@@ -71,7 +71,7 @@ func (f *fakeGithub) CreateStatus(org, repo, ref string, status *github.RepoStat
 func (f *fakeGithub) GetCombinedStatus(org, repo, ref string, opts *github.ListOptions) (*github.CombinedStatus, *github.Response, error) {
 	f.hits++
 	context := fmt.Sprintf("context %d", f.hits-f.hitsBeforeResponse+1)
-	combStatus := &github.CombinedStatus{Statuses: []github.RepoStatus{github.RepoStatus{Context: &context}}}
+	combStatus := &github.CombinedStatus{Statuses: []github.RepoStatus{{Context: &context}}}
 	if f.hits >= f.hitsBeforeResponse {
 		return combStatus, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}, LastPage: f.pages}, nil
 	}
@@ -81,7 +81,7 @@ func (f *fakeGithub) GetCombinedStatus(org, repo, ref string, opts *github.ListO
 func (f *fakeGithub) List(org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	f.hits++
 	title := fmt.Sprintf("pr %d", f.hits-f.hitsBeforeResponse+1)
-	list := []*github.PullRequest{&github.PullRequest{Title: &title}}
+	list := []*github.PullRequest{{Title: &title}}
 	if f.hits >= f.hitsBeforeResponse {
 		return list, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}, LastPage: f.pages}, nil
 	}
@@ -101,14 +101,17 @@ func TestCreateStatus(t *testing.T) {
 		TargetURL:   &urlStr,
 	}
 	tests := []*fakeGithub{
-		&fakeGithub{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
-		&fakeGithub{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
+		{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
+		{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
+		{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
+		{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
 	}
 	for _, test := range tests {
 		client := newTestClient(test)
-		status, _, err := client.CreateStatus("org", "repo", "ref", sampleStatus)
+		one := 1
+		ref := "fake-ref"
+		pr := &github.PullRequest{Number: &one, Head: &github.PullRequestBranch{SHA: &ref}}
+		status, _, err := client.CreateStatus("org", "repo", pr, sampleStatus)
 		if (err == nil) != test.shouldSucceed {
 			t.Errorf("CreateStatus test '%s' failed because the error value was unexpected: %v", test.name, err)
 		}
@@ -139,15 +142,15 @@ func TestCreateStatus(t *testing.T) {
 // and returns the correct result.
 func TestGetCombinedStatus(t *testing.T) {
 	tests := []*fakeGithub{
-		&fakeGithub{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
-		&fakeGithub{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
-		&fakeGithub{name: "2 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 2},
-		&fakeGithub{name: "10 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 10},
-		&fakeGithub{name: "2 pages 2 retries", hitsBeforeResponse: 3, shouldSucceed: true, pages: 2},
-		&fakeGithub{name: "10 pages max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 10},
-		&fakeGithub{name: "10 pages one too many retries", hitsBeforeResponse: 7, shouldSucceed: false, pages: 10},
+		{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
+		{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
+		{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
+		{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
+		{name: "2 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 2},
+		{name: "10 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 10},
+		{name: "2 pages 2 retries", hitsBeforeResponse: 3, shouldSucceed: true, pages: 2},
+		{name: "10 pages max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 10},
+		{name: "10 pages one too many retries", hitsBeforeResponse: 7, shouldSucceed: false, pages: 10},
 	}
 
 	for _, test := range tests {
@@ -183,17 +186,17 @@ func TestGetCombinedStatus(t *testing.T) {
 // and returns the correct result.
 func TestForEachPR(t *testing.T) {
 	tests := []*fakeGithub{
-		&fakeGithub{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
-		&fakeGithub{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
-		&fakeGithub{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
-		&fakeGithub{name: "2 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 2},
-		&fakeGithub{name: "10 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 10},
-		&fakeGithub{name: "2 pages 2 retries", hitsBeforeResponse: 3, shouldSucceed: true, pages: 2},
-		&fakeGithub{name: "10 pages max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 10},
-		&fakeGithub{name: "10 pages one too many retries", hitsBeforeResponse: 7, shouldSucceed: false, pages: 10},
-		&fakeGithub{name: "continue on final error", hitsBeforeResponse: 1, shouldSucceed: true, pages: 13},
-		&fakeGithub{name: "continue on error", hitsBeforeResponse: 1, shouldSucceed: true, pages: 16},
+		{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
+		{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
+		{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
+		{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
+		{name: "2 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 2},
+		{name: "10 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 10},
+		{name: "2 pages 2 retries", hitsBeforeResponse: 3, shouldSucceed: true, pages: 2},
+		{name: "10 pages max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 10},
+		{name: "10 pages one too many retries", hitsBeforeResponse: 7, shouldSucceed: false, pages: 10},
+		{name: "continue on final error", hitsBeforeResponse: 1, shouldSucceed: true, pages: 13},
+		{name: "continue on error", hitsBeforeResponse: 1, shouldSucceed: true, pages: 16},
 	}
 
 	for _, test := range tests {

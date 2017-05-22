@@ -57,8 +57,8 @@ func MoveMode(origContext, newContext string) *Mode {
 
 	return &Mode{
 		conditions: []*contextCondition{
-			&contextCondition{context: origContext, state: stateAny},
-			&contextCondition{context: newContext, state: stateDNE},
+			{context: origContext, state: stateAny},
+			{context: newContext, state: stateDNE},
 		},
 		actions: func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
 			return append(dup(statuses, sha), dep(statuses, sha)...)
@@ -71,8 +71,8 @@ func MoveMode(origContext, newContext string) *Mode {
 func CopyMode(origContext, newContext string) *Mode {
 	return &Mode{
 		conditions: []*contextCondition{
-			&contextCondition{context: origContext, state: stateAny},
-			&contextCondition{context: newContext, state: stateDNE},
+			{context: origContext, state: stateAny},
+			{context: newContext, state: stateDNE},
 		},
 		actions: copyAction(origContext, newContext),
 	}
@@ -85,7 +85,7 @@ func CopyMode(origContext, newContext string) *Mode {
 // that only PRs that have the newContext in addition to the origContext will be considered and the
 // description of the retired context will indicate that it was replaced by newContext.
 func RetireMode(origContext, newContext string) *Mode {
-	conditions := []*contextCondition{&contextCondition{context: origContext, state: stateAny}}
+	conditions := []*contextCondition{{context: origContext, state: stateAny}}
 	if newContext != "" {
 		conditions = append(conditions, &contextCondition{context: newContext, state: stateAny})
 	}
@@ -113,7 +113,7 @@ func copyAction(origContext, newContext string) func(statuses []github.RepoStatu
 			return nil
 		}
 		return []*github.RepoStatus{
-			&github.RepoStatus{
+			{
 				Context:     &newContext,
 				State:       oldStatus.State,
 				TargetURL:   oldStatus.TargetURL,
@@ -136,7 +136,7 @@ func retireAction(origContext, newContext string) func(statuses []github.RepoSta
 	}
 	return func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
 		return []*github.RepoStatus{
-			&github.RepoStatus{
+			{
 				Context:     &origContext,
 				State:       &stateSuccess,
 				TargetURL:   nil,
@@ -232,7 +232,7 @@ func (m *Migrator) ProcessPR(pr *github.PullRequest) error {
 	actions := m.ProcessStatuses(combined)
 
 	for _, action := range actions {
-		if _, _, err = m.client.CreateStatus(m.org, m.repo, *pr.Head.SHA, action); err != nil {
+		if _, _, err = m.client.CreateStatus(m.org, m.repo, pr, action); err != nil {
 			return err
 		}
 	}
