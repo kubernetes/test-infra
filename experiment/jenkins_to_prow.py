@@ -20,7 +20,6 @@ import argparse
 import copy
 import fileinput
 import json
-import os
 import subprocess
 import sys
 import yaml
@@ -79,6 +78,8 @@ TEMPLATE = {
     }
 }
 
+# pylint: disable=too-many-branches,too-many-statements,too-many-locals
+
 def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     """Convert Jenkins config to prow config."""
     with open(jenkins_path) as fp:
@@ -132,15 +133,11 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
         deleting = False
         for line in fileinput.input(jenkins_path, inplace=True):
             if line.strip().startswith('-'):
-                if job in line.strip():
-                    deleting = True
-                else:
-                    deleting = False
+                deleting = job in line.strip()
 
             if not deleting:
                 sys.stdout.write(line)
 
-    
     # add mode=local to config.json
     if config_path:
         with open(config_path, 'r+') as fp:
@@ -152,15 +149,15 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             fp.write(json.dumps(configs, sort_keys=True, indent=2))
             fp.truncate()
 
-    for oldName, newName in job_replace.iteritems():
+    for old_name, new_name in job_replace.iteritems():
         files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
         for fname in files:
-            with open(fname) as f:
-                s = f.read()
-            s = s.replace(oldName, newName)
-            with open(fname, "w") as f:
-                f.write(s)
-        subprocess.check_call(['git', 'mv', 'jobs/%s.env' % oldName, 'jobs/%s.env' % newName])
+            with open(fname) as fp:
+                content = fp.read()
+            content = content.replace(old_name, new_name)
+            with open(fname, "w") as fp:
+                fp.write(content)
+        subprocess.check_call(['git', 'mv', 'jobs/%s.env' % old_name, 'jobs/%s.env' % new_name])
 
 
 if __name__ == '__main__':

@@ -29,3 +29,4 @@ pylint jobs/*.py
 pylint queue-health/graph/graph.py
 pylint queue-health/weekly_commit_stats.py
 pylint triage/*.py
+pylint experiment/*.py
