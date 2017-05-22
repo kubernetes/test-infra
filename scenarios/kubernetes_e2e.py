@@ -333,7 +333,7 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        sudo = args.docker_in_docker or args.build
+        sudo = args.docker_in_docker or args.build is not None
         mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
@@ -358,8 +358,13 @@ def main(args):
         mode.add_service_account(args.service_account)
 
     runner_args = []
-    if args.build:
-        runner_args.append('--build')
+    if args.build is not None:
+        if args.build == '':
+            # Empty string means --build was passed without any arguments;
+            # if --build wasn't passed, args.build would be None
+            runner_args.append('--build')
+        else:
+            runner_args.append('--build=%s' % args.build)
         k8s = os.getcwd()
         if not os.path.basename(k8s) == 'kubernetes':
             raise ValueError(k8s)
@@ -464,7 +469,8 @@ def create_parser():
         help='Paths that should be mounted within the docker container in the form local:remote')
     # Assume we're upping, testing, and downing a cluster by default
     parser.add_argument(
-        '--build', action='store_true', help='Build kubernetes binaries if set')
+        '--build', nargs='?', default=None, const='',
+        help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
         '--stage', help='Stage binaries to gs:// path if set')
     parser.add_argument(
