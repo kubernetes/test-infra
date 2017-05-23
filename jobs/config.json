@@ -3611,8 +3611,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy.env", 
       "--test=false", 
-      "--down=false", 
-      "--mode=local"
+      "--down=false"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4237,8 +4236,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce", 
       "--cluster=", 
-      "--multiple-federations", 
-      "--mode=local"
+      "--multiple-federations"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
