@@ -35,39 +35,43 @@ import operator
 
 import requests
 
+def main():
+    """run flake detector."""
+    res = requests.get('https://prow.k8s.io/data.js')
+    data = res.json()
 
-r = requests.get('https://prow.k8s.io/data.js')
-data = r.json()
+    jobs = {}
+    for job in data:
+        if job['type'] != 'presubmit':
+            continue
+        if job['repo'] != 'kubernetes/kubernetes':
+            continue
+        if job['state'] != 'success' and job['state'] != 'failure':
+            continue
+        if job['job'] not in jobs:
+            jobs[job['job']] = {}
+        if job['pull_sha'] not in jobs[job['job']]:
+            jobs[job['job']][job['pull_sha']] = []
+        jobs[job['job']][job['pull_sha']].append(job['state'])
 
-jobs = {}
-for job in data:
-    if job['type'] != 'presubmit':
-        continue
-    if job['repo'] != 'kubernetes/kubernetes':
-        continue
-    if job['state'] != 'success' and job['state'] != 'failure':
-        continue
-    if job['job'] not in jobs:
-        jobs[job['job']] = {}
-    if job['pull_sha'] not in jobs[job['job']]:
-        jobs[job['job']][job['pull_sha']] = []
-    jobs[job['job']][job['pull_sha']].append(job['state'])
+    job_commits = {}
+    job_flakes = {}
+    for job, commits in jobs.items():
+        job_commits[job] = len(commits)
+        job_flakes[job] = 0
+        for results in commits.values():
+            if 'success' in results and 'failure' in results:
+                job_flakes[job] += 1
 
-job_commits = {}
-job_flakes = {}
-for job, commits in jobs.items():
-    job_commits[job] = len(commits)
-    job_flakes[job] = 0
-    for results in commits.values():
-        if 'success' in results and 'failure' in results:
-            job_flakes[job] += 1
+    print 'Certain flakes from the last day:'
+    total_success_chance = 1.0
+    for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
+        if job_commits[job] < 10:
+            continue
+        fail_chance = flakes / job_commits[job]
+        total_success_chance *= (1.0 - fail_chance)
+        print '{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job)
+    print 'Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance))
 
-print('Certain flakes from the last day:')
-total_success_chance = 1.0
-for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
-    if job_commits[job] < 10:
-        continue
-    fail_chance = flakes / job_commits[job]
-    total_success_chance *= (1.0 - fail_chance)
-    print('{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job))
-print('Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance)))
+if __name__ == '__main__':
+    main()

@@ -26,6 +26,7 @@ import requests
 
 
 def prune(host):
+    """Cancel old, duplicate tests of the same pr."""
     queue = requests.get('http://%s/queue/api/json' % host).json()
 
     dupes = {}
@@ -36,21 +37,21 @@ def prune(host):
                 params = {d['name']: d['value'] for d in action['parameters']}
         if 'PULL_NUMBER' in params:
             name = item['task']['name']
-            queueId = item['id']
+            queue_id = item['id']
             since = item['inQueueSince']
-            dupes.setdefault((name, params['PULL_NUMBER']), []).append((since, queueId, params))
+            dupes.setdefault((name, params['PULL_NUMBER']), []).append((since, queue_id, params))
 
-    for k, v in dupes.iteritems():
-        if len(v) < 2:
+    for key, val in dupes.iteritems():
+        if len(val) < 2:
             continue
-        v.sort()
-        print '===', k
-        for p in v[:-1]:
-            print p
-            resp = requests.post('http://%s/queue/cancelItem?id=%d' % (host, p[1]))
-        print 'GOOD:', v[-1]
+        val.sort()
+        print '===', key
+        for pull in val[:-1]:
+            print pull
+            _resp = requests.post('http://%s/queue/cancelItem?id=%d' % (host, pull[1]))
+        print 'GOOD:', val[-1]
 
 
 if __name__ == '__main__':
-    host = sys.argv[1] if len(sys.argv) > 1 else 'localhost:8080'
-    prune(host)
+    HOST = sys.argv[1] if len(sys.argv) > 1 else 'localhost:8080'
+    prune(HOST)
