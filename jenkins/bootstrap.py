@@ -806,7 +806,10 @@ def parse_repos(args):
         if args.branch:
             raise ValueError('Multi --repo does not support --branch, use --repo=R=branch')
     elif len(repos) == 1 and (args.branch or args.pull):
-        ret[repos[0]] = (args.branch, args.pull)
+        repo = repos[0]
+        if '=' in repo or ':' in repo:
+            raise ValueError('--repo cannot contain = or : with --branch or --pull')
+        ret[repo] = (args.branch, args.pull)
         return ret
     for repo in repos:
         mat = re.match(r'([^=]+)(=([^:,~^\s]+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
@@ -818,10 +821,10 @@ def parse_repos(args):
             continue
         commits = mat.group(2)[1:].split(',')
         if len(commits) == 1:
-            if ':' in commits[0]:
-                raise ValueError('branch:commit must also specify PRs to merge', repos)
+            # Checking out a branch, possibly at a specific commit
             ret[this_repo] = (commits[0], '')
             continue
+        # Checking out one or more PRs
         ret[this_repo] = ('', ','.join(commits))
     return ret
 

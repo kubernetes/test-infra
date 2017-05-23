@@ -378,33 +378,58 @@ class ParseReposTest(unittest.TestCase):
             {'foo': ('bbb', '')},
             bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb', pull='')))
 
+    def testDeprecatedBranch(self):
+        """--repo=foo --branch=bbb:1234 works"""
+        self.assertEquals(
+            {'foo': ('bbb:1234', '')},
+            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb:1234', pull='')))
+
+    def testDeprecatedBranchRepoCommit(self):
+        """--repo=foo=master:aaa --branch=bar is not allowed"""
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master:aaa'], branch='master'))
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master'], branch='bar'))
+
     def testDeprecatedPull(self):
         """--repo=foo --pull=123 works."""
         self.assertEquals(
             {'foo': ('', '123:abc,333:ddd')},
             bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='123:abc,333:ddd')))
 
+    def testDeprecatedPullRepoCommit(self):
+        """--repo=foo=master:aaa --pull=123:abc is not allowed"""
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master:aaa'], branch='', pull='123:abc'))
+        with self.assertRaises(ValueError):
+            bootstrap.parse_repos(FakeArgs(
+                repo=['foo=master'], branch='', pull='123:abc'))
+
     def testPlain(self):
-        """"foo equals foo=master."""
+        """"--repo=foo equals foo=master."""
         self.assertEquals(
             {'foo': ('master', '')},
             bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='')))
 
     def testBranch(self):
-        """foo=branch."""
+        """--repo=foo=branch."""
         self.assertEquals(
             {'foo': ('this', '')},
             bootstrap.parse_repos(
                 FakeArgs(repo=['foo=this'], branch='', pull='')))
 
     def testBranchCommit(self):
-        """foo=branch:commit is not allowed."""
-        with self.assertRaises(ValueError):
+        """--repo=foo=branch:commit works"""
+        self.assertEquals(
+            {'foo': ('this:abcd', '')},
             bootstrap.parse_repos(
-                FakeArgs(repo=['foo=this:abcd'], branch='', pull=''))
+                FakeArgs(repo=['foo=this:abcd'], branch='', pull='')))
 
     def testPull(self):
-        """foo=111,222 works"""
+        """--repo=foo=111,222 works"""
         self.assertEquals(
             {'foo': ('', '111,222')},
             bootstrap.parse_repos(FakeArgs(
@@ -412,14 +437,14 @@ class ParseReposTest(unittest.TestCase):
 
 
     def testPullBranch(self):
-        """foo=master,111,222 works"""
+        """--repo=foo=master,111,222 works"""
         self.assertEquals(
             {'foo': ('', 'master,111,222')},
             bootstrap.parse_repos(
                 FakeArgs(repo=['foo=master,111,222'], branch='', pull='')))
 
     def testPullReleaseBranch(self):
-        """foo=release-3.14,&a-fancy%_branch+:abcd,222 works"""
+        """--repo=foo=release-3.14,&a-fancy%_branch+:abcd,222 works"""
         self.assertEquals(
             {'foo': ('', 'release-3.14,&a-fancy%_branch+:abcd,222')},
             bootstrap.parse_repos(
@@ -427,14 +452,14 @@ class ParseReposTest(unittest.TestCase):
                          branch='', pull='')))
 
     def testPullBranchCommit(self):
-        """foo=master,111,222 works"""
+        """--repo=foo=master:aaa,111:bbb,222:ccc works"""
         self.assertEquals(
             {'foo': ('', 'master:aaa,111:bbb,222:ccc')},
             bootstrap.parse_repos(FakeArgs(
                 repo=['foo=master:aaa,111:bbb,222:ccc'], branch='', pull='')))
 
     def testMultiRepo(self):
-        """foo=master,111,222 bar works"""
+        """--repo=foo=master,111,222 --repo=bar works"""
         self.assertEquals(
             {
                 'foo': ('', 'master:aaa,111:bbb,222:ccc'),
@@ -1261,12 +1286,26 @@ class IntegrationTest(unittest.TestCase):
             branch='%s:%s' % (self.BRANCH, sha),
             pull=None,
             root=self.root_workspace)
+        # Supplying the commit through repo works.
+        test_bootstrap(
+            job='fake-branch',
+            repo="%s=%s:%s" % (self.REPO, self.BRANCH, sha),
+            branch=None,
+            pull=None,
+            root=self.root_workspace)
         # Using branch head fails.
         with self.assertRaises(SystemExit):
             test_bootstrap(
                 job='fake-branch',
                 repo=self.REPO,
                 branch=self.BRANCH,
+                pull=None,
+                root=self.root_workspace)
+        with self.assertRaises(SystemExit):
+            test_bootstrap(
+                job='fake-branch',
+                repo="%s=%s" % (self.REPO, self.BRANCH),
+                branch=None,
                 pull=None,
                 root=self.root_workspace)
 
