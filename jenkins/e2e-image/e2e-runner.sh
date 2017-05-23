@@ -122,13 +122,4 @@ if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
   e2e_go_args+=(--timeout="${KUBEKINS_TIMEOUT}")
 fi
 
-if [[ -n "${E2E_PUBLISH_PATH:-}" ]]; then
-  e2e_go_args+=(--publish="${E2E_PUBLISH_PATH}")
-fi
-
-if [[ "${E2E_PUBLISH_GREEN_VERSION:-}" == "true" ]]; then
-  # Use plaintext version file packaged with kubernetes.tar.gz
-  e2e_go_args+=(--publish="gs://${KUBE_GCS_DEV_RELEASE_BUCKET}/ci/latest-green.txt")
-fi
-
 kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"

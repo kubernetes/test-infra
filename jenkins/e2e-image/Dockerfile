@@ -36,8 +36,7 @@ ENV E2E_UP=true \
     E2E_DOWN=true
 
 # Customize these as appropriate
-ENV E2E_PUBLISH_PATH= \
-    INSTANCE_PREFIX=jenkins-e2e \
+ENV INSTANCE_PREFIX=jenkins-e2e \
     KUBERNETES_PROVIDER=gce
 
 # Variables specific to GCP

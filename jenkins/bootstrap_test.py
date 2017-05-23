@@ -2008,6 +2008,7 @@ class JobTest(unittest.TestCase):
                 black = [
                     'E2E_DOWN=',
                     'E2E_NAME=',
+                    'E2E_PUBLISH_PATH=',
                     'E2E_TEST=',
                     'E2E_UP=',
                     'USE_KUBEMARK=',

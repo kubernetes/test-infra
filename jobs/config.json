@@ -132,7 +132,8 @@
   "ci-kubernetes-e2e-gce": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce.env", 
+      "--publish=gs://kubernetes-release-dev/ci/latest-green.txt"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -360,6 +361,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-canary.env", 
+      "--publish=gs://kubernetes-release-dev/ci/latest-canarygreen.txt", 
       "--tag=latest"
     ], 
     "scenario": "kubernetes_e2e", 
