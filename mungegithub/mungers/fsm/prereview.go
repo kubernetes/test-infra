@@ -28,7 +28,7 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteActionRequired = "release-note-action-required"
 	releaseNoteExperimental   = "release-note-experimental"
-	releaseNoteLabelNeeded    = "release-note-none"
+	releaseNoteNone           = "release-note-none"
 )
 
 // PreReview is the state before the review starts.
@@ -71,7 +71,7 @@ func (p *PreReview) checkCLA(obj *githubhelper.MungeObject) bool {
 }
 
 func (p *PreReview) checkReleaseNotes(obj *githubhelper.MungeObject) bool {
-	return obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteExperimental) || obj.HasLabel(releaseNoteLabelNeeded)
+	return obj.HasLabel(releaseNote) || obj.HasLabel(releaseNoteActionRequired) || obj.HasLabel(releaseNoteExperimental) || obj.HasLabel(releaseNoteNone)
 }
 
 func (p *PreReview) checkAssignees(obj *githubhelper.MungeObject) bool {

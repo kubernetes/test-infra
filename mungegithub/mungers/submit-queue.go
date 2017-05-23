@@ -896,6 +896,7 @@ const (
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
 	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
+	noReleaseNote           = "Will not auto merge because " + releaseNoteLabelNeeded + " is present."
 	ciFailure               = "Required Github CI test is not green"
 	ciFailureFmt            = ciFailure + ": %s"
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
@@ -1001,6 +1002,12 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 			sq.SetMergeStatus(obj, noApproved)
 			return false
 		}
+	}
+
+	// PR cannot have the label `release-note-label-needed`
+	if obj.HasLabel(releaseNoteLabelNeeded) {
+		sq.SetMergeStatus(obj, noReleaseNote)
+		return false
 	}
 
 	// PR cannot have the label which prevents merging.
