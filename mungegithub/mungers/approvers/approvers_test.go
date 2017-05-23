@@ -565,6 +565,8 @@ We suggest the following additional approver: **Alice**
 
 Assign the PR to them by writing ` + "`/assign @Alice`" + ` in a comment when ready.
 
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
@@ -598,6 +600,8 @@ func TestGetMessageAllApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="LGTM">Bill</a>*
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -633,6 +637,8 @@ This pull-request has been approved by:
 We suggest the following additional approvers: **Alice**, **Bill**
 
 Assign the PR to them by writing ` + "`/assign @Alice @Bill`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
