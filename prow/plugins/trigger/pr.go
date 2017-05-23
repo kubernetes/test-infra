@@ -78,6 +78,8 @@ func askToJoin(ghc githubClient, pr github.PullRequest) error {
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`@k8s-bot ok to test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
 
+I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
 <details>
 
 %s
