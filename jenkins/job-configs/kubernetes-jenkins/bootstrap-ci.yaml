@@ -101,8 +101,8 @@
         trigger-job: ''
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
-        jenkins-timeout: 140
-        timeout: 40
+        jenkins-timeout: 150
+        timeout: 50
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-kops-aws-weave: #justinsb
@@ -125,7 +125,7 @@
         job-name: ci-kubernetes-e2e-gce-canary
         frequency: '@daily'  # At least once a day, can manually trigger too
         jenkins-timeout: 250
-        timeout: 50
+        timeout: 60
         trigger-job: ''
     - kubernetes-e2e-gce-slow:
         job-name: ci-kubernetes-e2e-gce-slow
@@ -231,8 +231,8 @@
         trigger-job: 'kubernetes-build'
     - kubernetes-e2e-gce-stackdriver:
         job-name: ci-kubernetes-e2e-gce-stackdriver
-        jenkins-timeout: 150
-        timeout: 50
+        jenkins-timeout: 170
+        timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 
@@ -499,14 +499,14 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-es-logging:
         job-name: ci-kubernetes-e2e-gce-es-logging
-        jenkins-timeout: 190
-        timeout: 90
+        jenkins-timeout: 210
+        timeout: 110
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-sd-logging:
         job-name: ci-kubernetes-e2e-gce-sd-logging
-        jenkins-timeout: 220
-        timeout: 120
+        jenkins-timeout: 240
+        timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-statefulset:
@@ -537,8 +537,8 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-sd-logging:
         job-name: ci-kubernetes-e2e-gci-gce-sd-logging
-        jenkins-timeout: 220
-        timeout: 120
+        jenkins-timeout: 240
+        timeout: 140
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-statefulset:
@@ -814,8 +814,8 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gke-stackdriver:
         job-name: ci-kubernetes-e2e-gke-stackdriver
-        jenkins-timeout: 150
-        timeout: 50
+        jenkins-timeout: 170
+        timeout: 70
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 
@@ -1173,8 +1173,8 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-gce-scale:
         job-name: ci-kubernetes-kubemark-gce-scale
-        jenkins-timeout: 1180
-        timeout: 1080
+        jenkins-timeout: 1200
+        timeout: 1100
         frequency: 'H H/12 * * *'
         trigger-job: ''
     # END KUBEMARK

@@ -393,6 +393,8 @@ def main(args):
         runner_args.append('--save=%s' % args.save)
     if args.publish:
         runner_args.append('--publish=%s' % args.publish)
+    if args.timeout:
+        runner_args.append('--timeout=%s' % args.timeout)
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -513,6 +515,8 @@ def create_parser():
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
         '--up', default='true', help='If we need to bring up a e2e cluster')
+    parser.add_argument(
+        '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
     parser.add_argument(
         '--multiple-federations', default=False, action='store_true',
         help='If we need to run multiple federation control planes in parallel')
