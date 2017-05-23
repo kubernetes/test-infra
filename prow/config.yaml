@@ -186,47 +186,6 @@ presubmits:
     context: pull-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce )?test this"
-    spec:
-      containers:
-      - args:
-        - --pull=$(PULL_REFS)
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
-        - --json
-        - --timeout=90
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
 
   - name: pull-kubernetes-kubemark-e2e-gce
     always_run: true
@@ -389,47 +348,6 @@ presubmits:
     context: pull-security-kubernetes-federation-e2e-gce
     rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
     trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce )?test this"
-    spec:
-      containers:
-      - args:
-        - --pull=$(PULL_REFS)
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
-        - --json
-        - --timeout=90
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
 
   - name: pull-security-kubernetes-kubemark-e2e-gce
     always_run: true
@@ -2981,44 +2899,6 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-      - mountPath: /root/.cache
-        name: cache-ssd
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-    - hostPath:
-        path: /mnt/disks/ssd0
-      name: cache-ssd
-
-- name: ci-kubernetes-pull-gce-federation-deploy
-  interval: 24h
-  spec:
-    containers:
-    - args:
-      - --timeout=90
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
