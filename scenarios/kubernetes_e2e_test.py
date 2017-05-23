@@ -77,6 +77,64 @@ class Stub(object):
         setattr(self.thing, self.param, self.old)
 
 
+class ClusterNameTest(unittest.TestCase):
+    def test_name_filled(self):
+        """Return the cluster name if set."""
+        name = 'foo'
+        build = '1984'
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertIn(name, actual)
+        self.assertNotIn(build, actual)
+
+    def test_name_empty_short_build(self):
+        """Return the build number if name is empty."""
+        name = ''
+        build = '1984'
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertIn(build, actual)
+
+    def test_name_empty_long_build(self):
+        """Return a short hash of a long build number if name is empty."""
+        name = ''
+        build = '0' * 63
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertNotIn(build, actual)
+        if len(actual) > 32:  # Some firewall names consume half the quota
+            self.fail('Name should be short: %s' % actual)
+
+
+class SetupExtractTest(unittest.TestCase):
+    def check(self, extract, envs, args):
+        actual_envs = []
+        actual_args = []
+        class FakeMode(object):
+            @staticmethod
+            def add_environment(env):
+                actual_envs.append(env)
+        kubernetes_e2e.setup_extract(extract, FakeMode, actual_args)
+        self.assertEquals(envs, actual_envs)
+        self.assertEquals(args, actual_args)
+
+    def test_no_extract(self):
+        """Do nothing when --extract=."""
+        self.check(None, envs=[], args=[])
+
+    def test_extract_local(self):
+        """Set JENKINS_USE_LOCAL_BINARIES=y when --extract=local."""
+        self.check('local', envs=['JENKINS_USE_LOCAL_BINARIES=y'], args=[])
+
+    def test_extract_none(self):
+        """Set RAW_EXTRACT=y when --extract=none but send nothing to kubetest."""
+        self.check('none', envs=['RAW_EXTRACT=y'], args=[])
+
+    def test_extract_other(self):
+        """Set RAW_EXTRACT=y and send --extract to kubetest normally."""
+        self.check('other', envs=['RAW_EXTRACT=y'], args=['--extract=other'])
+
+
 class ScenarioTest(unittest.TestCase):
     """Test for e2e scenario."""
     callstack = []

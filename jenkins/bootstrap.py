@@ -164,19 +164,27 @@ def pull_numbers(pull):
 
 def pull_ref(pull):
     """Turn a PR number of list of refs into specific refs to fetch and check out."""
-    if ref_has_shas(pull):
-        refs = []
-        checkouts = []
-        for name, sha in (x.split(':') for x in pull.split(',')):
-            if len(refs) == 0:
-                # first entry is the branch spec ("master")
-                refs.append(name)
-            else:
-                num = int(name)
-                refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
-            checkouts.append(sha)
-        return refs, checkouts
-    return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+    if isinstance(pull, int) or ',' not in pull:
+        return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+    pulls = pull.split(',')
+    refs = []
+    checkouts = []
+    for ref in pulls:
+        if ':' in ref:  # master:abcd or 1234:abcd
+            name, sha = ref.split(':')
+        elif not refs:  # master
+            name, sha = ref, 'FETCH_HEAD'
+        else:
+            name = ref
+            sha = 'refs/pr/%s' % ref
+
+        checkouts.append(sha)
+        if not refs:  # First ref should be branch to merge into
+            refs.append(name)
+        else:  # Subsequent refs should be PR numbers
+            num = int(name)
+            refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
+    return refs, checkouts
 
 
 def branch_ref(branch):

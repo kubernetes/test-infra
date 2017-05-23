@@ -20,6 +20,7 @@
 """Runs kubernetes e2e test with specified config"""
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -312,6 +313,29 @@ class DockerMode(object):
         check('docker', 'stop', self.container)
 
 
+def cluster_name(cluster, build):
+    """Return or select a cluster name."""
+    if cluster:
+        return cluster
+    if len(build) < 20:
+        return 'e2e-%s' % build
+    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
+
+
+def setup_extract(extract, mode, runner_args):
+    if not extract:
+        return
+    if extract == 'local':
+        # TODO(fejta): delete this if block after pushing a RAW_EXTRACT image
+        mode.add_environment('JENKINS_USE_LOCAL_BINARIES=y')
+    else:
+        mode.add_environment('RAW_EXTRACT=y')  # TODO(fejta): delete this
+        if extract != 'none':
+            runner_args.append('--extract=%s' % extract)
+
+
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -396,7 +420,8 @@ def main(args):
     if args.timeout:
         runner_args.append('--timeout=%s' % args.timeout)
 
-    cluster = args.cluster or 'e2e-%s' % os.getenv('BUILD_NUMBER', 0)
+    setup_extract(args.extract, mode, runner_args)
+    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
@@ -480,6 +505,8 @@ def create_parser():
         '--stage-suffix', help='Append suffix to staged version if set')
     parser.add_argument(
         '--charts-tests', action='store_true', help='If the test is a charts test job')
+    parser.add_argument(
+        '--extract', help='Pass --extract flag to kubetest')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(

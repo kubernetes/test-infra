@@ -73,10 +73,17 @@ fi
 
 
 # We get the Kubernetes tarballs unless we are going to use old ones
-if [[ "${JENKINS_USE_EXISTING_BINARIES:-}" =~ ^[yY]$ ]]; then
-  echo "Using existing binaries; not cleaning, fetching, or unpacking new ones."
+if [[ -n "${RAW_EXTRACT:-}" ]]; then
+  echo 'RAW_EXTRACT is set, --extract set by $@'
+  # TODO(fejta): delete everything after here
+elif [[ "${JENKINS_USE_EXISTING_BINARIES:-}" =~ ^[yY]$ ]]; then
+  echo 'ERROR: JENKINS_USE_EXISTING_BINARIES no longer supported'
+  echo 'Send --extract=none to scenarios/kubernetes_e2e.py'
+  exit 1
 elif [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
-  e2e_go_args+=(--extract="local")
+  echo 'ERROR: JENKINS_USE_LOCAL_BINARIES no longer supported.'
+  echo 'Send --extract=local to scenarios/kubernetes_e2e.py'
+  exit 1
 elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
   # This is for test, staging, and prod jobs on GKE, where we want to
   # test what's running in GKE by default rather than some CI build.
