@@ -155,18 +155,6 @@ if [[ "${E2E_UPGRADE_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--upgrade_args="${GINKGO_UPGRADE_TEST_ARGS}")
 fi
 
-if [[ "${USE_KUBEMARK:-}" == "true" ]]; then
-  e2e_go_args+=(--kubemark=true)
-fi
-
-if [[ "${CHARTS_TEST:-}" == "true" ]]; then
-  e2e_go_args+=(--charts=true)
-fi
-
-if [[ "${PERF_TESTS:-}" == "true" ]]; then
-  e2e_go_args+=(--perf-tests=true)
-fi
-
 if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
   e2e_go_args+=(--timeout="${KUBEKINS_TIMEOUT}")
 fi

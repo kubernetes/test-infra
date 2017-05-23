@@ -1961,7 +1961,17 @@ class JobTest(unittest.TestCase):
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
 
-                black = ['E2E_DOWN=', 'E2E_NAME=', 'E2E_TEST=', 'E2E_UP='] # to classify from E2E_UPGRADE
+                # to classify from E2E_UPGRADE,
+                # also test for https://github.com/kubernetes/test-infra/issues/2829
+                black = [
+                    'E2E_DOWN=',
+                    'E2E_NAME=',
+                    'E2E_TEST=',
+                    'E2E_UP=',
+                    'USE_KUBEMARK=',
+                    'CHARTS_TEST=',
+                    'PERF_TESTS='
+                ]
                 for b in black:
                     if b in line:
                         self.fail('[%r]: Env %r: Convert %r to use e2e scenario flags' % (job, line, b))
