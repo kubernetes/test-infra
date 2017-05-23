@@ -29,6 +29,9 @@ import sys
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
+KUBEKINS_IMAGE = 'gcr.io/k8s-testimages/kubekins-e2e'
+KUBEKINS_BAZEL_IMAGE = 'gcr.io/k8s-testimages/kubekins-e2e-bazel'
+
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -54,10 +57,6 @@ def check_env(env, *cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd, env=env)
 
-
-def kubekins(tag):
-    """Return full path to kubekins-e2e:tag."""
-    return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
 def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
@@ -200,10 +199,15 @@ class LocalMode(object):
 
 class DockerMode(object):
     """Runs e2e tests via docker run kubekins-e2e."""
-    def __init__(self, container, workspace, sudo, tag, mount_paths):
+    def __init__(self, container, workspace, sudo, tag, mount_paths,
+                 need_bazel=False):
         self.tag = tag
+        if need_bazel:
+            self.image = KUBEKINS_BAZEL_IMAGE
+        else:
+            self.image = KUBEKINS_IMAGE
         try:  # Pull a newer version if one exists
-            check('docker', 'pull', kubekins(tag))
+            check('docker', 'pull', '%s:%s' % (self.image, self.tag))
         except subprocess.CalledProcessError:
             pass
 
@@ -300,7 +304,7 @@ class DockerMode(object):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
         cmd = list(self.cmd)
-        cmd.append(kubekins(self.tag))
+        cmd.append('%s:%s' % (self.image, self.tag))
         cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
@@ -334,7 +338,8 @@ def main(args):
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
         sudo = args.docker_in_docker or args.build
-        mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
+        mode = DockerMode(container, workspace, sudo, args.tag,
+                          args.mount_paths, need_bazel=(args.build == 'bazel'))
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
     else:

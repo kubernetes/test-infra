@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/k8s-testimages/kubekins-e2e
+KUBEKINS_IMG = gcr.io/k8s-testimages/kubekins-e2e
+KUBEKINS_BAZEL_IMG = gcr.io/k8s-testimages/kubekins-e2e-bazel
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 all: build
@@ -21,12 +22,16 @@ kubetest:
 	GOOS=linux GOARCH=amd64 go build -o kubetest ../../kubetest
 
 build: kubetest
-	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
+	docker build -t $(KUBEKINS_IMG):$(TAG) -f Dockerfile-kubekins-e2e .
+	docker tag $(KUBEKINS_IMG):$(TAG) $(KUBEKINS_IMG):latest
+	docker build -t $(KUBEKINS_BAZEL_IMG):$(TAG) -f Dockerfile-kubekins-e2e-bazel .
+	docker tag $(KUBEKINS_BAZEL_IMG):$(TAG) $(KUBEKINS_BAZEL_IMG):latest
 	rm kubetest
-	@echo Built $(IMG):$(TAG) and tagged with latest
+	@echo Built $(KUBEKINS_BAZEL_IMG):$(TAG) and $(KUBEKINS_BAZEL_IMG):$(TAG) and tagged with latest
 
 push: build
-	gcloud docker -- push $(IMG):$(TAG)
-	gcloud docker -- push $(IMG):latest
-	@echo Pushed $(IMG) with :latest and :$(TAG) tags
+	gcloud docker -- push $(KUBEKINS_IMG):$(TAG)
+	gcloud docker -- push $(KUBEKINS_IMG):latest
+	gcloud docker -- push $(KUBEKINS_BAZEL_IMG):$(TAG)
+	gcloud docker -- push $(KUBEKINS_BAZEL_IMG):latest
+	@echo Pushed $(KUBEKINS_IMG) and $(KUBEKINS_BAZEL_IMG) with :latest and :$(TAG) tags
