@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = [
         "assign-fixes_test.go",
-        "assign-unassign-handler_test.go",
         "check-labels_test.go",
         "cherrypick-auto-approve_test.go",
         "cla_test.go",
@@ -44,7 +43,6 @@ go_test(
         "//vendor:github.com/google/go-github/github",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/clock",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 
@@ -53,7 +51,6 @@ go_library(
     srcs = [
         "approval-handler.go",
         "assign-fixes.go",
-        "assign-unassign-handler.go",
         "block_paths.go",
         "blunderbuss.go",
         "bulk-lgtm.go",
@@ -129,9 +126,7 @@ filegroup(
         "//mungegithub/mungers/approvers:all-srcs",
         "//mungegithub/mungers/e2e:all-srcs",
         "//mungegithub/mungers/flakesync:all-srcs",
-        "//mungegithub/mungers/fsm:all-srcs",
-        "//mungegithub/mungers/matchers/comment:all-srcs",
-        "//mungegithub/mungers/matchers/event:all-srcs",
+        "//mungegithub/mungers/matchers:all-srcs",
         "//mungegithub/mungers/mungerutil:all-srcs",
         "//mungegithub/mungers/shield:all-srcs",
         "//mungegithub/mungers/testowner:all-srcs",
