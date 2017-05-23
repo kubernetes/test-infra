@@ -190,6 +190,7 @@ presubmits:
       containers:
       - args:
         - --pull=$(PULL_REFS)
+        - --root=/go/src
         - --repo=k8s.io/kubernetes
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
@@ -392,6 +393,7 @@ presubmits:
       containers:
       - args:
         - --pull=$(PULL_REFS)
+        - --root=/go/src
         - --repo=k8s.io/kubernetes
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
