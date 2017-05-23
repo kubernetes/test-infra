@@ -314,7 +314,7 @@ class DockerMode(object):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -370,6 +370,12 @@ def main(args):
         runner_args.append('--stage-suffix=%s' % args.stage_suffix)
     if args.multiple_federations:
         runner_args.append('--multiple-federations')
+    if args.perf_tests:
+        runner_args.append('--perf-tests')
+    if args.charts_tests:
+        runner_args.append('--charts')
+    if args.kubemark:
+        runner_args.append('--kubemark')
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -464,6 +470,8 @@ def create_parser():
     parser.add_argument(
         '--stage-suffix', help='Append suffix to staged version if set')
     parser.add_argument(
+        '--charts-tests', action='store_true', help='If the test is a charts test job')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
@@ -471,6 +479,10 @@ def create_parser():
         '--down', default='true', help='If we need to set --down in e2e.go')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
+    parser.add_argument(
+        '--kubemark', action='store_true', help='If the test uses kubemark')
+    parser.add_argument(
+        '--perf-tests', action='store_true', help='If the test need to run k8s/perf-test e2e test')
     parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(

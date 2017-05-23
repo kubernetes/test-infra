@@ -71,7 +71,8 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-charts-gce.env", 
       "--test=false", 
-      "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts"
+      "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts", 
+      "--charts-tests"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3427,7 +3428,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-100-gce.env", 
       "--docker-in-docker", 
       "--cluster=kubemark-100", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3440,7 +3442,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-5-gce.env", 
       "--docker-in-docker", 
       "--cluster=kubemark-5", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3453,7 +3456,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-5-gce-1.5.env", 
       "--docker-in-docker", 
       "--cluster=kubemark-5-1-5", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3466,7 +3470,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-500-gce.env", 
       "--docker-in-docker", 
       "--cluster=kubemark-500", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3479,7 +3484,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-gce-scale.env", 
       "--cluster=kubemark-2000", 
       "--test=false", 
-      "--docker-in-docker"
+      "--docker-in-docker", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3492,7 +3498,8 @@
       "--env-file=jobs/ci-kubernetes-kubemark-high-density-100-gce.env", 
       "--docker-in-docker", 
       "--cluster=kubemark-100pods", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4035,7 +4042,8 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-perf-tests-e2e-gce-clusterloader.env", 
       "--test=false", 
-      "--mode=local"
+      "--mode=local", 
+      "--perf-tests"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4253,7 +4261,8 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/pull-kubernetes-kubemark-e2e-gce.env", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4268,7 +4277,8 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/pull-kubernetes-kubemark-e2e-gce-gci.env", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-gci", 
-      "--test=false"
+      "--test=false", 
+      "--kubemark"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
