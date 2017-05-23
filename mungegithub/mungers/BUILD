@@ -43,7 +43,6 @@ go_test(
         "//vendor:github.com/google/go-github/github",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/clock",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 
@@ -127,7 +126,6 @@ filegroup(
         "//mungegithub/mungers/approvers:all-srcs",
         "//mungegithub/mungers/e2e:all-srcs",
         "//mungegithub/mungers/flakesync:all-srcs",
-        "//mungegithub/mungers/fsm:all-srcs",
         "//mungegithub/mungers/matchers/comment:all-srcs",
         "//mungegithub/mungers/matchers/event:all-srcs",
         "//mungegithub/mungers/mungerutil:all-srcs",
