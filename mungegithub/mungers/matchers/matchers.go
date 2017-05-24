@@ -89,6 +89,64 @@ func (c CreatedBefore) MatchReviewComment(review *github.PullRequestComment) boo
 	return review.CreatedAt.Before(time.Time(c))
 }
 
+// UpdatedAfter matches comments updated after the time
+type UpdatedAfter time.Time
+
+var _ Matcher = UpdatedAfter{}
+
+// MatchComment returns true if the comment is updated after the time
+func (u UpdatedAfter) MatchComment(comment *github.IssueComment) bool {
+	if comment == nil || comment.UpdatedAt == nil {
+		return false
+	}
+	return comment.UpdatedAt.After(time.Time(u))
+}
+
+// MatchEvent returns true if the event is updated after the time
+func (u UpdatedAfter) MatchEvent(event *github.IssueEvent) bool {
+	if event == nil || event.CreatedAt == nil {
+		return false
+	}
+	return event.CreatedAt.Before(time.Time(u))
+}
+
+// MatchReviewComment returns true if the review comment is updated after the time
+func (u UpdatedAfter) MatchReviewComment(review *github.PullRequestComment) bool {
+	if review == nil || review.UpdatedAt == nil {
+		return false
+	}
+	return review.UpdatedAt.After(time.Time(u))
+}
+
+// UpdatedBefore matches Items updated before the time
+type UpdatedBefore time.Time
+
+var _ Matcher = UpdatedBefore{}
+
+// MatchComment returns true if the comment is created before the time
+func (u UpdatedBefore) MatchComment(comment *github.IssueComment) bool {
+	if comment == nil || comment.UpdatedAt == nil {
+		return false
+	}
+	return comment.UpdatedAt.Before(time.Time(u))
+}
+
+// MatchEvent returns true if the event is created before the time
+func (u UpdatedBefore) MatchEvent(event *github.IssueEvent) bool {
+	if event == nil || event.CreatedAt == nil {
+		return false
+	}
+	return event.CreatedAt.Before(time.Time(u))
+}
+
+// MatchReviewComment returns true if the review comment is created before the time
+func (u UpdatedBefore) MatchReviewComment(review *github.PullRequestComment) bool {
+	if review == nil || review.UpdatedAt == nil {
+		return false
+	}
+	return review.UpdatedAt.Before(time.Time(u))
+}
+
 type validAuthorMatcher struct{}
 
 func ValidAuthor() Matcher {
