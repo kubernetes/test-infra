@@ -32,7 +32,7 @@ func makeComment(body, author string, beforeNow time.Duration) *github.IssueComm
 	return &github.IssueComment{
 		Body:      &body,
 		User:      &github.User{Login: &author},
-		CreatedAt: timeAgo(beforeNow),
+		UpdatedAt: timeAgo(beforeNow),
 	}
 }
 
