@@ -469,6 +469,8 @@ We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}
 Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
 <details {{if not .ap.IsApproved}}open{{end}}>
 Needs approval from an approver in each of these OWNERS Files:
 
