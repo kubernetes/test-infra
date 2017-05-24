@@ -3625,6 +3625,20 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-pull-gce-federation-deploy-canary": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy.env", 
+      "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy-canary.env", 
+      "--test=false", 
+      "--down=false", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-soak-cos-docker-validation-deploy": {
     "args": [
       "--env-file=platforms/gce.env", 
@@ -4245,6 +4259,23 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce", 
       "--cluster=", 
       "--multiple-federations"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "pull-kubernetes-federation-e2e-gce-canary": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/pull-kubernetes-e2e.env", 
+      "--env-file=jobs/pull-kubernetes-federation-e2e-gce.env", 
+      "--env-file=jobs/pull-kubernetes-federation-e2e-gce-canary.env", 
+      "--build", 
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce-canary", 
+      "--cluster=", 
+      "--multiple-federations", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
