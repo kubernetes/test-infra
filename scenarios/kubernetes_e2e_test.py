@@ -245,14 +245,17 @@ class DockerTest(ScenarioTest):
 
     def test_default_tag(self):
         """Ensure the default tag exists on gcr.io."""
-        args = self.parser.parse_args()
-        match = re.match('gcr.io/([^:]+):(.+)', kubernetes_e2e.kubekins(args.tag))
-        self.assertIsNotNone(match)
-        url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
-                                                     match.group(2))
-        data = json.loads(urllib.urlopen(url).read())
-        self.assertNotIn('errors', data)
-        self.assertIn('name', data)
+        for image in (
+            kubernetes_e2e.KUBEKINS_IMAGE, kubernetes_e2e.KUBEKINS_BAZEL_IMAGE):
+            args = self.parser.parse_args()
+            match = re.match('gcr.io/([^:]+):(.+)',
+                             '%s:%s' % (image, args.tag))
+            self.assertIsNotNone(match)
+            url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
+                                                         match.group(2))
+            data = json.loads(urllib.urlopen(url).read())
+            self.assertNotIn('errors', data)
+            self.assertIn('name', data)
 
     def test_docker_env(self):
         """
