@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestConfigLoads(t *testing.T) {
@@ -174,5 +175,121 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 		if !reflect.DeepEqual(j, sp[i]) {
 			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%#v\nshould match: %#v", j, sp[i])
 		}
+	}
+}
+
+func CheckBazelPortContainer(c kube.Container, cache bool) error {
+	if !cache {
+		if len(c.Ports) != 0 {
+			return fmt.Errorf("Job does not use --cache-ssd should not set ports in spec!")
+		}
+		return nil
+	}
+
+	if len(c.Ports) != 1 {
+		return fmt.Errorf("Job uses --cache-ssd need to set ports in spec!")
+	} else if c.Ports[0].ContainerPort != 9999 {
+		return fmt.Errorf("Job uses --cache-ssd need to have ContainerPort 9999!")
+	} else if c.Ports[0].HostPort != 9999 {
+		return fmt.Errorf("Job uses --cache-ssd need to have HostPort 9999!")
+	}
+	return nil
+}
+
+func CheckBazelPortPresubmit(presubmits []Presubmit) error {
+	for _, presubmit := range presubmits {
+		if presubmit.Spec == nil {
+			continue
+		}
+		hasCache := false
+		for _, volume := range presubmit.Spec.Volumes {
+			if volume.Name == "cache-ssd" {
+				hasCache = true
+			}
+		}
+
+		for _, container := range presubmit.Spec.Containers {
+			if err := CheckBazelPortContainer(container, hasCache); err != nil {
+				return fmt.Errorf("%s: %v", presubmit.Name, err)
+			}
+		}
+
+		if err := CheckBazelPortPresubmit(presubmit.RunAfterSuccess); err != nil {
+			return fmt.Errorf("%s: %v", presubmit.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func CheckBazelPortPostsubmit(postsubmits []Postsubmit) error {
+	for _, postsubmit := range postsubmits {
+		hasCache := false
+		for _, volume := range postsubmit.Spec.Volumes {
+			if volume.Name == "cache-ssd" {
+				hasCache = true
+			}
+		}
+
+		for _, container := range postsubmit.Spec.Containers {
+			if err := CheckBazelPortContainer(container, hasCache); err != nil {
+				return fmt.Errorf("%s: %v", postsubmit.Name, err)
+			}
+		}
+
+		if err := CheckBazelPortPostsubmit(postsubmit.RunAfterSuccess); err != nil {
+			return fmt.Errorf("%s: %v", postsubmit.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func CheckBazelPortPeriodic(periodics []Periodic) error {
+	for _, periodic := range periodics {
+		hasCache := false
+		for _, volume := range periodic.Spec.Volumes {
+			if volume.Name == "cache-ssd" {
+				hasCache = true
+			}
+		}
+
+		for _, container := range periodic.Spec.Containers {
+			if err := CheckBazelPortContainer(container, hasCache); err != nil {
+				return fmt.Errorf("%s: %v", periodic.Name, err)
+			}
+		}
+
+		if err := CheckBazelPortPeriodic(periodic.RunAfterSuccess); err != nil {
+			return fmt.Errorf("%s: %v", periodic.Name, err)
+		}
+	}
+
+	return nil
+}
+
+// Set the HostPort to 9999 for all bazel pods so that they are forced
+// onto different nodes. Once pod affinity is GA, use that instead.
+// Until https://github.com/kubernetes/community/blob/master/contributors/design-proposals/local-storage-overview.md
+func TestBazelJobHasContainerPort(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	for _, pres := range c.Presubmits {
+		if err := CheckBazelPortPresubmit(pres); err != nil {
+			t.Errorf("Error in presubmit: %v", err)
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		if err := CheckBazelPortPostsubmit(posts); err != nil {
+			t.Errorf("Error in postsubmit: %v", err)
+		}
+	}
+
+	if err := CheckBazelPortPeriodic(c.Periodics); err != nil {
+		t.Errorf("Error in periodic: %v", err)
 	}
 }
