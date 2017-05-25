@@ -83,11 +83,6 @@ func TestPresubmits(t *testing.T) {
 			if !job.re.MatchString(job.RerunCommand) {
 				t.Errorf("For job %s: RerunCommand \"%s\" does not match regex \"%v\".", job.Name, job.RerunCommand, job.Trigger)
 			}
-			// Check that the rerun command made using the job name runs the job.
-			jobNameRerunCommand := fmt.Sprintf("@k8s-bot %s test this", job.Name)
-			if !job.re.MatchString(jobNameRerunCommand) {
-				t.Errorf("For job %s: rerunning with job name \"%s\" does not match regex \"%v\".", job.Name, jobNameRerunCommand, job.Trigger)
-			}
 			// Next check that the rerun command doesn't run any other jobs.
 			for j, job2 := range jobs {
 				if i == j {
@@ -101,9 +96,6 @@ func TestPresubmits(t *testing.T) {
 				}
 				if job2.re.MatchString(job.RerunCommand) {
 					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
-				}
-				if job2.re.MatchString(jobNameRerunCommand) {
-					t.Errorf("Job name rerun command \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", jobNameRerunCommand, job.Name, job2.Trigger, job2.Name)
 				}
 			}
 			var scenario string
