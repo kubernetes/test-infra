@@ -18,36 +18,36 @@ presubmits:
   - name: pull-cadvisor-e2e
     always_run: true
     context: pull-cadvisor-e2e
-    rerun_command: "@k8s-bot pull-cadvisor-e2e test this"
-    trigger: "@k8s-bot (pull-cadvisor-e2e )?test this"
+    rerun_command: "@k8s-bot e2e test this"
+    trigger: "@k8s-bot ((pull-cadvisor-)?e2e )?test this"
 
   kubernetes/charts:
   - name: pull-charts-e2e
     always_run: true
     context: pull-charts-e2e
-    rerun_command: "@k8s-bot pull-charts-e2e test this"
-    trigger: "@k8s-bot (pull-charts-e2e |e2e )?test this"
+    rerun_command: "@k8s-bot e2e test this"
+    trigger: "@k8s-bot ((pull-charts-)?e2e )?test this"
 
   kubernetes/heapster:
   - name: pull-heapster-e2e
     always_run: true
     context: pull-heapster-e2e
-    rerun_command: "@k8s-bot pull-heapster-e2e test this"
-    trigger: "@k8s-bot (pull-heapster-e2e )?test this"
+    rerun_command: "@k8s-bot e2e test this"
+    trigger: "@k8s-bot ((pull-heapster-)?e2e )?test this"
 
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     always_run: true
     context: pull-kops-e2e-kubernetes-aws
-    rerun_command: "@k8s-bot pull-kops-e2e-kubernetes-aws test this"
-    trigger: "@k8s-bot (pull-kops-e2e-kubernetes-aws |aws e2e )?test this"
+    rerun_command: "@k8s-bot e2e-kubernetes-aws test this"
+    trigger: "@k8s-bot ((pull-kops-)?e2e-kubernetes-aws |aws e2e )?test this"
 
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel
     context: pull-kubernetes-bazel
     always_run: true
-    rerun_command: "@k8s-bot pull-kubernetes-bazel test this"
-    trigger: "@k8s-bot (pull-kubernetes-bazel |bazel )?test this"
+    rerun_command: "@k8s-bot bazel test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?bazel )?test this"
     branches:
     - master
     spec:
@@ -72,7 +72,7 @@ presubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -85,8 +85,8 @@ presubmits:
     context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-kubeadm-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
+    rerun_command: "@k8s-bot e2e-kubeadm-gce test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?e2e-kubeadm-gce |kubeadm e2e )?test this"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
@@ -115,7 +115,7 @@ presubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999   
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -130,58 +130,58 @@ presubmits:
 
   - name: pull-kubernetes-cross
     context: pull-kubernetes-cross
-    rerun_command: "@k8s-bot pull-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-kubernetes-cross test this"
+    rerun_command: "@k8s-bot cross test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-kubernetes-unit
     always_run: true
     context: pull-kubernetes-unit
-    rerun_command: "@k8s-bot pull-kubernetes-unit test this"
-    trigger: "@k8s-bot (pull-kubernetes-unit |unit )?test this"
+    rerun_command: "@k8s-bot unit test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?unit )?test this"
 
   - name: pull-kubernetes-verify
     always_run: true
     context: pull-kubernetes-verify
-    rerun_command: "@k8s-bot pull-kubernetes-verify test this"
-    trigger: "@k8s-bot (pull-kubernetes-verify |verify )?test this"
+    rerun_command: "@k8s-bot verify test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?verify )?test this"
 
   - name: pull-kubernetes-e2e-gce
     context: pull-kubernetes-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce test this"
+    rerun_command: "@k8s-bot e2e-gce test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?e2e-gce test this"
 
   - name: pull-kubernetes-e2e-gce-canary
     context: pull-kubernetes-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
+    rerun_command: "@k8s-bot e2e-gce-canary test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?e2e-gce-canary test this"
 
   - name: pull-kubernetes-e2e-gce-etcd3
     always_run: true
     context: pull-kubernetes-e2e-gce-etcd3
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-etcd3 test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-gce-etcd3 |gce etcd3 e2e )?test this"
+    rerun_command: "@k8s-bot e2e-gce-etcd3 test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?e2e-gce-etcd3 |gce etcd3 e2e )?test this"
 
   - name: pull-kubernetes-e2e-gke
     context: pull-kubernetes-e2e-gke
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gke test this"
+    rerun_command: "@k8s-bot e2e-gke test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?e2e-gke test this"
 
   - name: pull-kubernetes-e2e-gke-gci
     context: pull-kubernetes-e2e-gke-gci
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
+    rerun_command: "@k8s-bot e2e-gke-gci test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?e2e-gke-gci test this"
 
   - name: pull-kubernetes-e2e-gce-gci
     context: pull-kubernetes-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce-gci test this"
+    rerun_command: "@k8s-bot e2e-gce-gci test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?e2e-gce-gci test this"
 
   - name: pull-kubernetes-e2e-kops-aws
     always_run: true
     context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-kops-aws test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-kops-aws |kops aws e2e )?test this"
+    rerun_command: "@k8s-bot e2e-kops-aws test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?e2e-kops-aws |kops aws e2e )?test this"
 
   - name: pull-kubernetes-federation-e2e-gce
     skip_branches:
@@ -190,8 +190,8 @@ presubmits:
     - release-1.6
     always_run: true
     context: pull-kubernetes-federation-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce )?test this"
+    rerun_command: "@k8s-bot federation-e2e-gce test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?federation-e2e-gce )?test this"
 
   - name: pull-kubernetes-federation-e2e-gce-canary
     skip_branches:
@@ -201,8 +201,8 @@ presubmits:
     always_run: false
     skip_report: true
     context: pull-kubernetes-federation-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce-canary test this"
-    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce-canary )?test this"
+    rerun_command: "@k8s-bot federation-e2e-gce-canary test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?federation-e2e-gce-canary )?test this"
     spec:
       containers:
       - args:
@@ -251,26 +251,26 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce
     always_run: true
     context: pull-kubernetes-kubemark-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-kubemark-e2e-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-kubemark-e2e-gce |kubemark e2e )?test this"
+    rerun_command: "@k8s-bot kubemark-e2e-gce test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?kubemark-e2e-gce |kubemark e2e )?test this"
 
   - name: pull-kubernetes-kubemark-e2e-gce-gci
     context: pull-kubernetes-kubemark-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
+    rerun_command: "@k8s-bot kubemark-e2e-gce-gci test this"
+    trigger: "@k8s-bot (pull-kubernetes-)?kubemark-e2e-gce-gci test this"
 
   - name: pull-kubernetes-node-e2e
     always_run: true
     context: pull-kubernetes-node-e2e
-    rerun_command: "@k8s-bot pull-kubernetes-node-e2e test this"
-    trigger: "@k8s-bot (pull-kubernetes-node-e2e |node e2e )?test this"
+    rerun_command: "@k8s-bot node-e2e test this"
+    trigger: "@k8s-bot ((pull-kubernetes-)?node-e2e |node e2e )?test this"
 
   kubernetes-security/kubernetes: # TODO(fejta, spxr): find way to not duplicate these
   - name: pull-security-kubernetes-bazel
     context: pull-security-kubernetes-bazel
     always_run: true
-    rerun_command: "@k8s-bot pull-security-kubernetes-bazel test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-bazel |bazel )?test this"
+    rerun_command: "@k8s-bot bazel test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?bazel )?test this"
     branches:
     - master
     spec:
@@ -295,7 +295,7 @@ presubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999   
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -308,8 +308,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-kubeadm-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
+    rerun_command: "@k8s-bot e2e-kubeadm-gce test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?e2e-kubeadm-gce |kubeadm e2e )?test this"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
@@ -338,7 +338,7 @@ presubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -353,58 +353,58 @@ presubmits:
 
   - name: pull-security-kubernetes-cross
     context: pull-security-kubernetes-cross
-    rerun_command: "@k8s-bot pull-security-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-security-kubernetes-cross test this"
+    rerun_command: "@k8s-bot cross test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?cross test this"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
 
   - name: pull-security-kubernetes-unit
     always_run: true
     context: pull-security-kubernetes-unit
-    rerun_command: "@k8s-bot pull-security-kubernetes-unit test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-unit |unit )?test this"
+    rerun_command: "@k8s-bot unit test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?unit )?test this"
 
   - name: pull-security-kubernetes-verify
     always_run: true
     context: pull-security-kubernetes-verify
-    rerun_command: "@k8s-bot pull-security-kubernetes-verify test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-verify |verify )?test this"
+    rerun_command: "@k8s-bot verify test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?verify )?test this"
 
   - name: pull-security-kubernetes-e2e-gce
     context: pull-security-kubernetes-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
+    rerun_command: "@k8s-bot e2e-gce test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?e2e-gce test this"
 
   - name: pull-security-kubernetes-e2e-gce-canary
     context: pull-security-kubernetes-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
+    rerun_command: "@k8s-bot e2e-gce-canary test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?e2e-gce-canary test this"
 
   - name: pull-security-kubernetes-e2e-gce-etcd3
     always_run: true
     context: pull-security-kubernetes-e2e-gce-etcd3
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-etcd3 test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-gce-etcd3 |gce etcd3 e2e )?test this"
+    rerun_command: "@k8s-bot e2e-gce-etcd3 test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?e2e-gce-etcd3 |gce etcd3 e2e )?test this"
 
   - name: pull-security-kubernetes-e2e-gke
     context: pull-security-kubernetes-e2e-gke
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
+    rerun_command: "@k8s-bot e2e-gke test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?e2e-gke test this"
 
   - name: pull-security-kubernetes-e2e-gke-gci
     context: pull-security-kubernetes-e2e-gke-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
+    rerun_command: "@k8s-bot e2e-gke-gci test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?e2e-gke-gci test this"
 
   - name: pull-security-kubernetes-e2e-gce-gci
     context: pull-security-kubernetes-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-gci test this"
+    rerun_command: "@k8s-bot e2e-gce-gci test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?e2e-gce-gci test this"
 
   - name: pull-security-kubernetes-e2e-kops-aws
     always_run: true
     context: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-kops-aws test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-kops-aws |kops aws e2e )?test this"
+    rerun_command: "@k8s-bot e2e-kops-aws test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?e2e-kops-aws |kops aws e2e )?test this"
 
   - name: pull-security-kubernetes-federation-e2e-gce
     skip_branches:
@@ -413,8 +413,8 @@ presubmits:
     - release-1.6
     always_run: true
     context: pull-security-kubernetes-federation-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce )?test this"
+    rerun_command: "@k8s-bot federation-e2e-gce test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?federation-e2e-gce )?test this"
 
   - name: pull-security-kubernetes-federation-e2e-gce-canary
     skip_branches:
@@ -424,8 +424,8 @@ presubmits:
     always_run: false
     skip_report: true
     context: pull-security-kubernetes-federation-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce-canary test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce-canary )?test this"
+    rerun_command: "@k8s-bot federation-e2e-gce-canary test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?federation-e2e-gce-canary )?test this"
     spec:
       containers:
       - args:
@@ -474,19 +474,19 @@ presubmits:
   - name: pull-security-kubernetes-kubemark-e2e-gce
     always_run: true
     context: pull-security-kubernetes-kubemark-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-kubemark-e2e-gce |kubemark e2e )?test this"
+    rerun_command: "@k8s-bot kubemark-e2e-gce test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?kubemark-e2e-gce |kubemark e2e )?test this"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce-gci
     context: pull-security-kubernetes-kubemark-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
+    rerun_command: "@k8s-bot kubemark-e2e-gce-gci test this"
+    trigger: "@k8s-bot (pull-security-kubernetes-)?kubemark-e2e-gce-gci test this"
 
   - name: pull-security-kubernetes-node-e2e
     always_run: true
     context: pull-security-kubernetes-node-e2e
-    rerun_command: "@k8s-bot pull-security-kubernetes-node-e2e test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-node-e2e |node e2e )?test this"
+    rerun_command: "@k8s-bot node-e2e test this"
+    trigger: "@k8s-bot ((pull-security-kubernetes-)?node-e2e |node e2e )?test this"
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
@@ -494,8 +494,8 @@ presubmits:
     branches:
     - master
     always_run: true
-    rerun_command: "@k8s-bot pull-test-infra-bazel test this"
-    trigger: "@k8s-bot (pull-test-infra-bazel |bazel )?test this"
+    rerun_command: "@k8s-bot bazel test this"
+    trigger: "@k8s-bot ((pull-test-infra-)?bazel )?test this"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:0.11
@@ -531,8 +531,8 @@ presubmits:
     context: pull-test-infra-gubernator
     branches:
     - master
-    rerun_command: "@k8s-bot pull-test-infra-gubernator test this"
-    trigger: "@k8s-bot pull-test-infra-gubernator test this"
+    rerun_command: "@k8s-bot gubernator test this"
+    trigger: "@k8s-bot (pull-test-infra-)?gubernator test this"
     run_if_changed: 'gubernator'
     spec:
       containers:
@@ -561,8 +561,8 @@ presubmits:
     context: pull-test-infra-verify-bazel
     branches:
     - master
-    rerun_command: "@k8s-bot pull-test-infra-verify-bazel test this"
-    trigger: "@k8s-bot (pull-test-infra-verify-bazel |verify )?test this"
+    rerun_command: "@k8s-bot verify-bazel test this"
+    trigger: "@k8s-bot ((pull-test-infra-)?verify-bazel |verify )?test this"
     always_run: true
     spec:
       containers:
@@ -583,7 +583,7 @@ presubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -620,7 +620,7 @@ postsubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -651,7 +651,7 @@ postsubmits:
             mountPath: /root/.cache
           ports:
           - containerPort: 9999
-            hostPort: 9999  
+            hostPort: 9999
         volumes:
         - name: service
           secret:
@@ -689,7 +689,7 @@ postsubmits:
               mountPath: /root/.cache
             ports:
             - containerPort: 9999
-              hostPort: 9999 
+              hostPort: 9999
           volumes:
           - name: service
             secret:
@@ -727,7 +727,7 @@ postsubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -758,7 +758,7 @@ postsubmits:
             mountPath: /root/.cache
           ports:
           - containerPort: 9999
-            hostPort: 9999  
+            hostPort: 9999
         volumes:
         - name: service
           secret:
@@ -796,7 +796,7 @@ postsubmits:
               mountPath: /root/.cache
             ports:
             - containerPort: 9999
-              hostPort: 9999 
+              hostPort: 9999
           volumes:
           - name: service
             secret:
@@ -835,7 +835,7 @@ postsubmits:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -908,7 +908,7 @@ periodics:
         mountPath: /root/.cache
       ports:
       - containerPort: 9999
-        hostPort: 9999  
+        hostPort: 9999
     volumes:
     - name: service
       secret:
@@ -1023,7 +1023,7 @@ periodics:
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
-          hostPort: 9999  
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -1061,7 +1061,7 @@ periodics:
             mountPath: /root/.cache
           ports:
           - containerPort: 9999
-            hostPort: 9999  
+            hostPort: 9999
         volumes:
         - name: service
           secret:

@@ -41,7 +41,6 @@ func Replace(j *Presubmit, ks *Presubmit) error {
 		return fmt.Errorf("%s should match %s", name, ks.Name)
 	}
 	j.Name = name
-	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.re = ks.re
@@ -58,9 +57,21 @@ func Replace(j *Presubmit, ks *Presubmit) error {
 	return nil
 }
 
+// RepoPrefix returns the canonical prefix for jobs/contexts under that repo.
+func RepoPrefix(repo string) string {
+	prefix := strings.Replace(repo, "/", "-", 1)       // kubernetes/charts => kubernetes-charts
+	prefix = strings.TrimPrefix(prefix, "kubernetes-") // kubernetes-kops => kops
+	prefix = strings.TrimPrefix(prefix, "google-")     // google-cadvisor => cadvisor
+	return fmt.Sprintf("pull-%s-", prefix)
+}
+
 func CheckContext(t *testing.T, repo string, p Presubmit) {
 	if p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
+	}
+	prefix := RepoPrefix(repo)
+	if !strings.HasPrefix(p.Name, prefix) {
+		t.Errorf("Context does not start with prefix: %s should start with %s", p.Name, prefix)
 	}
 	for _, c := range p.RunAfterSuccess {
 		CheckContext(t, repo, c)
@@ -81,8 +92,9 @@ func TestContextMatches(t *testing.T) {
 }
 
 func CheckRetest(t *testing.T, repo string, presubmits []Presubmit) {
+	prefix := RepoPrefix(repo)
 	for _, p := range presubmits {
-		expected := fmt.Sprintf("@k8s-bot %s test this", p.Name)
+		expected := fmt.Sprintf("@k8s-bot %s test this", strings.Replace(p.Name, prefix, "", 1))
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
