@@ -18,23 +18,6 @@
 FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170418-f54c7fbd
 MAINTAINER  Erick Fejta <fejta@google.com>
 
-# Defaults of all e2e runs
-ENV E2E_UP=true \
-    E2E_TEST=true \
-    E2E_DOWN=true
-
-# Customize these as appropriate
-ENV E2E_PUBLISH_PATH= \
-    INSTANCE_PREFIX=jenkins-e2e \
-    KUBERNETES_PROVIDER=gce
-
-# Variables specific to GCP
-ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
-    JOB_NAME=kubernetes-e2e-gce-conformance \
-    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e \
-    KUBE_GCE_NETWORK=jenkins-e2e \
-    KUBE_GCE_ZONE=us-central1-f
-
 # Variable specific to the machine:
 # GOOGLE_APPLICATION_CREDENTIALS
 # JENKINS_GCE_SSH_PRIVATE_KEY_FILE
