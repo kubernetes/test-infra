@@ -2012,7 +2012,10 @@ class JobTest(unittest.TestCase):
                     'E2E_UP=',
                     'USE_KUBEMARK=',
                     'CHARTS_TEST=',
-                    'PERF_TESTS='
+                    'PERF_TESTS=',
+                    'FEDERATION_UP=',
+                    'FEDERATION_DOWN=',
+                    'JENKINS_FEDERATION_PREFIX='
                 ]
                 for b in black:
                     if b in line:

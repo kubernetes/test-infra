@@ -381,6 +381,16 @@ def main(args):
         runner_args.append('--charts')
     if args.kubemark:
         runner_args.append('--kubemark')
+    if args.up:
+        runner_args.append('--up')
+    if args.down:
+        runner_args.append('--down')
+    if args.federation:
+        runner_args.append('--federation')
+    if args.deployment:
+        runner_args.append('--deployment=%s' % args.deployment)
+    if args.save:
+        runner_args.append('--save=%s' % args.save)
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -389,8 +399,7 @@ def main(args):
         # Not from Jenkins
         cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
         version = kubeadm_version(args.kubeadm)
-        opt = '--deployment kubernetes-anywhere' \
-            ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+        opt = ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
             ' --kubernetes-anywhere-phase2-provider kubeadm' \
             ' --kubernetes-anywhere-cluster %s' \
             ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
@@ -407,9 +416,7 @@ def main(args):
       # Use default component update behavior
       'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
       # E2E
-      'E2E_UP=%s' % args.up,
       'E2E_TEST=%s' % args.test,
-      'E2E_DOWN=%s' % args.down,
       'E2E_NAME=%s' % cluster,
       # AWS
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
@@ -480,9 +487,13 @@ def create_parser():
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
+        '--deployment', default='bash', choices=['none', 'bash', 'kops', 'kubernetes-anywhere'])
+    parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
-        '--down', default='true', help='If we need to set --down in e2e.go')
+        '--down', default='true', help='If we need to tear down the e2e cluster')
+    parser.add_argument(
+        '--federation', action='store_true', help='If kubetest will have --federation flag')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
@@ -490,13 +501,16 @@ def create_parser():
     parser.add_argument(
         '--perf-tests', action='store_true', help='If the test need to run k8s/perf-test e2e test')
     parser.add_argument(
+        '--save', default=None,
+        help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
+    parser.add_argument(
         '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
         '--tag', default='v20170525-59b0e879', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
-        '--test', default='true', help='If we need to set --test in e2e.go')
+        '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
-        '--up', default='true', help='If we need to set --up in e2e.go')
+        '--up', default='true', help='If we need to bring up a e2e cluster')
     parser.add_argument(
         '--multiple-federations', default=False, action='store_true',
         help='If we need to run multiple federation control planes in parallel')

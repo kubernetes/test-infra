@@ -463,7 +463,8 @@
   "ci-kubernetes-e2e-gce-federation": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-federation.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-federation.env", 
+      "--federation"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -473,7 +474,8 @@
   "ci-kubernetes-e2e-gce-federation-release-1.6": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1.6.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1.6.env", 
+      "--federation"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -483,7 +485,8 @@
   "ci-kubernetes-e2e-gce-federation-serial": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-federation-serial.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-federation-serial.env", 
+      "--federation"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -3078,6 +3081,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce.env", 
       "--kubeadm=ci", 
+      "--deployment=kubernetes-anywhere", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3091,6 +3095,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-6.env", 
       "--kubeadm=ci", 
+      "--deployment=kubernetes-anywhere", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3527,6 +3532,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-pull-gce-federation-deploy.env", 
+      "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy", 
       "--test=false", 
       "--down=false"
     ], 
@@ -3690,6 +3696,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-federation-deploy.env", 
+      "--federation", 
       "--build", 
       "--stage=gs://kubernetes-release-dev/ci/ci-kubernetes-soak-gce-federation-deploy", 
       "--test=false", 
@@ -3704,6 +3711,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-federation-test.env", 
+      "--federation", 
       "--soak-test", 
       "--up=false", 
       "--down=false"
@@ -4018,6 +4026,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/periodic-kubernetes-e2e-kubeadm-gce-1-6.env", 
       "--kubeadm=periodic", 
+      "--deployment=kubernetes-anywhere", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -4167,6 +4176,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/pull-kubernetes-e2e-kubeadm-gce.env", 
       "--kubeadm=pull", 
+      "--deployment=kubernetes-anywhere", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -4182,7 +4192,10 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce", 
       "--cluster=", 
-      "--multiple-federations"
+      "--multiple-federations", 
+      "--federation", 
+      "--deployment=none", 
+      "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4199,6 +4212,9 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce-canary", 
       "--cluster=", 
       "--multiple-federations", 
+      "--federation", 
+      "--deployment=none", 
+      "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
