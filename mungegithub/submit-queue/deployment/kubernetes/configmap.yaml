@@ -11,7 +11,7 @@ data:
   # Otherwise it's going to take an extra-cycle to detect the label change.
   # Run blunderbuss before approval-handler, so that we can suggest approvers
   # based on assigned reviewer.
-  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,old-test-getter,close-stale,docs-need-no-retest
+  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,old-test-getter,close-stale,docs-need-no-retest,sig-mention-handler
   config.state: open
   config.token-file: /etc/secret-volume/token
   config.loop-period: 20s
