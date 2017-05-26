@@ -14,6 +14,8 @@ currently comprises several related pieces that live in a Kubernetes cluster.
 * `cmd/crier` writes GitHub statuses and comments.
 * `cmd/horologium` starts periodic jobs when necessary.
 
+See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
+
 ## How to test prow
 
 Build with:
