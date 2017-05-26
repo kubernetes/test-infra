@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Hourly maintenance script for Jenkins agents."""
 
 import argparse
 import collections
@@ -27,31 +28,32 @@ import traceback
 
 import requests
 
-def ContainerImages():
+def container_images():
+    """find all running images."""
     for line in subprocess.check_output([
-        'docker',
-        'ps', '-a',
-        '--format={{.Image}}']).split('\n'):
-      if not line:
-          continue
-      yield line
+            'docker',
+            'ps', '-a',
+            '--format={{.Image}}']).split('\n'):
+        if not line:
+            continue
+        yield line
 
 
-def KillContainers():
+def kill_containers():
     """Kill containers that have been running for a long time."""
     now = datetime.datetime.now()
     old = []
     for line in subprocess.check_output([
-        'docker', 'ps', '-a',
-        '-f', 'status=running',
-        '--format={{.CreatedAt}}\t{{.ID}}',
+            'docker', 'ps', '-a',
+            '-f', 'status=running',
+            '--format={{.CreatedAt}}\t{{.ID}}',
     ]).split('\n'):
         if not line:
             continue
         created, name = line.split('\t')
         fmt = 'YYYY-MM-dd HH:MM'
-        dt = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
-        if now - dt > datetime.timedelta(days=1):
+        created = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
+        if now - created > datetime.timedelta(days=1):
             old.append(name)
 
     if not old:
@@ -60,28 +62,28 @@ def KillContainers():
     print 'Old running containers to kill:', old
     err = subprocess.call(['docker', 'kill'] + old)
     if err:
-        print >>sys.stderr, 'KillContainers failed'
+        print >>sys.stderr, 'kill_containers failed'
     return err
 
 
-def RemoveContainers():
+def remove_containers():
     """Remove non-running containers that we created a long time ago."""
     now = datetime.datetime.now()
     old = []
     for line in subprocess.check_output([
-        'docker',
-        'ps', '-a',
-        '-f', 'status=created',  # Never started due to timeout
-        '-f', 'status=exited',  # Container exited
-        '-f', 'status=dead',  # Zombie container
-        '--format={{.CreatedAt}}\t{{.ID}}\t{{.Image}}',
+            'docker',
+            'ps', '-a',
+            '-f', 'status=created',  # Never started due to timeout
+            '-f', 'status=exited',  # Container exited
+            '-f', 'status=dead',  # Zombie container
+            '--format={{.CreatedAt}}\t{{.ID}}\t{{.Image}}',
     ]).split('\n'):
         if not line:
             continue
-        created, name, image = line.split('\t')
+        created, name, _image = line.split('\t')
         fmt = 'YYYY-mm-dd HH:MM'
-        dt = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
-        if now - dt > datetime.timedelta(hours=2):
+        created = datetime.datetime.strptime(created[:len(fmt)], '%Y-%m-%d %H:%M')
+        if now - created > datetime.timedelta(hours=2):
             old.append(name)
 
     if not old:
@@ -90,11 +92,11 @@ def RemoveContainers():
     print 'Old non-running containers to remove:', old
     err = subprocess.call(['docker', 'rm', '-v'] + old)
     if err:
-        print >>sys.stderr, 'RemoveContainers failed'
+        print >>sys.stderr, 'remove_containers failed'
     return err
 
 
-def RemoveImages(skip, ancient):
+def remove_images(skip, ancient):
     """Remove all tagged images except the most recently downloaded one."""
     tags = collections.defaultdict(list)
     images = subprocess.check_output(['docker', 'images'])
@@ -102,7 +104,7 @@ def RemoveImages(skip, ancient):
     for line in images.split('\n'):
         if not line:
             continue
-        name, tag, _, age = re.split(r'\s+', line.strip())[:4]
+        name, tag, _unused, age = re.split(r'\s+', line.strip())[:4]
         if 'minutes' in age:
             continue
         if 'hour' in age and 'hours' not in age:
@@ -129,11 +131,11 @@ def RemoveImages(skip, ancient):
         err |= subprocess.call(['docker', 'rmi', '-f'] + dangling.split())
 
     if err:
-        print >>sys.stderr, 'RemoveImages failed'
+        print >>sys.stderr, 'remove_images failed'
     return err
 
 
-def RemoveVolumes():
+def remove_volumes():
     """Run docker cleanup volumes."""
     err = subprocess.call([
         'docker', 'run',
@@ -141,24 +143,25 @@ def RemoveVolumes():
         '-v', '/var/lib/docker:/var/lib/docker',
         '--rm', 'martin/docker-cleanup-volumes'])
     if err:
-        print >>sys.stderr, 'RemoveVolumes failed'
+        print >>sys.stderr, 'remove_volumes failed'
     return err
 
 
-def KillLoopingBash():
+def kill_looping_bash():
+    """kill hanging scripts."""
     err = 0
     bash_procs = subprocess.check_output(['pgrep', '-f', '^(/bin/)?bash']).split()
 
     clock_hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
     for pid in bash_procs:
         # man 5 proc
-        with open('/proc/%s/stat' % pid) as f:
-            stat = f.read().split()
+        with open('/proc/%s/stat' % pid) as fp:
+            stat = fp.read().split()
         utime = int(stat[13]) / clock_hz
         utime_minutes = utime / 60
         if utime_minutes > 30:
-            with open('/proc/%s/cmdline' % pid) as f:
-                cmdline = f.read().replace('\x00', ' ').strip()
+            with open('/proc/%s/cmdline' % pid) as fp:
+                cmdline = fp.read().replace('\x00', ' ').strip()
             print "killing bash pid %s (%r) with %d minutes of CPU time" % (
                 pid, cmdline, utime_minutes)
             print 'Environment variables:'
@@ -168,7 +171,7 @@ def KillLoopingBash():
     return err
 
 
-def DeleteCorruptGitRepos():
+def delete_corrupt_git_repos():
     """
     Find and delete corrupt .git directories. This can occur when the agent
     reboots in the middle of a git operation. This is *still* less flaky than doing
@@ -196,7 +199,8 @@ def DeleteCorruptGitRepos():
     return err
 
 
-def DeleteOldWorkspaces():
+def delete_old_workspaces():
+    """delete old workspace dirs."""
     err = 0
     live_jobs = None
     for host in ('jenkins-master', 'pull-jenkins-master'):
@@ -220,21 +224,22 @@ def DeleteOldWorkspaces():
 
 
 def main(ancient):
+    """Run maintenance."""
     # Copied from http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
     err = 0
-    err |= KillContainers()
-    err |= RemoveContainers()
-    err |= RemoveImages(set(ContainerImages()), ancient)
-    err |= RemoveVolumes()
-    err |= KillLoopingBash()
-    err |= DeleteCorruptGitRepos()
-    err |= DeleteOldWorkspaces()
+    err |= kill_containers()
+    err |= remove_containers()
+    err |= remove_images(set(container_images()), ancient)
+    err |= remove_volumes()
+    err |= kill_looping_bash()
+    err |= delete_corrupt_git_repos()
+    err |= delete_old_workspaces()
     sys.exit(err)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
+    PARSER = argparse.ArgumentParser(
         description='Run hourly maintenance on jenkins agents')
-    parser.add_argument('--ancient', action='store_true', help='Delete all old images')
-    args = parser.parse_args()
-    main(args.ancient)
+    PARSER.add_argument('--ancient', action='store_true', help='Delete all old images')
+    ARGS = PARSER.parse_args()
+    main(ARGS.ancient)

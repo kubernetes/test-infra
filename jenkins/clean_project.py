@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Clean a gcp project."""
+
 import argparse
 import collections
 import datetime
@@ -22,68 +24,70 @@ import subprocess
 import sys
 
 
-def Instances(project, age, filt):
-  zones = collections.defaultdict(list)
-  for inst in subprocess.check_output([
-      'gcloud', 'compute', '-q',
-      'instances', 'list',
-      '--format=value(name,zone,creationTimestamp)',
-      '--filter=%s' % filt,
-      '--project=%s' % project]).split('\n'):
-    inst = inst.strip()
-    if not inst:
-      continue
-    name, zone, created_str = re.split(r'\s+', inst)
-    tfmt = 'YYYY-mm-ddTHH:MM:SS'
-    created = datetime.datetime.strptime(created_str[:len(tfmt)], '%Y-%m-%dT%H:%M:%S')
-    if created < age:
-      zones[zone].append(name)
-  return zones
+def list_instances(project, age, filt):
+    """List instances."""
+    zones = collections.defaultdict(list)
+    for inst in subprocess.check_output([
+            'gcloud', 'compute', '-q',
+            'instances', 'list',
+            '--format=value(name,zone,creationTimestamp)',
+            '--filter=%s' % filt,
+            '--project=%s' % project]).split('\n'):
+        inst = inst.strip()
+        if not inst:
+            continue
+        name, zone, created_str = re.split(r'\s+', inst)
+        tfmt = 'YYYY-mm-ddTHH:MM:SS'
+        created = datetime.datetime.strptime(created_str[:len(tfmt)], '%Y-%m-%dT%H:%M:%S')
+        if created < age:
+            zones[zone].append(name)
+    return zones
 
 
-def DeleteInstances(project, zones, delete):
-  err = 0
-  for zone, instances in zones.items():
-    base = [
-        'gcloud', 'compute', '-q',
-        'instances', 'delete',
-        '--project=%s' % project,
-        '--zone=%s' % zone
-    ]
-    if not delete:
-      print >>sys.stderr, '--delete will run the following:'
-      base.insert(0, 'echo')
-    err |= subprocess.call(base + list(instances))
-  return err
-
+def delete_instances(project, zones, delete):
+    """Delete instances."""
+    err = 0
+    for zone, instances in zones.items():
+        base = [
+            'gcloud', 'compute', '-q',
+            'instances', 'delete',
+            '--project=%s' % project,
+            '--zone=%s' % zone
+        ]
+        if not delete:
+            print >>sys.stderr, '--delete will run the following:'
+            base.insert(0, 'echo')
+        err |= subprocess.call(base + list(instances))
+    return err
 
 def main(project, days, hours, filt, delete):
-  age = datetime.datetime.now() - datetime.timedelta(days=days, hours=hours)
-  zones = Instances(project, age, filt)
-  if zones:
-    sys.exit(DeleteInstances(project, zones, delete))
+    """run clean script."""
+    age = datetime.datetime.now() - datetime.timedelta(days=days, hours=hours)
+    zones = list_instances(project, age, filt)
+    if zones:
+        sys.exit(delete_instances(project, zones, delete))
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(
-      description='Delete old instances from a project')
-  parser.add_argument('--project', help='Project to clean', required=True)
-  parser.add_argument(
-      '--days', type=int,
-      help='Clean items more than --days old (added to --hours)')
-  parser.add_argument(
-      '--hours', type=float,
-      help='Clean items more than --hours old (added to --days)')
-  parser.add_argument(
-      '--delete', action='store_true', help='Really delete things when set')
-  parser.add_argument(
-      '--filter', default="name~'tmp.*' AND NOT tags.items:do-not-delete",
-      help='Filter down to these instances')
-  args = parser.parse_args()
+    PARSER = argparse.ArgumentParser(
+        description='Delete old instances from a project')
+    PARSER.add_argument('--project', help='Project to clean', required=True)
+    PARSER.add_argument(
+        '--days', type=int,
+        help='Clean items more than --days old (added to --hours)')
+    PARSER.add_argument(
+        '--hours', type=float,
+        help='Clean items more than --hours old (added to --days)')
+    PARSER.add_argument(
+        '--delete', action='store_true', help='Really delete things when set')
+    PARSER.add_argument(
+        '--filter', default="name~'tmp.*' AND NOT tags.items:do-not-delete",
+        help='Filter down to these instances')
+    ARGS = PARSER.parse_args()
 
-  # We want to allow --days=0 and --hours=0, so check against Noneness instead.
-  if args.days is None and args.hours is None:
-    print >>sys.stderr, 'must specify --days and/or --hours'
-    sys.exit(1)
+    # We want to allow --days=0 and --hours=0, so check against Noneness instead.
+    if ARGS.days is None and ARGS.hours is None:
+        print >>sys.stderr, 'must specify --days and/or --hours'
+        sys.exit(1)
 
-  main(args.project, args.days or 0, args.hours or 0, args.filter, args.delete)
+    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.delete)

@@ -31,23 +31,25 @@ import tempfile
 
 
 def call(cmd, **kwargs):
+    """run call with args."""
     logging.info('exec %s', ' '.join(cmd))
     return subprocess.call(cmd, **kwargs)
 
 
 def check_call(cmd):
+    """run check_call with args."""
     logging.info('exec %s', ' '.join(cmd))
     return subprocess.check_call(cmd)
 
 
-def dockerfile_layers(tf):
+def dockerfile_layers(tarball):
     '''Given a `docker save` tarball, return the layer metadata in order.'''
 
     layer_by_parent = {}
 
-    for m in tf.getmembers():
-        if m.name.endswith('/json'):
-            layer = json.load(tf.extractfile(m))
+    for member in tarball.getmembers():
+        if member.name.endswith('/json'):
+            layer = json.load(tarball.extractfile(member))
             layer_by_parent[layer.get('parent')] = layer
 
     # assemble layers by following parent pointers
@@ -62,23 +64,24 @@ def dockerfile_layers(tf):
 
 
 def is_whiteout(fname):
+    """Check if whiteout."""
     return fname.startswith('.wh.') or '/.wh.' in fname
 
 
-def extract_layers(tf, layers, outdir):
+def extract_layers(tarball, layers, outdir):
     '''Extract docker layers to a specific directory (fake a union mount).'''
-    for l in layers:
-        obj = tf.extractfile('%s/layer.tar' % l['id'])
-        with tarfile.open(fileobj=obj) as f:
+    for layer in layers:
+        obj = tarball.extractfile('%s/layer.tar' % layer['id'])
+        with tarfile.open(fileobj=obj) as fp:
             # Complication: .wh. files indicate deletions.
             # https://github.com/docker/docker/blob/master/image/spec/v1.md
-            members = f.getmembers()
+            members = fp.getmembers()
             members_good = [m for m in members if not is_whiteout(m.name)]
 
-            f.extractall(outdir, members_good)
+            fp.extractall(outdir, members_good)
 
-            for m in members:
-                name = m.name
+            for member in members:
+                name = member.name
                 if is_whiteout(name):
                     path = os.path.join(outdir, name.replace('.wh.', ''))
                     if os.path.isdir(path):
@@ -88,6 +91,8 @@ def extract_layers(tf, layers, outdir):
 
 
 def docker_diff(image_a, image_b, tmpdir, deep):
+    """Diff two docker images."""
+
     # dump images for inspection
     tf_a_path = '%s/a.tar' % tmpdir
     tf_b_path = '%s/b.tar' % tmpdir
@@ -122,10 +127,11 @@ def docker_diff(image_a, image_b, tmpdir, deep):
             'diff', '-rU5',
             os.path.join('a', deep),
             os.path.join('b', deep)],
-        cwd=tmpdir)
+             cwd=tmpdir)
 
 
 def main():
+    """Run docker_diff."""
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument('--deep', help='Show full differences for specific directory')

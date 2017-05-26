@@ -20,10 +20,11 @@ from __future__ import print_function
 
 import argparse
 import json
-import requests
 import subprocess
 import sys
 import time
+
+import requests
 
 
 AGENT_PR_SUBSTR = 'agent-pr'
@@ -38,13 +39,13 @@ def try_update(project, token):
         'Authorization': 'Bearer %s' % token,
         'Content-Type': 'application/json'
     }
-    r = requests.get(get_url, headers=headers)
+    res = requests.get(get_url, headers=headers)
     # Retry if the get failed.
-    if r.status_code != 200:
-        print('Got status code %d on GET.' % r.status_code)
-        print(r.text)
+    if res.status_code != 200:
+        print('Got status code %d on GET.' % res.status_code)
+        print(res.text)
         return False
-    json_data = r.json()
+    json_data = res.json()
     fingerprint = json_data['commonInstanceMetadata']['fingerprint']
     old_keys = []
     for entry in json_data['commonInstanceMetadata']['items']:
@@ -70,26 +71,27 @@ def try_update(project, token):
         ]
     }
     post_url = '%s/setCommonInstanceMetadata' % get_url
-    r = requests.post(post_url, headers=headers, data=json.dumps(resp_data))
+    res = requests.post(post_url, headers=headers, data=json.dumps(resp_data))
     # Retry if the fingerprint is wrong.
-    if r.status_code == 412:
+    if res.status_code == 412:
         return False
     # Don't retry on 200.
-    if r.status_code == 200:
+    if res.status_code == 200:
         return True
     # Retry on other status codes.
-    print('Got status code %d on POST.' % r.status_code)
-    print(r.text)
+    print('Got status code %d on POST.' % res.status_code)
+    print(res.text)
     return False
 
 
 def main(project):
+    """run clean."""
     token = subprocess.check_output([
         'gcloud',
         'auth',
         'application-default',
         'print-access-token']).strip()
-    for retry in range(NUM_RETRIES):
+    for _retry in range(NUM_RETRIES):
         if try_update(project, token):
             return 0
         else:
@@ -98,8 +100,8 @@ def main(project):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Delete Jenkins SSH keys.')
-    parser.add_argument('--project', help='Project to clean', required=True)
-    args = parser.parse_args()
+    PARSER = argparse.ArgumentParser(description='Delete Jenkins SSH keys.')
+    PARSER.add_argument('--project', help='Project to clean', required=True)
+    ARGS = PARSER.parse_args()
 
-    sys.exit(main(args.project))
+    sys.exit(main(ARGS.project))
