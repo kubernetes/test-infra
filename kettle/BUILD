@@ -28,7 +28,18 @@ py_test(
     srcs = [
         "model.py",
         "model_test.py",
+        ":package-srcs",
     ],
+)
+
+py_test(
+    name = "stream_test",
+    srcs = [
+        "stream.py",
+        "stream_test.py",
+        ":package-srcs",
+    ],
+    data = ["schema.json"],
 )
 
 py_test(
@@ -37,6 +48,7 @@ py_test(
         "make_json.py",
         "make_json_test.py",
         "model.py",
+        ":package-srcs",
     ],
     data = ["//:buckets"],
     # idem
