@@ -109,14 +109,14 @@ class MakeJsonTest(unittest.TestCase):
         expect([], ['123', '456', 'SUCCESS', 'FAILURE'], [])  # everything
         expect([], [], ['123', '456', 'SUCCESS', 'FAILURE'])  # nothing
 
-        expect(['--day'], ['456'], [])  # recent
+        expect(['--days=1'], ['456'], [])  # recent
         expect(['--days', '1'], [], ['456'])  # nothing (already emitted)
 
         add_build('some-job/457', now + 1, now + 11, 'SUCCESS', junits)
-        expect(['--day'], ['457'], ['456'])  # latest (day)
+        expect(['--days=1'], ['457'], ['456'])  # latest (day)
         expect([], ['457'], ['456'])         # latest (all)
 
-        expect(['--day', '--reset-emitted'], ['456', '457'], [])  # both (reset)
+        expect(['--days=1', '--reset-emitted'], ['456', '457'], [])  # both (reset)
         expect([], [], ['123', '456', '457'])                     # reset only works for given day
 
 

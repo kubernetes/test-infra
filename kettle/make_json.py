@@ -165,23 +165,37 @@ def row_for_build(path, started, finished, results):
     return build
 
 
+def get_table(days):
+    if days:
+        return ('build_emitted_%g' % days).replace('.', '_')
+    return 'build_emitted'
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--day', action='store_true',
-                        help='Grab data for builds in the last day')
-    parser.add_argument('--days', type=float,
+    parser.add_argument('--days', type=float, default=0,
                         help='Grab data for builds within N days')
     parser.add_argument('--reset-emitted', action='store_true',
                         help='Clear list of already-emitted builds.')
     return parser.parse_args(args)
 
-def main(db, opts, outfile):
-    incremental_table = 'build_emitted'
 
+def make_rows(db, builds):
+    for rowid, path, started, finished in builds:
+        try:
+            results = db.test_results_for_build(path)
+            yield rowid, row_for_build(path, started, finished, results)
+        except IOError:
+            return
+        except:
+            logging.exception('error on %s', path)
+
+
+def main(db, opts, outfile):
     min_started = None
-    if opts.day or opts.days:
+    if opts.days:
         min_started = time.time() - (opts.days or 1) * 24 * 60 * 60
-        incremental_table = ('build_emitted_%g' % (opts.days or 1)).replace('.', '_')
+    incremental_table = get_table(opts.days)
 
     if opts.reset_emitted:
         db.reset_emitted(incremental_table)
@@ -189,17 +203,10 @@ def main(db, opts, outfile):
     builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
 
     rows_emitted = set()
-    for rowid, path, started, finished in builds:
-        try:
-            results = db.test_results_for_build(path)
-            row = row_for_build(path, started, finished, results)
-            json.dump(row, outfile, sort_keys=True)
-            outfile.write('\n')
-            rows_emitted.add(rowid)
-        except IOError:
-            return
-        except:
-            logging.exception('error on %s', path)
+    for rowid, row in make_rows(db, builds):
+        json.dump(row, outfile, sort_keys=True)
+        outfile.write('\n')
+        rows_emitted.add(rowid)
 
     if rows_emitted:
         gen = db.insert_emitted(rows_emitted, incremental_table=incremental_table)
