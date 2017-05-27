@@ -51,7 +51,8 @@ class MockedClient(make_db.GCSClient):
         ART_DIR.replace('123', '122'): [],
     }
     gets = {
-        JOB_DIR + 'finished.json': {'timestamp': NOW},
+        JOB_DIR + 'finished.json': {'timestamp': NOW, 'result': 'SUCCESS'},
+        JOB_DIR + 'started.json': {'timestamp': NOW - 5},
         LOG_DIR + 'latest/latest-build.txt': '4',
         LOG_DIR + 'bad-latest/latest-build.txt': 'asdf',
         LOG_DIR + 'fake/122/finished.json': {'timestamp': 123},
@@ -119,8 +120,9 @@ class MainTest(unittest.TestCase):
             MockedClient.JOB_DIR.replace('123', '122')[:-1]:
                 (None, {'timestamp': 123}, []),
             MockedClient.JOB_DIR[:-1]:
-                (None, {'timestamp': MockedClient.NOW},
-                    [MockedClient.gets[MockedClient.ART_DIR + 'junit_01.xml']])
+                ({'timestamp': MockedClient.NOW - 5},
+                 {'timestamp': MockedClient.NOW, 'result': 'SUCCESS'},
+                 [MockedClient.gets[MockedClient.ART_DIR + 'junit_01.xml']])
         }
 
     def assert_main_output(self, threads, expected=None, db=None,

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generates a JSON file containing test history for the last day.
-
-Writes the JSON out to tests.json.
+"""Generates a SQLite DB containing test data downloaded from GCS.
 """
 
 from __future__ import print_function
@@ -34,6 +32,7 @@ import urllib2
 from xml.etree import cElementTree as ET
 
 import multiprocessing
+import multiprocessing.pool
 import requests
 import yaml
 
@@ -183,12 +182,13 @@ class GCSClient(object):
                 yield job, build
 
 
-def mp_init_worker(jobs_dir, metadata, client_class):
+def mp_init_worker(jobs_dir, metadata, client_class, use_signal=True):
     """
     Initialize the environment for multiprocessing-based multithreading.
     """
 
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    if use_signal:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
     # Multiprocessing doesn't allow local variables for each worker, so 77 need
     # to make a GCSClient global variable.
     global WORKER_CLIENT
@@ -255,6 +255,7 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
     else:
         if pool:
             pool.close()
+            pool.join()
     db.commit()
 
 
@@ -263,8 +264,8 @@ def download_junit(db, threads, client_class):
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
     if threads > 1:
-        pool = multiprocessing.Pool(threads, mp_init_worker,
-                                    ('', {}, client_class))
+        pool = multiprocessing.pool.ThreadPool(threads, mp_init_worker,
+                                               ('', {}, client_class, False))
         test_iterator = pool.imap_unordered(
             get_junits, builds_to_grab)
     else:
@@ -291,6 +292,9 @@ def download_junit(db, threads, client_class):
         if n % 100 == 0:
             db.commit()
     db.commit()
+    if pool:
+        pool.close()
+        pool.join()
 
 
 def main(db, jobs_dirs, threads, get_junit, client_class=GCSClient):
@@ -310,7 +314,7 @@ def get_options(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--buckets',
-        help='JSON file with GCS bucket locations',
+        help='YAML file with GCS bucket locations',
         required=True,
     )
     parser.add_argument(
