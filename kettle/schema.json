@@ -1,0 +1,119 @@
+[
+   {
+      "name" : "elapsed",
+      "type" : "FLOAT",
+      "description" : "total build time",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "started",
+      "type" : "TIMESTAMP",
+      "description" : "build start time",
+      "mode" : "NULLABLE"
+   },
+   {
+      "description" : "build end time",
+      "type" : "TIMESTAMP",
+      "mode" : "NULLABLE",
+      "name" : "finished"
+   },
+   {
+      "description" : "\"SUCCESS\" \"FAILED\" \"ABORTED\", etc",
+      "mode" : "NULLABLE",
+      "type" : "STRING",
+      "name" : "result"
+   },
+   {
+      "name" : "version",
+      "mode" : "NULLABLE",
+      "type" : "STRING"
+   },
+   {
+      "description" : "GCS path with build results",
+      "mode" : "NULLABLE",
+      "type" : "STRING",
+      "name" : "path"
+   },
+   {
+      "description" : "Job name.",
+      "mode" : "NULLABLE",
+      "type" : "STRING",
+      "name" : "job"
+   },
+   {
+      "description" : "Build number.",
+      "mode" : "NULLABLE",
+      "type" : "INTEGER",
+      "name" : "number"
+   },
+   {
+      "name": "metadata",
+      "mode" : "REPEATED",
+      "type" : "RECORD",
+      "description": "extra build information",
+      "fields": [
+         {
+            "mode" : "NULLABLE",
+            "type" : "STRING",
+            "name" : "key",
+            "description" : ""
+         },
+         {
+            "mode" : "NULLABLE",
+            "type" : "STRING",
+            "name" : "value",
+            "description" : ""
+         }
+      ]
+   },
+   {
+      "name" : "test",
+      "fields" : [
+         {
+            "description" : "",
+            "mode" : "NULLABLE",
+            "type" : "STRING",
+            "name" : "name"
+         },
+         {
+            "mode" : "NULLABLE",
+            "description" : "Elapsed test time.",
+            "type" : "FLOAT",
+            "name" : "time"
+         },
+         {
+            "name" : "failed",
+            "description" : "Did this test fail?",
+            "mode" : "NULLABLE",
+            "type" : "BOOLEAN"
+         },
+         {
+            "name" : "failure_text",
+            "description" : "Failure text (if test failed).",
+            "mode" : "NULLABLE",
+            "type" : "STRING"
+         }
+      ],
+      "description" : "Test results from individual JUnit files.",
+      "mode" : "REPEATED",
+      "type" : "RECORD"
+   },
+   {
+      "name" : "tests_run",
+      "mode" : "NULLABLE",
+      "description" : "Number of tests run.",
+      "type" : "INTEGER"
+   },
+   {
+      "name" : "tests_failed",
+      "type" : "INTEGER",
+      "description" : "Number of tests that failed.",
+      "mode" : "NULLABLE"
+   },
+   {
+      "name" : "executor",
+      "mode" : "NULLABLE",
+      "type" : "STRING",
+      "description": "Hostname of machine that ran the test"
+   }
+]
