@@ -111,7 +111,14 @@ def insert_data(table, rows_iter):
         row_ids.append(row_id)
 
     def insert(table, rows, row_ids):
-        errors = table.insert_data(rows, row_ids, skip_invalid_rows=True)
+        while True:
+            try:
+                errors = table.insert_data(rows, row_ids, skip_invalid_rows=True)
+                break
+            except google.cloud.exceptions.ServerError:
+                # retry
+                traceback.print_exc()
+                time.sleep(5)
 
         if not errors:
             print('Loaded {} builds into {}'.format(len(rows), table.name))
