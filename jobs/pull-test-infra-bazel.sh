@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Build and run only affected targets.
+# Logic adapted from https://github.com/bazelbuild/bazel/blob/633e48a4ce8747575b156639608ee18afe4b386e/scripts/ci/ci.sh
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -23,13 +26,34 @@ pip install -r jenkins/test_history/requirements.txt
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-bazel build //... && rc=$? || rc=$?
+# Compute list of modified files in bazel package form.
+commit_range="${PULL_BASE_SHA}..${PULL_PULL_SHA}"
+files=()
+for file in $(git diff --name-only "${commit_range}" ); do
+  files+=($(bazel query "${file}"))
+done
+
+# Build modified packages.
+buildables=$(bazel query \
+    --keep_going \
+    --noshow_progress \
+    "kind(.*_binary, rdeps(//..., set(${files[@]})))")
+rc=0
+if [[ ! -z "${buildables}" ]]; then
+  bazel build ${buildables} && rc=$? || rc=$?
+fi
 
 # Clear test.xml so that we don't pick up old results.
 find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
+# Run affected tests.
 if [[ "${rc}" == 0 ]]; then
-  bazel test --test_output=errors //... //verify:verify-all && rc=$? || rc=$?
+  tests=$(bazel query \
+      --keep_going \
+      --noshow_progress \
+      "kind(test, rdeps(//..., set(${files[@]}))) except attr('tags', 'manual', //...)")
+  bazel test --test_output=errors ${tests} //verify:verify-all && rc=$? || rc=$?
+  ./images/pull_kubernetes_bazel/coalesce.py
 fi
 
 case "${rc}" in
@@ -41,7 +65,5 @@ case "${rc}" in
     5) echo "Interrupted" ;;
     *) echo "Unknown exit code: ${rc}" ;;
 esac
-
-./images/pull_kubernetes_bazel/coalesce.py
 
 exit "${rc}"
