@@ -74,22 +74,27 @@ class StreamTest(unittest.TestCase):
         fakesub = FakeSub([
             [
                 ('a', Attrs({'event_type': 'OBJECT_DELETE'})),
+            ],
+            [
                 ('b', Attrs({
                     'event_type': 'OBJECT_FINALIZE',
                     'object_id': 'logs/fake/123/finished.json',
                     'bucket_id': 'kubernetes-jenkins'})),
             ],
+            [],
             [
                 ('c', Attrs({
                     'event_type': 'OBJECT_FINALIZE',
                     'object_id': 'logs/fake/123/finished.json',
                     'bucket_id': 'kubernetes-jenkins'})),
             ],
+            [],
             [
                 ('d', Attrs({
                     'event_type': 'OBJECT_FINALIZE',
                     'object_id': 'logs/fake/124/started.json'})),
-            ]
+            ],
+            [],
         ])
         faketable = FakeTable('day', stream.load_schema(FakeSchemaField), fakesub.trace)
         tables = {'day': (faketable, 'incr')}
@@ -103,7 +108,7 @@ class StreamTest(unittest.TestCase):
         self.maxDiff = 3000
 
         self.assertEqual(fakesub.trace,
-            [['pull'],
+            [['pull'], ['pull'], ['pull'],
              ['ack', ['a']],
              ['modify-ack', ['b'], 180],
              ['ack', ['b']],
@@ -127,11 +132,11 @@ class StreamTest(unittest.TestCase):
                  None]],
                [1]),
               {'skip_invalid_rows': True}],
-             ['pull'],
+             ['pull'], ['pull'],
              ['modify-ack', ['c'], 180],
              ['ack', ['c']],
              ['insert-data', ([], []), {'skip_invalid_rows': True}],
-             ['pull'],
+             ['pull'], ['pull'],
              ['ack', ['d']]]
         )
 

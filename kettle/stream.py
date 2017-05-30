@@ -25,6 +25,8 @@ import sys
 import traceback
 import time
 
+import multiprocessing.pool
+
 try:
     from google.cloud import bigquery
     from google.cloud import pubsub
@@ -65,17 +67,24 @@ def get_started_finished(gcs_client, db, todo):
     """Download started/finished.json from build dirs in todo."""
     acks = []
     build_dirs = []
-    for ack_id, job, build in todo:
-        build_dir, started, finished = gcs_client.get_started_finished(job, build)
-        if finished:
-            if not db.insert_build(build_dir, started, finished):
-                print('already present??')
-            print(build_dir, bool(started), bool(finished), finished and finished.get('result'))
-            build_dirs.append(build_dir)
-            acks.append(ack_id)
-        else:
-            print('???', build_dir, started, finished)
-
+    pool = multiprocessing.pool.ThreadPool(16)
+    try:
+        for ack_id, (build_dir, started, finished) in pool.imap_unordered(
+                lambda (ack_id, job, build): (ack_id, gcs_client.get_started_finished(job, build)),
+                todo):
+            # build_dir, started, finished = gcs_client.get_started_finished(job, build)
+            if finished:
+                if not db.insert_build(build_dir, started, finished):
+                    print('already present??')
+                print(build_dir, bool(started), bool(finished),
+                      started and time.strftime('%F %T %Z', time.localtime(started.get('timestamp', 0))),
+                      finished and finished.get('result'))
+                build_dirs.append(build_dir)
+                acks.append(ack_id)
+            else:
+                print('???', build_dir, started, finished)
+    finally:
+        pool.close()
     db.commit()
     return acks, build_dirs
 
@@ -146,11 +155,17 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
     results = [0] * 1000  # don't sleep on first loop
     while not stop():
         print()
-        if len(results) < 1000 and client_class is make_db.GCSClient:
+        if len(results) < 10 and client_class is make_db.GCSClient:
             time.sleep(5)  # slow down!
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = sub.pull(max_messages=1000)
+        results = sub.pull(max_messages=5000)
+        start = time.time()
+        while time.time() < start + 7:
+            results_more = sub.pull(max_messages=1000, return_immediately=True)
+            if not results_more:
+                break
+            results += results_more
 
         print('PULLED', len(results))
 
@@ -158,7 +173,8 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         if acks:
             print('ACK irrelevant', len(acks))
-            sub.acknowledge(acks)
+            for x in xrange(0, len(acks), 1000):
+                sub.acknowledge(acks[x: x + 1000])
 
         if todo:
             print('EXTEND-ACK ', (len(todo)))
@@ -173,7 +189,7 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
             sub.acknowledge(acks)
 
         # grab junit files for new builds
-        make_db.download_junit(db, 8, client_class)
+        make_db.download_junit(db, 16, client_class)
 
         # stream new rows to tables
         if build_dirs and tables:
