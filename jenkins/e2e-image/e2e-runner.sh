@@ -136,7 +136,7 @@ if [[ "${E2E_DOWN:-}" == "true" ]] || [[ "${FEDERATION_DOWN:-}" == "true" ]]; th
   e2e_go_args+=(--down)
 fi
 
-if [[ "${FEDERATION_UP:-}" == "true" ]] || [[ "${FEDERATION_DOWN:-}" == "true" ]]; then
+if [[ "${FEDERATION_UP:-}" == "true" ]] || [[ "${FEDERATION_DOWN:-}" == "true" ]] || [[ "${FEDERATION:-}" == "true" ]]; then
   e2e_go_args+=(--federation)
   if [[ -z "${FEDERATION_CLUSTERS:-}" ]]; then
     e2e_go_args+=("--deployment=none")
