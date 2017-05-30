@@ -313,10 +313,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-alpha-features-release-1.5": {
+  "ci-kubernetes-e2e-gce-alpha-features-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -440,10 +441,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-etcd3-release-1.5": {
+  "ci-kubernetes-e2e-gce-etcd3-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -999,10 +1001,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-reboot-release-1.5": {
+  "ci-kubernetes-e2e-gce-reboot-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1031,10 +1034,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-release-1.5": {
+  "ci-kubernetes-e2e-gce-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1115,10 +1119,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-serial-release-1.5": {
+  "ci-kubernetes-e2e-gce-serial-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1156,10 +1161,11 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-slow-release-1.5": {
+  "ci-kubernetes-e2e-gce-slow-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-slow-release-1.5.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-slow-release-1-5.env", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
