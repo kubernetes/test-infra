@@ -645,16 +645,6 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-qa-m55": {
-    "args": [
-      "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m55.env"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
   "ci-kubernetes-e2e-gce-gci-qa-m56": {
     "args": [
       "--env-file=platforms/gce.env", 
@@ -689,6 +679,16 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m59.env"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-gci-qa-m60": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m60.env"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -745,20 +745,20 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-m60": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-master.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m60.env"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-qa-slow-m55": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m55.env"
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-master.env"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -799,6 +799,16 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m59.env"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-gci-qa-slow-m60": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m60.env"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
