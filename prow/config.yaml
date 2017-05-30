@@ -151,6 +151,11 @@ presubmits:
     rerun_command: "@k8s-bot pull-kubernetes-e2e-gce test this"
     trigger: "@k8s-bot pull-kubernetes-e2e-gce test this"
 
+  - name: pull-kubernetes-e2e-gce-bazel
+    context: pull-kubernetes-e2e-gce-bazel
+    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
+    trigger: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
+
   - name: pull-kubernetes-e2e-gce-canary
     context: pull-kubernetes-e2e-gce-canary
     rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
@@ -373,6 +378,11 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce
     rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
     trigger: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
+
+  - name: pull-security-kubernetes-e2e-gce-bazel
+    context: pull-security-kubernetes-e2e-gce-bazel
+    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
+    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
 
   - name: pull-security-kubernetes-e2e-gce-canary
     context: pull-security-kubernetes-e2e-gce-canary

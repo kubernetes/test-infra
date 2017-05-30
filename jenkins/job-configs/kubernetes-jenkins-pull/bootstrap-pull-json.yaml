@@ -61,6 +61,11 @@
     jobs:
     - 'pull-{jsonsuffix}'
     jsonsuffix:  # pull-<repo>-<suffix> is the expected format
+    - kubernetes-e2e-gce-bazel:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-bazel
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 75
     - kubernetes-e2e-gce-canary:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-canary

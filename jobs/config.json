@@ -4065,6 +4065,20 @@
       "UNKNOWN"
     ]
   }, 
+  "pull-kubernetes-e2e-gce-bazel": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/pull-kubernetes-e2e.env", 
+      "--env-file=jobs/pull-kubernetes-e2e-gce-bazel.env", 
+      "--build=bazel", 
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel", 
+      "--cluster="
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "pull-kubernetes-e2e-gce-canary": {
     "args": [
       "--env-file=platforms/gce.env", 

@@ -1927,6 +1927,7 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-federation-e2e-gce-canary.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy-canary.env': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce.env': 'pull-kubernetes-e2e-gce-*',
+            'pull-kubernetes-e2e-gce-bazel.env': 'pull-kubernetes-e2e-gce-*',
             'pull-kubernetes-e2e-gce-canary.env': 'pull-kubernetes-e2e-gce-*',
         }
         projects = collections.defaultdict(set)
