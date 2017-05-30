@@ -41,10 +41,9 @@ buildables=$(bazel query \
 rc=0
 if [[ ! -z "${buildables}" ]]; then
   bazel build ${buildables} && rc=$? || rc=$?
+  # Clear test.xml so that we don't pick up old results.
+  find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 fi
-
-# Clear test.xml so that we don't pick up old results.
-find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
 # Run affected tests.
 if [[ "${rc}" == 0 ]]; then
