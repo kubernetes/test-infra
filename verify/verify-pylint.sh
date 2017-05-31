@@ -20,6 +20,5 @@ set -o pipefail
 export PYLINTHOME=$(mktemp -d)
 pylint="$(dirname $0)/pylint_bin"
 
-
 shopt -s extglob globstar
-${pylint} !(gubernator|kettle|external|mungegithub|bazel-*)/**/*.py
+${pylint} !(gubernator|external|mungegithub|bazel-*)/**/*.py

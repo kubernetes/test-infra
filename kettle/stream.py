@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Receive push events for new builds and upload rows to BigQuery.
-"""
+"""Receive push events for new builds and upload rows to BigQuery."""
+
+# pylint: disable=invalid-name
 
 from __future__ import print_function
 
@@ -31,7 +32,7 @@ try:
     from google.cloud import bigquery
     from google.cloud import pubsub
     import google.cloud.exceptions
-except ImportError, e:
+except ImportError:
     print('WARNING: unable to load google cloud (test environment?)')
     traceback.print_exc()
 
@@ -41,9 +42,7 @@ import make_json
 
 
 def process_changes(results):
-    """Given a list of GCS change events, return messages to ack and
-    jobs/builds to further process.
-    """
+    """Split GCS change events into trivial acks and builds to further process."""
     acks = []  # pubsub message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
 
@@ -76,8 +75,9 @@ def get_started_finished(gcs_client, db, todo):
             if finished:
                 if not db.insert_build(build_dir, started, finished):
                     print('already present??')
+                start = time.localtime(started.get('timestamp', 0) if started else 0)
                 print(build_dir, bool(started), bool(finished),
-                      started and time.strftime('%F %T %Z', time.localtime(started.get('timestamp', 0))),
+                      time.strftime('%F %T %Z', start),
                       finished and finished.get('result'))
                 build_dirs.append(build_dir)
                 acks.append(ack_id)
@@ -120,11 +120,12 @@ def insert_data(table, rows_iter):
         row_ids.append(row_id)
 
     def insert(table, rows, row_ids):
+        """Insert rows with row_ids into table, retrying as necessary."""
         while True:
             try:
                 errors = table.insert_data(rows, row_ids, skip_invalid_rows=True)
                 break
-            except google.cloud.exceptions.ServerError:
+            except google.cloud.exceptions.ServerError:   # pylint: disable=no-member
                 # retry
                 traceback.print_exc()
                 time.sleep(5)
@@ -147,6 +148,7 @@ def insert_data(table, rows_iter):
 
 
 def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
+    # pylint: disable=too-many-locals
     gcs_client = client_class('', {})
 
     if stop is None:
@@ -179,7 +181,7 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
         if todo:
             print('EXTEND-ACK ', (len(todo)))
             # give 3 minutes to grab build details
-            sub.modify_ack_deadline([i for i, j, b in todo], 60*3)
+            sub.modify_ack_deadline([i for i, _j, _b in todo], 60*3)
 
         acks, build_dirs = get_started_finished(gcs_client, db, todo)
 
@@ -227,7 +229,7 @@ def get_options(argv):
 
 def load_sub(poll):
     """Return the PubSub subscription specificed by the /-separated input."""
-    project, topic, subscription = OPTIONS.poll.split('/')
+    project, topic, subscription = poll.split('/')
     pubsub_client = pubsub.Client(project)
     return pubsub_client.topic(topic).subscription(subscription)
 
@@ -251,7 +253,7 @@ def load_tables(dataset, tablespecs):
 
     Returns {name: (bigquery.Table, incremental table name)}
     """
-    project, dataset_name = OPTIONS.dataset.split(':')
+    project, dataset_name = dataset.split(':')
     dataset = bigquery.Client(project).dataset(dataset_name)
 
     tables = {}
@@ -260,7 +262,7 @@ def load_tables(dataset, tablespecs):
         table = dataset.table(name)
         try:
             table.reload()
-        except google.cloud.exceptions.NotFound:
+        except google.cloud.exceptions.NotFound:  # pylint: disable=no-member
             table.schema = load_schema(bigquery.schema.SchemaField)
             table.create()
         tables[name] = (table, make_json.get_table(float(days)))
@@ -275,6 +277,8 @@ class StopWhen(object):
         self.target = target
 
     def __call__(self):
+        if os.path.exists('stop'):
+            return True
         now = self.clock()
         last = self.last
         self.last = now
@@ -284,11 +288,11 @@ class StopWhen(object):
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
 
-    stop = None
+    stop_func = None
     if OPTIONS.stop_at:
-        stop = StopWhen(OPTIONS.stop_at)
+        stop_func = StopWhen(OPTIONS.stop_at)
 
     main(model.Database('build.db'),
          load_sub(OPTIONS.poll),
          load_tables(OPTIONS.dataset, OPTIONS.tables),
-         stop=stop)
+         stop=stop_func)

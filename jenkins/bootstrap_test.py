@@ -1205,8 +1205,8 @@ class IntegrationTest(unittest.TestCase):
     BRANCH_FILE = 'fake-branch-file'
     PR_FILE = 'fake-pr-file'
     BRANCH = 'another-branch'
-    PR = 42
-    PR_TAG = bootstrap.pull_ref(PR)[0][0].strip('+')
+    PR_NUM = 42
+    PR_TAG = bootstrap.pull_ref(PR_NUM)[0][0].strip('+')
 
     def fake_repo(self, fake, _ssh=False):
         return os.path.join(self.root_github, fake)
@@ -1268,14 +1268,14 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'rm', self.MASTER])
         subprocess.check_call(['touch', self.PR_FILE])
         subprocess.check_call(['git', 'add', self.PR_FILE])
-        subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR])
+        subprocess.check_call(['git', 'commit', '-m', 'Create branch for PR %d' % self.PR_NUM])
         subprocess.check_call(['git', 'tag', self.PR_TAG])
         os.chdir('/tmp')
         test_bootstrap(
             job='fake-pr',
             repo=self.REPO,
             branch=None,
-            pull=self.PR,
+            pull=self.PR_NUM,
             root=self.root_workspace)
 
     def test_branch(self):

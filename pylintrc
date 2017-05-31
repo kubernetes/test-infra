@@ -5,7 +5,7 @@ disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-me
 reports=no
 
 [BASIC]
-good-names=ls,kw,pr,PR,fp,_
+good-names=ls,kw,pr,fp,_,db
 
 [DESIGN]
 max-args=12

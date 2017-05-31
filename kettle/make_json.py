@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Generate JSON for BigQuery importing."""
+
+# pylint: disable=invalid-name
+
 import argparse
-import hashlib
 import logging
 import json
 import os
-import sqlite3
 import subprocess
 import sys
 import time
@@ -37,20 +39,20 @@ def parse_junit(xml):
     # NOTE: this is modified from gubernator/view_build.py
     tree = ET.fromstring(xml)
 
-    def make_result(name, time, failure_text, skipped):
+    # pylint: disable=redefined-outer-name
+
+    def make_result(name, time, failure_text):
         if failure_text:
             if time is None:
                 return {'name': name, 'failed': True, 'failure_text': failure_text}
-            else:
-                return {'name': name, 'time': time, 'failed': True, 'failure_text': failure_text}
-        else:
-            if time is None:
-                return {'name': name}
-            else:
-                return {'name': name, 'time': time}
+            return {'name': name, 'time': time, 'failed': True, 'failure_text': failure_text}
+        if time is None:
+            return {'name': name}
+        return {'name': name, 'time': time}
 
     # Note: skipped tests are ignored because they make rows too large for BigQuery.
-    # Knowing that a given build could have ran a test but didn't for some reason isn't very interesting.
+    # Knowing that a given build could have ran a test but didn't for some reason
+    # isn't very interesting.
     if tree.tag == 'testsuite':
         for child in tree:
             name = child.attrib['name']
@@ -61,7 +63,7 @@ def parse_junit(xml):
             skipped = child.findall('skipped')
             if skipped:
                 continue
-            yield make_result(name, time, failure_text, skipped)
+            yield make_result(name, time, failure_text)
     elif tree.tag == 'testsuites':
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
@@ -74,7 +76,7 @@ def parse_junit(xml):
                 skipped = child.findall('skipped')
                 if skipped:
                     continue
-                yield make_result(name, time, failure_text, skipped)
+                yield make_result(name, time, failure_text)
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
@@ -187,7 +189,7 @@ def make_rows(db, builds):
             yield rowid, row_for_build(path, started, finished, results)
         except IOError:
             return
-        except:
+        except:  # pylint: disable=bare-except
             logging.exception('error on %s', path)
 
 
@@ -216,6 +218,6 @@ def main(db, opts, outfile):
 
 
 if __name__ == '__main__':
-    db = model.Database('build.db')
-    opts = parse_args(sys.argv[1:])
-    main(db, opts, sys.stdout)
+    DB = model.Database('build.db')
+    OPTIONS = parse_args(sys.argv[1:])
+    main(DB, OPTIONS, sys.stdout)

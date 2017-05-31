@@ -14,16 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO as StringIO
-import json
+# pylint: disable=missing-docstring,invalid-name
+
 import unittest
 
 import stream
 import make_db_test
 import model
-import time
-
-import pprint
 
 
 class FakeSub(object):
@@ -31,8 +28,8 @@ class FakeSub(object):
         self.pulls = pulls
         self.trace = []
 
-    def pull(self, **kwargs):
-        self.trace.append(['pull'])
+    def pull(self, return_immediately=False, **_kwargs):
+        self.trace.append(['pull', return_immediately])
         return self.pulls.pop(0)
 
     def acknowledge(self, acks):
@@ -101,14 +98,16 @@ class StreamTest(unittest.TestCase):
         stream.main(
             db, fakesub, tables, make_db_test.MockedClient, [1, 0, 0, 0].pop)
 
-        # pprint.pprint(fakesub.trace)
+        # uncomment if the trace changes
+        # import pprint; pprint.pprint(fakesub.trace)
 
         now = make_db_test.MockedClient.NOW
 
         self.maxDiff = 3000
 
-        self.assertEqual(fakesub.trace,
-            [['pull'], ['pull'], ['pull'],
+        self.assertEqual(
+            fakesub.trace,
+            [['pull', False], ['pull', True], ['pull', True],
              ['ack', ['a']],
              ['modify-ack', ['b'], 180],
              ['ack', ['b']],
@@ -132,13 +131,12 @@ class StreamTest(unittest.TestCase):
                  None]],
                [1]),
               {'skip_invalid_rows': True}],
-             ['pull'], ['pull'],
+             ['pull', False], ['pull', True],
              ['modify-ack', ['c'], 180],
              ['ack', ['c']],
              ['insert-data', ([], []), {'skip_invalid_rows': True}],
-             ['pull'], ['pull'],
-             ['ack', ['d']]]
-        )
+             ['pull', False], ['pull', True],
+             ['ack', ['d']]])
 
 
 if __name__ == '__main__':

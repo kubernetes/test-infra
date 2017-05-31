@@ -16,11 +16,11 @@
 
 import cStringIO as StringIO
 import json
+import time
 import unittest
 
 import make_json
 import model
-import time
 
 
 class MakeJsonTest(unittest.TestCase):
@@ -28,8 +28,8 @@ class MakeJsonTest(unittest.TestCase):
         self.db = model.Database(':memory:')
 
     def test_path_to_job_and_number(self):
-        def expect(s, job, number):
-            self.assertEqual(make_json.path_to_job_and_number(s), (job, number))
+        def expect(path, job, number):
+            self.assertEqual(make_json.path_to_job_and_number(path), (job, number))
 
         expect('gs://kubernetes-jenkins/logs/some-build/123', 'some-build', 123)
         expect('gs://kubernetes-jenkins/logs/some-build/123asdf', 'some-build', None)
@@ -60,12 +60,14 @@ class MakeJsonTest(unittest.TestCase):
                job='J', number=123,
                started=10, finished=15, elapsed=5,
                version='v1.2.3', result='SUCCESS', executor='agent-34',
-               )
-        expect(path, None, {'timestamp': 15, 'result': 'FAILURE', 'metadata': {'repo': 'ignored', 'pull': 'asdf'}}, [],
+              )
+        expect(path, None,
+               {'timestamp': 15, 'result': 'FAILURE',
+                'metadata': {'repo': 'ignored', 'pull': 'asdf'}}, [],
                result='FAILURE', job='J', number=123, finished=15,
                metadata=[{'key': 'pull', 'value': 'asdf'}, {'key': 'repo', 'value': 'ignored'}])
-        expect(path, None, None, [
-                '''<testsuite>
+        expect(path, None, None, ['''
+                   <testsuite>
                     <testcase name="t1" time="1.0"><failure>stacktrace</failure></testcase>
                     <testcase name="t2" time="2.0"></testcase>
                     <testcase name="t2#1" time="2.0"></testcase>
@@ -82,9 +84,12 @@ class MakeJsonTest(unittest.TestCase):
 
         def add_build(path, start, finish, result, junits):
             path = 'gs://kubernetes-jenkins/logs/%s' % path
-            self.db.insert_build(path, {'timestamp': start}, {'timestamp': finish, 'result': result})
+            self.db.insert_build(
+                path, {'timestamp': start}, {'timestamp': finish, 'result': result})
             # fake build rowid doesn't matter here
-            self.db.insert_build_junits(hash(path), {'%s/artifacts/junit_%d.xml' % (path, n): junit for n, junit in enumerate(junits)})
+            self.db.insert_build_junits(
+                hash(path),
+                {'%s/artifacts/junit_%d.xml' % (path, n): junit for n, junit in enumerate(junits)})
 
         def expect(args, needles, negneedles):
             buf = StringIO.StringIO()

@@ -42,7 +42,7 @@ class ModelTest(unittest.TestCase):
         def expect(builds):
             rows = []
             have = set()
-            for rowid, path, started, finished in self.db.get_builds():
+            for rowid, path, _started, _finished in self.db.get_builds():
                 rows.append(rowid)
                 have.add(int(path[path.rindex('/', 0, -1) + 1:]))
             self.assertEqual(have, builds)

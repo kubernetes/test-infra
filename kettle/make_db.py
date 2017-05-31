@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generates a SQLite DB containing test data downloaded from GCS.
-"""
+"""Generates a SQLite DB containing test data downloaded from GCS."""
+
+# pylint: disable=invalid-name,global-statement
 
 from __future__ import print_function
 
 import argparse
-import datetime
-import hashlib
 import logging
 import os
-import re
 import random
 import re
 import signal
@@ -43,6 +41,7 @@ def pad_numbers(s):
     """Modify a string to make its numbers suitable for natural sorting."""
     return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
 
+WORKER_CLIENT = None  # used for multiprocessing
 
 class GCSClient(object):
     def __init__(self, jobs_dir, metadata=None):
@@ -66,13 +65,13 @@ class GCSClient(object):
                 resp.raise_for_status()
                 if as_json:
                     return resp.json()
-                else:
-                    return resp.content
+                return resp.content
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
             time.sleep(random.random() * min(60, 2 ** retry))
 
-    def _parse_uri(self, path):
+    @staticmethod
+    def _parse_uri(path):
         if not path.startswith('gs://'):
             raise ValueError("Bad GCS path")
         bucket, prefix = path[5:].split('/', 1)
@@ -82,7 +81,7 @@ class GCSClient(object):
         """Get an object from GCS."""
         bucket, path = self._parse_uri(path)
         return self._request('%s/o/%s' % (bucket, urllib2.quote(path, '')),
-                           {'alt': 'media'}, as_json=as_json)
+                             {'alt': 'media'}, as_json=as_json)
 
     def ls(self, path, dirs=True, files=True, delim=True, item_field='name'):
         """Lists objects under a path on gcs."""
@@ -145,7 +144,7 @@ class GCSClient(object):
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
         return True, sorted((os.path.basename(os.path.dirname(b))
-                            for b in build_paths), key=pad_numbers, reverse=True)
+                             for b in build_paths), key=pad_numbers, reverse=True)
 
     def get_started_finished(self, job, build):
         if self.metadata.get('pr'):
@@ -158,7 +157,6 @@ class GCSClient(object):
 
     def get_builds(self, builds_have):
         """Generates all (job, build) pairs ever."""
-        now = time.time()
         if self.metadata.get('pr'):
             files = self.ls(self.jobs_dir + '/directory/', delim=False)
             for fname in files:
@@ -259,6 +257,20 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
     db.commit()
 
 
+def remove_system_out(data):
+    """Strip bloated system-out annotations."""
+    if 'system-out' in data:
+        try:
+            root = ET.fromstring(data)
+            for parent in root.findall('*//system-out/..'):
+                for child in parent.findall('system-out'):
+                    parent.remove(child)
+            return ET.tostring(root)
+        except ET.ParseError:
+            pass
+    return data
+
+
 def download_junit(db, threads, client_class):
     """Download junit results for builds without them."""
     builds_to_grab = db.get_builds_missing_junit()
@@ -276,17 +288,7 @@ def download_junit(db, threads, client_class):
     for n, (build_id, build_path, junits) in enumerate(test_iterator, 1):
         print('%d/%d' % (n, len(builds_to_grab)),
               build_path, len(junits), len(''.join(junits.values())))
-        # strip bloated system-out annotations
-        for path, data in junits.items():
-            if 'system-out' in data:
-                try:
-                    root = ET.fromstring(data)
-                    for parent in root.findall('*//system-out/..'):
-                        for child in parent.findall('system-out'):
-                            parent.remove(child)
-                    junits[path] = ET.tostring(root)
-                except ET.ParseError:
-                    continue
+        junits = {k: remove_system_out(v) for k, v in junits.iteritems()}
 
         db.insert_build_junits(build_id, junits)
         if n % 100 == 0:
@@ -333,6 +335,7 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    jobs_dirs = yaml.load(open(OPTIONS.buckets))
-    db = model.Database('build.db')
-    main(db, jobs_dirs, OPTIONS.threads, OPTIONS.junit)
+    main(model.Database('build.db'),
+         yaml.load(open(OPTIONS.buckets)),
+         OPTIONS.threads,
+         OPTIONS.junit)
