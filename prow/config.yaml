@@ -155,6 +155,53 @@ presubmits:
     context: pull-kubernetes-e2e-gce-bazel
     rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
     trigger: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170530-7cb6f5b5
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
 
   - name: pull-kubernetes-e2e-gce-canary
     context: pull-kubernetes-e2e-gce-canary
@@ -383,6 +430,53 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-bazel
     rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
     trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170530-7cb6f5b5
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
 
   - name: pull-security-kubernetes-e2e-gce-canary
     context: pull-security-kubernetes-e2e-gce-canary
