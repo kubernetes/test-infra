@@ -94,6 +94,7 @@ for pr in ${conflicting_prs[@]}; do
   PAGER=cat git diff --name-only --diff-filter=UXB
   # Abort so we can reset
   git merge --abort >/dev/null 2>/dev/null || true
+  git reset -q --hard
   git checkout -q master
   git branch -q -D merge-test
   git prune 2>/dev/null
