@@ -21,8 +21,10 @@ query: |
   from (
     select
       job, /* name of job */
-      round(sum(if(flaked=1,passed,runs))/sum(runs),3) build_consistency, /* percentage of runs that flaked */
-      round(1-sum(flaked)/sum(runs),3) commit_consistency, /* percentage of commits that flaked */
+      max(stamp) last_stamp,
+      min(stamp) first_stamp,
+      round(sum(if(flaked=1,passed,runs))/sum(runs),3) build_consistency, /* percentage of runs that did not flake */
+      round(1-sum(flaked)/count(distinct commit),3) commit_consistency, /* percentage of commits that did not flake */
       sum(flaked) flakes, /* number of times it flaked */
       sum(runs) runs, /* number of times the job ran */
       count(distinct commit) commits, /* number of commits tested */
