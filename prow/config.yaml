@@ -1396,7 +1396,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
