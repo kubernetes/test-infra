@@ -73,7 +73,6 @@ BLACKLIST = [
 ]
 
 PR_PROJECTS = [
-    'kubernetes-pr-cri-validation',
     'k8s-jkns-pr-kubemark',
     'k8s-jkns-pr-gce',
     'k8s-jkns-pr-gci-gce',
@@ -88,7 +87,7 @@ PR_PROJECTS = [
 def check_pr_jobs():
     """Handle PR jobs"""
     for project in PR_PROJECTS:
-        clean_project(project)
+        clean_project(project, hours=3)
 
 
 def check_ci_jobs():
