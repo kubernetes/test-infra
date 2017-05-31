@@ -27,11 +27,12 @@ pip install -r jenkins/test_history/requirements.txt
 export TEST_TMPDIR="/root/.cache/bazel"
 
 # Compute list of modified files in bazel package form.
-commit_range="${PULL_BASE_SHA}..${PULL_PULL_SHA}"
-files=()
-for file in $(git diff --name-only --diff-filter=d "${commit_range}" ); do
-  files+=($(bazel query "${file}"))
-done
+commit_range="${PULL_BASE_SHA}...${PULL_PULL_SHA}"
+files=(bazel query "set($(git diff --name-only --diff-filter=d "${commit_range}"))")
+if [[ "${#files[@]}" == 0 ]]; then
+  echo "No bazel packages affected."
+  exit 0
+fi
 
 # Build modified packages.
 buildables=$(bazel query \
