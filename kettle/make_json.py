@@ -179,6 +179,8 @@ def parse_args(args):
                         help='Grab data for builds within N days')
     parser.add_argument('--reset-emitted', action='store_true',
                         help='Clear list of already-emitted builds.')
+    parser.add_argument('paths', nargs='*',
+                        help='Options list of gs:// paths to dump rows for.')
     return parser.parse_args(args)
 
 
@@ -202,7 +204,13 @@ def main(db, opts, outfile):
     if opts.reset_emitted:
         db.reset_emitted(incremental_table)
 
-    builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
+    if opts.paths:
+        # When asking for rows for specific builds, use a dummy table and clear it first.
+        incremental_table = 'incremental_manual'
+        db.reset_emitted(incremental_table)
+        builds = list(db.get_builds_from_paths(opts.paths, incremental_table))
+    else:
+        builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
 
     rows_emitted = set()
     for rowid, row in make_rows(db, builds):

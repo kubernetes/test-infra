@@ -124,6 +124,10 @@ class MakeJsonTest(unittest.TestCase):
         expect(['--days=1', '--reset-emitted'], ['456', '457'], [])  # both (reset)
         expect([], [], ['123', '456', '457'])                     # reset only works for given day
 
+        # verify that direct paths work
+        expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
+        expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
+
 
 if __name__ == '__main__':
     unittest.main()
