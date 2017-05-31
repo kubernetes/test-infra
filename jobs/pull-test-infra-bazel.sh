@@ -29,7 +29,10 @@ export TEST_TMPDIR="/root/.cache/bazel"
 # Compute list of modified files in bazel package form.
 commit_range="${PULL_BASE_SHA}..${PULL_PULL_SHA}"
 files=()
-for file in $(git diff --name-only --diff-filter=d "${commit_range}" ); do
+# git diff --name-only only prints the original (old) filename for renames
+# git diff --name-status prints the new name followed by the old name for
+# renames, so use it instead (after cutting out the first field, the status)
+for file in $(git diff --name-status --diff-filter=d "${commit_range}" | cut -f2); do
   files+=($(bazel query "${file}"))
 done
 
