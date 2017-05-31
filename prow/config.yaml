@@ -895,6 +895,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: REPO_NAME
+        value: test-infra
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       volumeMounts:
