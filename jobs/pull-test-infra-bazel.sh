@@ -26,35 +26,15 @@ pip install -r jenkins/test_history/requirements.txt
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-# Compute list of modified files in bazel package form.
-commit_range="${PULL_BASE_SHA}...${PULL_PULL_SHA}"
-files=(bazel query "set($(git diff --name-only --diff-filter=d "${commit_range}"))")
-if [[ "${#files[@]}" == 0 ]]; then
-  echo "No bazel packages affected."
-  exit 0
-fi
+# Run a no-target bazel to create the `bazel-testlogs` symlink.
+# We need the symlink to be created so that we can remove left-over from
+# previous tests (the symlink goes to a cache that is shared between runs).
+bazel build
+find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
-# Build modified packages.
-buildables=$(bazel query \
-    --keep_going \
-    --noshow_progress \
-    "kind(.*_binary, rdeps(//..., set(${files[@]})))")
-rc=0
-if [[ ! -z "${buildables}" ]]; then
-  bazel build ${buildables} && rc=$? || rc=$?
-  # Clear test.xml so that we don't pick up old results.
-  find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
-fi
+verify/bazel-test-affected.sh "${PULL_BASE_SHA}...${PULL_PULL_SHA}" && rc=$? || rc=$?
 
-# Run affected tests.
-if [[ "${rc}" == 0 ]]; then
-  tests=$(bazel query \
-      --keep_going \
-      --noshow_progress \
-      "kind(test, rdeps(//..., set(${files[@]}))) except attr('tags', 'manual', //...)")
-  bazel test --test_output=errors ${tests} //verify:verify-all && rc=$? || rc=$?
-  ./images/pull_kubernetes_bazel/coalesce.py
-fi
+./images/pull_kubernetes_bazel/coalesce.py
 
 case "${rc}" in
     0) echo "Success" ;;
