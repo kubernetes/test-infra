@@ -29,7 +29,7 @@ export TEST_TMPDIR="/root/.cache/bazel"
 # Compute list of modified files in bazel package form.
 commit_range="${PULL_BASE_SHA}..${PULL_PULL_SHA}"
 files=()
-for file in $(git diff --name-only "${commit_range}" ); do
+for file in $(git diff --name-only --diff-filter=d "${commit_range}" ); do
   files+=($(bazel query "${file}"))
 done
 
