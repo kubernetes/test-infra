@@ -14,8 +14,6 @@
 
 """Receive push events for new builds and upload rows to BigQuery."""
 
-# pylint: disable=invalid-name
-
 from __future__ import print_function
 
 import argparse
@@ -71,7 +69,6 @@ def get_started_finished(gcs_client, db, todo):
         for ack_id, (build_dir, started, finished) in pool.imap_unordered(
                 lambda (ack_id, job, build): (ack_id, gcs_client.get_started_finished(job, build)),
                 todo):
-            # build_dir, started, finished = gcs_client.get_started_finished(job, build)
             if finished:
                 if not db.insert_build(build_dir, started, finished):
                     print('already present??')
@@ -82,7 +79,7 @@ def get_started_finished(gcs_client, db, todo):
                 build_dirs.append(build_dir)
                 acks.append(ack_id)
             else:
-                print('???', build_dir, started, finished)
+                print('finished.json missing?', build_dir, started, finished)
     finally:
         pool.close()
     db.commit()
@@ -118,6 +115,9 @@ def insert_data(table, rows_iter):
         row = row_to_mapping(row, table.schema)
         rows.append(row)
         row_ids.append(row_id)
+
+    if not rows:  # nothing to do
+        return []
 
     def insert(table, rows, row_ids):
         """Insert rows with row_ids into table, retrying as necessary."""
@@ -175,11 +175,11 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         if acks:
             print('ACK irrelevant', len(acks))
-            for x in xrange(0, len(acks), 1000):
-                sub.acknowledge(acks[x: x + 1000])
+            for n in xrange(0, len(acks), 1000):
+                sub.acknowledge(acks[n: n + 1000])
 
         if todo:
-            print('EXTEND-ACK ', (len(todo)))
+            print('EXTEND-ACK ', len(todo))
             # give 3 minutes to grab build details
             sub.modify_ack_deadline([i for i, _j, _b in todo], 60*3)
 
@@ -199,32 +199,6 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
                 emitted = insert_data(table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
-
-
-def get_options(argv):
-    """Process command line arguments."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--poll',
-        required=True,
-        help='Follow GCS changes from project/topic/subscription',
-    )
-    parser.add_argument(
-        '--dataset',
-        help='BigQuery dataset (e.g. k8s-gubernator:build)'
-    )
-    parser.add_argument(
-        '--tables',
-        nargs='+',
-        default=[],
-        help='Upload rows to table:days [e.g. --tables day:1 week:7 all:0]',
-    )
-    parser.add_argument(
-        '--stop_at',
-        type=int,
-        help='Terminate when this hour (0-23) rolls around (in local time).'
-    )
-    return parser.parse_args(argv)
 
 
 def load_sub(poll):
@@ -251,7 +225,11 @@ def load_schema(schemafield):
 def load_tables(dataset, tablespecs):
     """Construct a dictionary of BigQuery tables given the input tablespec.
 
-    Returns {name: (bigquery.Table, incremental table name)}
+    Args:
+        dataset: bigquery.Dataset
+        tablespecs: list of strings of "NAME:DAYS", e.g. ["day:1"]
+    Returns:
+        {name: (bigquery.Table, incremental table name)}
     """
     project, dataset_name = dataset.split(':')
     dataset = bigquery.Client(project).dataset(dataset_name)
@@ -285,14 +263,36 @@ class StopWhen(object):
         return now != last and now == self.target
 
 
+def get_options(argv):
+    """Process command line arguments."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--poll',
+        required=True,
+        help='Follow GCS changes from project/topic/subscription',
+    )
+    parser.add_argument(
+        '--dataset',
+        help='BigQuery dataset (e.g. k8s-gubernator:build)'
+    )
+    parser.add_argument(
+        '--tables',
+        nargs='+',
+        default=[],
+        help='Upload rows to table:days [e.g. --tables day:1 week:7 all:0]',
+    )
+    parser.add_argument(
+        '--stop_at',
+        type=int,
+        help='Terminate when this hour (0-23) rolls around (in local time).'
+    )
+    return parser.parse_args(argv)
+
+
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-
-    stop_func = None
-    if OPTIONS.stop_at:
-        stop_func = StopWhen(OPTIONS.stop_at)
 
     main(model.Database('build.db'),
          load_sub(OPTIONS.poll),
          load_tables(OPTIONS.dataset, OPTIONS.tables),
-         stop=stop_func)
+         stop=StopWhen(OPTIONS.stop_at))

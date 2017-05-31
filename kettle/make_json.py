@@ -16,8 +16,6 @@
 
 """Generate JSON for BigQuery importing."""
 
-# pylint: disable=invalid-name
-
 import argparse
 import logging
 import json
@@ -151,10 +149,10 @@ def row_for_build(path, started, finished, results):
                 metadata.pop('job-version')
             if metadata.get('version') == build_version:
                 metadata.pop('version')
-            for k, v in metadata.items():
-                if not isinstance(v, basestring):
+            for key, value in metadata.items():
+                if not isinstance(value, basestring):
                     # the schema specifies a string value. force it!
-                    metadata[k] = json.dumps(v)
+                    metadata[key] = json.dumps(value)
         if not metadata:
             return None
         return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]

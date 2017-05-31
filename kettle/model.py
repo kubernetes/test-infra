@@ -162,7 +162,8 @@ class Database(object):
         gen, = self.db.execute('select max(gen)+1 from %s' % incremental_table).fetchone()
         if not gen:
             gen = 0
-        self.db.executemany('insert into %s values(?,?)' % incremental_table,
-                            ((row, gen) for row in rows_emitted))
+        self.db.executemany(
+            'insert into %s values(?,?)' % incremental_table,
+            ((row, gen) for row in rows_emitted))
         self.db.commit()
         return gen

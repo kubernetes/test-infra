@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable=missing-docstring,invalid-name
+# pylint: disable=missing-docstring
 
 import unittest
 
@@ -100,10 +100,9 @@ class StreamTest(unittest.TestCase):
 
         # uncomment if the trace changes
         # import pprint; pprint.pprint(fakesub.trace)
+        # self.maxDiff = 3000
 
         now = make_db_test.MockedClient.NOW
-
-        self.maxDiff = 3000
 
         self.assertEqual(
             fakesub.trace,
@@ -134,7 +133,6 @@ class StreamTest(unittest.TestCase):
              ['pull', False], ['pull', True],
              ['modify-ack', ['c'], 180],
              ['ack', ['c']],
-             ['insert-data', ([], []), {'skip_invalid_rows': True}],
              ['pull', False], ['pull', True],
              ['ack', ['d']]])
 

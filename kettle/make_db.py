@@ -14,8 +14,6 @@
 
 """Generates a SQLite DB containing test data downloaded from GCS."""
 
-# pylint: disable=invalid-name,global-statement
-
 from __future__ import print_function
 
 import argparse
@@ -37,9 +35,9 @@ import yaml
 import model
 
 
-def pad_numbers(s):
+def pad_numbers(string):
     """Modify a string to make its numbers suitable for natural sorting."""
-    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), string)
 
 WORKER_CLIENT = None  # used for multiprocessing
 
@@ -85,6 +83,8 @@ class GCSClient(object):
 
     def ls(self, path, dirs=True, files=True, delim=True, item_field='name'):
         """Lists objects under a path on gcs."""
+        # pylint: disable=invalid-name
+
         bucket, path = self._parse_uri(path)
         params = {'prefix': path, 'fields': 'nextPageToken'}
         if delim:
@@ -143,8 +143,9 @@ class GCSClient(object):
                 return False, (str(n) for n in xrange(latest_build, 0, -1))
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
-        return True, sorted((os.path.basename(os.path.dirname(b))
-                             for b in build_paths), key=pad_numbers, reverse=True)
+        return True, sorted(
+            (os.path.basename(os.path.dirname(b)) for b in build_paths),
+            key=pad_numbers, reverse=True)
 
     def get_started_finished(self, job, build):
         if self.metadata.get('pr'):
@@ -187,9 +188,9 @@ def mp_init_worker(jobs_dir, metadata, client_class, use_signal=True):
 
     if use_signal:
         signal.signal(signal.SIGINT, signal.SIG_IGN)
-    # Multiprocessing doesn't allow local variables for each worker, so 77 need
+    # Multiprocessing doesn't allow local variables for each worker, so we need
     # to make a GCSClient global variable.
-    global WORKER_CLIENT
+    global WORKER_CLIENT  # pylint: disable=global-statement
     WORKER_CLIENT = client_class(jobs_dir, metadata)
 
 def get_started_finished((job, build)):
@@ -234,7 +235,7 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
         builds_iterator = pool.imap_unordered(
             get_started_finished, jobs_and_builds)
     else:
-        global WORKER_CLIENT
+        global WORKER_CLIENT  # pylint: disable=global-statement
         WORKER_CLIENT = gcs
         builds_iterator = (
             get_started_finished(job_build) for job_build in jobs_and_builds)
@@ -276,12 +277,12 @@ def download_junit(db, threads, client_class):
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
     if threads > 1:
-        pool = multiprocessing.pool.ThreadPool(threads, mp_init_worker,
-                                               ('', {}, client_class, False))
+        pool = multiprocessing.pool.ThreadPool(
+            threads, mp_init_worker, ('', {}, client_class, False))
         test_iterator = pool.imap_unordered(
             get_junits, builds_to_grab)
     else:
-        global WORKER_CLIENT
+        global WORKER_CLIENT  # pylint: disable=global-statement
         WORKER_CLIENT = client_class('', {})
         test_iterator = (
             get_junits(build_path) for build_path in builds_to_grab)
