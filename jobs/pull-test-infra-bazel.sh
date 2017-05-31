@@ -32,6 +32,10 @@ files=()
 for file in $(git diff --name-only --diff-filter=d "${commit_range}" ); do
   files+=($(bazel query "${file}"))
 done
+if [[ "${#files[@]}" == 0 ]]; then
+  echo "No bazel packages affected."
+  exit 0
+fi
 
 # Build modified packages.
 buildables=$(bazel query \
