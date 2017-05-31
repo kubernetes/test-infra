@@ -4231,7 +4231,8 @@
       "--env-file=jobs/pull-kubernetes-e2e-gce-bazel.env", 
       "--build=bazel", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel", 
-      "--cluster="
+      "--cluster=", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
