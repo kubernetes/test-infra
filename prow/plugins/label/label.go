@@ -46,7 +46,6 @@ var (
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
 	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
-	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
 	kindMap                 = map[string]string{
 		"bugs":             "kind/bug",
@@ -242,11 +241,9 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 
 	}
 
+	//TODO(grodrigues3): Once labels are standardized, make this reply with a comment.
 	if len(nonexistent) > 0 {
-		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
-		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
-			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
-		}
+		log.Infof("Nonexistent labels: %v", nonexistent)
 	}
 
 	// Tried to remove Labels that were not present on the Issue
