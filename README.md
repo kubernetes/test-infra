@@ -35,7 +35,7 @@ Test anything with the following pattern:
 
 ```
 git clone https://github.com/kubernetes/test-infra
-test-infra/bootstrap.py --job=J --repo=R --service-account=S.json --upload=gs://B
+test-infra/jenkins/bootstrap.py --job=J --repo=R --service-account=S.json --upload=gs://B
 ```
 
 The `--job=J` flag specifies what test job to run.
@@ -66,7 +66,7 @@ you'll need to do the following:
 Please test the job on your local workstation before creating a PR:
 ```
 mkdir /tmp/whatever && cd /tmp/whatever
-$GOPATH/src/k8s.io/test-infra/bootstrap.py \
+$GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
   --job=J \  # aka your new job
   --repo=R1 --repo=R2 \  # what repos to check out
   --service-account ~/S.json  # the service account to use to launch GCE/GKE clusters
