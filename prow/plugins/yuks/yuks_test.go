@@ -59,10 +59,13 @@ func TestJokesMedium(t *testing.T) {
 	fc := &fakegithub.FakeClient{
 		IssueComments: make(map[int][]github.IssueComment),
 	}
+
+	comment := "/joke"
+
 	ice := github.IssueCommentEvent{
 		Action: "created",
 		Comment: github.IssueComment{
-			Body: "@k8s-bot tell me a joke",
+			Body: comment,
 		},
 		Issue: github.Issue{
 			Number: 5,
@@ -98,7 +101,7 @@ func TestJokes(t *testing.T) {
 			name:          "ignore edited comment",
 			state:         "open",
 			action:        "edited",
-			body:          "@k8s-bot tell me a joke",
+			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: false,
 			shouldError:   false,
@@ -107,7 +110,7 @@ func TestJokes(t *testing.T) {
 			name:          "leave joke on pr",
 			state:         "open",
 			action:        "created",
-			body:          "@k8s-bot tell me a joke",
+			body:          "/joke",
 			joke:          "this? that.",
 			pr:            &struct{}{},
 			shouldComment: true,
@@ -117,7 +120,7 @@ func TestJokes(t *testing.T) {
 			name:          "leave joke on issue",
 			state:         "open",
 			action:        "created",
-			body:          "@k8s-bot tell me a joke",
+			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: true,
 			shouldError:   false,
@@ -126,7 +129,7 @@ func TestJokes(t *testing.T) {
 			name:          "reject bad joke chars",
 			state:         "open",
 			action:        "created",
-			body:          "@k8s-bot tell me a joke",
+			body:          "/joke",
 			joke:          "[hello](url)",
 			shouldComment: false,
 			shouldError:   true,

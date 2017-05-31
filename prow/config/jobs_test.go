@@ -28,7 +28,12 @@ import (
 
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
-const testThis = "@k8s-bot test this"
+const (
+	newTestThis   = "/test all"
+	oldTestThis   = "@k8s-bot test this"
+	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
+	oldRetestBody = "@k8s-bot test this [submit-queue is verifying that this PR is safe to merge]"
+)
 
 type JSONJob struct {
 	Scenario string   `json:"scenario"`
@@ -76,8 +81,18 @@ func TestPresubmits(t *testing.T) {
 			}
 			// Check that the merge bot will run AlwaysRun jobs, otherwise it
 			// will attempt to rerun forever.
-			if job.AlwaysRun && !job.re.MatchString(testThis) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
+			if job.AlwaysRun && (!job.re.MatchString(newTestThis) || !job.re.MatchString(oldTestThis)) {
+				t.Errorf("AlwaysRun job %s: \"%s\" and/or \"%s\" do not match regex \"%v\".", job.Name, newTestThis, oldTestThis, job.Trigger)
+			}
+			if job.AlwaysRun && (!job.re.MatchString(newRetestBody) || !job.re.MatchString(oldRetestBody)) {
+				t.Errorf("AlwaysRun job %s: \"%s\" and/or \"%s\" do not match regex \"%v\".", job.Name, newRetestBody, oldRetestBody, job.Trigger)
+			}
+			// Check that the merge bot will not run Non-AlwaysRun jobs
+			if !job.AlwaysRun && (job.re.MatchString(newTestThis) || job.re.MatchString(oldTestThis)) {
+				t.Errorf("Non-AlwaysRun job %s: \"%s\" and/or \"%s\" match regex \"%v\".", job.Name, newTestThis, oldTestThis, job.Trigger)
+			}
+			if !job.AlwaysRun && (job.re.MatchString(newRetestBody) || job.re.MatchString(oldRetestBody)) {
+				t.Errorf("Non-AlwaysRun job %s: \"%s\" and/or \"%s\" match regex \"%v\".", job.Name, newRetestBody, oldRetestBody, job.Trigger)
 			}
 			// Check that the rerun command actually runs the job.
 			if !job.re.MatchString(job.RerunCommand) {
@@ -522,5 +537,36 @@ func TestValidPodNames(t *testing.T) {
 		if !podRe.MatchString(j) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
 		}
+	}
+}
+
+func TestNoDuplicateJobs(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	allJobs := make(map[string]bool)
+	for _, j := range c.AllPresubmits() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in presubmit: %s.", j)
+		}
+		allJobs[j] = true
+	}
+
+	allJobs = make(map[string]bool)
+	for _, j := range c.AllPostsubmits() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in postsubmit: %s.", j)
+		}
+		allJobs[j] = true
+	}
+
+	allJobs = make(map[string]bool)
+	for _, j := range c.AllPeriodics() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in periodic %s.", j)
+		}
+		allJobs[j] = true
 	}
 }

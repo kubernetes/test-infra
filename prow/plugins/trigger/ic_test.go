@@ -50,7 +50,7 @@ func TestHandleIssueComment(t *testing.T) {
 		// Not a PR.
 		{
 			Author:      "t",
-			Body:        "ok to test",
+			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        false,
 			ShouldBuild: false,
@@ -58,7 +58,7 @@ func TestHandleIssueComment(t *testing.T) {
 		// Closed PR.
 		{
 			Author:      "t",
-			Body:        "ok to test",
+			Body:        "/ok-to-test",
 			State:       "closed",
 			IsPR:        true,
 			ShouldBuild: false,
@@ -66,15 +66,15 @@ func TestHandleIssueComment(t *testing.T) {
 		// Comment by a bot.
 		{
 			Author:      "k8s-bot",
-			Body:        "ok to test",
+			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Non-trusted member.
+		// Non-trusted member's ok to test.
 		{
 			Author:      "u",
-			Body:        "ok to test",
+			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
@@ -82,16 +82,16 @@ func TestHandleIssueComment(t *testing.T) {
 		// Non-trusted member after "ok to test".
 		{
 			Author:      "u",
-			Body:        "@k8s-bot test this",
+			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
 			HasOkToTest: true,
 			ShouldBuild: true,
 		},
-		// Trusted member's ok to test.
+		// Trusted member's ok to test
 		{
 			Author:      "t",
-			Body:        "looks great, thanks!\nok to test",
+			Body:        "looks great, thanks!\n/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
@@ -107,7 +107,7 @@ func TestHandleIssueComment(t *testing.T) {
 		// Trusted member's test this.
 		{
 			Author:      "t",
-			Body:        "@k8s-bot test this",
+			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
@@ -115,7 +115,7 @@ func TestHandleIssueComment(t *testing.T) {
 		// Wrong branch.
 		{
 			Author:      "t",
-			Body:        "@k8s-bot test this",
+			Body:        "/test",
 			State:       "open",
 			IsPR:        true,
 			Branch:      "other",
@@ -174,14 +174,14 @@ func TestHandleIssueComment(t *testing.T) {
 					Name:      "job",
 					AlwaysRun: true,
 					Context:   "pull-job",
-					Trigger:   "@k8s-bot test this",
+					Trigger:   `/test all`,
 					Brancher:  config.Brancher{Branches: []string{"master"}},
 				},
 				{
 					Name:      "jib",
 					AlwaysRun: false,
 					Context:   "pull-jib",
-					Trigger:   "@k8s-bot jib test this",
+					Trigger:   `/test jib`,
 				},
 			},
 		})
@@ -192,7 +192,7 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		if tc.HasOkToTest {
 			g.IssueComments[0] = []github.IssueComment{{
-				Body: "ok to test",
+				Body: "/ok-to-test",
 				User: github.User{Login: "t"},
 			}}
 		}

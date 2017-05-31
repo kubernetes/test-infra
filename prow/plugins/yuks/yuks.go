@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	match  = regexp.MustCompile(`(?m)^@k8s-(ci|ro)?bot tell me a joke[,.?!]*\r?$`)
+	match  = regexp.MustCompile(`^/joke\r?$`)
 	simple = regexp.MustCompile(`^[\w?'!., ]+$`)
 )
 

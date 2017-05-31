@@ -6,7 +6,7 @@ presubmits:
   #   name:          Job name.
   #   trigger:       Regexp commenters can say to trigger the job.
   #   always_run:    Whether to run for every PR. Default is false. If this is
-  #                  set then your trigger needs to match "@k8s-bot test this".
+  #                  set then your trigger needs to match "((?m)^@k8s-bot test this,?(\\s+|$)|(?m)^/test all,?(\\s+|$))".
   #   context:       GitHub status context.
   #   rerun_command: How should users trigger just this job, as a string, not a
   #                  regex. For example, if the trigger regex is "(e2e )?test",
@@ -18,36 +18,36 @@ presubmits:
   - name: pull-cadvisor-e2e
     always_run: true
     context: pull-cadvisor-e2e
-    rerun_command: "@k8s-bot pull-cadvisor-e2e test this"
-    trigger: "@k8s-bot (pull-cadvisor-e2e )?test this"
+    rerun_command: "/test pull-cadvisor-e2e"
+    trigger: "((?m)^@k8s-bot (pull-cadvisor-e2e )?test this,?(\\s+|$)|(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$))"
 
   kubernetes/charts:
   - name: pull-charts-e2e
     always_run: true
     context: pull-charts-e2e
-    rerun_command: "@k8s-bot pull-charts-e2e test this"
-    trigger: "@k8s-bot (pull-charts-e2e |e2e )?test this"
+    rerun_command: "/test pull-charts-e2e"
+    trigger: "((?m)^@k8s-bot (pull-charts-e2e )?test this,?(\\s+|$)|(?m)^/test( all| pull-charts-e2e),?(\\s+|$))"
 
   kubernetes/heapster:
   - name: pull-heapster-e2e
     always_run: true
     context: pull-heapster-e2e
-    rerun_command: "@k8s-bot pull-heapster-e2e test this"
-    trigger: "@k8s-bot (pull-heapster-e2e )?test this"
+    rerun_command: "/test pull-heapster-e2e"
+    trigger: "((?m)^@k8s-bot (pull-heapster-e2e )?test this,?(\\s+|$)|(?m)^/test( all| pull-heapster-e2e),?(\\s+|$))"
 
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     always_run: true
     context: pull-kops-e2e-kubernetes-aws
-    rerun_command: "@k8s-bot pull-kops-e2e-kubernetes-aws test this"
-    trigger: "@k8s-bot (pull-kops-e2e-kubernetes-aws |aws e2e )?test this"
+    rerun_command: "/test pull-kops-e2e-kubernetes-aws"
+    trigger: "((?m)^@k8s-bot (pull-kops-e2e-kubernetes-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$))"
 
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel
     context: pull-kubernetes-bazel
     always_run: true
-    rerun_command: "@k8s-bot pull-kubernetes-bazel test this"
-    trigger: "@k8s-bot (pull-kubernetes-bazel |bazel )?test this"
+    rerun_command: "/test pull-kubernetes-bazel"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-bazel )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-bazel),?(\\s+|$))"
     branches:
     - master
     spec:
@@ -85,8 +85,8 @@ presubmits:
     context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-kubeadm-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
+    rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-kubeadm-gce test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$))"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
@@ -130,31 +130,31 @@ presubmits:
 
   - name: pull-kubernetes-cross
     context: pull-kubernetes-cross
-    rerun_command: "@k8s-bot pull-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-kubernetes-cross test this"
-    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    rerun_command: "/test pull-kubernetes-cross"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-cross test this,?(\\s+|$)|(?m)^/test pull-kubernetes-cross,?(\\s+|$))"
+    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
 
   - name: pull-kubernetes-unit
     always_run: true
     context: pull-kubernetes-unit
-    rerun_command: "@k8s-bot pull-kubernetes-unit test this"
-    trigger: "@k8s-bot (pull-kubernetes-unit |unit )?test this"
+    rerun_command: "/test pull-kubernetes-unit"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-unit )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$))"
 
   - name: pull-kubernetes-verify
     always_run: true
     context: pull-kubernetes-verify
-    rerun_command: "@k8s-bot pull-kubernetes-verify test this"
-    trigger: "@k8s-bot (pull-kubernetes-verify |verify )?test this"
+    rerun_command: "/test pull-kubernetes-verify"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-verify )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gce
     context: pull-kubernetes-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce test this"
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gce test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gce,?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gce-bazel
     context: pull-kubernetes-e2e-gce-bazel
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce-bazel test this"
+    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gce-bazel test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gce-bazel,?(\\s+|$))"
     skip_branches:
     - release-1.4
     - release-1.5
@@ -211,35 +211,35 @@ presubmits:
 
   - name: pull-kubernetes-e2e-gce-canary
     context: pull-kubernetes-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce-canary test this"
+    rerun_command: "/test pull-kubernetes-e2e-gce-canary"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gce-canary test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gce-canary,?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gce-etcd3
     always_run: true
     context: pull-kubernetes-e2e-gce-etcd3
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-etcd3 test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-gce-etcd3 |gce etcd3 e2e )?test this"
+    rerun_command: "/test pull-kubernetes-e2e-gce-etcd3"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-e2e-gce-etcd3 )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-e2e-gce-etcd3),?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gke
     context: pull-kubernetes-e2e-gke
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gke test this"
+    rerun_command: "/test pull-kubernetes-e2e-gke"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gke test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gke-gci
     context: pull-kubernetes-e2e-gke-gci
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gke-gci test this"
+    rerun_command: "/test pull-kubernetes-e2e-gke-gci"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gke-gci test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-gce-gci
     context: pull-kubernetes-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-e2e-gce-gci test this"
+    rerun_command: "/test pull-kubernetes-e2e-gce-gci"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-gce-gci test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-gce-gci,?(\\s+|$))"
 
   - name: pull-kubernetes-e2e-kops-aws
     always_run: true
     context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "@k8s-bot pull-kubernetes-e2e-kops-aws test this"
-    trigger: "@k8s-bot (pull-kubernetes-e2e-kops-aws |kops aws e2e )?test this"
+    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-e2e-kops-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$))"
 
   - name: pull-kubernetes-federation-e2e-gce
     skip_branches:
@@ -249,8 +249,8 @@ presubmits:
     always_run: true
     skip_report: true  # TODO(fejta): remove
     context: pull-kubernetes-federation-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce )?test this"
+    rerun_command: "/test pull-kubernetes-federation-e2e-gce"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-federation-e2e-gce )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-federation-e2e-gce),?(\\s+|$))"
 
   - name: pull-kubernetes-federation-e2e-gce-canary
     skip_branches:
@@ -260,8 +260,8 @@ presubmits:
     always_run: false
     skip_report: true
     context: pull-kubernetes-federation-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-kubernetes-federation-e2e-gce-canary test this"
-    trigger: "@k8s-bot (pull-kubernetes-federation-e2e-gce-canary )?test this"
+    rerun_command: "/test pull-kubernetes-federation-e2e-gce-canary"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-federation-e2e-gce-canary test this,?(\\s+|$)|(?m)^/test pull-kubernetes-federation-e2e-gce-canary,?(\\s+|$))"
     spec:
       containers:
       - args:
@@ -310,26 +310,26 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce
     always_run: true
     context: pull-kubernetes-kubemark-e2e-gce
-    rerun_command: "@k8s-bot pull-kubernetes-kubemark-e2e-gce test this"
-    trigger: "@k8s-bot (pull-kubernetes-kubemark-e2e-gce |kubemark e2e )?test this"
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-kubemark-e2e-gce )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$))"
 
   - name: pull-kubernetes-kubemark-e2e-gce-gci
     context: pull-kubernetes-kubemark-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this"
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-gci"
+    trigger: "((?m)^@k8s-bot pull-kubernetes-kubemark-e2e-gce-gci test this,?(\\s+|$)|(?m)^/test pull-kubernetes-kubemark-e2e-gce-gci,?(\\s+|$))"
 
   - name: pull-kubernetes-node-e2e
     always_run: true
     context: pull-kubernetes-node-e2e
-    rerun_command: "@k8s-bot pull-kubernetes-node-e2e test this"
-    trigger: "@k8s-bot (pull-kubernetes-node-e2e |node e2e )?test this"
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "((?m)^@k8s-bot (pull-kubernetes-node-e2e )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$))"
 
   kubernetes-security/kubernetes: # TODO(fejta, spxr): find way to not duplicate these
   - name: pull-security-kubernetes-bazel
     context: pull-security-kubernetes-bazel
     always_run: true
-    rerun_command: "@k8s-bot pull-security-kubernetes-bazel test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-bazel |bazel )?test this"
+    rerun_command: "/test pull-security-kubernetes-bazel"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-bazel )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-bazel),?(\\s+|$))"
     branches:
     - master
     spec:
@@ -367,8 +367,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-kubeadm-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-kubeadm-gce test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$))"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:0.4
@@ -412,31 +412,31 @@ presubmits:
 
   - name: pull-security-kubernetes-cross
     context: pull-security-kubernetes-cross
-    rerun_command: "@k8s-bot pull-security-kubernetes-cross test this"
-    trigger: "@k8s-bot pull-security-kubernetes-cross test this"
-    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    rerun_command: "/test pull-security-kubernetes-cross"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-cross test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-cross,?(\\s+|$))"
+    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
 
   - name: pull-security-kubernetes-unit
     always_run: true
     context: pull-security-kubernetes-unit
-    rerun_command: "@k8s-bot pull-security-kubernetes-unit test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-unit |unit )?test this"
+    rerun_command: "/test pull-security-kubernetes-unit"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-unit )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$))"
 
   - name: pull-security-kubernetes-verify
     always_run: true
     context: pull-security-kubernetes-verify
-    rerun_command: "@k8s-bot pull-security-kubernetes-verify test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-verify |verify )?test this"
+    rerun_command: "/test pull-security-kubernetes-verify"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-verify )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-verify),?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gce
     context: pull-security-kubernetes-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gce"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gce test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gce,?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gce-bazel
     context: pull-security-kubernetes-e2e-gce-bazel
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gce-bazel test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gce-bazel,?(\\s+|$))"
     skip_branches:
     - release-1.4
     - release-1.5
@@ -493,35 +493,35 @@ presubmits:
 
   - name: pull-security-kubernetes-e2e-gce-canary
     context: pull-security-kubernetes-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-canary test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gce-canary test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gce-canary,?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gce-etcd3
     always_run: true
     context: pull-security-kubernetes-e2e-gce-etcd3
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-etcd3 test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-gce-etcd3 |gce etcd3 e2e )?test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-etcd3"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-e2e-gce-etcd3 )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-e2e-gce-etcd3),?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gke
     context: pull-security-kubernetes-e2e-gke
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gke"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gke test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gke,?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gke-gci
     context: pull-security-kubernetes-e2e-gke-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gke-gci test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gke-gci test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-gce-gci
     context: pull-security-kubernetes-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-e2e-gce-gci test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-gci"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-gce-gci test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-gce-gci,?(\\s+|$))"
 
   - name: pull-security-kubernetes-e2e-kops-aws
     always_run: true
     context: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: "@k8s-bot pull-security-kubernetes-e2e-kops-aws test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-e2e-kops-aws |kops aws e2e )?test this"
+    rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-e2e-kops-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$))"
 
   - name: pull-security-kubernetes-federation-e2e-gce
     skip_branches:
@@ -531,8 +531,8 @@ presubmits:
     always_run: true
     skip_report: true  # TODO(fejta): remove
     context: pull-security-kubernetes-federation-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce )?test this"
+    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-federation-e2e-gce )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-federation-e2e-gce),?(\\s+|$))"
 
   - name: pull-security-kubernetes-federation-e2e-gce-canary
     skip_branches:
@@ -542,8 +542,8 @@ presubmits:
     always_run: false
     skip_report: true
     context: pull-security-kubernetes-federation-e2e-gce-canary
-    rerun_command: "@k8s-bot pull-security-kubernetes-federation-e2e-gce-canary test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-federation-e2e-gce-canary )?test this"
+    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce-canary"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-federation-e2e-gce-canary test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-federation-e2e-gce-canary,?(\\s+|$))"
     spec:
       containers:
       - args:
@@ -592,19 +592,19 @@ presubmits:
   - name: pull-security-kubernetes-kubemark-e2e-gce
     always_run: true
     context: pull-security-kubernetes-kubemark-e2e-gce
-    rerun_command: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-kubemark-e2e-gce |kubemark e2e )?test this"
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-kubemark-e2e-gce )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$))"
 
   - name: pull-security-kubernetes-kubemark-e2e-gce-gci
     context: pull-security-kubernetes-kubemark-e2e-gce-gci
-    rerun_command: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
-    trigger: "@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this"
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-gci"
+    trigger: "((?m)^@k8s-bot pull-security-kubernetes-kubemark-e2e-gce-gci test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-gci,?(\\s+|$))"
 
   - name: pull-security-kubernetes-node-e2e
     always_run: true
     context: pull-security-kubernetes-node-e2e
-    rerun_command: "@k8s-bot pull-security-kubernetes-node-e2e test this"
-    trigger: "@k8s-bot (pull-security-kubernetes-node-e2e |node e2e )?test this"
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "((?m)^@k8s-bot (pull-security-kubernetes-node-e2e )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$))"
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
@@ -612,8 +612,8 @@ presubmits:
     branches:
     - master
     always_run: true
-    rerun_command: "@k8s-bot pull-test-infra-bazel test this"
-    trigger: "@k8s-bot (pull-test-infra-bazel |bazel )?test this"
+    rerun_command: "/test pull-test-infra-bazel"
+    trigger: "((?m)^@k8s-bot (pull-test-infra-bazel )?test this,?(\\s+|$)|(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$))"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:0.12
@@ -648,8 +648,8 @@ presubmits:
     context: pull-test-infra-gubernator
     branches:
     - master
-    rerun_command: "@k8s-bot pull-test-infra-gubernator test this"
-    trigger: "@k8s-bot pull-test-infra-gubernator test this"
+    rerun_command: "/test pull-test-infra-gubernator"
+    trigger: "((?m)^@k8s-bot pull-test-infra-gubernator test this,?(\\s+|$)|(?m)^/test pull-test-infra-gubernator,?(\\s+|$))"
     run_if_changed: 'gubernator'
     spec:
       containers:
@@ -678,8 +678,8 @@ presubmits:
     context: pull-test-infra-verify-bazel
     branches:
     - master
-    rerun_command: "@k8s-bot pull-test-infra-verify-bazel test this"
-    trigger: "@k8s-bot (pull-test-infra-verify-bazel |verify )?test this"
+    rerun_command: "/test pull-test-infra-verify-bazel"
+    trigger: "((?m)^@k8s-bot (pull-test-infra-verify-bazel )?test this,?(\\s+|$)|(?m)^/test( all| pull-test-infra-verify-bazel),?(\\s+|$))"
     always_run: true
     spec:
       containers:
@@ -708,7 +708,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-
 
 postsubmits:
   kubernetes/kubernetes:

@@ -69,6 +69,7 @@ func TestTrusted(t *testing.T) {
 			},
 			Trusted: false,
 		},
+		/* Old syntax */
 		// Non org member, ok to test comment by org member.
 		{
 			PR: github.PullRequest{
@@ -82,6 +83,19 @@ func TestTrusted(t *testing.T) {
 			},
 			Trusted: true,
 		},
+		// Non org member, ok to test comment with carriage return by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "@k8s-bot ok to test\r",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: true,
+		},
 		// Non org member, multiline ok to test comment by org member.
 		{
 			PR: github.PullRequest{
@@ -89,11 +103,24 @@ func TestTrusted(t *testing.T) {
 			},
 			Comments: []github.IssueComment{
 				{
-					Body: "ok to test\r\nthanks",
+					Body: "hello\nok to test\r\nplease",
 					User: github.User{Login: "t1"},
 				},
 			},
 			Trusted: true,
+		},
+		// Non org member, ok to test with additional comment before by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "please, @k8s-bot ok to test",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: false,
 		},
 		// Non org member, ok to test comment by non-org member.
 		{
@@ -129,6 +156,98 @@ func TestTrusted(t *testing.T) {
 			Comments: []github.IssueComment{
 				{
 					Body: "ok to test",
+					User: github.User{Login: "u"},
+				},
+			},
+			Trusted: false,
+		},
+		/* New syntax */
+		// Non org member, ok to test comment by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "/ok-to-test",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: true,
+		},
+		// Non org member, ok to test comment with carriage return by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "/ok-to-test\r",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: true,
+		},
+		// Non org member, multiline ok to test comment by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "hello\n/ok-to-test\r\nplease",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: true,
+		},
+		// Non org member, ok to test with additional comment before by org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "please, /ok-to-test",
+					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: false,
+		},
+		// Non org member, ok to test comment by non-org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "/ok-to-test",
+					User: github.User{Login: "u2"},
+				},
+			},
+			Trusted: false,
+		},
+		// Non org member, ok to test comment by bot.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "/ok-to-test",
+					User: github.User{Login: "k8s-bot"},
+				},
+			},
+			Trusted: false,
+		},
+		// Non org member, ok to test comment by author.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+			Comments: []github.IssueComment{
+				{
+					Body: "/ok-to-test",
 					User: github.User{Login: "u"},
 				},
 			},
