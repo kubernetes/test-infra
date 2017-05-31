@@ -381,9 +381,9 @@ def main(args):
         runner_args.append('--charts')
     if args.kubemark:
         runner_args.append('--kubemark')
-    if args.up:
+    if args.up == 'true':
         runner_args.append('--up')
-    if args.down:
+    if args.down == 'true':
         runner_args.append('--down')
     if args.federation:
         runner_args.append('--federation')

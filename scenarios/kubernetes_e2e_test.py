@@ -129,6 +129,17 @@ class LocalTest(ScenarioTest):
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
 
+    def test_updown(self):
+        """Make sure local mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--up=false'])
+        self.assertEqual(args.mode, 'local')
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+
+        lastcall = self.callstack[-1]
+        self.assertNotIn('--up', lastcall)
+        self.assertIn('--down', lastcall)
+
     def test_kubeadm_ci(self):
         """Make sure kubeadm ci mode is fine overall."""
         args = self.parser.parse_args(['--mode=local', '--kubeadm=ci'])
