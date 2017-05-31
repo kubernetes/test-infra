@@ -337,42 +337,6 @@
         trigger-job: 'ci-kubernetes-build'
 
     # gce-1.5
-    - kubernetes-e2e-gce-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-release-1.5
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
-    - kubernetes-e2e-gce-etcd3-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-etcd3-release-1.5
-        jenkins-timeout: 170
-        timeout: 70
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
-    - kubernetes-e2e-gce-reboot-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-reboot-release-1.5
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
-    - kubernetes-e2e-gce-slow-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-slow-release-1.5
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
-    - kubernetes-e2e-gce-serial-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-serial-release-1.5
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
-    - kubernetes-e2e-gce-alpha-features-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-alpha-features-release-1.5
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-gce-scalability-release-1.5:
         job-name: ci-kubernetes-e2e-gce-scalability-release-1.5
         jenkins-timeout: 240
