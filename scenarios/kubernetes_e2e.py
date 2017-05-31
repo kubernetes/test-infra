@@ -391,6 +391,8 @@ def main(args):
         runner_args.append('--deployment=%s' % args.deployment)
     if args.save:
         runner_args.append('--save=%s' % args.save)
+    if args.publish:
+        runner_args.append('--publish=%s' % args.publish)
 
     cluster = args.cluster or 'e2e-gce-%s-%s' % (
         os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
@@ -474,7 +476,7 @@ def create_parser():
         default=[],
         nargs='*',
         help='Paths that should be mounted within the docker container in the form local:remote')
-    # Assume we're upping, testing, and downing a cluster by default
+    parser.add_argument('--publish', help='Upload binaries to gs://path if set')
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
