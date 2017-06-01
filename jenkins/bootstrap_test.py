@@ -1434,6 +1434,7 @@ class JobTest(unittest.TestCase):
         'config.json',  # For --json mode
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
+        'move_timeout.py', # Tool to migrate timeouts to config.json
     ]
 
     yaml_suffix = {
@@ -1845,8 +1846,15 @@ class JobTest(unittest.TestCase):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
         default_timeout = int(re.search(r'\$\{DOCKER_TIMEOUT:-(\d+)m', open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()).group(1))
         bad_jobs = set()
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            config = json.loads(fp.read())
 
         for job, job_path in self.jobs:
+            job_name = job.rsplit('.', 1)[0]
+            modern = config.get(job_name,{}).get('scenario') in [
+                'kubernetes_e2e',
+                'kubernetes_kops_aws',
+            ]
             valids = [
                 'kubernetes-e2e-',
                 'kubernetes-kubemark-',
@@ -1859,34 +1867,63 @@ class JobTest(unittest.TestCase):
             found_timeout = False
             with open(job_path) as fp:
                 lines = list(l for l in fp if not l.startswith('#'))
-            docker_timeout = default_timeout - 15
-            for line in lines:
+            container_timeout = default_timeout
+            kubetest_timeout = None
+            for line in lines:  # Validate old pattern no longer used
                 if line.startswith('### Reporting'):
                     bad_jobs.add(job)
                 if '{rc}' in line:
                     bad_jobs.add(job)
-                if line.startswith('export DOCKER_TIMEOUT='):
-                    docker_timeout = int(re.match(
-                        r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
-                    docker_timeout -= 15
-
-                if 'KUBEKINS_TIMEOUT=' not in line:
-                    continue
-                found_timeout = True
-                if job.endswith('.sh'):
+            if job.endswith('.sh'):  # --json=False type jobs, TODO(fejta): deprecate
+                for line in lines:
+                    if line.startswith('export DOCKER_TIMEOUT='):
+                        container_timeout = int(re.match(
+                            r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
+                    if 'KUBEKINS_TIMEOUT=' not in line:
+                        continue
                     mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
-                else:
+                    self.assertTrue(mat, 'Bad KUBEKINS_TIMEOUT in %s' % job)
+                    kubetest_timeout = int(mat.group(1))
+            elif not modern:
+                realjob = self.GetRealBootstrapJob(job)
+                self.assertTrue(realjob)
+                self.assertIn('timeout', realjob, job)
+                container_timeout = int(realjob['timeout'])
+                for line in lines:
+                    if 'DOCKER_TIMEOUT=' in line:
+                        self.fail('Set docker timeout in bootstrap yaml: %s' % job)
+                    if 'KUBEKINS_TIMEOUT=' not in line:
+                        continue
                     mat = re.match(r'KUBEKINS_TIMEOUT=(\d+)m.*', line)
-                    realjob = self.GetRealBootstrapJob(job)
-                    self.assertTrue(realjob)
-                    self.assertIn('timeout', realjob, job)
-                    docker_timeout = realjob['timeout']
-                    self.assertGreater(docker_timeout, 0)
-                self.assertTrue(mat, line)
-                if int(mat.group(1)) > docker_timeout:
-                    bad_jobs.add((job, mat.group(1), docker_timeout))
-            self.assertTrue(found_timeout, job)
-        self.assertFalse(bad_jobs)
+                    self.assertTrue(mat, line)
+                    kubetest_timeout = int(mat.group(1))
+            else:
+                realjob = self.GetRealBootstrapJob(job)
+                self.assertTrue(realjob)
+                self.assertIn('timeout', realjob, job)
+                container_timeout = int(realjob['timeout'])
+                for line in lines:
+                    if 'DOCKER_TIMEOUT=' in line:
+                        self.fail('Set container timeout in prow and/or bootstrap yaml: %s' % job)
+                    if 'KUBEKINS_TIMEOUT=' in line:
+                        self.fail('Set kubetest --timeout in config.json, not KUBEKINS_TIMEOUT: %s' % job)
+                for arg in config[job_name]['args']:
+                    if arg == '--timeout=None':
+                        bad_jobs.add(('Must specify a timeout', job, arg))
+                    mat = re.match(r'--timeout=(\d+)m', arg)
+                    if not mat:
+                        continue
+                    kubetest_timeout = int(mat.group(1))
+            if kubetest_timeout is None:
+                self.fail('Missing timeout: %s' % job)
+            if kubetest_timeout > container_timeout:
+                bad_jobs.add((job, kubetest_timeout, container_timeout))
+            elif kubetest_timeout + 20 > container_timeout:
+                bad_jobs.add(('insufficient kubetest leeway', job, kubetest_timeout, container_timeout))
+
+
+        if bad_jobs:
+            self.fail('\n'.join(str(s) for s in bad_jobs))
 
     def testOnlyJobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
@@ -2006,17 +2043,18 @@ class JobTest(unittest.TestCase):
                 # to classify from E2E_UPGRADE,
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
                 black = [
+                    'CHARTS_TEST=',
                     'E2E_DOWN=',
                     'E2E_NAME=',
                     'E2E_PUBLISH_PATH=',
                     'E2E_TEST=',
                     'E2E_UP=',
-                    'USE_KUBEMARK=',
-                    'CHARTS_TEST=',
-                    'PERF_TESTS=',
-                    'FEDERATION_UP=',
                     'FEDERATION_DOWN=',
-                    'JENKINS_FEDERATION_PREFIX='
+                    'FEDERATION_UP=',
+                    'JENKINS_FEDERATION_PREFIX=',
+                    'KUBEKINS_TIMEOUT=',
+                    'PERF_TESTS=',
+                    'USE_KUBEMARK=',
                 ]
                 for b in black:
                     if b in line:

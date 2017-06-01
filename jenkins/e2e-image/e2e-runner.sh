@@ -118,8 +118,4 @@ if [[ "${E2E_UPGRADE_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--upgrade_args="${GINKGO_UPGRADE_TEST_ARGS}")
 fi
 
-if [[ -n "${KUBEKINS_TIMEOUT:-}" ]]; then
-  e2e_go_args+=(--timeout="${KUBEKINS_TIMEOUT}")
-fi
-
 kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"

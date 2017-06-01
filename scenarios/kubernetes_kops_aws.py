@@ -65,7 +65,7 @@ def kubekins(tag):
 
 def main(args):
     """Set up env, start kops-runner, handle termination. """
-    # pylint: disable=too-many-locals,too-many-branches
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 
     job_name = (os.environ.get('JOB_NAME') or
                 os.environ.get('USER') or
@@ -200,6 +200,8 @@ def main(args):
 
     if args.kops_args:
         cmd.append('--kops-args=%s' % args.kops_args)
+    if args.timeout:
+        cmd.append('--timeout=%s' % args.timeout)
 
     setup_signal_handlers(container)
 
@@ -269,6 +271,9 @@ if __name__ == '__main__':
         help='Additional space-separated args to pass unvalidated to \'kops '
         'create cluster\', e.g. \'--kops-args="--dns private --node-size '
         't2.micro"\'')
+    PARSER.add_argument(
+        '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
+
     ARGS = PARSER.parse_args()
 
     if not ARGS.cluster:
