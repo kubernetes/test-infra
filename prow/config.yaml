@@ -169,6 +169,9 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -178,7 +181,10 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170530-7cb6f5b5
+        # Make Bazel use shared cache for its root
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170601-727dd8f5
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -444,6 +450,9 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -453,7 +462,10 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170530-7cb6f5b5
+        # Make Bazel use shared cache for its root
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170601-727dd8f5
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
