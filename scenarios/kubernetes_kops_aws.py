@@ -280,7 +280,7 @@ if __name__ == '__main__':
         raise ValueError('--cluster must be provided')
 
     # If aws keys are missing, try to fetch from HOME dir
-    if not (ARGS.aws_ssh or ARGS.aws_pub or ARGS.aws_cred):
+    if not ARGS.aws_ssh or not ARGS.aws_pub or not ARGS.aws_cred:
         HOME = os.environ.get('HOME')
         if not HOME:
             raise ValueError('HOME dir not set!')
