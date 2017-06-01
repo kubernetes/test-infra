@@ -213,8 +213,12 @@ func dashLink(r Report) string {
 // createComment takes a report and a list of entries generated with
 // createEntry and returns a nicely formatted comment.
 func createComment(r Report, entries []string) string {
+	plural := ""
+	if len(entries) > 1 {
+		plural = "s"
+	}
 	lines := []string{
-		fmt.Sprintf("@%s: The following test(s) **failed**:", r.Author),
+		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun them all:", r.Author, plural),
 		"",
 		"Test name | Commit | Details | Rerun command",
 		"--- | --- | --- | ---",

@@ -32,19 +32,20 @@ type fkc struct {
 }
 
 func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
-	c.started = append(c.started, pj.Metadata.Name)
+	c.started = append(c.started, pj.Spec.Context)
 	return pj, nil
 }
 
 func TestHandleIssueComment(t *testing.T) {
 	var testcases = []struct {
-		Author      string
-		Body        string
-		State       string
-		IsPR        bool
-		Branch      string
-		ShouldBuild bool
-		HasOkToTest bool
+		Author        string
+		Body          string
+		State         string
+		IsPR          bool
+		Branch        string
+		ShouldBuild   bool
+		HasOkToTest   bool
+		StartsExactly string
 	}{
 		// Not a PR.
 		{
@@ -120,6 +121,15 @@ func TestHandleIssueComment(t *testing.T) {
 			Branch:      "other",
 			ShouldBuild: false,
 		},
+		// Retest with one running and one failed
+		{
+			Author:        "t",
+			Body:          "/retest",
+			State:         "open",
+			IsPR:          true,
+			ShouldBuild:   true,
+			StartsExactly: "pull-jib",
+		},
 	}
 	for _, tc := range testcases {
 		if tc.Branch == "" {
@@ -131,11 +141,22 @@ func TestHandleIssueComment(t *testing.T) {
 			PullRequests: map[int]*github.PullRequest{
 				0: {
 					Number: 0,
+					Head: github.PullRequestBranch{
+						SHA: "cafe",
+					},
 					Base: github.PullRequestBranch{
 						Ref: tc.Branch,
 						Repo: github.Repo{
 							Name: "repo",
 						},
+					},
+				},
+			},
+			CombinedStatuses: map[string]*github.CombinedStatus{
+				"cafe": &github.CombinedStatus{
+					Statuses: []github.Status{
+						{State: "pending", Context: "pull-job"},
+						{State: "failure", Context: "pull-jib"},
 					},
 				},
 			},
@@ -152,9 +173,15 @@ func TestHandleIssueComment(t *testing.T) {
 				{
 					Name:      "job",
 					AlwaysRun: true,
-					Context:   "job job",
+					Context:   "pull-job",
 					Trigger:   "@k8s-bot test this",
 					Brancher:  config.Brancher{Branches: []string{"master"}},
+				},
+				{
+					Name:      "jib",
+					AlwaysRun: false,
+					Context:   "pull-jib",
+					Trigger:   "@k8s-bot jib test this",
 				},
 			},
 		})
@@ -192,6 +219,9 @@ func TestHandleIssueComment(t *testing.T) {
 			t.Errorf("Built but should not have: %+v", tc)
 		} else if len(kc.started) == 0 && tc.ShouldBuild {
 			t.Errorf("Not built but should have: %+v", tc)
+		}
+		if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
+			t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, kc.started)
 		}
 	}
 }

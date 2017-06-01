@@ -222,6 +222,93 @@ func TestCommentBodyMatches(t *testing.T) {
 	}
 }
 
+func TestRetestPresubmits(t *testing.T) {
+	var testcases = []struct {
+		skipContexts     map[string]bool
+		runContexts      map[string]bool
+		expectedContexts []string
+	}{
+		{
+			map[string]bool{},
+			map[string]bool{},
+			[]string{"gce", "unit"},
+		},
+		{
+			map[string]bool{"gce": true},
+			map[string]bool{},
+			[]string{"unit"},
+		},
+		{
+			map[string]bool{},
+			map[string]bool{"federation": true, "nonexistent": true},
+			[]string{"gce", "unit", "federation"},
+		},
+		{
+			map[string]bool{},
+			map[string]bool{"gke": true},
+			[]string{"gce", "unit", "gke"},
+		},
+		{
+			map[string]bool{"gce": true},
+			map[string]bool{"gce": true}, // should never happen
+			[]string{"unit"},
+		},
+	}
+	c := &Config{
+		Presubmits: map[string][]Presubmit{
+			"org/repo": {
+				{
+					Context:   "gce",
+					AlwaysRun: true,
+				},
+				{
+					Context:   "unit",
+					AlwaysRun: true,
+				},
+				{
+					Context:   "gke",
+					AlwaysRun: false,
+				},
+				{
+					Context:   "federation",
+					AlwaysRun: false,
+				},
+			},
+			"org/repo2": {
+				{
+					Context:   "shouldneverrun",
+					AlwaysRun: true,
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		actualContexts := c.RetestPresubmits("org/repo", tc.skipContexts, tc.runContexts)
+		match := true
+		if len(actualContexts) != len(tc.expectedContexts) {
+			match = false
+		} else {
+			for _, actualJob := range actualContexts {
+				found := false
+				for _, expectedContext := range tc.expectedContexts {
+					if expectedContext == actualJob.Context {
+						found = true
+						break
+					}
+				}
+				if !found {
+					match = false
+					break
+				}
+			}
+		}
+		if !match {
+			t.Errorf("Wrong contexts for skip %v run %v. Got %v, expected %v.", tc.runContexts, tc.skipContexts, actualContexts, tc.expectedContexts)
+		}
+	}
+
+}
+
 func TestConditionalPresubmits(t *testing.T) {
 	presubmits := []Presubmit{
 		{
