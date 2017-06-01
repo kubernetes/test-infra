@@ -124,8 +124,8 @@ func (f *TriageFiler) FileIssues() error {
 
 // AddFlags will add any requested flags to the cobra `cmd`.
 func (f *TriageFiler) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&f.topClustersCount, "triage-sync-count", 3, "The number of clusters to sync issues for on github.")
-	cmd.Flags().IntVar(&f.windowDays, "triage-window-days", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
+	cmd.Flags().IntVar(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
+	cmd.Flags().IntVar(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
 }
 
 // Munge is unused by the TriageFiler.
@@ -476,25 +476,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 	for i, test := range c.topTestsFailed(len(c.Tests)) {
 		testNames[i] = test.Name
 	}
-	assignees := c.filer.creator.TestsOwners(testNames)
-	sigs := c.filer.creator.TestsSIGs(testNames)
-	if len(assignees) > 0 || len(sigs) > 0 {
-		fmt.Fprint(&buf, "\n<details><summary>Rationale for assignments:</summary>\n")
-		fmt.Fprint(&buf, "\n| Assignee or SIG area | Owns test(s) |\n| --- | --- |\n")
-		for assignee, tests := range assignees {
-			if len(tests) > 3 {
-				tests = tests[0:3]
-			}
-			fmt.Fprintf(&buf, "| %s | %s |\n", assignee, strings.Join(tests, "; "))
-		}
-		for sig, tests := range sigs {
-			if len(tests) > 3 {
-				tests = tests[0:3]
-			}
-			fmt.Fprintf(&buf, "| sig/%s | %s |\n", sig, strings.Join(tests, "; "))
-		}
-		fmt.Fprint(&buf, "\n</details><br>\n")
-	}
+	fmt.Fprint(&buf, c.filer.creator.ExplainTestAssignments(testNames))
 
 	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Id)
 

@@ -56,8 +56,9 @@ spec:
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
         - --github-key=$(GITHUB_KEY)
-        - --triage-window-days=$(TRIAGE_WINDOW_DAYS)
-        - --triage-sync-count=$(TRIAGE_SYNC_COUNT)
+        - --triage-window=$(TRIAGE_WINDOW)
+        - --triage-count=$(TRIAGE_COUNT)
+        - --flakyjob-count=$(FLAKYJOB_COUNT)
         image: gcr.io/k8s-testimages/submit-queue:2017-05-02-90fe8836
         env:
           - name: HTTP_CACHE_DIR
@@ -190,21 +191,26 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: gitrepo.enable-md-yaml
+          - name: FLAKYJOB_COUNT
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: flakyjob.count
           - name: TEST_OWNERS_CSV
             valueFrom:
               configMapKeyRef:
                 name: @@-sq-config
                 key: issue-creator.test-owners-csv
-          - name: TRIAGE_WINDOW_DAYS
+          - name: TRIAGE_WINDOW
             valueFrom:
               configMapKeyRef:
                 name: @@-sq-config
-                key: triage-filer.window-days
-          - name: TRIAGE_SYNC_COUNT
+                key: triage.window
+          - name: TRIAGE_COUNT
             valueFrom:
               configMapKeyRef:
                 name: @@-sq-config
-                key: triage-filer.sync-count
+                key: triage.count
           - name: NUMBER_OF_OLD_TEST_RESULTS
             valueFrom:
               configMapKeyRef:
