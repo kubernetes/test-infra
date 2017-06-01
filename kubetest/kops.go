@@ -176,8 +176,8 @@ func (k kops) SetupKubecfg() error {
 
 func (k kops) Down() error {
 	// We do a "kops get" first so the exit status of "kops delete" is
-	// more sensical in the case of a non-existant cluster. ("kops
-	// delete" will exit with status 1 on a non-existant cluster)
+	// more sensical in the case of a non-existent cluster. ("kops
+	// delete" will exit with status 1 on a non-existent cluster)
 	err := finishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
 	if err != nil {
 		// This is expected if the cluster doesn't exist.
