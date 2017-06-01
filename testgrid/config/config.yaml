@@ -965,6 +965,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
+- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
 # Add New Testgroups Here
 
 #
@@ -2411,3 +2429,24 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.7
   - name: federation-build-1.7
     test_group_name: ci-kubernetes-federation-build-1.7
+
+- name: cos-image-validation
+  dashboard_tab:
+  - name: cos_beta-k8s-new
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-new
+  - name: cos_beta-k8s-current
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-current
+  - name: cos_beta-k8s-dev
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev
+  - name: cos_beta-k8s-new-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
+  - name: cos_beta-k8s-current-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
+  - name: cos_beta-k8s-dev-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
+  - name: cos_beta-k8s-new-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
+  - name: cos_beta-k8s-current-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
+  - name: cos_beta-k8s-dev-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
