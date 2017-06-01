@@ -473,49 +473,6 @@
         timeout: 70
         trigger-job: 'ci-kubernetes-build-1.5'
 
-    - kubernetes-e2e-gce-gci-qa-master:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-master
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m60:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m60
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m59:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m59
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m58:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m58
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m57:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m57
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-m56:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-m56
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-cos-docker-validation:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-cos-docker-validation
-        jenkins-timeout: 170
-        timeout: 70
-        trigger-job: ''
-
     - kubernetes-e2e-gce-gci-ci-serial-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-serial-master
@@ -535,49 +492,6 @@
         timeout: 320
         trigger-job: 'ci-kubernetes-build-1.5'
 
-    - kubernetes-e2e-gce-gci-qa-serial-master:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m60:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m59:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m59
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m58:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m58
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m57:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m57
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-serial-m56:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-serial-m56
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-cos-docker-validation-serial:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-cos-docker-validation-serial
-        jenkins-timeout: 420
-        timeout: 320
-        trigger-job: ''
-
     - kubernetes-e2e-gce-gci-ci-slow-master:
         frequency: 'H/5 * * * *' # At least every 30m
         job-name: ci-kubernetes-e2e-gce-gci-ci-slow-master
@@ -596,50 +510,8 @@
         jenkins-timeout: 270
         timeout: 170
         trigger-job: 'ci-kubernetes-build-1.5'
-
-    - kubernetes-e2e-gce-gci-qa-slow-master:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-master
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m60:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m59:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m59
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m58:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m58
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m57:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m57
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-gce-gci-qa-slow-m56:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-gce-gci-qa-slow-m56
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-cos-docker-validation-slow:
-        frequency: 'H/5 * * * *' # At least every 30m
-        job-name: ci-kubernetes-e2e-cos-docker-validation-slow
-        jenkins-timeout: 270
-        timeout: 170
-        trigger-job: ''
     # END GCE-GCI
+
 
 
     # START GKE
