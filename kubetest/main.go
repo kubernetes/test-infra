@@ -335,7 +335,7 @@ func findVersion() string {
 	if _, err := os.Stat("hack/lib/version.sh"); err == nil {
 		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
 		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
-		if b, err := output(exec.Command("bash", "-c", gross)); err == nil {
+		if b, _, err := output(exec.Command("bash", "-c", gross)); err == nil {
 			return strings.TrimSpace(string(b))
 		} else {
 			log.Printf("Failed to get_version_vars: %v", err)
@@ -427,7 +427,7 @@ func prepareGcp(kubernetesProvider string) error {
 	}
 
 	log.Printf("Checking presence of public key in %s", p)
-	if o, err := output(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
+	if o, _, err := output(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
 		return err
 	} else if b, err := ioutil.ReadFile(pk); err != nil {
 		return err

@@ -252,7 +252,7 @@ func run(deploy deployer, o options) error {
 }
 
 func listNodes(dump string) error {
-	b, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+	b, _, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 		return err
 	}
 
-	stdout, cerr := output(exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap))
+	stdout, _, cerr := output(exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap))
 	if err := ioutil.WriteFile(dp, stdout, mode); err != nil {
 		return err
 	}
@@ -320,7 +320,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 
 func ListResources() ([]byte, error) {
 	log.Printf("Listing resources...")
-	stdout, err := output(exec.Command("./cluster/gce/list-resources.sh"))
+	stdout, _, err := output(exec.Command("./cluster/gce/list-resources.sh"))
 	if err != nil {
 		return stdout, fmt.Errorf("Failed to list resources (%s):\n%s", err, string(stdout))
 	}
@@ -331,14 +331,14 @@ func clusterSize(deploy deployer) (int, error) {
 	if err := deploy.SetupKubecfg(); err != nil {
 		return -1, err
 	}
-	o, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))
+	stdout, stderr, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))
 	if err != nil {
-		log.Printf("kubectl get nodes failed: %s\n%s", WrapError(err).Error(), string(o))
+		log.Printf("kubectl get nodes failed: %s\n%s\n%s", WrapError(err).Error(), string(stdout), string(stderr))
 		return -1, err
 	}
-	stdout := strings.TrimSpace(string(o))
-	log.Printf("Cluster nodes:\n%s", stdout)
-	return len(strings.Split(stdout, "\n")), nil
+	nodes := strings.TrimSpace(string(stdout))
+	log.Printf("Cluster nodes:\n%s", nodes)
+	return len(strings.Split(nodes, "\n")), nil
 }
 
 // commandError will provide stderr output (if available) from structured
