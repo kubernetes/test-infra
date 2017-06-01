@@ -82,6 +82,13 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
+    if not args.aws_ssh:
+        raise ValueError("aws_ssh is required")
+    if not args.aws_pub:
+        raise ValueError("aws_pub is required")
+    if not args.aws_cred:
+        raise ValueError("aws_cred is required")
+
     for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
         if not os.path.isfile(os.path.expandvars(path)):
             raise IOError(path, os.path.expandvars(path))
