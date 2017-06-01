@@ -635,6 +635,7 @@ CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
 GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
 GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
+JENKINS_HOME_ENV = 'JENKINS_HOME'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
@@ -735,10 +736,11 @@ def setup_magic_environment(job):
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
     os.environ[WORKSPACE_ENV] = cwd
-    # TODO(fejta): Previously dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
-    #              probably to minimize leakage between jobs.
-    #              Consider accomplishing this another way.
-    os.environ[HOME_ENV] = cwd
+    # By default, Jenkins sets HOME to JENKINS_HOME, which is shared by all
+    # jobs. To avoid collisions, set it to the cwd instead, but only when
+    # running on Jenkins.
+    if os.environ.get(HOME_ENV, None) == os.environ.get(JENKINS_HOME_ENV, None):
+        os.environ[HOME_ENV] = cwd
     # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
     #              value. Consider making everything below here agnostic to the
     #              job name.
