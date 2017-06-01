@@ -18,17 +18,18 @@
 FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170418-f54c7fbd
 MAINTAINER  Erick Fejta <fejta@google.com>
 
-# Since golang is based on debian, we need to use jdk1.7, rather than bazel's default jdk1.8.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash-completion \
-    openjdk-7-jdk \
+    pkg-config \
+    zip \
+    unzip \
+    xz-utils \
     zlib1g-dev \
     && apt-get clean
 
-ENV BAZEL_VERSION 0.4.5
-RUN DEB="bazel_${BAZEL_VERSION}-jdk7-linux-x86_64.deb"; \
-    wget "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${DEB}" && \
-    dpkg -i "${DEB}" && rm "${DEB}"
+ENV BAZEL_VERSION 0.5.0
+RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
+    wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
+    chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 # Defaults of all e2e runs
 ENV E2E_UP=true \
