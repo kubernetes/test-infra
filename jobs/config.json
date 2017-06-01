@@ -3214,7 +3214,16 @@
     "sigOwners": [
       "UNKNOWN"
     ]
-  }, 
+  },
+  "ci-kubernetes-e2e-kops-gce": {
+    "scenario": "kubernetes_e2e",
+    "args": [
+      "--entrypoint=kops-e2e-runner.sh",
+      "--cluster=e2e-kops-gce.test-aws.k8s.io",
+      "--env-file=platforms/kops_gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-kops-gce.env"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce": {
     "args": [
       "--cluster=", 
