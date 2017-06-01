@@ -78,7 +78,7 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (make|quick|bazel) stategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) stategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
