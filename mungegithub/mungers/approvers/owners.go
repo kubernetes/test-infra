@@ -143,7 +143,7 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 	ap := NewApprovers(o)
 	for approver := range approvers {
-		ap.AddApprover(approver, "")
+		ap.AddApprover(approver, "", false)
 	}
 	return ap.UnapprovedFiles()
 }
@@ -174,7 +174,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 			glog.Errorf("Couldn't find/suggest approvers for each files. Unapproved: %s", ap.UnapprovedFiles())
 			return ap.GetCurrentApproversSet()
 		}
-		ap.AddApprover(newApprover, "")
+		ap.AddApprover(newApprover, "", false)
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -224,6 +224,7 @@ type Approval struct {
 	Login     string // Login of the approver
 	How       string // How did the approver approved
 	Reference string // Where did the approver approved
+	NoIssue   bool   // Approval also accepts missing associated issue
 }
 
 // String creates a link for the approval. Use `Login` if you just want the name.
@@ -237,9 +238,10 @@ func (a Approval) String() string {
 }
 
 type Approvers struct {
-	owners    Owners
-	approvers map[string]Approval
-	assignees sets.String
+	owners          Owners
+	approvers       map[string]Approval
+	assignees       sets.String
+	AssociatedIssue int
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -268,21 +270,40 @@ func NewApprovers(owners Owners) Approvers {
 	}
 }
 
+// shouldNotOverrideApproval decides whether or not we should keep the
+// original approval:
+// If someone approves a PR multiple times, we only want to keep the
+// latest approval, unless a previous approval was "no-issue", and the
+// most recent isn't.
+func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool {
+	approval, alreadyApproved := ap.approvers[login]
+
+	return alreadyApproved && approval.NoIssue && !noIssue
+}
+
 // AddLGTMer adds a new LGTM Approver
-func (ap *Approvers) AddLGTMer(login, reference string) {
+func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
+	if ap.shouldNotOverrideApproval(login, noIssue) {
+		return
+	}
 	ap.approvers[login] = Approval{
 		Login:     login,
 		How:       "LGTM",
 		Reference: reference,
+		NoIssue:   noIssue,
 	}
 }
 
 // AddApprover adds a new Approver
-func (ap *Approvers) AddApprover(login, reference string) {
+func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
+	if ap.shouldNotOverrideApproval(login, noIssue) {
+		return
+	}
 	ap.approvers[login] = Approval{
 		Login:     login,
 		How:       "Approved",
 		Reference: reference,
+		NoIssue:   noIssue,
 	}
 }
 
@@ -292,6 +313,7 @@ func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
 		Login:     login,
 		How:       "Author self-approved",
 		Reference: reference,
+		NoIssue:   false,
 	}
 }
 
@@ -316,6 +338,18 @@ func (ap Approvers) GetCurrentApproversSet() sets.String {
 	return currentApprovers
 }
 
+// GetNoIssueApproversSet returns the set of "no-issue" approvers (login
+// only)
+func (ap Approvers) GetNoIssueApproversSet() sets.String {
+	approvers := sets.NewString()
+
+	for approver := range ap.NoIssueApprovers() {
+		approvers.Insert(approver)
+	}
+
+	return approvers
+}
+
 // GetFilesApprovers returns a map from files -> list of current approvers.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
@@ -334,6 +368,28 @@ func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	}
 
 	return filesApprovers
+}
+
+// NoIssueApprovers returns the list of people who have "no-issue"
+// approved the pull-request. They are included in the list iff they can
+// approve one of the files.
+func (ap Approvers) NoIssueApprovers() map[string]Approval {
+	nia := map[string]Approval{}
+	reverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
+
+	for _, approver := range ap.approvers {
+		if !approver.NoIssue {
+			continue
+		}
+
+		if len(reverseMap[approver.Login]) == 0 {
+			continue
+		}
+
+		nia[approver.Login] = approver
+	}
+
+	return nia
 }
 
 // UnapprovedFiles returns owners files that still need approval
@@ -398,11 +454,28 @@ func (ap Approvers) IsApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
 }
 
+// IsApprovedWithIssue verifies that the PR is approved, and has an
+// associated issue or a valid "no-issue" approver.
+func (ap Approvers) IsApprovedWithIssue() bool {
+	return ap.IsApproved() && (ap.AssociatedIssue != 0 || len(ap.NoIssueApprovers()) != 0)
+}
+
 // ListApprovals returns the list of approvals
 func (ap Approvers) ListApprovals() []Approval {
 	approvals := []Approval{}
 
 	for _, approver := range ap.GetCurrentApproversSet().List() {
+		approvals = append(approvals, ap.approvers[approver])
+	}
+
+	return approvals
+}
+
+// ListNoIssueApprovals returns the list of "no-issue" approvals
+func (ap Approvers) ListNoIssueApprovals() []Approval {
+	approvals := []Approval{}
+
+	for _, approver := range ap.GetNoIssueApproversSet().List() {
 		approvals = append(approvals, ap.approvers[approver])
 	}
 
@@ -469,6 +542,14 @@ We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}
 Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
+{{if .ap.AssociatedIssue -}}
+Associated issue: *{{.ap.AssociatedIssue}}*
+{{- else if len .ap.NoIssueApprovers -}}
+Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+{{- else -}}
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
+{{- end}}
+
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details {{if not .ap.IsApproved}}open{{end}}>
@@ -481,7 +562,7 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 
 	*message += getGubernatorMetadata(ap.GetCCs())
 
-	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
+	title := GenerateTemplateOrFail("This PR is **{{if not .IsApprovedWithIssue}}NOT {{end}}APPROVED**", "title", ap)
 
 	if title == nil || message == nil {
 		return nil
