@@ -430,10 +430,6 @@ def main(args):
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
-    # Overwrite JOB_NAME for soak-*-test jobs
-    if args.soak_test and os.environ.get('JOB_NAME'):
-        mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
-
     mode.start(runner_args)
 
 def create_parser():
@@ -443,7 +439,6 @@ def create_parser():
         '--mode', default='docker', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
-
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
@@ -504,8 +499,6 @@ def create_parser():
     parser.add_argument(
         '--save', default=None,
         help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
-    parser.add_argument(
-        '--soak-test', action='store_true', help='If the test is a soak test job')
     parser.add_argument(
         '--tag', default='v20170531-e6de0525', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(

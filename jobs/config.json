@@ -4032,6 +4032,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-cos-docker-validation-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4045,7 +4046,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-cos-docker-validation-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-cos-docker-validation-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4059,6 +4060,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.4-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.4-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4072,7 +4074,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.4-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.4-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4086,6 +4088,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.5-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.5-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4099,7 +4102,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.5-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.5-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4113,6 +4116,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.6-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.6-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4126,7 +4130,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1.6-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.6-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4140,6 +4144,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-2-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-2-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4153,7 +4158,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-2-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-2-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4167,6 +4172,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4181,6 +4187,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-federation-deploy.env", 
       "--federation", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-federation-deploy", 
       "--build", 
       "--stage=gs://kubernetes-release-dev/ci/ci-kubernetes-soak-gce-federation-deploy", 
       "--test=false", 
@@ -4197,7 +4204,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-federation-test.env", 
       "--federation", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-federation-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4211,6 +4218,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-gci-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-gci-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4224,7 +4232,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-gci-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-gci-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4238,7 +4246,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4252,6 +4260,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.4-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.4-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4265,7 +4274,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.4-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.4-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4279,6 +4288,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.5-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.5-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4292,7 +4302,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.5-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.5-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4306,6 +4316,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.6-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.6-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4319,7 +4330,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1.6-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.6-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4333,6 +4344,7 @@
     "args": [
       "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-soak-gke-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4346,6 +4358,7 @@
     "args": [
       "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-soak-gke-gci-deploy.env", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-gci-deploy", 
       "--test=false", 
       "--down=false", 
       "--timeout=90m"
@@ -4359,7 +4372,7 @@
     "args": [
       "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-soak-gke-gci-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-gci-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"
@@ -4373,7 +4386,7 @@
     "args": [
       "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-soak-gke-test.env", 
-      "--soak-test", 
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-deploy", 
       "--up=false", 
       "--down=false", 
       "--timeout=600m"

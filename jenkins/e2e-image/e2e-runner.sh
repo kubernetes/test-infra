@@ -28,7 +28,6 @@ mkdir -p ${ARTIFACTS}
 
 : ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
 : ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
-: ${JENKINS_SOAK_PREFIX:="gs://kubernetes-jenkins/soak/${JOB_NAME}"}
 
 # Explicitly set config path so staging gcloud (if installed) uses same path
 export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
@@ -89,13 +88,6 @@ else
   # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
   # usually what we're testing.
   e2e_go_args+=(--extract="${JENKINS_PUBLISHED_VERSION:-ci/latest}")
-fi
-
-if [[ "${JENKINS_SOAK_MODE:-}" == "y" ]]; then
-  # In soak mode we sync cluster state to gcs.
-  # If we --up a cluster, we save the kubecfg and version info to gcs.
-  # Otherwise we load kubecfg and version info from gcs.
-  e2e_go_args+=(--save="${JENKINS_SOAK_PREFIX}")
 fi
 
 if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then

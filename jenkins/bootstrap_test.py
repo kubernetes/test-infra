@@ -2056,6 +2056,8 @@ class JobTest(unittest.TestCase):
                     'KUBEKINS_TIMEOUT=',
                     'PERF_TESTS=',
                     'USE_KUBEMARK=',
+                    'JENKINS_SOAK_MODE',
+                    'JENKINS_SOAK_PREFIX'
                 ]
                 for b in black:
                     if b in line:
