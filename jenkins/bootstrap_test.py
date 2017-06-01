@@ -2060,12 +2060,12 @@ class JobTest(unittest.TestCase):
                 for arg in config[job].get('args', []):
                     if arg == '--mode=local':
                         rightMode = True
-                    m = re.match(r'--env-file=jobs/([^\"]+)\.env', arg)
+                    m = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if m:
                         env = m.group(1)
-                        if env == job:
+                        if env == 'jobs/%s' % job:
                             hasMatchingEnv = True
-                        path = bootstrap.test_infra('jobs/%s.env' % env)
+                        path = bootstrap.test_infra('%s.env' % env)
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
