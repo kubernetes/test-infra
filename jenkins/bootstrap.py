@@ -664,8 +664,13 @@ def setup_logging(path):
     return build_log
 
 
-def setup_magic_environment(job):
-    """Set magic environment variables scripts currently expect."""
+def setup_magic_environment(job, override_home_env=True):
+    """Set magic environment variables scripts currently expect.
+
+    Args:
+        override_home_env: set HOME to PWD. Useful on Jenkins and in local
+            testing.
+    """
     home = os.environ[HOME_ENV]
     # TODO(fejta): jenkins sets these values. Consider migrating to using
     #              a secret volume instead and passing the path to this volume
@@ -692,10 +697,8 @@ def setup_magic_environment(job):
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
     os.environ[WORKSPACE_ENV] = cwd
-    # TODO(fejta): jenkins/dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
-    #              probably to minimize leakage between jobs.
-    #              Consider accomplishing this another way.
-    os.environ[HOME_ENV] = cwd
+    if override_home_env:
+        os.environ[HOME_ENV] = cwd
     # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
     #              value. Consider making everything below here agnostic to the
     #              job name.
@@ -869,7 +872,7 @@ def bootstrap(args):
             version = find_version(call)
         else:
             version = ''
-        setup_magic_environment(job)
+        setup_magic_environment(job, args.override_home_env)
         setup_credentials(call, args.service_account, upload)
         setup_creds = True
         logging.info('Start %s at %s...', build, version)
@@ -947,6 +950,11 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    parser.add_argument(
+        '--override-home-env',
+        default=True,
+        help=('Set the HOME environment variable to PWD. Useful on Jenkins '
+              'and in local testing.'))
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(

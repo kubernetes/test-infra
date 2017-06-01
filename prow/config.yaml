@@ -169,6 +169,7 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        - --override-home-env=False
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -444,6 +445,7 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        - --override-home-env=False
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
