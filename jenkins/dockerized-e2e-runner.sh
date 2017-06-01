@@ -76,8 +76,8 @@ fi
 # which will happen during a timeout.
 CONTAINER_NAME="${JOB_NAME}-${BUILD_NUMBER}"
 
-echo 'ERROR: dockerized-e2e-runner.sh is deprecated' > &1
-echo 'ERROR: migrate this job to jobs/config.json and bootstrap.py --json=1 immediately' > &1
+echo 'ERROR: dockerized-e2e-runner.sh is deprecated' >&2
+echo 'ERROR: migrate this job to jobs/config.json and bootstrap.py --json=1 immediately' >&2
 echo "Starting..."
 timeout -s KILL ${DOCKER_TIMEOUT:-60m} docker run --rm \
   --name="${CONTAINER_NAME}" \

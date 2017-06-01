@@ -1859,6 +1859,7 @@ class JobTest(unittest.TestCase):
                 'kubernetes-e2e-',
                 'kubernetes-kubemark-',
                 'kubernetes-soak-',
+                'kubernetes-federation-e2e-',
                 'kops-e2e-',
             ]
 
