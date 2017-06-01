@@ -4700,7 +4700,7 @@
       "--federation", 
       "--deployment=none", 
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy", 
-      "--timeout=90"
+      "--timeout=90m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
