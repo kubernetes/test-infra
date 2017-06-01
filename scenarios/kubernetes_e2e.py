@@ -396,12 +396,9 @@ def main(args):
     if args.timeout:
         runner_args.append('--timeout=%s' % args.timeout)
 
-    cluster = args.cluster or 'e2e-gce-%s-%s' % (
-        os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
+    cluster = args.cluster or 'e2e-%s' % os.getenv('BUILD_NUMBER', 0)
 
     if args.kubeadm:
-        # Not from Jenkins
-        cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
         version = kubeadm_version(args.kubeadm)
         opt = ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
             ' --kubernetes-anywhere-phase2-provider kubeadm' \
