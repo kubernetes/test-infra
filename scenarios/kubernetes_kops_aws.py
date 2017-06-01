@@ -281,12 +281,12 @@ if __name__ == '__main__':
             raise ValueError('HOME dir not set!')
         if not ARGS.aws_ssh:
             ARGS.aws_ssh = '%s/.ssh/kube_aws_rsa' % HOME
-            print >>sys.stderr, 'AWS ssh key not found. Try to fetch from %s' % ARGS.aws_ssh
+            print >>sys.stderr, 'AWS ssh key not set. Defaulting to %s' % ARGS.aws_ssh
         if not ARGS.aws_pub:
             ARGS.aws_pub = '%s/.ssh/kube_aws_rsa.pub' % HOME
-            print >>sys.stderr, 'AWS pub key not found. Try to fetch from %s' % ARGS.aws_pub
+            print >>sys.stderr, 'AWS pub key not set. Defaulting to %s' % ARGS.aws_pub
         if not ARGS.aws_cred:
             ARGS.aws_cred = '%s/.aws/credentials' % HOME
-            print >>sys.stderr, 'AWS cred not found. Try to fetch from %s' % ARGS.aws_cred
+            print >>sys.stderr, 'AWS cred not set. Defaulting to %s' % ARGS.aws_cred
 
     main(ARGS)
