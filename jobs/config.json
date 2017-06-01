@@ -1471,11 +1471,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1.5.env", 
-      "--timeout=180m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5.env", 
+      "--timeout=180m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1605,11 +1606,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-ingress-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-ingress-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1.5.env", 
-      "--timeout=90m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-5.env", 
+      "--timeout=90m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1673,11 +1675,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-reboot-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-reboot-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1.5.env", 
-      "--timeout=180m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-5.env", 
+      "--timeout=180m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1707,11 +1710,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1.5.env", 
-      "--timeout=50m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-5.env", 
+      "--timeout=50m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1799,11 +1803,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-serial-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-serial-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1.5.env", 
-      "--timeout=300m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1-5.env", 
+      "--timeout=300m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -1844,11 +1849,12 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gci-gce-slow-release-1.5": {
+  "ci-kubernetes-e2e-gci-gce-slow-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1.5.env", 
-      "--timeout=150m"
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1-5.env", 
+      "--timeout=150m", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
