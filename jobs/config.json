@@ -2336,7 +2336,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster.env", 
       "--mode=local"
     ], 
@@ -2347,7 +2347,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster-new": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster-new.env", 
       "--mode=local"
     ], 
@@ -2358,7 +2358,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-master": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-master.env", 
       "--mode=local"
     ], 
@@ -2369,7 +2369,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster.env", 
       "--mode=local"
     ], 
@@ -2380,7 +2380,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster-new": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster-new.env", 
       "--mode=local"
     ], 
@@ -2391,7 +2391,7 @@
   }, 
   "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-master": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-master.env", 
       "--mode=local"
     ], 
@@ -2478,7 +2478,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster.env", 
       "--mode=local"
     ], 
@@ -2489,7 +2489,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster-new": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster-new.env", 
       "--mode=local"
     ], 
@@ -2500,7 +2500,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-master": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-master.env", 
       "--mode=local"
     ], 
@@ -2511,7 +2511,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster.env", 
       "--mode=local"
     ], 
@@ -2522,7 +2522,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster-new": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster-new.env", 
       "--mode=local"
     ], 
@@ -2533,7 +2533,7 @@
   }, 
   "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master": {
     "args": [
-      "--env-file=plarforms/gke.env", 
+      "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master.env", 
       "--mode=local"
     ], 
