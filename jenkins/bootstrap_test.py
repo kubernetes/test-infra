@@ -894,6 +894,21 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         self.assertEquals(env[bootstrap.HOME_ENV], env[bootstrap.WORKSPACE_ENV])
         self.assertEquals(cwd, env[bootstrap.WORKSPACE_ENV])
 
+    def testWorkspaceNoOverrideHome(self):
+        """WORKSPACE exists and is set to cwd; HOME is unchanged."""
+        env = FakeEnviron()
+        cwd = '/fake/random-location'
+        old_home = env[bootstrap.HOME_ENV]
+        with Stub(os, 'environ', env):
+            with Stub(os, 'getcwd', lambda: cwd):
+                bootstrap.setup_magic_environment(JOB, override_home_env=False)
+
+        self.assertIn(bootstrap.WORKSPACE_ENV, env)
+        self.assertEquals(old_home, env[bootstrap.HOME_ENV])
+        self.assertNotEquals(env[bootstrap.HOME_ENV],
+                             env[bootstrap.WORKSPACE_ENV])
+        self.assertEquals(cwd, env[bootstrap.WORKSPACE_ENV])
+
     def testJobEnvMismatch(self):
         env = FakeEnviron()
         with Stub(os, 'environ', env):
@@ -1017,6 +1032,7 @@ class FakeArgs(object):
     timeout = 0
     upload = UPLOAD
     json = False
+    override_home_env = True
 
     def __init__(self, **kw):
         self.branch = BRANCH

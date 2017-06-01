@@ -102,8 +102,8 @@ class LocalMode(object):
         self.env = []
         self.os_env = []
         self.env_files = []
+        # Do we need to add these, given that we have self.os_env?
         self.add_environment(
-            'HOME=%s' % workspace,
             'WORKSPACE=%s' % workspace,
             'PATH=%s' % os.getenv('PATH'),
         )
