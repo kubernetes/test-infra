@@ -102,7 +102,7 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 			return
 		}
 
-		msg := fmt.Sprintf("@%s There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:<br>(1) mentioning a sig: `@kubernetes/sig-<team-name>-misc`<br>(2) specifying the label manually: `/sig <label>`<br><br>_Note: method (1) will trigger a notification to the team. You can find the team list [here](https://github.com/kubernetes/community/blob/master/sig-list.md)._", *obj.Issue.User.Login)
+		msg := fmt.Sprintf("@%s There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:<br>(1) mentioning a sig: `@kubernetes/sig-<team-name>-misc`<br>(2) specifying the label manually: `/sig <label>`<br><br>_Note: method (1) will trigger a notification to the team. You can find the team list [here](https://github.com/kubernetes/community/blob/master/sig-list.md) and label list [here](https://github.com/kubernetes/kubernetes/labels)_", *obj.Issue.User.Login)
 
 		if err := obj.WriteComment(msg); err != nil {
 			glog.Errorf("failed to leave comment for %s that issue #%v needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
