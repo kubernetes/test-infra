@@ -28,7 +28,7 @@ import sys
 import time
 
 
-def Gcloud(project, *args, **kwargs):
+def gcloud(project, *args, **kwargs):
     cmd = ('gcloud', '--project=%s' % project, 'compute') + args
     print >>sys.stderr, 'RUN:', ' '.join(cmd)
     if not kwargs.get('output'):
@@ -37,10 +37,10 @@ def Gcloud(project, *args, **kwargs):
     return subprocess.check_output(cmd)
 
 
-def SnapshotDisks(project, zone, *disks):
+def snapshot_disks(project, zone, *disks):
     ymd = time.strftime('%Y%m%d', time.localtime())
     snapshots = ['%s-%s' % (d, ymd) for d in disks]
-    Gcloud(
+    gcloud(
         project,
         'disks',
         'snapshot',
@@ -49,7 +49,7 @@ def SnapshotDisks(project, zone, *disks):
         *disks)
 
 
-def Disks(instance):
+def get_disks(instance):
     """Return a {name: size_gb} map."""
     return {
         instance: 500,
@@ -58,38 +58,39 @@ def Disks(instance):
     }
 
 
-def Address(project, zone, instance):
+def get_address(project, zone, instance):
     """Return the reserved ip address of the instance."""
-    return Gcloud(
+    return gcloud(
         project,
         'addresses',
         'describe',
         '%s-ip' % instance,
-        '--region=%s' % Region(zone),
+        '--region=%s' % get_region(zone),
         '--format=value(address)',
     )
 
 
 
-def Region(zone):
+def get_region(zone):
     """Converts us-central1-f into us-central1."""
     return '-'.join(zone.split('-')[:2])
 
 
-def Snapshot(project, zone, instance):
+def get_snapshot(project, zone, instance):
     """Snapshot all the disks for this instance."""
-    SnapshotDisks(project, zone, *Disks(instance))
+    snapshot_disks(project, zone, *get_disks(instance))
 
 
-def Delete(project, zone, instance):
+def delete(project, zone, instance):
     """Confirm and delete instance and associated disks."""
     print >>sys.stderr, 'WARNING: duplicated jobs may fail/corrupt results'
-    print >>sys.stderr, 'TODO(fejta): See http://stackoverflow.com/questions/19645430/changing-jenkins-build-number'
+    print >>sys.stderr, ('TODO(fejta): See http://stackoverflow.com/'
+                         'questions/19645430/changing-jenkins-build-number')
     answer = raw_input('Delete %s [yes/NO]: ')
     if not answer or answer != 'yes':
         print >>sys.stderr, 'aborting'
         sys.exit(1)
-    Gcloud(
+    gcloud(
         project,
         'compute',
         'instances',
@@ -97,13 +98,13 @@ def Delete(project, zone, instance):
         '--zone=%s' % zone,
         instance,
     )
-    Gcloud(
+    gcloud(
         project,
         'compute',
         'disks',
         'delete',
         '--zone=%s' % zone,
-        *Disks(instance))
+        *get_disks(instance))
 
 
 SCOPES = [
@@ -114,19 +115,19 @@ SCOPES = [
 ]
 
 
-def Restore(project, zone, instance, snapshot):
+def restore(project, zone, instance, snapshot):
     """Restore instance and disks from the snapshot suffix."""
     disks = []
     description = 'Created from %s by %s' % (snapshot, getpass.getuser())
-    for disk, gb in Disks(instance).items():
-        Gcloud(
+    for disk, size in get_disks(instance).items():
+        gcloud(
             project,
             'compute',
             'disks',
             'create',
             '--description=%s' % description,
             '--zone=%s' % zone,
-            '--size=%dGB' % gb,
+            '--size=%dGB' % size,
             '--source-snapshot=%s-%s' % (disk, snapshot),
             disk,
         )
@@ -137,7 +138,7 @@ def Restore(project, zone, instance, snapshot):
         if disk == instance:
             attrs.append('boot=yes')
         disks.append(attrs)
-    Gcloud(
+    gcloud(
         project,
         'compute',
         'instances',
@@ -147,35 +148,35 @@ def Restore(project, zone, instance, snapshot):
         '--machine-type=n1-highmem-32',  # should reduce to 8
         '--scopes=%s' % ','.join(SCOPES),
         '--tag=do-not-delete,jenkins,jenkins-master',
-        '--address=%s' % Address(project, zone, instance),
+        '--address=%s' % get_address(project, zone, instance),
         *('--disk=%s' % ','.join(a) for a in disks))
 
 
 
-def Main(args):
+def main(args):
     if args.pr:
         project, instance = 'kubernetes-jenkins-pull', 'pull-jenkins-master'
     else:
         project, instance = 'kubernetes-jenkins', 'jenkins-master'
     zone = args.zone
     if not args.restore:
-        Snapshot(project, zone, instance)
+        get_snapshot(project, zone, instance)
         return
     if args.delete:
-        Delete(project, zone, instance)
+        delete(project, zone, instance)
     snapshot = args.restore
-    Restore(project, zone, instance, snapshot)
+    restore(project, zone, instance, snapshot)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Tool to backup/restore the jenkins master')
-    parser.add_argument(
+    PARSER = argparse.ArgumentParser('Tool to backup/restore the jenkins master')
+    PARSER.add_argument(
         '--zone', default='us-central1-f', help='Jenkins zone')
-    parser.add_argument(
+    PARSER.add_argument(
         '--pr', action='store_true', help='Manipulate PR jenkins when set')
-    parser.add_argument(
+    PARSER.add_argument(
         '--restore', help='restore jenkins to the YYYYMMDD snapshot when set')
-    parser.add_argument(
+    PARSER.add_argument(
         '--delete', help='delete current jenkins instance before restoring')
-    args = parser.parse_args()
-    Main(args)
+    ARGS = PARSER.parse_args()
+    main(ARGS)
