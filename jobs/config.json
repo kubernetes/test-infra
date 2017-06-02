@@ -56,6 +56,12 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-build-1.7": {
+    "scenario": "kubernetes_build", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-build-debian-unstable": {
     "args": [
       "--script=./debian/jenkins.sh", 
@@ -3802,6 +3808,17 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-federation-build-1.7": {
+    "args": [
+      "--fast", 
+      "--federation=k8s-jkns-e2e-gce-f8n-1-7", 
+      "--release=kubernetes-federation-release-1-7"
+    ], 
+    "scenario": "kubernetes_build", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-kubemark-100-gce": {
     "args": [
       "--env-file=platforms/gce.env", 
@@ -3946,6 +3963,15 @@
   "ci-kubernetes-node-kubelet-1.6": {
     "args": [
       "--branch=release-1.6"
+    ], 
+    "scenario": "kubernetes_kubelet", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-node-kubelet-1.7": {
+    "args": [
+      "--branch=release-1.7"
     ], 
     "scenario": "kubernetes_kubelet", 
     "sigOwners": [
@@ -4436,6 +4462,16 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-test-go-release-1.7": {
+    "args": [
+      "--branch=release-1.7", 
+      "--force"
+    ], 
+    "scenario": "kubernetes_verify", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-verify-master": {
     "args": [
       "--branch=master", 
@@ -4472,6 +4508,17 @@
   "ci-kubernetes-verify-release-1.6": {
     "args": [
       "--branch=release-1.6", 
+      "--force", 
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ], 
+    "scenario": "kubernetes_verify", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-verify-release-1.7": {
+    "args": [
+      "--branch=release-1.7", 
       "--force", 
       "--script=./hack/jenkins/verify-dockerized.sh"
     ], 
