@@ -72,22 +72,19 @@ BLACKLIST = [
     'kubernetes-scale', # Let it's up/down job handle the resources
 ]
 
-PR_PROJECTS = [
-    'k8s-jkns-pr-kubemark',
-    'k8s-jkns-pr-gce',
-    'k8s-jkns-pr-gci-gce',
-    'k8s-jkns-pr-gke',
-    'k8s-jkns-pr-gci-gke',
-    'k8s-jkns-pr-gci-kubemark',
-    'k8s-jkns-pr-bldr-e2e-gce-fdrtn',
-    'k8s-jkns-pr-gce-etcd3',
-    'k8s-jkns-pr-gci-bld-e2e-gce-fd',
-]
+PR_PROJECTS = {
+    'k8s-jkns-pr-kubemark':3,
+    'k8s-jkns-pr-gce':3,
+    'k8s-jkns-pr-gci-gce':3,
+    'k8s-jkns-pr-gci-kubemark':3,
+    'k8s-jkns-pr-bldr-e2e-gce-fdrtn':24,
+    'k8s-jkns-pr-gce-etcd3':3,
+}
 
 def check_pr_jobs():
     """Handle PR jobs"""
-    for project in PR_PROJECTS:
-        clean_project(project, hours=3)
+    for project, expire in PR_PROJECTS.iteritems():
+        clean_project(project, hours=expire)
 
 
 def check_ci_jobs():

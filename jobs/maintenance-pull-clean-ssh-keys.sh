@@ -23,12 +23,9 @@ projects=(
   k8s-jkns-pr-kubemark
   k8s-jkns-pr-gce
   k8s-jkns-pr-gci-gce
-  k8s-jkns-pr-gke
-  k8s-jkns-pr-gci-gke
   k8s-jkns-pr-gci-kubemark
   k8s-jkns-pr-bldr-e2e-gce-fdrtn
   k8s-jkns-pr-gce-etcd3
-  k8s-jkns-pr-gci-bld-e2e-gce-fd
   )
 
 for proj in "${projects[@]}"; do
