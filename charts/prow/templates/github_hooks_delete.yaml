@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}.hookdelete"
+  labels:
+    heritage: {{.Release.Service | quote }}
+    release: {{.Release.Name | quote }}
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}.hookdelete"
+      labels:
+        heritage: {{.Release.Service | quote }}
+        release: {{.Release.Name | quote }}
+        chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: delete-hooks-job
+        image: "{{ .Values.images.hook_manager }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        env:
+        - name: BOT_USER_ID
+          value: "{{ .Values.githubBotAccount }}"
+        - name: REPOS_TO_HOOK
+          value: "( {{ .Values.repos }} )"
+        - name: GITHUB_USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: hookmanager-cred
+              key: user_id
+        - name: AUTH_ID
+          valueFrom:
+            secretKeyRef:
+              name: hookmanager-cred
+              key: auth_id
+        - name: GITHUB_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hookmanager-cred
+              key: auth_token
+        - name: INSTALL_SCRIPT
+          value: &script |-
+            #int the create script we created a text file with each line containing <HOOK_ID>:<REPO>
+            while read hook; do
+                echo "${hook}";
+                values=( ${hook//:/ } ); #split the line into an array
+                echo "/hook_manager delete_webhook --credentials=${GITHUB_USER_NAME}:${GITHUB_AUTH_TOKEN} --hook_id=${values[0]} --repo=\"${values[1]}\""
+                #now delete each hook
+                /hook_manager delete_webhook --credentials=${GITHUB_USER_NAME}:${GITHUB_AUTH_TOKEN} --hook_id=${values[0]} --repo="${values[1]}";
+            done < /etc/webhooks/created_hooks
+            
+            kubectl delete secret hmac
+            kubectl delete secret created-hooks
+            kubectl delete job "{{.Release.Name}}.hookinstall"
+            #kubectl delete job "{{.Release.Name}}.hookdelete"
+        command: ["bash"]
+        args: ["-c", *script]
+        volumeMounts:
+        - name: hooks
+          mountPath: /etc/webhooks
+          readOnly: true
+      volumes:
+      - name: hooks
+        secret:
+          secretName: created-hooks

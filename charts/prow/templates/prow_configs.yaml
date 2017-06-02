@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+data:
+  config: |-
+    ---
+    presubmits:
+      # PR job triggering definitions.
+      # Keys: Full repo name: "org/repo".
+      # Values: List of jobs to run when events occur in the repo.
+      #   name:          Job name.
+      #   trigger:       Regexp commenters can say to trigger the job.
+      #   always_run:    Whether to run for every PR. Default is false. If this is
+      #                  set then your trigger needs to match "@k8s-bot test this".
+      #   context:       GitHub status context.
+      #   rerun_command: How should users trigger just this job, as a string, not a
+      #                  regex. For example, if the trigger regex is "(e2e )?test",
+      #                  then a rerun command might be "e2e test".
+      #   skip_report:   If true, then do not set status or comment on GitHub.
+      #   spec:          If this exists then run a kubernetes pod with this spec.
+      #                  Otherwise, run a Jenkins job.
+      
+      {{ range .Values.repos }}
+      {{ . }}:
+      - name: "{{ . }}-pipeline"
+        always_run: true
+        context: "Jenkins GCE e2e"
+        rerun_command: "@prow go"
+        trigger: "@prow go"
+      {{ end }}
+    postsubmits:
+    periodics:
+      - name: metrics-bigquery
+        interval: 24h
+        spec:
+          containers:
+          - image: gcr.io/k8s-testimages/bigquery:0.1
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/service-account/service-account.json
+            volumeMounts:
+            - name: service
+              mountPath: /etc/service-account
+              readOnly: true
+          volumes:
+          - name: service
+            secret:
+              secretName: triage-service-account
+  plugins: |-
+      # Plugin repository whitelist.
+      # Keys: Full repo name: "org/repo.
+      # Values: List of plugins to run against the repo.
+      ---
+      {{ range .Values.repos }}
+      {{ . }}:
+      - assign
+      - trigger
+      - label
+      - close
+      - heart
+      - lgtm
+      - yuks
+      - reopen
+      
+      {{ end }}
