@@ -20,13 +20,6 @@ set -o pipefail
 export PYLINTHOME=$(mktemp -d)
 pylint="$(dirname $0)/pylint_bin"
 
-$pylint \
-  scenarios/*.py \
-  jenkins/*.py \
-  jobs/*.py \
-  metrics/*.py \
-  queue-health/graph/graph.py \
-  queue-health/weekly_commit_stats.py \
-  triage/*.py \
-  experiment/*.py \
-  verify/*.py
+
+shopt -s extglob globstar
+pylint !(gubernator|kettle|external|mungegithub|bazel-*)/**/*.py

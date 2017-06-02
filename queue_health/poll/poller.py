@@ -25,25 +25,25 @@ import traceback
 import requests
 
 def get_submit_queue_json(path):
-    for n in range(3):
+    for count in range(3):
         uri = 'https://submit-queue.k8s.io/%s' % path
         print >>sys.stderr, 'GET %s' % uri
         resp = requests.get(uri, allow_redirects=True)
         if resp.ok:
             break
-        time.sleep(2**n)
+        time.sleep(2**count)
     resp.raise_for_status()
     return resp.json()
 
 
 def is_blocked():
-    ci = get_submit_queue_json('health')
-    return ci['MergePossibleNow'] != True
+    json = get_submit_queue_json('health')
+    return json['MergePossibleNow'] != True
 
 
 def get_stats():
     stats = get_submit_queue_json('sq-stats')
-    return stats['Initialized'] == True, stats['MergesSinceRestart']
+    return stats['Initialized'] is True, stats['MergesSinceRestart']
 
 
 def poll():
@@ -79,14 +79,14 @@ def save_stats(uri, buf):
     proc.communicate(buf.getvalue())
     code = proc.wait()
     if code:
-      print >>sys.stderr, 'Failed to copy stats to %s: %d' % (uri, code)
+        print >>sys.stderr, 'Failed to copy stats to %s: %d' % (uri, code)
 
 
 def poll_forever(uri, service_account=None):
     if service_account:
-      print >>sys.stderr, 'Activating service account using: %s' % service_account
-      subprocess.check_call(
-          ['gcloud', 'auth', 'activate-service-account', '--key-file=%s' % service_account])
+        print >>sys.stderr, 'Activating service account using: %s' % service_account
+        subprocess.check_call(
+            ['gcloud', 'auth', 'activate-service-account', '--key-file=%s' % service_account])
     print >>sys.stderr, 'Loading historical stats from %s...' % uri
     buf = cStringIO.StringIO()
     buf.write(load_stats(uri))
@@ -107,7 +107,8 @@ def poll_forever(uri, service_account=None):
                 traceback.print_exc()
                 continue
 
-            data = '{} {} {} {} {} {} {}\n'.format(now, online, prs, queue, running, blocked, merge_count)
+            data = '{} {} {} {} {} {} {}\n'.format(
+                now, online, prs, queue, running, blocked, merge_count)
             print >>sys.stderr, 'Appending to history: %s' % data
             buf.write(data)
 
@@ -119,7 +120,7 @@ def poll_forever(uri, service_account=None):
 
 if __name__ == '__main__':
     # log all arguments.
-    pp = pprint.PrettyPrinter(stream=sys.stderr)
-    pp.pprint(sys.argv)
+    PP = pprint.PrettyPrinter(stream=sys.stderr)
+    PP.pprint(sys.argv)
 
     poll_forever(*sys.argv[1:])

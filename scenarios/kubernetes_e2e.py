@@ -346,7 +346,7 @@ def main(args):
         sudo = args.docker_in_docker or args.build is not None
         mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
-        mode = LocalMode(workspace)
+        mode = LocalMode(workspace) #pylint:disable=redefined-variable-type
     else:
         raise ValueError(args.mode)
 
