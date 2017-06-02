@@ -46,6 +46,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 }
