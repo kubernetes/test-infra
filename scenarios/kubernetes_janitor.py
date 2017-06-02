@@ -77,7 +77,6 @@ PR_PROJECTS = {
     'k8s-jkns-pr-gce':3,
     'k8s-jkns-pr-gci-gce':3,
     'k8s-jkns-pr-gci-kubemark':3,
-    'k8s-jkns-pr-bldr-e2e-gce-fdrtn':24,
     'k8s-jkns-pr-gce-etcd3':3,
 }
 
