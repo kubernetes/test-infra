@@ -113,8 +113,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation.env", 
-      "--timeout=50m",
-      "--extract=gci/gci-next-canary",
+      "--timeout=50m", 
+      "--extract=gci/gci-next-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -126,8 +126,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-serial.env", 
-      "--timeout=300m",
-      "--extract=gci/gci-next-canary",
+      "--timeout=300m", 
+      "--extract=gci/gci-next-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -140,7 +140,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-slow.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-next-canary",
+      "--extract=gci/gci-next-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -666,31 +666,34 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-master.env", 
       "--timeout=50m", 
-      "--extract=ci/latest"
+      "--extract=ci/latest", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-release-1.4": {
+  "ci-kubernetes-e2e-gce-gci-ci-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1.4.env", 
+      "--extract=ci/latest-1.4", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-4.env", 
       "--timeout=50m", 
-      "--extract=ci/latest-1.4"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-release-1.5": {
+  "ci-kubernetes-e2e-gce-gci-ci-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1.5.env", 
+      "--extract=ci/latest-1.5", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-5.env", 
       "--timeout=50m", 
-      "--extract=ci/latest-1.5"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -702,31 +705,34 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-master.env", 
       "--timeout=300m", 
-      "--extract=ci/latest"
+      "--extract=ci/latest", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4": {
+  "ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1.4.env", 
+      "--extract=ci/latest-1.4", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4.env", 
       "--timeout=300m", 
-      "--extract=ci/latest-1.4"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5": {
+  "ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1.5.env", 
+      "--extract=ci/latest-1.5", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5.env", 
       "--timeout=300m", 
-      "--extract=ci/latest-1.5"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -738,31 +744,34 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-master.env", 
       "--timeout=150m", 
-      "--extract=ci/latest"
+      "--extract=ci/latest", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4": {
+  "ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.4.env", 
+      "--extract=ci/latest-1.4", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4.env", 
       "--timeout=150m", 
-      "--extract=ci/latest-1.4"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5": {
+  "ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5": {
     "args": [
       "--env-file=platforms/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1.5.env", 
+      "--extract=ci/latest-1.5", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5.env", 
       "--timeout=150m", 
-      "--extract=ci/latest-1.5"
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -802,7 +811,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m56.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-56",
+      "--extract=gci/gci-56", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -815,7 +824,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m57.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-57",
+      "--extract=gci/gci-57", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -828,7 +837,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m58.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-58",
+      "--extract=gci/gci-58", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -841,7 +850,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m59.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-59",
+      "--extract=gci/gci-59", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -854,7 +863,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m60.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-60",
+      "--extract=gci/gci-60", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -867,7 +876,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-master.env", 
       "--timeout=50m", 
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -880,7 +889,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m56.env", 
       "--timeout=300m", 
-      "--extract=gci/gci-56",
+      "--extract=gci/gci-56", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -893,7 +902,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m57.env", 
       "--timeout=300m", 
-      "--extract=gci/gci-57",
+      "--extract=gci/gci-57", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -906,7 +915,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m58.env", 
       "--timeout=300m", 
-      "--extract=gci/gci-58",
+      "--extract=gci/gci-58", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -919,7 +928,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m59.env", 
       "--timeout=300m", 
-      "--extract=gci/gci-59",
+      "--extract=gci/gci-59", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -931,8 +940,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m60.env", 
-      "--timeout=300m",
-      "--extract=gci/gci-60",
+      "--timeout=300m", 
+      "--extract=gci/gci-60", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -945,7 +954,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-master.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -958,7 +967,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m56.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-56",
+      "--extract=gci/gci-56", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -971,7 +980,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m57.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-57",
+      "--extract=gci/gci-57", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -984,7 +993,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m58.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-58",
+      "--extract=gci/gci-58", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -997,7 +1006,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m59.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-59",
+      "--extract=gci/gci-59", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -1010,7 +1019,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m60.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-60",
+      "--extract=gci/gci-60", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -1023,7 +1032,7 @@
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-master.env", 
       "--timeout=150m", 
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-canary", 
       "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3483,7 +3492,8 @@
       "--env-file=platforms/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-gci-ci-master.env", 
       "--timeout=50m", 
-      "--extract=ci/latest"
+      "--extract=ci/latest", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
