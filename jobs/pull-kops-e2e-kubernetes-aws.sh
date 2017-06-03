@@ -69,7 +69,7 @@ export LOG_DUMP_USE_KUBECTL=yes
 export LOG_DUMP_SSH_KEY=/workspace/.ssh/kube_aws_rsa
 export LOG_DUMP_SSH_USER=admin
 export LOG_DUMP_SAVE_LOGS="cloud-init-output"
-export LOG_DUMP_SAVE_SERVICES="protokube"
+export LOG_DUMP_SAVE_SERVICES="protokube kops-configuration"
 
 # Flake detection. Individual tests get a second chance to pass.
 export GINKGO_TOLERATE_FLAKES="y"
