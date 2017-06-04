@@ -330,8 +330,6 @@ def setup_extract(extract, mode, runner_args):
         runner_args.append('--extract=%s' % extract)
 
 
-
-
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements

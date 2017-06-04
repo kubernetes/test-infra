@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sort current config.json alphabetically. """
+"""Migrate --extract flag from an JENKINS_FOO env to a scenario flag."""
 
 import json
 import os
@@ -31,7 +31,7 @@ def sort():
     """Sort config.json alphabetically."""
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
-    regexp = re.compile(r'JENKINS_USE_LOCAL_BINARIES=y')
+    regexp = re.compile(r'JENKINS_USE_SERVER_VERSION=y')
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
@@ -40,31 +40,28 @@ def sort():
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         if migrated:
-            if 'JENKINS_USE_LOCAL_BINARIES=y' in env:
+            if 'JENKINS_USE_SERVER_VERSION=y' in env:
                 problems.append(job)
                 continue
-        timeout = None
+        extract = None
         lines = []
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            if timeout:
+            if extract:
                 print >>sys.stderr, 'Duplicate extracts:', job, line
                 problems.append(job)
                 break
-            timeout = True
+            extract = True
         else:
-            if timeout:
-                with open(test_infra('jobs/%s.env' % job), 'w') as fp:
-                    fp.write('\n'.join(lines))
-                values['args'].append('--extract=local')
-            else:
-                if (
-                        any('--build' in a for a in values['args'])
-                        and '--extract=local' not in values['args']):
-                    values['args'].append('--extract=local')
+            if not extract:
+                problems.append(job)
+                continue
+            with open(test_infra('jobs/%s.env' % job), 'w') as fp:
+                fp.write('\n'.join(lines))
+            values['args'].append('--extract=gke')
     with open(test_infra('jobs/config.json'), 'w') as fp:
         fp.write(json.dumps(configs, sort_keys=True, indent=2))
         fp.write('\n')
