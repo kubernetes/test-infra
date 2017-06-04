@@ -239,6 +239,21 @@ class SubprocessTest(unittest.TestCase):
 class PullRefsTest(unittest.TestCase):
     """Tests for pull_ref, branch_ref, ref_has_shas, and pull_numbers."""
 
+    def test_multiple_no_shas(self):
+        """Test master,1111,2222."""
+        self.assertEqual(
+            bootstrap.pull_ref('master,123,456'),
+            ([
+                'master',
+                '+refs/pull/123/head:refs/pr/123',
+                '+refs/pull/456/head:refs/pr/456',
+            ], [
+                'FETCH_HEAD',
+                'refs/pr/123',
+                'refs/pr/456',
+            ]),
+        )
+
     def test_pull_has_shas(self):
         self.assertTrue(bootstrap.ref_has_shas('master:abcd'))
         self.assertFalse(bootstrap.ref_has_shas('123'))
@@ -1447,6 +1462,7 @@ class JobTest(unittest.TestCase):
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
         'move_timeout.py', # Tool to migrate timeouts to config.json
+        'move_extract.py',
     ]
 
     yaml_suffix = {
@@ -1856,6 +1872,21 @@ class JobTest(unittest.TestCase):
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
 
+    def test_valid_env(self):
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                data = fp.read()
+            if 'kops' in job:  # TODO(fejta): update this one too
+                continue
+            self.assertNotIn(
+                'JENKINS_USE_LOCAL_BINARIES=',
+                data,
+                'Send --extract=local to config.json, not JENKINS_USE_LOCAL_BINARIES in %s' % job)
+            self.assertNotIn(
+                'JENKINS_USE_EXISTING_BINARIES=',
+                data,
+                'Send --extract=local to config.json, not JENKINS_USE_EXISTING_BINARIES in %s' % job)  # pylint: disable=line-too-long
+
     def test_valid_timeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
         default_timeout = int(re.search(
@@ -2064,29 +2095,29 @@ class JobTest(unittest.TestCase):
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
 
-                # to classify from E2E_UPGRADE,
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
-                bads = [
-                    'CHARTS_TEST=',
-                    'E2E_DOWN=',
-                    'E2E_NAME=',
-                    'E2E_PUBLISH_PATH=',
-                    'E2E_TEST=',
-                    'E2E_UP=',
-                    'FEDERATION_DOWN=',
-                    'FEDERATION_UP=',
-                    'JENKINS_FEDERATION_PREFIX=',
-                    'KUBEKINS_TIMEOUT=',
-                    'PERF_TESTS=',
-                    'USE_KUBEMARK=',
-                    'JENKINS_SOAK_MODE',
-                    'JENKINS_SOAK_PREFIX'
+                black = [
+                    ('CHARTS_TEST=', '--charts-tests'),
+                    ('E2E_DOWN=', '--down=true|false'),
+                    ('E2E_NAME=', '--cluster=whatever'),
+                    ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
+                    ('E2E_TEST=', '--test=true|false'),
+                    ('E2E_UP=', '--up=true|false'),
+                    ('FEDERATION_DOWN=', '--down=true|false'),
+                    ('FEDERATION_UP=', '--up=true|false'),
+                    ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+                    ('JENKINS_SOAK_MODE', '--soak'),
+                    ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
+                    ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
+                    ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
+                    ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+                    ('PERF_TESTS=', '--perf'),
+                    ('USE_KUBEMARK=', '--kubemark'),
                 ]
-                for bad in bads:
-                    if bad in line:
-                        self.fail(
-                            '[%r]: Env %r: Convert %r to use e2e scenario flags' % (
-                                job, line, bad))
+                for env, fix in black:
+                    if env in line:
+                        self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
+                            job, line, env, fix))
 
 
     def test_no_bad_vars_in_jobs(self):
