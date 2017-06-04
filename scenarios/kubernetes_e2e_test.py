@@ -124,7 +124,7 @@ class SetupExtractTest(unittest.TestCase):
 
     def test_extract_local(self):
         """Set JENKINS_USE_LOCAL_BINARIES=y when --extract=local."""
-        self.check('local', envs=['JENKINS_USE_LOCAL_BINARIES=y'], args=[])
+        self.check('local', envs=['RAW_EXTRACT=y'], args=['--extract=local'])
 
     def test_extract_none(self):
         """Set RAW_EXTRACT=y when --extract=none but send nothing to kubetest."""
