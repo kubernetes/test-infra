@@ -111,7 +111,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-next-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -122,7 +123,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-serial.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-next-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -133,7 +135,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-cos-docker-validation-slow.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-next-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -719,7 +722,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m56.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-56"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -730,7 +734,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m57.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-57"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -741,7 +746,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m58.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-58"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -752,7 +758,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m59.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-59"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -763,7 +770,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-m60.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-60"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -774,7 +782,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-master.env", 
-      "--timeout=50m"
+      "--timeout=50m", 
+      "--extract=gci/gci-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -785,7 +794,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m56.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-56"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -796,7 +806,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m57.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-57"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -807,7 +818,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m58.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-58"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -818,7 +830,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m59.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-59"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -829,7 +842,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-m60.env", 
-      "--timeout=300m"
+      "--timeout=300m", 
+      "--extract=gci/gci-60"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -840,7 +854,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-serial-master.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -851,7 +866,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m56.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-56"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -862,7 +878,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m57.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-57"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -873,7 +890,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m58.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-58"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -884,7 +902,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m59.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-59"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -895,7 +914,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-m60.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-60"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -906,7 +926,8 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-qa-slow-master.env", 
-      "--timeout=150m"
+      "--timeout=150m", 
+      "--extract=gci/gci-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4087,7 +4108,8 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-cos-docker-validation-deploy", 
       "--test=false", 
       "--down=false", 
-      "--timeout=90m"
+      "--timeout=90m", 
+      "--extract=gci/gci-next-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -4101,7 +4123,8 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-cos-docker-validation-deploy", 
       "--up=false", 
       "--down=false", 
-      "--timeout=600m"
+      "--timeout=600m", 
+      "--extract=gci/gci-next-canary"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
