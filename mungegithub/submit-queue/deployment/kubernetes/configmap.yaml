@@ -103,14 +103,7 @@ data:
   # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
   # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
   submit-queue.jenkins-jobs: "\"\""
-  submit-queue.presubmit-jobs: "\
-    kubernetes-pull-build-test-e2e-gce,\
-    kubernetes-pull-build-test-e2e-gke,\
-    kubernetes-pull-build-test-federation-e2e-gce,\
-    node-pull-build-e2e-test,\
-    kubernetes-pull-build-test-gci-e2e-gce,\
-    kubernetes-pull-build-test-gci-e2e-gke,\
-    kubernetes-pull-build-test-gci-kubemark-e2e-gce"
+  submit-queue.presubmit-jobs: "\"\""
   submit-queue.weak-stable-jobs: "\"\""
   submit-queue.do-not-merge-milestones: "v1.8,v1.9,next-candidate,"
   submit-queue.admin-port: "9999"
