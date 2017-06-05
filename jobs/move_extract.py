@@ -29,10 +29,15 @@ def test_infra(*paths):
 
 def sort():
     """Sort config.json alphabetically."""
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
-    regexp = re.compile(r'JENKINS_USE_GCI_VERSION=y|JENKINS_GCI_HEAD_IMAGE_FAMILY=(.+)')
+    regexp = re.compile('|'.join([
+        r'JENKINS_PUBLISHED_VERSION=(.+)',
+        r'JENKINS_PUBLISHED_SKEW_VERSION=(.+)',
+        r'JENKINS_USE_SKEW_TESTS=(.+)',
+        r'JENKINS_USE_SKEW_KUBECTL=(.+)',
+    ]))
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
@@ -41,32 +46,55 @@ def sort():
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         if migrated:
-            if 'JENKINS_USE_GCI_VERSION=' in env or 'JENKINS_GCI_HEAD_IMAGE_FAMILY=' in env:
+            if any(j in env for j in [
+                    'JENKINS_PUBLISHED_VERSION=',
+                    'JENKINS_PUBLISHED_SKEW_VERSION=',
+                    'JENKINS_USE_SKEW_TESTS=',
+                    'JENKINS_USE_SKEW_KUBECTL=',
+            ]):
                 problems.append(job)
                 continue
-        gci = family = None
+        if 'JENKINS_USE_SERVER_VERSION=' in env or 'JENKINS_USE_GCI_VERSION=' in env:
+            continue  # Handled by other PRs
+        extract = skew = tests = kubectl = None
         lines = []
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            if family and gci:
-                print >>sys.stderr, 'Duplicated:', job, line
-                problems.append(job)
-                break
-            if mat.group(1):
-                family = mat.group(1)
-            else:
-                gci = True
+            extractv, skewv, testsv, kubectlv = mat.groups()
+            if extractv:
+                if extract:
+                    problems.append(job)
+                    break
+                extract = extractv
+            if skewv:
+                if skew:
+                    problems.append(job)
+                    break
+                skew = skewv
+            if testsv:
+                if tests:
+                    problems.append(job)
+                    break
+                tests = testsv
+            if kubectlv:
+                if kubectl:
+                    problems.append(job)
+                    break
+                kubectl = kubectlv
         else:
-            if bool(gci) ^ bool(family):
-                problems.append(job)
-                continue
-            if family:
-                with open(test_infra('jobs/%s.env' % job), 'w') as fp:
-                    fp.write('\n'.join(lines))
-                values['args'].append('--extract=gci/%s' % family)
+            if skew:
+                values['args'].append('--extract=%s' % skew)
+                if tests == 'true':
+                    values['args'].append('--skew')
+                elif kubectl != 'false':
+                    lines.append('SKEW_KUBECTL=y')
+            extract = extract or 'ci/latest'
+            values['args'].append('--extract=%s' % extract)
+            with open(test_infra('jobs/%s.env' % job), 'w') as fp:
+                fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
         fp.write(json.dumps(configs, sort_keys=True, indent=2))
         fp.write('\n')
