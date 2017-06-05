@@ -63,7 +63,7 @@ func (c *Comment) Match(matcher Matcher) bool {
 }
 
 func (c *Comment) Date() *time.Time {
-	return c.CreatedAt
+	return c.UpdatedAt
 }
 
 func (c *Comment) AppendEvent(events []*github.IssueEvent) []*github.IssueEvent {
@@ -87,7 +87,7 @@ func (r *ReviewComment) Match(matcher Matcher) bool {
 }
 
 func (r *ReviewComment) Date() *time.Time {
-	return r.CreatedAt
+	return r.UpdatedAt
 }
 
 func (r *ReviewComment) AppendEvent(events []*github.IssueEvent) []*github.IssueEvent {

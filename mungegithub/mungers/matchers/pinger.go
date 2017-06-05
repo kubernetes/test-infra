@@ -17,9 +17,8 @@ limitations under the License.
 package matchers
 
 import (
-	"time"
-
 	"github.com/google/go-github/github"
+	"time"
 )
 
 // Pinger checks if it's time to send a ping.
@@ -95,7 +94,7 @@ func (p *Pinger) getPings(comments []*github.IssueComment, startDate *time.Time)
 	return Items{}.
 		AddComments(comments...).
 		Filter(MungerNotificationName(p.keyword)).
-		Filter(CreatedAfter(*startDate))
+		Filter(UpdatedAfter(*startDate))
 }
 
 func (p *Pinger) isMaxReached(pings Items) bool {

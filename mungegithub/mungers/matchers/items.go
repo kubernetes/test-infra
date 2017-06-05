@@ -95,6 +95,12 @@ func (i Items) Swap(x, y int) {
 
 // Less compares two Items
 func (i Items) Less(x, y int) bool {
+	if i[x].Date() == nil {
+		return true
+	} else if i[y].Date() == nil {
+		return false
+	}
+
 	return i[x].Date().Before(*i[y].Date())
 }
 
