@@ -28,18 +28,19 @@
 # secret "hookmanager-cred" deleted
 # secret "hookmanager-cred" created
 
+set -o errexit
+set -o nounset
+set -o pipefail
 
 # check if the secret already exists in the k8s cluster - if the command below returns zero then the secret already exists
+set +e
 kubectl get secret hookmanager-cred &> /dev/null
 if [ $(echo $?) -eq 0 ]; then
   echo "Auth token secret already defined for this cluster.  Please remove via ./delete_auth_k8s.sh before recreating.";
   exit 1;
 fi
+set -e
 
-#set errexit, nounset, pipefail
-set -o errexit
-set -o nounset
-set -o pipefail
 
 
 
