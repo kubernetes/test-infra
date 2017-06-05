@@ -15,10 +15,7 @@
 # limitations under the License.
 
 # Usage:
-# The script builds and run tests affected by modified files.
-#
-# The list of modified files is created based on the git-diff options passed
-# as parameters to this command.
+# The script deletes auth token secrets in the k8s cluster and on github.
 #
 # Examples:
 # ./delete_auth_k8s.sh
