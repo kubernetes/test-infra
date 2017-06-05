@@ -85,9 +85,9 @@ elif [[ "${JENKINS_USE_LOCAL_BINARIES:-}" =~ ^[yY]$ ]]; then
   echo 'Send --extract=local to scenarios/kubernetes_e2e.py'
   exit 1
 elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
-  # This is for test, staging, and prod jobs on GKE, where we want to
-  # test what's running in GKE by default rather than some CI build.
-  e2e_go_args+=(--extract="gke")
+  echo 'ERROR: JENKINS_USE_SERVER_VERSION no longer supported.'
+  echo 'Send --extract=gke to scenarios/kubernetes_e2e.py'
+  exit 1
 elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
   # Use GCI image builtin version. Needed for GCI release qual tests.
   e2e_go_args+=(--extract="gci/${JENKINS_GCI_HEAD_IMAGE_FAMILY}")

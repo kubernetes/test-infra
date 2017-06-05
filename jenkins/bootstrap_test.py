@@ -2110,6 +2110,7 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
                     ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
                     ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
+                    ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
                     ('PERF_TESTS=', '--perf'),
                     ('USE_KUBEMARK=', '--kubemark'),
