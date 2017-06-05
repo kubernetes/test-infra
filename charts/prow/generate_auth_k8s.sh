@@ -1,5 +1,37 @@
 #!/bin/bash
 
+#!/bin/bash
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Usage:
+# The script builds and run tests affected by modified files.
+#
+# The list of modified files is created based on the git-diff options passed
+# as parameters to this command.
+#
+# Example:
+# ./generate_auth_k8s.sh
+# Enter GitHub username: <MY-BOT-ACCOUNT>
+# <MY-BOT-ACCOUNT>'s GitHub Password:
+# wrote results to file: github_cred
+# GITHUB_AUTH_ID=99013573
+# GITHUB_AUTH_TOKEN=<TOKEN_VALUE>
+# secret "hookmanager-cred" deleted
+# secret "hookmanager-cred" created
+
+
 # check if the secret already exists in the k8s cluster - if the command below returns zero then the secret already exists
 kubectl get secret hookmanager-cred &> /dev/null
 if [ $(echo $?) -eq 0 ]; then

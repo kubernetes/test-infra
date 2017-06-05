@@ -37,7 +37,7 @@ When undeploying use helm and the delete_auth_k8s script provided. This script r
 
 ```bash
 helm delete <RELEASE_NAME>
-./generate_auth_k8s.sh
+./delete_auth_k8s.sh
 ```
 
 ## Configuration
