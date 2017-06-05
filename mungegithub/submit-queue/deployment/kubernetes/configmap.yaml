@@ -24,8 +24,7 @@ data:
     \"pull-kubernetes-kubemark-e2e-gce\",\
     \"pull-kubernetes-e2e-gce-etcd3\",\
     \"pull-kubernetes-bazel\",\
-    \"pull-kubernetes-e2e-kops-aws\",\
-    \"pull-kubernetes-federation-e2e-gce\""
+    \"pull-kubernetes-e2e-kops-aws\""
 
   submit-queue.protected-branches: "master"
   submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"

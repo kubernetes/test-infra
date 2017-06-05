@@ -41,7 +41,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 90
+        timeout: 130
         fail: true
     builders:
     - shell: |
