@@ -325,13 +325,9 @@ def cluster_name(cluster, build):
 def setup_extract(extract, mode, runner_args):
     if not extract:
         return
-    if extract == 'local':
-        # TODO(fejta): delete this if block after pushing a RAW_EXTRACT image
-        mode.add_environment('JENKINS_USE_LOCAL_BINARIES=y')
-    else:
-        mode.add_environment('RAW_EXTRACT=y')  # TODO(fejta): delete this
-        if extract != 'none':
-            runner_args.append('--extract=%s' % extract)
+    mode.add_environment('RAW_EXTRACT=y')  # TODO(fejta): delete this
+    if extract != 'none':
+        runner_args.append('--extract=%s' % extract)
 
 
 
@@ -527,7 +523,7 @@ def create_parser():
         '--save', default=None,
         help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
     parser.add_argument(
-        '--tag', default='v20170531-e6de0525', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170604-7a224919', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
