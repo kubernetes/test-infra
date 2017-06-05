@@ -99,6 +99,12 @@
         timeout: 140
         frequency: '@hourly'
         trigger-job: ''
+    - kubernetes-e2e-kops-aws-release-1-7: #justinsb
+        job-name: ci-kubernetes-e2e-kops-aws-release-1-7
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@hourly'
+        trigger-job: ''    
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
         jenkins-timeout: 150
@@ -336,23 +342,23 @@
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
 
-    # gce-1.5
-    - kubernetes-e2e-gce-scalability-release-1.5:
-        job-name: ci-kubernetes-e2e-gce-scalability-release-1.5
+    # gce-1.7
+    - kubernetes-e2e-gce-scalability-release-1-7:
+        job-name: ci-kubernetes-e2e-gce-scalability-release-1-7
         jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
-        trigger-job: 'ci-kubernetes-build-1.5'
+        trigger-job: 'ci-kubernetes-build-1.7'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.6'
 
-    # gci-gce-1.5
-    - kubernetes-e2e-gci-gce-scalability-release-1.5:
-        job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1.5
+    # gci-gce-1.7
+    - kubernetes-e2e-gci-gce-scalability-release-1-7:
+        job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
         jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
-        trigger-job: 'ci-kubernetes-build-1.5'
+        trigger-job: 'ci-kubernetes-build-1.7'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.6'
 
@@ -364,7 +370,7 @@
         frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.6'
         use-blocker: true
-        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1.5'
+        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1-7'
     - kubernetes-e2e-gce-federation-release-1.6:
         job-name: ci-kubernetes-e2e-gce-federation-release-1.6
         jenkins-timeout: 1020
@@ -380,7 +386,7 @@
         frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.6'
         use-blocker: true
-        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1.5'
+        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1-7'
 
     # gce-features
     - kubernetes-e2e-gce-ingress:
