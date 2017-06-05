@@ -89,8 +89,9 @@ elif [[ "${JENKINS_USE_SERVER_VERSION:-}" =~ ^[yY]$ ]]; then
   echo 'Send --extract=gke to scenarios/kubernetes_e2e.py'
   exit 1
 elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
-  # Use GCI image builtin version. Needed for GCI release qual tests.
-  e2e_go_args+=(--extract="gci/${JENKINS_GCI_HEAD_IMAGE_FAMILY}")
+  echo 'ERROR: JENKINS_USE_GCI_VERSION no longer supported'
+  echo 'Send --extract=gci/FAMILY to scenarios/kubernetes_e2e.py'
+  exit 1
 else
   # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
   # usually what we're testing.

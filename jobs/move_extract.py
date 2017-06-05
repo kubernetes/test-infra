@@ -29,9 +29,10 @@ def test_infra(*paths):
 
 def sort():
     """Sort config.json alphabetically."""
+    # pylint: disable=too-many-branches
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
-    regexp = re.compile(r'JENKINS_USE_SERVER_VERSION=y')
+    regexp = re.compile(r'JENKINS_USE_GCI_VERSION=y|JENKINS_GCI_HEAD_IMAGE_FAMILY=(.+)')
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
@@ -40,28 +41,32 @@ def sort():
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         if migrated:
-            if 'JENKINS_USE_SERVER_VERSION=y' in env:
+            if 'JENKINS_USE_GCI_VERSION=' in env or 'JENKINS_GCI_HEAD_IMAGE_FAMILY=' in env:
                 problems.append(job)
                 continue
-        extract = None
+        gci = family = None
         lines = []
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            if extract:
-                print >>sys.stderr, 'Duplicate extracts:', job, line
+            if family and gci:
+                print >>sys.stderr, 'Duplicated:', job, line
                 problems.append(job)
                 break
-            extract = True
+            if mat.group(1):
+                family = mat.group(1)
+            else:
+                gci = True
         else:
-            if not extract:
+            if bool(gci) ^ bool(family):
                 problems.append(job)
                 continue
-            with open(test_infra('jobs/%s.env' % job), 'w') as fp:
-                fp.write('\n'.join(lines))
-            values['args'].append('--extract=gke')
+            if family:
+                with open(test_infra('jobs/%s.env' % job), 'w') as fp:
+                    fp.write('\n'.join(lines))
+                values['args'].append('--extract=gci/%s' % family)
     with open(test_infra('jobs/config.json'), 'w') as fp:
         fp.write(json.dumps(configs, sort_keys=True, indent=2))
         fp.write('\n')

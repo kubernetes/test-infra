@@ -2111,6 +2111,8 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
                     ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
                     ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
+                    ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
+                    ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
                     ('PERF_TESTS=', '--perf'),
                     ('USE_KUBEMARK=', '--kubemark'),
