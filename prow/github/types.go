@@ -78,6 +78,7 @@ type PullRequest struct {
 	Head               PullRequestBranch `json:"head"`
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
+	Assignees          []User            `json:"assignees"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -209,4 +210,39 @@ type Commit struct {
 	Added    []string `json:"added"`
 	Removed  []string `json:"removed"`
 	Modified []string `json:"modified"`
+}
+
+// ReviewEvent is what GitHub sends us when a PR review is changed.
+type ReviewEvent struct {
+	Action      string `json:"action"`
+	PullRequest `json:"pull_request"`
+	Repo        `json:"repository"`
+	Review      `json:"review"`
+}
+
+// Review describes a Pull Request review.
+type Review struct {
+	ID      int `json:"id"`
+	User    `json:"user"`
+	Body    string `json:"body"`
+	State   string `json:"state"`
+	HTMLURL string `json:"html_url"`
+}
+
+// ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
+type ReviewCommentEvent struct {
+	Action      string `json:"action"`
+	PullRequest `json:"pull_request"`
+	Repo        `json:"repository"`
+	Comment     ReviewComment `json:"comment"`
+}
+
+// ReviewComment describes a Pull Request review.
+type ReviewComment struct {
+	ID       int `json:"id"`
+	ReviewID int `json:"pull_request_review_id"`
+	User     `json:"user"`
+	Body     string `json:"body"`
+	Path     string `json:"path"`
+	HTMLURL  string `json:"html_url"`
 }
