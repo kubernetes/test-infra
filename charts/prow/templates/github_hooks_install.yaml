@@ -30,7 +30,7 @@ spec:
         - name: BOT_USER_ID
           value: "{{ .Values.githubBotAccount }}"
         - name: HOOK_URL
-          value: "{{ .Values.githubHookConsumerAddress }}"
+          value: "{{ .Values.prowDomain }}/hook"
         - name: REPOS_TO_HOOK
           value: "{{ .Values.repos }}"
         - name: AUTH_TOKEN

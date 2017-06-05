@@ -28,7 +28,7 @@ spec:
     - prow.cnct.io
     secretName: prow-cnct-cert
   rules:
-  - host: prow.cnct.io
+  - host: {{ .Values.prowDomain }}
     http:
       paths:
       - path: /*

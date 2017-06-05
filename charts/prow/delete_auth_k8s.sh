@@ -1,6 +1,10 @@
 #!/bin/sh
 
-set -e
+#set errexit, nounset, pipefail
+set -o errexit
+set -o nounset
+set -o pipefail
+
 GITHUB_USER_NAME=`kubectl get secret hookmanager-cred --output=jsonpath={.data.user_id} | base64 --decode | tr -d '\n\r'`
 GITHUB_AUTH_ID=`kubectl get secret hookmanager-cred --output=jsonpath={.data.auth_id} | base64 --decode | tr -d '\n\r'`
 

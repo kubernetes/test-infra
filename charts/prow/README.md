@@ -4,7 +4,7 @@ This is a helm chart for the kubernetes [test-infra prow project](https://github
 
 ## Usage
 
-This assumes a pre create k8s cluster.
+This assumes a pre-created k8s cluster.
 
 ### github auth tokens
 
@@ -14,8 +14,8 @@ One goal of this chart was to minimize the manual steps around github auth token
 
 ```bash
 ./generate_auth_k8s.sh
-Enter GitHub username: samsungbot
-samsungbot's GitHub Password:
+Enter GitHub username: <MY-BOT-ACCOUNT>
+<MY-BOT-ACCOUNT>'s GitHub Password:
 wrote results to file: github_cred
 GITHUB_AUTH_ID=99013573
 GITHUB_AUTH_TOKEN=<TOKEN_VALUE>
@@ -41,6 +41,8 @@ helm delete <RELEASE_NAME>
 ```
 
 ## Configuration
+
+This chart defaults to the kubernetes production values for prow. Please configure prowDomain to a value you control, since github needs a public address or dns name for webhooks. Also make sure the repos values are also values your control.
 
 
 

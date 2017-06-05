@@ -2,45 +2,22 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+#the bot account used for hook management
 githubBotAccount: samsungbot
-trustedOrgs: samsung-cnct, kubernetes
-githubHookConsumerAddress: "https://prow.cnct.io/hook"
-jenkinsaddress: ""
-repos: 
-  - samsung-cnct/prow-chart
-#  - samsung-cnct/lbex 
-#  - samsung-cnct/documentation 
-#  - samsung-cnct/k2 
-#  - samsung-cnct/terraform-provider-distroimage 
-#  - samsung-cnct/flipbit
-#  - samsung-cnct/gci-iptables-conf-agent
-#  - samsung-cnct/k2-tools
-#  - samsung-cnct/kraken-ci-jobs
-#  - samsung-cnct/k8s-on-joyent
-#  - samsung-cnct/drunkensmee
-#  - samsung-cnct/cassandra-container
-#  - samsung-cnct/teraform-provider-coreosbox
-#  - samsung-cnct/k2cli
-#  - samsung-cnct/kraken-services
-#  - samsung-cnct/careen-docker
-#  - samsung-cnct/technical-onboarding
-#  - samsung-cnct/team-opensource
-#  - samsung-cnct/nc-pod
-#  - samsung-cnct/docs-ghp-staging
-#  - samsung-cnct/samsung-cnct.github.io
-#  - samsung-cnct/homebrew-terraform-provider-coreosbox
-#  - samsung-cnct/mass-ansible-playbook
-#  - samsung-cnct/terraform-provider-execute
-#  - samsung-cnct/logrotate
-#  - samsung-cnct/terraform-provider-coreos
-#  - samsung-cnct/careen
-#  - samsung-cnct/shared-logging-directory
-#  - samsung-cnct/k2-logging-fluentd-daemonset
-#  - samsung-cnct/gci-dnsmasq
-#  - samsung-cnct/vault
-#  - samsung-cnct/kraken
-#  - samsung-cnct/consul
 
+#which orgs are trusted by prow
+trustedOrgs: samsung-cnct, kubernetes
+
+#this must be a domain under your control
+prowDomain: prow.k8s.io
+jenkinsaddress: ""
+
+#make sure these are github repos under your control
+repos: 
+  - kubernetes/test-infra
+#  - kubernetes/kubernetes 
+
+#docker iamges used by prow
 images:
   crier: jfelten/crier:latest
   deck: jfelten/deck:latest
@@ -49,7 +26,6 @@ images:
   horologium: jfelten/horologium:latest
   lego: jetstack/kube-lego:0.1.3
   line: jfelten/line:latest
-  marque: jfelten/marque:latest
   sinker: jfelten/sinker:latest
   splice: jfelten/splice:latest
   tot: jfelten/tot:latest
