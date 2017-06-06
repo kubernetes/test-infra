@@ -480,13 +480,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-current": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_current.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sdev.env", 
       "--env-file=jobs/suite/default.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-current.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -495,13 +495,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_current.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sdev.env", 
       "--env-file=jobs/suite/serial.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -510,13 +510,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_current.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sdev.env", 
       "--env-file=jobs/suite/slow.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -525,13 +525,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-dev": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_dev.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable1.env", 
       "--env-file=jobs/suite/default.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -540,13 +540,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_dev.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable1.env", 
       "--env-file=jobs/suite/serial.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -555,13 +555,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_dev.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable1.env", 
       "--env-file=jobs/suite/slow.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -570,13 +570,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-new": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_new.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable2.env", 
       "--env-file=jobs/suite/default.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -585,13 +585,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_new.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable2.env", 
       "--env-file=jobs/suite/serial.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -600,13 +600,13 @@
       "sig-node"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8s_new.env", 
-      "--env-file=jobs/image/cos_beta.env", 
+      "--env-file=jobs/k8s/k8sstable2.env", 
       "--env-file=jobs/suite/slow.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow.env", 
+      "--extract=gci/gci-59", 
       "--mode=local", 
       "--timeout=150m"
     ], 
