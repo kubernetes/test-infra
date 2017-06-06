@@ -524,3 +524,34 @@ func TestValidPodNames(t *testing.T) {
 		}
 	}
 }
+
+func TestNoDuplicateJobs(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	allJobs := make(map[string]bool)
+	for _, j := range c.AllPresubmits() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in presubmit: %s.", j)
+		}
+		allJobs[j] = true
+	}
+
+	allJobs = make(map[string]bool)
+	for _, j := range c.AllPostsubmits() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in postsubmit: %s.", j)
+		}
+		allJobs[j] = true
+	}
+
+	allJobs = make(map[string]bool)
+	for _, j := range c.AllPeriodics() {
+		if allJobs[j] == true {
+			t.Errorf("Found duplicate job in periodic %s.", j)
+		}
+		allJobs[j] = true
+	}
+}
