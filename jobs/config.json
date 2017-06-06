@@ -5295,7 +5295,7 @@
       "--deployment=none", 
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy", 
       "--timeout=90m", 
-      "--extract=ci/latest"
+      "--extract=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5318,7 +5318,7 @@
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary", 
       "--mode=local", 
       "--timeout=90m", 
-      "--extract=ci/latest"
+      "--extract=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [

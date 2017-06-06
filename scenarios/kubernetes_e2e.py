@@ -413,6 +413,8 @@ def main(args):
         runner_args.append('--publish=%s' % args.publish)
     if args.timeout:
         runner_args.append('--timeout=%s' % args.timeout)
+    if args.skew:
+        runner_args.append('--skew')
 
     setup_extract(args.extract, mode, runner_args)
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
@@ -520,6 +522,9 @@ def create_parser():
     parser.add_argument(
         '--save', default=None,
         help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
+    parser.add_argument(
+        '--skew', action='store_true',
+        help='If we need to run skew tests, pass --skew to kubetest.')
     parser.add_argument(
         '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
