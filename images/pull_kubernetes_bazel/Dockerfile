@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     bash-completion \
     git \
     wget \
+    gettext-base \
     python \
     python-pip && \
     apt-get clean
