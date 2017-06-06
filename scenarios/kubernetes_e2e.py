@@ -326,8 +326,9 @@ def setup_extract(extract, mode, runner_args):
     if not extract:
         return
     mode.add_environment('RAW_EXTRACT=y')  # TODO(fejta): delete this
-    if extract != 'none':
-        runner_args.append('--extract=%s' % extract)
+    for ext in extract:
+        if ext != 'none':
+            runner_args.append('--extract=%s' % ext)
 
 
 def main(args):
@@ -502,7 +503,7 @@ def create_parser():
     parser.add_argument(
         '--charts-tests', action='store_true', help='If the test is a charts test job')
     parser.add_argument(
-        '--extract', help='Pass --extract flag to kubetest')
+        '--extract', action="append", help='Pass --extract flag(s) to kubetest')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(

@@ -124,15 +124,21 @@ class SetupExtractTest(unittest.TestCase):
 
     def test_extract_local(self):
         """Set JENKINS_USE_LOCAL_BINARIES=y when --extract=local."""
-        self.check('local', envs=['RAW_EXTRACT=y'], args=['--extract=local'])
+        self.check(['local'], envs=['RAW_EXTRACT=y'], args=['--extract=local'])
 
     def test_extract_none(self):
         """Set RAW_EXTRACT=y when --extract=none but send nothing to kubetest."""
-        self.check('none', envs=['RAW_EXTRACT=y'], args=[])
+        self.check(['none'], envs=['RAW_EXTRACT=y'], args=[])
 
     def test_extract_other(self):
         """Set RAW_EXTRACT=y and send --extract to kubetest normally."""
-        self.check('other', envs=['RAW_EXTRACT=y'], args=['--extract=other'])
+        self.check(['other'], envs=['RAW_EXTRACT=y'], args=['--extract=other'])
+
+    def test_extract_multiple(self):
+        """Set RAW_EXTRACT=y and send multiple --extract to kubetest normally."""
+        self.check(['k8s1', 'k8s2'],
+                   envs=['RAW_EXTRACT=y'],
+                   args=['--extract=k8s1', '--extract=k8s2'])
 
 
 class ScenarioTest(unittest.TestCase):
