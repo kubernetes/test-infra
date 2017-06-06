@@ -47,31 +47,6 @@ e2e_go_args=( \
   --dump="${ARTIFACTS}" \
 )
 
-# Allow download & unpack of alternate version of tests, for cross-version & upgrade testing.
-#
-# JENKINS_PUBLISHED_SKEW_VERSION adds a second --extract before the other one.
-# The JENKINS_PUBLISHED_SKEW_VERSION extracts to kubernetes_skew.
-# The JENKINS_PUBLISHED_VERSION extracts to kubernetes.
-#
-# For upgrades, PUBLISHED_SKEW should be a new release than PUBLISHED.
-if [[ -n "${JENKINS_PUBLISHED_SKEW_VERSION:-}" ]]; then
-  e2e_go_args+=(--extract="${JENKINS_PUBLISHED_SKEW_VERSION}")
-  # Assume JENKINS_USE_SKEW_KUBECTL == true for backward compatibility
-  : ${JENKINS_USE_SKEW_KUBECTL:=true}
-  if [[ "${JENKINS_USE_SKEW_TESTS:-}" == "true" ]]; then
-    e2e_go_args+=(--skew)  # Get kubectl as well as test code from kubernetes_skew
-  elif [[ "${JENKINS_USE_SKEW_KUBECTL}" == "true" ]]; then
-    # Append kubectl-path of skewed kubectl to test args, since we always
-    # want that to use the skewed kubectl version:
-    #  - for upgrade jobs, we want kubectl to be at the same version as
-    #    master.
-    #  - for client skew tests, we want to use the skewed kubectl
-    #    (that's what we're testing).
-    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
-  fi
-fi
-
-
 # We get the Kubernetes tarballs unless we are going to use old ones
 if [[ -n "${RAW_EXTRACT:-}" ]]; then
   echo 'RAW_EXTRACT is set, --extract set by $@'
@@ -93,9 +68,9 @@ elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
   echo 'Send --extract=gci/FAMILY to scenarios/kubernetes_e2e.py'
   exit 1
 else
-  # use JENKINS_PUBLISHED_VERSION, default to 'ci/latest', since that's
-  # usually what we're testing.
-  e2e_go_args+=(--extract="${JENKINS_PUBLISHED_VERSION:-ci/latest}")
+  echo 'ERROR: RAW_EXTRACT is unset. Please set to signal --extract set by $@'
+  echo 'This requirement will disappear after migration to --extract is finished'
+  exit 1
 fi
 
 if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
@@ -108,6 +83,9 @@ fi
 
 if [[ "${E2E_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--test)
+  if [[ "${SKEW_KUBECTL:-}" == 'y' ]]; then
+      GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
+  fi
   if [[ -n "${GINKGO_TEST_ARGS:-}" ]]; then
     e2e_go_args+=(--test_args="${GINKGO_TEST_ARGS}")
   fi

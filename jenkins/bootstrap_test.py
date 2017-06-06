@@ -2106,6 +2106,10 @@ class JobTest(unittest.TestCase):
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+                    ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
+                    ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
+                    ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
+                    ('JENKINS_USE_SKEW_TESTS=', '--skew'),
                     ('JENKINS_SOAK_MODE', '--soak'),
                     ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
                     ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
@@ -2118,6 +2122,8 @@ class JobTest(unittest.TestCase):
                     ('USE_KUBEMARK=', '--kubemark'),
                 ]
                 for env, fix in black:
+                    if 'JENKINS_PUBLISHED_VERSION' in env and 'kops' in job:
+                        continue  # TOOD(fejta): migrate kops jobs
                     if env in line:
                         self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
                             job, line, env, fix))
@@ -2180,10 +2186,13 @@ class JobTest(unittest.TestCase):
                                 'Job %r, --cluster should be 20 chars or fewer' % job
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
+                    args = config[job]['args']
+                    if not any('--extract=' in a for a in args):
+                        self.fail('e2e job needs --extract flag: %s %s' % (job, args))
                     self.assertTrue(has_matching_env, job)
                     self.assertTrue(right_mode, job)
                     if job.startswith('pull-kubernetes-'):
-                        self.assertIn('--cluster=', config[job]['args'])
+                        self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -2194,12 +2203,11 @@ class JobTest(unittest.TestCase):
                         else:
                             stage = 'gs://kubernetes-release-pull/ci/%s' % job
                             suffix = False
-                        self.assertIn(
-                            '--stage=%s' % stage, config[job]['args'])
+                        self.assertIn('--stage=%s' % stage, args)
                         self.assertEquals(
                             suffix,
-                            any('--stage-suffix=' in a for a in config[job]['args']),
-                            ('--stage-suffix=', suffix, job, config[job]['args']))
+                            any('--stage-suffix=' in a for a in args),
+                            ('--stage-suffix=', suffix, job, args))
 
     def test_config_is_sorted(self):
         """Test jobs/config.json is sorted."""
