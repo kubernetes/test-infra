@@ -521,7 +521,7 @@ def create_parser():
         '--save', default=None,
         help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
     parser.add_argument(
-        '--tag', default='v20170604-7a224919', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
