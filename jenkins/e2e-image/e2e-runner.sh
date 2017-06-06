@@ -47,10 +47,11 @@ e2e_go_args=( \
   --dump="${ARTIFACTS}" \
 )
 
-# We get the Kubernetes tarballs unless we are going to use old ones
+# TODO(fejta): delete all of these soon, as RAW_EXTRACT is the only supported
+# option. Meaning call to e2e-runner.sh needs an --extract flag
 if [[ -n "${RAW_EXTRACT:-}" ]]; then
   echo 'RAW_EXTRACT is set, --extract set by $@'
-  # TODO(fejta): delete everything after here
+  echo 'Note that RAW_EXTRACT is no longer required, feel free to remove'
 elif [[ "${JENKINS_USE_EXISTING_BINARIES:-}" =~ ^[yY]$ ]]; then
   echo 'ERROR: JENKINS_USE_EXISTING_BINARIES no longer supported'
   echo 'Send --extract=none to scenarios/kubernetes_e2e.py'
@@ -67,10 +68,13 @@ elif [[ "${JENKINS_USE_GCI_VERSION:-}" =~ ^[yY]$ ]]; then
   echo 'ERROR: JENKINS_USE_GCI_VERSION no longer supported'
   echo 'Send --extract=gci/FAMILY to scenarios/kubernetes_e2e.py'
   exit 1
-else
-  echo 'ERROR: RAW_EXTRACT is unset. Please set to signal --extract set by $@'
-  echo 'This requirement will disappear after migration to --extract is finished'
+elif [[ -n "${JENKINS_PUBLISHED_VERSION:-}" ]]; then
+  echo 'ERROR: JENKINS_PUBLISHED_VERSION no longer supported'
+  echo 'Send --extract=ci/latest or appropriate kubetest value to scenarios/kubernetes_e2e.py'
   exit 1
+else
+  echo 'RAW_EXTRACT is unset, which is probably fine.'
+  echo 'Ensure kubetest gets an --extract flag (via scenarios/kubernetes_e2e.py)'
 fi
 
 if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
