@@ -106,41 +106,6 @@ class ClusterNameTest(unittest.TestCase):
             self.fail('Name should be short: %s' % actual)
 
 
-class SetupExtractTest(unittest.TestCase):
-    def check(self, extract, envs, args):
-        actual_envs = []
-        actual_args = []
-        class FakeMode(object):
-            @staticmethod
-            def add_environment(env):
-                actual_envs.append(env)
-        kubernetes_e2e.setup_extract(extract, FakeMode, actual_args)
-        self.assertEquals(envs, actual_envs)
-        self.assertEquals(args, actual_args)
-
-    def test_no_extract(self):
-        """Do nothing when --extract=."""
-        self.check(None, envs=[], args=[])
-
-    def test_extract_local(self):
-        """Set JENKINS_USE_LOCAL_BINARIES=y when --extract=local."""
-        self.check(['local'], envs=['RAW_EXTRACT=y'], args=['--extract=local'])
-
-    def test_extract_none(self):
-        """Set RAW_EXTRACT=y when --extract=none but send nothing to kubetest."""
-        self.check(['none'], envs=['RAW_EXTRACT=y'], args=[])
-
-    def test_extract_other(self):
-        """Set RAW_EXTRACT=y and send --extract to kubetest normally."""
-        self.check(['other'], envs=['RAW_EXTRACT=y'], args=['--extract=other'])
-
-    def test_extract_multiple(self):
-        """Set RAW_EXTRACT=y and send multiple --extract to kubetest normally."""
-        self.check(['k8s1', 'k8s2'],
-                   envs=['RAW_EXTRACT=y'],
-                   args=['--extract=k8s1', '--extract=k8s2'])
-
-
 class ScenarioTest(unittest.TestCase):
     """Test for e2e scenario."""
     callstack = []
@@ -179,9 +144,6 @@ class ScenarioTest(unittest.TestCase):
         self.callstack.append(string.join(cmd))
         return FAKE_WORKSPACE_STATUS_V1_6
 
-
-class LocalTest(ScenarioTest):
-    """Class for testing e2e scenario in local mode."""
     def test_local(self):
         """Make sure local mode is fine overall."""
         args = self.parser.parse_args(['--mode=local'])
@@ -192,6 +154,19 @@ class LocalTest(ScenarioTest):
         self.assertNotEqual(self.envs, {})
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
+
+    def test_extract_multiple(self):
+        """Ensure multiple --extract flags are accepted."""
+        args = self.parser.parse_args(['--extract=a', '--extract=b'])
+        self.assertEquals(['a', 'b'], args.extract)
+
+    def test_extract_args(self):
+        """Ensure extract flags are passed to kubetest."""
+        args = self.parser.parse_args(['--extract=foo', '--extract=bar'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--extract=foo', self.callstack[-1])
+            self.assertIn('--extract=bar', self.callstack[-1])
 
     def test_updown(self):
         """Make sure local mode is fine overall."""
@@ -305,8 +280,6 @@ class LocalTest(ScenarioTest):
 
         self.assertEqual(sysexit.exception.code, 2)
 
-class DockerTest(ScenarioTest):
-    """Class for testing e2e scenario in docker mode."""
     def test_docker(self):
         """Make sure docker mode is fine overall."""
         args = self.parser.parse_args()

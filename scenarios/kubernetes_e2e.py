@@ -322,15 +322,6 @@ def cluster_name(cluster, build):
     return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
 
 
-def setup_extract(extract, mode, runner_args):
-    if not extract:
-        return
-    mode.add_environment('RAW_EXTRACT=y')  # TODO(fejta): delete this
-    for ext in extract:
-        if ext != 'none':
-            runner_args.append('--extract=%s' % ext)
-
-
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -417,7 +408,8 @@ def main(args):
     if args.skew:
         runner_args.append('--skew')
 
-    setup_extract(args.extract, mode, runner_args)
+    for ext in args.extract or []:
+        runner_args.append('--extract=%s' % ext)
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
 
     if args.kubeadm:
