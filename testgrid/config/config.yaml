@@ -461,7 +461,7 @@ test_groups:
   days_of_results: 4
 - name: ci-kubernetes-test-go-release-1.7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.7
-  days_of_results: 4  
+  days_of_results: 4
 - name: ci-kubernetes-verify-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-master
 - name: ci-kubernetes-verify-release-1.7
@@ -546,7 +546,7 @@ test_groups:
     name_elements:
     - target_config: Tests name
     - target_config: Context
-    name_format: '%s [%s]'    
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-non-cri-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1.6
   test_name_config:
@@ -1837,7 +1837,7 @@ dashboards:
   - name: build-1.6
     test_group_name: ci-kubernetes-federation-build-1.6
   - name: build-1.7
-    test_group_name: ci-kubernetes-federation-build-1.7  
+    test_group_name: ci-kubernetes-federation-build-1.7
 
 - name: release-1.6-all
   dashboard_tab:
@@ -2003,6 +2003,86 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.6
   - name: kubelet-non-cri-1.6
     test_group_name: ci-kubernetes-node-kubelet-non-cri-1.6
+
+# Blocking tests for the next release
+- name: release-master-blocking
+  dashboard_tab:
+  # Build/Verify
+  - name: build-master
+    test_group_name: ci-kubernetes-build
+  - name: verify-master
+    test_group_name: ci-kubernetes-verify-master
+  - name: test-go-master
+    test_group_name: ci-kubernetes-test-go
+  - name: federation-build-master
+    test_group_name: ci-kubernetes-federation-build
+  # E2E
+  - name: gce-master
+    test_group_name: ci-kubernetes-e2e-gce
+  - name: gci-gce-master
+    test_group_name: ci-kubernetes-e2e-gci-gce
+  - name: gke-master
+    test_group_name: ci-kubernetes-e2e-gke
+  - name: gci-gke-master
+    test_group_name: ci-kubernetes-e2e-gci-gke
+  - name: kubeadm-gce-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  # AWS
+  - name: kops-aws-master
+    test_group_name: ci-kubernetes-e2e-kops-aws
+  # Slow
+  - name: gce-slow-master
+    test_group_name: ci-kubernetes-e2e-gce-slow
+  - name: gci-gce-slow-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
+  - name: gke-slow-master
+    test_group_name: ci-kubernetes-e2e-gke-slow
+  - name: gci-gke-slow-master
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow
+  # Serial
+  - name: gce-serial-master
+    test_group_name: ci-kubernetes-e2e-gce-serial
+  - name: gci-gce-serial-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+  - name: gke-serial-master
+    test_group_name: ci-kubernetes-e2e-gke-serial
+  - name: gci-gke-serial-master
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial
+  # Federation
+  - name: gce-federation-master
+    test_group_name: ci-kubernetes-e2e-gce-federation
+  # Alpha
+  - name: gce-alpha-features-master
+    test_group_name: ci-kubernetes-e2e-gce-alpha-features
+  - name: gci-gce-alpha-features-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+  # Scalability
+  - name: gce-scalability-master
+    test_group_name: ci-kubernetes-e2e-gce-scalability
+  - name: gci-gce-scalability-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  # Ingress
+  - name: gci-gce-ingress-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+  - name: gci-gke-ingress-master
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+  # Reboot
+  - name: gce-reboot-master
+    test_group_name: ci-kubernetes-e2e-gce-reboot
+  - name: gci-gce-reboot-master
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+  - name: gke-reboot-master
+    test_group_name: ci-kubernetes-e2e-gke-reboot
+  - name: gci-gke-reboot-master
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot
+  # Soak
+  - name: ci-kubernetes-soak-gce-master-deploy
+    test_group_name: ci-kubernetes-soak-gce-deploy
+  - name: ci-kubernetes-soak-gce-master-test
+    test_group_name: ci-kubernetes-soak-gce-test
+  # Node
+  - name: kubelet-master
+    test_group_name: ci-kubernetes-node-kubelet
 
 - name: release-1.6-upgrade-skew
   dashboard_tab:
