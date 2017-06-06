@@ -4153,7 +4153,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-new
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
   spec:
     containers:
     - args:
@@ -4186,7 +4186,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   spec:
     containers:
     - args:
@@ -4219,7 +4219,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
   spec:
     containers:
     - args:
@@ -4252,7 +4252,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-current
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
   spec:
     containers:
     - args:
@@ -4285,7 +4285,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
   spec:
     containers:
     - args:
@@ -4318,7 +4318,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
   spec:
     containers:
     - args:
@@ -4351,7 +4351,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
   spec:
     containers:
     - args:
@@ -4384,7 +4384,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
   spec:
     containers:
     - args:
@@ -4417,7 +4417,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
+  name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
   spec:
     containers:
     - args:
