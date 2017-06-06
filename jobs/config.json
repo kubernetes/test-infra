@@ -418,10 +418,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sdev-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sdev.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/default.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.7", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -433,10 +433,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sdev.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/serial.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.7", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -448,10 +448,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sdev.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/slow.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.7", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -463,10 +463,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable1.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/default.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.6", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -478,10 +478,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable1.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/serial.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.6", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -493,10 +493,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable1.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/slow.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.6", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -508,10 +508,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable2.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/default.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.5", 
       "--mode=local", 
       "--timeout=150m"
     ], 
@@ -523,10 +523,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable2.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/serial.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.5", 
       "--mode=local", 
       "--timeout=300m"
     ], 
@@ -538,10 +538,10 @@
   "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/k8s/k8sstable2.env", 
+      "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/suite/slow.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow.env", 
-      "--extract=gci/gci-59", 
+      "--extract=ci/latest-1.5", 
       "--mode=local", 
       "--timeout=150m"
     ], 
