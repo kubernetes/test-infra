@@ -37,7 +37,7 @@ const (
 	noIssueArgument = "no-issue"
 )
 
-var AssociatedIssueRegex = regexp.MustCompile(`#(\d+)`)
+var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
 
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
