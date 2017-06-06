@@ -1429,7 +1429,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-sd-logging.env", 
-      "--timeout=120m", 
+      "--timeout=180m", 
       "--extract=ci/latest"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -2138,7 +2138,7 @@
     "args": [
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-sd-logging.env", 
-      "--timeout=120m", 
+      "--timeout=180m", 
       "--extract=ci/latest"
     ], 
     "scenario": "kubernetes_e2e", 
