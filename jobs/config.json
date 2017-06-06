@@ -416,7 +416,7 @@
   }, 
   "ci-kubernetes-e2e-gce-alpha-features-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=180m", 
@@ -732,7 +732,7 @@
   }, 
   "ci-kubernetes-e2e-gce-federation-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--mode=local", 
@@ -1458,7 +1458,7 @@
   "ci-kubernetes-e2e-gce-reboot-release-1-7": {
     "args": [
       "--cluster=err-e2e", 
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-reboot-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=180m", 
@@ -1510,7 +1510,7 @@
   }, 
   "ci-kubernetes-e2e-gce-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=50m", 
@@ -1625,7 +1625,7 @@
   }, 
   "ci-kubernetes-e2e-gce-serial-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=300m", 
@@ -1689,7 +1689,7 @@
   }, 
   "ci-kubernetes-e2e-gce-slow-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-slow-release-1-7.env", 
       "--timeout=150m", 
       "--extract=ci/latest-1.7", 
@@ -1917,7 +1917,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=180m", 
@@ -2078,7 +2078,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=90m", 
@@ -2167,7 +2167,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-reboot-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=180m", 
@@ -2219,7 +2219,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=50m", 
@@ -2334,7 +2334,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-serial-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=300m", 
@@ -2398,7 +2398,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gce-slow-release-1-7": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--timeout=150m", 
@@ -2483,7 +2483,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gke-ingress-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-ingress-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--mode=local", 
@@ -2592,7 +2592,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gke-reboot-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-reboot-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -2629,7 +2629,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gke-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-release-1-7.env", 
       "--extract=ci/latest-1.7", 
       "--mode=local", 
@@ -2678,7 +2678,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gke-serial-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-serial-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -2727,7 +2727,7 @@
   }, 
   "ci-kubernetes-e2e-gci-gke-slow-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -4070,7 +4070,7 @@
   }, 
   "ci-kubernetes-e2e-gke-reboot-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-reboot-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -4107,7 +4107,7 @@
   }, 
   "ci-kubernetes-e2e-gke-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -4157,7 +4157,7 @@
   }, 
   "ci-kubernetes-e2e-gke-serial-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-serial-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -4206,7 +4206,7 @@
   }, 
   "ci-kubernetes-e2e-gke-slow-release-1-7": {
     "args": [
-      "--env-file=platforms/gke.env", 
+      "--env-file=jobs/platform/gke.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gke-slow-release-1-7.env", 
       "--mode=local", 
       "--extract=ci/latest-1.7", 
@@ -4344,7 +4344,7 @@
   "ci-kubernetes-e2e-kops-aws-release-1-7": {
     "args": [
       "--cluster=e2e-kops-aws-release-17.test-aws.k8s.io", 
-      "--env-file=platforms/kops_aws.env", 
+      "--env-file=jobs/platform/kops_aws.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env", 
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws-release-1-7.env", 
       "--timeout=120m"
@@ -5023,7 +5023,7 @@
   }, 
   "ci-kubernetes-soak-gce-1-7-deploy": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1-7-deploy.env", 
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1-7-deploy", 
       "--extract=ci/latest-1.7", 
@@ -5038,7 +5038,7 @@
   }, 
   "ci-kubernetes-soak-gce-1-7-test": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gce-1-7-test.env", 
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1-7-deploy", 
       "--extract=ci/latest-1.7", 
@@ -5268,7 +5268,7 @@
   }, 
   "ci-kubernetes-soak-gci-gce-1-7-deploy": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1-7-deploy.env", 
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1-7-deploy", 
       "--extract=ci/latest-1.7", 
@@ -5283,7 +5283,7 @@
   }, 
   "ci-kubernetes-soak-gci-gce-1-7-test": {
     "args": [
-      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/ci-kubernetes-soak-gci-gce-1-7-test.env", 
       "--extract=ci/latest-1.7", 
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1-7-deploy", 

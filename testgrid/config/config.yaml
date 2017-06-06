@@ -1018,24 +1018,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-deploy
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-slow
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-slow
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-slow
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-new-serial
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-current-serial
-- name: ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-beta-k8s-dev-serial
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
