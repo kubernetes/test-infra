@@ -2187,8 +2187,19 @@ class JobTest(unittest.TestCase):
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
-                    if not any('--extract=' in a for a in args):
+                    extracts = [a for a in args if '--extract=' in a]
+                    if not extracts:
                         self.fail('e2e job needs --extract flag: %s %s' % (job, args))
+                    if any(s in job for s in [
+                            'upgrade', 'skew', 'downgrade', 'rollback',
+                            'ci-kubernetes-e2e-gce-canary',
+                    ]):
+                        expected = 2
+                    else:
+                        expected = 1
+                    if len(extracts) != expected:
+                        self.fail('Wrong number of --extract args (%d != %d) in %s' % (
+                            len(extracts), expected, job))
                     self.assertTrue(has_matching_env, job)
                     self.assertTrue(right_mode, job)
                     if job.startswith('pull-kubernetes-'):

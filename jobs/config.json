@@ -5062,8 +5062,7 @@
       "--stage=gs://kubernetes-release-dev/ci/ci-kubernetes-soak-gce-federation-deploy", 
       "--test=false", 
       "--down=false", 
-      "--timeout=90m", 
-      "--extract=ci/latest"
+      "--timeout=90m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5531,8 +5530,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5549,8 +5547,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel", 
       "--cluster=", 
       "--mode=local", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5566,8 +5563,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5583,8 +5579,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5600,8 +5595,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gci", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5618,8 +5612,7 @@
       "--stage=gs://kubernetes-release-dev/ci", 
       "--stage-suffix=pull-gke", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5636,8 +5629,7 @@
       "--stage=gs://kubernetes-release-dev/ci", 
       "--stage-suffix=pull-gke-gci", 
       "--cluster=", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5649,11 +5641,11 @@
       "--cluster=", 
       "--env-file=platforms/gce.env", 
       "--env-file=jobs/pull-kubernetes-e2e-kubeadm-gce.env", 
+      "--extract=local", 
       "--kubeadm=pull", 
       "--deployment=kubernetes-anywhere", 
       "--mode=local", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5673,8 +5665,7 @@
       "--federation", 
       "--deployment=none", 
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy", 
-      "--timeout=90m", 
-      "--extract=local"
+      "--timeout=90m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5696,8 +5687,7 @@
       "--deployment=none", 
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary", 
       "--mode=local", 
-      "--timeout=90m", 
-      "--extract=local"
+      "--timeout=90m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5715,8 +5705,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce", 
       "--test=false", 
       "--kubemark", 
-      "--timeout=45m", 
-      "--extract=ci/latest"
+      "--timeout=45m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -5734,8 +5723,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-gci", 
       "--test=false", 
       "--kubemark", 
-      "--timeout=55m", 
-      "--extract=ci/latest"
+      "--timeout=55m"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
