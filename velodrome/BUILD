@@ -9,7 +9,6 @@ sh_test(
         ":config.py",
         ":configs",
     ],
-    tags = ["manual"],
 )
 
 filegroup(
