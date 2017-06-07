@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: boskos-reaper
+  name: boskos-janitor
   labels:
-    app: boskos-reaper
+    app: boskos-janitor
 spec:
   replicas: 1  # one canonical source of resources
   template:
     metadata:
       labels:
-        app: boskos-reaper
+        app: boskos-janitor
     spec:
       terminationGracePeriodSeconds: 30
       containers:
-      - name: boskos-reaper
-        image: gcr.io/k8s-testimages/reaper:v20170502-1897e866
+      - name: boskos-janitor
+        image: gcr.io/k8s-testimages/janitor:v20170502-b59bddad
