@@ -26,29 +26,19 @@ import (
 )
 
 var (
-	clean    = janitorClean
-	POOLSIZE = 10 // Maximum concurrent janitor goroutines
+	clean      = janitorClean
+	POOLSIZE   = 10 // Maximum concurrent janitor goroutines
+	BUFFERSIZE = 1  // Maximum holding resources
 )
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
 	logrus.Info("Initialized boskos client!")
-	janitorPool := make(chan string, 1)
-
-	for i := 0; i < POOLSIZE; i++ {
-		go janitor(boskos, janitorPool)
-	}
-
+	buffer := setup(boskos, POOLSIZE, BUFFERSIZE)
 	for {
-		if proj, err := boskos.Acquire("project", "dirty", "cleaning"); err != nil {
-			logrus.WithError(err).Error("Boskos acquire failed!")
-			time.Sleep(time.Minute)
-		} else if proj == "" {
-			time.Sleep(time.Minute)
-		} else {
-			janitorPool <- proj // will block until pool has a free slot
-		}
+		run(boskos, buffer)
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -63,10 +53,34 @@ type boskosClient interface {
 	ReleaseOne(name string, dest string) error
 }
 
-// async janitor goroutine
-func janitor(c boskosClient, pool chan string) {
+func setup(c boskosClient, janitorCount int, bufferSize int) chan string {
+	buffer := make(chan string, 1)
+	for i := 0; i < janitorCount; i++ {
+		go janitor(c, buffer)
+	}
+	return buffer
+}
+
+func run(c boskosClient, buffer chan string) int {
+	totalAcquire := 0
+
 	for {
-		proj := <-pool
+		if proj, err := c.Acquire("project", "dirty", "cleaning"); err != nil {
+			logrus.WithError(err).Error("Boskos acquire failed!")
+			return totalAcquire
+		} else if proj == "" {
+			return totalAcquire
+		} else {
+			buffer <- proj // will block until buffer has a free slot
+			totalAcquire++
+		}
+	}
+}
+
+// async janitor goroutine
+func janitor(c boskosClient, buffer chan string) {
+	for {
+		proj := <-buffer
 
 		dest := "free"
 		if err := clean(proj); err != nil {
