@@ -5589,6 +5589,14 @@
       "UNKNOWN"
     ]
   }, 
+  "maintenance-ci-prow-config-upload": {
+    "args": [
+      "cd test-infra/prow", 
+      "make update-config", 
+      "make update-plugins"
+    ], 
+    "scenario": "execute"
+  }, 
   "maintenance-pull-janitor": {
     "args": [
       "--pr-janitor"
