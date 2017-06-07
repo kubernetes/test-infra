@@ -615,26 +615,26 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-slow-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1-6
-- name: ci-kubernetes-e2e-gci-gke-ingress-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1.6
-- name: ci-kubernetes-e2e-gci-gke-reboot-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1.6
-- name: ci-kubernetes-e2e-gci-gke-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-release-1.6
-- name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial-release-1.6
-- name: ci-kubernetes-e2e-gci-gke-slow-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-release-1.6
-- name: ci-kubernetes-e2e-gke-alpha-features-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1.6
-- name: ci-kubernetes-e2e-gke-reboot-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-reboot-release-1.6
-- name: ci-kubernetes-e2e-gke-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-release-1.6
-- name: ci-kubernetes-e2e-gke-serial-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-serial-release-1.6
-- name: ci-kubernetes-e2e-gke-slow-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-slow-release-1.6
+- name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+- name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1-6
+- name: ci-kubernetes-e2e-gci-gke-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-release-1-6
+- name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial-release-1-6
+- name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-release-1-6
+- name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1-6
+- name: ci-kubernetes-e2e-gke-reboot-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-reboot-release-1-6
+- name: ci-kubernetes-e2e-gke-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-release-1-6
+- name: ci-kubernetes-e2e-gke-serial-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-serial-release-1-6
+- name: ci-kubernetes-e2e-gke-slow-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-slow-release-1-6
 # 1.6 soak
 - name: ci-kubernetes-soak-gce-1.6-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.6-deploy
@@ -1695,7 +1695,7 @@ dashboards:
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl gce e2e tests for 1.6 branch'
   - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl gke e2e tests for 1.6 branch'
   - name: gce-1.5
@@ -1829,7 +1829,7 @@ dashboards:
     base_options: 'include-filter-by-regex=Volume'
     description: 'storage gce e2e tests for 1.6 branch'
   - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
     base_options: 'include-filter-by-regex=Volume'
     description: 'storage gke e2e tests for 1.6 branch'
   - name: gce-1.5
@@ -1837,7 +1837,7 @@ dashboards:
     base_options: 'include-filter-by-regex=Volume'
     description: 'storage gce e2e tests for 1.5 branch'
   - name: gke-1.5
-    test_group_name: ci-kubernetes-e2e-gke-release-1.5
+    test_group_name: ci-kubernetes-e2e-gke-release-1-5
     base_options: 'include-filter-by-regex=Volume'
     description: 'storage gke e2e tests for 1.5 branch'
   - name: gce-flaky
@@ -1942,25 +1942,25 @@ dashboards:
   - name: gci-gce-slow-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1-6
   - name: gci-gke-ingress-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
   - name: gci-gke-reboot-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
   - name: gci-gke-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
   - name: gci-gke-serial-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
   - name: gci-gke-slow-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
   - name: gke-alpha-features-1.6
-    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
   - name: gke-reboot-1.6
-    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-6
   - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
   - name: gke-serial-1.6
-    test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
   - name: gke-slow-1.6
-    test_group_name: ci-kubernetes-e2e-gke-slow-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
   - name: soak-gce-1.6-deploy
     test_group_name: ci-kubernetes-soak-gce-1.6-deploy
   - name: soak-gce-1.6-test
@@ -1996,9 +1996,9 @@ dashboards:
   - name: gci-gce-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-6
   - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
   - name: gci-gke-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
   - name: kubeadm-gce-1.6
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
   # AWS
@@ -2010,18 +2010,21 @@ dashboards:
   - name: gci-gce-slow-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-slow-release-1-6
   - name: gke-slow-1.6
-    test_group_name: ci-kubernetes-e2e-gke-slow-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
   - name: gci-gke-slow-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
   # Serial
   - name: gce-serial-1.6
     test_group_name: ci-kubernetes-e2e-gce-serial-release-1-6
   - name: gci-gce-serial-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1-6
   - name: gke-serial-1.6
-    test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
   - name: gci-gke-serial-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
+  # Federation
+  - name: gce-federation-1.6
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1.6
   # Alpha
   - name: gce-alpha-features-1.6
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
@@ -2036,16 +2039,16 @@ dashboards:
   - name: gci-gce-ingress-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
   - name: gci-gke-ingress-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
   # Reboot
   - name: gce-reboot-1.6
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-6
   - name: gci-gce-reboot-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot-release-1-6
   - name: gke-reboot-1.6
-    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1.6
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-6
   - name: gci-gke-reboot-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
   # Soak
   - name: ci-kubernetes-soak-gce-1.6-deploy
     test_group_name: ci-kubernetes-soak-gce-1.6-deploy
