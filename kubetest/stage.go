@@ -59,7 +59,7 @@ func (s *stageStrategy) Enabled() bool {
 }
 
 // Stage the release build to GCS.
-// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation?
+// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation? --noupdatelatest
 func (s *stageStrategy) Stage() error {
 	name := k8s("release", "push-build.sh")
 	b := s.bucket
@@ -69,6 +69,7 @@ func (s *stageStrategy) Stage() error {
 	args := []string{
 		"--nomock",
 		"--verbose",
+		"--noupdatelatest", // we may need to expose control of this if build jobs start using kubetest
 		fmt.Sprintf("--bucket=%v", b),
 	}
 	if s.ci {
