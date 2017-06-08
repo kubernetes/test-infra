@@ -1267,7 +1267,7 @@ func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject
 }
 
 // Returns true if we can discard the PR from the queue, false if we must keep it for later.
-// If you modify this, consider modifying maybeMergeBatch too.
+// If you modify this, consider modifying doBatchMerge too.
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	interruptedObj := sq.interruptedObj
 	sq.interruptedObj = nil
