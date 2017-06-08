@@ -54,4 +54,6 @@ func TestVend(t *testing.T) {
 	}
 	expectEqual(t, "fourth vend, different instance", store2.vend("a"), 4)
 
+	// test real stuff
+	expectEqual(t, "real old job", store2.vend("ci-kubernetes-build-1.3"), 31)
 }

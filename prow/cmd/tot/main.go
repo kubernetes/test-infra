@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"sync"
 
@@ -79,7 +80,19 @@ func (s *store) save() error {
 func (s *store) vend(b string) int {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	n := s.Number[b] + 1
+	n, ok := s.Number[b]
+	if !ok {
+		if out, err := exec.Command("gsutil", "cat", fmt.Sprintf("gs://kubernetes-jenkins/logs/%s/latest-build.txt", b)).Output(); err != nil {
+			log.Error(err)
+			n = 0
+		} else {
+			if n, err = strconv.Atoi(string(out)); err != nil {
+				log.Error(err)
+				n = 0
+			}
+		}
+	}
+	n++
 	s.Number[b] = n
 
 	err := s.save()
