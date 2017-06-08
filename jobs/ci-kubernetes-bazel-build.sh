@@ -34,7 +34,14 @@ if [[ "${rc}" == 0 ]]; then
     echo "Kubernetes version missing; not uploading ci artifacts."
     rc=1
   else
-    bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
+    push_build="../release/push-build.sh"
+    if [[ -x "${push_build}" ]]; then
+      "${push_build}" --bucket=kubernetes-release-dev --nomock --verbose --ci \
+        --gcs-suffix=-bazel && rc=$? || rc=$?
+    else
+      echo "release repository missing; using Bazel gcs upload rule directly"
+      bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
+    fi
   fi
 fi
 
