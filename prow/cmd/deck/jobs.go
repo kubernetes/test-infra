@@ -61,6 +61,7 @@ type Job struct {
 
 type JobAgent struct {
 	kc      *kube.Client
+	pkc     *kube.Client
 	jc      *jenkins.Client
 	jobs    []Job
 	jobsMap map[string]Job // pod name -> Job
@@ -96,7 +97,7 @@ func (ja *JobAgent) GetLog(name string) ([]byte, error) {
 	}
 	if job.Agent == "" || job.Agent == "kubernetes" {
 		// running on Kubernetes
-		return ja.kc.Namespace(kube.TestPodNamespace).GetLog(name)
+		return ja.pkc.GetLog(name)
 	} else if ja.jc != nil && job.Agent == "jenkins" {
 		// running on Jenkins
 		m := jobNameRE.FindStringSubmatch(name)
