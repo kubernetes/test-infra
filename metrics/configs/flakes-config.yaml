@@ -3,6 +3,8 @@ query: |
   #standardSQL
   select
     job,
+    first_stamp,
+    last_stamp,
     build_consistency,
     commit_consistency,
     flakes,
@@ -21,8 +23,10 @@ query: |
   from (
     select
       job, /* name of job */
-      round(sum(if(flaked=1,passed,runs))/sum(runs),3) build_consistency, /* percentage of runs that flaked */
-      round(1-sum(flaked)/sum(runs),3) commit_consistency, /* percentage of commits that flaked */
+      max(stamp) last_stamp,
+      min(stamp) first_stamp,
+      round(sum(if(flaked=1,passed,runs))/sum(runs),3) build_consistency, /* percentage of runs that did not flake */
+      round(1-sum(flaked)/count(distinct commit),3) commit_consistency, /* percentage of commits that did not flake */
       sum(flaked) flakes, /* number of times it flaked */
       sum(runs) runs, /* number of times the job ran */
       count(distinct commit) commits, /* number of commits tested */
@@ -30,7 +34,7 @@ query: |
     from (
       select
         job,
-        stamp,  /* TODO(fejta): use or remove */
+        stamp,
         num,
         commit,
         if(passed = runs or passed = 0, 0, 1) flaked, /* consistent: always pass or always fail */
@@ -100,3 +104,22 @@ jqfilter: |
       flakiest: ([(.flakiest[] | select(.flakes|tonumber >= 4) | {
         (.name): (.flakes|tonumber)}) ])| add
   }})] | add
+
+jqmeasurements: |
+  ([(.[] | .runs|tonumber)] | add) as $totalruns |
+  ([(.[] | .commits|tonumber)] | add) as $totalcommits |
+  [(.[] | {
+    measurement: "flakes",
+    tags: {
+      job: (.job)
+    },
+    fields: {
+      build_consistency: (.build_consistency|tonumber),
+      commit_consistency: (.commit_consistency|tonumber),
+      build_consistency_weighted: ((.build_consistency|tonumber) * (.runs|tonumber) / $totalruns),
+      commit_consistency_weighted: ((.commit_consistency|tonumber) * (.commits|tonumber) / $totalcommits),
+      flakes: (.flakes|tonumber),
+      first_stamp: (.first_stamp),
+      last_stamp: (.last_stamp)
+    }
+  })]

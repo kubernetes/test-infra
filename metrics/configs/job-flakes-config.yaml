@@ -3,7 +3,7 @@ query: |
   select /* Calculate probability a job flaked this week */
     job,
     round(sum(if(flaked==1,passed,runs))/sum(runs),3) build_consistency,
-    round(1-sum(flaked)/sum(runs),3) commit_consistency,
+    round(1-sum(flaked)/count(distinct commit),3) commit_consistency,
     sum(flaked) flakes,
     sum(runs) runs
   from ( /* Determine whether a (job, pr-num, commit) flaked */

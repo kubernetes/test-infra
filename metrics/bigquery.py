@@ -18,6 +18,7 @@
 
 import argparse
 import glob
+import json
 import os
 import re
 import subprocess
@@ -26,6 +27,8 @@ import time
 import traceback
 
 import yaml
+
+import influxdb
 
 def check(*cmd, **keyargs):
     """Logs and runs the command, raising on errors."""
@@ -61,15 +64,28 @@ def do_jq(jqfilter, data_filename, out_filename, jq_bin='jq'):
     with open(out_filename, 'w') as out_file:
         check([jq_bin, jqfilter, data_filename], stdout=out_file)
 
-def run_metric(project, prefix, metric, query, jqfilter):
+def run_metric(project, prefix, metric, query, jqfilter, jq_point=None, influx=None):
     """Runs query and filters results, uploading data to GCS."""
     stamp = time.strftime('%Y-%m-%d')
     raw = 'raw-%s.json' % stamp
     filtered = 'daily-%s.json' % stamp
     latest = '%s-latest.json' % metric
+    points = '%s-data-points.json' % metric
 
     do_query(query, raw, project)
     do_jq(jqfilter, raw, filtered)
+    if jq_point:
+        if influx:
+            do_jq(jq_point, raw, points)
+            with open(points) as points_file:
+                points = json.load(
+                    points_file,
+                    object_hook=influxdb.Point.from_dict,
+                )
+            influx.push(points, "metrics")
+        else:
+            print >>sys.stderr, 'Skipping upload of %s, no influxdb config.\n' % metric
+
     def copy(src, dst):
         """Use gsutil to copy src to test with minimal caching."""
         check([
@@ -82,7 +98,7 @@ def run_metric(project, prefix, metric, query, jqfilter):
 def all_configs(search='**.yaml'):
     """Returns config files in the metrics dir."""
     return glob.glob(os.path.join(
-        os.path.dirname(__file__), '../metrics', search))
+        os.path.dirname(__file__), 'configs', search))
 
 def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
@@ -91,11 +107,15 @@ def main(configs, project, bucket_path):
     if not bucket_path:
         raise ValueError('bucket_path', bucket_path)
 
+    if 'VELODROME_INFLUXDB_CONFIG' in os.environ:
+        influx = influxdb.Pusher.from_config(os.environ['VELODROME_INFLUXDB_CONFIG'])
+    else:
+        influx = None
+
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
     # when the service account in use has access to multiple projects.
-    if not sys.__stdin__.isatty():
-        check(['bq', 'show'], stdin='\n')
+    check(['bq', 'show'], stdin='\n')
 
     errs = []
     for path in configs or all_configs():
@@ -112,10 +132,18 @@ def main(configs, project, bucket_path):
                 metric,
                 config['query'],
                 config['jqfilter'],
+                config.get('jqmeasurements'),
+                influx,
             )
-        except (ValueError, KeyError, IOError, subprocess.CalledProcessError):
+        except (
+                ValueError,
+                KeyError,
+                IOError,
+                subprocess.CalledProcessError,
+                influxdb.Error,
+            ):
             print >>sys.stderr, traceback.format_exc()
-            errs += path
+            errs.append(path)
 
     if errs:
         print 'Failed %d configs: %s' % (len(errs), ', '.join(errs))
