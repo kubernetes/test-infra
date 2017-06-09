@@ -33,6 +33,8 @@ var (
 	totURL   = flag.String("tot-url", "http://tot", "Tot URL")
 	crierURL = flag.String("crier-url", "http://crier", "Crier URL")
 
+	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+
 	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
@@ -47,6 +49,15 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
+	var pkc *kube.Client
+	if *buildCluster == "" {
+		pkc = kc.Namespace(kube.TestPodNamespace)
+	} else {
+		pkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+		}
+	}
 
 	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
 	if err != nil {
@@ -56,7 +67,7 @@ func main() {
 
 	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
 
-	c := plank.NewController(kc, jc, *crierURL, *totURL)
+	c := plank.NewController(kc, pkc, jc, *crierURL, *totURL)
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {

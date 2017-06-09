@@ -28,6 +28,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/ghodss/yaml"
 )
 
 const (
@@ -202,15 +204,15 @@ func NewClientInCluster(namespace string) (*Client, error) {
 // master endpoint.
 type Cluster struct {
 	// The IP address of the cluster's master endpoint.
-	Endpoint string `json:"endpoint"`
+	Endpoint string `yaml:"endpoint"`
 	// Base64-encoded public cert used by clients to authenticate to the
 	// cluster endpoint.
-	ClientCertificate string `json:"clientCertificate"`
+	ClientCertificate string `yaml:"clientCertificate"`
 	// Base64-encoded private key used by clients..
-	ClientKey string `json:"clientKey"`
+	ClientKey string `yaml:"clientKey"`
 	// Base64-encoded public certificate that is the root of trust for the
 	// cluster.
-	ClusterCACertificate string `json:"clusterCaCertificate"`
+	ClusterCACertificate string `yaml:"clusterCaCertificate"`
 }
 
 // NewClientFromFile reads a Cluster object at clusterPath and returns an
@@ -221,7 +223,7 @@ func NewClientFromFile(clusterPath, namespace string) (*Client, error) {
 		return nil, err
 	}
 	var c Cluster
-	if err := json.Unmarshal(data, &c); err != nil {
+	if err := yaml.Unmarshal(data, &c); err != nil {
 		return nil, err
 	}
 	return NewClient(&c, namespace)
