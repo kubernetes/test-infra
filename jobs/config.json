@@ -161,13 +161,69 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -175,13 +231,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.6"
     ], 
@@ -190,14 +246,74 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gce-1-6-master-upgrade-master": {
+  "ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -304,58 +420,6 @@
       "--timeout=120m", 
       "--extract=ci/latest-1.5", 
       "--skew", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-cvm-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-1.6-master-gci-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -1315,62 +1379,6 @@
       "--extract=ci/latest", 
       "--skew", 
       "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-cvm-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gce-master-1.6-gci-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
@@ -2835,6 +2843,122 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.7", 
+      "--extract=ci/latest-1.6", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial": {
+    "args": [
+      "--env-file=jobs/platform/gke.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial.env", 
+      "--timeout=120m", 
+      "--extract=ci/latest-1.6", 
+      "--skew", 
+      "--extract=ci/latest-1.7", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
@@ -2936,58 +3060,6 @@
       "--timeout=120m", 
       "--extract=ci/latest-1.5", 
       "--skew", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-cvm-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
-      "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.6-master-gci-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3260,13 +3332,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3274,13 +3346,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.5"
     ], 
@@ -3289,13 +3361,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3303,13 +3375,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3317,13 +3389,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.5"
     ], 
@@ -3332,13 +3404,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3346,13 +3418,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3360,13 +3432,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.6"
     ], 
@@ -3375,13 +3447,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3389,13 +3461,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3403,13 +3475,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.6"
     ], 
@@ -3418,13 +3490,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3444,13 +3516,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3458,13 +3530,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.5"
     ], 
@@ -3473,13 +3545,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3487,13 +3559,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3501,13 +3573,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.5"
     ], 
@@ -3516,13 +3588,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.5"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3530,13 +3602,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3544,13 +3616,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.6"
     ], 
@@ -3559,13 +3631,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3573,13 +3645,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3587,13 +3659,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-cluster-new.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster-new.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--skew", 
       "--extract=ci/latest-1.6"
     ], 
@@ -3602,13 +3674,13 @@
       "UNKNOWN"
     ]
   }, 
-  "ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master": {
+  "ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-master-upgrade-master.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-master.env", 
       "--mode=local", 
       "--timeout=900m", 
-      "--extract=ci/latest", 
+      "--extract=ci/latest-1.7", 
       "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
@@ -3934,62 +4006,6 @@
       "--extract=ci/latest", 
       "--skew", 
       "--extract=ci/latest-1.6"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-cvm-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
-    ], 
-    "scenario": "kubernetes_e2e", 
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  }, 
-  "ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial": {
-    "args": [
-      "--env-file=jobs/platform/gke.env", 
-      "--env-file=jobs/ci-kubernetes-e2e-gke-master-1.6-gci-kubectl-skew-serial.env", 
-      "--timeout=120m", 
-      "--extract=ci/latest-1.6", 
-      "--skew", 
-      "--extract=ci/latest"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
