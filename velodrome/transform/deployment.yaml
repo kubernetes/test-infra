@@ -2,6 +2,13 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: transform-${PROJECT}-${GH_ORGANIZATION}-${GH_REPOSITORY}-${TRANSFORM_METRIC}
+  labels:
+    app: transform
+    project: ${PROJECT}
+    gh-organization: ${GH_ORGANIZATION}
+    gh-repository: ${GH_REPOSITORY}
+    transform-plugin: ${TRANSFORM_PLUGIN}
+    transform-metric: ${TRANSFORM_METRIC}
 spec:
   replicas: 1
   template:

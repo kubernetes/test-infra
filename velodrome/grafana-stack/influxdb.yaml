@@ -2,6 +2,9 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: influxdb-${PROJECT}
+  labels:
+    app: influxdb
+    project: ${PROJECT}
 spec:
   replicas: 1
   template:
