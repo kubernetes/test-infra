@@ -80,8 +80,12 @@ def normalize(s):
                    lambda m: 'map[%s]' % ' '.join(sorted(m.group(1).split())),
                    s)
 
-    return flakeReasonOrdinalRE.sub(repl, s)
+    s = flakeReasonOrdinalRE.sub(repl, s)
 
+    if len(s) > 400000:  # ridiculously long test output
+        s = s[:200000] + '\n...[truncated]...\n' + s[-200000:]
+
+    return s
 
 def normalize_name(name):
     """
