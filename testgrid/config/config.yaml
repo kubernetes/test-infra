@@ -1962,9 +1962,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-serial-release-1.6
   - name: gci-gke-serial-1.6
     test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1.6
-  # Federation
-  - name: gce-federation-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1.6
   # Alpha
   - name: gce-alpha-features-1.6
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
