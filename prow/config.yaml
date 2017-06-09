@@ -1529,6 +1529,39 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
+- name: ci-kubernetes-e2e-gce-gpu-1-7
+  interval: 2h
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170515-c7116fb4
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
   interval: 6h
   spec:

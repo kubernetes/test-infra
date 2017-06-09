@@ -1279,6 +1279,20 @@
       "UNKNOWN"
     ]
   }, 
+  "ci-kubernetes-e2e-gce-gpu-1-7": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-gpu-1-7.env", 
+      "--mode=local", 
+      "--timeout=180m", 
+      "--extract=ci/latest-1.7"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
   "ci-kubernetes-e2e-gce-ha-master": {
     "args": [
       "--env-file=jobs/platform/gce.env", 
