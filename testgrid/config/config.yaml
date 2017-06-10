@@ -105,6 +105,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
+- name: ci-kubernetes-e2e-gce-gpu-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-1-7
 - name: ci-kubernetes-e2e-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
@@ -2587,6 +2589,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-deploy
   - name: soak-gci-gce-1-7-test
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
+  - name: gce-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
 
 - name: release-1.7-blocking
   dashboard_tab:
@@ -2656,6 +2660,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-deploy
   - name: soak-gci-gce-1-7-test
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
+  - name: gce-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
 
 - name: cos-image-validation
   dashboard_tab:
