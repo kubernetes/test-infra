@@ -97,8 +97,9 @@ class Point(object):
 
 class Pusher(object):
     """Client that pushes Point objects to an InfluxDB."""
-    def __init__(self, host_port, user, password):
+    def __init__(self, host_port, path, user, password):
         self.host_port = host_port
+        self.path = path or ""
         self.user = user
         self.password = password
 
@@ -114,7 +115,12 @@ class Pusher(object):
         check_config('hostport')
         check_config('user')
         check_config('password')
-        return Pusher(config['hostport'], config['user'], config['password'])
+        return Pusher(
+            config['hostport'],
+            config.get('path'),
+            config['user'],
+            config['password']
+        )
 
     def push(self, points, database):
         """Pushes time series data points to an InfluxDB in batches."""
@@ -136,7 +142,7 @@ class Pusher(object):
 
                 try:
                     conn = httplib.HTTPConnection(self.host_port)
-                    conn.request('POST', '/write?%s' % params, body)
+                    conn.request('POST', '%s/write?%s' % (self.path, params), body)
                     resp = conn.getresponse()
                 except httplib.HTTPException:
                     print >>sys.stderr, (
