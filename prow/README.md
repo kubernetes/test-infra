@@ -11,7 +11,6 @@ currently comprises several related pieces that live in a Kubernetes cluster.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.
 * `cmd/phony` sends fake webhooks.
 * `cmd/tot` vends incrementing build numbers.
-* `cmd/crier` writes GitHub statuses and comments.
 * `cmd/horologium` starts periodic jobs when necessary.
 * `cmd/mkpj` creates `ProwJobs`.
 

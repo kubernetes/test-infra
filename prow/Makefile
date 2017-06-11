@@ -20,9 +20,8 @@ SINKER_VERSION     = 0.10
 DECK_VERSION       = 0.28
 SPLICE_VERSION     = 0.20
 TOT_VERSION        = 0.1
-CRIER_VERSION      = 0.7
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.19
+PLANK_VERSION      = 0.20
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
@@ -102,17 +101,6 @@ tot-deployment: get-cluster-credentials
 tot-service: get-cluster-credentials
 	kubectl apply -f cluster/tot_service.yaml
 
-crier-image:
-	CGO_ENABLED=0 go build -o cmd/crier/crier k8s.io/test-infra/prow/cmd/crier
-	docker build -t "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)" cmd/crier
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)"
-
-crier-deployment: get-cluster-credentials
-	kubectl apply -f cluster/crier_deployment.yaml
-
-crier-service: get-cluster-credentials
-	kubectl apply -f cluster/crier_service.yaml
-
 horologium-image:
 	CGO_ENABLED=0 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
 	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" cmd/horologium
@@ -129,4 +117,4 @@ plank-image:
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment crier-image crier-service crier-deployment horologium-image horologium-deployment plank-image plank-deployment
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment
