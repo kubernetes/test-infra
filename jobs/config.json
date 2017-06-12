@@ -4343,6 +4343,20 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-gpu": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gpu.env",
+      "--mode=local",
+      "--timeout=180m",
+      "--extract=ci/latest",
+      "--check-leaked-resources=true"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-kubernetes-e2e-gke-ingress": {
     "args": [
       "--env-file=jobs/platform/gke.env",
