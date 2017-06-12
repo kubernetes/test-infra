@@ -106,7 +106,7 @@ class ClusterNameTest(unittest.TestCase):
             self.fail('Name should be short: %s' % actual)
 
 
-class ScenarioTest(unittest.TestCase):
+class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """Test for e2e scenario."""
     callstack = []
     envs = {}
@@ -154,6 +154,54 @@ class ScenarioTest(unittest.TestCase):
         self.assertNotEqual(self.envs, {})
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
+
+    def test_check_leaks_docker(self):
+        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
+
+    def test_check_leaks_false_docker(self):
+        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources=false'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
+
+    def test_check_leaks(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources=true', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_false(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources=false', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_default(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_unset(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_extract_multiple(self):
         """Ensure multiple --extract flags are accepted."""
