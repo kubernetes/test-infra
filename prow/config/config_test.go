@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -46,7 +47,7 @@ func Replace(j *Presubmit, ks *Presubmit) error {
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.re = ks.re
 	if len(j.RunAfterSuccess) != len(ks.RunAfterSuccess) {
-		return fmt.Errorf("RunAfterSuccess should match. - %s", name)
+		return fmt.Errorf("length of RunAfterSuccess should match. - %s", name)
 	}
 
 	for i := range j.RunAfterSuccess {
@@ -181,17 +182,17 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 func CheckBazelPortContainer(c kube.Container, cache bool) error {
 	if !cache {
 		if len(c.Ports) != 0 {
-			return fmt.Errorf("Job does not use --cache-ssd should not set ports in spec!")
+			return errors.New("job does not use --cache-ssd and so should not set ports in spec")
 		}
 		return nil
 	}
 
 	if len(c.Ports) != 1 {
-		return fmt.Errorf("Job uses --cache-ssd need to set ports in spec!")
+		return errors.New("job uses --cache-ssd and so needs to set ports in spec!")
 	} else if c.Ports[0].ContainerPort != 9999 {
-		return fmt.Errorf("Job uses --cache-ssd need to have ContainerPort 9999!")
+		return errors.New("job uses --cache-ssd and so needs to have ContainerPort 9999!")
 	} else if c.Ports[0].HostPort != 9999 {
-		return fmt.Errorf("Job uses --cache-ssd need to have HostPort 9999!")
+		return errors.New("job uses --cache-ssd and so needs to have HostPort 9999!")
 	}
 	return nil
 }
