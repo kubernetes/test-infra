@@ -58,7 +58,7 @@ hook-deployment: get-cluster-credentials
 	kubectl apply -f cluster/hook_deployment.yaml
 
 hook-service: get-cluster-credentials
-	kubectl create -f cluster/hook_service.yaml
+	kubectl apply -f cluster/hook_service.yaml
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
@@ -77,7 +77,7 @@ deck-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deck_deployment.yaml
 
 deck-service: get-cluster-credentials
-	kubectl create -f cluster/deck_service.yaml
+	kubectl apply -f cluster/deck_service.yaml
 
 splice-image:
 	CGO_ENABLED=0 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
