@@ -2103,6 +2103,7 @@ class JobTest(unittest.TestCase):
                     ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
                     ('E2E_TEST=', '--test=true|false'),
                     ('E2E_UP=', '--up=true|false'),
+                    ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
@@ -2187,6 +2188,19 @@ class JobTest(unittest.TestCase):
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
+                    self.assertTrue(
+                        any('--check-leaked-resources' in a for a in args),
+                        '--check-leaked-resources=true|false unset in %s' % job)
+                    if (
+                            '--env-file=jobs/pull-kubernetes-e2e.env' in args
+                            and '--check-leaked-resources=false' not in args):
+                        self.fail('PR job %s should not check for resource leaks' % job)
+                    # Consider deleting any job with --check-leaked-resources=false
+                    if (
+                            '--env-file=jobs/platform/gce.env' not in args
+                            and '--env-file=jobs/platform/gke.env' not in args
+                            and '--check-leaked-resources=true' in args):
+                        self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
                     extracts = [a for a in args if '--extract=' in a]
                     if not extracts:
                         self.fail('e2e job needs --extract flag: %s %s' % (job, args))

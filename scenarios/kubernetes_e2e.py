@@ -411,6 +411,10 @@ def main(args):
     for ext in args.extract or []:
         runner_args.append('--extract=%s' % ext)
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    # TODO(fejta): remove this add_environment after pushing new kubetest image
+    mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
+    runner_args.append('--check-leaked-resources=%s' % args.check_leaked_resources)
+
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
@@ -527,8 +531,12 @@ def create_parser():
     parser.add_argument(
         '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
     parser.add_argument(
-        '--multiple-federations', default=False, action='store_true',
-        help='If we need to run multiple federation control planes in parallel')
+        '--multiple-federations', action='store_true',
+        help='Run federation control planes in parallel')
+    parser.add_argument(
+        '--check-leaked-resources',
+        nargs='?', default='false', const='true',
+        help='Send --check-leaked-resources to kubetest')
     return parser
 
 if __name__ == '__main__':

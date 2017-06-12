@@ -47,14 +47,6 @@ e2e_go_args=( \
   --dump="${ARTIFACTS}" \
 )
 
-if [[ "${FAIL_ON_GCP_RESOURCE_LEAK:-true}" == "true" ]]; then
-  case "${KUBERNETES_PROVIDER}" in
-    gce|gke)
-      e2e_go_args+=(--check-leaked-resources)
-      ;;
-  esac
-fi
-
 if [[ "${E2E_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--test)
   if [[ "${SKEW_KUBECTL:-}" == 'y' ]]; then
