@@ -97,8 +97,8 @@ sync_repo() {
         if [[ -z "${commitSHA}" ]]; then
             continue
         fi
-    	echo "working ${commitSHA}"
-    	git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" cherry-pick ${commitSHA}
+        echo "working ${commitSHA}"
+        git -c user.name="Kubernetes Publisher" -c user.email="k8s-publish-robot@users.noreply.github.com" cherry-pick --keep-redundant-commits ${commitSHA}
     done <<< "${commits}"
     
     # track the k8s.io/kubernetes commit SHA so we can always determine which level of kube this repo matches
