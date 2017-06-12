@@ -2098,16 +2098,19 @@ class JobTest(unittest.TestCase):
                     self.fail('[%r]: Env %r: { and } are not allowed in env files' % (job, line))
 
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
+                # TODO(fejta): sort this list
                 black = [
                     ('CHARTS_TEST=', '--charts-tests'),
                     ('E2E_DOWN=', '--down=true|false'),
                     ('E2E_NAME=', '--cluster=whatever'),
                     ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
                     ('E2E_TEST=', '--test=true|false'),
+                    ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
                     ('E2E_UP=', '--up=true|false'),
                     ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),
+                    ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
                     ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
                     ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),

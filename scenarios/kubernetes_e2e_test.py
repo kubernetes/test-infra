@@ -208,6 +208,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = self.parser.parse_args(['--extract=a', '--extract=b'])
         self.assertEquals(['a', 'b'], args.extract)
 
+    def test_upgrade_args(self):
+        """Ensure upgrade_args flags are passed to kubetest."""
+        args = self.parser.parse_args(['--upgrade_args=foo bar'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--upgrade_args=foo bar', self.callstack[-1])
+
     def test_extract_args(self):
         """Ensure extract flags are passed to kubetest."""
         args = self.parser.parse_args(['--extract=foo', '--extract=bar'])

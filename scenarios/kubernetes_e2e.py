@@ -407,6 +407,8 @@ def main(args):
         runner_args.append('--timeout=%s' % args.timeout)
     if args.skew:
         runner_args.append('--skew')
+    if args.upgrade_args:
+        runner_args.append('--upgrade_args=%s' % args.upgrade_args)
 
     for ext in args.extract or []:
         runner_args.append('--extract=%s' % ext)
@@ -537,6 +539,10 @@ def create_parser():
         '--check-leaked-resources',
         nargs='?', default='false', const='true',
         help='Send --check-leaked-resources to kubetest')
+    parser.add_argument(
+        '--upgrade_args', help='Send --upgrade_args to kubetest')
+    # TODO(fejta): allow sending arbitrary args to kubetest, remove flags that
+    # otherwise do nothing aside from pass value to kubetest
     return parser
 
 if __name__ == '__main__':

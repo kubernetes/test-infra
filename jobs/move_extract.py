@@ -33,46 +33,50 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'FAIL_ON_GCP_RESOURCE_LEAK=(.+)',
+        r'E2E_UPGRADE_TEST=true',
+        r'GINKGO_UPGRADE_TEST_ARGS=(.+)',
     ]))
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
             continue
-        args = values.get('args', [])
-        migrated = any('--check-leaked-resources=' in a for a in args)
+        migrated = any('--upgrade_args=' in a for a in values.get('args', []))
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         if migrated:
             if any(j in env for j in [
-                    'FAIL_ON_GCP_RESOURCE_LEAK=',
+                    'GINKGO_UPGRADE_TEST_ARGS=',
+                    'E2E_UPGRADE_TEST=',
             ]):
                 problems.append(job)
             continue
-        check = None
+        upgrading = False
+        upgrade_args = None
         lines = []
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            checkv = mat.group(1)
-            if checkv:
-                if check:
-                    problems.append('Duplicate: %s' % job)
+            args = mat.group(1)
+            if args:
+                if upgrade_args:
+                    problems.append('Duplicate %s' % job)
                     break
-                check = checkv
-        else:
-            if not check:
-                if ('--env-file=jobs/pull-kubernetes-e2e.env' in args
-                        or '-aws' in job):
-                    check = 'false'
-                else:
-                    check = 'true'
-            if check not in ['true', 'false']:
-                problems.append('Bad value %s in %s' % (check, job))
+                upgrade_args = args
                 continue
-            values['args'].append('--check-leaked-resources=%s' % check)
+            if upgrading:
+                problems.append('Duplicate E2E_UPGRADE_TEST in %s' % job)
+                break
+            else:
+                upgrading = True
+        else:
+            if not upgrading:
+                continue
+            if upgrading and not args:
+                problems.append('Missing GINKGO_UPGRADE_TEST_ARGS in %s' % job)
+                continue
+            values['args'].append('--upgrade_args=%s' % upgrade_args)
             with open(test_infra('jobs/%s.env' % job), 'w') as fp:
                 fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
