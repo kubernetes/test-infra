@@ -759,10 +759,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
 - name: ci-kubernetes-bazel-build-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-6
+- name: ci-kubernetes-bazel-build-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-7
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
 - name: ci-kubernetes-bazel-test-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-6
+- name: ci-kubernetes-bazel-test-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-7
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # rktnetes
@@ -870,6 +874,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
 - name: ci-kubernetes-e2e-kubeadm-gce-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6
+- name: ci-kubernetes-e2e-kubeadm-gce-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-latest-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-upgrade-cluster
@@ -897,10 +903,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-6
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-7
 - name: periodic-kubernetes-bazel-test-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-6
+- name: periodic-kubernetes-bazel-test-1-7
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-7
 - name: periodic-kubernetes-bazel-build-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
+- name: periodic-kubernetes-bazel-build-1-7
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-7
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 # perf tests
@@ -2652,6 +2664,18 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: ci-gce-kubeadm-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
+  - name: ci-bazel-build-1.7
+    test_group_name: ci-kubernetes-bazel-build-1-7
+  - name: ci-bazel-test-1.7
+    test_group_name: ci-kubernetes-bazel-test-1-7
+  - name: periodic-gce-kubeadm-1.7
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  - name: periodic-bazel-build-1.7
+    test_group_name: periodic-kubernetes-bazel-build-1-7
+  - name: periodic-bazel-test-1.7
+    test_group_name: periodic-kubernetes-bazel-test-1-7
 
 - name: release-1.7-blocking
   dashboard_tab:
@@ -2723,6 +2747,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gce-kubeadm-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
 
 - name: cos-image-validation
   dashboard_tab:

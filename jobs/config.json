@@ -4510,7 +4510,7 @@
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cluster-lifecycle"
     ]
   }, 
   "ci-kubernetes-e2e-kubeadm-gce-1-6": {
@@ -4526,7 +4526,23 @@
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cluster-lifecycle"
+    ]
+  }, 
+  "ci-kubernetes-e2e-kubeadm-gce-1-7": {
+    "args": [
+      "--cluster=", 
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-7.env", 
+      "--kubeadm=ci", 
+      "--deployment=kubernetes-anywhere", 
+      "--mode=local", 
+      "--timeout=300m", 
+      "--extract=ci/latest-1.7"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-cluster-lifecycle"
     ]
   }, 
   "ci-kubernetes-e2e-prow-canary": {
@@ -5680,11 +5696,27 @@
       "--deployment=kubernetes-anywhere", 
       "--mode=local", 
       "--timeout=300m", 
-      "--extract=ci/latest"
+      "--extract=ci/latest-1.6"
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cluster-lifecycle"
+    ]
+  }, 
+  "periodic-kubernetes-e2e-kubeadm-gce-1-7": {
+    "args": [
+      "--cluster=", 
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/periodic-kubernetes-e2e-kubeadm-gce-1-7.env", 
+      "--kubeadm=periodic", 
+      "--deployment=kubernetes-anywhere", 
+      "--mode=local", 
+      "--timeout=300m", 
+      "--extract=ci/latest-1.7"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-cluster-lifecycle"
     ]
   }, 
   "pull-cadvisor-e2e": {
@@ -5851,7 +5883,7 @@
     ], 
     "scenario": "kubernetes_e2e", 
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cluster-lifecycle"
     ]
   }, 
   "pull-kubernetes-federation-e2e-gce": {
