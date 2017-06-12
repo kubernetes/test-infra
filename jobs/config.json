@@ -679,6 +679,20 @@
       "sig-node"
     ]
   }, 
+  "ci-kubernetes-e2e-gce-cosbeta-no-snat": {
+    "args": [
+      "--env-file=jobs/platform/gce.env", 
+      "--env-file=jobs/image/cosbeta.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-no-snat.env", 
+      "--timeout=10m", 
+      "--mode=local", 
+      "--extract=ci/latest"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
   "ci-kubernetes-e2e-gce-enormous-cluster": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env", 

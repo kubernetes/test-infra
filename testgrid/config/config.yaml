@@ -1038,6 +1038,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
+- name: ci-kubernetes-e2e-gce-cosbeta-no-snat
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-no-snat
 # Add New Testgroups Here
 
 #
@@ -1806,6 +1808,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl e2e tests in gke-1-7-1.6-gci-kubectl-skew-serial'
+
+- name: sig-network
+  dashboard_tab:
+  - name: cosbeta-no-snat
+    test_group_name: ci-kubernetes-e2e-gce-cosbeta-no-snat
 
 - name: etcd-upgrades
   dashboard_tab:
