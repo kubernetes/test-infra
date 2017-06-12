@@ -2,6 +2,9 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: nginx-${PROJECT}
+  labels:
+    app: nginx
+    project: ${PROJECT}
 spec:
   replicas: 1
   template:
