@@ -138,6 +138,40 @@ func TestCreatePod(t *testing.T) {
 	}
 }
 
+func TestCreateConfigMap(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.CreateConfigMap(ConfigMap{}); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestReplaceConfigMap(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/config" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.ReplaceConfigMap("config", ConfigMap{}); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
 // TestNewClient messes around with certs and keys and such to just make sure
 // that our cert handling is done properly. We create root and client keys,
 // then server and client certificates, then ensure that the client can talk

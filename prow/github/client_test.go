@@ -18,6 +18,7 @@ package github
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -660,7 +661,32 @@ func TestFindIssues(t *testing.T) {
 	if result[0].Number != issueNum {
 		t.Errorf("Expected issue number %+v, got %+v", issueNum, result[0].Number)
 	}
+}
 
+func TestGetFile(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/contents/foo.txt" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		c := &Content{
+			Content: base64.StdEncoding.EncodeToString([]byte("abcde")),
+		}
+		b, err := json.Marshal(&c)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if content, err := c.GetFile("k8s", "kuber", "foo.txt"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if content != "abcde" {
+		t.Errorf("Wrong content -- expect: abcde, got: %s", content)
+	}
 }
 
 // TestGetLabels tests both GetRepoLabels and GetIssueLabels.
