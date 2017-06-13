@@ -1,0 +1,88 @@
+# The envs and args defined in "jobs" override the ones defined in each
+# dimension.
+jobs:
+  # Ubuntu image validation.
+  e2e-gce-ubuntustable1-k8snew-default:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=${job_name_hash}
+    sigOwners: ['sig-node']
+  e2e-gce-ubuntustable1-k8snew-slow:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=${job_name_hash}
+    sigOwners: ['sig-node']
+  e2e-gce-ubuntustable1-k8snew-serial:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=${job_name_hash}
+    sigOwners: ['sig-node']
+
+common:
+  args:
+  - --mode=local
+
+cloudProviders:
+  gce:
+    args:
+    - --check-leaked-resources=true
+    envs:
+    - KUBERNETES_PROVIDER=gce
+    - E2E_MIN_STARTUP_PODS=8
+    - KUBE_GCE_ZONE=us-central1-f
+    - CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
+  gke:
+    args:
+    - --check-leaked-resources=true
+    envs:
+    - KUBERNETES_PROVIDER=gke
+    - E2E_MIN_STARTUP_PODS=8
+    - ZONE=us-central1-f
+    - CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER=https://test-container.sandbox.googleapis.com/
+    - CLOUDSDK_BUCKET=gs://cloud-sdk-testing/ci/staging
+
+images:
+  ubuntustable1:
+    envs:
+    - KUBE_NODE_OS_DISTRIBUTION=ubuntu
+    - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
+    - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
+
+k8sVersions:
+  master:
+    args:
+    - --extract=ci/latest
+  new:
+    args:
+    - --extract=ci/latest-1.7
+  stable1:
+    args:
+    - --extract=ci/latest-1.6
+  stable2:
+    args:
+    - --extract=ci/latest-1.5
+
+testSuites:
+  default:
+    args:
+    - --timeout=50m
+    envs:
+    - GINKGO_PARALLEL=y
+    - GINKGO_PARALLEL_NODES=30
+    - GINKGO_TEST_ARGS=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+  serial:
+    args:
+    - --timeout=300m
+    envs:
+    - GINKGO_PARALLEL=n
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
+  slow:
+    args:
+    - --timeout=150m
+    envs:
+    - GINKGO_PARALLEL=y
+    - GINKGO_PARALLEL_NODES=30
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
