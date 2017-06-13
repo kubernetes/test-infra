@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -114,6 +115,35 @@ func TestHandler(t *testing.T) {
 	expectResponse(t, handler, req, "http post", "")
 
 	req, err = http.NewRequest("HEAD", "/vend/bar", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expectResponse(t, handler, req, "http vend", "40")
+}
+
+type mapHandler map[string]string
+
+func (h mapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%s", h[r.URL.Path])
+}
+
+func TestFallback(t *testing.T) {
+	serv := httptest.NewServer(mapHandler(map[string]string{
+		"/logs/foo/latest-build.txt": "200",
+		"/logs/bar/latest-build.txt": "\t300 \n",
+		"/logs/baz/latest-build.txt": "asdf",
+	}))
+	defer serv.Close()
+
+	store := makeStore(t)
+	defer os.Remove(store.storagePath)
+	store.fallbackFunc = fallbackHandler{serv.URL + "/logs/%s/latest-build.txt"}.get
+
+	expectEqual(t, "vend foo 1", store.vend("foo"), 201)
+	expectEqual(t, "vend foo 2", store.vend("foo"), 202)
+
+	expectEqual(t, "vend bar", store.vend("bar"), 301)
+	expectEqual(t, "vend baz", store.vend("baz"), 1)
+	expectEqual(t, "vend quux", store.vend("quux"), 1)
 }

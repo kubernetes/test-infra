@@ -26,7 +26,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -35,12 +37,17 @@ var (
 	port        = flag.Int("port", 8888, "port to listen on")
 	logJson     = flag.Bool("log-json", false, "output log in JSON format")
 	storagePath = flag.String("storage", "tot.json", "where to store the results")
+
+	// TODO(rmmh): remove this once we have no jobs running on Jenkins
+	useFallback = flag.Bool("fallback", false, "fallback to GCS bucket for missing builds")
+	fallbackURI = "https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt"
 )
 
 type store struct {
-	Number      map[string]int // job name -> last vended build number
-	mutex       sync.Mutex
-	storagePath string
+	Number       map[string]int // job name -> last vended build number
+	mutex        sync.Mutex
+	storagePath  string
+	fallbackFunc func(string) int
 }
 
 func newStore(storagePath string) (*store, error) {
@@ -79,7 +86,12 @@ func (s *store) save() error {
 func (s *store) vend(b string) int {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	n := s.Number[b] + 1
+	n, ok := s.Number[b]
+	if !ok && s.fallbackFunc != nil {
+		n = s.fallbackFunc(b)
+	}
+	n++
+
 	s.Number[b] = n
 
 	err := s.save()
@@ -121,17 +133,49 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Error("unable to read body", err)
+			log.WithError(err).Error("unable to read body")
 			return
 		}
 		n, err := strconv.Atoi(string(body))
 		if err != nil {
-			log.Error("unable to parse number", err)
+			log.WithError(err).Error("unable to parse number")
 			return
 		}
 		log.Infof("setting %s to %d from %s", b, n, r.RemoteAddr)
 		s.set(b, n)
 	}
+}
+
+type fallbackHandler struct {
+	template string
+}
+
+func (f fallbackHandler) get(b string) int {
+	url := fmt.Sprintf(f.template, b)
+
+	var body []byte
+
+	for i := 0; i < 10; i++ {
+		resp, err := http.Get(url)
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				body, err = ioutil.ReadAll(resp.Body)
+				if err == nil {
+					break
+				}
+			}
+		}
+		log.WithError(err).Error("fallback failed")
+		time.Sleep(2)
+	}
+
+	n, err := strconv.Atoi(strings.TrimSpace(string(body)))
+	if err != nil {
+		return 0
+	}
+
+	return n
 }
 
 func main() {
@@ -145,6 +189,10 @@ func main() {
 	s, err := newStore(*storagePath)
 	if err != nil {
 		log.WithError(err).Fatal("newStore failed")
+	}
+
+	if *useFallback {
+		s.fallbackFunc = fallbackHandler{fallbackURI}.get
 	}
 
 	http.HandleFunc("/vend/", s.handle)
