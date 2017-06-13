@@ -43,6 +43,11 @@ sync_repo() {
 
     local currBranch=$(git rev-parse --abbrev-ref HEAD)
     local previousKubeSHA=$(cat kubernetes-sha)
+    local new_repo="false"
+    if [[ "${previousKubeSHA}" == "" ]]; then
+        new_repo="true"
+        echo "sync_repo() is processing a repo that doesn't have kubernetes-sha, treat it as a new repo"
+    fi
     
     git remote add upstream-kube "${kubernetes_remote}" || true
     git fetch upstream-kube
@@ -58,6 +63,9 @@ sync_repo() {
 
     local previousBranchSHA=$(git log --grep "Kubernetes-commit: ${previousKubeSHA}" --format='%H')
     local commits=$(git log --no-merges --format='%H' --reverse ${previousBranchSHA}..HEAD)
+    if [ "${new_repo}" = "true" ]; then
+        commits=$(git log --no-merges --format='%H' --reverse HEAD)
+    fi
 
     # check if any commit of commits change Godeps/Godeps.json
     local commits_change_godeps=$(git log --format='%H' --follow Godeps/Godeps.json)
@@ -79,7 +87,7 @@ sync_repo() {
     # before the first commit that's to be cherry-picked so that any new
     # Godep.json changes from k8s.io/kubernetes will apply cleanly. Note that 
     # entries for k8s.io/* will be updated later in the process.
-    if [ "${cherrypicks_change_godeps}" = "true" ]; then
+    if [ "${cherrypicks_change_godeps}" = "true" ] && [ "${new_repo}" = "false" ]; then
        local cleanGodepJsonCommit=${previousBranchSHA}
        git checkout ${cleanGodepJsonCommit} Godeps/Godeps.json
        if git diff --cached --exit-code &>/dev/null; then
