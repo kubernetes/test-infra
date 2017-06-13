@@ -94,10 +94,11 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 		return
 	}
 
-	comments, ok := obj.ListComments()
+	issueComments, ok := obj.ListComments()
 	if !ok {
 		return
 	}
+	comments := c.FromIssueComments(issueComments)
 
 	// Use the pinger to notify assignees:
 	// - Set time period based on configuration (at the top of this file)
@@ -128,10 +129,16 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 }
 
 // StaleComments returns a slice of stale comments
-func (NagFlakeIssues) StaleComments(obj *mgh.MungeObject, comments []*github.IssueComment) []*github.IssueComment {
+func (NagFlakeIssues) StaleComments(obj *mgh.MungeObject, issueComments []*github.IssueComment) []*github.IssueComment {
+	comments := c.FromIssueComments(issueComments)
 	// Remove all pings written before the last human actor comment
-	return c.FilterComments(comments, c.And([]c.Matcher{
+	filtered := c.FilterComments(comments, c.And([]c.Matcher{
 		c.MungerNotificationName(flakeNagNotifyName),
 		c.CreatedBefore(*c.LastComment(comments, c.HumanActor(), &time.Time{})),
 	}))
+	issueCommentsFiltered := []*github.IssueComment{}
+	for _, comment := range filtered {
+		issueCommentsFiltered = append(issueCommentsFiltered, comment.Source.(*github.IssueComment))
+	}
+	return issueCommentsFiltered
 }

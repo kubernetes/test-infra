@@ -111,10 +111,12 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	for _, fn := range files {
 		filenames = append(filenames, *fn.Filename)
 	}
-	comments, ok := obj.ListComments()
+	issueComments, ok := obj.ListComments()
 	if !ok {
 		return
 	}
+	comments := c.FromIssueComments(issueComments)
+	approveComments := getApproveComments(comments)
 
 	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
@@ -122,7 +124,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
 			int64(*obj.Issue.Number)))
 	approversHandler.AssociatedIssue = findAssociatedIssue(obj.Issue.Body)
-	addApprovers(&approversHandler, comments)
+	addApprovers(&approversHandler, approveComments)
 	// Author implicitly approves their own PR
 	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
 		url := ""
@@ -142,11 +144,11 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
 	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()
-	latestApprove := getApproveComments(comments).GetLast()
+	latestApprove := approveComments.GetLast()
 	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, approversHandler)
 	if newMessage != nil {
 		if latestNotification != nil {
-			obj.DeleteComment(latestNotification)
+			obj.DeleteComment(latestNotification.Source.(*githubapi.IssueComment))
 		}
 		obj.WriteComment(*newMessage)
 	}
@@ -178,13 +180,13 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	return *lastAdded.Actor.Login != botName
 }
 
-func getApproveComments(comments []*githubapi.IssueComment) c.FilteredComments {
+func getApproveComments(comments []*c.Comment) c.FilteredComments {
 	approverMatcher := c.CommandName(approveCommand)
 	lgtmMatcher := c.CommandName(lgtmLabel)
 	return c.FilterComments(comments, c.And{c.HumanActor(), c.Or{approverMatcher, lgtmMatcher}})
 }
 
-func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *githubapi.IssueComment, approversHandler approvers.Approvers) *string {
+func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *c.Comment, approversHandler approvers.Approvers) *string {
 	if latestNotification != nil && (latestApprove == nil || latestApprove.CreatedAt.Before(*latestNotification.CreatedAt)) {
 		// if we have an existing notification AND
 		// the latestApprove happened before we updated
@@ -198,20 +200,19 @@ func (h *ApprovalHandler) updateNotification(org, project string, latestNotifica
 // and identifies all of the people that have said /approve and adds
 // them to the Approvers.  The function uses the latest approve or cancel comment
 // to determine the Users intention
-func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.IssueComment) {
-	approveComments := getApproveComments(comments)
+func addApprovers(approversHandler *approvers.Approvers, approveComments c.FilteredComments) {
 	for _, comment := range approveComments {
 		commands := c.ParseCommands(comment)
 		for _, cmd := range commands {
 			if cmd.Name != approveCommand && cmd.Name != lgtmCommand {
 				continue
 			}
-			if comment.User == nil || comment.User.Login == nil {
+			if comment.Author == nil {
 				continue
 			}
 
 			if cmd.Arguments == cancelArgument {
-				approversHandler.RemoveApprover(*comment.User.Login)
+				approversHandler.RemoveApprover(*comment.Author)
 			} else {
 				url := ""
 				if comment.HTMLURL != nil {
@@ -220,13 +221,13 @@ func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.I
 
 				if cmd.Name == approveCommand {
 					approversHandler.AddApprover(
-						*comment.User.Login,
+						*comment.Author,
 						url,
 						cmd.Arguments == noIssueArgument,
 					)
 				} else {
 					approversHandler.AddLGTMer(
-						*comment.User.Login,
+						*comment.Author,
 						url,
 						cmd.Arguments == noIssueArgument,
 					)

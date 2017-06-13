@@ -19,15 +19,13 @@ package comment
 import (
 	"regexp"
 	"strings"
-
-	"github.com/google/go-github/github"
 )
 
 // NotificationName identifies notifications by name
 type NotificationName string
 
 // Match returns true if the comment is a notification with the given name
-func (b NotificationName) Match(comment *github.IssueComment) bool {
+func (b NotificationName) Match(comment *Comment) bool {
 	notif := ParseNotification(comment)
 	if notif == nil {
 		return false
@@ -40,7 +38,7 @@ func (b NotificationName) Match(comment *github.IssueComment) bool {
 type CommandName string
 
 // Match if the comment contains a command with the given name
-func (c CommandName) Match(comment *github.IssueComment) bool {
+func (c CommandName) Match(comment *Comment) bool {
 	commands := ParseCommands(comment)
 	for _, command := range commands {
 		if strings.ToUpper(command.Name) == strings.ToUpper(string(c)) {
@@ -54,7 +52,7 @@ func (c CommandName) Match(comment *github.IssueComment) bool {
 type CommandArguments regexp.Regexp
 
 // Match if the comment contains a command whose arguments match the regexp
-func (c *CommandArguments) Match(comment *github.IssueComment) bool {
+func (c *CommandArguments) Match(comment *Comment) bool {
 	commands := ParseCommands(comment)
 	for _, command := range commands {
 		if (*regexp.Regexp)(c).MatchString(command.Arguments) {

@@ -18,15 +18,13 @@ package comment
 
 import (
 	"time"
-
-	"github.com/google/go-github/github"
 )
 
 // FilteredComments is a list of comments
-type FilteredComments []*github.IssueComment
+type FilteredComments []*Comment
 
 // GetLast returns the last comment in a series of comments
-func (f FilteredComments) GetLast() *github.IssueComment {
+func (f FilteredComments) GetLast() *Comment {
 	if f.Empty() {
 		return nil
 	}
@@ -39,7 +37,7 @@ func (f FilteredComments) Empty() bool {
 }
 
 // FilterComments will return the list of matching comments
-func FilterComments(comments []*github.IssueComment, matcher Matcher) FilteredComments {
+func FilterComments(comments []*Comment, matcher Matcher) FilteredComments {
 	matches := FilteredComments{}
 
 	for _, comment := range comments {
@@ -52,7 +50,7 @@ func FilterComments(comments []*github.IssueComment, matcher Matcher) FilteredCo
 }
 
 // LastComment returns the creation date of the last comment that matches. Or deflt if there is no such comment.
-func LastComment(comments []*github.IssueComment, matcher Matcher, deflt *time.Time) *time.Time {
+func LastComment(comments []*Comment, matcher Matcher, deflt *time.Time) *time.Time {
 	matches := FilterComments(comments, matcher)
 	if matches.Empty() {
 		return deflt

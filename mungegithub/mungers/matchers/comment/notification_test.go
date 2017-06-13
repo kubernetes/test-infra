@@ -19,8 +19,6 @@ package comment
 import (
 	"reflect"
 	"testing"
-
-	"github.com/google/go-github/github"
 )
 
 func TestParseNotification(t *testing.T) {
@@ -67,7 +65,7 @@ func TestParseNotification(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualNotif := ParseNotification(&github.IssueComment{Body: &test.comment})
+		actualNotif := ParseNotification(&Comment{Body: &test.comment})
 		if !reflect.DeepEqual(actualNotif, test.notif) {
 			t.Error(actualNotif, "doesn't match expected notif:", test.notif)
 		}
