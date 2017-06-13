@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"regexp"
+	"sort"
 	"strconv"
 
 	githubapi "github.com/google/go-github/github"
@@ -90,8 +91,9 @@ func findAssociatedIssue(body *string) int {
 // Munge is the workhorse the will actually make updates to the PR
 // The algorithm goes as:
 // - Initially, we build an approverSet
-//   - Go through all comments after latest commit.
-//	- If anyone said "/approve", add them to approverSet.
+//   - Go through all comments in order of creation.
+//		 - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
+//	 - If anyone said "/approve" or "/lgtm", add them to approverSet.
 // - Then, for each file, we see if any approver of this file is in approverSet and keep track of files without approval
 //   - An approver of a file is defined as:
 //     - Someone listed as an "approver" in an OWNERS file in the files directory OR
@@ -115,7 +117,20 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	if !ok {
 		return
 	}
-	comments := c.FromIssueComments(issueComments)
+	reviewComments, ok := obj.ListReviewComments()
+	if !ok {
+		return
+	}
+	reviews, ok := obj.ListReviews()
+	if !ok {
+		return
+	}
+	commentsFromIssueComments := c.FromIssueComments(issueComments)
+	comments := append(commentsFromIssueComments, c.FromReviewComments(reviewComments)...)
+	comments = append(comments, c.FromReviews(reviews)...)
+	sort.SliceStable(comments, func(i, j int) bool {
+		return comments[i].CreatedAt.Before(*comments[j].CreatedAt)
+	})
 	approveComments := getApproveComments(comments)
 
 	approversHandler := approvers.NewApprovers(
@@ -143,7 +158,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
-	latestNotification := c.FilterComments(comments, notificationMatcher).GetLast()
+	latestNotification := c.FilterComments(commentsFromIssueComments, notificationMatcher).GetLast()
 	latestApprove := approveComments.GetLast()
 	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, approversHandler)
 	if newMessage != nil {
