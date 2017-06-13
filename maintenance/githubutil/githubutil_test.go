@@ -17,6 +17,7 @@ limitations under the License.
 package githubutil
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -60,7 +61,7 @@ func newTestClient(f *fakeGithub) *Client {
 	}
 }
 
-func (f *fakeGithub) CreateStatus(org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
+func (f *fakeGithub) CreateStatus(ctx context.Context, org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
 	f.hits++
 	if f.hits >= f.hitsBeforeResponse {
 		return status, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}}, nil
@@ -68,7 +69,7 @@ func (f *fakeGithub) CreateStatus(org, repo, ref string, status *github.RepoStat
 	return nil, nil, fmt.Errorf("some error that forces a retry")
 }
 
-func (f *fakeGithub) GetCombinedStatus(org, repo, ref string, opts *github.ListOptions) (*github.CombinedStatus, *github.Response, error) {
+func (f *fakeGithub) GetCombinedStatus(ctx context.Context, org, repo, ref string, opts *github.ListOptions) (*github.CombinedStatus, *github.Response, error) {
 	f.hits++
 	context := fmt.Sprintf("context %d", f.hits-f.hitsBeforeResponse+1)
 	combStatus := &github.CombinedStatus{Statuses: []github.RepoStatus{{Context: &context}}}
@@ -78,7 +79,7 @@ func (f *fakeGithub) GetCombinedStatus(org, repo, ref string, opts *github.ListO
 	return nil, nil, fmt.Errorf("some error that forces a retry")
 }
 
-func (f *fakeGithub) List(org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
+func (f *fakeGithub) List(ctx context.Context, org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	f.hits++
 	title := fmt.Sprintf("pr %d", f.hits-f.hitsBeforeResponse+1)
 	list := []*github.PullRequest{{Title: &title}}

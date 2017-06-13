@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -101,7 +102,7 @@ func (client *Client) limitsCheckAndWait() {
 		glog.Error("Failed to get RateLimits: ", err)
 		sleep = time.Minute
 	} else {
-		limits, _, err := githubClient.RateLimits()
+		limits, _, err := githubClient.RateLimits(context.Background())
 		if err != nil {
 			glog.Error("Failed to get RateLimits:", err)
 			sleep = time.Minute
@@ -143,7 +144,12 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 	for {
 		client.limitsCheckAndWait()
 
-		issues, resp, err := githubClient.Issues.ListByRepo(client.Org, client.Project, opt)
+		issues, resp, err := githubClient.Issues.ListByRepo(
+			context.Background(),
+			client.Org,
+			client.Project,
+			opt,
+		)
 		if err != nil {
 			close(c)
 			glog.Error(err)
@@ -191,7 +197,13 @@ func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.
 	for {
 		client.limitsCheckAndWait()
 
-		events, resp, err := githubClient.Issues.ListIssueEvents(client.Org, client.Project, issueID, opt)
+		events, resp, err := githubClient.Issues.ListIssueEvents(
+			context.Background(),
+			client.Org,
+			client.Project,
+			issueID,
+			opt,
+		)
 		if err != nil {
 			glog.Errorf("ListIssueEvents failed: %s. Retrying...", err)
 			time.Sleep(time.Second)
@@ -227,7 +239,13 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 	for {
 		client.limitsCheckAndWait()
 
-		comments, resp, err := githubClient.Issues.ListComments(client.Org, client.Project, issueID, opt)
+		comments, resp, err := githubClient.Issues.ListComments(
+			context.Background(),
+			client.Org,
+			client.Project,
+			issueID,
+			opt,
+		)
 		if err != nil {
 			close(c)
 			glog.Error(err)
@@ -263,7 +281,13 @@ func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *g
 	for {
 		client.limitsCheckAndWait()
 
-		comments, resp, err := githubClient.PullRequests.ListComments(client.Org, client.Project, issueID, opt)
+		comments, resp, err := githubClient.PullRequests.ListComments(
+			context.Background(),
+			client.Org,
+			client.Project,
+			issueID,
+			opt,
+		)
 		if err != nil {
 			close(c)
 			glog.Error(err)

@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/test-infra",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GodepVersion": "v79",
 	"Packages": [
 		"./prow/...",
 		"./gcsweb/...",
@@ -74,7 +74,7 @@
 		},
 		{
 			"ImportPath": "github.com/google/go-github/github",
-			"Rev": "e4194fe26c3379788dc1671da379f719351f093e"
+			"Rev": "7a51fb928f52a196d5f31daefb8a489453ef54ff"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
