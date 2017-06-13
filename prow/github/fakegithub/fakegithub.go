@@ -67,7 +67,7 @@ func (f *FakeClient) IsTrustedMember(user string) (bool, error) {
 	}
 	return false, nil
 }
-func (f *FakeClient) GetTrustedOrgs() []string {
+func (f *FakeClient) TrustedOrgs() []string {
 
 	return []string{"kubernetes"}
 }

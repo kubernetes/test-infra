@@ -665,17 +665,14 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 	return issSearchResult.Issues, err
 }
 
-// set the trusted orgs
+// SetTrustedOrgs takes a comma deliminated list and sets the trustedOrg array for this client.
 func (c *Client) SetTrustedOrgs(trustedOrgsList string) {
 	c.trustedOrgs = strings.Split(trustedOrgsList, ",")
 }
 
-// return true if an org is in the trusted list
+// IsTrustedOrg returns true if an org is in this client's trusted array.
 func (c *Client) IsTrustedOrg(org string) bool {
 
-	if c.trustedOrgs == nil {
-		return false
-	}
 	for _, trustedOrg := range c.trustedOrgs {
 		if trustedOrg == org {
 			return true
@@ -684,6 +681,7 @@ func (c *Client) IsTrustedOrg(org string) bool {
 	return false
 }
 
+// IsTrustedMember checks all trusted orgs for a user. It returns true is a use is in any of the trusted orgs.
 func (c *Client) IsTrustedMember(user string) (bool, error) {
 	c.log("IsTrustedMember", c.trustedOrgs, user)
 	for _, trustedOrg := range c.trustedOrgs {
@@ -699,6 +697,7 @@ func (c *Client) IsTrustedMember(user string) (bool, error) {
 	return false, nil
 }
 
-func (c *Client) GetTrustedOrgs() []string {
+// TrustedOrgs returns this client's trusted org array
+func (c *Client) TrustedOrgs() []string {
 	return c.trustedOrgs
 }

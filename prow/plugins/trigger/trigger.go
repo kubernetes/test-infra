@@ -49,7 +49,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
-	GetTrustedOrgs() []string
+	TrustedOrgs() []string
 }
 
 type kubeClient interface {
