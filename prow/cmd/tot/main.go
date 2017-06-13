@@ -90,6 +90,50 @@ func (s *store) vend(b string) int {
 	return n
 }
 
+func (s *store) peek(b string) int {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return s.Number[b]
+}
+
+func (s *store) set(b string, n int) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.Number[b] = n
+
+	err := s.save()
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+func (s *store) handle(w http.ResponseWriter, r *http.Request) {
+	b := r.URL.Path[len("/vend/"):]
+	switch r.Method {
+	case "GET":
+		n := s.vend(b)
+		log.Infof("vending %s number %d to %s", b, n, r.RemoteAddr)
+		fmt.Fprintf(w, "%d", n)
+	case "HEAD":
+		n := s.peek(b)
+		log.Infof("peeking %s number %d to %s", b, n, r.RemoteAddr)
+		fmt.Fprintf(w, "%d", n)
+	case "POST":
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Error("unable to read body", err)
+			return
+		}
+		n, err := strconv.Atoi(string(body))
+		if err != nil {
+			log.Error("unable to parse number", err)
+			return
+		}
+		log.Infof("setting %s to %d from %s", b, n, r.RemoteAddr)
+		s.set(b, n)
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -103,12 +147,7 @@ func main() {
 		log.WithError(err).Fatal("newStore failed")
 	}
 
-	http.HandleFunc("/vend/", func(w http.ResponseWriter, r *http.Request) {
-		b := r.URL.Path[len("/vend/"):]
-		n := s.vend(b)
-		log.Infof("sending %s number %d to %s", b, n, r.RemoteAddr)
-		fmt.Fprintf(w, "%d", n)
-	})
+	http.HandleFunc("/vend/", s.handle)
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
