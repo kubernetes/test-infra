@@ -29,8 +29,13 @@ spec:
         role: prow
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.17
+        image: gcr.io/k8s-prow/plank:0.18
+        args:
+        - --build-cluster=/etc/cluster/cluster
         volumeMounts:
+        - mountPath: /etc/cluster
+          name: cluster
+          readOnly: true
         - mountPath: /etc/jenkins
           name: jenkins
           readOnly: true
@@ -39,3 +44,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: jenkins-token
+      - name: cluster
+        secret:
+          defaultMode: 420
+          secretName: build-cluster

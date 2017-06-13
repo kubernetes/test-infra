@@ -17,15 +17,16 @@ all: build test
 
 HOOK_VERSION       = 0.109
 SINKER_VERSION     = 0.10
-DECK_VERSION       = 0.27
+DECK_VERSION       = 0.28
 SPLICE_VERSION     = 0.20
 TOT_VERSION        = 0.0
 CRIER_VERSION      = 0.7
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.17
+PLANK_VERSION      = 0.18
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow
+BUILD_PROJECT ?= k8s-prow-builds
 ZONE ?= us-central1-f
 CLUSTER ?= prow
 # Build and push specific variables.
@@ -40,6 +41,9 @@ update-plugins: get-cluster-credentials
 
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+
+get-build-cluster-credentials:
+	gcloud container clusters get-credentials "$(BUILD_CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 build:
 	go install ./cmd/...
