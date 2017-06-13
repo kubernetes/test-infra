@@ -47,7 +47,7 @@ func (b *buildStrategy) Set(value string) error {
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("Bad build strategy: %v (use: bash, quick, release)", value)
+	return fmt.Errorf("Bad build strategy: %v (use: bazel, quick, release)", value)
 }
 
 // True when this kubetest invocation wants to build a release

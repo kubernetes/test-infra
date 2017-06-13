@@ -2,6 +2,11 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: fetcher-${PROJECT}-${GH_ORGANIZATION}-${GH_REPOSITORY}
+  labels:
+    app: fetcher
+    project: ${PROJECT}
+    gh-organization: ${GH_ORGANIZATION}
+    gh-repository: ${GH_REPOSITORY}
 spec:
   replicas: 1
   template:

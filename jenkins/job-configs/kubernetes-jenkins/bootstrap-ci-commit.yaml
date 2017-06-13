@@ -108,6 +108,14 @@
         repo-name: k8s.io/kubernetes
         timeout: 100
 
+    - kubernetes-build-1.7:
+        branch: release-1.7
+        commit-frequency: 'H/5 * * * *'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        job-name: ci-kubernetes-build-1.7
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+
     - kubernetes-federation-build:
         branch: master
         commit-frequency: 'H/5 * * * *'
@@ -124,12 +132,12 @@
         commit-frequency: 'H/5 * * * *'
         timeout: 50
 
-    - kubernetes-federation-build-soak:
-        branch: master
-        commit-frequency: 'H 23 * * *'
+    - kubernetes-federation-build-1.7:
+        branch: release-1.7
         giturl: 'https://github.com/kubernetes/kubernetes'
-        job-name: ci-kubernetes-federation-build-soak
+        job-name: ci-kubernetes-federation-build-1.7
         repo-name: k8s.io/kubernetes
+        commit-frequency: 'H/5 * * * *'
         timeout: 50
 
     - kubernetes-build-debian-unstable:

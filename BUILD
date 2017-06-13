@@ -36,6 +36,8 @@ filegroup(
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
         "//logexporter/cmd:all-srcs",
+        "//maintenance/githubutil:all-srcs",
+        "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",
         "//prow:all-srcs",

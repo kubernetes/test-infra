@@ -15,8 +15,21 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/google-containers/kubekins-test:v20160822
+FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170418-f54c7fbd
 MAINTAINER  Erick Fejta <fejta@google.com>
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    zip \
+    unzip \
+    xz-utils \
+    zlib1g-dev \
+    && apt-get clean
+
+ENV BAZEL_VERSION 0.5.0
+RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
+    wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
+    chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 # Defaults of all e2e runs
 ENV E2E_UP=true \
@@ -24,8 +37,7 @@ ENV E2E_UP=true \
     E2E_DOWN=true
 
 # Customize these as appropriate
-ENV E2E_PUBLISH_PATH= \
-    INSTANCE_PREFIX=jenkins-e2e \
+ENV INSTANCE_PREFIX=jenkins-e2e \
     KUBERNETES_PROVIDER=gce
 
 # Variables specific to GCP
@@ -53,9 +65,7 @@ RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
         --bash-completion=false \
         --path-update=false \
         --usage-reporting=false && \
-    gcloud components install beta && \
-    gcloud components install alpha && \
-    gcloud components update kubectl && \
+    gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 ADD ["e2e-runner.sh", \

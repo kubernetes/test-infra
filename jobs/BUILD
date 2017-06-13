@@ -5,7 +5,7 @@ filegroup(
     srcs = glob([
         "*.sh",
         "*.env",
-        "config.json",
+        "*.json",
     ]),
 )
 

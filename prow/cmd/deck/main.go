@@ -35,6 +35,8 @@ import (
 )
 
 var (
+	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+
 	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
@@ -52,6 +54,15 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
+	var pkc *kube.Client
+	if *buildCluster == "" {
+		pkc = kc.Namespace(kube.TestPodNamespace)
+	} else {
+		pkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+		}
+	}
 
 	var jc *jenkins.Client
 	if *jenkinsURL != "" {
@@ -64,8 +75,9 @@ func main() {
 	}
 
 	ja := &JobAgent{
-		kc: kc,
-		jc: jc,
+		kc:  kc,
+		pkc: pkc,
+		jc:  jc,
 	}
 	ja.Start()
 

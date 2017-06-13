@@ -164,19 +164,27 @@ def pull_numbers(pull):
 
 def pull_ref(pull):
     """Turn a PR number of list of refs into specific refs to fetch and check out."""
-    if ref_has_shas(pull):
-        refs = []
-        checkouts = []
-        for name, sha in (x.split(':') for x in pull.split(',')):
-            if len(refs) == 0:
-                # first entry is the branch spec ("master")
-                refs.append(name)
-            else:
-                num = int(name)
-                refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
-            checkouts.append(sha)
-        return refs, checkouts
-    return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+    if isinstance(pull, int) or ',' not in pull:
+        return ['+refs/pull/%d/merge' % int(pull)], ['FETCH_HEAD']
+    pulls = pull.split(',')
+    refs = []
+    checkouts = []
+    for ref in pulls:
+        if ':' in ref:  # master:abcd or 1234:abcd
+            name, sha = ref.split(':')
+        elif not refs:  # master
+            name, sha = ref, 'FETCH_HEAD'
+        else:
+            name = ref
+            sha = 'refs/pr/%s' % ref
+
+        checkouts.append(sha)
+        if not refs:  # First ref should be branch to merge into
+            refs.append(name)
+        else:  # Subsequent refs should be PR numbers
+            num = int(name)
+            refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
+    return refs, checkouts
 
 
 def branch_ref(branch):
@@ -806,7 +814,10 @@ def parse_repos(args):
         if args.branch:
             raise ValueError('Multi --repo does not support --branch, use --repo=R=branch')
     elif len(repos) == 1 and (args.branch or args.pull):
-        ret[repos[0]] = (args.branch, args.pull)
+        repo = repos[0]
+        if '=' in repo or ':' in repo:
+            raise ValueError('--repo cannot contain = or : with --branch or --pull')
+        ret[repo] = (args.branch, args.pull)
         return ret
     for repo in repos:
         mat = re.match(r'([^=]+)(=([^:,~^\s]+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
@@ -818,10 +829,10 @@ def parse_repos(args):
             continue
         commits = mat.group(2)[1:].split(',')
         if len(commits) == 1:
-            if ':' in commits[0]:
-                raise ValueError('branch:commit must also specify PRs to merge', repos)
+            # Checking out a branch, possibly at a specific commit
             ret[this_repo] = (commits[0], '')
             continue
+        # Checking out one or more PRs
         ret[this_repo] = ('', ','.join(commits))
     return ret
 

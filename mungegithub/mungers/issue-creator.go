@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -369,4 +370,28 @@ func (c *IssueCreator) TestsOwners(testNames []string) map[string][]string {
 		}
 	}
 	return users
+}
+
+func (c *IssueCreator) ExplainTestAssignments(testNames []string) string {
+	assignees := c.TestsOwners(testNames)
+	sigs := c.TestsSIGs(testNames)
+	var buf bytes.Buffer
+	if len(assignees) > 0 || len(sigs) > 0 {
+		fmt.Fprint(&buf, "\n<details><summary>Rationale for assignments:</summary>\n")
+		fmt.Fprint(&buf, "\n| Assignee or SIG area | Owns test(s) |\n| --- | --- |\n")
+		for assignee, tests := range assignees {
+			if len(tests) > 3 {
+				tests = tests[0:3]
+			}
+			fmt.Fprintf(&buf, "| %s | %s |\n", assignee, strings.Join(tests, "; "))
+		}
+		for sig, tests := range sigs {
+			if len(tests) > 3 {
+				tests = tests[0:3]
+			}
+			fmt.Fprintf(&buf, "| sig/%s | %s |\n", sig, strings.Join(tests, "; "))
+		}
+		fmt.Fprint(&buf, "\n</details><br>\n")
+	}
+	return buf.String()
 }

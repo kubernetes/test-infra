@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Build and run only affected targets.
+# Logic adapted from https://github.com/bazelbuild/bazel/blob/633e48a4ce8747575b156639608ee18afe4b386e/scripts/ci/ci.sh
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -23,14 +26,15 @@ pip install -r jenkins/test_history/requirements.txt
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
-bazel build //... && rc=$? || rc=$?
-
-# Clear test.xml so that we don't pick up old results.
+# Run a no-target bazel to create the `bazel-testlogs` symlink.
+# We need the symlink to be created so that we can remove left-over from
+# previous tests (the symlink goes to a cache that is shared between runs).
+bazel build
 find -L bazel-testlogs -name 'test.xml' -type f -exec rm '{}' +
 
-if [[ "${rc}" == 0 ]]; then
-  bazel test --test_output=errors //... //verify:verify-all && rc=$? || rc=$?
-fi
+verify/bazel-test-affected.sh "${PULL_BASE_SHA}...${PULL_PULL_SHA}" && rc=$? || rc=$?
+
+./images/pull_kubernetes_bazel/coalesce.py
 
 case "${rc}" in
     0) echo "Success" ;;
@@ -41,7 +45,5 @@ case "${rc}" in
     5) echo "Interrupted" ;;
     *) echo "Unknown exit code: ${rc}" ;;
 esac
-
-./images/pull_kubernetes_bazel/coalesce.py
 
 exit "${rc}"

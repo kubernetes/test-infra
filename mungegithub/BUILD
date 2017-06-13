@@ -22,7 +22,6 @@ go_library(
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",
         "//mungegithub/mungers:go_default_library",
-        "//mungegithub/mungers/fsm:go_default_library",
         "//mungegithub/mungers/mungerutil:go_default_library",
         "//mungegithub/reports:go_default_library",
         "//vendor:github.com/golang/glog",
@@ -55,5 +54,11 @@ filegroup(
 filegroup(
     name = "configs",
     srcs = glob(["*.txt"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "configmaps",
+    srcs = glob(["**/configmap.yaml"]),
     visibility = ["//visibility:public"],
 )

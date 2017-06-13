@@ -104,7 +104,7 @@ func TestUnapprovedFiles(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
 		calculated := testApprovers.UnapprovedFiles()
 		if !test.expectedUnapproved.Equal(calculated) {
@@ -216,7 +216,7 @@ func TestGetFiles(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
 		calculated := testApprovers.GetFiles("org", "project")
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
@@ -360,7 +360,7 @@ func TestGetCCs(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
 		testApprovers.AddAssignees(test.assignees...)
 		calculated := testApprovers.GetCCs()
@@ -461,7 +461,7 @@ func TestIsApproved(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
 		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
@@ -537,7 +537,7 @@ func TestGetFilesApprovers(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners)})
 		for _, approver := range test.approvers {
-			testApprovers.AddApprover(approver, "REFERENCE")
+			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
 		calculated := testApprovers.GetFilesApprovers()
 		if !reflect.DeepEqual(test.expectedStatus, calculated) {
@@ -556,7 +556,7 @@ func TestGetMessage(t *testing.T) {
 			}),
 		},
 	)
-	ap.AddApprover("Bill", "REFERENCE")
+	ap.AddApprover("Bill", "REFERENCE", false)
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -564,6 +564,10 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bi
 We suggest the following additional approver: **Alice**
 
 Assign the PR to them by writing ` + "`/assign @Alice`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
@@ -592,12 +596,16 @@ func TestGetMessageAllApproved(t *testing.T) {
 			}),
 		},
 	)
-	ap.AddApprover("Alice", "REFERENCE")
-	ap.AddLGTMer("Bill", "REFERENCE")
+	ap.AddApprover("Alice", "REFERENCE", false)
+	ap.AddLGTMer("Bill", "REFERENCE", false)
 
-	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
+	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="LGTM">Bill</a>*
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -626,13 +634,18 @@ func TestGetMessageNoneApproved(t *testing.T) {
 			}),
 		},
 	)
+	ap.AddAuthorSelfApprover("John", "REFERENCE")
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
 We suggest the following additional approvers: **Alice**, **Bill**
 
 Assign the PR to them by writing ` + "`/assign @Alice @Bill`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
@@ -644,6 +657,85 @@ You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["Alice","Bill"]} -->`
+	if got := GetMessage(ap, "org", "project"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+}
+
+func TestGetMessageApprovedIssueAssociated(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+			}),
+		},
+	)
+	ap.AssociatedIssue = 12345
+	ap.AddAuthorSelfApprover("John", "REFERENCE")
+	ap.AddApprover("Bill", "REFERENCE", false)
+	ap.AddApprover("Alice", "REFERENCE", false)
+
+	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*, *<a href="REFERENCE" title="Author self-approved">John</a>*
+
+Associated issue: *12345*
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
+<details >
+Needs approval from an approver in each of these OWNERS Files:
+
+- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`
+	if got := GetMessage(ap, "org", "project"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+}
+
+func TestGetMessageApprovedNoIssueByPassed(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+			}),
+		},
+	)
+	ap.AddAuthorSelfApprover("John", "REFERENCE")
+	ap.AddApprover("Bill", "REFERENCE", true)
+	ap.AddApprover("Alice", "REFERENCE", true)
+
+	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*, *<a href="REFERENCE" title="Author self-approved">John</a>*
+
+Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
+<details >
+Needs approval from an approver in each of these OWNERS Files:
+
+- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {

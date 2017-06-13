@@ -1,14 +1,15 @@
 [MESSAGES CONTROL]
-disable=fixme,locally-disabled,locally-enabled,relative-import
+disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines
 
 [REPORTS]
 reports=no
 
 [BASIC]
-good-names=fp,_
+good-names=kw,pr,PR,fp,_
 
 [DESIGN]
 max-args=12
+max-attributes=12
 
 [SIMILARITIES]
 ignore-imports=yes

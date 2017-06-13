@@ -25,25 +25,27 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'name condition managed')
+Resource = collections.namedtuple('Resource', 'name group condition managed')
 DEMOLISH_ORDER = [
     # Beware of insertion order
-    Resource('instances', 'zone', None),
-    Resource('addresses', 'region', None),
-    Resource('disks', 'zone', None),
-    Resource('firewall-rules', None, None),
-    Resource('routes', None, None),
-    Resource('forwarding-rules', 'region', None),
-    Resource('target-http-proxies', None, None),
-    Resource('target-https-proxies', None, None),
-    Resource('url-maps', None, None),
-    Resource('backend-services', 'region', None),
-    Resource('health-checks', None, None),
-    Resource('http-health-checks', None, None),
-    Resource('target-pools', 'region', None),
-    Resource('instance-groups', 'zone', 'Yes'),
-    Resource('instance-groups', 'zone', 'No'),
-    Resource('instance-templates', None, None),
+    Resource('instances', None, 'zone', None),
+    Resource('addresses', None, 'region', None),
+    Resource('disks', None, 'zone', None),
+    Resource('firewall-rules', None, None, None),
+    Resource('routes', None, None, None),
+    Resource('forwarding-rules', None, 'region', None),
+    Resource('target-http-proxies', None, None, None),
+    Resource('target-https-proxies', None, None, None),
+    Resource('url-maps', None, None, None),
+    Resource('backend-services', None, 'region', None),
+    Resource('target-pools', None, 'region', None),
+    Resource('health-checks', None, None, None),
+    Resource('http-health-checks', None, None, None),
+    Resource('instance-groups', None, 'zone', 'Yes'),
+    Resource('instance-groups', None, 'zone', 'No'),
+    Resource('instance-templates', None, None, None),
+    Resource('networks', 'subnets', 'region', None),
+    Resource('networks', None, '', None),
 ]
 
 
@@ -63,12 +65,17 @@ def collect(project, age, resource, filt):
 
     col = collections.defaultdict(list)
 
-    for item in json.loads(subprocess.check_output([
-            'gcloud', 'compute', '-q',
-            resource.name, 'list',
-            '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,MANAGED)',
-            '--filter=%s' % filt,
-            '--project=%s' % project])):
+    cmd = ['gcloud', 'compute', '-q', resource.name]
+    if resource.group:
+        cmd.append(resource.group)
+    cmd.extend([
+        'list',
+        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,MANAGED)',
+        '--filter=%s' % filt,
+        '--project=%s' % project])
+    print '%r' % cmd
+
+    for item in json.loads(subprocess.check_output(cmd)):
 
         print '%r' % item
 
@@ -89,10 +96,11 @@ def collect(project, age, resource, filt):
 
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
-        print ('Found %r, %r in %r, created time = %r' %
-               (resource.name, item['name'], colname, item['creationTimestamp']))
+        print ('Found %r(%r), %r in %r, created time = %r' %
+               (resource.name, resource.group, item['name'], colname, item['creationTimestamp']))
         if created < age:
-            print 'Added to janitor list: %r, %r' % (resource.name, item['name'])
+            print ('Added to janitor list: %r(%r), %r' %
+                   (resource.name, resource.group, item['name']))
             col[colname].append(item['name'])
     return col
 
@@ -111,13 +119,16 @@ def clear_resources(project, col, resource):
     err = 0
     for col, items in col.items():
         if ARGS.dryrun:
-            print 'Resource type %r to be deleted: %r' % (resource.name, list(items))
+            print ('Resource type %r(%r) to be deleted: %r' %
+                   (resource.name, resource.group, list(items)))
             continue
 
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
 
         # construct the customized gcloud commend
         base = ['gcloud', 'compute', '-q', resource.name]
+        if resource.group:
+            base.append(resource.group)
         if resource.managed:
             base.append(manage_key[resource.managed])
         base.append('delete')
@@ -179,7 +190,7 @@ if __name__ == '__main__':
         help='Clean items more than --hours old (added to --days)')
     PARSER.add_argument(
         '--filter',
-        default='NOT tags.items:do-not-delete AND NOT name ~ ^default-',
+        default='NOT tags.items:do-not-delete AND NOT name ~ ^default',
         help='Filter down to these instances')
     PARSER.add_argument(
         '--dryrun',

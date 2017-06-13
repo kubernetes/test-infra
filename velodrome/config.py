@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import os
-import subprocess
+import string
 import sys
 
 import yaml
@@ -111,13 +111,8 @@ def print_deployments(components, env):
 
 
 def print_deployment(deployment, env):
-    p = subprocess.Popen(["envsubst", " ".join(["$" + key for key in env])],
-                         stdin=subprocess.PIPE,
-                         env=env)
-    p.communicate(deployment)
+    print string.Template(deployment).safe_substitute(**env),
     print '---'
-    sys.stdout.flush()
-
 
 if __name__ == '__main__':
     main()

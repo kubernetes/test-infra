@@ -42,7 +42,7 @@ Password and database creation
 Connect to the container and create the db:
 
 ```
-$ kubectl exec -i -t influx-$PROJECT-123456 -- influx -username root -password "${influxdb_password}"
+$ kubectl exec -i -t influx-${PROJECT}-123456 -- influx -username root -password "${influxdb_password}"
 > create database github
 ```
 

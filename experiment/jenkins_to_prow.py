@@ -20,7 +20,6 @@ import argparse
 import copy
 import fileinput
 import json
-import os
 import subprocess
 import sys
 import yaml
@@ -28,10 +27,10 @@ import yaml
 
 TEMPLATE = {
     'name': '',
-    'interval': '1h',
+    'interval': '2h',
     'spec': {
         'containers': [{
-            'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094',
+            'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0',
             'args': [],
             'volumeMounts': [{
                 'readOnly': True,
@@ -41,9 +40,6 @@ TEMPLATE = {
                 'readOnly': True,
                 'mountPath': '/etc/ssh-key-secret',
                 'name': 'ssh'
-            }, {
-                'mountPath': '/root/.cache',
-                'name': 'cache-ssd'
             }],
             'env': [{
                 'name': 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -70,14 +66,11 @@ TEMPLATE = {
                 'secretName': 'ssh-key-secret'
             },
             'name': 'ssh'
-        }, {
-            'hostPath': {
-                'path': '/mnt/disks/ssd0'
-            },
-            'name': 'cache-ssd'
         }]
     }
 }
+
+# pylint: disable=too-many-branches,too-many-statements,too-many-locals
 
 def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     """Convert Jenkins config to prow config."""
@@ -98,7 +91,6 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     jenkins_jobs = project.get(suffix)
     dump = []
     job_names = []
-    job_replace = {}
     for jenkins_job in jenkins_jobs:
         name = jenkins_job.keys()[0]
         real_job = jenkins_job[name]
@@ -118,12 +110,10 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             dump.append(output)
             job_names.append(real_job['job-name'])
 
-    for job in job_names:
-        if '.' in job:
-            job_replace[job] = job.replace('.', '-')
-
     if prow_path:
-        yaml.safe_dump(dump, file(prow_path, 'a'), default_flow_style=False)
+        with open(prow_path, 'a') as fp:
+            fp.write('\n')
+            yaml.safe_dump(dump, fp, default_flow_style=False)
     else:
         print yaml.safe_dump(dump, default_flow_style=False)
 
@@ -132,15 +122,11 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
         deleting = False
         for line in fileinput.input(jenkins_path, inplace=True):
             if line.strip().startswith('-'):
-                if job in line.strip():
-                    deleting = True
-                else:
-                    deleting = False
+                deleting = job in line.strip()
 
             if not deleting:
                 sys.stdout.write(line)
 
-    
     # add mode=local to config.json
     if config_path:
         with open(config_path, 'r+') as fp:
@@ -150,17 +136,20 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
                     configs[job]['args'].append('--mode=local')
             fp.seek(0)
             fp.write(json.dumps(configs, sort_keys=True, indent=2))
+            fp.write('\n')
             fp.truncate()
 
-    for oldName, newName in job_replace.iteritems():
-        files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
-        for fname in files:
-            with open(fname) as f:
-                s = f.read()
-            s = s.replace(oldName, newName)
-            with open(fname, "w") as f:
-                f.write(s)
-        subprocess.check_call(['git', 'mv', 'jobs/%s.env' % oldName, 'jobs/%s.env' % newName])
+    for old_name in job_names:
+        if '.' in old_name:
+            new_name = old_name.replace('.', '-')
+            files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
+            for fname in files:
+                with open(fname) as fp:
+                    content = fp.read()
+                content = content.replace(old_name, new_name)
+                with open(fname, "w") as fp:
+                    fp.write(content)
+            subprocess.check_call(['git', 'mv', 'jobs/%s.env' % old_name, 'jobs/%s.env' % new_name])
 
 
 if __name__ == '__main__':

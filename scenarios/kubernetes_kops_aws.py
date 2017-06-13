@@ -65,7 +65,7 @@ def kubekins(tag):
 
 def main(args):
     """Set up env, start kops-runner, handle termination. """
-    # pylint: disable=too-many-locals,too-many-branches
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 
     job_name = (os.environ.get('JOB_NAME') or
                 os.environ.get('USER') or
@@ -200,6 +200,8 @@ def main(args):
 
     if args.kops_args:
         cmd.append('--kops-args=%s' % args.kops_args)
+    if args.timeout:
+        cmd.append('--timeout=%s' % args.timeout)
 
     setup_signal_handlers(container)
 
@@ -269,24 +271,27 @@ if __name__ == '__main__':
         help='Additional space-separated args to pass unvalidated to \'kops '
         'create cluster\', e.g. \'--kops-args="--dns private --node-size '
         't2.micro"\'')
+    PARSER.add_argument(
+        '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
+
     ARGS = PARSER.parse_args()
 
     if not ARGS.cluster:
         raise ValueError('--cluster must be provided')
 
     # If aws keys are missing, try to fetch from HOME dir
-    if not (ARGS.aws_ssh or ARGS.aws_pub or ARGS.aws_cred):
+    if not ARGS.aws_ssh or not ARGS.aws_pub or not ARGS.aws_cred:
         HOME = os.environ.get('HOME')
         if not HOME:
             raise ValueError('HOME dir not set!')
         if not ARGS.aws_ssh:
             ARGS.aws_ssh = '%s/.ssh/kube_aws_rsa' % HOME
-            print >>sys.stderr, 'AWS ssh key not found. Try to fetch from %s' % ARGS.aws_ssh
+            print >>sys.stderr, 'AWS ssh key not set. Defaulting to %s' % ARGS.aws_ssh
         if not ARGS.aws_pub:
             ARGS.aws_pub = '%s/.ssh/kube_aws_rsa.pub' % HOME
-            print >>sys.stderr, 'AWS pub key not found. Try to fetch from %s' % ARGS.aws_pub
+            print >>sys.stderr, 'AWS pub key not set. Defaulting to %s' % ARGS.aws_pub
         if not ARGS.aws_cred:
             ARGS.aws_cred = '%s/.aws/credentials' % HOME
-            print >>sys.stderr, 'AWS cred not found. Try to fetch from %s' % ARGS.aws_cred
+            print >>sys.stderr, 'AWS cred not set. Defaulting to %s' % ARGS.aws_cred
 
     main(ARGS)

@@ -20,6 +20,7 @@
 """Runs kubernetes e2e test with specified config"""
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -78,6 +79,12 @@ def kubeadm_version(mode):
         if not status:
             raise ValueError('STABLE_BUILD_SCM_REVISION not found')
         version = status.group(1)
+
+        # Work-around for release-1.6 jobs, which still upload debs to an older
+        # location (without os/arch prefixes).
+        # TODO(pipejakob): remove this when we no longer support 1.6.x.
+        if version.startswith("v1.6."):
+            return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
     elif mode == 'pull':
         version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
@@ -306,9 +313,18 @@ class DockerMode(object):
         check('docker', 'stop', self.container)
 
 
+def cluster_name(cluster, build):
+    """Return or select a cluster name."""
+    if cluster:
+        return cluster
+    if len(build) < 20:
+        return 'e2e-%s' % build
+    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -327,7 +343,7 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        sudo = args.docker_in_docker or args.build
+        sudo = args.docker_in_docker or args.build is not None
         mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
@@ -352,8 +368,13 @@ def main(args):
         mode.add_service_account(args.service_account)
 
     runner_args = []
-    if args.build:
-        runner_args.append('--build')
+    if args.build is not None:
+        if args.build == '':
+            # Empty string means --build was passed without any arguments;
+            # if --build wasn't passed, args.build would be None
+            runner_args.append('--build')
+        else:
+            runner_args.append('--build=%s' % args.build)
         k8s = os.getcwd()
         if not os.path.basename(k8s) == 'kubernetes':
             raise ValueError(k8s)
@@ -364,16 +385,40 @@ def main(args):
         runner_args.append('--stage-suffix=%s' % args.stage_suffix)
     if args.multiple_federations:
         runner_args.append('--multiple-federations')
+    if args.perf_tests:
+        runner_args.append('--perf-tests')
+    if args.charts_tests:
+        runner_args.append('--charts')
+    if args.kubemark:
+        runner_args.append('--kubemark')
+    if args.up == 'true':
+        runner_args.append('--up')
+    if args.down == 'true':
+        runner_args.append('--down')
+    if args.federation:
+        runner_args.append('--federation')
+    if args.deployment:
+        runner_args.append('--deployment=%s' % args.deployment)
+    if args.save:
+        runner_args.append('--save=%s' % args.save)
+    if args.publish:
+        runner_args.append('--publish=%s' % args.publish)
+    if args.timeout:
+        runner_args.append('--timeout=%s' % args.timeout)
+    if args.skew:
+        runner_args.append('--skew')
 
-    cluster = args.cluster or 'e2e-gce-%s-%s' % (
-        os.environ['NODE_NAME'], os.getenv('EXECUTOR_NUMBER', 0))
+    for ext in args.extract or []:
+        runner_args.append('--extract=%s' % ext)
+    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    # TODO(fejta): remove this add_environment after pushing new kubetest image
+    mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
+    runner_args.append('--check-leaked-resources=%s' % args.check_leaked_resources)
+
 
     if args.kubeadm:
-        # Not from Jenkins
-        cluster = args.cluster or 'e2e-kubeadm-%s' % os.getenv('BUILD_NUMBER', 0)
         version = kubeadm_version(args.kubeadm)
-        opt = '--deployment kubernetes-anywhere' \
-            ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
+        opt = ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
             ' --kubernetes-anywhere-phase2-provider kubeadm' \
             ' --kubernetes-anywhere-cluster %s' \
             ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
@@ -390,9 +435,7 @@ def main(args):
       # Use default component update behavior
       'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
       # E2E
-      'E2E_UP=%s' % args.up,
       'E2E_TEST=%s' % args.test,
-      'E2E_DOWN=%s' % args.down,
       'E2E_NAME=%s' % cluster,
       # AWS
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
@@ -405,10 +448,6 @@ def main(args):
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
-    # Overwrite JOB_NAME for soak-*-test jobs
-    if args.soak_test and os.environ.get('JOB_NAME'):
-        mode.add_environment('JOB_NAME=%s' % os.environ.get('JOB_NAME').replace('-test', '-deploy'))
-
     mode.start(runner_args)
 
 def create_parser():
@@ -418,7 +457,6 @@ def create_parser():
         '--mode', default='docker', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
-
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
@@ -450,32 +488,55 @@ def create_parser():
         default=[],
         nargs='*',
         help='Paths that should be mounted within the docker container in the form local:remote')
-    # Assume we're upping, testing, and downing a cluster by default
+    parser.add_argument('--publish', help='Upload binaries to gs://path if set')
     parser.add_argument(
-        '--build', action='store_true', help='Build kubernetes binaries if set')
+        '--build', nargs='?', default=None, const='',
+        help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
         '--stage', help='Stage binaries to gs:// path if set')
     parser.add_argument(
         '--stage-suffix', help='Append suffix to staged version if set')
     parser.add_argument(
+        '--charts-tests', action='store_true', help='If the test is a charts test job')
+    parser.add_argument(
+        '--extract', action="append", help='Pass --extract flag(s) to kubetest')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
+    parser.add_argument(
+        '--deployment', default='bash', choices=['none', 'bash', 'kops', 'kubernetes-anywhere'])
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
-        '--down', default='true', help='If we need to set --down in e2e.go')
+        '--down', default='true', help='If we need to tear down the e2e cluster')
+    parser.add_argument(
+        '--federation', action='store_true', help='If kubetest will have --federation flag')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--soak-test', action='store_true', help='If the test is a soak test job')
+        '--kubemark', action='store_true', help='If the test uses kubemark')
     parser.add_argument(
-        '--tag', default='v20170504-79009d67', help='Use a specific kubekins-e2e tag if set')
+        '--perf-tests', action='store_true', help='If the test need to run k8s/perf-test e2e test')
     parser.add_argument(
-        '--test', default='true', help='If we need to set --test in e2e.go')
+        '--save', default=None,
+        help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
     parser.add_argument(
-        '--up', default='true', help='If we need to set --up in e2e.go')
+        '--skew', action='store_true',
+        help='If we need to run skew tests, pass --skew to kubetest.')
     parser.add_argument(
-        '--multiple-federations', default=False, action='store_true',
-        help='If we need to run multiple federation control planes in parallel')
+        '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
+    parser.add_argument(
+        '--test', default='true', help='If we need to run any actual test within kubetest')
+    parser.add_argument(
+        '--up', default='true', help='If we need to bring up a e2e cluster')
+    parser.add_argument(
+        '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
+    parser.add_argument(
+        '--multiple-federations', action='store_true',
+        help='Run federation control planes in parallel')
+    parser.add_argument(
+        '--check-leaked-resources',
+        nargs='?', default='false', const='true',
+        help='Send --check-leaked-resources to kubetest')
     return parser
 
 if __name__ == '__main__':

@@ -14,11 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Attach Jenkins agents."""
 
 import ConfigParser
 import sys
 
-from jenkinsapi import jenkins  # sudo pip install jenkinsapi
+# Todo(krzyzacy): fix the import error
+# sudo pip install jenkinsapi
+from jenkinsapi import jenkins # pylint: disable=import-error
 
 EXCLUSIVE = True
 SHARED = False
@@ -33,6 +36,7 @@ INFO = {
 
 
 def info(host, kind):
+    """Get host info."""
     labels, executors, exclusive = INFO[kind]
     return {
         'credential_description': 'Jenkins GCE ssh key',
@@ -53,12 +57,14 @@ def info(host, kind):
 
 
 def create(api, host, config):
+    """Create agent."""
     delete(api, host)
     print 'Creating %s...' % host,
     print api.nodes.create_node(host, config)
 
 
 def delete(api, host):
+    """Delete agent."""
     if host in api.nodes:
         print 'Deleting %s...' % host,
         print api.delete_node(host)
@@ -77,16 +83,16 @@ def creds(path, section):
       key=7deadbeef9999999
     """
     config = ConfigParser.SafeConfigParser()
-    config.read(ini)
+    config.read(path)
     return config.get(section, 'user'), config.get(section, 'key')
 
 
 if __name__ == '__main__':
-    cmd, host, kind, ini, agent = sys.argv[1:]
-    user, key = creds(ini, agent)
-    J = jenkins.Jenkins('http://localhost:8080', user, key)
+    CMD, HOST, KIND, INI, AGENT = sys.argv[1:]
+    USER, KEY = creds(INI, AGENT)
+    J = jenkins.Jenkins('http://localhost:8080', USER, KEY)
 
     if sys.argv[1] == 'delete':
-        delete(J, host)
+        delete(J, HOST)
     else:
-        create(J, host, info(host, kind))
+        create(J, HOST, info(HOST, KIND))

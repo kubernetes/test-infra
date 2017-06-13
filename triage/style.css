@@ -17,6 +17,10 @@ pre span.mm {
   color: grey;
 }
 
+.clearoptions {
+  cursor: pointer;
+}
+
 h2 {
   position: sticky;
   top: 0px;
@@ -33,6 +37,46 @@ h2 > a {
   font-size: 14px;
   padding: 10px 0 0 10px;
 }
+
+span.owner {
+  cursor: pointer;
+  margin: 10px;
+  padding: 0 10px 0 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background: var(--color, #eee);
+}
+
+button.toggle {
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px 10px 5px 10px;
+  border-radius: 5px;
+  border-color: var(--color, #eee);
+  border-width: 3px;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+button.toggle.active {
+  background-color: var(--color, #eee);
+}
+
+/* colors from http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12 */
+.sig-api-machinery      { --color: #bc80bd; }
+.sig-apps               { --color: #ffffb3; }
+.sig-autoscaling        { --color: #bebada; }
+.sig-big-data           { --color: #fb8072; }
+.sig-cli                { --color: #80b1d3; }
+.sig-cluster-lifecycle  { --color: #fdb462; }
+.sig-federation         { --color: #b3de69; }
+.sig-instrumentation    { --color: #fccde5; }
+.sig-network            { --color: #d9d9d9; }
+.sig-node               { --color: #8dd3c7; }
+.sig-scalability        { --color: #ccebc5; }
+.sig-scheduling         { --color: #ffed6f; }
+.sig-storage            { --color: #aaf; }
+.sig-ui                 { --color: #afa; }
+.sig-testing            { --color: #faa; }
 
 div.graph {
   width: 1200px;

@@ -35,6 +35,8 @@ class StringsTest(unittest.TestCase):
                  'UNIQ1 a UNIQ2 b UNIQ3'),
                 ('Mon, 12 January 2017 11:34:35 blah blah', 'TIMEblah blah'),
                 ('123.45.68.12:345 abcd1234eeee', 'UNIQ1 UNIQ2'),
+                ('foobarbaz ' * 500000,
+                 'foobarbaz ' * 20000 + '\n...[truncated]...\n' + 'foobarbaz ' * 20000),
         ]:
             self.assertEqual(summarize.normalize(src), dst)
 
@@ -168,13 +170,18 @@ class IntegrationTest(unittest.TestCase):
             {'build': 'gs://logs/some-job/2'},
             {'build': 'gs://logs/some-job/3'},
             {'build': 'gs://logs/some-job/4'},
-            {'failure_text': 'some other error message'},
+            {'name': 'another test', 'failure_text': 'some other error message'},
             {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
             {},  # intentional dupe
             {'build': 'gs://logs/other-job/7'},
         ]), open('tests.json', 'w'))
+        json.dump({
+            'node': ['example']
+        }, open('owners.json', 'w'))
         summarize.main(summarize.parse_args(
-            ['builds.json', 'tests.json', '--output_slices=failure_data_PREFIX.json']))
+            ['builds.json', 'tests.json',
+             '--output_slices=failure_data_PREFIX.json',
+             '--owners=owners.json']))
         output = json_load_byteified(open('failure_data.json'))
 
         # uncomment when output changes
@@ -209,6 +216,7 @@ class IntegrationTest(unittest.TestCase):
                                    'name': 'some-job'}],
                          'name': 'example test'}],
               'spans': [29],
+              'owner': 'node',
               'text': 'some awful stack trace exit 1'},
              {'id': random_hash_2,
               'key': 'some other error message',
@@ -216,8 +224,9 @@ class IntegrationTest(unittest.TestCase):
                                    'name': 'other-job'}],
                          'name': 'unrelated test'},
                         {'jobs': [{'builds': [4], 'name': 'some-job'}],
-                         'name': 'example test'}],
+                         'name': 'another test'}],
               'spans': [24],
+              'owner': 'testing',
               'text': 'some other error message'}]
         )
 

@@ -24,8 +24,11 @@ def wordRE(word):
 # Match lines with error messages
 # HACK: match ANSI colored lines by allowing preceding "m",
 # as in"\x1b[0;31mFAILED\x1b[0m"
+
+default_words = ["build timed out", "error", "fail", "failed", "fatal", "undefined"]
+
 error_re = re.compile(
-    r'(?:\b|(?<=m))(error|fatal|fail|failed|build timed out)\b', re.IGNORECASE)
+    r'(?:\b|(?<=m))(%s)\b' % '|'.join(default_words), re.IGNORECASE)
 
 # Match the dictionary string in the given line
 def objref(line):

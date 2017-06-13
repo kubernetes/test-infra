@@ -22,9 +22,10 @@ export PATH="${TEST_SRCDIR}/pylint:${PATH}"
 
 # TODO(fejta): all python files
 pylint scenarios/*.py
-pylint jenkins/bootstrap.py
-pylint jenkins/janitor.py
+pylint jenkins/*.py
 pylint jobs/*.py
+pylint metrics/*.py
 pylint queue-health/graph/graph.py
 pylint queue-health/weekly_commit_stats.py
 pylint triage/*.py
+pylint experiment/*.py

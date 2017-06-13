@@ -30,24 +30,24 @@ RUN apt-get update && apt-get install -y \
     python-pip && \
     apt-get clean
 
-ENV BAZEL_VERSION 0.4.5
-RUN wget "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
+ENV BAZEL_VERSION 0.5.0
+RUN wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
 
-ENV GCLOUD_VERSION 149.0.0
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
+ENV GCLOUD_VERSION 156.0.0
+RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     ./google-cloud-sdk/install.sh
 ENV PATH "/google-cloud-sdk/bin:${PATH}"
 
 ENV NODE_VERSION 6.10.0
-RUN wget https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz && \
+RUN wget -q https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz && \
     tar xf node-v${NODE_VERSION}-linux-x64.tar.xz --strip-components=1 -C /usr && \
     rm node-v${NODE_VERSION}-linux-x64.tar.xz && \
     npm install -g mocha
 
 WORKDIR /workspace
-ADD runner /
-ENTRYPOINT ["/bin/bash", "/runner"]
+COPY runner coalesce.py /usr/local/bin/
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/runner"]

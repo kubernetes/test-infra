@@ -11,20 +11,21 @@ data:
   # Otherwise it's going to take an extra-cycle to detect the label change.
   # Run blunderbuss before approval-handler, so that we can suggest approvers
   # based on assigned reviewer.
-  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,old-test-getter,close-stale,docs-need-no-retest
+  config.pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,flakyjob-reporter,old-test-getter,close-stale,docs-need-no-retest,sig-mention-handler
   config.state: open
   config.token-file: /etc/secret-volume/token
   config.loop-period: 20s
 
   # test-options feature options.
   test-options.required-retest-contexts: "\
-    \"Jenkins unit/integration\",\
-    \"Jenkins verification\",\
-    \"Jenkins GCE Node e2e\",\
-    \"Jenkins Kubemark GCE e2e\",\
-    \"Jenkins GCE etcd3 e2e\",\
-    \"Jenkins Bazel Build\",\
-    \"Jenkins kops AWS e2e\""
+    \"pull-kubernetes-unit\",\
+    \"pull-kubernetes-verify\",\
+    \"pull-kubernetes-node-e2e\",\
+    \"pull-kubernetes-kubemark-e2e-gce\",\
+    \"pull-kubernetes-e2e-gce-etcd3\",\
+    \"pull-kubernetes-bazel\",\
+    \"pull-kubernetes-e2e-kops-aws\",\
+    \"pull-kubernetes-federation-e2e-gce\""
 
   submit-queue.protected-branches: "master"
   submit-queue.protected-branches-extra-contexts: "cla/linuxfoundation"
@@ -103,16 +104,9 @@ data:
   # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
   # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
   submit-queue.jenkins-jobs: "\"\""
-  submit-queue.presubmit-jobs: "\
-    kubernetes-pull-build-test-e2e-gce,\
-    kubernetes-pull-build-test-e2e-gke,\
-    kubernetes-pull-build-test-federation-e2e-gce,\
-    node-pull-build-e2e-test,\
-    kubernetes-pull-build-test-gci-e2e-gce,\
-    kubernetes-pull-build-test-gci-e2e-gke,\
-    kubernetes-pull-build-test-gci-kubemark-e2e-gce"
+  submit-queue.presubmit-jobs: "\"\""
   submit-queue.weak-stable-jobs: "\"\""
-  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.do-not-merge-milestones: "v1.8,v1.9,next-candidate,"
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
   submit-queue.history-url: https://storage.googleapis.com/kubernetes-test-history/static/index.html
@@ -130,15 +124,15 @@ data:
   gitrepo.repo-dir: /gitrepos
   gitrepo.enable-md-yaml: "false"
   issue-creator.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
-  triage-filer.window-days: "1"
-  triage-filer.sync-count: "3"
+  triage.window: "1"
+  triage.count: "10"
+  flakyjob.count: "3"
   old-test-getter.number-of-old-test-results: "5"
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: .generated-files
   check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"
   issue-categorizer.triager-url: "http://issue-triager-service:5000"
-  cla.cla-status-context: ""
   alias.alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
 
   # Temporary gate approval process

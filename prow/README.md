@@ -14,6 +14,8 @@ currently comprises several related pieces that live in a Kubernetes cluster.
 * `cmd/crier` writes GitHub statuses and comments.
 * `cmd/horologium` starts periodic jobs when necessary.
 
+See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
+
 ## How to test prow
 
 Build with:
@@ -90,7 +92,9 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
-messages defined in [config.yaml](config.yaml).
+messages defined in [config.yaml](config.yaml). Here is a
+[command list](https://github.com/kubernetes/test-infra/blob/master/commands.md)
+for them. 
 
 ## How to turn up a new cluster
 

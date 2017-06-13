@@ -17,13 +17,16 @@ limitations under the License.
 package mungers
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	githubapi "github.com/google/go-github/github"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungers/testowner"
 )
 
 // fakeClient implements the RepoClient interface in order to be substituted for a
@@ -310,4 +313,79 @@ func stringSlicesEqual(strs1, strs2 []string) bool {
 	sort.Strings(strs1)
 	sort.Strings(strs2)
 	return reflect.DeepEqual(strs1, strs2)
+}
+
+func TestOwnersSIGs(t *testing.T) {
+	sampleOwnerCSV = []byte(
+		`name,owner,auto-assigned,sig
+some test, cjwagner,0,sigarea2
+some test2, cjwagner, 1, sigarea3
+some test3, cjwagner, 0, sigarea4
+Sysctls should support sysctls,Random-Liu,1,node
+Sysctls should support unsafe sysctls which are actually whitelisted,deads2k,1,node
+testname1,cjwagner ,1,sigarea
+testname2,spxtr,1,sigarea
+ThirdParty resources Simple Third Party creating/deleting thirdparty objects works,luxas,1,api-machinery
+Upgrade cluster upgrade should maintain a functioning cluster,luxas,1,cluster-lifecycle
+Upgrade master upgrade should maintain a functioning cluster,xiang90,1,cluster-lifecycle`)
+
+	ownerlist, err := testowner.NewOwnerListFromCsv(bytes.NewReader(sampleOwnerCSV))
+	if err != nil {
+		t.Fatalf("Failed to init an OwnerList: %v\n", err)
+	}
+	c := &IssueCreator{
+		owners:       ownerlist,
+		maxAssignees: 3,
+		maxSIGCount:  3,
+	}
+
+	cases := []struct {
+		tests        []string
+		owners, sigs map[string][]string
+	}{
+		{
+			tests:  []string{"testname1"},
+			owners: map[string][]string{"cjwagner": []string{"testname1"}},
+			sigs:   map[string][]string{"sigarea": []string{"testname1"}},
+		},
+		{
+			tests:  []string{"testname1", "testname2"},
+			owners: map[string][]string{"cjwagner": []string{"testname1"}, "spxtr": []string{"testname2"}},
+			sigs:   map[string][]string{"sigarea": []string{"testname1", "testname2"}},
+		},
+		{
+			tests:  []string{"testname1", "testname2", "some test"},
+			owners: map[string][]string{"cjwagner": []string{"testname1", "some test"}, "spxtr": []string{"testname2"}},
+			sigs:   map[string][]string{"sigarea": []string{"testname1", "testname2"}, "sigarea2": []string{"some test"}},
+		},
+		{
+			tests:  []string{"testname1", "some test", "some test2", "some_test3"},
+			owners: map[string][]string{"cjwagner": []string{"testname1", "some test", "some test2"}},
+			sigs:   map[string][]string{"sigarea": []string{"testname1"}, "sigarea2": []string{"some test"}, "sigarea3": []string{"some test2"}},
+		},
+	}
+	for _, test := range cases {
+		owners := c.TestsOwners(test.tests)
+		sigs := c.TestsSIGs(test.tests)
+		if !reflect.DeepEqual(owners, test.owners) {
+			t.Errorf("Expected owners map was %v but got %v\n", test.owners, owners)
+		}
+		if !reflect.DeepEqual(sigs, test.sigs) {
+			t.Errorf("Expected sigs map was %v but got %v\n", test.sigs, sigs)
+		}
+
+		table := c.ExplainTestAssignments(test.tests)
+		for owner, testNames := range owners {
+			row := fmt.Sprintf("| %s | %s |", owner, strings.Join(testNames, "; "))
+			if !strings.Contains(table, row) {
+				t.Errorf("Assignment explanation table is missing row: '%s'\n", row)
+			}
+		}
+		for sig, testNames := range sigs {
+			row := fmt.Sprintf("| sig/%s | %s |", sig, strings.Join(testNames, "; "))
+			if !strings.Contains(table, row) {
+				t.Errorf("Assignment explanation table is missing row: '%s'\n", row)
+			}
+		}
+	}
 }

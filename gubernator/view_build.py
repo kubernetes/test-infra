@@ -88,7 +88,7 @@ def build_details(build_dir):
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
         failures: list of (name, duration, text) tuples
-        build_log: a hilighted portion of errors in the build log. May be None.
+        build_log: a highlighted portion of errors in the build log. May be None.
     """
     started_fut = gcs_async.read(build_dir + '/started.json')
     finished = gcs_async.read(build_dir + '/finished.json').get_result()

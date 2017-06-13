@@ -26,7 +26,7 @@ import (
 
 const (
 	period        = time.Hour
-	maxProwJobAge = 24 * time.Hour
+	maxProwJobAge = 7 * 24 * time.Hour
 	maxPodAge     = 12 * time.Hour
 )
 

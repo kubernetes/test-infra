@@ -1267,7 +1267,7 @@ func newInterruptedObject(obj *github.MungeObject) *submitQueueInterruptedObject
 }
 
 // Returns true if we can discard the PR from the queue, false if we must keep it for later.
-// If you modify this, consider modifying maybeMergeBatch too.
+// If you modify this, consider modifying doBatchMerge too.
 func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 	interruptedObj := sq.interruptedObj
 	sq.interruptedObj = nil
@@ -1526,8 +1526,8 @@ func (sq *SubmitQueue) servePriorityInfo(res http.ResponseWriter, req *http.Requ
 	res.Write([]byte(`  <li>Release milestone due date
     <ul>
       <li>Release milestones are of the form vX.Y where X and Y are integers</li>
-      <li>Other milestones are ignored.
-      <li>PR with no release milestone will be considered after any PR with a milestone</li>
+      <li>The release milestore must have a due date set to affect queue order</li>
+      <li>Other milestones are ignored</li>
     </ul>
   </li>
 `))

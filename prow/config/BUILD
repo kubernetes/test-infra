@@ -16,11 +16,16 @@ go_test(
     ],
     data = [
         "//jobs",
+        "//mungegithub:configmaps",
         "//prow:configs",
         "//scenarios",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor:github.com/ghodss/yaml",
+    ],
 )
 
 go_library(

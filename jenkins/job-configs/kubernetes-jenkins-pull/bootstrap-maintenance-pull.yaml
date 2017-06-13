@@ -56,7 +56,7 @@
         timeout: 0
     - janitor:
         branch: master
-        frequency: 'H H/3 * * *'
+        frequency: '@hourly'
         job-name: maintenance-pull-janitor
         json: 1
         repo-name: 'k8s.io/test-infra'

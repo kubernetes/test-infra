@@ -163,7 +163,9 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.kubemark {
-		errs = appendError(errs, xmlWrap("Kubemark", KubemarkTest))
+		errs = appendError(errs, xmlWrap("Kubemark", func() error {
+			return KubemarkTest(o.dump)
+		}))
 	}
 
 	if o.charts {
@@ -413,13 +415,6 @@ func DumpFederationLogs(location string) error {
 }
 
 func PerfTest() error {
-	// TODO(wojtek-t): Remove once #2744 is debugged.
-	if out, err := output(exec.Command("ls", "/go/src/k8s.io/perf-tests")); err == nil {
-		log.Printf("ls /go/src/k8s.io/perf-tests: %s", string(out))
-	} else {
-		log.Printf("ls /go/src/k8s.io/perf-tests error: %v", err)
-	}
-
 	// Run perf tests
 	cmdline := fmt.Sprintf("%s/src/k8s.io/perf-tests/clusterloader/run-e2e.sh", os.Getenv("GOPATH"))
 	if err := finishRunning(exec.Command(cmdline)); err != nil {
@@ -436,7 +431,7 @@ func ChartsTest() error {
 	return nil
 }
 
-func KubemarkTest() error {
+func KubemarkTest(logDir string) error {
 	// Stop previous run
 	err := finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	if err != nil {
@@ -468,6 +463,13 @@ func KubemarkTest() error {
 		return finishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
 	})
 	if err != nil {
+		if logDir != "" {
+			log.Printf("Start kubemark step failed, trying to dump logs from kubemark master...")
+			if logErr := finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", logDir)); logErr != nil {
+				// This can happen in case of non-SSH'able kubemark master.
+				log.Printf("Failed to dump logs from kubemark master: %v", logErr)
+			}
+		}
 		return err
 	}
 

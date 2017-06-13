@@ -18,14 +18,12 @@ package mungers
 
 import (
 	"bytes"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/mungers/testowner"
 )
 
@@ -254,40 +252,11 @@ func checkCluster(clust *Cluster, t *testing.T) {
 	}
 }
 
-// TestTFValidateRealClusters fetches fresh cluster data and checks that the clusters parsed from it
-// are valid and can be sorted properly by topClusters.
-func TestTFValidateRealClusters(t *testing.T) {
-	f := NewTestTriageFiler()
-	raw, err := mungerutil.ReadHTTP(clusterDataURL)
-	if err != nil {
-		t.Fatal("Failed to fetch file at url '" + clusterDataURL + "' errmsg: " + err.Error())
-	}
-	clusters, err := f.loadClusters(raw)
-	if err != nil {
-		t.Fatalf("Failed to load clusters: %v", err)
-	}
-	for _, clust := range clusters {
-		checkCluster(clust, t)
-	}
-
-	sorted := topClusters(clusters, len(clusters))
-	for i := 1; i < len(clusters); i++ {
-		if sorted[i-1].totalBuilds < sorted[i].totalBuilds {
-			t.Errorf("Top Clusters were improperly sorted. '%s' should come before '%s'\n", sorted[i].Id, sorted[i-1].Id)
-		}
-	}
-}
-
 func TestTFOwnersAndSIGs(t *testing.T) {
-	// This test is really more of a test of OwnerMapper and the IssueCreator's 'TestsSIGs' and 'TestsOwners'
-	// methods, but it fits well here because it can use real testnames from the clustered failure data.
-	sigregexp := regexp.MustCompile("sig/.*")
-
+	// Integration test for triage-filers use of issue-creator's TestsOwners, TestsSIGs, and
+	// ExplainTestAssignments. These functions in turn rely on OwnerList.
 	f := NewTestTriageFiler()
-	raw, err := mungerutil.ReadHTTP(clusterDataURL)
-	if err != nil {
-		t.Fatal("Failed to fetch file at url '" + clusterDataURL + "' errmsg: " + err.Error())
-	}
+	var err error
 	f.creator.owners, err = testowner.NewOwnerListFromCsv(bytes.NewReader(sampleOwnerCSV))
 	f.creator.maxSIGCount = 3
 	f.creator.maxAssignees = 3
@@ -295,44 +264,8 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 		t.Fatalf("Failed to create a new OwnersList.  errmsg: %v", err)
 	}
 
-	clusters, err := f.loadClusters(raw)
-	if err != nil {
-		t.Fatalf("Failed to load clusters: %v", err)
-	}
-	for _, clust := range clusters {
-		owners := clust.Owners()
-		labels := clust.Labels()
-		if len(owners) > f.creator.maxAssignees {
-			t.Errorf("Cluster: %s has too many assignees: %v\n", clust.Id, owners)
-		}
-		for _, owner := range owners {
-			if owner == "" {
-				t.Errorf("Cluster: %s has at least one empty string owner!\n", clust.Id)
-				break
-			}
-		}
-		// Check that the 'kind/flake' label still exists when sig labels are used.
-		sigsCount := 0
-		foundKind := false
-		for _, label := range labels {
-			if label == "kind/flake" {
-				foundKind = true
-			} else {
-				if sigregexp.MatchString(label) {
-					sigsCount++
-				}
-			}
-		}
-		if !foundKind {
-			t.Errorf("The cluster: %s does not have the label 'kind/flake'!", clust.Id)
-		}
-		if sigsCount > f.creator.maxSIGCount {
-			t.Errorf("The cluster: %s has too many 'sig/.*' labels!\n", clust.Id)
-		}
-	}
-
 	// Check that the usernames and sig areas are as expected (no stay commas or anything like that).
-	clusters, err = f.loadClusters(json1issue2job2test)
+	clusters, err := f.loadClusters(json1issue2job2test)
 	if err != nil {
 		t.Fatalf("Failed to load clusters: %v", err)
 	}

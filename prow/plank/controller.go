@@ -58,10 +58,10 @@ type Controller struct {
 	totURL   string
 }
 
-func NewController(kc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
 	return &Controller{
 		kc:       kc,
-		pkc:      kc.Namespace(kube.TestPodNamespace),
+		pkc:      pkc,
 		jc:       jc,
 		crierURL: crierURL,
 		totURL:   totURL,
@@ -347,14 +347,6 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	for i := range pj.Spec.PodSpec.Containers {
 		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
-		// Set the HostPort to 9999 for all build pods so that they are forced
-		// onto different nodes. Once pod affinity is GA, use that instead.
-		spec.Containers[i].Ports = append(spec.Containers[i].Ports,
-			kube.Port{
-				ContainerPort: 9999,
-				HostPort:      9999,
-			},
-		)
 		spec.Containers[i].Env = append(spec.Containers[i].Env,
 			kube.EnvVar{
 				Name:  "JOB_NAME",

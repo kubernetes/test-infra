@@ -18,6 +18,7 @@ function readOptions() {
     let el = document.getElementById(id);
     if (el.type === "checkbox") return el.checked;
     if (el.type === "radio") return el.form[el.name].value;
+    if (el.type === "select-one") return el.value;
     if (el.type === "text") {
       if (id.startsWith("filter")) {
         if (el.value === "") {
@@ -35,6 +36,16 @@ function readOptions() {
     }
   }
 
+  function readSigs() {
+    var ret = [];
+    for (let el of document.getElementById("btn-sig-group").children) {
+      if (el.classList.contains('active')) {
+        ret.push(el.textContent);
+      }
+    }
+    return ret;
+  }
+
   var opts = {
     ci: read('job-ci'),
     pr: read('job-pr'),
@@ -43,11 +54,15 @@ function readOptions() {
     reTest: read('filter-test'),
     showNormalize: read('show-normalize'),
     sort: read('sort'),
-  }
+    sig: readSigs(),
+  };
+
+  console.log(opts.sig);
 
   var url = '';
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
+  if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
   for (var name of ["text", "job", "test"]) {
     var re = opts['re' + name[0].toUpperCase() + name.slice(1)];
     if (re) {
@@ -88,13 +103,24 @@ function setOptionsFromURL() {
     if (!value) return;
     var el = document.getElementById(id);
     if (el.type === "checkbox") el.checked = (value === "1");
-    if (el.type === "text") el.value = value;
+    else el.value = value;
   }
+
+  function writeSigs(sigs) {
+    for (let sig of (sigs || '').split(',')) {
+      var el = document.getElementById('btn-sig-' + sig);
+      if (el) {
+        el.classList.add('active');
+      }
+    }
+  }
+
   write('job-ci', qs.ci);
   write('job-pr', qs.pr);
   write('filter-text', qs.text);
   write('filter-job', qs.job);
   write('filter-test', qs.test);
+  writeSigs(qs.sig);
 }
 
 // Render up to `count` clusters, with `start` being the first for consideration.
@@ -104,7 +130,7 @@ function renderSubset(start, count) {
   var shown = 0;
   for (let c of clustered.data) {
     if (n++ < start) continue;
-    shown += renderCluster(top, c.key, c.id, c.text, c.tests, c.spans);
+    shown += renderCluster(top, c);
     lastClusterRendered = n;
     if (shown >= count) break;
   }
@@ -113,6 +139,8 @@ function renderSubset(start, count) {
 // Clear the page and reinitialize the renderer and filtering. Render a few failures.
 function rerender(maxCount) {
   if (!clusteredAll) return;
+
+  console.log('rerender!');
 
   options = readOptions();
   clustered = clusteredAll.refilter(options);
@@ -144,6 +172,21 @@ function rerender(maxCount) {
 
   // draw graphs after the current render cycle, to reduce perceived latency.
   setTimeout(drawVisibleGraphs, 0);
+}
+
+function toggle(target) {
+  if (target.matches('button.toggle')) {
+    target.classList.toggle("active");
+    // rerender after repainting the clicked button, to improve responsiveness.
+    setTimeout(rerender, 0);
+  } else if (target.matches('span.owner')) {
+    document.getElementById('btn-sig-' + target.textContent).click();
+  } else if (target.matches('.clearoptions')) {
+    document.location = document.location.pathname;
+  } else {
+    return false;
+  }
+  return true;
 }
 
 // Render just the cluster with the given key.
@@ -203,7 +246,7 @@ function drawVisibleGraphs() {
 // If someone clicks on an expandable node, expand it!
 function clickHandler(evt) {
   var target = evt.target;
-  if (expand(target)) {
+  if (expand(target) || toggle(target)) {
     evt.preventDefault();
     return true;
   }

@@ -80,7 +80,22 @@ def normalize(s):
                    lambda m: 'map[%s]' % ' '.join(sorted(m.group(1).split())),
                    s)
 
-    return flakeReasonOrdinalRE.sub(repl, s)
+    s = flakeReasonOrdinalRE.sub(repl, s)
+
+    if len(s) > 400000:  # ridiculously long test output
+        s = s[:200000] + '\n...[truncated]...\n' + s[-200000:]
+
+    return s
+
+def normalize_name(name):
+    """
+    Given a test name, remove [...]/{...}.
+
+    Matches code in testgrid and kubernetes/hack/update_owners.py.
+    """
+    name = re.sub(r'\[.*?\]|\{.*?\}', '', name)
+    name = re.sub(r'\s+', ' ', name)
+    return name.strip()
 
 
 def make_ngram_counts(s, ngram_counts={}):
@@ -408,17 +423,60 @@ def render(builds, clustered):
             'builds': builds_to_columns(builds)}
 
 
-def render_slice(data, builds, prefix):
+def annotate_owners(data, builds, owners):
+    """
+    Assign ownership to a cluster based on the share of hits in the last day.
+    """
+    owner_re = re.compile(r'(?:%s)' % '|'.join(
+        '(?P<%s>%s)' % (
+            sig.replace('-', '_'),  # regex group names can't have -
+            '|'.join(re.escape(p) for p in prefixes)
+        )
+        for sig, prefixes in owners.iteritems()
+    ))
+    job_paths = data['builds']['job_paths']
+    yesterday = max(data['builds']['cols']['started']) - (60 * 60 * 24)
+
+    for cluster in data['clustered']:
+        owner_counts = {}
+        for test in cluster['tests']:
+            m = owner_re.match(normalize_name(test['name']))
+            if not m:
+                continue
+            owner = next(k for k, v in m.groupdict().iteritems() if v)
+            owner = owner.replace('_', '-')
+            counts = owner_counts.setdefault(owner, [0, 0])
+            for job in test['jobs']:
+                if ':' in job['name']:  # non-standard CI
+                    continue
+                job_path = job_paths[job['name']]
+                for build in job['builds']:
+                    if builds['%s/%d' % (job_path, build)]['started'] > yesterday:
+                        counts[0] += 1
+                    else:
+                        counts[1] += 1
+        if owner_counts:
+            owner = max(owner_counts.items(), key=lambda (o, c): (c, o))[0]
+            cluster['owner'] = owner
+        else:
+            cluster['owner'] = 'testing'
+
+
+def render_slice(data, builds, prefix='', owner=''):
     clustered = []
     builds_out = {}
     jobs = set()
     for cluster in data['clustered']:
         # print [cluster['id'], prefix]
-        if cluster['id'].startswith(prefix):
+        if owner and cluster.get('owner') == owner:
             clustered.append(cluster)
-            for test in cluster['tests']:
-                for job in test['jobs']:
-                    jobs.add(job['name'])
+        elif prefix and cluster['id'].startswith(prefix):
+            clustered.append(cluster)
+        else:
+            continue
+        for test in cluster['tests']:
+            for job in test['jobs']:
+                jobs.add(job['name'])
     for path, build in builds.iteritems():
         if build['job'] in jobs:
             builds_out[path] = build
@@ -429,7 +487,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('builds', help='builds.json file from BigQuery')
     parser.add_argument('tests', help='tests.json file from BigQuery')
-    parser.add_argument('--previous', help='previous output')
+    parser.add_argument('--previous', help='previous output', type=argparse.FileType('r'))
+    parser.add_argument('--owners', help='test owner SIGs', type=argparse.FileType('r'))
     parser.add_argument('--output', default='failure_data.json')
     parser.add_argument('--output_slices',
                         help='Output slices to this path (must include PREFIX in template)')
@@ -443,12 +502,17 @@ def main(args):
     previous_clustered = None
     if args.previous:
         print 'loading previous'
-        previous_clustered = json.load(open(args.previous))['clustered']
+        previous_clustered = json.load(args.previous)['clustered']
     clustered = cluster_global(clustered_local, previous_clustered)
 
     print '%d clusters' % len(clustered)
 
     data = render(builds, clustered)
+
+    if args.owners:
+        owners = json.load(args.owners)
+        annotate_owners(data, builds, owners)
+
     json.dump(data, open(args.output, 'w'),
               sort_keys=True)
 
@@ -459,6 +523,13 @@ def main(args):
             json.dump(render_slice(data, builds, id_prefix),
                       open(args.output_slices.replace('PREFIX', id_prefix), 'w'),
                       sort_keys=True)
+        if args.owners:
+            owners.setdefault('testing', [])  # for output
+            for owner in owners:
+                json.dump(render_slice(data, builds, prefix='', owner=owner),
+                          open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w'),
+                          sort_keys=True)
+
 
 
 if __name__ == '__main__':

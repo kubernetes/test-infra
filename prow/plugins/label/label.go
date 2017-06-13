@@ -44,10 +44,15 @@ type assignEvent struct {
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
-	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(?:misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
+	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
 	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
-	nonExistentLabel        = "These labels do not exist in this repository: `%v`"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	kindMap                 = map[string]string{
+		"bugs":             "kind/bug",
+		"feature-requests": "kind/feature",
+		"api-reviews":      "kind/api-change",
+		"proposals":        "kind/design",
+	}
 )
 
 func init() {
@@ -201,6 +206,7 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + strings.TrimSpace(sigMatch[1]))
+		kind := sigMatch[2]
 		if ae.issue.HasLabel(sigLabel) {
 			continue
 		}
@@ -210,6 +216,12 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 		}
 		if err := gc.AddLabel(ae.org, ae.repo, ae.number, sigLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
+		}
+
+		if kLabel, ok := kindMap[kind]; ok {
+			if err := gc.AddLabel(ae.org, ae.repo, ae.number, kLabel); err != nil {
+				log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
+			}
 		}
 	}
 
@@ -229,11 +241,9 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 
 	}
 
+	//TODO(grodrigues3): Once labels are standardized, make this reply with a comment.
 	if len(nonexistent) > 0 {
-		msg := fmt.Sprintf(nonExistentLabel, strings.Join(nonexistent, ", "))
-		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
-			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
-		}
+		log.Infof("Nonexistent labels: %v", nonexistent)
 	}
 
 	// Tried to remove Labels that were not present on the Issue

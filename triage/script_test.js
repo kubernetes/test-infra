@@ -33,10 +33,10 @@ describe('Clusters', () => {
                 assert.deepEqual(c.refilter(opts).data, expected);
             });
         }
-        let ham = {text: 'ham', key: 'ham', id: '1234', tests: [
+        let ham = {text: 'ham', key: 'ham', id: '1234', owner: 'node', tests: [
             {name: 'volume', jobs: [{name: 'cure', builds: [1, 2]}]},
         ]};
-        let spam = {text: 'spam', key: 'spam', id: '5678', tests: [
+        let spam = {text: 'spam', key: 'spam', id: '5678', owner: 'ui', tests: [
             {name: 'networking', jobs: [{name: 'g', builds: [2]}]},
         ]};
         let pr = {text: 'bam', key: 'bam', id: '9abc', tests: [
@@ -48,6 +48,7 @@ describe('Clusters', () => {
         expect('filters by text', [ham], [ham, spam], {reText: /ham/im, ci: true});
         expect('filters by test', [ham], [ham, spam], {reTest: /volume/im, ci: true});
         expect('filters by job', [ham], [ham, spam], {reJob: /cure/im, ci: true});
+        expect('filters by sig', [ham], [ham, spam], {sig: ['node'], ci: true});
         expect('shows PRs when demanded', [pr], [ham, spam, pr], {pr: true});
         expect('hides PRs otherwise', [ham, spam], [ham, spam, pr], {ci: true});
         expect('can hide everything', [], [ham, spam, pr], {});

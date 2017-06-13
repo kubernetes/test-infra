@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: boskos-janitor
+  labels:
+    app: boskos-janitor
+spec:
+  replicas: 1  # one canonical source of resources
+  template:
+    metadata:
+      labels:
+        app: boskos-janitor
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: boskos-janitor
+        image: gcr.io/k8s-testimages/janitor:v20170502-b59bddad

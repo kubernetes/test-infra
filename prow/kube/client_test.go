@@ -17,10 +17,19 @@ limitations under the License.
 package kube
 
 import (
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
+	"math/big"
+	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func getClient(url string) *Client {
@@ -248,5 +257,93 @@ func TestPatchJobStatus(t *testing.T) {
 	_, err := c.PatchJobStatus("jo", Job{})
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+// TestNewClient messes around with certs and keys and such to just make sure
+// that our cert handling is done properly. We create root and client keys,
+// then server and client certificates, then ensure that the client can talk
+// to the server.
+// See https://ericchiang.github.io/post/go-tls/ for implementation details.
+func TestNewClient(t *testing.T) {
+	r := rand.New(rand.NewSource(42))
+	rootKey, err := rsa.GenerateKey(r, 2048)
+	if err != nil {
+		t.Fatalf("Generating key: %v", err)
+	}
+	tmpl := &x509.Certificate{
+		SerialNumber:          big.NewInt(42),
+		SignatureAlgorithm:    x509.SHA256WithRSA,
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(time.Hour),
+		BasicConstraintsValid: true,
+		IsCA:        true,
+		KeyUsage:    x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+		IPAddresses: []net.IP{net.ParseIP("127.0.0.1")},
+	}
+	certDER, err := x509.CreateCertificate(r, tmpl, tmpl, &rootKey.PublicKey, rootKey)
+	if err != nil {
+		t.Fatalf("Creating cert: %v", err)
+	}
+	rootCert, err := x509.ParseCertificate(certDER)
+	if err != nil {
+		t.Fatalf("Parsing cert: %v", err)
+	}
+	rootCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+	rootKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootKey),
+	})
+	rootTLSCert, err := tls.X509KeyPair(rootCertPEM, rootKeyPEM)
+	if err != nil {
+		t.Fatalf("Creating KeyPair: %v", err)
+	}
+
+	clientKey, err := rsa.GenerateKey(r, 2048)
+	if err != nil {
+		t.Fatalf("Creating key: %v", err)
+	}
+
+	clientCertTmpl := &x509.Certificate{
+		BasicConstraintsValid: true,
+		SerialNumber:          big.NewInt(43),
+		SignatureAlgorithm:    x509.SHA256WithRSA,
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(time.Hour),
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	clientCertDER, err := x509.CreateCertificate(r, clientCertTmpl, rootCert, &clientKey.PublicKey, rootKey)
+	if err != nil {
+		t.Fatalf("Creating cert: %v", err)
+	}
+	clientCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: clientCertDER})
+	clientKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(clientKey),
+	})
+
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(rootCertPEM)
+
+	clus := &Cluster{
+		ClientCertificate:    base64.StdEncoding.EncodeToString(clientCertPEM),
+		ClientKey:            base64.StdEncoding.EncodeToString(clientKeyPEM),
+		ClusterCACertificate: base64.StdEncoding.EncodeToString(rootCertPEM),
+	}
+	s := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("{}")) }))
+	s.TLS = &tls.Config{
+		Certificates: []tls.Certificate{rootTLSCert},
+		ClientCAs:    certPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+	}
+	s.StartTLS()
+	defer s.Close()
+	clus.Endpoint = s.URL
+	cl, err := NewClient(clus, "default")
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+	if _, err := cl.GetPod("p"); err != nil {
+		t.Fatalf("Failed to talk to server: %v", err)
 	}
 }
