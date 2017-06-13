@@ -214,16 +214,16 @@ type Commit struct {
 
 // ReviewEvent is what GitHub sends us when a PR review is changed.
 type ReviewEvent struct {
-	Action      string `json:"action"`
-	PullRequest `json:"pull_request"`
-	Repo        `json:"repository"`
-	Review      `json:"review"`
+	Action      string      `json:"action"`
+	PullRequest PullRequest `json:"pull_request"`
+	Repo        Repo        `json:"repository"`
+	Review      Review      `json:"review"`
 }
 
 // Review describes a Pull Request review.
 type Review struct {
-	ID      int `json:"id"`
-	User    `json:"user"`
+	ID      int    `json:"id"`
+	User    User   `json:"user"`
 	Body    string `json:"body"`
 	State   string `json:"state"`
 	HTMLURL string `json:"html_url"`
@@ -231,17 +231,17 @@ type Review struct {
 
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
 type ReviewCommentEvent struct {
-	Action      string `json:"action"`
-	PullRequest `json:"pull_request"`
-	Repo        `json:"repository"`
+	Action      string        `json:"action"`
+	PullRequest PullRequest   `json:"pull_request"`
+	Repo        Repo          `json:"repository"`
 	Comment     ReviewComment `json:"comment"`
 }
 
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
-	ID       int `json:"id"`
-	ReviewID int `json:"pull_request_review_id"`
-	User     `json:"user"`
+	ID       int    `json:"id"`
+	ReviewID int    `json:"pull_request_review_id"`
+	User     User   `json:"user"`
 	Body     string `json:"body"`
 	Path     string `json:"path"`
 	HTMLURL  string `json:"html_url"`
