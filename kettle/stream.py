@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import pprint
+import socket
 import sys
 import traceback
 import time
@@ -94,6 +95,19 @@ def row_to_mapping(row, schema):
     return [row.get(field.name, [] if field.mode == 'REPEATED' else None) for field in schema]
 
 
+def retry(func, *args, **kwargs):
+    """Run a function with arguments, retrying on server errors. """
+    # pylint: disable=no-member
+    for attempt in xrange(20):
+        try:
+            return func(*args, **kwargs)
+        except (socket.error, google.cloud.exceptions.ServerError):
+            # retry with exponential backoff
+            traceback.print_exc()
+            time.sleep(1.4 ** attempt)
+    return func(*args, **kwargs)  # one last attempt
+
+
 def insert_data(table, rows_iter):
     """Upload rows from rows_iter into bigquery table table.
 
@@ -121,14 +135,7 @@ def insert_data(table, rows_iter):
 
     def insert(table, rows, row_ids):
         """Insert rows with row_ids into table, retrying as necessary."""
-        while True:
-            try:
-                errors = table.insert_data(rows, row_ids, skip_invalid_rows=True)
-                break
-            except google.cloud.exceptions.ServerError:   # pylint: disable=no-member
-                # retry
-                traceback.print_exc()
-                time.sleep(5)
+        errors = retry(table.insert_data, rows, row_ids, skip_invalid_rows=True)
 
         if not errors:
             print('Loaded {} builds into {}'.format(len(rows), table.name))
@@ -159,9 +166,10 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
         print()
         if len(results) < 10 and client_class is make_db.GCSClient:
             time.sleep(5)  # slow down!
+
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = sub.pull(max_messages=5000)
+        results = retry(sub.pull, max_messages=1000)
         start = time.time()
         while time.time() < start + 7:
             results_more = sub.pull(max_messages=1000, return_immediately=True)
@@ -176,19 +184,19 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
         if acks:
             print('ACK irrelevant', len(acks))
             for n in xrange(0, len(acks), 1000):
-                sub.acknowledge(acks[n: n + 1000])
+                retry(sub.acknowledge, acks[n: n + 1000])
 
         if todo:
             print('EXTEND-ACK ', len(todo))
             # give 3 minutes to grab build details
-            sub.modify_ack_deadline([i for i, _j, _b in todo], 60*3)
+            retry(sub.modify_ack_deadline, [i for i, _j, _b in todo], 60*3)
 
         acks, build_dirs = get_started_finished(gcs_client, db, todo)
 
         # notify pubsub queue that we've handled the finished.json messages
         if acks:
             print('ACK "finished.json"', len(acks))
-            sub.acknowledge(acks)
+            retry(sub.acknowledge, acks)
 
         # grab junit files for new builds
         make_db.download_junit(db, 16, client_class)
