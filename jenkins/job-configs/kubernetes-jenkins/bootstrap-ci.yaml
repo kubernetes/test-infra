@@ -533,7 +533,8 @@
         job-name: ci-kubernetes-e2e-gke-large-cluster
         jenkins-timeout: 720
         timeout: 620
-        frequency: '0 17 * * *'
+        # enable when we finish with manual testing for 1.7
+        frequency: '' #'0 17 * * *'
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
