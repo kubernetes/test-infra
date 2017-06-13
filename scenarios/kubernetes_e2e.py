@@ -20,6 +20,7 @@
 """Runs kubernetes e2e test with specified config"""
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -312,6 +313,15 @@ class DockerMode(object):
         check('docker', 'stop', self.container)
 
 
+def cluster_name(cluster, build):
+    """Return or select a cluster name."""
+    if cluster:
+        return cluster
+    if len(build) < 20:
+        return 'e2e-%s' % build
+    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
+
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -395,8 +405,16 @@ def main(args):
         runner_args.append('--publish=%s' % args.publish)
     if args.timeout:
         runner_args.append('--timeout=%s' % args.timeout)
+    if args.skew:
+        runner_args.append('--skew')
 
-    cluster = args.cluster or 'e2e-%s' % os.getenv('BUILD_NUMBER', 0)
+    for ext in args.extract or []:
+        runner_args.append('--extract=%s' % ext)
+    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    # TODO(fejta): remove this add_environment after pushing new kubetest image
+    mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
+    runner_args.append('--check-leaked-resources=%s' % args.check_leaked_resources)
+
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
@@ -481,6 +499,8 @@ def create_parser():
     parser.add_argument(
         '--charts-tests', action='store_true', help='If the test is a charts test job')
     parser.add_argument(
+        '--extract', action="append", help='Pass --extract flag(s) to kubetest')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
         '--deployment', default='bash', choices=['none', 'bash', 'kops', 'kubernetes-anywhere'])
@@ -500,7 +520,10 @@ def create_parser():
         '--save', default=None,
         help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
     parser.add_argument(
-        '--tag', default='v20170531-e6de0525', help='Use a specific kubekins-e2e tag if set')
+        '--skew', action='store_true',
+        help='If we need to run skew tests, pass --skew to kubetest.')
+    parser.add_argument(
+        '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
@@ -508,8 +531,12 @@ def create_parser():
     parser.add_argument(
         '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
     parser.add_argument(
-        '--multiple-federations', default=False, action='store_true',
-        help='If we need to run multiple federation control planes in parallel')
+        '--multiple-federations', action='store_true',
+        help='Run federation control planes in parallel')
+    parser.add_argument(
+        '--check-leaked-resources',
+        nargs='?', default='false', const='true',
+        help='Send --check-leaked-resources to kubetest')
     return parser
 
 if __name__ == '__main__':

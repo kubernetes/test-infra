@@ -16,16 +16,16 @@ k8s-metrics bucket and named with the format 'METRICNAME-latest.json'.
 ## Metrics
 
 * failures - find jobs that have been failing the longest
-    - [Config](failures-config.yaml)
+    - [Config](configs/failures-config.yaml)
     - [failures-latest.json](http://storage.googleapis.com/k8s-metrics/failures-latest.json)
 * flakes - find the flakiest jobs this week (and the flakiest tests in each job).
-    - [Config](flakes-config.yaml)
+    - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
 * job-flakes - compute consistency of all jobs
-    - [Config](job-flakes-config.yaml)
+    - [Config](configs/job-flakes-config.yaml)
     - [job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/job-flakes-latest.json)
 * weekly-consistency - compute overall weekly consistency for PRs
-    - [Config](weekly-consistency-config.yaml)
+    - [Config](configs/weekly-consistency-config.yaml)
     - [weekly-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/weekly-consistency-latest.json)
 
 ## Adding a new metric

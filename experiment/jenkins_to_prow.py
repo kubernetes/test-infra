@@ -27,10 +27,10 @@ import yaml
 
 TEMPLATE = {
     'name': '',
-    'interval': '6h',
+    'interval': '2h',
     'spec': {
         'containers': [{
-            'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170418-c08e1094',
+            'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0',
             'args': [],
             'volumeMounts': [{
                 'readOnly': True,

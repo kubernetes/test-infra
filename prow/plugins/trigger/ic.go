@@ -27,6 +27,7 @@ import (
 )
 
 var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
+var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleIC(c client, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
@@ -55,14 +56,33 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		}
 	}
 	// Which jobs does the comment want us to run?
+	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
-	if len(requestedJobs) == 0 {
+	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		return nil
 	}
 
 	pr, err := c.GitHubClient.GetPullRequest(org, repo, number)
 	if err != nil {
 		return err
+	}
+
+	if shouldRetestFailed {
+		combinedStatus, err := c.GitHubClient.GetCombinedStatus(org, repo, pr.Head.SHA)
+		if err != nil {
+			return err
+		}
+		skipContexts := make(map[string]bool) // these succeeded or are running
+		runContexts := make(map[string]bool)  // these failed and should be re-run
+		for _, status := range combinedStatus.Statuses {
+			state := status.State
+			if state == github.StatusSuccess || state == github.StatusPending {
+				skipContexts[status.Context] = true
+			} else if state == github.StatusError || state == github.StatusFailure {
+				runContexts[status.Context] = true
+			}
+		}
+		requestedJobs = append(requestedJobs, c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, runContexts)...)
 	}
 
 	// Skip untrusted users.

@@ -17,6 +17,9 @@ limitations under the License.
 package mungers
 
 import (
+	"regexp"
+	"strconv"
+
 	githubapi "github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 
@@ -28,10 +31,13 @@ import (
 )
 
 const (
-	approveCommand = "APPROVE"
-	lgtmCommand    = "LGTM"
-	cancel         = "cancel"
+	approveCommand  = "APPROVE"
+	lgtmCommand     = "LGTM"
+	cancelArgument  = "cancel"
+	noIssueArgument = "no-issue"
 )
+
+var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
 
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
@@ -63,6 +69,23 @@ func (*ApprovalHandler) EachLoop() error { return nil }
 
 // AddFlags will add any request flags to the cobra `cmd`
 func (*ApprovalHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
+
+// Returns associated issue, or 0 if it can't find any.
+// This is really simple, and could be improved later.
+func findAssociatedIssue(body *string) int {
+	if body == nil {
+		return 0
+	}
+	match := AssociatedIssueRegex.FindStringSubmatch(*body)
+	if len(match) == 0 {
+		return 0
+	}
+	v, err := strconv.Atoi(match[1])
+	if err != nil {
+		return 0
+	}
+	return v
+}
 
 // Munge is the workhorse the will actually make updates to the PR
 // The algorithm goes as:
@@ -98,6 +121,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 			filenames,
 			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
 			int64(*obj.Issue.Number)))
+	approversHandler.AssociatedIssue = findAssociatedIssue(obj.Issue.Body)
 	addApprovers(&approversHandler, comments)
 	// Author implicitly approves their own PR
 	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
@@ -127,7 +151,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		obj.WriteComment(*newMessage)
 	}
 
-	if !approversHandler.IsApproved() {
+	if !approversHandler.IsApprovedWithIssue() {
 		if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
 			obj.RemoveLabel(approvedLabel)
 		}
@@ -186,7 +210,7 @@ func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.I
 				continue
 			}
 
-			if cmd.Arguments == cancel {
+			if cmd.Arguments == cancelArgument {
 				approversHandler.RemoveApprover(*comment.User.Login)
 			} else {
 				url := ""
@@ -198,11 +222,13 @@ func addApprovers(approversHandler *approvers.Approvers, comments []*githubapi.I
 					approversHandler.AddApprover(
 						*comment.User.Login,
 						url,
+						cmd.Arguments == noIssueArgument,
 					)
 				} else {
 					approversHandler.AddLGTMer(
 						*comment.User.Login,
 						url,
+						cmd.Arguments == noIssueArgument,
 					)
 				}
 

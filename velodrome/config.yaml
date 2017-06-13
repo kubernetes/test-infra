@@ -120,13 +120,23 @@ projects:
             - --percentiles=50
       istio/auth: *transform-istio
       istio/istio: *transform-istio
-      istio/manager: *transform-istio
+      istio/pilot: *transform-istio
       istio/mixer: *transform-istio
       istio/proxy: *transform-istio
     nginx:
       public-ip:
     grafana:
       google-analytics-uaid: ""
+    prometheus:
+      prometheus-config.yml: |
+        global:
+          scrape_interval: 15m
+        scrape_configs:
+          - job_name: istio-ci-metrics
+            metrics_path: /metrics
+            static_configs:
+              - targets:
+                  - http://104.197.146.56:9103
   tensorflow:
     repositories:
       tensorflow/tensorflow:

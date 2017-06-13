@@ -50,6 +50,11 @@ type Status struct {
 	Context     string `json:"context,omitempty"`
 }
 
+// CombinedStatus is the latest statuses for a ref.
+type CombinedStatus struct {
+	Statuses []Status `json:"statuses"`
+}
+
 // User is a GitHub user account.
 type User struct {
 	Login string `json:"login"`

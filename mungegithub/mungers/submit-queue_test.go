@@ -37,13 +37,7 @@ import (
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 
-	"github.com/golang/glog"
 	"github.com/google/go-github/github"
-)
-
-var (
-	_ = fmt.Printf
-	_ = glog.Errorf
 )
 
 func stringPtr(val string) *string { return &val }
@@ -979,7 +973,7 @@ func TestSubmitQueue(t *testing.T) {
 	}
 	for testNum := range tests {
 		test := &tests[testNum]
-		fmt.Printf("---------Starting test %v (%v)---------------------\n", testNum, test.name)
+		t.Logf("---------Starting test %v (%v)---------------------", testNum, test.name)
 		issueNum := testNum + 1
 		issueNumStr := strconv.Itoa(issueNum)
 

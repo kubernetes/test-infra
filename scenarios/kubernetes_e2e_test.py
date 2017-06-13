@@ -77,7 +77,36 @@ class Stub(object):
         setattr(self.thing, self.param, self.old)
 
 
-class ScenarioTest(unittest.TestCase):
+class ClusterNameTest(unittest.TestCase):
+    def test_name_filled(self):
+        """Return the cluster name if set."""
+        name = 'foo'
+        build = '1984'
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertIn(name, actual)
+        self.assertNotIn(build, actual)
+
+    def test_name_empty_short_build(self):
+        """Return the build number if name is empty."""
+        name = ''
+        build = '1984'
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertIn(build, actual)
+
+    def test_name_empty_long_build(self):
+        """Return a short hash of a long build number if name is empty."""
+        name = ''
+        build = '0' * 63
+        actual = kubernetes_e2e.cluster_name(name, build)
+        self.assertTrue(actual)
+        self.assertNotIn(build, actual)
+        if len(actual) > 32:  # Some firewall names consume half the quota
+            self.fail('Name should be short: %s' % actual)
+
+
+class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """Test for e2e scenario."""
     callstack = []
     envs = {}
@@ -115,9 +144,6 @@ class ScenarioTest(unittest.TestCase):
         self.callstack.append(string.join(cmd))
         return FAKE_WORKSPACE_STATUS_V1_6
 
-
-class LocalTest(ScenarioTest):
-    """Class for testing e2e scenario in local mode."""
     def test_local(self):
         """Make sure local mode is fine overall."""
         args = self.parser.parse_args(['--mode=local'])
@@ -128,6 +154,67 @@ class LocalTest(ScenarioTest):
         self.assertNotEqual(self.envs, {})
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
+
+    def test_check_leaks_docker(self):
+        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
+
+    def test_check_leaks_false_docker(self):
+        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources=false'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
+
+    def test_check_leaks(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources=true', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_false(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources=false', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_default(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--check-leaked-resources', '--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_check_leaks_unset(self):
+        """Ensure --check-leaked-resources=true sends flag to kubetest."""
+        args = self.parser.parse_args(['--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
+            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
+
+    def test_extract_multiple(self):
+        """Ensure multiple --extract flags are accepted."""
+        args = self.parser.parse_args(['--extract=a', '--extract=b'])
+        self.assertEquals(['a', 'b'], args.extract)
+
+    def test_extract_args(self):
+        """Ensure extract flags are passed to kubetest."""
+        args = self.parser.parse_args(['--extract=foo', '--extract=bar'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--extract=foo', self.callstack[-1])
+            self.assertIn('--extract=bar', self.callstack[-1])
 
     def test_updown(self):
         """Make sure local mode is fine overall."""
@@ -241,8 +328,6 @@ class LocalTest(ScenarioTest):
 
         self.assertEqual(sysexit.exception.code, 2)
 
-class DockerTest(ScenarioTest):
-    """Class for testing e2e scenario in docker mode."""
     def test_docker(self):
         """Make sure docker mode is fine overall."""
         args = self.parser.parse_args()

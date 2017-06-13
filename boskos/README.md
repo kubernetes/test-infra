@@ -11,7 +11,7 @@ boskos is a resource manager service, that handles and manages different kind of
 Boskos is inited with a config of resources, one JSON entry per line, from `-config`
 
 A resource object looks like
-```
+```go
 type Resource struct {
 	Type       string    `json:"type"`
 	Name       string    `json:"name"`
@@ -28,7 +28,7 @@ State is a string that tells the current status of the resource.
 ## API
 
 1. 	URL: /acquire
-	Desc: Use /start when you want to get hold of some resource.
+	Desc: Use /acquire when you want to get hold of some resource.
 	Method: POST
 	URL Params: 
 		Required: type=[string]  : type of requested resource
@@ -39,7 +39,7 @@ State is a string that tells the current status of the resource.
 	Example: /acquire?type=project&state=free&dest=busy&owner=user
 
 2.	URL: /release
-	Desc: use /done when you finish use some resource. Owner need to match current owner.
+	Desc: use /release when you finish use some resource. Owner need to match current owner.
 	Method: POST
 	URL Params:
 		Required: name=[string]  : name of finished resource
@@ -80,6 +80,7 @@ State is a string that tells the current status of the resource.
 			Sum of state moved to after /done
 			Count of projects with each owner (or without an owner)
 			A sample object will look like:
+```json
 			{
 				“type” : “project”
 				“Current”: 

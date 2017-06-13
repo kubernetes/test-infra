@@ -60,7 +60,6 @@ spec:
       containers:
       - name: boskos
         image: gcr.io/k8s-testimages/boskos:v20170430-36dfc948
-        imagePullPolicy: IfNotPresent
         args:
         - -storage=/store/boskos.json
         - -config=/etc/config/config

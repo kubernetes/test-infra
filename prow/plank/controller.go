@@ -58,10 +58,10 @@ type Controller struct {
 	totURL   string
 }
 
-func NewController(kc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
 	return &Controller{
 		kc:       kc,
-		pkc:      kc.Namespace(kube.TestPodNamespace),
+		pkc:      pkc,
 		jc:       jc,
 		crierURL: crierURL,
 		totURL:   totURL,

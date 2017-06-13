@@ -2,6 +2,9 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: influxdb-${PROJECT}
+  labels:
+    app: influxdb
+    project: ${PROJECT}
 spec:
   replicas: 1
   template:
@@ -15,15 +18,8 @@ spec:
         command:
         image: influxdb:1.2.2
         env:
-        - name: ADMIN_USER
-          value: root
-        - name: INFLUXDB_INIT_PWD
-          valueFrom:
-            secretKeyRef:
-              name: influxdb-${PROJECT}
-              key: rootpassword
-        - name: PRE_CREATE_DB
-          value: github;monitoring
+        - name: INFLUXDB_HTTP_AUTH_ENABLED
+          value: "true"
         resources:
           requests:
             cpu: 0m
@@ -31,20 +27,12 @@ spec:
         - name: influxdb-port
           containerPort: 8086
         volumeMounts:
-        - mountPath: /data
+        - mountPath: /var/lib/influxdb/
           name: database-volume
-        - mountPath: /config
-          name: influx-config
       volumes:
       - name: database-volume
         persistentVolumeClaim:
           claimName: influxdb-${PROJECT}-database-claim
-      - name: influx-config
-        configMap:
-          name: influxdb-${PROJECT}
-          items:
-          - key: influxdb.toml
-            path: config.toml
 ---
 apiVersion: v1
 kind: Service
@@ -77,113 +65,3 @@ spec:
   resources:
     requests:
       storage: 100Gi
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: influxdb-${PROJECT}
-  labels:
-    app: influxdb
-    project: ${PROJECT}
-data:
-  influxdb.toml: |
-    reporting-disabled = false
-    bind-address = ":8088"
-    hostname = ""
-    join = ""
-
-    [meta]
-      dir = "/data/meta"
-      retention-autocreate = true
-      logging-enabled = true
-      pprof-enabled = false
-      lease-duration = "1m0s"
-
-    [data]
-      dir = "/data/data"
-      engine = "tsm1"
-      wal-dir = "/data/wal"
-      wal-logging-enabled = true
-      query-log-enabled = true
-      cache-max-memory-size = 524288000
-      cache-snapshot-memory-size = 26214400
-      cache-snapshot-write-cold-duration = "1h0m0s"
-      compact-full-write-cold-duration = "24h0m0s"
-      max-points-per-block = 0
-      data-logging-enabled = true
-
-    [cluster]
-      force-remote-mapping = false
-      write-timeout = "5s"
-      shard-writer-timeout = "5s"
-      max-remote-write-connections = 3
-      shard-mapper-timeout = "5s"
-      max-concurrent-queries = 0
-      query-timeout = "0"
-      max-select-point = 0
-      max-select-series = 0
-      max-select-buckets = 0
-
-    [retention]
-      enabled = true
-      check-interval = "30m0s"
-
-    [shard-precreation]
-      enabled = true
-      check-interval = "10m0s"
-      advance-period = "30m0s"
-
-    [admin]
-      enabled = true
-      bind-address = ":8083"
-      https-enabled = false
-      https-certificate = "/etc/ssl/influxdb.pem"
-      Version = ""
-
-    [monitor]
-      store-enabled = true
-      store-database = "_internal"
-      store-interval = "10s"
-
-    [subscriber]
-      enabled = true
-
-    [http]
-      enabled = true
-      bind-address = ":8086"
-      auth-enabled = true
-      log-enabled = true
-      write-tracing = false
-      pprof-enabled = false
-      https-enabled = false
-      https-certificate = "/etc/ssl/influxdb.pem"
-      max-row-limit = 10000
-
-    [[graphite]]
-      enabled = false
-      bind-address = ":2003"
-      database = "graphite"
-      protocol = "tcp"
-      batch-size = 5000
-      batch-pending = 10
-      batch-timeout = "1s"
-      consistency-level = "one"
-      separator = "."
-      udp-read-buffer = 0
-
-    [[udp]]
-      enabled = false
-      bind-address = ":8089"
-      database = "udp"
-      retention-policy = ""
-      batch-size = 5000
-      batch-pending = 10
-      read-buffer = 0
-      batch-timeout = "1s"
-      precision = ""
-      udp-payload-size = 0
-
-    [continuous_queries]
-      log-enabled = true
-      enabled = true
-      run-interval = "1s"

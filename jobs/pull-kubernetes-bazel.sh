@@ -39,7 +39,7 @@ if [[ "${rc}" == 0 ]]; then
     rc=1
   else
     version="${PULL_NUMBER:-batch}/${PULL_REFS:-}"
-    bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
+    bazel run //:push-build -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
   fi
 fi
 

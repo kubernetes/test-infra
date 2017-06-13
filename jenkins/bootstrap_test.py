@@ -239,6 +239,21 @@ class SubprocessTest(unittest.TestCase):
 class PullRefsTest(unittest.TestCase):
     """Tests for pull_ref, branch_ref, ref_has_shas, and pull_numbers."""
 
+    def test_multiple_no_shas(self):
+        """Test master,1111,2222."""
+        self.assertEqual(
+            bootstrap.pull_ref('master,123,456'),
+            ([
+                'master',
+                '+refs/pull/123/head:refs/pr/123',
+                '+refs/pull/456/head:refs/pr/456',
+            ], [
+                'FETCH_HEAD',
+                'refs/pr/123',
+                'refs/pr/456',
+            ]),
+        )
+
     def test_pull_has_shas(self):
         self.assertTrue(bootstrap.ref_has_shas('master:abcd'))
         self.assertFalse(bootstrap.ref_has_shas('123'))
@@ -1447,6 +1462,7 @@ class JobTest(unittest.TestCase):
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
         'move_timeout.py', # Tool to migrate timeouts to config.json
+        'move_extract.py',
     ]
 
     yaml_suffix = {
@@ -1856,6 +1872,21 @@ class JobTest(unittest.TestCase):
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
 
+    def test_valid_env(self):
+        for job, job_path in self.jobs:
+            with open(job_path) as fp:
+                data = fp.read()
+            if 'kops' in job:  # TODO(fejta): update this one too
+                continue
+            self.assertNotIn(
+                'JENKINS_USE_LOCAL_BINARIES=',
+                data,
+                'Send --extract=local to config.json, not JENKINS_USE_LOCAL_BINARIES in %s' % job)
+            self.assertNotIn(
+                'JENKINS_USE_EXISTING_BINARIES=',
+                data,
+                'Send --extract=local to config.json, not JENKINS_USE_EXISTING_BINARIES in %s' % job)  # pylint: disable=line-too-long
+
     def test_valid_timeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
         default_timeout = int(re.search(
@@ -1966,9 +1997,9 @@ class JobTest(unittest.TestCase):
         # pylint: disable=line-too-long
         allowed_list = {
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
-            'ci-kubernetes-e2e-gce-scalability-release-1.5.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1.5.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce.env': 'ci-kubernetes-kubemark-*',
@@ -2064,29 +2095,39 @@ class JobTest(unittest.TestCase):
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
 
-                # to classify from E2E_UPGRADE,
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
-                bads = [
-                    'CHARTS_TEST=',
-                    'E2E_DOWN=',
-                    'E2E_NAME=',
-                    'E2E_PUBLISH_PATH=',
-                    'E2E_TEST=',
-                    'E2E_UP=',
-                    'FEDERATION_DOWN=',
-                    'FEDERATION_UP=',
-                    'JENKINS_FEDERATION_PREFIX=',
-                    'KUBEKINS_TIMEOUT=',
-                    'PERF_TESTS=',
-                    'USE_KUBEMARK=',
-                    'JENKINS_SOAK_MODE',
-                    'JENKINS_SOAK_PREFIX'
+                black = [
+                    ('CHARTS_TEST=', '--charts-tests'),
+                    ('E2E_DOWN=', '--down=true|false'),
+                    ('E2E_NAME=', '--cluster=whatever'),
+                    ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
+                    ('E2E_TEST=', '--test=true|false'),
+                    ('E2E_UP=', '--up=true|false'),
+                    ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
+                    ('FEDERATION_DOWN=', '--down=true|false'),
+                    ('FEDERATION_UP=', '--up=true|false'),
+                    ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+                    ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
+                    ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
+                    ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
+                    ('JENKINS_USE_SKEW_TESTS=', '--skew'),
+                    ('JENKINS_SOAK_MODE', '--soak'),
+                    ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
+                    ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
+                    ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
+                    ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
+                    ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
+                    ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
+                    ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+                    ('PERF_TESTS=', '--perf'),
+                    ('USE_KUBEMARK=', '--kubemark'),
                 ]
-                for bad in bads:
-                    if bad in line:
-                        self.fail(
-                            '[%r]: Env %r: Convert %r to use e2e scenario flags' % (
-                                job, line, bad))
+                for env, fix in black:
+                    if 'JENKINS_PUBLISHED_VERSION' in env and 'kops' in job:
+                        continue  # TOOD(fejta): migrate kops jobs
+                    if env in line:
+                        self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
+                            job, line, env, fix))
 
 
     def test_no_bad_vars_in_jobs(self):
@@ -2146,10 +2187,37 @@ class JobTest(unittest.TestCase):
                                 'Job %r, --cluster should be 20 chars or fewer' % job
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
+                    args = config[job]['args']
+                    self.assertTrue(
+                        any('--check-leaked-resources' in a for a in args),
+                        '--check-leaked-resources=true|false unset in %s' % job)
+                    if (
+                            '--env-file=jobs/pull-kubernetes-e2e.env' in args
+                            and '--check-leaked-resources=false' not in args):
+                        self.fail('PR job %s should not check for resource leaks' % job)
+                    # Consider deleting any job with --check-leaked-resources=false
+                    if (
+                            '--env-file=jobs/platform/gce.env' not in args
+                            and '--env-file=jobs/platform/gke.env' not in args
+                            and '--check-leaked-resources=true' in args):
+                        self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
+                    extracts = [a for a in args if '--extract=' in a]
+                    if not extracts:
+                        self.fail('e2e job needs --extract flag: %s %s' % (job, args))
+                    if any(s in job for s in [
+                            'upgrade', 'skew', 'downgrade', 'rollback',
+                            'ci-kubernetes-e2e-gce-canary',
+                    ]):
+                        expected = 2
+                    else:
+                        expected = 1
+                    if len(extracts) != expected:
+                        self.fail('Wrong number of --extract args (%d != %d) in %s' % (
+                            len(extracts), expected, job))
                     self.assertTrue(has_matching_env, job)
                     self.assertTrue(right_mode, job)
                     if job.startswith('pull-kubernetes-'):
-                        self.assertIn('--cluster=', config[job]['args'])
+                        self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -2160,12 +2228,11 @@ class JobTest(unittest.TestCase):
                         else:
                             stage = 'gs://kubernetes-release-pull/ci/%s' % job
                             suffix = False
-                        self.assertIn(
-                            '--stage=%s' % stage, config[job]['args'])
+                        self.assertIn('--stage=%s' % stage, args)
                         self.assertEquals(
                             suffix,
-                            any('--stage-suffix=' in a for a in config[job]['args']),
-                            ('--stage-suffix=', suffix, job, config[job]['args']))
+                            any('--stage-suffix=' in a for a in args),
+                            ('--stage-suffix=', suffix, job, args))
 
     def test_config_is_sorted(self):
         """Test jobs/config.json is sorted."""

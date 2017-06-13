@@ -12,3 +12,24 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
+
+py_test(
+    name = "bigquery_test",
+    srcs = [
+        "bigquery.py",
+        "bigquery_test.py",
+    ],
+    args = ["--jq=$(location @jq//file)"],
+    data = [
+        ":all-srcs",
+        "@jq//file",
+    ],
+)
+
+py_test(
+    name = "influxdb_test",
+    srcs = [
+        "influxdb.py",
+        "influxdb_test.py",
+    ],
+)

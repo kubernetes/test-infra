@@ -50,6 +50,7 @@ filegroup(
         ":package-srcs",
         "//boskos/client:all-srcs",
         "//boskos/common:all-srcs",
+        "//boskos/janitor:all-srcs",
         "//boskos/ranch:all-srcs",
         "//boskos/reaper:all-srcs",
     ],

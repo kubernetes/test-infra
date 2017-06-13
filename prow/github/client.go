@@ -399,6 +399,18 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	return err
 }
 
+// GetCombinedStatus returns the latest statuses for a given ref.
+func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
+	c.log("GetCombinedStatus", org, repo, ref)
+	var combinedStatus CombinedStatus
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s/commits/%s/status", c.base, org, repo, ref),
+		exitCodes: []int{200},
+	}, &combinedStatus)
+	return &combinedStatus, err
+}
+
 func (c *Client) GetLabels(org, repo string) ([]Label, error) {
 	c.log("GetLabel", org, repo)
 	if c.fake {

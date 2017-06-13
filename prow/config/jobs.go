@@ -133,6 +133,20 @@ func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll *regexp.R
 	return result
 }
 
+// RetestPresubmits returns all presubmits that should be run given a /retest command.
+// This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
+func (c *Config) RetestPresubmits(fullRepoName string, skipContexts, runContexts map[string]bool) []Presubmit {
+	var result []Presubmit
+	if jobs, ok := c.Presubmits[fullRepoName]; ok {
+		for _, job := range jobs {
+			if (job.AlwaysRun || runContexts[job.Context]) && !skipContexts[job.Context] {
+				result = append(result, job)
+			}
+		}
+	}
+	return result
+}
+
 func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {

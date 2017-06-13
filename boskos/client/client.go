@@ -59,7 +59,10 @@ func (c *Client) Acquire(rtype string, state string, dest string) (string, error
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.resources = append(c.resources, r)
+	if r != "" {
+		c.resources = append(c.resources, r)
+	}
+
 	return r, nil
 }
 
@@ -169,7 +172,7 @@ func (c *Client) acquire(rtype string, state string, dest string) (string, error
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
@@ -181,6 +184,8 @@ func (c *Client) acquire(rtype string, state string, dest string) (string, error
 			return "", err
 		}
 		return res.Name, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+		return "", nil
 	}
 
 	return "", fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
@@ -193,7 +198,7 @@ func (c *Client) release(name string, dest string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
 	}
 	return nil
@@ -206,7 +211,7 @@ func (c *Client) update(name string, state string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
 	}
 	return nil
@@ -220,7 +225,7 @@ func (c *Client) reset(rtype string, state string, expire time.Duration, dest st
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return rmap, err
