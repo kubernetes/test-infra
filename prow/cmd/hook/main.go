@@ -107,7 +107,7 @@ func main() {
 		} else {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)
 		}
-		
+
 		kubeClient, err = kube.NewClientInCluster(kube.ProwNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client.")
