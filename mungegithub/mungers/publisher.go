@@ -217,7 +217,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 			{
 				// rule for the sample-apiserver master branch
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apiextensions-apiserver"},
-				dst: coordinate{repo: "sample-apiserver", branch: "master", dir: "./"},
+				dst: coordinate{repo: "apiextensions-apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
 					coordinate{repo: "apimachinery", branch: "master"},
 					coordinate{repo: "client-go", branch: "master"},
@@ -225,7 +225,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				},
 			},
 		},
-		publishScript: "/publish_scripts/publish_sample_apiserver.sh",
+		publishScript: "/publish_scripts/publish_apiextensions_apiserver.sh",
 	}
 
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
