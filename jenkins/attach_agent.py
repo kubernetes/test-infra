@@ -88,7 +88,7 @@ def creds(path, section):
 
 
 if __name__ == '__main__':
-    CMD, HOST, KIND, INI, AGENT = sys.argv[1:]
+    CMD, HOST, KIND, INI, AGENT = sys.argv[1:]  # pylint: disable=unbalanced-tuple-unpacking
     USER, KEY = creds(INI, AGENT)
     J = jenkins.Jenkins('http://localhost:8080', USER, KEY)
 

@@ -3,8 +3,8 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])
 
 py_test(
-    name = "verify-boilerplate",
-    srcs = ["verify-boilerplate.py"],
+    name = "verify_boilerplate",
+    srcs = ["verify_boilerplate.py"],
     data = ["//:all-srcs"],
 )
 
@@ -30,18 +30,18 @@ sh_test(
     name = "verify-pylint",
     srcs = ["verify-pylint.sh"],
     data = [
-        "//:all-srcs",
         ":pylint_bin",
+        "//:all-srcs",
     ],
 )
 
 test_suite(
     name = "verify-all",
     tests = [
-        "verify-boilerplate",
         "verify-gofmt",
         "verify-govet",
         "verify-pylint",
+        "verify_boilerplate",
     ],
 )
 

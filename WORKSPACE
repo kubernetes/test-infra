@@ -257,7 +257,7 @@ py_library(
     name = "configparser_lib",
     srcs = glob(["**/*.py"]),
     visibility = ["//visibility:public"],
-    imports = ["configparser_lib/backports"],
+    imports = ["backports"],
 )
 """,
     sha256 = "5308b47021bc2340965c371f0f058cc6971a04502638d4244225c49d80db273a",

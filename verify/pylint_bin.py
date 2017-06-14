@@ -22,18 +22,17 @@ import pylint
 
 if __name__ == '__main__':
     # Otherwise bazel's symlinks confuse pylint/astroid
-    extras = set()
+    EXTRAS = set()
     for path in sys.path:
-        try:
-          for something in os.listdir(path):
-              full = os.path.join(path, something)
-              real = os.path.realpath(full)
-              if real != full:
-                  extras.add(os.path.dirname(real))
-              break
-        except OSError:
-            pass
-    for extra in extras:
+        if not os.path.isdir(path):
+            continue
+        for something in os.listdir(path):
+            full = os.path.join(path, something)
+            real = os.path.realpath(full)
+            if real != full:
+                EXTRAS.add(os.path.dirname(real))
+                break
+    for extra in EXTRAS:
         sys.path.append(extra)
 
     # Otherwise this is the entirety of bin/pylint

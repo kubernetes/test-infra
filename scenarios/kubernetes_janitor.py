@@ -113,7 +113,7 @@ def main(args):
 
     # Summary
     print 'Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED))
-    if len(FAILED) > 0:
+    if FAILED:
         print >>sys.stderr, 'Failed projects: %r' % FAILED
         exit(1)
 

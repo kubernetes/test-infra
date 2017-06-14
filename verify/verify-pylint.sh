@@ -28,4 +28,5 @@ $pylint \
   queue-health/graph/graph.py \
   queue-health/weekly_commit_stats.py \
   triage/*.py \
-  experiment/*.py
+  experiment/*.py \
+  verify/*.py
