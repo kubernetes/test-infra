@@ -804,6 +804,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-serial
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+- name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default
+- name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial
+- name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-ubuntu-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke
@@ -1083,6 +1089,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-serial
   - name: gce-ubuntu-1.6-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-slow
+  - name: gce-ubuntustable1-k8snew-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default
+  - name: gce-ubuntustable1-k8snew-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial
+  - name: gce-ubuntustable1-k8snew-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow
   - name: cdk-gce-node
     test_group_name: canonical-kubernetes-e2e-gce
 

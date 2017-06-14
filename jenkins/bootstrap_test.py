@@ -1997,9 +1997,9 @@ class JobTest(unittest.TestCase):
         # pylint: disable=line-too-long
         allowed_list = {
             # The ubuntu image validation jobs intentionally share projects.
-            'e2e-gce-ubuntustable1-k8snew-default.env': 'e2e-gce-ubuntu*',
-            'e2e-gce-ubuntustable1-k8snew-serial.env': 'e2e-gce-ubuntu*',
-            'e2e-gce-ubuntustable1-k8snew-slow.env': 'e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
