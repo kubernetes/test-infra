@@ -2767,3 +2767,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   - name: cosbeta-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
+
+#
+# Start dashboard groups
+#
+
+dashboard_groups:
+- name: 1.7-upgrade-all
+  dashboard_names:
+  - 1.5-1.7-upgrade
+  - 1.6-1.7-upgrade

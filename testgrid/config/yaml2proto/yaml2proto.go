@@ -160,6 +160,10 @@ func (c *Config) Update(yamlData []byte) error {
 		c.config.Dashboards = append(c.config.Dashboards, dashboard)
 	}
 
+	for _, dashboardGroup := range curConfig.DashboardGroups {
+		c.config.DashboardGroups = append(c.config.DashboardGroups, dashboardGroup)
+	}
+
 	return nil
 }
 
