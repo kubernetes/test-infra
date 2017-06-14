@@ -6061,7 +6061,61 @@
     "sigOwners": [
       "UNKNOWN"
     ]
-  },
+  }, 
+  "e2e-gce-ubuntustable1-k8snew-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+    "args": [
+      "--env-file=jobs/e2e-gce-ubuntustable1-k8snew-default.env", 
+      "--mode=local", 
+      "--check-leaked-resources=true", 
+      "--extract=ci/latest-1.7", 
+      "--timeout=50m", 
+      "--cluster=d0b18ac282"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-node"
+    ], 
+    "tags": [
+      "generated"
+    ]
+  }, 
+  "e2e-gce-ubuntustable1-k8snew-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+    "args": [
+      "--env-file=jobs/e2e-gce-ubuntustable1-k8snew-serial.env", 
+      "--mode=local", 
+      "--check-leaked-resources=true", 
+      "--extract=ci/latest-1.7", 
+      "--timeout=300m", 
+      "--cluster=e07c0819b5"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-node"
+    ], 
+    "tags": [
+      "generated"
+    ]
+  }, 
+  "e2e-gce-ubuntustable1-k8snew-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+    "args": [
+      "--env-file=jobs/e2e-gce-ubuntustable1-k8snew-slow.env", 
+      "--mode=local", 
+      "--check-leaked-resources=true", 
+      "--extract=ci/latest-1.7", 
+      "--timeout=150m", 
+      "--cluster=f6c444b174"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-node"
+    ], 
+    "tags": [
+      "generated"
+    ]
+  }, 
   "maintenance-ci-janitor": {
     "scenario": "kubernetes_janitor",
     "sigOwners": [

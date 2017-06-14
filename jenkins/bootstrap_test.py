@@ -2205,7 +2205,8 @@ class JobTest(unittest.TestCase):
                     if (
                             '--env-file=jobs/platform/gce.env' not in args
                             and '--env-file=jobs/platform/gke.env' not in args
-                            and '--check-leaked-resources=true' in args):
+                            and '--check-leaked-resources=true' in args
+                            and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
                     extracts = [a for a in args if '--extract=' in a]
                     if not extracts:

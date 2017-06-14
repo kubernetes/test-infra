@@ -20,9 +20,9 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ ./experiment/generate_tests.py --config-path=experiment/test_config.yaml \
-    --output-dir=jobs/generated
-
+  $ ./experiment/generate_tests.py \
+      --yaml-config-path=experiment/test_config.yaml \
+      --json-config-path=jobs/config.json
 """
 
 import argparse
@@ -52,18 +52,18 @@ def get_envs(desc, field):
     field is None or the field does not contain the key "envs"."""
 
     result = ['', '# The %s configurations.' % desc]
-    if field is None or field.get('envs') is None:
+    if field is None:
         return result
-    return result + field['envs']
+    return result + field.get('envs', [])
 
 
 def get_args(job_name, field):
     """Returns a list of args from the given field, and an empty list if the
     field is None or the field does not contain the key "args"."""
 
-    if field is None or field.get('args') is None:
+    if field is None:
         return []
-    return substitute(job_name, field['args'])
+    return substitute(job_name, field.get('args', []))
 
 
 def get_project_id(job_name):
@@ -81,6 +81,9 @@ def get_job_def(env_filename, args, sig_owners):
     result['args'].append('--env-file=%s' % env_filename)
     result['args'].extend(args)
     result['sigOwners'] = ['UNKNOWN'] if sig_owners is None else sig_owners
+    # Indicates that this job definition is auto-generated.
+    result['tags'] = ['generated']
+    result['_comment'] = 'AUTO-GENERATED - DO NOT EDIT.'
     return result
 
 
@@ -108,7 +111,7 @@ def generate_envs(job_name, common, cloud_provider, image, k8s_version,
                   test_suite, job):
     """Returns a list of envs fetched from the given fields."""
 
-    envs = ['# Auto-generated; DO NOT MODIFY.']
+    envs = ['# AUTO-GENERATED - DO NOT EDIT.']
     envs.extend(get_envs('common', common))
     envs.extend(get_envs('cloud provider', cloud_provider))
     envs.extend(get_envs('image', image))
@@ -168,49 +171,63 @@ def for_each_job(job_name, common, cloud_providers, images, k8s_versions,
     return envs, args
 
 
-def main(config_path, output_dir):
+def remove_generated_jobs(json_config):
+    for job_name, job_def in json_config.items():
+        tags = job_def.get('tags')
+        if tags is not None and 'generated' in tags:
+            del json_config[job_name]
+
+
+def main(json_config_path, yaml_config_path, output_dir):
     '''Creates test job definitions for the jobs and their configs from the
-    config_path and writes them to output_dir.'''
+    yaml_config_path and writes them to json_config_path and output_dir.'''
 
-    # TODO(yguo0905): Validate the configurations from config_path.
+    # TODO(yguo0905): Validate the configurations from yaml_config_path.
 
-    with open(config_path) as fp:
-        doc = yaml.safe_load(fp)
+    with open(json_config_path) as fp:
+        json_config = json.load(fp)
+    remove_generated_jobs(json_config)
+
+    with open(yaml_config_path) as fp:
+        yaml_config = yaml.safe_load(fp)
 
     # TODO(yguo0905): Create output_dir if it does not exist, or remove
     # existing configs in output_dir otherwise.
 
-    job_defs = dict()
-    for job_name, _ in doc['jobs'].items():
+    for job_name, _ in yaml_config['jobs'].items():
         # Get the envs and args for each job defined under "jobs".
         envs, args = for_each_job(job_name,
-                                  doc['common'],
-                                  doc['cloudProviders'],
-                                  doc['images'],
-                                  doc['k8sVersions'],
-                                  doc['testSuites'],
-                                  doc['jobs'])
+                                  yaml_config['common'],
+                                  yaml_config['cloudProviders'],
+                                  yaml_config['images'],
+                                  yaml_config['k8sVersions'],
+                                  yaml_config['testSuites'],
+                                  yaml_config['jobs'])
         # Write the extacted envs into an env file for the job.
         env_filename = write_env_file(output_dir, job_name, envs)
         # Add the job to the definitions.
-        sig_owners = doc['jobs'][job_name].get('sigOwners')
-        job_defs[job_name] = get_job_def(env_filename, args, sig_owners)
+        sig_owners = yaml_config['jobs'][job_name].get('sigOwners')
+        json_config[job_name] = get_job_def(env_filename, args, sig_owners)
 
-    # Write the job definitions to config.yaml.
-    write_job_defs_file(output_dir, job_defs)
+    # Write the job definitions to config.json.
+    write_job_defs_file(output_dir, json_config)
 
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         description='Create test definitions from the given config')
     PARSER.add_argument(
-        '--config-path',
+        '--yaml-config-path',
         help='Path to config.yaml',
+        default=None)
+    PARSER.add_argument(
+        '--json-config-path',
+        help='Path to config.json',
         default=None)
     PARSER.add_argument(
         '--output-dir',
         help='Path to output dir',
-        default=None)
+        default='jobs')
     ARGS = PARSER.parse_args()
 
-    main(ARGS.config_path, ARGS.output_dir)
+    main(ARGS.json_config_path, ARGS.yaml_config_path, ARGS.output_dir)

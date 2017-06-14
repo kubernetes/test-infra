@@ -727,18 +727,13 @@ def job_script(job, use_json):
     """Return path to script for job."""
     if not use_json:
         return [test_infra('jobs/%s.sh' % job)]
-
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
-    job_config = config.get(job)
-
-    if job_config is None:
-        with open(test_infra('jobs/generated/config.json')) as fp:
-            config = json.loads(fp.read())
     job_config = config[job]
-
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
+
+
 
 
 def gubernator_uri(paths):
