@@ -100,6 +100,7 @@ class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
     def __init__(self, workspace):
         self.workspace = workspace
+        self.entrypoint = None
         self.env = []
         self.os_env = []
         self.env_files = []
@@ -154,15 +155,16 @@ class LocalMode(object):
     @property
     def runner(self):
         """Finds the best version of e2e-runner.sh."""
+        entrypoint = self.entrypoint or 'e2e-runner.sh'
         options = [
-          os.path.join(self.workspace, 'e2e-runner.sh'),
-          '/workspace/e2e-runner.sh',
-          test_infra('jenkins/e2e-image/e2e-runner.sh')
+          os.path.join(self.workspace, entrypoint),
+          '/workspace/' + entrypoint,
+          test_infra('jenkins/e2e-image/' + entrypoint)
         ]
         for path in options:
             if os.path.isfile(path):
                 return path
-        raise ValueError('Cannot find e2e-runner at any of %s' % ', '.join(options))
+        raise ValueError('Cannot find %s at any of %s' % (entrypoint, ', '.join(options)))
 
 
     def install_prerequisites(self):
@@ -210,6 +212,7 @@ class DockerMode(object):
 
         print 'Starting %s...' % container
 
+        self.entrypoint = None
         self.container = container
         self.cmd = [
             'docker', 'run', '--rm',
@@ -301,6 +304,8 @@ class DockerMode(object):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
         cmd = list(self.cmd)
+        if self.entrypoint:
+          cmd.append('--entrypoint=/workspace/' + self.entrypoint)
         cmd.append(kubekins(self.tag))
         cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
@@ -366,6 +371,9 @@ def main(args):
 
     if args.service_account:
         mode.add_service_account(args.service_account)
+
+    if args.entrypoint:
+      mode.entrypoint = args.entrypoint
 
     runner_args = []
     if args.build is not None:
@@ -457,6 +465,9 @@ def create_parser():
         '--mode', default='docker', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+    parser.add_argument(
+        '--entrypoint', default='e2e-runner.sh', help='Test script to invoke')
+
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
