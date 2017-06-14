@@ -41,6 +41,7 @@ py_test(
     data = ["//:buckets"],
     # idem
     local = True,
+    deps = ["@yaml//:yaml"],
 )
 
 filegroup(
