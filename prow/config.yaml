@@ -678,6 +678,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
+        - "--json"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -929,12 +930,15 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -961,11 +965,14 @@ postsubmits:
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--json"
           securityContext:
             privileged: true
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
+          - name: TEST_TMPDIR
+            value: /root/.cache/bazel
           volumeMounts:
           - name: service
             mountPath: /etc/service-account
