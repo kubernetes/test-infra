@@ -91,7 +91,7 @@
         job-name: pull-kubernetes-e2e-gce-etcd3
         json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 75
+        timeout: 85
     - kubernetes-e2e-kops-aws:
         max-total: 12
         job-name: pull-kubernetes-e2e-kops-aws

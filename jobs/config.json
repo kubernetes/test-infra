@@ -6202,7 +6202,7 @@
       "--build", 
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3", 
       "--cluster=", 
-      "--timeout=55m", 
+      "--timeout=65m", 
       "--check-leaked-resources=false"
     ], 
     "scenario": "kubernetes_e2e", 
