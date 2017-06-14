@@ -2208,6 +2208,11 @@ class JobTest(unittest.TestCase):
                             and '--check-leaked-resources=true' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
+                    if (
+                            '--check-leaked-resources=true' not in args
+                            and 'generated' in config[job].get('tags', [])):
+                        self.fail('Generated job %s must have --check-leaked-resources=yes' % job)
+
                     extracts = [a for a in args if '--extract=' in a]
                     if not extracts:
                         self.fail('e2e job needs --extract flag: %s %s' % (job, args))
