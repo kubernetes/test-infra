@@ -89,7 +89,7 @@ presubmits:
     trigger: "@k8s-bot (pull-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
         args:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -370,7 +370,7 @@ presubmits:
     trigger: "@k8s-bot (pull-security-kubernetes-e2e-kubeadm-gce |kubeadm e2e )?test this"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
         args:
         - "--pull=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -778,7 +778,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
             args:
             - "--branch=$(PULL_REFS)"
             - "--clean"
@@ -885,7 +885,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce-1-6
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
             args:
             - "--branch=$(PULL_REFS)"
             - "--clean"
@@ -992,7 +992,7 @@ postsubmits:
       - name: ci-kubernetes-e2e-kubeadm-gce-1-7
         spec:
           containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
             args:
             - "--branch=$(PULL_REFS)"
             - "--clean"
@@ -1265,7 +1265,7 @@ periodics:
     - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
           args:
           - "--repo=k8s.io/kubernetes=release-1.6"
           - "--clean"
@@ -1375,7 +1375,7 @@ periodics:
     - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:0.6
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170614-415ac9dc
           args:
           - "--repo=k8s.io/kubernetes=release-1.7"
           - "--clean"
