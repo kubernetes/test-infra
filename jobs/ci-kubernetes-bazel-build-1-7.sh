@@ -34,7 +34,7 @@ if [[ "${rc}" == 0 ]]; then
     echo "Kubernetes version missing; not uploading ci artifacts."
     rc=1
   else
-    bazel run //:ci-artifacts -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
+    bazel run //:push-build -- "gs://kubernetes-release-dev/bazel/${version}" && rc=$? || rc=$?
   fi
 fi
 
