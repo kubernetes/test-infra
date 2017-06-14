@@ -24,6 +24,9 @@ py_test(
         ":all-srcs",
         "@jq//file",
     ],
+    deps = [
+        "@yaml//:yaml",
+    ],
 )
 
 py_test(
