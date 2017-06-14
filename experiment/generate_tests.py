@@ -146,13 +146,13 @@ def for_each_job(job_name, common, cloud_providers, images, k8s_versions,
     job_name.'''
 
     fields = job_name.split('-')
-    if len(fields) != 5:
-        raise ValueError('Expected 5 fields in job name', job_name)
+    if len(fields) != 7:
+        raise ValueError('Expected 7 fields in job name', job_name)
 
-    cloud_provider_name = fields[1]
-    image_name = fields[2]
-    k8s_version_name = fields[3][3:]
-    test_suite_name = fields[4]
+    cloud_provider_name = fields[3]
+    image_name = fields[4]
+    k8s_version_name = fields[5][3:]
+    test_suite_name = fields[6]
 
     envs = generate_envs(job_name,
                          common,

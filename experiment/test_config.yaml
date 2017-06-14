@@ -2,19 +2,19 @@
 # dimension.
 jobs:
   # Ubuntu image validation.
-  e2e-gce-ubuntustable1-k8snew-default:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=${job_name_hash}
     sigOwners: ['sig-node']
-  e2e-gce-ubuntustable1-k8snew-slow:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=${job_name_hash}
     sigOwners: ['sig-node']
-  e2e-gce-ubuntustable1-k8snew-serial:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
