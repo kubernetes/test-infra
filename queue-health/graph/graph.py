@@ -43,7 +43,7 @@ DAYS = 21  # Graph this many days of history.
 
 def mean(*a):
     """Calculate the mean for items."""
-    return numpy.mean(*a)  # pylint: disable=no-member
+    return numpy.mean(*a)  # pylint: disable=no-value-for-parameter
 
 def parse_line(
         date, timenow, online, pulls, queue,
@@ -473,4 +473,4 @@ if __name__ == '__main__':
     # log all arguments.
     pprint.PrettyPrinter(stream=sys.stderr).pprint(sys.argv)
 
-    render_forever(*sys.argv[1:])
+    render_forever(*sys.argv[1:])  # pylint: disable=no-value-for-parameter

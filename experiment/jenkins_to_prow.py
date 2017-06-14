@@ -131,9 +131,9 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     if config_path:
         with open(config_path, 'r+') as fp:
             configs = json.loads(fp.read())
-            for job in job_names:
-                if job in configs:
-                    configs[job]['args'].append('--mode=local')
+            for jobn in job_names:
+                if jobn in configs:
+                    configs[jobn]['args'].append('--mode=local')
             fp.seek(0)
             fp.write(json.dumps(configs, sort_keys=True, indent=2))
             fp.write('\n')
