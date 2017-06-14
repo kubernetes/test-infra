@@ -929,7 +929,7 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      - image: gcr.io/k8s-testimages/bazelbuild:0.11
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -961,7 +961,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-7
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.9
+        - image: gcr.io/k8s-testimages/bazelbuild:0.11
           args:
           - "--branch=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -1310,7 +1310,7 @@ periodics:
   interval: 2h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.9
+    - image: gcr.io/k8s-testimages/bazelbuild:0.11
       args:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
@@ -1343,7 +1343,7 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.9
+      - image: gcr.io/k8s-testimages/bazelbuild:0.11
         args:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
