@@ -31,7 +31,7 @@ sh_test(
     srcs = ["verify-pylint.sh"],
     data = [
         "//:all-srcs",
-        "@pylint//:pylint",
+        ":pylint_bin",
     ],
 )
 
@@ -43,6 +43,12 @@ test_suite(
         "verify-govet",
         "verify-pylint",
     ],
+)
+
+py_binary(
+    name = "pylint_bin",
+    srcs = ["pylint_bin.py"],
+    deps = ["@pylint//:pylint"],
 )
 
 filegroup(
