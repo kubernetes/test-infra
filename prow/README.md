@@ -13,6 +13,7 @@ currently comprises several related pieces that live in a Kubernetes cluster.
 * `cmd/tot` vends incrementing build numbers.
 * `cmd/crier` writes GitHub statuses and comments.
 * `cmd/horologium` starts periodic jobs when necessary.
+* `cmd/mkpj` creates `ProwJobs`.
 
 See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
 
@@ -36,6 +37,18 @@ This will listen on `localhost:8888` for webhooks. Send one with:
 ```
 ./bazel-bin/prow/cmd/phony/phony --event issue_comment --payload prow/cmd/phony/examples/test_comment.json
 ```
+
+## How to run a given job on prow
+
+Run the following, specifying `JOB_NAME`:
+
+```
+bazel run //prow/cmd/mkpj -- --job=JOB_NAME
+```
+
+This will print the ProwJob YAML to stdout. You may pipe it into `kubectl`.
+Depending on the job, you will need to specify more information such as PR
+number.
 
 ## How to update the cluster
 
