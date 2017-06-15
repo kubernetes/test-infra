@@ -65,13 +65,15 @@ class MakeJsonTest(unittest.TestCase):
                result='FAILURE', job='J', number=123, finished=15,
                metadata=[{'key': 'pull', 'value': 'asdf'}, {'key': 'repo', 'value': 'ignored'}])
         expect(path, None, None, [
-            '''<testsuite>
-            <testcase name="t1" time="1.0"><failure>stacktrace</failure></testcase>
-            <testcase name="t2" time="2.0"></testcase>
-            </testsuite>'''],
-            job='J', number=123,
-            tests_run=2, tests_failed=1,
-            test=[{'name': 't1', 'time': 1.0, 'failed': True, 'failure_text': 'stacktrace'}, {'name': 't2', 'time': 2.0}])
+                '''<testsuite>
+                    <testcase name="t1" time="1.0"><failure>stacktrace</failure></testcase>
+                    <testcase name="t2" time="2.0"></testcase>
+                    <testcase name="t2#1" time="2.0"></testcase>
+                   </testsuite>'''],
+               job='J', number=123,
+               tests_run=2, tests_failed=1,
+               test=[{'name': 't1', 'time': 1.0, 'failed': True, 'failure_text': 'stacktrace'},
+                     {'name': 't2', 'time': 2.0}])
 
     def test_main(self):
         now = time.time()
