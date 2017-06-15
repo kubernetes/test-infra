@@ -33,6 +33,7 @@ CONFIG_PROTO_SCHEMA = {
             'name': 'dashboard_tab',
             1: 'name',
             2: 'test_group_name',
+            6: 'base_options',
             7: {},
             8: {2: {}},
             9: {},
@@ -104,14 +105,17 @@ def path_to_query(path):
     options = {}
     for dashboard in get_config().get('dashboards', []):
         dashboard_name = dashboard['name'][0]
-        for tab in dashboard['dashboard_tab']:
+        tabs = dashboard['dashboard_tab']
+        for tab in tabs:
+            if 'base_options' in tab:
+                continue
             if group in tab['test_group_name']:
                 query = '%s#%s' % (dashboard_name, tab['name'][0])
-                options[dashboard_name] = query
+                options[dashboard_name] = (-len(tabs), query)
     if 'k8s' in options:
-        return options['k8s']
+        return options['k8s'][1]
     elif len(options) > 1:
         logging.warning('ambiguous testgrid options: %s', options)
     elif len(options) == 0:
         return ''
-    return options.values()[0]
+    return sorted(options.values())[0][1]

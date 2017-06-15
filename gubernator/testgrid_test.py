@@ -60,6 +60,7 @@ class TestTestgrid(unittest.TestCase):
                 {'query': ['gce-serial'], 'name': ['gce-serial']},
                 {'query': ['gce-soak'], 'name': ['gce-soak']},
                 {'query': ['gce-soak-1.3'], 'name': ['gce-soak-1.3']},
+                {'query': ['gke'], 'name': ['gke']},
                 {'query': ['unusedgroup'], 'name': ['unused']},
             ],
             'dashboards': [
@@ -82,6 +83,21 @@ class TestTestgrid(unittest.TestCase):
                     'dashboard_tab': [
                         {'test_group_name': ['gce-soak-1.3'], 'name': ['soak']},
                     ]
+                },
+                {
+                    'name': ['gke'],
+                    'dashboard_tab': [
+                       {'test_group_name': ['gke'], 'name': ['gke']}
+                    ]
+                },
+                {
+                    'name': ['sig-storage'],
+                    'dashboard_tab': [
+                       {'test_group_name': ['gke'], 'name': ['gke'],
+                         'base_options': ['include-filter-by-regex=Storage']},
+                       {'test_group_name': ['gce-serial'], 'name': ['gce-serial'],
+                         'base_options': ['include-filter-by-regex=Storage']}
+                    ]
                 }
             ]
         }
@@ -93,6 +109,7 @@ class TestTestgrid(unittest.TestCase):
         expect('gce-soak-1.3', 'gce#soak-1.3')
         expect('unusedgroup', '')
         expect('notarealpath', '')
+        expect('gke', 'gke#gke')
 
 
 class TestTestgridGCS(main_test.TestBase):
