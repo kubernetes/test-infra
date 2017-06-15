@@ -143,6 +143,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3
+- name: ci-kubernetes-e2e-gce-etcd3-pr-validate
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3-pr-validate
 - name: ci-kubernetes-e2e-gce-etcd3-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3-release-1-5
 - name: ci-kubernetes-e2e-gci-gce-etcd3
@@ -1193,6 +1195,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gce-etcd3
+  - name: gce-etcd3-pr-validate
+    test_group_name: ci-kubernetes-e2e-gce-etcd3-pr-validate
   - name: gce-etcd3-1.5
     test_group_name: ci-kubernetes-e2e-gce-etcd3-release-1-5
   - name: gci-gce-etcd3
@@ -2089,6 +2093,8 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build
   - name: gce
     test_group_name: ci-kubernetes-e2e-gce
+  - name: gce-etcd3
+    test_group_name: ci-kubernetes-e2e-gce-etcd3
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
   - name: gke
