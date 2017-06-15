@@ -727,7 +727,7 @@
       "--env-file=jobs/platform/gce.env", 
       "--env-file=jobs/image/cosbeta.env", 
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-no-snat.env", 
-      "--timeout=10m", 
+      "--timeout=15m", 
       "--mode=local", 
       "--extract=ci/latest", 
       "--check-leaked-resources=true"
