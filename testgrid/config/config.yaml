@@ -2097,6 +2097,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: gce-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gce-slow
   - name: gci-gce-slow
