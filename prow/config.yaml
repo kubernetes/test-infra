@@ -7679,7 +7679,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default
+  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default
   spec:
     containers:
     - args:
@@ -7712,7 +7712,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial
+  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial
   spec:
     containers:
     - args:
@@ -7745,7 +7745,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow
+  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow
   spec:
     containers:
     - args:

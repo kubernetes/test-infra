@@ -2035,61 +2035,61 @@
     "sigOwners": [
       "UNKNOWN"
     ]
-  }, 
-  "ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default": {
-    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
     "args": [
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default.env", 
-      "--mode=local", 
-      "--check-leaked-resources=true", 
-      "--extract=ci/latest-1.7", 
-      "--timeout=50m", 
-      "--cluster=45b523d155"
-    ], 
-    "scenario": "kubernetes_e2e", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.7",
+      "--timeout=50m",
+      "--cluster=dcb74cd42a"
+    ],
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
-    ], 
+    ],
     "tags": [
       "generated"
     ]
-  }, 
-  "ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial": {
-    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
     "args": [
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial.env", 
-      "--mode=local", 
-      "--check-leaked-resources=true", 
-      "--extract=ci/latest-1.7", 
-      "--timeout=300m", 
-      "--cluster=156e72fd8d"
-    ], 
-    "scenario": "kubernetes_e2e", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.7",
+      "--timeout=300m",
+      "--cluster=0ac5dfddd1"
+    ],
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
-    ], 
+    ],
     "tags": [
       "generated"
     ]
-  }, 
-  "ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow": {
-    "_comment": "AUTO-GENERATED - DO NOT EDIT.", 
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
     "args": [
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow.env", 
-      "--mode=local", 
-      "--check-leaked-resources=true", 
-      "--extract=ci/latest-1.7", 
-      "--timeout=150m", 
-      "--cluster=b7f66af7b4"
-    ], 
-    "scenario": "kubernetes_e2e", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.7",
+      "--timeout=150m",
+      "--cluster=d17516cf20"
+    ],
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
-    ], 
+    ],
     "tags": [
       "generated"
     ]
-  }, 
+  },
   "ci-kubernetes-e2e-gci-gce": {
     "args": [
       "--env-file=jobs/platform/gce.env",
@@ -6115,7 +6115,7 @@
     "sigOwners": [
       "UNKNOWN"
     ]
-  }, 
+  },
   "maintenance-ci-janitor": {
     "scenario": "kubernetes_janitor",
     "sigOwners": [

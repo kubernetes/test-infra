@@ -2,19 +2,19 @@
 # dimension.
 jobs:
   # Ubuntu image validation.
-  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-default:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-slow:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8snew-serial:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
@@ -52,10 +52,10 @@ images:
     - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
 
 k8sVersions:
-  master:
+  dev:
     args:
     - --extract=ci/latest
-  new:
+  beta:
     args:
     - --extract=ci/latest-1.7
   stable1:
