@@ -2094,6 +2094,8 @@ class JobTest(unittest.TestCase):
                     self.fail('[%r]: Env %r: No quote in env' % (job, line))
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
+                if '{' in line or '}' in line:
+                    self.fail('[%r]: Env %r: { and } are not allowed in env files' % (job, line))
 
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
                 black = [
