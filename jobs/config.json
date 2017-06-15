@@ -820,6 +820,21 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gce-etcd3-pr-validate": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3-pr-validate.env",
+      "--timeout=50m",
+      "--extract=ci/latest",
+      "--mode=local",
+      "--cluster=pr-validation",
+      "--check-leaked-resources=true"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
   "ci-kubernetes-e2e-gce-etcd3-release-1-5": {
     "args": [
       "--env-file=jobs/platform/gce.env",
