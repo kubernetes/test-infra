@@ -30,7 +30,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
         fp.seek(0)
-        fp.write(json.dumps(configs, sort_keys=True, indent=2))
+        fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
         fp.write('\n')
         fp.truncate()
 

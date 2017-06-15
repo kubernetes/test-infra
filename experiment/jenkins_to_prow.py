@@ -135,7 +135,7 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
                 if jobn in configs:
                     configs[jobn]['args'].append('--mode=local')
             fp.seek(0)
-            fp.write(json.dumps(configs, sort_keys=True, indent=2))
+            fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
             fp.write('\n')
             fp.truncate()
 

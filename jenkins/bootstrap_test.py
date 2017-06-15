@@ -2240,7 +2240,12 @@ class JobTest(unittest.TestCase):
         """Test jobs/config.json is sorted."""
         with open(bootstrap.test_infra('jobs/config.json')) as fp:
             original = fp.read()
-            expect = json.dumps(json.loads(original), sort_keys=True, indent=2) + '\n'
+            expect = json.dumps(
+                json.loads(original),
+                sort_keys=True,
+                indent=2,
+                separators=(',', ': ')
+                ) + '\n'
             if original != expect:
                 self.fail('config.json is not sorted, please run jobs/config_sort.py')
 
