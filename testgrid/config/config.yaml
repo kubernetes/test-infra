@@ -1329,6 +1329,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: gce-kubeadm-1.6
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
+  - name: gce-kubeadm-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
 
@@ -1667,10 +1669,14 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build
   - name: bazel-build-1.6
     test_group_name: ci-kubernetes-bazel-build-1-6
+  - name: bazel-build-1.7
+    test_group_name: ci-kubernetes-bazel-build-1-7
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
   - name: bazel-test-1.6
     test_group_name: ci-kubernetes-bazel-test-1-6
+  - name: bazel-test-1.7
+    test_group_name: ci-kubernetes-bazel-test-1-7
   - name: test-go
     test_group_name: ci-kubernetes-test-go
   - name: test-go-1.4
@@ -2025,6 +2031,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
   - name: gke-slow-1.6
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
+  - name: kubeadm-gce-1.6
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
   - name: soak-gce-1.6-deploy
     test_group_name: ci-kubernetes-soak-gce-1.6-deploy
   - name: soak-gce-1.6-test
