@@ -243,9 +243,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
                 kubernetes_e2e.main(args)
 
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/'  # pylint: disable=line-too-long
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      'v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/', self.envs['E2E_OPT'])
         called = False
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
@@ -285,9 +285,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
                 kubernetes_e2e.main(args)
 
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/'  # pylint: disable=line-too-long
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      'v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/', self.envs['E2E_OPT'])
         called = False
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
@@ -304,9 +304,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status_v1_6):
                 kubernetes_e2e.main(args)
 
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.6.4-beta.0.18+84febd4537dd19/build/debs/'
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      'v1.6.4-beta.0.18+84febd4537dd19/build/debs/', self.envs['E2E_OPT'])
         called = False
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
@@ -324,9 +324,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             with Stub(os, 'environ', fake_env):
                 kubernetes_e2e.main(args)
 
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/1234/master:abcd/bin/linux/amd64/'
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        self.assertIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version gs://kubernetes-release-dev/bazel/'
+                      '1234/master:abcd/bin/linux/amd64/', self.envs['E2E_OPT'])
 
     def test_kubeadm_invalid(self):
         """Make sure kubeadm invalid mode exits unsuccessfully."""
