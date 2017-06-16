@@ -20,6 +20,10 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+for i in {1..10}; do
+  echo 'WARNING: kops-e2e-runner.sh is deprecated, migrate logic to kubetest'
+done
+
 if [[ -z "${KOPS_BASE_URL:-}" ]]; then
   readonly KOPS_LATEST=${KOPS_LATEST:-"latest-ci.txt"}
   readonly LATEST_URL="https://storage.googleapis.com/kops-ci/bin/${KOPS_LATEST}"
@@ -36,7 +40,10 @@ chmod +x "${WORKSPACE}/kops"
 # Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
 export PRIORITY_PATH="/workspace/kubernetes/platforms/linux/amd64"
 
-export E2E_OPT="--deployment kops --kops /workspace/kops ${E2E_OPT}"
+e2e_args=( \
+  --deployment=kops \
+  --kops=workspace/kops \
+)
 
 # TODO(zmerlynn): This is duplicating some logic in e2e-runner.sh, but
 # I'd rather keep it isolated for now.
@@ -49,7 +56,7 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
   fi
   readonly KOPS_KUBE_RELEASE_URL=${KOPS_KUBE_RELEASE_URL:-"https://storage.googleapis.com/kubernetes-release-dev/ci"}
 
-  export E2E_OPT="${E2E_OPT} --kops-kubernetes-version ${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}"
+  e2e_args+=(--kops-kubernetes-version="${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}")
 fi
 
 EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip' || true)
@@ -60,7 +67,7 @@ if [[ -z "${EXTERNAL_IP}" ]]; then
   echo
   EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
 fi
-export E2E_OPT="${E2E_OPT} --kops-admin-access ${EXTERNAL_IP}/32"
+e2e_args+=(--kops-admin-access="${EXTERNAL_IP}/32")
 
 # Define a custom instance lister for cluster/log-dump.sh.
 function log_dump_custom_get_instances() {
@@ -81,7 +88,7 @@ function log_dump_custom_get_instances() {
 pip install awscli # Only needed for log_dump_custom_get_instances
 export -f log_dump_custom_get_instances # Export to cluster/log-dump.sh
 
-$(dirname "${BASH_SOURCE}")/e2e-runner.sh "${@}"
+$(dirname "${BASH_SOURCE}")/e2e-runner.sh "${e2e_args[@]}" "${@}"
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
   export CLOUDSDK_CONFIG="/workspace/.config/gcloud"

@@ -33,26 +33,16 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'E2E_UPGRADE_TEST=true',
-        r'GINKGO_UPGRADE_TEST_ARGS=(.+)',
+        r'E2E_OPT=(--check_version_skew=false|true)'
     ]))
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
             continue
-        migrated = any('--upgrade_args=' in a for a in values.get('args', []))
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
-        if migrated:
-            if any(j in env for j in [
-                    'GINKGO_UPGRADE_TEST_ARGS=',
-                    'E2E_UPGRADE_TEST=',
-            ]):
-                problems.append(job)
-            continue
-        upgrading = False
-        upgrade_args = None
         lines = []
+        skew = None
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
@@ -60,23 +50,23 @@ def sort():
                 continue
             args = mat.group(1)
             if args:
-                if upgrade_args:
+                if skew:
                     problems.append('Duplicate %s' % job)
                     break
-                upgrade_args = args
+                skew = args
                 continue
-            if upgrading:
-                problems.append('Duplicate E2E_UPGRADE_TEST in %s' % job)
+        else:
+            if not skew:
+                continue
+            for arg in values['args']:
+                if not arg.startswith('--check_version_skew'):
+                    continue
+                if arg != skew:
+                    problems.append('Mismatch in %s: %s != %s' % (job, arg, skew))
+                    continue
                 break
             else:
-                upgrading = True
-        else:
-            if not upgrading:
-                continue
-            if upgrading and not args:
-                problems.append('Missing GINKGO_UPGRADE_TEST_ARGS in %s' % job)
-                continue
-            values['args'].append('--upgrade_args=%s' % upgrade_args)
+                values['args'].append(skew)
             with open(test_infra('jobs/%s.env' % job), 'w') as fp:
                 fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
