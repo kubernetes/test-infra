@@ -331,9 +331,6 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	}
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
-	spec.NodeSelector = map[string]string{
-		"role": "build",
-	}
 	// Keep this synchronized with get_running_build_log in Gubernator!
 	podName := fmt.Sprintf("%s-%s", pj.Spec.Job, buildID)
 	if len(podName) > 60 {

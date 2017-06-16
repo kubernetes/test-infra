@@ -54,8 +54,6 @@ spec:
       labels:
         app: tot
     spec:
-      nodeSelector:
-        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: tot

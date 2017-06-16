@@ -30,8 +30,6 @@ spec:
       labels:
         app: hook
     spec:
-      nodeSelector:
-        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook

@@ -30,8 +30,6 @@ spec:
       labels:
         app: deck
     spec:
-      nodeSelector:
-        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
