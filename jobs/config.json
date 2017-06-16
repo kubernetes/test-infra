@@ -3647,110 +3647,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-cluster": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-cluster.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-cluster-new": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-cluster-new.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-master": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-container_vm-1-6-upgrade-master.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-cluster": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-cluster.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-cluster-new": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-cluster-new.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-master": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-container_vm-1-5-gci-1-6-upgrade-master.env",
-      "--timeout=900m",
-      "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
-      "--mode=local"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env",
@@ -3917,6 +3813,58 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--skew",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env",
@@ -3963,6 +3911,58 @@
       "--check-leaked-resources=true",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check_version_skew=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--skew",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master.env",
+      "--timeout=900m",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.5",
+      "--check-leaked-resources=true",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
+      "--check_version_skew=false",
+      "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4138,10 +4138,10 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-cluster": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-cluster.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster.env",
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
@@ -4155,10 +4155,10 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-cluster-new": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new": {
     "args": [
       "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-cluster-new.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new.env",
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--skew",
@@ -4173,10 +4173,10 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-master": {
+  "ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master": {
     "args": [
       "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-container_vm-1-6-upgrade-master.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master.env",
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
