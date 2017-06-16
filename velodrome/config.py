@@ -55,11 +55,11 @@ def main():
                 })
                 patch_configuration("prometheus-config",
                                     project['prometheus'],
-                                    { "PROJECT": project_name })
+                                    {"PROJECT": project_name})
             if 'grafana' in project:
                 patch_configuration("grafana-config",
                                     project['grafana'],
-                                    { "PROJECT": project_name })
+                                    {"PROJECT": project_name})
             for repository, transforms in project['repositories'].items():
                 print_deployments(["fetcher"], {
                     "GH_ORGANIZATION": repository.split("/")[0],
@@ -83,15 +83,15 @@ def main():
 
 
 def apply_transform(new_args, env):
-    with open(get_absolute_path(DEPLOYMENTS["transform"])) as f:
-        config = yaml.load(f)
+    with open(get_absolute_path(DEPLOYMENTS["transform"])) as fp:
+        config = yaml.load(fp)
         config['spec']['template']['spec']['containers'][0]['args'] += new_args
     print_deployment(yaml.dump(config, default_flow_style=False), env)
 
 
 def patch_configuration(component, values, env):
-    with open(get_absolute_path(DEPLOYMENTS[component])) as f:
-        config = yaml.load(f)
+    with open(get_absolute_path(DEPLOYMENTS[component])) as fp:
+        config = yaml.load(fp)
         # We want to fail if we have unknown keys in values
         unknown_keys = set(values) - set(config['data'])
         if unknown_keys:
@@ -106,8 +106,8 @@ def get_absolute_path(path):
 
 def print_deployments(components, env):
     for component in components:
-        with open(get_absolute_path(DEPLOYMENTS[component])) as f:
-            print_deployment(f.read(), env)
+        with open(get_absolute_path(DEPLOYMENTS[component])) as fp:
+            print_deployment(fp.read(), env)
 
 
 def print_deployment(deployment, env):

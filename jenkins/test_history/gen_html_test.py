@@ -55,9 +55,9 @@ TEST_DATA = {
 
 
 TEST_BUCKETS_DATA = {
-    "gs://kubernetes-jenkins/logs/": { "prefix": "" },
-    "gs://rktnetes-jenkins/logs/": { "prefix": "rktnetes$" },
-    "gs://kube_azure_log/": { "prefix": "azure$" },
+    "gs://kubernetes-jenkins/logs/": {"prefix": ""},
+    "gs://rktnetes-jenkins/logs/": {"prefix": "rktnetes$"},
+    "gs://kube_azure_log/": {"prefix": "azure$"},
 }
 
 
@@ -175,10 +175,10 @@ class GenHtmlTest(unittest.TestCase):
 
     def test_failure_class(self):
         for passed, failed, expected in [
-            (0, 0, ''),
-            (0, 10, 'job-broken'),
-            (10, 5, 'job-troubled'),
-            (100, 9, 'job-flaky'),
+                (0, 0, ''),
+                (0, 10, 'job-broken'),
+                (10, 5, 'job-troubled'),
+                (100, 9, 'job-flaky'),
         ]:
             self.assertEqual(gen_html.failure_class(passed, failed), expected)
 

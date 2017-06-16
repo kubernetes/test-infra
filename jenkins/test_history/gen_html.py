@@ -112,6 +112,7 @@ def job_results(bucket, prefix, job_name, job_data, test_names):
             'latest_failure': None or 'https://gubernater-link...',
         }]
     """
+    # pylint:disable=too-many-locals,too-many-branches
     full_job_name = '{}{}'.format(prefix, job_name)
     num_failed = 0
     num_passed = 0
@@ -153,7 +154,8 @@ def job_results(bucket, prefix, job_name, job_data, test_names):
     tests = []
     for test in sorted(test_summaries.values(), key=lambda t: t['name'].lower()):
         if test['latest_failure'] is not None:
-            test['latest_failure'] = gubernator_url(bucket, job_name, test['latest_failure'], test['name'])
+            test['latest_failure'] = gubernator_url(
+                bucket, job_name, test['latest_failure'], test['name'])
         if test['runs'] > 0:
             tests.append(test)
             if test['failed'] == 0:
@@ -211,17 +213,16 @@ def merge_bad_tests(bad_tests, new_tests):
 
 
 def load_blocking_jobs(configmap):
-    with open(configmap) as b:
-        data = yaml.load(b)
+    with open(configmap) as fp:
+        data = yaml.load(fp)
     return data['data']['submit-queue.jenkins-jobs'].split(',')
 
 
 def main(in_path, buckets_path, out_dir, configmap):
     """Uses in_path and buckets_path to write a static report under out_dir."""
+    # pylint:disable=too-many-locals
     with open(in_path) as data_file:
         data = json.load(data_file)
-
-    templates_path = '{}/templates'.format(os.path.abspath(os.path.dirname(__file__)))
 
     blocking_jobs = load_blocking_jobs(configmap)
 
@@ -240,20 +241,24 @@ def main(in_path, buckets_path, out_dir, configmap):
         summaries.append(job)
         if job.tests > 0:
             job_template = JINJA_ENV.get_template('job.html')
-            job_html = job_template.render({
+            job_html = job_template.render({ # pylint:disable=no-member
                 'job_name': job_name,
                 'tests': tests,
             })
             with open('{}/suite-{}.html'.format(out_dir, full_name), 'w') as job_file:
                 job_file.write(job_html)
     summaries.sort()
-    blocking_job_summaries = filter(lambda s: s.name in blocking_jobs, summaries)
+    blocking_job_summaries = [x for x in summaries if x.name in blocking_jobs]
 
     index_template = JINJA_ENV.get_template('index.html')
-    index_html = index_template.render({
+    index_html = index_template.render({ # pylint:disable=no-member
         'last_updated': time.strftime('%a %b %d %T %Z'),
         'job_groups': [blocking_job_summaries, summaries],
-        'bad_tests': sorted(bad_tests.values(), key=lambda t: t['failed'] / (t['passed'] + t['failed']), reverse=True),
+        'bad_tests': sorted(
+            bad_tests.values(),
+            key=lambda t: t['failed'] / (t['passed'] + t['failed']),
+            reverse=True
+        ),
     })
     with open('{}/index.html'.format(out_dir), 'w') as index_file:
         index_file.write(index_html)
