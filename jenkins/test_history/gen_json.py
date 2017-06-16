@@ -70,8 +70,7 @@ class GCSClient(object):
                 resp.raise_for_status()
                 if as_json:
                     return resp.json()
-                else:
-                    return resp.content
+                return resp.content
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
             time.sleep(random.random() * min(60, 2 ** retry))

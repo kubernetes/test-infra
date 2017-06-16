@@ -28,7 +28,8 @@ import re
 import sys
 import time
 
-import jinja2
+# TODO(fejta): add jinja2 to bazel dependencies
+import jinja2  # pylint: disable=import-error
 import yaml
 
 
@@ -56,12 +57,11 @@ JINJA_ENV = jinja2.Environment(
 def failure_class(passed, failed):
     if failed == 0:
         return ''
-    elif passed == 0:
+    if passed == 0:
         return 'job-broken'
-    elif passed / 10 < failed:
+    if passed / 10 < failed:
         return 'job-troubled'
-    else:
-        return 'job-flaky'
+    return 'job-flaky'
 
 JINJA_ENV.globals['failure_class'] = failure_class
 

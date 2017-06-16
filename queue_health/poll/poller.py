@@ -123,4 +123,4 @@ if __name__ == '__main__':
     PP = pprint.PrettyPrinter(stream=sys.stderr)
     PP.pprint(sys.argv)
 
-    poll_forever(*sys.argv[1:])
+    poll_forever(*sys.argv[1:])  # pylint: disable=no-value-for-parameter
