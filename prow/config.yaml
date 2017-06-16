@@ -3420,7 +3420,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -3453,7 +3453,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -3486,7 +3486,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -3519,7 +3519,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -3552,7 +3552,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -3585,7 +3585,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master
   spec:
     containers:
@@ -3618,7 +3618,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -3651,7 +3651,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -3684,7 +3684,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -3717,7 +3717,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -3750,7 +3750,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -3783,7 +3783,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 2h
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master
   spec:
     containers:
