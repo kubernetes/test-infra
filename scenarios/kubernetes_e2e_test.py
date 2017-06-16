@@ -220,8 +220,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--publish=location',
             '--timeout=42m',
             '--upgrade_args=ginkgo',
-            '--up=true',
-            '--down=false',
             '--check-leaked-resources=true',
             '--charts',
         ]
@@ -232,6 +230,22 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         lastcall = self.callstack[-1]
         for arg in migrated:
             self.assertIn(arg, lastcall)
+
+    def test_updown_default(self):
+        args = kubernetes_e2e.parse_args(['--mode=local'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--up', lastcall)
+        self.assertIn('--down', lastcall)
+
+    def test_updown_set(self):
+        args = kubernetes_e2e.parse_args(['--mode=local', '--up=false', '--down=true'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertNotIn('--up', lastcall)
+        self.assertIn('--down', lastcall)
 
 
     def test_kubeadm_ci(self):
