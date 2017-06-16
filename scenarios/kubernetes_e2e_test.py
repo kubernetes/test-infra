@@ -112,6 +112,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     envs = {}
 
     def setUp(self):
+        self.parser = kubernetes_e2e.create_parser()
         self.boiler = [
             Stub(kubernetes_e2e, 'check', self.fake_check),
             Stub(shutil, 'copy', fake_pass),
@@ -145,7 +146,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_local(self):
         """Make sure local mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local'])
+        args = self.parser.parse_args(['--mode=local'])
         self.assertEqual(args.mode, 'local')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
@@ -156,15 +157,15 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_check_leaks_docker(self):
         """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
-        args = kubernetes_e2e.parse_args(['--mode=docker', '--check-leaked-resources'])
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-            self.assertIn('--check-leaked-resources', self.callstack[-1])
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
             self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
 
     def test_check_leaks_false_docker(self):
         """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
-        args = kubernetes_e2e.parse_args(['--mode=docker', '--check-leaked-resources=false'])
+        args = self.parser.parse_args(['--mode=docker', '--check-leaked-resources=false'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources=false', self.callstack[-1])
@@ -172,7 +173,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_check_leaks(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources=true', '--mode=local'])
+        args = self.parser.parse_args(['--check-leaked-resources=true', '--mode=local'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources=true', self.callstack[-1])
@@ -180,7 +181,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_check_leaks_false(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources=false', '--mode=local'])
+        args = self.parser.parse_args(['--check-leaked-resources=false', '--mode=local'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources=false', self.callstack[-1])
@@ -188,55 +189,54 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_check_leaks_default(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources', '--mode=local'])
+        args = self.parser.parse_args(['--check-leaked-resources', '--mode=local'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-            self.assertIn('--check-leaked-resources', self.callstack[-1])
+            self.assertIn('--check-leaked-resources=true', self.callstack[-1])
             self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_check_leaks_unset(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--mode=local'])
+        args = self.parser.parse_args(['--mode=local'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-            self.assertNotIn('--check-leaked-resources', self.callstack[-1])
+            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
             self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
-    def test_migrated_kubetest_args(self):
-        migrated = [
-            '--stage=a-stage',
-            '--stage-suffix=panda',
-            '--random-flag', 'random-value',
-            '--multiple-federations',
-            'arg1', 'arg2',
-            '--federation',
-            '--kubemark',
-            '--extract=this',
-            '--extract=that',
-            '--perf-tests',
-            '--deployment=yay',
-            '--save=somewhere',
-            '--skew',
-            '--publish=location',
-            '--timeout=42m',
-            '--upgrade_args=ginkgo',
-            '--up=true',
-            '--down=false',
-            '--check-leaked-resources=true',
-            '--charts',
-        ]
-        args = kubernetes_e2e.parse_args(['--mode=docker'] + migrated + ['--test=false'])
-        self.assertEquals(migrated, args.kubetest_args)
+    def test_extract_multiple(self):
+        """Ensure multiple --extract flags are accepted."""
+        args = self.parser.parse_args(['--extract=a', '--extract=b'])
+        self.assertEquals(['a', 'b'], args.extract)
+
+    def test_upgrade_args(self):
+        """Ensure upgrade_args flags are passed to kubetest."""
+        args = self.parser.parse_args(['--upgrade_args=foo bar'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-        lastcall = self.callstack[-1]
-        for arg in migrated:
-            self.assertIn(arg, lastcall)
+            self.assertIn('--upgrade_args=foo bar', self.callstack[-1])
 
+    def test_extract_args(self):
+        """Ensure extract flags are passed to kubetest."""
+        args = self.parser.parse_args(['--extract=foo', '--extract=bar'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+            self.assertIn('--extract=foo', self.callstack[-1])
+            self.assertIn('--extract=bar', self.callstack[-1])
+
+    def test_updown(self):
+        """Make sure local mode is fine overall."""
+        args = self.parser.parse_args(['--mode=local', '--up=false'])
+        self.assertEqual(args.mode, 'local')
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+
+        lastcall = self.callstack[-1]
+        self.assertNotIn('--up', lastcall)
+        self.assertIn('--down', lastcall)
 
     def test_kubeadm_ci(self):
         """Make sure kubeadm ci mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=ci'])
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=ci'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'ci')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
@@ -278,7 +278,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_periodic(self):
         """Make sure kubeadm periodic mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=periodic'])
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=periodic'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'periodic')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
@@ -297,7 +297,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_periodic_v1_6(self):
         """Make sure kubeadm periodic mode has correct version on v1.6"""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=periodic'])
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=periodic'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'periodic')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
@@ -316,7 +316,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_pull(self):
         """Make sure kubeadm pull mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=pull'])
+        args = self.parser.parse_args(['--mode=local', '--kubeadm=pull'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'pull')
         fake_env = {'PULL_NUMBER': 1234, 'PULL_REFS': 'master:abcd'}
@@ -331,13 +331,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     def test_kubeadm_invalid(self):
         """Make sure kubeadm invalid mode exits unsuccessfully."""
         with self.assertRaises(SystemExit) as sysexit:
-            kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=deploy'])
+            self.parser.parse_args(['--mode=local', '--kubeadm=deploy'])
 
         self.assertEqual(sysexit.exception.code, 2)
 
     def test_docker(self):
         """Make sure docker mode is fine overall."""
-        args = kubernetes_e2e.parse_args()
+        args = self.parser.parse_args()
         self.assertEqual(args.mode, 'docker')
         with Stub(kubernetes_e2e, 'check_env', fake_bomb):
             kubernetes_e2e.main(args)
@@ -348,7 +348,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_default_tag(self):
         """Ensure the default tag exists on gcr.io."""
-        args = kubernetes_e2e.parse_args()
+        args = self.parser.parse_args()
         match = re.match('gcr.io/([^:]+):(.+)', kubernetes_e2e.kubekins(args.tag))
         self.assertIsNotNone(match)
         url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
