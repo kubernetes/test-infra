@@ -296,7 +296,6 @@ class DockerMode(object):
             '-v', '%s:%s:ro' % (path, service),
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
-
     def start(self, args):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
@@ -394,10 +393,10 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
         runner_args.extend([
-            ' --kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
-            ' --kubernetes-anywhere-phase2-provider=kubeadm',
-            ' --kubernetes-anywhere-cluster=%s' % cluster,
-            ' --kubernetes-anywhere-kubeadm-version=%s' % version,
+            '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
+            '--kubernetes-anywhere-phase2-provider=kubeadm',
+            '--kubernetes-anywhere-cluster=%s' % cluster,
+            '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
 
     # TODO(fejta): delete this?
