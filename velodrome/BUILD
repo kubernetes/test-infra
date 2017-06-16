@@ -1,13 +1,14 @@
 package(default_visibility = ["//visibility:public"])
 
-sh_test(
-    name = "test_config",
-    srcs = [
-        "test_config.sh",
-    ],
+py_test(
+    name = "config_test",
+    srcs = ["config.py"],
     data = [
-        ":config.py",
         ":configs",
+    ],
+    main = "config.py",
+    deps = [
+        "@yaml//:yaml",
     ],
 )
 

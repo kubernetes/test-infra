@@ -161,11 +161,10 @@ def file_memoize(description, name):
                 data = json.load(open(name))
                 print 'done (cached)', description
                 return data
-            else:
-                data = func(*args, **kwargs)
-                json.dump(data, open(name, 'w'))
-                print 'done', description
-                return data
+            data = func(*args, **kwargs)
+            json.dump(data, open(name, 'w'))
+            print 'done', description
+            return data
         wrapper.__wrapped__ = func
         return wrapper
     return inner

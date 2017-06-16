@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,4 +17,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-(cd $(dirname ${BASH_SOURCE}) && ./config.py)
+# Cache location.
+export TEST_TMPDIR="/root/.cache/bazel"
+
+bazel clean --expunge
+
+make bazel-test && rc=$? || rc=$?
+
+# Coalesce test results into one file for upload.
+"$(dirname "${0}")/../images/pull_kubernetes_bazel/coalesce.py"
+
+exit "${rc}"

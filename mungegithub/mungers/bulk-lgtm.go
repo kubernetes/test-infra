@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/json"
@@ -193,21 +194,35 @@ func (b *BulkLGTM) ServeLGTM(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	}
-	user, _, err := githubClient.Users.Get("")
+	user, _, err := githubClient.Users.Get(context.Background(), "")
 	if err != nil {
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))
 		return
 	}
-	if _, _, err := githubClient.Issues.AddAssignees(b.config.Org, b.config.Project, prNumber, []string{*user.Login}); err != nil {
+	_, _, err = githubClient.Issues.AddAssignees(
+		context.Background(),
+		b.config.Org,
+		b.config.Project,
+		prNumber,
+		[]string{*user.Login},
+	)
+	if err != nil {
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))
 		return
 	}
 	msg := "/lgtm\n\n/release-note-none\n\nLGTM + release-note-none from the bulk LGTM tool"
-	if _, _, err := githubClient.Issues.CreateComment(b.config.Org, b.config.Project, prNumber, &githubapi.IssueComment{Body: &msg}); err != nil {
+	_, _, err = githubClient.Issues.CreateComment(
+		context.Background(),
+		b.config.Org,
+		b.config.Project,
+		prNumber,
+		&githubapi.IssueComment{Body: &msg},
+	)
+	if err != nil {
 		res.Header().Set("Content-type", "text/plain")
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))
@@ -407,7 +422,7 @@ func (b *BulkLGTM) ServeUser(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("{ \"login\": \"unknown\"}"))
 		return
 	}
-	user, _, err := githubClient.Users.Get("")
+	user, _, err := githubClient.Users.Get(context.Background(), "")
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(err.Error()))

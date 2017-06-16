@@ -42,10 +42,10 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.cloud_provider="gce"
 
 .phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
-.phase1.gce.instance_type="n1-standard-2"
+.phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="us-central1"
-.phase1.gce.zone="us-central1-b"
+.phase1.gce.zone="us-central1-c"
 .phase1.gce.network="default"
 
 .phase2.installer_container="docker.io/colemickens/k8s-ignition:latest"

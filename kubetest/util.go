@@ -149,10 +149,10 @@ func finishRunning(cmd *exec.Cmd) error {
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
 			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 			cmd.Process.Kill()
-			return fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
+			return fmt.Errorf("Terminate after 15m after %s timeout during %s", timeout, stepName)
 		case <-interrupt.C:
 			interrupted = true
-			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
+			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, stepName)
 			terminate.Reset(15 * time.Minute)
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
 				log.Printf("Failed to interrupt %v. Will terminate immediately: %v", stepName, err)

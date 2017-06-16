@@ -62,7 +62,7 @@ def sort():
                 fp.write('\n'.join(lines))
             values['args'].append('--timeout=%s' % timeout)
     with open(test_infra('jobs/config.json'), 'w') as fp:
-        fp.write(json.dumps(configs, sort_keys=True, indent=2))
+        fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
         fp.write('\n')
     if not problems:
         sys.exit(0)

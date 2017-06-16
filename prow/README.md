@@ -13,6 +13,7 @@ currently comprises several related pieces that live in a Kubernetes cluster.
 * `cmd/tot` vends incrementing build numbers.
 * `cmd/crier` writes GitHub statuses and comments.
 * `cmd/horologium` starts periodic jobs when necessary.
+* `cmd/mkpj` creates `ProwJobs`.
 
 See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
 
@@ -36,6 +37,18 @@ This will listen on `localhost:8888` for webhooks. Send one with:
 ```
 ./bazel-bin/prow/cmd/phony/phony --event issue_comment --payload prow/cmd/phony/examples/test_comment.json
 ```
+
+## How to run a given job on prow
+
+Run the following, specifying `JOB_NAME`:
+
+```
+bazel run //prow/cmd/mkpj -- --job=JOB_NAME
+```
+
+This will print the ProwJob YAML to stdout. You may pipe it into `kubectl`.
+Depending on the job, you will need to specify more information such as PR
+number.
 
 ## How to update the cluster
 
@@ -102,13 +115,11 @@ Prow should run anywhere that Kubernetes runs. Here are the steps required to
 set up a prow cluster on GKE.
 
 1. Create the cluster. I'm assuming that `PROJECT`, `CLUSTER`, and `ZONE` are
-set. I'm putting prow components on a node with the label `role=prow`, and I'm
-doing the actual tests on nodes with the label `role=build`, but this isn't a
-hard requirement.
+set. You can also choose to run the builds in a separate cluster.
 
  ```
- gcloud -q container --project "${PROJECT}" clusters create "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=prow --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
- gcloud -q container node-pools create build-pool --project "${PROJECT}" --cluster "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1 --node-labels=role=build
+ gcloud -q container --project "${PROJECT}" clusters create "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 4 --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
+ gcloud -q container node-pools create build-pool --project "${PROJECT}" --cluster "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1
  ```
 
 2. Create the secrets that allow prow to talk to GitHub. The `hmac-token` is

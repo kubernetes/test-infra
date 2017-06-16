@@ -21,28 +21,28 @@ from __future__ import print_function
 
 import argparse
 import glob
-import json
-import mmap
 import os
 import re
 import sys
 
-parser = argparse.ArgumentParser()
-parser.add_argument("filenames", help="list of files to check, all files if unspecified", nargs='*')
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "filenames", help="list of files to check, all files if unspecified", nargs='*')
 
-rootdir = os.path.dirname(__file__) + "/../"
-rootdir = os.path.abspath(rootdir)
-parser.add_argument("--rootdir", default=rootdir, help="root directory to examine")
+    rootdir = os.path.dirname(__file__) + "/../"
+    rootdir = os.path.abspath(rootdir)
+    parser.add_argument("--rootdir", default=rootdir, help="root directory to examine")
 
-default_boilerplate_dir = os.path.join(rootdir, "verify/boilerplate")
-parser.add_argument("--boilerplate-dir", default=default_boilerplate_dir)
-args = parser.parse_args()
+    default_boilerplate_dir = os.path.join(rootdir, "verify/boilerplate")
+    parser.add_argument("--boilerplate-dir", default=default_boilerplate_dir)
+    return parser.parse_args()
 
 
 def get_refs():
     refs = {}
 
-    for path in glob.glob(os.path.join(args.boilerplate_dir, "boilerplate.*.txt")):
+    for path in glob.glob(os.path.join(ARGS.boilerplate_dir, "boilerplate.*.txt")):
         extension = os.path.basename(path).split(".")[1]
 
         ref_file = open(path, 'r')
@@ -52,14 +52,13 @@ def get_refs():
 
     return refs
 
-def file_passes(filename, refs, regexs):
-    try:
-        f = open(filename, 'r')
-    except:
-        return False
 
-    data = f.read()
-    f.close()
+def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
+    try:
+        with open(filename, 'r') as fp:
+            data = fp.read()
+    except IOError:
+        return False
 
     basename = os.path.basename(filename)
     extension = file_extension(filename)
@@ -70,13 +69,13 @@ def file_passes(filename, refs, regexs):
 
     # remove build tags from the top of Go files
     if extension == "go":
-        p = regexs["go_build_constraints"]
-        (data, found) = p.subn("", data, 1)
+        con = regexs["go_build_constraints"]
+        (data, found) = con.subn("", data, 1)
 
     # remove shebang from the top of shell files
     if extension == "sh" or extension == "py":
-        p = regexs["shebang"]
-        (data, found) = p.subn("", data, 1)
+        she = regexs["shebang"]
+        (data, found) = she.subn("", data, 1)
 
     data = data.splitlines()
 
@@ -87,15 +86,15 @@ def file_passes(filename, refs, regexs):
     # trim our file to the same number of lines as the reference file
     data = data[:len(ref)]
 
-    p = regexs["year"]
-    for d in data:
-        if p.search(d):
+    year = regexs["year"]
+    for datum in data:
+        if year.search(datum):
             return False
 
     # Replace all occurrences of the regex "2017|2016|2015|2014" with "YEAR"
-    p = regexs["date"]
-    for i, d in enumerate(data):
-        (data[i], found) = p.subn('YEAR', d)
+    when = regexs["date"]
+    for idx, datum in enumerate(data):
+        (data[idx], found) = when.subn('YEAR', datum)
         if found != 0:
             break
 
@@ -108,32 +107,33 @@ def file_passes(filename, refs, regexs):
 def file_extension(filename):
     return os.path.splitext(filename)[1].split(".")[-1].lower()
 
-skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'vendor', '__init__.py']
+SKIPPED_DIRS = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'vendor', '__init__.py']
 
 def normalize_files(files):
     newfiles = []
     for pathname in files:
-        if any(x in pathname for x in skipped_dirs):
+        if any(x in pathname for x in SKIPPED_DIRS):
             continue
         newfiles.append(pathname)
-    for i, pathname in enumerate(newfiles):
+    for idx, pathname in enumerate(newfiles):
         if not os.path.isabs(pathname):
-            newfiles[i] = os.path.join(args.rootdir, pathname)
+            newfiles[idx] = os.path.join(ARGS.rootdir, pathname)
     return newfiles
+
 
 def get_files(extensions):
     files = []
-    if len(args.filenames) > 0:
-        files = args.filenames
+    if ARGS.filenames:
+        files = ARGS.filenames
     else:
-        for root, dirs, walkfiles in os.walk(args.rootdir):
+        for root, dirs, walkfiles in os.walk(ARGS.rootdir):
             # don't visit certain dirs. This is just a performance improvement
             # as we would prune these later in normalize_files(). But doing it
             # cuts down the amount of filesystem walking we do and cuts down
             # the size of the file list
-            for d in skipped_dirs:
-                if d in dirs:
-                    dirs.remove(d)
+            for dpath in SKIPPED_DIRS:
+                if dpath in dirs:
+                    dirs.remove(dpath)
 
             for name in walkfiles:
                 pathname = os.path.join(root, name)
@@ -148,20 +148,21 @@ def get_files(extensions):
             outfiles.append(pathname)
     return outfiles
 
+
 def get_regexs():
     regexs = {}
     # Search for "YEAR" which exists in the boilerplate, but shouldn't in the real thing
-    regexs["year"] = re.compile( 'YEAR' )
+    regexs["year"] = re.compile('YEAR')
     # dates can be 2014, 2015, 2016 or 2017, company holder names can be anything
-    regexs["date"] = re.compile( '(2014|2015|2016|2017)' )
+    regexs["date"] = re.compile('(2014|2015|2016|2017)')
     # strip // +build \n\n build constraints
     regexs["go_build_constraints"] = re.compile(r"^(// \+build.*\n)+\n", re.MULTILINE)
     # strip #!.* from shell/python scripts
     regexs["shebang"] = re.compile(r"^(#!.*\n)\n*", re.MULTILINE)
     return regexs
 
-if __name__ == "__main__":
-    exit_code = 0
+
+def main():
     regexs = get_regexs()
     refs = get_refs()
     filenames = get_files(refs.keys())
@@ -176,3 +177,8 @@ if __name__ == "__main__":
         for filename in sorted(nonconforming_files):
             print(filename)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    ARGS = get_args()
+    main()

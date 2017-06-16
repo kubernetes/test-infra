@@ -38,7 +38,7 @@ TEMPLATE = ('### job-env\n'
             'E2E_OPT=--check_version_skew=false\n'
             'E2E_UPGRADE_TEST=true\n'
             'STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf\n'
-            'GINKGO_UPGRADE_TEST_ARGS=--ginkgo.focus=\\[Feature:{FEATURE}}\\] '
+            'GINKGO_UPGRADE_TEST_ARGS=--ginkgo.focus=\\[Feature:{FEATURE}\\] '
             '--upgrade-target={NEW_VERSION} --upgrade-image={NEW_IMAGE}\n'
             'JENKINS_PUBLISHED_SKEW_VERSION={NEW_VERSION}\n'
             'JENKINS_PUBLISHED_VERSION={OLD_VERSION}\n'
@@ -140,7 +140,7 @@ def main(args):
         configs[job]['args'].append('--env-file=jobs/%s.env' % job)
         configs[job]['args'].append('--mode=local')
         fp.seek(0)
-        fp.write(json.dumps(configs, sort_keys=True, indent=2))
+        fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
         fp.write('\n')
         fp.truncate()
 

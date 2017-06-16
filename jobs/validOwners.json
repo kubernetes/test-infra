@@ -25,5 +25,6 @@
    "sig-storage",
    "sig-testing",
    "sig-ui",
-   "sig-windows"
+   "sig-windows",
+   "sig-release"
 ]

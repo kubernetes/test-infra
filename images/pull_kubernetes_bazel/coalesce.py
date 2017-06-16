@@ -54,22 +54,22 @@ def sanitize(text):
 
 def result(pkg):
     """Given a directory, create a testcase element describing it."""
-    el = ET.Element('testcase')
-    el.set('classname', 'go_test')
+    elem = ET.Element('testcase')
+    elem.set('classname', 'go_test')
     pkg_parts = pkg.split('/')
-    el.set('name', '//%s:%s' % ('/'.join(pkg_parts[1:-1]), pkg_parts[-1]))
-    el.set('time', '0')
+    elem.set('name', '//%s:%s' % ('/'.join(pkg_parts[1:-1]), pkg_parts[-1]))
+    elem.set('time', '0')
     suites = ET.parse(pkg + '/test.xml').getroot()
     for suite in suites:
         for case in suite:
             for status in case:
                 if status.tag == 'error' or status.tag == 'failure':
                     failure = ET.Element('failure')
-                    with open(pkg + '/test.log') as f:
-                        text = f.read().decode('utf8', 'ignore')
+                    with open(pkg + '/test.log') as fp:
+                        text = fp.read().decode('utf8', 'ignore')
                         failure.text = sanitize(text)
-                    el.append(failure)
-    return el
+                    elem.append(failure)
+    return elem
 
 
 def main():
@@ -81,13 +81,13 @@ def main():
         os.mkdir('_artifacts')
     except OSError:
         pass
-    with open('_artifacts/junit_bazel.xml', 'w') as f:
-        f.write(ET.tostring(root, 'utf8'))
+    with open('_artifacts/junit_bazel.xml', 'w') as fp:
+        fp.write(ET.tostring(root, 'utf8'))
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Coalesce JUnit results.')
-    parser.add_argument('--repo_root', default='.')
-    args = parser.parse_args()
-    os.chdir(args.repo_root)
+    PARSER = argparse.ArgumentParser(description='Coalesce JUnit results.')
+    PARSER.add_argument('--repo_root', default='.')
+    ARGS = PARSER.parse_args()
+    os.chdir(ARGS.repo_root)
     main()

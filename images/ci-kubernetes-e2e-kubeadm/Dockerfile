@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20170327-d33e8685
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20170615-bea2c374
 MAINTAINER beacham@google.com
 
 RUN apt-get update && apt-get install -y \
@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV TERRAFORM_VERSION=0.7.2 \
     KUBERNETES_PROVIDER=kubernetes-anywhere \
-    KUBECTL_VERSION=1.6.0-beta.4 \
+    KUBECTL_VERSION=1.6.4 \
     PATH=/usr/local/bin:${PATH}
 
 # Add kubernetes-anywhere dependencies: jsonnet, terraform, kubectl

@@ -18,14 +18,8 @@ set -o nounset
 set -o pipefail
 
 export PYLINTHOME=$(mktemp -d)
-export PATH="${TEST_SRCDIR}/pylint:${PATH}"
+pylint="$(dirname $0)/pylint_bin"
 
-# TODO(fejta): all python files
-pylint scenarios/*.py
-pylint jenkins/*.py
-pylint jobs/*.py
-pylint metrics/*.py
-pylint queue-health/graph/graph.py
-pylint queue-health/weekly_commit_stats.py
-pylint triage/*.py
-pylint experiment/*.py
+
+shopt -s extglob globstar
+${pylint} !(gubernator|kettle|external|mungegithub|bazel-*)/**/*.py

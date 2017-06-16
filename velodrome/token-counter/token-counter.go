@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -62,7 +63,7 @@ func GetGithubClient(token string) *github.Client {
 
 // GetUsername finds the login for each token
 func GetUsername(client *github.Client) (string, error) {
-	user, _, err := client.Users.Get("")
+	user, _, err := client.Users.Get(context.Background(), "")
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +111,7 @@ func CreateTokenHandlers(tokenFiles []string, influxdb *InfluxDB) ([]TokenHandle
 }
 
 func (t TokenHandler) getCoreRate() (*github.Rate, error) {
-	limits, _, err := t.gClient.RateLimits()
+	limits, _, err := t.gClient.RateLimits(context.Background())
 	if err != nil {
 		return nil, err
 	}
