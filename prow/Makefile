@@ -43,7 +43,7 @@ get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 get-build-cluster-credentials:
-	gcloud container clusters get-credentials "$(BUILD_CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(BUILD_PROJECT)" --zone="$(ZONE)"
 
 build:
 	go install ./cmd/...
