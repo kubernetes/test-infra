@@ -2203,7 +2203,6 @@ class JobTest(unittest.TestCase):
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
-                    self.assertNotIn('--charts-tests', args)  # Use --charts
                     self.assertTrue(
                         any('--check-leaked-resources' in a for a in args),
                         '--check-leaked-resources=true|false unset in %s' % job)

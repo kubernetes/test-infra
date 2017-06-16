@@ -78,7 +78,7 @@
       "--env-file=jobs/ci-kubernetes-charts-gce.env",
       "--test=false",
       "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts",
-      "--charts",
+      "--charts-tests",
       "--timeout=180m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
