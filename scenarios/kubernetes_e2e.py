@@ -388,11 +388,12 @@ def main(args):
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
-        opt = ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
-            ' --kubernetes-anywhere-phase2-provider kubeadm' \
-            ' --kubernetes-anywhere-cluster %s' \
-            ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
-        mode.add_environment('E2E_OPT=%s' % opt)
+        runner_args.extend([
+            ' --kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
+            ' --kubernetes-anywhere-phase2-provider=kubeadm',
+            ' --kubernetes-anywhere-cluster=%s' % cluster,
+            ' --kubernetes-anywhere-kubeadm-version=%s' % version,
+        ])
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
