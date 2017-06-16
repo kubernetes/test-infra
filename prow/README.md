@@ -117,7 +117,7 @@ set up a prow cluster on GKE.
 1. Create the cluster. I'm assuming that `PROJECT`, `CLUSTER`, and `ZONE` are
 set. I'm putting prow components on a node with the label `role=prow`, and I'm
 doing the actual tests on nodes with the label `role=build`, but this isn't a
-hard requirement.
+hard requirement. You can also choose to run the builds in a separate cluster.
 
  ```
  gcloud -q container --project "${PROJECT}" clusters create "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 4 --node-labels=role=prow --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
