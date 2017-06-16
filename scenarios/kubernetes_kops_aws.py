@@ -160,16 +160,11 @@ def main(args):
         ])
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
 
-    extra_args = [
-        '--kops-cluster %s' % args.cluster,
-        '--kops-zones=%s ' % zones,
-        '--kops-state=%s' % args.state,
-        '--kops-nodes=%s' % args.nodes,
-        '--kops-ssh-key=%s' % aws_ssh,
-    ]
-
+    e2e_opt = ('--kops-cluster %s --kops-zones %s '
+               '--kops-state %s --kops-nodes=%s --kops-ssh-key=%s' %
+               (args.cluster, zones, args.state, args.nodes, aws_ssh))
     if args.image:
-        extra_args.append(' --kops-image=%s' % args.image)
+        e2e_opt += ' --kops-image=%s' % args.image
 
     cmd.extend([
       # Boilerplate envs
@@ -182,6 +177,8 @@ def main(args):
       '-e', 'E2E_UP=%s' % args.up,
       '-e', 'E2E_TEST=%s' % args.test,
       '-e', 'E2E_DOWN=%s' % args.down,
+      # Kops
+      '-e', 'E2E_OPT=%s' % e2e_opt,
     ])
 
     # env blacklist.
@@ -205,7 +202,6 @@ def main(args):
         cmd.append('--kops-args=%s' % args.kops_args)
     if args.timeout:
         cmd.append('--timeout=%s' % args.timeout)
-    cmd.extend(extra_args)
 
     setup_signal_handlers(container)
 
@@ -217,6 +213,7 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+
     PARSER.add_argument(
         '--aws-ssh',
         default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
@@ -231,16 +228,15 @@ if __name__ == '__main__':
         help='Path to aws credential file')
     PARSER.add_argument(
         '--aws-profile',
-        default=(
-            os.environ.get('AWS_PROFILE') or
-            os.environ.get('AWS_DEFAULT_PROFILE') or
-            'default'
-        ),
+        default=(os.environ.get('AWS_PROFILE') or
+                 os.environ.get('AWS_DEFAULT_PROFILE') or
+                 'default'),
         help='Profile within --aws-cred to use')
     PARSER.add_argument(
         '--aws-role-arn',
         default=os.environ.get('KOPS_E2E_ROLE_ARN'),
-        help='Use --aws-profile to run as --aws-role-arn if set')
+        help='If set, use the --aws-profile profile credentials '
+        'and run as --aws-role-arn')
     PARSER.add_argument(
         '--service-account',
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
@@ -248,7 +244,7 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', required=True, help='Name of the aws cluster (required)')
+        '--cluster', help='Name of the aws cluster (required)')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
@@ -257,21 +253,31 @@ if __name__ == '__main__':
         '--state', default='s3://k8s-kops-jenkins/',
         help='Name of the aws state storage')
     PARSER.add_argument(
-        '--tag', default='v20170314-bb0669b0', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170314-bb0669b0',
+        help='Use a specific kubekins-e2e tag if set')
     PARSER.add_argument(
         '--test', default='true', help='If we need to set --test in e2e.go')
     PARSER.add_argument(
         '--up', default='true', help='If we need to set --up in e2e.go')
     PARSER.add_argument(
-        '--zones', help='Comma-separated list of zones else random choice')
+        '--zones', default=None,
+        help='Availability zones to start the cluster in. '
+        'Defaults to a random zone.')
     PARSER.add_argument(
-        '--image', help='AMI for nodes to use. Defaults to kops default.')
+        '--image', default='',
+        help='Image (AMI) for nodes to use. Defaults to kops default.')
     PARSER.add_argument(
-        '--kops-args', help='Additional space-separated list of args')
+        '--kops-args', default='',
+        help='Additional space-separated args to pass unvalidated to \'kops '
+        'create cluster\', e.g. \'--kops-args="--dns private --node-size '
+        't2.micro"\'')
     PARSER.add_argument(
         '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
 
     ARGS = PARSER.parse_args()
+
+    if not ARGS.cluster:
+        raise ValueError('--cluster must be provided')
 
     # If aws keys are missing, try to fetch from HOME dir
     if not ARGS.aws_ssh or not ARGS.aws_pub or not ARGS.aws_cred:
