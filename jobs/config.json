@@ -2101,6 +2101,114 @@
       "generated"
     ]
   },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest",
+      "--timeout=50m",
+      "--cluster=test-2e79fbd2ec"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest",
+      "--timeout=300m",
+      "--cluster=test-c858633e76"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest",
+      "--timeout=150m",
+      "--cluster=test-70b21a36b2"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.6",
+      "--timeout=50m",
+      "--cluster=test-b9bc64dba5"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.6",
+      "--timeout=300m",
+      "--cluster=test-4c9af8b031"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow.env",
+      "--mode=local",
+      "--check-leaked-resources=true",
+      "--extract=ci/latest-1.6",
+      "--timeout=150m",
+      "--cluster=test-7214dd78b9"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce": {
     "args": [
       "--env-file=jobs/platform/gce.env",
