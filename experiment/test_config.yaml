@@ -2,6 +2,24 @@
 # dimension.
 jobs:
   # Ubuntu image validation.
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default:
     envs:
     - PROJECT=ubuntu-image-validation
@@ -17,6 +35,24 @@ jobs:
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
     envs:
     - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial:
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
