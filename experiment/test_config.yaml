@@ -6,19 +6,19 @@ jobs:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
-    - --cluster=${job_name_hash}
+    - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
-    - --cluster=${job_name_hash}
+    - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
     envs:
     - PROJECT=ubuntu-image-validation
     args:
-    - --cluster=${job_name_hash}
+    - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
 
 common:
