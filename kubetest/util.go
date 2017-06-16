@@ -17,8 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -168,6 +170,26 @@ func finishRunning(cmd *exec.Cmd) error {
 	}
 }
 
+/*
+cmd: command to retry
+timeout: how long to retry for
+*/
+func retryFinishRunning(cmd *exec.Cmd, timeout time.Duration) error {
+	stepName := strings.Join(cmd.Args, " ")
+	var err error
+
+	for start := time.Now(); time.Since(start) < timeout; {
+		thisCmd := *cmd
+		err = finishRunning(&thisCmd)
+		if err == nil {
+			return nil
+		}
+		log.Printf("Step '%s' failed, will be retried...(%s remaining until timeout)", stepName, timeout-time.Since(start))
+		time.Sleep(10 * time.Second)
+	}
+	return fmt.Errorf("Step '%s' retry timeout after %s : last error = %v", stepName, timeout.String(), err)
+}
+
 // return exec.Command(cmd, args...) while calling .StdinPipe().WriteString(input)
 func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 	c := exec.Command(cmd, args...)
@@ -267,4 +289,42 @@ func joinUrl(urlPath, path string) (string, error) {
 	}
 	u.Path = filepath.Join(u.Path, path)
 	return u.String(), nil
+}
+
+// Consumes kubernetes version string from 1) KUBERNETES_RELEASE env var or 2) version file in release directory
+// Returns corresponding hyperkube image tag
+func hyperkubeVersion() (string, error) {
+	dockerizeVersionStr := func(semver string) string {
+		return strings.Replace(semver, "+", "_", -1)
+	}
+	versionEnv := os.Getenv("KUBERNETES_RELEASE")
+	if versionEnv != "" {
+		return dockerizeVersionStr(versionEnv), nil
+	}
+
+	versionFilePath := filepath.Join(".", "_output", "federation", "versions")
+
+	versionJSON, err := ioutil.ReadFile(versionFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	versionMap := map[string]interface{}{}
+	if err := json.Unmarshal(versionJSON, &versionMap); err != nil {
+		return "", fmt.Errorf("error unmarshaling version file json: %v", err)
+	}
+	versionStr := versionMap["KUBE_VERSION"]
+	if versionStr == nil {
+		return "", fmt.Errorf("KUBE_VERSION not found in version data: %v", versionMap)
+	}
+	return dockerizeVersionStr(versionStr.(string)), nil
+}
+
+func useKubeContext(contextName string) error {
+	kargs := []string{
+		"config",
+		"use-context",
+		contextName,
+	}
+	return finishRunning(exec.Command("./cluster/kubectl.sh", kargs...))
 }

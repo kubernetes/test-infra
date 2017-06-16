@@ -82,7 +82,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/kops/kubernetes-anywhere")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/kops/kops-federation/kubernetes-anywhere")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -174,6 +174,8 @@ func getDeployer(deployment string) (deployer, error) {
 		return bash{}, nil
 	case "kops":
 		return NewKops()
+	case "kops-federation":
+		return NewKopsFederation()
 	case "kubernetes-anywhere":
 		return NewKubernetesAnywhere()
 	case "none":

@@ -25,6 +25,8 @@ go_library(
         "extract.go",
         "federation.go",
         "kops.go",
+        "kops-federation.go",
+        "kubefed.go",
         "main.go",
         "none.go",
         "stage.go",
