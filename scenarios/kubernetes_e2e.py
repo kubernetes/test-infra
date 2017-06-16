@@ -380,6 +380,11 @@ def main(args):
             raise ValueError(k8s)
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
+    if args.up == 'true':
+        runner_args.append('--up')
+    if args.down == 'true':
+        runner_args.append('--down')
+
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     # TODO(fejta): remove this add_environment after pushing new kubetest image
     mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
@@ -470,6 +475,10 @@ def create_parser():
         '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
+    parser.add_argument(
+        '--down', default='true', help='If we need to tear down the e2e cluster')
+    parser.add_argument(
+        '--up', default='true', help='If we need to bring up a e2e cluster')
     parser.add_argument(
         '--kubetest_args',
         action='append',
