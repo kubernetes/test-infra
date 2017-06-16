@@ -4,7 +4,7 @@ metadata:
   labels:
     app: cherrypick
     target-repo: kubernetes
-  name: cherrypick-status
+  name: kubernetes-cp-status
   namespace: default
 spec:
   ports:
