@@ -119,6 +119,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
+- name: ci-kubernetes-e2e-gce-audit
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-audit
+- name: ci-kubernetes-e2e-gci-gce-audit
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit
 - name: ci-kubernetes-e2e-gce-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-autoscaling
 - name: ci-kubernetes-e2e-gci-gce-autoscaling
@@ -1028,6 +1032,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-7
 - name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7
+- name: ci-kubernetes-e2e-gce-audit-release-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-audit-release-1-7
+- name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit-release-1-7
 - name: ci-kubernetes-e2e-gce-scalability-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1-7
 - name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
@@ -1207,6 +1215,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
   - name: gci-gce-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
+  - name: gce-audit
+    test_group_name: ci-kubernetes-e2e-gce-audit
+  - name: gci-gce-audit
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit
   - name: gce-autoscaling
     test_group_name: ci-kubernetes-e2e-gce-autoscaling
   - name: gci-gce-autoscaling
@@ -2163,6 +2175,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-features
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+  - name: gce-audit
+    test_group_name: ci-kubernetes-e2e-gce-audit
+  - name: gci-gce-audit
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit
   - name: gce-scalability
     test_group_name: ci-kubernetes-e2e-gce-scalability
   - name: gci-gce-scalability
@@ -2679,6 +2695,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   - name: gci-gce-alpha-features-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7
+  - name: gce-audit-release-1-7
+    test_group_name: ci-kubernetes-e2e-gce-audit-release-1-7
+  - name: gci-gce-audit-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
   - name: gce-scalability-release-1-7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
   - name: gci-gce-scalability-release-1-7
@@ -2762,6 +2782,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   - name: gci-gce-alpha-features-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7
+  - name: gce-audit-release-1-7
+    test_group_name: ci-kubernetes-e2e-gce-audit-release-1-7
+  - name: gci-gce-audit-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
   - name: gce-scalability-release-1-7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
   - name: gci-gce-scalability-release-1-7
