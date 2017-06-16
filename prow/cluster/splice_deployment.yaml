@@ -11,8 +11,6 @@ spec:
       labels:
         app: splice
     spec:
-      nodeSelector:
-        role: prow
       containers:
       - name: splice
         image: gcr.io/k8s-prow/splice:0.20
