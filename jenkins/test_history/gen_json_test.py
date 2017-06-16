@@ -87,10 +87,10 @@ class MockedClient(gen_json.GCSClient):
     </testsuite>
     '''}
 
-    def get(self, path, **_kwargs):
+    def get(self, path, **_kwargs):  # pylint: disable=arguments-differ
         return self.gets.get(path)
 
-    def ls(self, path, **_kwargs):
+    def ls(self, path, **_kwargs):  # pylint: disable=arguments-differ
         return self.lists[path]
 
 

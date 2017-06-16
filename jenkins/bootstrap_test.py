@@ -346,7 +346,7 @@ class CheckoutTest(unittest.TestCase):
                 bootstrap.checkout(third_time_charm, REPO, None, PULL)
         self.assertEquals(expected_attempts, self.tries)
 
-    def test_pull(self):
+    def test_pull_ref(self):
         """checkout fetches the right ref for a pull."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
@@ -459,7 +459,7 @@ class ParseReposTest(unittest.TestCase):
             bootstrap.parse_repos(
                 FakeArgs(repo=['foo=this:abcd'], branch='', pull='')))
 
-    def test_pull(self):
+    def test_parse_repos(self):
         """--repo=foo=111,222 works"""
         self.assertEquals(
             {'foo': ('', '111,222')},
