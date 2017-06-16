@@ -37,8 +37,30 @@ def sort():
     ]))
     problems = []
     for job, values in configs.items():
-        if values.get('scenario') != 'kubernetes_e2e':
+        if 'args' not in values:
             continue
+        new_args = []
+        found = False
+        for arg in values['args']:
+            if arg == '--check-leaked-resources=true':
+                found = True
+                new_args.append('--check-leaked-resources')
+            elif arg == '--check-leaked-resources=false':
+                found = True
+            elif arg == '--check_version_skew=false':
+                found = True
+                new_args.append('--check-version-skew=false')
+            else:
+                new_args.append(arg)
+        if not found:
+            continue
+        if found and values.get('scenario') != 'kubernetes_e2e':
+            problems.append('Weird %s' % job)
+            continue
+        values['args'] = new_args
+        if values:
+            continue
+        # old stuff
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         lines = []
