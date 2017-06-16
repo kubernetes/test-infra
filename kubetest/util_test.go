@@ -29,6 +29,68 @@ import (
 	"time"
 )
 
+func TestPushEnv(t *testing.T) {
+	env := "fake-env"
+	empty := ""
+	filled := "initial"
+	cases := []struct {
+		name    string
+		initial *string
+		pushed  string
+	}{
+		{
+			name:   "initial-missing-popped-missing",
+			pushed: "hello",
+		},
+		{
+			name:    "initial-empty-popped-empty",
+			initial: &empty,
+			pushed:  "hello",
+		},
+		{
+			name:    "inital-set-popped-set",
+			initial: &filled,
+			pushed:  "hello",
+		},
+	}
+	for _, tc := range cases {
+		if tc.initial == nil {
+			if err := os.Unsetenv(env); err != nil {
+				t.Fatalf("%s: could not unset %s: %v", tc.name, env, err)
+			}
+		} else {
+			if err := os.Setenv(env, *tc.initial); err != nil {
+				t.Fatalf("%s: could not set %s: %v", tc.name, env, err)
+			}
+		}
+		f, err := pushEnv(env, tc.pushed)
+		if err != nil {
+			t.Errorf("%s: push error: %v", tc.name, err)
+			continue
+		}
+		actual, present := os.LookupEnv(env)
+		if !present {
+			t.Errorf("%s: failed to push %s", tc.name, tc.pushed)
+			continue
+		}
+		if actual != tc.pushed {
+			t.Errorf("%s: actual %s != expected %s", tc.name, actual, tc.pushed)
+			continue
+		}
+		if err = f(); err != nil {
+			t.Errorf("%s: pop error: %v", tc.name, err)
+		}
+		actual, present = os.LookupEnv(env)
+		if tc.initial == nil && present {
+			t.Errorf("%s: env present after popping", tc.name)
+			continue
+		} else if tc.initial != nil && *tc.initial != actual {
+			t.Errorf("%s: popped env is %s not initial %s", tc.name, actual, *tc.initial)
+		}
+	}
+
+}
+
 func TestXmlWrap(t *testing.T) {
 	cases := []struct {
 		name            string

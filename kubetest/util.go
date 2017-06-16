@@ -268,3 +268,31 @@ func joinUrl(urlPath, path string) (string, error) {
 	u.Path = filepath.Join(u.Path, path)
 	return u.String(), nil
 }
+
+// Chdir() to dir and return a function to cd back to Getwd()
+func pushd(dir string) (func() error, error) {
+	old, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to os.Getwd(): %v", err)
+	}
+	if err = os.Chdir(dir); err != nil {
+		return nil, err
+	}
+	return func() error {
+		return os.Chdir(old)
+	}, nil
+}
+
+// Push env=value and return a function that resets env
+func pushEnv(env, value string) (func() error, error) {
+	prev, present := os.LookupEnv(env)
+	if err := os.Setenv(env, value); err != nil {
+		return nil, fmt.Errorf("could not set %s: %v", env, err)
+	}
+	return func() error {
+		if present {
+			return os.Setenv(env, prev)
+		}
+		return os.Unsetenv(env)
+	}, nil
+}
