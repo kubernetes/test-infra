@@ -2117,6 +2117,8 @@ class JobTest(unittest.TestCase):
                     ('E2E_TEST=', '--test=true|false'),
                     ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
                     ('E2E_UP=', '--up=true|false'),
+                    ('E2E_OPT=--check_version_skew', '--check-version-skew=true|false'),
+                    ('E2E_OPT=', 'Send kubetest the flags directly'),
                     ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),

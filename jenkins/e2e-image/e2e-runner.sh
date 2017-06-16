@@ -57,4 +57,4 @@ if [[ "${E2E_TEST:-}" == "true" ]]; then
   fi
 fi
 
-kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"
+kubetest "${e2e_go_args[@]}" "${@}"
