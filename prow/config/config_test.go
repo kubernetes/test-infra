@@ -83,7 +83,7 @@ func TestContextMatches(t *testing.T) {
 
 func CheckRetest(t *testing.T, repo string, presubmits []Presubmit) {
 	for _, p := range presubmits {
-		expected := fmt.Sprintf("@k8s-bot %s test this", p.Name)
+		expected := fmt.Sprintf("/test %s", p.Name)
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
