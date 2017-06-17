@@ -5322,6 +5322,24 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7": {
+    "args": [
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7.env",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.6",
+      "--deployment=kubernetes-anywhere",
+      "--mode=local",
+      "--timeout=300m",
+      "--extract=ci/latest-1.6",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-1-7": {
     "args": [
       "--cluster=",
