@@ -24,20 +24,24 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plank"
 )
 
 var (
-	totURL   = flag.String("tot-url", "http://tot", "Tot URL")
-	crierURL = flag.String("crier-url", "http://crier", "Crier URL")
+	totURL = flag.String("tot-url", "http://tot", "Tot URL")
 
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
 	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+
+	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
+	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 )
 
 func main() {
@@ -67,7 +71,20 @@ func main() {
 
 	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
 
-	c := plank.NewController(kc, pkc, jc, *crierURL, *totURL)
+	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+	}
+	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+	var ghc *github.Client
+	if *dryRun {
+		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
+	} else {
+		ghc = github.NewClient(*githubBotName, oauthSecret)
+	}
+
+	c := plank.NewController(kc, pkc, jc, ghc, *totURL)
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {

@@ -194,9 +194,6 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "42")
 }
 
-func handleCrier(w http.ResponseWriter, r *http.Request) {
-}
-
 func TestSyncJenkinsJob(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -230,37 +227,15 @@ func TestSyncJenkinsJob(t *testing.T) {
 				},
 			},
 			expectedBuild:    true,
-			expectedState:    kube.PendingState,
-			expectedEnqueued: true,
-		},
-		{
-			name: "start new job, report",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Type:   kube.PresubmitJob,
-					Report: true,
-					Refs: kube.Refs{
-						Pulls: []kube.Pull{kube.Pull{}},
-					},
-				},
-				Status: kube.ProwJobStatus{
-					State: kube.TriggeredState,
-				},
-			},
-			expectedBuild:    true,
 			expectedReport:   true,
 			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
 		},
 		{
-			name: "start new job, error, report",
+			name: "start new job, error",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Type:   kube.PresubmitJob,
-					Report: true,
-					Refs: kube.Refs{
-						Pulls: []kube.Pull{kube.Pull{}},
-					},
+					Type: kube.PresubmitJob,
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -328,17 +303,14 @@ func TestSyncJenkinsJob(t *testing.T) {
 			status: jenkins.Status{
 				Building: true,
 			},
-			expectedState: kube.PendingState,
+			expectedState:  kube.PendingState,
+			expectedReport: true,
 		},
 		{
 			name: "building, error",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Type:   kube.PresubmitJob,
-					Report: true,
-					Refs: kube.Refs{
-						Pulls: []kube.Pull{kube.Pull{}},
-					},
+					Type: kube.PresubmitJob,
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
@@ -363,6 +335,7 @@ func TestSyncJenkinsJob(t *testing.T) {
 			},
 			expectedState:    kube.SuccessState,
 			expectedComplete: true,
+			expectedReport:   true,
 		},
 		{
 			name: "finished, failed",
@@ -377,15 +350,10 @@ func TestSyncJenkinsJob(t *testing.T) {
 			},
 			expectedState:    kube.FailureState,
 			expectedComplete: true,
+			expectedReport:   true,
 		},
 	}
 	for _, tc := range testcases {
-		var reported bool
-		var handleCrier = func(w http.ResponseWriter, r *http.Request) {
-			reported = true
-		}
-		crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
-		defer crierServ.Close()
 		fjc := &fjc{
 			enqueued: tc.enqueued,
 			status:   tc.status,
@@ -396,9 +364,8 @@ func TestSyncJenkinsJob(t *testing.T) {
 		}
 
 		c := Controller{
-			kc:       fkc,
-			jc:       fjc,
-			crierURL: crierServ.URL,
+			kc: fkc,
+			jc: fjc,
 		}
 		if err := c.syncJenkinsJob(tc.pj); err != nil != tc.expectedError {
 			t.Errorf("for case %s got wrong error: %v", tc.name, err)
@@ -411,8 +378,11 @@ func TestSyncJenkinsJob(t *testing.T) {
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %s got wrong completion", tc.name)
 		}
-		if reported != tc.expectedReport {
+		if (len(c.reports) > 0) != tc.expectedReport {
 			t.Errorf("for case %s got wrong report", tc.name)
+		}
+		if len(c.reports) > 1 {
+			t.Errorf("for case %s, reported %d times", tc.name, len(c.reports))
 		}
 		if fjc.built != tc.expectedBuild {
 			t.Errorf("for case %s got wrong built", tc.name)
@@ -435,6 +405,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		expectedNumPods    int
 		expectedComplete   bool
 		expectedCreatedPJs int
+		expectedReport     bool
 	}{
 		{
 			name: "completed prow job",
@@ -498,6 +469,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedState:   kube.PendingState,
 			expectedPodName: "boop-42",
 			expectedNumPods: 1,
+			expectedReport:  true,
 		},
 		{
 			name: "reset when pod goes missing",
@@ -558,6 +530,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodName:    "boop-42",
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
+			expectedReport:     true,
 		},
 		{
 			name: "failed pod",
@@ -584,6 +557,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedState:    kube.FailureState,
 			expectedPodName:  "boop-42",
 			expectedNumPods:  1,
+			expectedReport:   true,
 		},
 		{
 			name: "evicted pod",
@@ -638,8 +612,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 	for _, tc := range testcases {
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 		defer totServ.Close()
-		crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
-		defer crierServ.Close()
 		pm := make(map[string]kube.Pod)
 		for i := range tc.pods {
 			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
@@ -651,10 +623,9 @@ func TestSyncKubernetesJob(t *testing.T) {
 			pods: tc.pods,
 		}
 		c := Controller{
-			kc:       fc,
-			pkc:      fpc,
-			totURL:   totServ.URL,
-			crierURL: crierServ.URL,
+			kc:     fc,
+			pkc:    fpc,
+			totURL: totServ.URL,
 		}
 		if err := c.syncKubernetesJob(tc.pj, pm); err != nil {
 			t.Errorf("for case %s got an error: %v", tc.name, err)
@@ -676,6 +647,12 @@ func TestSyncKubernetesJob(t *testing.T) {
 		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
 			t.Errorf("for case %s got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
+		if (len(c.reports) > 0) != tc.expectedReport {
+			t.Errorf("for case %s got wrong report", tc.name)
+		}
+		if len(c.reports) > 1 {
+			t.Errorf("for case %s, reported %d times", tc.name, len(c.reports))
+		}
 	}
 }
 
@@ -685,8 +662,6 @@ func TestBatch(t *testing.T) {
 		Name:    "pr-some-job",
 		Context: "Some Job Context",
 	}
-	crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
-	defer crierServ.Close()
 	fc := &fkc{
 		prowjobs: []kube.ProwJob{NewProwJob(BatchSpec(pre, kube.Refs{
 			Org:     "o",
@@ -707,10 +682,9 @@ func TestBatch(t *testing.T) {
 	}
 	jc := &fjc{}
 	c := Controller{
-		kc:       fc,
-		pkc:      fc,
-		jc:       jc,
-		crierURL: crierServ.URL,
+		kc:  fc,
+		pkc: fc,
+		jc:  jc,
 	}
 
 	if err := c.Sync(); err != nil {
@@ -780,16 +754,13 @@ func TestPeriodic(t *testing.T) {
 
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
-	crierServ := httptest.NewServer(http.HandlerFunc(handleCrier))
-	defer crierServ.Close()
 	fc := &fkc{
 		prowjobs: []kube.ProwJob{NewProwJob(PeriodicSpec(per))},
 	}
 	c := Controller{
-		kc:       fc,
-		pkc:      fc,
-		totURL:   totServ.URL,
-		crierURL: crierServ.URL,
+		kc:     fc,
+		pkc:    fc,
+		totURL: totServ.URL,
 	}
 
 	if err := c.Sync(); err != nil {

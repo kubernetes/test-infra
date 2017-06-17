@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package crier
+package plank
 
 import (
 	"strings"
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestPRLink(t *testing.T) {
@@ -56,10 +57,18 @@ func TestPRLink(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		prl := prLink(Report{
-			RepoOwner: tc.org,
-			RepoName:  tc.repo,
-			Number:    tc.number,
+		prl := prLink(kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Refs: kube.Refs{
+					Org:  tc.org,
+					Repo: tc.repo,
+					Pulls: []kube.Pull{
+						kube.Pull{
+							Number: tc.number,
+						},
+					},
+				},
+			},
 		})
 		if prl[len(guberPrefix):] != tc.suffix {
 			t.Errorf("Expected failed case %+v, got %s", tc, prl)
@@ -70,18 +79,17 @@ func TestPRLink(t *testing.T) {
 func TestParseIssueComment(t *testing.T) {
 	var testcases = []struct {
 		name             string
-		r                Report
+		context          string
+		state            string
 		ics              []github.IssueComment
 		expectedDeletes  []int
 		expectedContexts []string
 		expectedUpdate   int
 	}{
 		{
-			name: "should delete old style comments",
-			r: Report{
-				Context: "Jenkins foo test",
-				State:   github.StatusSuccess,
-			},
+			name:    "should delete old style comments",
+			context: "Jenkins foo test",
+			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -107,19 +115,15 @@ func TestParseIssueComment(t *testing.T) {
 			expectedDeletes: []int{12345, 12367},
 		},
 		{
-			name: "should create a new comment",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusFailure,
-			},
+			name:             "should create a new comment",
+			context:          "bla test",
+			state:            github.StatusFailure,
 			expectedContexts: []string{"bla test"},
 		},
 		{
-			name: "should not delete an up-to-date comment",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusSuccess,
-			},
+			name:    "should not delete an up-to-date comment",
+			context: "bla test",
+			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -128,11 +132,9 @@ func TestParseIssueComment(t *testing.T) {
 			},
 		},
 		{
-			name: "should delete when all tests pass",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusSuccess,
-			},
+			name:    "should delete when all tests pass",
+			context: "bla test",
+			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -144,11 +146,9 @@ func TestParseIssueComment(t *testing.T) {
 			expectedContexts: []string{},
 		},
 		{
-			name: "should delete a passing test with \\r",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusSuccess,
-			},
+			name:    "should delete a passing test with \\r",
+			context: "bla test",
+			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -161,11 +161,9 @@ func TestParseIssueComment(t *testing.T) {
 		},
 
 		{
-			name: "should update a failed test",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusFailure,
-			},
+			name:    "should update a failed test",
+			context: "bla test",
+			state:   github.StatusFailure,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -177,11 +175,9 @@ func TestParseIssueComment(t *testing.T) {
 			expectedContexts: []string{"bla test"},
 		},
 		{
-			name: "should preserve old results when updating",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusFailure,
-			},
+			name:    "should preserve old results when updating",
+			context: "bla test",
+			state:   github.StatusFailure,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -193,11 +189,9 @@ func TestParseIssueComment(t *testing.T) {
 			expectedContexts: []string{"bla test", "foo test"},
 		},
 		{
-			name: "should merge duplicates",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusFailure,
-			},
+			name:    "should merge duplicates",
+			context: "bla test",
+			state:   github.StatusFailure,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -214,11 +208,9 @@ func TestParseIssueComment(t *testing.T) {
 			expectedContexts: []string{"bla test", "foo test"},
 		},
 		{
-			name: "should update an old comment when a test passes",
-			r: Report{
-				Context: "bla test",
-				State:   github.StatusSuccess,
-			},
+			name:    "should update an old comment when a test passes",
+			context: "bla test",
+			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
 				{
 					User: github.User{Login: "k8s-ci-robot"},
@@ -232,7 +224,16 @@ func TestParseIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		deletes, entries, update := parseIssueComments(tc.r, "k8s-ci-robot", tc.ics)
+		pj := kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Context: tc.context,
+				Refs:    kube.Refs{Pulls: []kube.Pull{{}}},
+			},
+			Status: kube.ProwJobStatus{
+				State: kube.ProwJobState(tc.state),
+			},
+		}
+		deletes, entries, update := parseIssueComments(pj, "k8s-ci-robot", tc.ics)
 		if len(deletes) != len(tc.expectedDeletes) {
 			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 		} else {

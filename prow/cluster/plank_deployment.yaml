@@ -19,7 +19,7 @@ metadata:
   labels:
     app: plank
 spec:
-  replicas: 1
+  replicas: 1 # Do not scale up.
   template:
     metadata:
       labels:
@@ -27,15 +27,20 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.19
+        image: gcr.io/k8s-prow/plank:0.20
         args:
         - --build-cluster=/etc/cluster/cluster
+        - --dry-run=false
+        - --github-bot-name=k8s-ci-robot
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
           readOnly: true
         - mountPath: /etc/jenkins
           name: jenkins
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
           readOnly: true
       volumes:
       - name: jenkins
@@ -46,3 +51,6 @@ spec:
         secret:
           defaultMode: 420
           secretName: build-cluster
+      - name: oauth
+        secret:
+          secretName: oauth-token
