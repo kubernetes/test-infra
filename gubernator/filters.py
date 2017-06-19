@@ -25,7 +25,9 @@ import jinja2
 
 GITHUB_VIEW_TEMPLATE = 'https://github.com/kubernetes/kubernetes/blob/%s/%s#L%s'
 GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
-
+LINKIFY_RE = re.compile(
+    r'(^\s*/\S*/)(kubernetes/(\S+):(\d+)(?: \+0x[0-9a-f]+)?)$',
+    flags=re.MULTILINE)
 
 
 def do_timestamp(unix_time, css_class='timestamp', tmpl='%F %H:%M'):
@@ -71,11 +73,12 @@ def do_linkify_stacktrace(inp, commit):
     if not commit:
         return jinja2.Markup(inp)  # this was already escaped, mark it safe!
     def rep(m):
-        path, line = m.groups()
-        return '<a href="%s">%s</a>' % (
-            GITHUB_VIEW_TEMPLATE % (commit, path, line), m.group(0))
-    return jinja2.Markup(re.sub(r'^/\S*/kubernetes/(\S+):(\d+)$', rep, inp,
-                                flags=re.MULTILINE))
+        prefix, full, path, line = m.groups()
+        return '%s<a href="%s">%s</a>' % (
+            prefix,
+            GITHUB_VIEW_TEMPLATE % (commit, path, line),
+            full)
+    return jinja2.Markup(LINKIFY_RE.sub(rep, inp))
 
 
 def do_github_commit_link(commit):
