@@ -70,7 +70,7 @@ def collect(project, age, resource, filt):
         cmd.append(resource.group)
     cmd.extend([
         'list',
-        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,MANAGED)',
+        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
         '--filter=%s' % filt,
         '--project=%s' % project])
     print '%r' % cmd
