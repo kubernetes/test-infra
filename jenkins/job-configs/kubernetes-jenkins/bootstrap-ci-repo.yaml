@@ -193,6 +193,12 @@
         job-name: ci-kubernetes-node-kubelet-1.7
         repo-name: k8s.io/kubernetes
         timeout: 90
+    - kubernetes-node-kubelet-serial-1-7:
+        branch: release-1.7
+        frequency: 'H H/2 * * *'
+        job-name: ci-kubernetes-node-kubelet-serial-1-7
+        repo-name: k8s.io/kubernetes
+        timeout: 240
 
     - kubernetes-node-docker:  # dawnchen
         branch: master

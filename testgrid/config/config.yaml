@@ -557,6 +557,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-1-7
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-non-cri-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1.6
   test_name_config:
@@ -1610,6 +1617,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-1.6
   - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-1.7
+  - name: kubelet-serial-1-7
+    test_group_name: ci-kubernetes-node-kubelet-serial-1-7
   - name: docker-kubelet
     test_group_name: ci-kubernetes-node-docker
   - name: docker-e2e
@@ -2578,6 +2587,8 @@ dashboards:
     test_group_name: ci-kubernetes-verify-release-1.7
   - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-1.7
+  - name: kubelet-serial-1-7
+    test_group_name: ci-kubernetes-node-kubelet-serial-1-7
   - name: federation-build-1.7
     test_group_name: ci-kubernetes-federation-build-1.7
   - name: gce-release-1-7
@@ -2682,6 +2693,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-1.7
+  - name: kubelet-serial-1.7
+    test_group_name: ci-kubernetes-node-kubelet-serial-1-7
   - name: aws-release-1-7
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
   - name: gke-serial-release-1-7
@@ -2724,6 +2737,10 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  # - name: gke-gpu-1-7 # mindprince
+  #   test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
+  - name: gci-gce-audit-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
 
 
 - name: cos-image-validation

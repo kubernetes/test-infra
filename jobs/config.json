@@ -5750,7 +5750,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-docker": {
@@ -5759,7 +5759,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-docker-benchmark": {
@@ -5768,13 +5768,13 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet": {
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-1.4": {
@@ -5783,7 +5783,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-1.5": {
@@ -5792,7 +5792,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-1.6": {
@@ -5801,7 +5801,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-1.7": {
@@ -5810,7 +5810,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-benchmark": {
@@ -5819,7 +5819,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-conformance": {
@@ -5829,7 +5829,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-flaky": {
@@ -5838,7 +5838,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-non-cri-1.6": {
@@ -5848,7 +5848,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-node-kubelet-serial": {
@@ -5857,7 +5857,16 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-node-kubelet-serial-1-7": {
+    "args": [
+      "--properties=test/e2e_node/jenkins/jenkins-serial.properties"
+    ],
+    "scenario": "kubernetes_kubelet",
+    "sigOwners": [
+      "sig-node"
     ]
   },
   "ci-kubernetes-pull-gce-federation-deploy": {
