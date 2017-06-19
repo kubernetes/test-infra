@@ -22,19 +22,19 @@ jobs:
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default:
     envs:
-    - PROJECT=ubuntu-image-validation
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow:
     envs:
-    - PROJECT=ubuntu-image-validation
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
     envs:
-    - PROJECT=ubuntu-image-validation
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
