@@ -2098,28 +2098,78 @@ dashboards:
   dashboard_tab:
   - name: build
     test_group_name: ci-kubernetes-build
-  - name: gce
-    test_group_name: ci-kubernetes-e2e-gce
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-serial
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gce-slow
-  - name: gce-reboot
-    test_group_name: ci-kubernetes-e2e-gce-reboot
-  - name: gce-scalability
-    test_group_name: ci-kubernetes-e2e-gce-scalability
   - name: test-go
     test_group_name: ci-kubernetes-test-go
   - name: verify
     test_group_name: ci-kubernetes-verify-master
   - name: kubelet
     test_group_name: ci-kubernetes-node-kubelet
+  - name: federation-build
+    test_group_name: ci-kubernetes-federation-build
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+  - name: gce-etcd3
+    test_group_name: ci-kubernetes-e2e-gce-etcd3
+  - name: gci-gce
+    test_group_name: ci-kubernetes-e2e-gci-gce
   - name: gke
     test_group_name: ci-kubernetes-e2e-gke
+  - name: gci-gke
+    test_group_name: ci-kubernetes-e2e-gci-gke
+  - name: aws
+    test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: gce-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+  - name: gci-gce-slow
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gke-slow
+  - name: gci-gke-slow
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+  - name: gci-gce-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+  - name: gci-gke-serial
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial
   - name: gce-federation
     test_group_name: ci-kubernetes-e2e-gce-federation
+  - name: gce-alpha-features
+    test_group_name: ci-kubernetes-e2e-gce-alpha-features
+  - name: gci-gce-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+  - name: gce-audit
+    test_group_name: ci-kubernetes-e2e-gce-audit
+  - name: gci-gce-audit
+    test_group_name: ci-kubernetes-e2e-gci-gce-audit
+  - name: gce-scalability
+    test_group_name: ci-kubernetes-e2e-gce-scalability
+  - name: gci-gce-scalability
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gci-gce-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+  - name: gci-gke-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+  - name: gce-reboot
+    test_group_name: ci-kubernetes-e2e-gce-reboot
+  - name: gci-gce-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+  - name: gke-reboot
+    test_group_name: ci-kubernetes-e2e-gke-reboot
+  - name: gci-gke-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot
+  - name: soak-gce-deploy
+    test_group_name: ci-kubernetes-soak-gce-deploy
+  - name: soak-gce-test
+    test_group_name: ci-kubernetes-soak-gce-test
+  - name: soak-gce-gci-deploy
+    test_group_name: ci-kubernetes-soak-gce-gci-deploy
+  - name: soak-gce-gci-test
+    test_group_name: ci-kubernetes-soak-gce-gci-test
 
 - name: release-1.6-upgrade-skew
   dashboard_tab:
