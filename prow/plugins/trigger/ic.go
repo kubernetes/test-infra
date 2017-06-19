@@ -19,6 +19,7 @@ package trigger
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -86,7 +87,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	}
 
 	// Skip untrusted users.
-	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
+	orgMember, err := c.GitHubClient.IsTrustedMember(commentAuthor)
 	if err != nil {
 		return err
 	} else if !orgMember {
@@ -95,7 +96,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member", trustedOrg, trustedOrg)
+			resp := fmt.Sprintf("you can't request testing unless you are a member of one of these organizations: %s", strings.Join(c.GitHubClient.TrustedOrgs(), ","))
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}

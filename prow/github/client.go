@@ -36,12 +36,13 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
-	client  *http.Client
-	botName string
-	token   string
-	base    string
-	dry     bool
-	fake    bool
+	client      *http.Client
+	botName     string
+	token       string
+	base        string
+	dry         bool
+	fake        bool
+	trustedOrgs []string
 }
 
 const (
@@ -662,4 +663,41 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 		exitCodes: []int{200},
 	}, &issSearchResult)
 	return issSearchResult.Issues, err
+}
+
+// SetTrustedOrgs takes a comma deliminated list and sets the trustedOrg array for this client.
+func (c *Client) SetTrustedOrgs(trustedOrgsList string) {
+	c.trustedOrgs = strings.Split(trustedOrgsList, ",")
+}
+
+// IsTrustedOrg returns true if an org is in this client's trusted array.
+func (c *Client) IsTrustedOrg(org string) bool {
+
+	for _, trustedOrg := range c.trustedOrgs {
+		if trustedOrg == org {
+			return true
+		}
+	}
+	return false
+}
+
+// IsTrustedMember checks all trusted orgs for a user. It returns true is a use is in any of the trusted orgs.
+func (c *Client) IsTrustedMember(user string) (bool, error) {
+	c.log("IsTrustedMember", c.trustedOrgs, user)
+	for _, trustedOrg := range c.trustedOrgs {
+		trusted, err := c.IsMember(trustedOrg, user)
+		if err != nil {
+			return trusted, err
+		}
+		if trusted {
+			return true, nil
+		}
+
+	}
+	return false, nil
+}
+
+// TrustedOrgs returns this client's trusted org array
+func (c *Client) TrustedOrgs() []string {
+	return c.trustedOrgs
 }

@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -35,7 +36,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "ok to test". There's no need to look for previous
 		// "ok to test" comments since the PR was just opened!
-		member, err := c.GitHubClient.IsMember(trustedOrg, pr.PullRequest.User.Login)
+		member, err := c.GitHubClient.IsTrustedMember(pr.PullRequest.User.Login)
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
@@ -43,7 +44,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			return buildAll(c, pr.PullRequest)
 		} else {
 			c.Logger.Info("Asking PR author to join the org.")
-			if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
+			if err := askToJoin(c.GitHubClient, pr.PullRequest, c.GitHubClient.TrustedOrgs()); err != nil {
 				return fmt.Errorf("could not ask to join: %s", err)
 			}
 		}
@@ -73,10 +74,10 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func askToJoin(ghc githubClient, pr github.PullRequest) error {
+func askToJoin(ghc githubClient, pr github.PullRequest, trustedOrgs []string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
-I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`@k8s-bot ok to test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
+I'm waiting for a member from one of these organizations: [%s] to verify that this patch is reasonable to test. If it is, they should reply with ` + "`@k8s-bot ok to test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
 
 I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -85,7 +86,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 %s
 </details>
 `
-	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, plugins.AboutThisBot)
+	comment := fmt.Sprintf(commentTemplate, pr.User.Login, strings.Join(trustedOrgs, ","), strings.Join(trustedOrgs, ","), plugins.AboutThisBot)
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name
@@ -103,7 +104,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
-	orgMember, err := ghc.IsMember(trustedOrg, author)
+	orgMember, err := ghc.IsTrustedMember(author)
 	if err != nil {
 		return false, err
 	} else if orgMember {
@@ -129,7 +130,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
 			continue
 		}
 		// Ensure that the commenter is in the org.
-		commentAuthorMember, err := ghc.IsMember(trustedOrg, commentAuthor)
+		commentAuthorMember, err := ghc.IsTrustedMember(commentAuthor)
 		if err != nil {
 			return false, err
 		} else if commentAuthorMember {

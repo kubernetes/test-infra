@@ -59,6 +59,19 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	return false, nil
 }
 
+func (f *FakeClient) IsTrustedMember(user string) (bool, error) {
+	for _, m := range f.OrgMembers {
+		if m == user {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+func (f *FakeClient) TrustedOrgs() []string {
+
+	return []string{"kubernetes"}
+}
+
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }

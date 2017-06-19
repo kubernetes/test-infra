@@ -56,6 +56,7 @@ var (
 	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+	trustedOrgs       = flag.String("trusted-orgs", "kubernetes", "Comma deliminated list of trusted github organizations")
 )
 
 func main() {
@@ -112,6 +113,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting kube client.")
 		}
 	}
+	githubClient.SetTrustedOrgs(*trustedOrgs)
 
 	configAgent := &config.ConfigAgent{}
 	if err := configAgent.Start(*configPath); err != nil {

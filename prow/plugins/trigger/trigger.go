@@ -28,7 +28,6 @@ import (
 const (
 	pluginName = "trigger"
 	lgtmLabel  = "lgtm"
-	trustedOrg = "kubernetes"
 )
 
 func init() {
@@ -41,6 +40,7 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	BotName() string
 	IsMember(org, user string) (bool, error)
+	IsTrustedMember(user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
@@ -49,6 +49,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
+	TrustedOrgs() []string
 }
 
 type kubeClient interface {
@@ -60,6 +61,7 @@ type client struct {
 	KubeClient   kubeClient
 	Config       *config.Config
 	Logger       *logrus.Entry
+	trustedOrgs  []string
 }
 
 func getClient(pc plugins.PluginClient) client {
