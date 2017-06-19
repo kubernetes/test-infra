@@ -1470,7 +1470,6 @@ class JobTest(unittest.TestCase):
         'job-configs/bootstrap-maintenance.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
@@ -1564,70 +1563,32 @@ class JobTest(unittest.TestCase):
             'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml',
             check, use_json=True)
 
-    def test_bootstrap_pull_yaml(self):
-        is_modern = lambda n: 'kops' not in n
-        def check(job, name):
-            job_name = 'pull-%s' % name
-            self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertIn('json', job)
-            modern = is_modern(name)  # TODO(fejta): all modern
-            self.assertEquals(modern, job['json'])
-            if is_modern(name):
-                self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml',
-            check, use_json=is_modern)
-
     def test_bootstrap_security_pull(self):
-        is_modern = lambda n: n != 'kubernetes-e2e-kops-aws'
         def check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
-            self.assertIn('json', job)
-            modern = is_modern(name)
-            self.assertEquals(modern, job['json'])
-            if is_modern(name):
-                self.assertGreater(job['timeout'], 0)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
-            check, use_json=is_modern)
+            check, use_json=True)
 
     def test_bootstrap_security_match(self):
-        jobs1 = self.load_bootstrap_yaml('job-configs/kubernetes-jenkins-pull/bootstrap-pull.yaml')
         json_jobs = self.load_bootstrap_yaml(
             'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml')
 
-        jobs2 = self.load_bootstrap_yaml(
+        sec_jobs = self.load_bootstrap_yaml(
             'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
-        for name, job in jobs1.iteritems():
-            if job['repo-name'] == 'k8s.io/kubernetes':
-                job2 = jobs2[name]
-                for attr in job:
-                    if attr != 'repo-name':
-                        self.assertEquals(job[attr], job2[attr], job)
-        for name, job in jobs2.iteritems():
-            if job.get('json') and any(n in name for n in ['kubernetes-e2e', 'kubemark-e2e']):
-                jobs = json_jobs
-                skip_json = True
-            else:
-                jobs = jobs1
-                skip_json = False
-            self.assertIn(name, jobs)
-            job2 = jobs[name]
+        for name, job in sec_jobs.iteritems():
+            self.assertIn(name, json_jobs)
+            job2 = json_jobs[name]
             for attr in job:
                 if attr == 'repo-name':
-                    continue
-                if attr == 'json' and skip_json:
                     continue
                 self.assertEquals(job[attr], job2[attr])
 
