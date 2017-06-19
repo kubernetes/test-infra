@@ -305,6 +305,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1-5
 - name: ci-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke
+- name: ci-kubernetes-e2e-gke-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu
 - name: ci-kubernetes-e2e-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
@@ -1503,6 +1505,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
+  - name: gke-gpu
+    test_group_name: ci-kubernetes-e2e-gke-gpu
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
   - name: ubuntu-gke
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
