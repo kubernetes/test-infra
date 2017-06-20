@@ -1889,9 +1889,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
   - name: periodic-kubeadm-gce-1.6
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
-  - name: ci-gce-kubeadm-1.7
+  - name: kubeadm-gce-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: periodic-gce-kubeadm-1.7
+  - name: periodic-kubeadm-gce-1.7
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
