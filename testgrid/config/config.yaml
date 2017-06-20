@@ -896,11 +896,11 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
 # kubeadm tests
-- name: ci-kubernetes-e2e-kubeadm-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
-- name: ci-kubernetes-e2e-kubeadm-gce-1-6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7
+- name: ci-kubernetes-e2e-kubeadm-gce    
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce   
+- name: ci-kubernetes-e2e-kubeadm-gce-1-6   
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6   
+- name: ci-kubernetes-e2e-kubeadm-gce-1-7   
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-latest-upgrade-cluster
@@ -1327,12 +1327,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ha-master
   - name: gce-taint-evict
     test_group_name: ci-kubernetes-e2e-gce-taint-evict
-  - name: gce-kubeadm
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce
-  - name: gce-kubeadm-1.6
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
-  - name: gce-kubeadm-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
 
@@ -2823,3 +2817,10 @@ dashboard_groups:
   - google-gke
   - google-gke-staging
   - google-gke-prod
+
+- name: sig-cluster-lifecycle-all
+  dashboard_names:
+  - sig-cluster-lifecycle
+  - latest-upgrades
+  - 1.5-1.7-upgrade
+  - 1.6-1.7-upgrade
