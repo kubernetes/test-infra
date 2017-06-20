@@ -2807,11 +2807,6 @@ dashboards:
 #
 
 dashboard_groups:
-- name: 1.7-upgrade-all
-  dashboard_names:
-  - 1.5-1.7-upgrade
-  - 1.6-1.7-upgrade
-
 - name: gke-all
   dashboard_names:
   - google-gke
