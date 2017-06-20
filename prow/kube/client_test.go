@@ -96,48 +96,6 @@ func TestDeletePod(t *testing.T) {
 	}
 }
 
-func TestGetJob(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs/jo" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	jo, err := c.GetJob("jo")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if jo.Metadata.Name != "abcd" {
-		t.Errorf("Wrong name: %s", jo.Metadata.Name)
-	}
-}
-
-func TestListJobs(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"items": [{}, {}]}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	js, err := c.ListJobs(nil)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if len(js) != 2 {
-		t.Error("Expected two jobs.")
-	}
-}
-
 func TestGetPod(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -177,86 +135,6 @@ func TestCreatePod(t *testing.T) {
 	}
 	if po.Metadata.Name != "abcd" {
 		t.Errorf("Wrong name: %s", po.Metadata.Name)
-	}
-}
-
-func TestCreateJob(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	jo, err := c.CreateJob(Job{})
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if jo.Metadata.Name != "abcd" {
-		t.Errorf("Wrong name: %s", jo.Metadata.Name)
-	}
-}
-
-func TestDeleteJob(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs/jo" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	err := c.DeleteJob("jo")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
-func TestPatchJob(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPatch {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs/jo" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		if r.Header.Get("Content-Type") != "application/strategic-merge-patch+json" {
-			t.Errorf("Bad Content-Type: %s", r.Header.Get("Content-Type"))
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	_, err := c.PatchJob("jo", Job{})
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
-func TestPatchJobStatus(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPatch {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/batch/v1/namespaces/ns/jobs/jo/status" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		if r.Header.Get("Content-Type") != "application/strategic-merge-patch+json" {
-			t.Errorf("Bad Content-Type: %s", r.Header.Get("Content-Type"))
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	_, err := c.PatchJobStatus("jo", Job{})
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
 	}
 }
 
