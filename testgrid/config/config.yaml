@@ -2817,3 +2817,9 @@ dashboard_groups:
   dashboard_names:
   - 1.5-1.7-upgrade
   - 1.6-1.7-upgrade
+
+- name: gke-all
+  dashboard_names:
+  - google-gke
+  - google-gke-staging
+  - google-gke-prod
