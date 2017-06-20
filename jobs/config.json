@@ -3060,7 +3060,7 @@
     "args": [
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-prod.env",
-      "--timeout=480m",
+      "--timeout=600m",
       "--extract=gke",
       "--check-leaked-resources=true",
       "--check_version_skew=false"
@@ -3309,7 +3309,7 @@
     "args": [
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-staging.env",
-      "--timeout=480m",
+      "--timeout=600m",
       "--extract=gke",
       "--check-leaked-resources=true",
       "--check_version_skew=false"
@@ -4838,7 +4838,7 @@
     "args": [
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gke-prod.env",
-      "--timeout=480m",
+      "--timeout=600m",
       "--extract=gke",
       "--check-leaked-resources=true",
       "--check_version_skew=false"
@@ -5101,7 +5101,7 @@
     "args": [
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gke-staging.env",
-      "--timeout=480m",
+      "--timeout=600m",
       "--extract=gke",
       "--check-leaked-resources=true",
       "--check_version_skew=false"

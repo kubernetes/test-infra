@@ -612,108 +612,108 @@
         trigger-job: 'ci-kubernetes-build'
 
     # gke-version-pinned
-    # trigger-job: 'ci-kubernetes-build-1.4'
+    # trigger-job: 'ci-kubernetes-build-1.6'
     # TODO(spxtr) float with current release.
     - kubernetes-e2e-gke-pre-release:
         job-name: ci-kubernetes-e2e-gke-pre-release
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-test:
         job-name: ci-kubernetes-e2e-gke-test
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-subnet:
         job-name: ci-kubernetes-e2e-gke-subnet
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-staging:
         job-name: ci-kubernetes-e2e-gke-staging
-        jenkins-timeout: 600
-        timeout: 500
+        jenkins-timeout: 720
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-staging-parallel:
         job-name: ci-kubernetes-e2e-gke-staging-parallel
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-prod:
         job-name: ci-kubernetes-e2e-gke-prod
-        jenkins-timeout: 600
-        timeout: 500
+        jenkins-timeout: 720
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-prod-parallel:
         job-name: ci-kubernetes-e2e-gke-prod-parallel
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gke-prod-smoke:
         job-name: ci-kubernetes-e2e-gke-prod-smoke
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
 
     # gci-gke-version-pinned
-    # trigger-job: 'ci-kubernetes-build-1.4'
+    # trigger-job: 'ci-kubernetes-build-1.6'
     # TODO(spxtr) float with current release.
     - kubernetes-e2e-gci-gke-pre-release:
         job-name: ci-kubernetes-e2e-gci-gke-pre-release
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-test:
         job-name: ci-kubernetes-e2e-gci-gke-test
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-subnet:
         job-name: ci-kubernetes-e2e-gci-gke-subnet
         jenkins-timeout: 600
         timeout: 500
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-staging:
         job-name: ci-kubernetes-e2e-gci-gke-staging
-        jenkins-timeout: 600
-        timeout: 500
+        jenkins-timeout: 720
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-staging-parallel:
         job-name: ci-kubernetes-e2e-gci-gke-staging-parallel
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-prod:
         job-name: ci-kubernetes-e2e-gci-gke-prod
-        jenkins-timeout: 600
-        timeout: 500
+        jenkins-timeout: 720
+        timeout: 620
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-prod-parallel:
         job-name: ci-kubernetes-e2e-gci-gke-prod-parallel
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     - kubernetes-e2e-gci-gke-prod-smoke:
         job-name: ci-kubernetes-e2e-gci-gke-prod-smoke
         jenkins-timeout: 200
         timeout: 100
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.4'
+        trigger-job: 'ci-kubernetes-build-1.6'
     # END GKE
 
     # START KUBEMARK
