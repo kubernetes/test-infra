@@ -1811,13 +1811,13 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-sd-logging.env",
-      "--timeout=180m",
+      "--timeout=1320m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-instrumentation"
     ]
   },
   "ci-kubernetes-e2e-gce-serial": {
@@ -2763,13 +2763,13 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-sd-logging.env",
-      "--timeout=180m",
+      "--timeout=1320m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-instrumentation"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-serial": {

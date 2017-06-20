@@ -403,9 +403,9 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-sd-logging:
         job-name: ci-kubernetes-e2e-gce-sd-logging
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
+        jenkins-timeout: 1440
+        timeout: 1340
+        frequency: '0 0 * * *' # Daily at 09:00 CET
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-statefulset:
         job-name: ci-kubernetes-e2e-gce-statefulset
@@ -435,9 +435,9 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-sd-logging:
         job-name: ci-kubernetes-e2e-gci-gce-sd-logging
-        jenkins-timeout: 300
-        timeout: 200
-        frequency: 'H/5 * * * *' # At least every 30m
+        jenkins-timeout: 1440
+        timeout: 1340
+        frequency: '0 0 * * *' # Daily at 09:00 CET
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-statefulset:
         job-name: ci-kubernetes-e2e-gci-gce-statefulset
