@@ -1,6 +1,6 @@
 # Life of a Prow Job
 
-I comment `@k8s-bot test this` on a PR. GitHub creates a JSON object representing that action and sends a webhook to prow. [Here](https://github.com/kubernetes/test-infra/tree/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cmd/phony/examples) are some examples of webhook payloads.
+I comment `/test all` on a PR. GitHub creates a JSON object representing that action and sends a webhook to prow. [Here](https://github.com/kubernetes/test-infra/tree/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cmd/phony/examples) are some examples of webhook payloads.
 
 The webhook finds its way into the cluster with the help of an [Ingress](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cluster/ingress.yaml) object. This object has a rule stating that `/hook` goes to the [hook service](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cluster/hook_service.yaml) which is backed by the [hook deployment](https://github.com/kubernetes/test-infra/blob/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cluster/hook_deployment.yaml) and finally into the [hook program](https://github.com/kubernetes/test-infra/tree/c8829eef589a044126289cb5b4dc8e85db3ea22f/prow/cmd/hook) itself. The hook program deserializes the payload into the appropriate go struct, and then passes it along to each plugin.
 

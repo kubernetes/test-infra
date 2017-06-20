@@ -26,6 +26,6 @@ Command | Implemented By | Who can run it | Description
 `/release-note-none` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note-none` label
 `@kubernetes/sig-<some-github-team>` | prow [label](./prow/plugins/label) | kubernetes org members | adds the corresponding `sig` label
 `/retest` | prow [trigger](./prow/plugins/trigger) | anyone on trusted PRs | reruns failed tests
-`@k8s-bot test this` | prow [trigger](./prow/plugins/trigger) | anyone on trusted PRs | runs tests defined in [config.yaml](./prow/config.yaml)
-`@k8s-bot ok to test` | prow [trigger](./prow/plugins/trigger) | kubernetes org members | allows the PR author to `@k8s-bot test this`
-`@k8s-bot tell me a joke` | prow [yuks](./prow/plugins/yuks) | anyone | tells a bad joke, sometimes
+`/test all`<br>`/test <some-test-name>` | prow [trigger](./prow/plugins/trigger) | anyone on trusted PRs | runs tests defined in [config.yaml](./prow/config.yaml)
+`/ok-to-test` | prow [trigger](./prow/plugins/trigger) | kubernetes org members | allows the PR author to `/test all`
+`/joke` | prow [yuks](./prow/plugins/yuks) | anyone | tells a bad joke, sometimes
