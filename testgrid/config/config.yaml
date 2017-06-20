@@ -1883,6 +1883,19 @@ dashboards:
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl e2e tests in gke-1-7-1.6-gci-kubectl-skew-serial'
 
+- name: sig-cluster-lifecycle
+  dashboard_tab:
+  - name: kubeadm-gce-1.6
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
+  - name: periodic-kubeadm-gce-1.6
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
+  - name: ci-gce-kubeadm-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
+  - name: periodic-gce-kubeadm-1.7
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  - name: kubeadm-gce
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce
+
 - name: sig-network
   dashboard_tab:
   - name: cosbeta-no-snat
@@ -2460,8 +2473,6 @@ dashboards:
     test_group_name: ci-kubernetes-build-debian-unstable
   - name: gke-large-teardown
     test_group_name: ci-kubernetes-e2e-gke-large-teardown
-  - name: kubeadm-gce
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
   - name: garbage-collector
