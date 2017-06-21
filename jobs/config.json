@@ -5714,7 +5714,7 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-kubemark-gce-scale.env",
-      "--cluster=kubemark-2000",
+      "--cluster=kubemark-5000",
       "--test=false",
       "--docker-in-docker",
       "--kubemark",
