@@ -51,8 +51,8 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
-	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
-	dry   = flag.Bool("dry", false, "Dry run for testing. Uses API tokens but does not mutate.")
+	local  = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
+	dryRun = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -113,7 +113,7 @@ func main() {
 		if *githubBotName == "" {
 			logrus.Fatal("Must specify --github-bot-name.")
 		}
-		if *dry {
+		if *dryRun {
 			githubClient = github.NewDryRunClient(*githubBotName, oauthSecret)
 		} else {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)
@@ -124,7 +124,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting kube client.")
 		}
 
-		if !*dry && teamToken != "" {
+		if !*dryRun && teamToken != "" {
 			slackClient = slack.NewClient(teamToken)
 		}
 	}
