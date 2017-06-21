@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -26,15 +25,11 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers"
+	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/reports"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
-)
-
-var (
-	_ = fmt.Print
 )
 
 type mungeConfig struct {
