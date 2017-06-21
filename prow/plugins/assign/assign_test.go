@@ -21,81 +21,19 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
-type fakeClient struct {
-	assigned   map[string]int
-	unassigned map[string]int
-
-	requested    map[string]int
-	unrequested  map[string]int
-	contributors map[string]bool
-
-	commented bool
-}
-
-func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []string) error {
-	for _, who := range assignees {
-		c.unassigned[who] += 1
-	}
-
-	return nil
-}
-
-func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
-	var missing github.MissingUsers
-	for _, who := range assignees {
-		if who != "evil" {
-			c.assigned[who] += 1
-		} else {
-			missing.Users = append(missing.Users, who)
-		}
-	}
-
-	if len(missing.Users) == 0 {
-		return nil
-	}
-	return missing
-}
-
-func (c *fakeClient) RequestReview(org, repo string, number int, logins []string) error {
-	var missing github.MissingUsers
-	for _, user := range logins {
-		if c.contributors[user] {
-			c.requested[user] += 1
-		} else {
-			missing.Users = append(missing.Users, user)
-		}
-	}
-	if len(missing.Users) > 0 {
-		return missing
-	}
-	return nil
-}
-
-func (c *fakeClient) UnrequestReview(org, repo string, number int, logins []string) error {
-	for _, user := range logins {
-		c.unrequested[user] += 1
-	}
-	return nil
-}
-
-func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
-	c.commented = comment != ""
-	return nil
-}
-
-func NewFakeClient(contribs []string) *fakeClient {
-	c := &fakeClient{
-		contributors: make(map[string]bool),
-		requested:    make(map[string]int),
-		unrequested:  make(map[string]int),
-		assigned:     make(map[string]int),
-		unassigned:   make(map[string]int),
+func NewFakeClient(contribs []string) *fakegithub.FakeClient {
+	c := &fakegithub.FakeClient{
+		Contributors: make(map[string]bool),
+		Requested:    make(map[string]int),
+		Unrequested:  make(map[string]int),
+		Assigned:     make(map[string]int),
+		Unassigned:   make(map[string]int),
 	}
 	for _, user := range contribs {
-		c.contributors[user] = true
+		c.Contributors[user] = true
 	}
 	return c
 }
@@ -393,47 +331,47 @@ func TestAssignAndReview(t *testing.T) {
 			continue
 		}
 
-		if tc.commented != fc.commented {
-			t.Errorf("For case %s, expect commented: %v, got commented %v", tc.name, tc.commented, fc.commented)
+		if tc.commented != fc.Commented {
+			t.Errorf("For case %s, expect commented: %v, got commented %v", tc.name, tc.commented, fc.Commented)
 		}
 
-		if len(fc.assigned) != len(tc.assigned) {
-			t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.assigned, tc.assigned)
+		if len(fc.Assigned) != len(tc.assigned) {
+			t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.Assigned, tc.assigned)
 		} else {
 			for _, who := range tc.assigned {
-				if n, ok := fc.assigned[who]; !ok || n < 1 {
-					t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.assigned, tc.assigned)
+				if n, ok := fc.Assigned[who]; !ok || n < 1 {
+					t.Errorf("For case %s, assigned actual %v != expected %s", tc.name, fc.Assigned, tc.assigned)
 					break
 				}
 			}
 		}
-		if len(fc.unassigned) != len(tc.unassigned) {
-			t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.unassigned, tc.unassigned)
+		if len(fc.Unassigned) != len(tc.unassigned) {
+			t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.Unassigned, tc.unassigned)
 		} else {
 			for _, who := range tc.unassigned {
-				if n, ok := fc.unassigned[who]; !ok || n < 1 {
-					t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.unassigned, tc.unassigned)
+				if n, ok := fc.Unassigned[who]; !ok || n < 1 {
+					t.Errorf("For case %s, unassigned %v != %s", tc.name, fc.Unassigned, tc.unassigned)
 					break
 				}
 			}
 		}
 
-		if len(fc.requested) != len(tc.requested) {
-			t.Errorf("For case %s, requested actual %v != expected %s", tc.name, fc.requested, tc.requested)
+		if len(fc.Requested) != len(tc.requested) {
+			t.Errorf("For case %s, requested actual %v != expected %s", tc.name, fc.Requested, tc.requested)
 		} else {
 			for _, who := range tc.requested {
-				if n, ok := fc.requested[who]; !ok || n < 1 {
-					t.Errorf("For case %s, requested actual %v != expected %s", tc.name, fc.requested, tc.requested)
+				if n, ok := fc.Requested[who]; !ok || n < 1 {
+					t.Errorf("For case %s, requested actual %v != expected %s", tc.name, fc.Requested, tc.requested)
 					break
 				}
 			}
 		}
-		if len(fc.unrequested) != len(tc.unrequested) {
-			t.Errorf("For case %s, unrequested %v != %s", tc.name, fc.unrequested, tc.unrequested)
+		if len(fc.Unrequested) != len(tc.unrequested) {
+			t.Errorf("For case %s, unrequested %v != %s", tc.name, fc.Unrequested, tc.unrequested)
 		} else {
 			for _, who := range tc.unrequested {
-				if n, ok := fc.unrequested[who]; !ok || n < 1 {
-					t.Errorf("For case %s, unrequested %v != %s", tc.name, fc.unrequested, tc.unrequested)
+				if n, ok := fc.Unrequested[who]; !ok || n < 1 {
+					t.Errorf("For case %s, unrequested %v != %s", tc.name, fc.Unrequested, tc.unrequested)
 					break
 				}
 			}

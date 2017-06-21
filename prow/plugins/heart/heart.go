@@ -47,12 +47,6 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
 }
 
-type githubClient interface {
-	CreateCommentReaction(org, repo string, ID int, reaction string) error
-	CreateIssueReaction(org, repo string, ID int, reaction string) error
-	GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error)
-}
-
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	return handleIC(pc.GitHubClient, pc.Logger, ic)
 }
@@ -61,7 +55,7 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 	return handlePR(pc.GitHubClient, pc.Logger, pre)
 }
 
-func handleIC(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handleIC(gc plugins.GithubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil
@@ -83,7 +77,7 @@ func handleIC(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) e
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handlePR(gc plugins.GithubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
 	// Only consider newly opened PRs
 	if pre.Action != "opened" {
 		return nil

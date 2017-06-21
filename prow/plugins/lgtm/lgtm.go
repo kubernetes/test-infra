@@ -53,17 +53,8 @@ func init() {
 	plugins.RegisterReviewCommentEventHandler(pluginName, handleReviewComment)
 }
 
-type githubClient interface {
-	IsMember(owner, login string) (bool, error)
-	AddLabel(owner, repo string, number int, label string) error
-	AssignIssue(owner, repo string, number int, assignees []string) error
-	CreateComment(owner, repo string, number int, comment string) error
-	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-}
-
 // prLabelChecker returns a function that lazily checks if a label is applied to a pr.
-func prLabelChecker(gc githubClient, log *logrus.Entry, org, repo string, num int) func(string) (bool, error) {
+func prLabelChecker(gc plugins.GithubClient, log *logrus.Entry, org, repo string, num int) func(string) (bool, error) {
 	return func(label string) (bool, error) {
 		labels, err := gc.GetIssueLabels(org, repo, num)
 		if err != nil {
@@ -143,7 +134,7 @@ func handleReviewComment(pc plugins.PluginClient, rce github.ReviewCommentEvent)
 	return handle(pc.GitHubClient, pc.Logger, e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *event) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, e *event) error {
 	if e.action != "created" && e.action != "submitted" {
 		return nil
 	}

@@ -22,22 +22,8 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 )
-
-type fakeClient struct {
-	commented bool
-	open      bool
-}
-
-func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
-	c.commented = true
-	return nil
-}
-
-func (c *fakeClient) ReopenIssue(owner, repo string, number int) error {
-	c.open = true
-	return nil
-}
 
 func TestOpenComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
@@ -106,7 +92,7 @@ func TestOpenComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClient{}
+		fc := &fakegithub.FakeClient{}
 		ice := github.IssueCommentEvent{
 			Action: tc.action,
 			Comment: github.IssueComment{
@@ -124,14 +110,14 @@ func TestOpenComment(t *testing.T) {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
-		if tc.shouldReopen && !fc.open {
+		if tc.shouldReopen && !fc.Open {
 			t.Errorf("For case %s, should have reopened but didn't.", tc.name)
-		} else if !tc.shouldReopen && fc.open {
+		} else if !tc.shouldReopen && fc.Open {
 			t.Errorf("For case %s, should not have reopened but did.", tc.name)
 		}
-		if tc.shouldComment && !fc.commented {
+		if tc.shouldComment && !fc.Commented {
 			t.Errorf("For case %s, should have commented but didn't.", tc.name)
-		} else if !tc.shouldComment && fc.commented {
+		} else if !tc.shouldComment && fc.Commented {
 			t.Errorf("For case %s, should not have commented but did.", tc.name)
 		}
 	}

@@ -45,6 +45,17 @@ type FakeClient struct {
 
 	// org/repo#number:assignee
 	AssigneesAdded []string
+
+	Assigned   map[string]int
+	Unassigned map[string]int
+
+	Requested    map[string]int
+	Unrequested  map[string]int
+	Contributors map[string]bool
+
+	Commented bool
+	Closed    bool
+	Open      bool
 }
 
 func (f *FakeClient) BotName() string {
@@ -65,11 +76,14 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 }
 
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
-	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
-		ID:   f.IssueCommentID,
-		Body: comment,
-	})
-	f.IssueCommentID++
+	if f.IssueComments != nil {
+		f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
+			ID:   f.IssueCommentID,
+			Body: comment,
+		})
+		f.IssueCommentID++
+	}
+	f.Commented = comment != ""
 	return nil
 }
 
@@ -161,8 +175,13 @@ func (f *FakeClient) FindIssues(query string) ([]github.Issue, error) {
 
 func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
 	var m github.MissingUsers
+	if f.Assigned == nil {
+		f.Assigned = make(map[string]int)
+	}
 	for _, a := range assignees {
-		if a == "not-in-the-org" {
+		if a != "not-in-the-org" && a != "evil" {
+			f.Assigned[a] += 1
+		} else {
 			m.Users = append(m.Users, a)
 			continue
 		}
@@ -172,4 +191,48 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 		return nil
 	}
 	return m
+}
+
+func (f *FakeClient) CloseIssue(org, repo string, number int) error {
+	f.Closed = true
+	return nil
+}
+
+func (c *FakeClient) ReopenIssue(org, repo string, number int) error {
+	c.Open = true
+	return nil
+}
+
+func (c *FakeClient) RequestReview(org, repo string, number int, logins []string) error {
+	var missing github.MissingUsers
+	for _, user := range logins {
+		if c.Contributors[user] {
+			c.Requested[user] += 1
+		} else {
+			missing.Users = append(missing.Users, user)
+		}
+	}
+	if len(missing.Users) > 0 {
+		return missing
+	}
+	return nil
+}
+
+func (c *FakeClient) UnassignIssue(org, repo string, number int, logins []string) error {
+	for _, who := range logins {
+		c.Unassigned[who] += 1
+	}
+
+	return nil
+}
+
+func (c *FakeClient) UnrequestReview(org, repo string, number int, logins []string) error {
+	for _, user := range logins {
+		c.Unrequested[user] += 1
+	}
+	return nil
+}
+
+func (c *FakeClient) EditComment(org, repo string, ID int, comment string) error {
+	return nil
 }

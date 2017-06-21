@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
@@ -50,20 +51,11 @@ type jenkinsClient interface {
 	Status(job, id string) (*jenkins.Status, error)
 }
 
-type githubClient interface {
-	BotName() string
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
-}
-
 type Controller struct {
 	kc     kubeClient
 	pkc    kubeClient
 	jc     jenkinsClient
-	ghc    githubClient
+	ghc    plugins.GithubClient
 	totURL string
 
 	reports []kube.ProwJob

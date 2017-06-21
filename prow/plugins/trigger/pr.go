@@ -73,7 +73,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func askToJoin(ghc githubClient, pr github.PullRequest) error {
+func askToJoin(ghc plugins.GithubClient, pr github.PullRequest) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
@@ -100,7 +100,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 // trustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok to test
 // comments by org members.
-func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
+func trustedPullRequest(ghc plugins.GithubClient, pr github.PullRequest) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
 	orgMember, err := ghc.IsMember(trustedOrg, author)

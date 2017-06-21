@@ -51,18 +51,11 @@ func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 }
 
-type githubClient interface {
-	IsMember(org, user string) (bool, error)
-	CreateComment(owner, repo string, number int, comment string) error
-	AddLabel(owner, repo string, number int, label string) error
-	RemoveLabel(owner, repo string, number int, label string) error
-}
-
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider PRs and new comments.
 	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil

@@ -33,16 +33,11 @@ func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 }
 
-type githubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-	CloseIssue(owner, repo string, number int) error
-}
-
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, ic)
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider open issues and new comments.
 	if ic.Issue.State != "open" || ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil

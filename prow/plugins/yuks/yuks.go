@@ -43,10 +43,6 @@ func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 }
 
-type githubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-}
-
 type joker interface {
 	readJoke() (string, error)
 }
@@ -84,7 +80,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 	return handle(pc.GitHubClient, pc.Logger, ic, jokeUrl)
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j joker) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, ic github.IssueCommentEvent, j joker) error {
 	// Only consider new comments.
 	if ic.Action != "created" {
 		return nil
