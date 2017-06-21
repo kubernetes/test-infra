@@ -33,6 +33,7 @@ class Database(object):
             create table if not exists build(gcs_path primary key, started_json, finished_json, finished_time);
             create table if not exists file(path string primary key, data);
             create table if not exists build_junit_grabbed(build_id integer primary key);
+            create index if not exists build_finished_time_idx on build(finished_time)
             ''')
 
     def commit(self):
