@@ -32,6 +32,8 @@ CLUSTER ?= prow
 REGISTRY ?= gcr.io
 PUSH ?= gcloud docker -- push
 
+DOCKER_LABELS=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
+
 update-config: get-cluster-credentials
 	kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 
@@ -54,7 +56,7 @@ test:
 
 hook-image:
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
-	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" cmd/hook
+	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" $(DOCKER_LABELS) cmd/hook
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)"
 
 hook-deployment: get-cluster-credentials
@@ -65,7 +67,7 @@ hook-service: get-cluster-credentials
 
 sinker-image:
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
-	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" cmd/sinker
+	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" $(DOCKER_LABELS) cmd/sinker
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)"
 
 sinker-deployment: get-cluster-credentials
@@ -73,7 +75,7 @@ sinker-deployment: get-cluster-credentials
 
 deck-image:
 	CGO_ENABLED=0 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
-	docker build -t "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)" cmd/deck
+	docker build -t "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)" $(DOCKER_LABELS) cmd/deck
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)"
 
 deck-deployment: get-cluster-credentials
@@ -84,7 +86,7 @@ deck-service: get-cluster-credentials
 
 splice-image:
 	CGO_ENABLED=0 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
-	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" cmd/splice
+	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
 
 splice-deployment: get-cluster-credentials
@@ -92,7 +94,7 @@ splice-deployment: get-cluster-credentials
 
 tot-image:
 	CGO_ENABLED=0 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
-	docker build -t "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)" cmd/tot
+	docker build -t "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)" $(DOCKER_LABELS) cmd/tot
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)"
 
 tot-deployment: get-cluster-credentials
@@ -103,7 +105,7 @@ tot-service: get-cluster-credentials
 
 horologium-image:
 	CGO_ENABLED=0 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
-	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" cmd/horologium
+	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" $(DOCKER_LABELS) cmd/horologium
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)"
 
 horologium-deployment: get-cluster-credentials
@@ -111,7 +113,7 @@ horologium-deployment: get-cluster-credentials
 
 plank-image:
 	CGO_ENABLED=0 go build -o cmd/plank/plank k8s.io/test-infra/prow/cmd/plank
-	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" cmd/plank
+	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" $(DOCKER_LABELS) cmd/plank
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)"
 
 plank-deployment: get-cluster-credentials
