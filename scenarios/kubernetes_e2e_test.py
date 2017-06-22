@@ -52,6 +52,27 @@ FAKE_WORKSPACE_STATUS_V1_6 = 'STABLE_BUILD_GIT_COMMIT 84febd4537dd190518657405b7
 'STABLE_gitMajor 1\n' \
 'STABLE_gitMinor 6+\n'
 
+FAKE_DESCRIBE_FROM_FAMILY_RESPONSE = """
+archiveSizeBytes: '1581831882'
+creationTimestamp: '2017-06-16T10:37:57.681-07:00'
+description: 'Google, Container-Optimized OS, 59-9460.64.0 stable, Kernel: ChromiumOS-4.4.52
+  Kubernetes: 1.6.4 Docker: 1.11.2'
+diskSizeGb: '10'
+family: cos-stable
+id: '2388425242502080922'
+kind: compute#image
+labelFingerprint: 42WmSpB8rSM=
+licenses:
+- https://www.googleapis.com/compute/v1/projects/cos-cloud/global/licenses/cos
+name: cos-stable-59-9460-64-0
+rawDisk:
+  containerType: TAR
+  source: ''
+selfLink: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-59-9460-64-0
+sourceType: RAW
+status: READY
+"""
+
 def fake_pass(*_unused, **_unused2):
     """Do nothing."""
     pass
@@ -142,6 +163,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         """fake a workstatus blob for v1.6."""
         self.callstack.append(string.join(cmd))
         return FAKE_WORKSPACE_STATUS_V1_6
+
+    def fake_output_get_latest_image(self, *cmd):
+        """fake a `gcloud compute images describe-from-family` response."""
+        self.callstack.append(string.join(cmd))
+        return FAKE_DESCRIBE_FROM_FAMILY_RESPONSE
 
     def test_local(self):
         """Make sure local mode is fine overall."""
@@ -385,6 +411,22 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('WORKSPACE=/workspace', mode.cmd)
         self.assertNotIn('GOPATH=/something/else', mode.cmd)
         self.assertIn('USER=jenkins', mode.cmd)
+
+    def test_image_family(self):
+        """Make sure --image-family fetches the latest image correctly."""
+        args = kubernetes_e2e.parse_args([
+            '--mode=local',
+            '--image-family=cos-stable',
+            '--image-project=cos-cloud'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(
+                kubernetes_e2e,
+                'check_output',
+                self.fake_output_get_latest_image):
+                kubernetes_e2e.main(args)
+        self.assertEqual(
+            self.envs['KUBE_GCE_NODE_IMAGE'], 'cos-stable-59-9460-64-0')
+        self.assertEqual(self.envs['KUBE_GCE_NODE_PROJECT'], 'cos-cloud')
 
 if __name__ == '__main__':
     unittest.main()

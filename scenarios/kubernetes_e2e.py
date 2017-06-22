@@ -179,6 +179,26 @@ class LocalMode(object):
         """Add specified k8s.io repos (noop)."""
         pass
 
+    def use_latest_image(self, image_family, image_project):
+        """Gets the latest image from the image_family in the image_project."""
+        out = check_output(
+            'gcloud', 'compute', 'images', 'describe-from-family',
+            image_family, '--project=%s' % image_project)
+        latest_image = next(
+            (line[6:].strip() for line in out.split('\n') if (
+                line.startswith('name: '))),
+            None)
+        if not latest_image:
+            raise ValueError(
+                'Failed to get the latest image from family %s in project %s' % (
+                    image_family, image_project))
+        # TODO(yguo0905): Support this in GKE.
+        self.add_environment(
+            'KUBE_GCE_NODE_IMAGE=%s' % latest_image,
+            'KUBE_GCE_NODE_PROJECT=%s' % image_project)
+        print >>sys.stderr, 'Set KUBE_GCE_NODE_IMAGE=%s' % latest_image
+        print >>sys.stderr, 'Set KUBE_GCE_NODE_PROJECT=%s' % image_project
+
     def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
@@ -423,6 +443,9 @@ def main(args):
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
+    if args and args.image_family and args.image_project:
+        mode.use_latest_image(args.image_family, args.image_project)
+
     mode.start(runner_args)
 
 def create_parser():
@@ -432,6 +455,12 @@ def create_parser():
         '--mode', default='docker', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+    parser.add_argument(
+        '--image-family',
+        help='The image family from which to fetch the latest image')
+    parser.add_argument(
+        '--image-project',
+        help='The image project from which to fetch the test images')
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
@@ -492,6 +521,13 @@ def parse_args(args=None):
     parser = create_parser()
     args, extra = parser.parse_known_args(args)
     args.kubetest_args += extra
+
+    if (args.image_family or args.image_project) and args.mode == 'docker':
+        raise ValueError(
+            '--image-family / --image-project is not supported in docker mode')
+    if bool(args.image_family) != bool(args.image_project):
+        raise ValueError(
+            '--image-family and --image-project must be both set or unset')
     return args
 
 
