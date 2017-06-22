@@ -77,6 +77,9 @@ type PullRequest struct {
 	Base               PullRequestBranch `json:"base"`
 	Head               PullRequestBranch `json:"head"`
 	Body               string            `json:"body"`
+	Merged             bool              `json:"merged"`
+	Mergeable          *bool             `json:"mergeable,omitempty"`
+	State              string            `json:"state"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
 }
 
@@ -136,7 +139,7 @@ type Issue struct {
 	Body      string  `json:"body"`
 
 	// This will be non-nil if it is a pull request.
-	PullRequest *struct{} `json:"pull_request,omitempty"`
+	PullRequest *PullRequest `json:"pull_request,omitempty"`
 }
 
 func (i Issue) IsAssignee(login string) bool {

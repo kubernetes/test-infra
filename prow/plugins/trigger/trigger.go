@@ -49,6 +49,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
+	FindIssues(query string) ([]github.Issue, error)
 }
 
 type kubeClient interface {

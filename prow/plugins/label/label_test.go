@@ -70,7 +70,7 @@ func getFakeRepoIssueComment(commentBody, commenter string, repoLabels, issueLab
 		Issue: github.Issue{
 			User:        github.User{Login: "a"},
 			Number:      prNumber,
-			PullRequest: &struct{}{},
+			PullRequest: &github.PullRequest{},
 			Labels:      startingLabels,
 		},
 		Action: "created",
