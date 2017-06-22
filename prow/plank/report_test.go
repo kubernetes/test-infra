@@ -17,6 +17,7 @@ limitations under the License.
 package plank
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -24,7 +25,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-func TestPRLink(t *testing.T) {
+func TestTemplate(t *testing.T) {
 	var testcases = []struct {
 		org    string
 		repo   string
@@ -57,7 +58,8 @@ func TestPRLink(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		prl := prLink(kube.ProwJob{
+		var b bytes.Buffer
+		if err := tmpl.Execute(&b, &kube.ProwJob{
 			Spec: kube.ProwJobSpec{
 				Refs: kube.Refs{
 					Org:  tc.org,
@@ -69,9 +71,13 @@ func TestPRLink(t *testing.T) {
 					},
 				},
 			},
-		})
-		if prl[len(guberPrefix):] != tc.suffix {
-			t.Errorf("Expected failed case %+v, got %s", tc, prl)
+		}); err != nil {
+			t.Errorf("Error executing template: %v", err)
+			continue
+		}
+		expectedPath := "https://k8s-gubernator.appspot.com/pr/" + tc.suffix
+		if !strings.Contains(b.String(), expectedPath) {
+			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
 	}
 }
