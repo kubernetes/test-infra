@@ -2240,6 +2240,22 @@ class JobTest(unittest.TestCase):
                             len(extracts), expected, job))
                     self.assertTrue(has_matching_env, job)
                     self.assertTrue(right_mode, job)
+
+                    has_image_family = any(
+                        [x for x in args if x.startswith('--image-family')])
+                    has_image_project = any(
+                        [x for x in args if x.startswith('--image-project')])
+                    local_mode = any(
+                        [x for x in args if x.startswith('--mode=local')])
+                    if (
+                            (has_image_family or has_image_project)
+                            and not local_mode):
+                        self.fail('--image-family / --image-project is not '
+                                  'supported in docker mode: %s' % job)
+                    if has_image_family != has_image_project:
+                        self.fail('--image-family and --image-project must be'
+                                  'both set or unset: %s' % job)
+
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', args)
                         if 'gke' in job:
