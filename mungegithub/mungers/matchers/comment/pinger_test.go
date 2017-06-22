@@ -19,8 +19,6 @@ package comment
 import (
 	"testing"
 	"time"
-
-	"github.com/google/go-github/github"
 )
 
 func timeAgo(d time.Duration) *time.Time {
@@ -28,16 +26,16 @@ func timeAgo(d time.Duration) *time.Time {
 	return &t
 }
 
-func makeComment(body, author string, beforeNow time.Duration) *github.IssueComment {
-	return &github.IssueComment{
+func makeComment(body, author string, beforeNow time.Duration) *Comment {
+	return &Comment{
 		Body:      &body,
-		User:      &github.User{Login: &author},
+		Author:    &author,
 		CreatedAt: timeAgo(beforeNow),
 	}
 }
 
 func TestMaxReachNotReachedNoStart(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 10*time.Hour),
 	}
@@ -50,7 +48,7 @@ func TestMaxReachNotReachedNoStart(t *testing.T) {
 }
 
 func TestMaxReachNotReachedWithStart(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 14*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 12*time.Hour),
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
@@ -65,7 +63,7 @@ func TestMaxReachNotReachedWithStart(t *testing.T) {
 }
 
 func TestMaxReachNoLimit(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 14*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 12*time.Hour),
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
@@ -80,7 +78,7 @@ func TestMaxReachNoLimit(t *testing.T) {
 }
 
 func TestNotification(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
 	}
 
@@ -95,7 +93,7 @@ func TestNotification(t *testing.T) {
 }
 
 func TestNotificationNilTimePeriod(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 14*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 13*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 12*time.Hour),
@@ -110,7 +108,7 @@ func TestNotificationNilTimePeriod(t *testing.T) {
 }
 
 func TestNotificationTimePeriodNotReached(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 5*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 3*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 1*time.Hour),
@@ -123,7 +121,7 @@ func TestNotificationTimePeriodNotReached(t *testing.T) {
 }
 
 func TestNotificationTimePeriodReached(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 4*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 3*time.Hour),
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 2*time.Hour),
@@ -136,7 +134,7 @@ func TestNotificationTimePeriodReached(t *testing.T) {
 }
 
 func TestNotificationStartDate(t *testing.T) {
-	comments := []*github.IssueComment{}
+	comments := []*Comment{}
 	notif := NewPinger("NOTIF").SetTimePeriod(10*time.Hour).PingNotification(comments, "who", timeAgo(2*time.Hour))
 	if notif != nil {
 		t.Error("PingNotification shouldn't have created a notif")

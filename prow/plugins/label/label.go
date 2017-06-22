@@ -66,7 +66,7 @@ type githubClient interface {
 	IsMember(org, user string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetLabels(owner, repo string) ([]github.Label, error)
+	GetRepoLabels(owner, repo string) ([]github.Label, error)
 	BotName() string
 }
 
@@ -155,7 +155,7 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) 
 		return nil
 	}
 
-	labels, err := gc.GetLabels(ae.org, ae.repo)
+	labels, err := gc.GetRepoLabels(ae.org, ae.repo)
 	if err != nil {
 		return err
 	}

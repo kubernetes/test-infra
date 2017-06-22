@@ -16,13 +16,11 @@ limitations under the License.
 
 package comment
 
-import "github.com/google/go-github/github"
-
 // True is a matcher that is always true
 type True struct{}
 
 // Match returns true no matter what
-func (t True) Match(comment *github.IssueComment) bool {
+func (t True) Match(comment *Comment) bool {
 	return true
 }
 
@@ -30,7 +28,7 @@ func (t True) Match(comment *github.IssueComment) bool {
 type False struct{}
 
 // Match returns false no matter what
-func (t False) Match(comment *github.IssueComment) bool {
+func (t False) Match(comment *Comment) bool {
 	return false
 }
 
@@ -38,7 +36,7 @@ func (t False) Match(comment *github.IssueComment) bool {
 type And []Matcher
 
 // Match returns true if all the matcher in the list matches
-func (a And) Match(comment *github.IssueComment) bool {
+func (a And) Match(comment *Comment) bool {
 	for _, matcher := range []Matcher(a) {
 		if !matcher.Match(comment) {
 			return false
@@ -51,7 +49,7 @@ func (a And) Match(comment *github.IssueComment) bool {
 type Or []Matcher
 
 // Match returns true if one of the matcher in the list matches
-func (o Or) Match(comment *github.IssueComment) bool {
+func (o Or) Match(comment *Comment) bool {
 	for _, matcher := range []Matcher(o) {
 		if matcher.Match(comment) {
 			return true
@@ -66,6 +64,6 @@ type Not struct {
 }
 
 // Match returns true if the matcher would return false, and vice-versa
-func (n Not) Match(comment *github.IssueComment) bool {
+func (n Not) Match(comment *Comment) bool {
 	return !n.Matcher.Match(comment)
 }

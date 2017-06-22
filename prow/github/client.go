@@ -411,12 +411,12 @@ func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, erro
 	return &combinedStatus, err
 }
 
-func (c *Client) GetLabels(org, repo string) ([]Label, error) {
-	c.log("GetLabel", org, repo)
+// getLabels is a helper function that retrieves a paginated list of labels from a github URI path.
+func (c *Client) getLabels(path string) ([]Label, error) {
 	if c.fake {
 		return nil, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo)
+	nextURL := strings.Join([]string{c.base, path}, "")
 	var labels []Label
 	for nextURL != "" {
 		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
@@ -441,6 +441,16 @@ func (c *Client) GetLabels(org, repo string) ([]Label, error) {
 		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
 	}
 	return labels, nil
+}
+
+func (c *Client) GetRepoLabels(org, repo string) ([]Label, error) {
+	c.log("GetRepoLabels", org, repo)
+	return c.getLabels(fmt.Sprintf("/repos/%s/%s/labels", org, repo))
+}
+
+func (c *Client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
+	c.log("GetIssueLabels", org, repo, number)
+	return c.getLabels(fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number))
 }
 
 func (c *Client) AddLabel(org, repo string, number int, label string) error {

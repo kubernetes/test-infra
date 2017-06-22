@@ -21,7 +21,6 @@ go_test(
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//vendor:github.com/google/go-github/github"],
 )
 
 go_library(

@@ -33,12 +33,14 @@ import (
 )
 
 var (
-	allPlugins           = map[string]struct{}{}
-	issueHandlers        = map[string]IssueHandler{}
-	issueCommentHandlers = map[string]IssueCommentHandler{}
-	pullRequestHandlers  = map[string]PullRequestHandler{}
-	pushEventHandlers    = map[string]PushEventHandler{}
-	statusEventHandlers  = map[string]StatusEventHandler{}
+	allPlugins                 = map[string]struct{}{}
+	issueHandlers              = map[string]IssueHandler{}
+	issueCommentHandlers       = map[string]IssueCommentHandler{}
+	pullRequestHandlers        = map[string]PullRequestHandler{}
+	pushEventHandlers          = map[string]PushEventHandler{}
+	reviewEventHandlers        = map[string]ReviewEventHandler{}
+	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
+	statusEventHandlers        = map[string]StatusEventHandler{}
 )
 
 type IssueHandler func(PluginClient, github.IssueEvent) error
@@ -83,6 +85,20 @@ type PushEventHandler func(PluginClient, github.PushEvent) error
 func RegisterPushEventHandler(name string, fn PushEventHandler) {
 	allPlugins[name] = struct{}{}
 	pushEventHandlers[name] = fn
+}
+
+type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
+
+func RegisterReviewEventHandler(name string, fn ReviewEventHandler) {
+	allPlugins[name] = struct{}{}
+	reviewEventHandlers[name] = fn
+}
+
+type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
+
+func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler) {
+	allPlugins[name] = struct{}{}
+	reviewCommentEventHandlers[name] = fn
 }
 
 type PluginAgent struct {
@@ -185,6 +201,36 @@ func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRe
 	hs := map[string]PullRequestHandler{}
 	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := pullRequestHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
+	return hs
+}
+
+// ReviewEventHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) ReviewEventHandlers(owner, repo string) map[string]ReviewEventHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]ReviewEventHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := reviewEventHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
+	return hs
+}
+
+// ReviewCommentEventHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) ReviewCommentEventHandlers(owner, repo string) map[string]ReviewCommentEventHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]ReviewCommentEventHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := reviewCommentEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}

@@ -19,18 +19,16 @@ package comment
 import (
 	"regexp"
 	"testing"
-
-	"github.com/google/go-github/github"
 )
 
-func makeCommentWithBody(body string) *github.IssueComment {
-	return &github.IssueComment{
+func makeCommentWithBody(body string) *Comment {
+	return &Comment{
 		Body: &body,
 	}
 }
 
 func TestNotificationName(t *testing.T) {
-	if NotificationName("MESSAGE").Match(&github.IssueComment{}) {
+	if NotificationName("MESSAGE").Match(&Comment{}) {
 		t.Error("Shouldn't match nil body")
 	}
 	if NotificationName("MESSAGE").Match(makeCommentWithBody("MESSAGE WRONG FORMAT")) {
@@ -48,7 +46,7 @@ func TestNotificationName(t *testing.T) {
 }
 
 func TestCommandName(t *testing.T) {
-	if CommandName("COMMAND").Match(&github.IssueComment{}) {
+	if CommandName("COMMAND").Match(&Comment{}) {
 		t.Error("Shouldn't match nil body")
 	}
 	if CommandName("COMMAND").Match(makeCommentWithBody("COMMAND WRONG FORMAT")) {
@@ -69,13 +67,13 @@ func TestCommandArgmuents(t *testing.T) {
 	var testcases = []struct {
 		name        string
 		re          string
-		comment     *github.IssueComment
+		comment     *Comment
 		shouldMatch bool
 	}{
 		{
 			name:        "shouldn't match nil body",
 			re:          ".*",
-			comment:     &github.IssueComment{},
+			comment:     &Comment{},
 			shouldMatch: false,
 		},
 		{

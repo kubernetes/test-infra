@@ -22,6 +22,46 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+func (s *Server) handleReviewEvent(re github.ReviewEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":      re.PullRequest.Base.Repo.Owner.Login,
+		"repo":     re.PullRequest.Base.Repo.Name,
+		"pr":       re.PullRequest.Number,
+		"review":   re.Review.ID,
+		"reviewer": re.Review.User.Login,
+		"url":      re.Review.HTMLURL,
+	})
+	l.Infof("Review %s.", re.Action)
+	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
+		pc := s.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
+		if err := h(pc, re); err != nil {
+			pc.Logger.WithError(err).Error("Error handling ReviewEvent.")
+		}
+	}
+}
+
+func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":       rce.PullRequest.Base.Repo.Owner.Login,
+		"repo":      rce.PullRequest.Base.Repo.Name,
+		"pr":        rce.PullRequest.Number,
+		"review":    rce.Comment.ReviewID,
+		"commenter": rce.Comment.User.Login,
+		"url":       rce.Comment.HTMLURL,
+	})
+	l.Infof("Review comment %s.", rce.Action)
+	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
+		pc := s.Plugins.PluginClient
+		pc.Logger = l.WithField("plugin", p)
+		pc.Config = s.ConfigAgent.Config()
+		if err := h(pc, rce); err != nil {
+			pc.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
+		}
+	}
+}
+
 func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	l := logrus.WithFields(logrus.Fields{
 		"org":    pr.PullRequest.Base.Repo.Owner.Login,

@@ -19,8 +19,6 @@ package comment
 import (
 	"reflect"
 	"testing"
-
-	"github.com/google/go-github/github"
 )
 
 func TestParseCommand(t *testing.T) {
@@ -82,7 +80,7 @@ func TestParseCommand(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualCommand := ParseCommands(&github.IssueComment{Body: &test.comment})
+		actualCommand := ParseCommands(&Comment{Body: &test.comment})
 		if !reflect.DeepEqual(actualCommand, test.expectedCommands) {
 			t.Error(actualCommand, "doesn't match expected commands:", test.expectedCommands)
 		}
