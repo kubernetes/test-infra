@@ -15,8 +15,8 @@
 # limitations under the License.
 
 # This script publishes the latest changes in the ${src_branch} of
-# k8s.io/kubernetes/staging/src/sample-apiserver to the ${dst_branch} of
-# k8s.io/sample-apiserver.
+# k8s.io/kubernetes/staging/src/k8s.io/api to the ${dst_branch} of
+# k8s.io/api.
 #
 # ${kubernetes_remote} is the remote url of k8s.io/kubernetes that will be used
 # in .git/config in the local checkout of sample-apiserver. We usually set it to
@@ -25,7 +25,7 @@
 # from the same revision of k8s.io/kubernetes.
 #
 # The script assumes that the working directory is
-# $GOPATH/src/k8s.io/sample-apiserver.
+# $GOPATH/src/k8s.io/api.
 #
 # The script is expected to be run by
 # k8s.io/test-infra/mungegithub/mungers/publisher.go
@@ -40,4 +40,4 @@ if [ ! $# -eq 4 ]; then
 fi
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-"${SCRIPT_DIR}"/publish_template.sh "sample-apiserver" "${1}" "${2}" "${3}" "${4}" "false"
+"${SCRIPT_DIR}"/publish_template.sh "api" "${1}" "${2}" "${3}" "${4}" "true"
