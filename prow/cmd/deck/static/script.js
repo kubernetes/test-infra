@@ -138,6 +138,8 @@ function redraw() {
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
             r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name));
+        } else if (build.url !== "") {
+            r.appendChild(createLinkCell("G", build.url));
         } else {
             r.appendChild(createTextCell(""));
         }
@@ -167,7 +169,7 @@ function redraw() {
             r.appendChild(createTextCell(""));
             r.appendChild(createTextCell(""));
         }
-        if (build.url === "" || build.type === "periodic") {
+        if (build.url === "") {
             r.appendChild(createTextCell(build.job));
         } else {
             r.appendChild(createLinkCell(build.job, build.url));
