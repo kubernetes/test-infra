@@ -106,7 +106,7 @@ data:
   submit-queue.jenkins-jobs: "\"\""
   submit-queue.presubmit-jobs: "\"\""
   submit-queue.weak-stable-jobs: "\"\""
-  submit-queue.do-not-merge-milestones: "v1.8,v1.9,next-candidate,"
+  submit-queue.do-not-merge-milestones: "\"\""
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
   submit-queue.history-url: https://storage.googleapis.com/kubernetes-test-history/static/index.html
