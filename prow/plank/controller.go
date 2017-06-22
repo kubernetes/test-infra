@@ -415,11 +415,13 @@ func guberURL(pj kube.ProwJob, build string) string {
 	} else {
 		url = guberBasePush
 	}
-	if pj.Spec.Refs.Org != "kubernetes" {
+
+	if pj.Spec.Refs.Org != "" && pj.Spec.Refs.Org != "kubernetes" {
 		url = fmt.Sprintf("%s/%s_%s", url, pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
-	} else if pj.Spec.Refs.Repo != "kubernetes" {
+	} else if pj.Spec.Refs.Repo != "" && pj.Spec.Refs.Repo != "kubernetes" {
 		url = fmt.Sprintf("%s/%s", url, pj.Spec.Refs.Repo)
 	}
+
 	switch t := pj.Spec.Type; t {
 	case kube.PresubmitJob:
 		return fmt.Sprintf("%s/%s/%s/%s/", url, strconv.Itoa(pj.Spec.Refs.Pulls[0].Number), pj.Spec.Job, build)
