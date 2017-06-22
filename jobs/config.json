@@ -1514,68 +1514,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.4",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.4",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gce.env",
@@ -1610,6 +1548,40 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest-1.7",
+      "--skew",
+      "--extract=ci/latest",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest-1.7",
+      "--skew",
+      "--extract=ci/latest",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
   "ci-kubernetes-e2e-gce-multizone": {
     "args": [
       "--cluster=bootstrap-e2e-gce-mz",
@@ -1622,6 +1594,38 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-proto": {
@@ -3586,68 +3590,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.4",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew": {
-    "args": [
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew.env",
-      "--timeout=120m",
-      "--extract=ci/latest-1.4",
-      "--skew",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gke-alpha-features": {
     "args": [
       "--env-file=jobs/platform/gke.env",
@@ -4808,6 +4750,40 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest-1.7",
+      "--skew",
+      "--extract=ci/latest",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest-1.7",
+      "--skew",
+      "--extract=ci/latest",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
   "ci-kubernetes-e2e-gke-multizone": {
     "args": [
       "--env-file=jobs/platform/gke.env",
@@ -4819,6 +4795,38 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew.env",
+      "--timeout=120m",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--check-leaked-resources=true",
+      "--check_version_skew=false",
+      "--mode=local"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-pre-release": {

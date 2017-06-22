@@ -482,14 +482,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.5
 - name: ci-kubernetes-verify-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.4
-- name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-1.5-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-1.5-upgrade-cluster-new
@@ -498,14 +498,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-container_vm-1.5-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1.4-gci-1.5-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-container_vm-1.4-container_vm-latest-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-container_vm-1.4-gci-latest-upgrade-cluster-new
@@ -1698,24 +1698,24 @@ dashboards:
   - name: verify-1.4
     test_group_name: ci-kubernetes-verify-release-1.4
 
-- name: google-kubectl-skew
+- name: master-kubectl-skew
   dashboard_tab:
-  - name: gce-1.4-1.5-cvm
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
-  - name: gce-1.4-1.5-gci
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
-  - name: gke-1.4-1.5-cvm
-    test_group_name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
-  - name: gke-1.4-1.5-gci
-    test_group_name: ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
-  - name: gce-1.5-1.4-cvm
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
-  - name: gce-1.5-1.4-gci
-    test_group_name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
-  - name: gke-1.5-1.4-cvm
-    test_group_name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
-  - name: gke-1.5-1.4-gci
-    test_group_name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
+  - name: gce-1.7-master-cvm
+    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+  - name: gce-1.7-master-gci
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+  - name: gke-1.7-master-cvm
+    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+  - name: gke-1.7-master-gci
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+  - name: gce-master-1.7-cvm
+    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+  - name: gce-master-1.7-gci
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  - name: gke-master-1.7-cvm
+    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+  - name: gke-master-1.7-gci
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
 - name: google-1.4-1.5-upgrade
   dashboard_tab:
