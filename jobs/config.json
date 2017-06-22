@@ -6076,6 +6076,16 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-release": {
+    "args": [
+      "./anago",
+      "master"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
   "ci-kubernetes-soak-cos-docker-validation-deploy": {
     "args": [
       "--env-file=jobs/platform/gce.env",
