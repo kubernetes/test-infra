@@ -46,6 +46,9 @@ func TestUpdateConfig(t *testing.T) {
 				Name: "kubernetes",
 			},
 		},
+		Head: github.PullRequestBranch{
+			SHA: "12345",
+		},
 		User: github.User{
 			Login: "foo",
 		},
@@ -151,9 +154,15 @@ func TestUpdateConfig(t *testing.T) {
 				basicPR.Number: tc.changes,
 			},
 			IssueComments: map[int][]github.IssueComment{},
-			RemoteFiles: map[string]string{
-				"prow/config.yaml":  "some-config",
-				"prow/plugins.yaml": "some-plugins",
+			RemoteFiles: map[string]map[string]string{
+				"prow/config.yaml": {
+					"master": "old-config",
+					"12345":  "new-config",
+				},
+				"prow/plugins.yaml": {
+					"master": "old-plugins",
+					"12345":  "new-plugins",
+				},
 			},
 		}
 		fkc := &fakeKubeClient{
@@ -182,16 +191,16 @@ func TestUpdateConfig(t *testing.T) {
 		if tc.configUpdate {
 			if config, ok := fkc.maps["config"]; !ok {
 				t.Fatalf("tc %s : Should have updated configmap for 'config'", tc.name)
-			} else if config.Data["config"] != "some-config" {
-				t.Fatalf("tc %s : Expect get config 'some-config', got %s", tc.name, config.Data["config"])
+			} else if config.Data["config"] != "new-config" {
+				t.Fatalf("tc %s : Expect get config 'new-config', got '%s'", tc.name, config.Data["config"])
 			}
 		}
 
 		if tc.pluginsUpdate {
 			if plugins, ok := fkc.maps["plugins"]; !ok {
 				t.Fatalf("tc %s : Should have updated configmap for 'plugins'", tc.name)
-			} else if plugins.Data["plugins"] != "some-plugins" {
-				t.Fatalf("tc %s : Expect get config 'some-plugins', got %s", tc.name, plugins.Data["plugins"])
+			} else if plugins.Data["plugins"] != "new-plugins" {
+				t.Fatalf("tc %s : Expect get config 'new-plugins', got '%s'", tc.name, plugins.Data["plugins"])
 			}
 		}
 	}

@@ -675,16 +675,24 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 	return issSearchResult.Issues, err
 }
 
-// GetFile uses github repo contents API to retrieve the content of a file.
+// GetFile uses github repo contents API to retrieve the content of a file with commit sha.
 // Todo: Support retrieve a directory
-func (c *Client) GetFile(org, repo, filepath string) (string, error) {
-	c.log("GetFile", org, repo, filepath)
+func (c *Client) GetFile(org, repo, filepath, commit string) (string, error) {
+	c.log("GetFile", org, repo, filepath, commit)
+
+	var url string
+	if commit == "" {
+		// Request content from master head
+		url = fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath)
+	} else {
+		// Request from a specific commit
+		url = fmt.Sprintf("%s/repos/%s/%s/contents/%s?ref=%s", c.base, org, repo, filepath, commit)
+	}
 
 	var res Content
-
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath),
+		path:      url,
 		exitCodes: []int{200},
 	}, &res)
 

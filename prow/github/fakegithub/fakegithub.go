@@ -47,7 +47,7 @@ type FakeClient struct {
 	AssigneesAdded []string
 
 	// Fake remote git storage
-	RemoteFiles map[string]string
+	RemoteFiles map[string]map[string]string
 }
 
 func (f *FakeClient) BotName() string {
@@ -177,10 +177,22 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	return m
 }
 
-func (f *FakeClient) GetFile(org, repo, file string) (string, error) {
-	if content, ok := f.RemoteFiles[file]; !ok {
+func (f *FakeClient) GetFile(org, repo, file, commit string) (string, error) {
+	if contents, ok := f.RemoteFiles[file]; !ok {
 		return "", fmt.Errorf("Could not find file %s", file)
 	} else {
-		return content, nil
+		if commit == "" {
+			if master, ok := contents["master"]; ok {
+				return master, nil
+			}
+
+			return "", fmt.Errorf("Could not find file %s in master", file)
+		}
+
+		if content, ok := contents[commit]; ok {
+			return content, nil
+		}
+
+		return "", fmt.Errorf("Could not find file %s with ref %s", file, commit)
 	}
 }

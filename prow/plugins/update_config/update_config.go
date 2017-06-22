@@ -39,7 +39,7 @@ func init() {
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error)
-	GetFile(org, repo, filepath string) (string, error)
+	GetFile(org, repo, filepath, commit string) (string, error)
 }
 
 type kubeClient interface {
@@ -50,8 +50,8 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre)
 }
 
-func handleConfig(gc githubClient, kc kubeClient, org, repo string) error {
-	content, err := gc.GetFile(org, repo, configFile)
+func handleConfig(gc githubClient, kc kubeClient, org, repo, commit string) error {
+	content, err := gc.GetFile(org, repo, configFile, commit)
 	if err != nil {
 		return err
 	}
@@ -68,8 +68,8 @@ func handleConfig(gc githubClient, kc kubeClient, org, repo string) error {
 	return nil
 }
 
-func handlePlugin(gc githubClient, kc kubeClient, org, repo string) error {
-	content, err := gc.GetFile(org, repo, pluginFile)
+func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) error {
+	content, err := gc.GetFile(org, repo, pluginFile, commit)
 	if err != nil {
 		return err
 	}
@@ -109,14 +109,14 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	var msg string
 	for _, change := range changes {
 		if change.Filename == configFile {
-			if err := handleConfig(gc, kc, org, repo); err != nil {
+			if err := handleConfig(gc, kc, org, repo, pr.Head.SHA); err != nil {
 				return err
 			}
 
 			msg += fmt.Sprintf("I updated Prow config for you!")
 
 		} else if change.Filename == pluginFile {
-			if err := handlePlugin(gc, kc, org, repo); err != nil {
+			if err := handlePlugin(gc, kc, org, repo, pr.Head.SHA); err != nil {
 				return err
 			}
 

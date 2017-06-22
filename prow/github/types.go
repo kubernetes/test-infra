@@ -213,7 +213,6 @@ type Commit struct {
 	Modified []string `json:"modified"`
 }
 
-<<<<<<< HEAD
 // ReviewEvent is what GitHub sends us when a PR review is changed.
 type ReviewEvent struct {
 	Action      string      `json:"action"`
@@ -252,4 +251,5 @@ type ReviewComment struct {
 // Content is some base64 encoded github file content
 type Content struct {
 	Content string `json:"content"`
+	SHA     string `json:"sha"`
 }
