@@ -138,8 +138,6 @@ function redraw() {
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
             r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name));
-        } else if (build.url !== "") {
-            r.appendChild(createLinkCell("G", build.url));
         } else {
             r.appendChild(createTextCell(""));
         }
