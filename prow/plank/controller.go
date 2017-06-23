@@ -17,10 +17,12 @@ limitations under the License.
 package plank
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"text/template"
 	"time"
 
 	"k8s.io/test-infra/prow/github"
@@ -33,6 +35,8 @@ const (
 	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
 	testInfra     = "https://github.com/kubernetes/test-infra/issues"
 )
+
+var urlTmpl = template.Must(template.New("url").Parse(`https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/`))
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
@@ -203,7 +207,13 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		pj.Status.Description = "Error checking job status."
 		c.reports = append(c.reports, pj)
 	} else {
-		if url := guberURL(pj, strconv.Itoa(status.Number)); pj.Status.URL != url {
+		pj.Status.BuildID = strconv.Itoa(status.Number)
+		var b bytes.Buffer
+		if err := urlTmpl.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		url := b.String()
+		if pj.Status.URL != url {
 			pj.Status.URL = url
 			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
 		} else if status.Building {
@@ -250,7 +260,13 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		pj.Status.State = kube.PendingState
 		if id, pn, err := c.startPod(pj); err == nil {
 			pj.Status.PodName = pn
-			pj.Status.URL = guberURL(pj, id)
+			pj.Status.BuildID = id
+			var b bytes.Buffer
+			if err := urlTmpl.Execute(&b, &pj); err != nil {
+				return fmt.Errorf("error executing URL template: %v", err)
+			}
+			url := b.String()
+			pj.Status.URL = url
 		} else {
 			return fmt.Errorf("error starting pod: %v", err)
 		}
@@ -405,33 +421,4 @@ func (c *Controller) getBuildID(server, name string) (string, error) {
 		}
 	}
 	return "", err
-}
-
-// TODO(spxtr): Template this.
-func guberURL(pj kube.ProwJob, build string) string {
-	var url string
-	if pj.Spec.Type == kube.PresubmitJob || pj.Spec.Type == kube.BatchJob {
-		url = guberBasePR
-	} else {
-		url = guberBasePush
-	}
-
-	if pj.Spec.Refs.Org != "" && pj.Spec.Refs.Org != "kubernetes" {
-		url = fmt.Sprintf("%s/%s_%s", url, pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
-	} else if pj.Spec.Refs.Repo != "" && pj.Spec.Refs.Repo != "kubernetes" {
-		url = fmt.Sprintf("%s/%s", url, pj.Spec.Refs.Repo)
-	}
-
-	switch t := pj.Spec.Type; t {
-	case kube.PresubmitJob:
-		return fmt.Sprintf("%s/%s/%s/%s/", url, strconv.Itoa(pj.Spec.Refs.Pulls[0].Number), pj.Spec.Job, build)
-	case kube.PostsubmitJob:
-		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
-	case kube.PeriodicJob:
-		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
-	case kube.BatchJob:
-		return fmt.Sprintf("%s/batch/%s/%s/", url, pj.Spec.Job, build)
-	default:
-		return testInfra
-	}
 }

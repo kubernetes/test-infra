@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.21
+        image: gcr.io/k8s-prow/plank:0.22
         args:
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
