@@ -756,58 +756,6 @@
     # END KUBEMARK
 
     # START UPGRADE
-    - kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.4-1.5-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.4-1.5-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-
-    - kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.5-1.4-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-    - kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gke-1.5-1.4-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.4-latest-1.5-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
-    - kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-cvm-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-    - kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew:
-        job-name: ci-kubernetes-e2e-gce-latest-1.5-latest-1.4-gci-kubectl-skew
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        trigger-job: ''
-
     ### kubernetes-e2e-upgrades-image-gke
     ### 1.4 to 1.5 GKE upgrade tests
     # cvm -> cvm
