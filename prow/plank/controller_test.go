@@ -17,13 +17,13 @@ limitations under the License.
 package plank
 
 import (
+	"bytes"
 	"testing"
 
 	"k8s.io/test-infra/prow/kube"
 )
 
-func TestGuberURL(t *testing.T) {
-
+func TestURLTemplate(t *testing.T) {
 	testcases := []struct {
 		name    string
 		jobType kube.ProwJobType
@@ -43,6 +43,24 @@ func TestGuberURL(t *testing.T) {
 			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/0/k8s-pre-1/1/",
 		},
 		{
+			name:    "k8s/test-infra presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "kubernetes",
+			repo:    "test-infra",
+			job:     "ti-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+		},
+		{
+			name:    "foo/k8s presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "foo",
+			repo:    "kubernetes",
+			job:     "k8s-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+		},
+		{
 			name:    "foo-bar presubmit",
 			jobType: kube.PresubmitJob,
 			org:     "foo",
@@ -50,33 +68,6 @@ func TestGuberURL(t *testing.T) {
 			job:     "foo-pre-1",
 			build:   "1",
 			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
-		},
-		{
-			name:    "nan-bar presubmit",
-			jobType: kube.PresubmitJob,
-			org:     "",
-			repo:    "bar",
-			job:     "bar-pre-1",
-			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/bar/0/bar-pre-1/1/",
-		},
-		{
-			name:    "foo-nan presubmit",
-			jobType: kube.PresubmitJob,
-			org:     "foo",
-			repo:    "",
-			job:     "foo-pre-2",
-			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_/0/foo-pre-2/1/",
-		},
-		{
-			name:    "nan presubmit",
-			jobType: kube.PresubmitJob,
-			org:     "",
-			repo:    "",
-			job:     "nan-pre-1",
-			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/0/nan-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
@@ -128,9 +119,16 @@ func TestGuberURL(t *testing.T) {
 					Repo:  tc.repo,
 				},
 			},
+			Status: kube.ProwJobStatus{
+				BuildID: tc.build,
+			},
 		}
 
-		res := guberURL(pj, tc.build)
+		var b bytes.Buffer
+		if err := urlTmpl.Execute(&b, &pj); err != nil {
+			t.Fatalf("Error executing template: %v", err)
+		}
+		res := b.String()
 		if res != tc.expect {
 			t.Errorf("tc: %s, Expect URL: %s, got %s", tc.name, tc.expect, res)
 		}
