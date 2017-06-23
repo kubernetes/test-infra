@@ -8,7 +8,7 @@ the submit queue.**
 
 Credentials can be acquired quickly using the gcloud CLI
 ```console
-$ gcloud container clusters get-credentials utility-cluster --project kubernetes-jenkins
+$ gcloud container clusters get-credentials mungegithub --project k8s-mungegithub --zone us-central1-b
 ```
 
 ## resolve.sh
