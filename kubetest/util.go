@@ -237,10 +237,10 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 				cmd.Process.Kill()
 			}
-			return nil, fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
+			return nil, fmt.Errorf("Build timed out. Terminate testing after 15m after %s timeout during %s", timeout, stepName)
 		case <-interrupt.C:
 			interrupted = true
-			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
+			log.Printf("Build timed out after %s, sending interrupt. Will terminate in another 15m", timeout)
 			terminate.Reset(15 * time.Minute)
 			for cmd.Process == nil {
 				time.Sleep(50 * time.Millisecond)
