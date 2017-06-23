@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -186,11 +187,11 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 	return c, nil
 }
 
-// return cmd.Output(), potentially timing out in the process.
-func output(cmd *exec.Cmd) ([]byte, error) {
+// return stdout & stderr from running the Cmd, potentially timing out in the process.
+func output(cmd *exec.Cmd) ([]byte, []byte, error) {
 	stepName := strings.Join(cmd.Args, " ")
 	if terminated {
-		return []byte{}, fmt.Errorf("kubetest terminated before starting %s", stepName)
+		return []byte{}, []byte{}, fmt.Errorf("kubetest terminated before starting %s", stepName)
 	}
 	if verbose {
 		cmd.Stderr = os.Stderr
@@ -202,8 +203,9 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	type result struct {
-		bytes []byte
-		err   error
+		stdout []byte
+		stderr []byte
+		err    error
 	}
 	finished := make(chan result)
 	lock := sync.Mutex{}
@@ -217,8 +219,16 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 		if !started {
 			return
 		}
-		b, err := cmd.Output()
-		finished <- result{b, err}
+
+		var stderr bytes.Buffer
+		if cmd.Stderr == nil {
+			cmd.Stderr = &stderr
+		} else {
+			cmd.Stderr = io.MultiWriter(cmd.Stderr, &stderr)
+		}
+
+		stdout, err := cmd.Output()
+		finished <- result{stdout, stderr.Bytes(), err}
 	}()
 	for {
 		select {
@@ -237,7 +247,7 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 				cmd.Process.Kill()
 			}
-			return nil, fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
+			return nil, nil, fmt.Errorf("Terminate testing after 15m after %s timeout during %s", timeout, stepName)
 		case <-interrupt.C:
 			interrupted = true
 			log.Printf("Interrupt testing after %s timeout. Will terminate in another 15m", timeout)
@@ -252,9 +262,9 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 			}
 		case fin := <-finished:
 			if fin.err != nil {
-				return fin.bytes, fmt.Errorf("error during %s: %v", stepName, fin.err)
+				return fin.stdout, fin.stderr, fmt.Errorf("error during %s: %v", stepName, fin.err)
 			}
-			return fin.bytes, fin.err
+			return fin.stdout, fin.stderr, fin.err
 		}
 	}
 }

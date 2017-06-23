@@ -241,7 +241,7 @@ func TestOutput(t *testing.T) {
 		runner := finishRunning
 		if tc.output {
 			runner = func(c *exec.Cmd) error {
-				_, err := output(c)
+				_, _, err := output(c)
 				return err
 			}
 		}

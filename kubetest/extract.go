@@ -188,7 +188,7 @@ func getTestBinaries(url, version string) error {
 		return err
 	}
 	f.Close()
-	o, err := output(exec.Command("md5sum", f.Name()))
+	o, _, err := output(exec.Command("md5sum", f.Name()))
 	if err != nil {
 		return err
 	}
@@ -264,7 +264,7 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
 	cat := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
-	release, err := output(exec.Command("gsutil", "cat", cat))
+	release, _, err := output(exec.Command("gsutil", "cat", cat))
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 
 func setupGciVars(family string) (string, error) {
 	p := "container-vm-image-staging"
-	b, err := output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
+	b, _, err := output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
 	if err != nil {
 		return "", err
 	}
@@ -316,7 +316,7 @@ func setupGciVars(family string) (string, error) {
 
 func setReleaseFromGci(image string) error {
 	u := fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image)
-	b, err := output(exec.Command("gsutil", "cat", u))
+	b, _, err := output(exec.Command("gsutil", "cat", u))
 	if err != nil {
 		return err
 	}
@@ -362,7 +362,7 @@ func (e extractStrategy) Extract() error {
 		if len(z) == 0 {
 			return fmt.Errorf("ZONE is unset")
 		}
-		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
+		ci, _, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
 		if err != nil {
 			return err
 		}
@@ -427,11 +427,11 @@ func loadState(save string) error {
 		return fmt.Errorf("failed loading kubeconfig: %v", err)
 	}
 
-	url, err := output(exec.Command("gsutil", "cat", uUrl))
+	url, _, err := output(exec.Command("gsutil", "cat", uUrl))
 	if err != nil {
 		return err
 	}
-	release, err := output(exec.Command("gsutil", "cat", rUrl))
+	release, _, err := output(exec.Command("gsutil", "cat", rUrl))
 	if err != nil {
 		return err
 	}
