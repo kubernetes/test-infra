@@ -17,18 +17,19 @@ limitations under the License.
 package plank
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
+	"text/template"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const (
-	commentTag  = "<!-- test report -->"
-	guberPrefix = "https://k8s-gubernator.appspot.com/pr/"
-)
+const commentTag = "<!-- test report -->"
+
+var tmpl = template.Must(template.New("report").Parse(`[Full PR test history](https://k8s-gubernator.appspot.com/pr/{{if eq .Spec.Refs.Org "kubernetes"}}{{if eq .Spec.Refs.Repo "kubernetes"}}{{else}}{{.Spec.Refs.Repo}}/{{end}}{{else}}{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}/{{end}}{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://k8s-gubernator.appspot.com/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.`))
 
 func (c *Controller) report(pj kube.ProwJob) error {
 	if !pj.Spec.Report {
@@ -59,13 +60,19 @@ func (c *Controller) report(pj kube.ProwJob) error {
 			return fmt.Errorf("error deleting comment: %v", err)
 		}
 	}
-	if len(entries) > 0 && updateID == 0 {
-		if err := c.ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, createComment(pj, entries)); err != nil {
-			return fmt.Errorf("error creating comment: %v", err)
+	if len(entries) > 0 {
+		comment, err := createComment(pj, entries)
+		if err != nil {
+			return fmt.Errorf("generating comment: %v", err)
 		}
-	} else if len(entries) > 0 {
-		if err := c.ghc.EditComment(refs.Org, refs.Repo, updateID, createComment(pj, entries)); err != nil {
-			return fmt.Errorf("error updating comment: %v", err)
+		if updateID == 0 {
+			if err := c.ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
+				return fmt.Errorf("error creating comment: %v", err)
+			}
+		} else {
+			if err := c.ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
+				return fmt.Errorf("error updating comment: %v", err)
+			}
 		}
 	}
 	return nil
@@ -154,31 +161,17 @@ func createEntry(pj kube.ProwJob) string {
 	}, " | ")
 }
 
-func prLink(pj kube.ProwJob) string {
-	refs := pj.Spec.Refs
-	var suffix string
-	if refs.Org == "kubernetes" {
-		if refs.Repo == "kubernetes" {
-			suffix = fmt.Sprintf("%d", refs.Pulls[0].Number)
-		} else {
-			suffix = fmt.Sprintf("%s/%d", refs.Repo, refs.Pulls[0].Number)
-		}
-	} else {
-		suffix = fmt.Sprintf("%s_%s/%d", refs.Org, refs.Repo, refs.Pulls[0].Number)
-	}
-	return guberPrefix + suffix
-}
-
-func dashLink(pj kube.ProwJob) string {
-	return guberPrefix + pj.Spec.Refs.Pulls[0].Author
-}
-
 // createComment take a ProwJob and a list of entries generated with
-// createEntry and returns a nicely formatted comment.
-func createComment(pj kube.ProwJob, entries []string) string {
+// createEntry and returns a nicely formatted comment. It may fail if template
+// execution fails.
+func createComment(pj kube.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
+	}
+	var b bytes.Buffer
+	if err := tmpl.Execute(&b, &pj); err != nil {
+		return "", err
 	}
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun them all:", pj.Spec.Refs.Pulls[0].Author, plural),
@@ -189,7 +182,7 @@ func createComment(pj kube.ProwJob, entries []string) string {
 	lines = append(lines, entries...)
 	lines = append(lines, []string{
 		"",
-		fmt.Sprintf("[Full PR test history](%s). [Your PR dashboard](%s). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/%s/%s/issues?q=is:issue+is:open) when you hit one in your PR.", prLink(pj), dashLink(pj), pj.Spec.Refs.Org, pj.Spec.Refs.Repo),
+		b.String(),
 		"",
 		"<details>",
 		"",
@@ -197,5 +190,5 @@ func createComment(pj kube.ProwJob, entries []string) string {
 		"</details>",
 		commentTag,
 	}...)
-	return strings.Join(lines, "\n")
+	return strings.Join(lines, "\n"), nil
 }
