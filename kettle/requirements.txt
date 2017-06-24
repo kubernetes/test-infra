@@ -1,3 +1,4 @@
+requests
 google-cloud-bigquery
 google-cloud-pubsub
 pyyaml
