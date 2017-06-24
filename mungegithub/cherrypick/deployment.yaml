@@ -25,7 +25,7 @@ spec:
         - --admin-port=$(ADMIN_PORT)
         - --repo-dir=$(REPO_DIR)
         - --period=$(PERIOD)
-        image: gcr.io/google_containers/cherrypick:2016-03-14-7fb1dae
+        image: gcr.io/k8s-testimages/cherrypick:2016-03-14-7fb1dae
         env:
           - name: TOKEN_FILE
             valueFrom:

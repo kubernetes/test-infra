@@ -48,7 +48,11 @@ data:
   size.generated-files-config: ""
   check-labels.label-file: "/gitrepos/contrib/labels.yaml"
   issue-categorizer.triager-url: ""
-  alias.alias-file: "/gitrepos/contrib/OWNERS_ALIASES"
+  alias.alias-file: ""
+  issue-creator.test-owners-csv: ""
+  triage.window: "0"
+  triage.count: "0"
+  flakyjob.count: "0"
 
   # Temporary gate approval process
   approval-activated: "true"
