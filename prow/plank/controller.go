@@ -215,7 +215,6 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		url := b.String()
 		if pj.Status.URL != url {
 			pj.Status.URL = url
-			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
 		} else if status.Building {
 			// Build still going.
 			return nil
