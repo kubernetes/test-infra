@@ -804,7 +804,6 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env",
       "--cluster=e2e-enormous-cluster",
-      "--down=false",
       "--timeout=1400m",
       "--extract=ci/latest",
       "--check-leaked-resources=false"
