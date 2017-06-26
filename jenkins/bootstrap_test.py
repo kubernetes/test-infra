@@ -2034,6 +2034,12 @@ class JobTest(unittest.TestCase):
         }
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)
+        boskos = []
+        with open(bootstrap.test_infra('boskos/resources.json')) as fp:
+            for res in json.loads(fp.read()):
+                if res['type'] == 'projects':
+                    boskos.append(res['name'])
+
         for job, job_path in self.jobs:
             with open(job_path) as fp:
                 lines = list(fp)
@@ -2051,6 +2057,8 @@ class JobTest(unittest.TestCase):
                     project = re.search(r'PROJECT="([^"]+)"', line).group(1)
                 else:
                     project = re.search(r'PROJECT=([^"]+)', line).group(1)
+                if project in boskos:
+                    self.fail('Project %s cannot be in boskos/resources.json!' % project)
                 projects[project].add(allowed_list.get(job, job))
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
         if duplicates:
