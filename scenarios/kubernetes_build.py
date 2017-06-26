@@ -34,8 +34,6 @@ def check(*cmd):
 def main(args):
     """Build kubernetes."""
     env = {}
-    if args.unstable:
-        env['DEB_CHANNEL'] = 'unstable'
     if args.suffix:
         env['KUBE_GCS_RELEASE_SUFFIX'] = args.suffix
     env['KUBE_FASTBUILD'] = 'true' if args.fast else 'false'
@@ -46,7 +44,6 @@ def main(args):
     if args.release:
         env['KUBE_GCS_RELEASE_BUCKET'] = args.release
         env['KUBE_GCS_RELEASE_BUCKET_MIRROR'] = args.release
-
 
     for key, value in env.items():
         os.environ[key] = value
@@ -66,10 +63,6 @@ if __name__ == '__main__':
         '--release', help='Upload binaries to the specified gs:// path')
     PARSER.add_argument(
         '--suffix', help='Append suffix to the upload path if set')
-    PARSER.add_argument(
-        '--unstable',
-        action='store_true',
-        help='Use the unstable debian channel')
     PARSER.add_argument(
         '--federation',
         help='Push federation images to the specified project')
