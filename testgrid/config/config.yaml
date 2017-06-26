@@ -825,6 +825,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
 - name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default 
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial 
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown 
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -1540,6 +1558,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   - name: ubuntu-gke-1.6-updown
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow
+  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown
 
 - name: google-gke-staging
   dashboard_tab:
