@@ -187,7 +187,9 @@ class Checker(object):
                 prop.check_and_maybe_update(self.config, project, fix)
 
         projects = self.load_projects(
-            '%s/../jobs' % os.path.dirname(__file__), filt)
+            '%s/../jobs' % os.path.dirname(__file__),
+            '%s/../boskos/resources.json' % os.path.dirname(__file__),
+            filt)
         _log.info('Checking %d projects', len(projects))
 
         run_threads_to_completion(
@@ -234,7 +236,7 @@ class Checker(object):
         return email.split('@')[0]
 
     @staticmethod
-    def load_projects(configs, filt):
+    def load_projects(configs, boskos, filt):
         """Scans the project directories for GCP projects to check."""
         filter_re = re.compile(filt)
         project_re = re.compile('^PROJECT="?([^"\r\n]+)"?$', re.MULTILINE)
@@ -254,6 +256,12 @@ class Checker(object):
                             continue
                         else:
                             raise ValueError(project)
+
+        with open(boskos) as fp:
+            for res in json.loads(fp.read()):
+                if res['type'] == 'projects':
+                    boskos.append(res['name'])
+
         return projects
 
 
