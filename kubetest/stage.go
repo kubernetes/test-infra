@@ -25,10 +25,11 @@ import (
 )
 
 type stageStrategy struct {
-	bucket        string
-	ci            bool
-	gcsSuffix     string
-	versionSuffix string
+	bucket         string
+	ci             bool
+	gcsSuffix      string
+	versionSuffix  string
+	dockerRegistry string
 }
 
 // Return something like gs://bucket/ci/suffix
@@ -80,6 +81,9 @@ func (s *stageStrategy) Stage() error {
 	}
 	if len(s.versionSuffix) > 0 {
 		args = append(args, fmt.Sprintf("--version-suffix=%s", s.versionSuffix))
+	}
+	if len(s.dockerRegistry) > 0 {
+		args = append(args, fmt.Sprintf("--docker-registry=%s", s.dockerRegistry))
 	}
 	if os.Getenv("FEDERATION") == "true" {
 		args = append(args, "--federation")
