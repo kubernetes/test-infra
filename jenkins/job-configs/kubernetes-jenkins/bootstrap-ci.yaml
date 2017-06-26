@@ -153,14 +153,14 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-autoscaling:
         job-name: ci-kubernetes-e2e-gce-autoscaling
-        jenkins-timeout: 330
-        timeout: 230
+        jenkins-timeout: 420
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-gce-autoscaling-migs
-        jenkins-timeout: 330
-        timeout: 230
+        jenkins-timeout: 420
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gce-alpha-features:
@@ -289,14 +289,14 @@
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-autoscaling:
         job-name: ci-kubernetes-e2e-gci-gce-autoscaling
-        jenkins-timeout: 330
-        timeout: 230
+        jenkins-timeout: 420
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-autoscaling-migs:
         job-name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
-        jenkins-timeout: 330
-        timeout: 230
+        jenkins-timeout: 420
+        timeout: 320
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
     - kubernetes-e2e-gci-gce-alpha-features:

@@ -586,7 +586,7 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling.env",
-      "--timeout=210m",
+      "--timeout=300m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
@@ -599,7 +599,7 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling-migs.env",
-      "--timeout=210m",
+      "--timeout=300m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
@@ -2450,7 +2450,7 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling.env",
-      "--timeout=210m",
+      "--timeout=300m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
@@ -2463,7 +2463,7 @@
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env",
-      "--timeout=210m",
+      "--timeout=300m",
       "--extract=ci/latest",
       "--check-leaked-resources=true"
     ],
