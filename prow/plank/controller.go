@@ -126,11 +126,12 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
-// terminateDupes aborts presubmits that have a newer version.
+// terminateDupes aborts presubmits that have a newer version. It modifies pjs
+// in-place when it aborts.
 func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]kube.ProwJob)
-	for _, pj := range pjs {
+	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
 		}
@@ -147,9 +148,11 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		if _, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel); err != nil {
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		if err != nil {
 			return err
 		}
+		pjs[i] = npj
 	}
 	return nil
 }
