@@ -61,19 +61,6 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
 }
 
-type githubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-	IsMember(org, user string) (bool, error)
-	AddLabel(owner, repo string, number int, label string) error
-	RemoveLabel(owner, repo string, number int, label string) error
-	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	BotName() string
-}
-
-type slackClient interface {
-	WriteMessage(msg string, channel string) error
-}
-
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	ae := assignEvent{
 		action:  ic.Action,
@@ -142,7 +129,7 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 	return
 }
 
-func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, ae assignEvent, sc plugins.SlackClient) error {
 	// only parse newly created comments/issues/PRs and if non bot author
 	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
 		return nil

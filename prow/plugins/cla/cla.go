@@ -58,14 +58,6 @@ func init() {
 	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent)
 }
 
-type gitHubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-	AddLabel(owner, repo string, number int, label string) error
-	RemoveLabel(owner, repo string, number int, label string) error
-	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
-	FindIssues(query string) ([]github.Issue, error)
-}
-
 func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, se)
 }
@@ -75,7 +67,7 @@ func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
 // 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
 //    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
 // 4. Set the corresponding CLA label if needed.
-func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
+func handle(gc plugins.GithubClient, log *logrus.Entry, se github.StatusEvent) error {
 	if se.State == "" || se.Context == "" {
 		return fmt.Errorf("invalid status event delivered with empty state/context")
 	}

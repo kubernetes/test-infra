@@ -40,16 +40,6 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
 }
 
-type githubClient interface {
-	AssignIssue(owner, repo string, number int, logins []string) error
-	UnassignIssue(owner, repo string, number int, logins []string) error
-
-	RequestReview(org, repo string, number int, logins []string) error
-	UnrequestReview(org, repo string, number int, logins []string) error
-
-	CreateComment(owner, repo string, number int, comment string) error
-}
-
 type event struct {
 	action string
 	body   string
@@ -199,7 +189,7 @@ type handler struct {
 	// as the first subgroup and the arguments to the command as the second subgroup.
 	regexp *regexp.Regexp
 	// gc is the githubClient to use for creating response comments in the event of a failure.
-	gc githubClient
+	gc plugins.GithubClient
 
 	// log is a logrus.Entry used to record actions the handler takes.
 	log *logrus.Entry
@@ -207,7 +197,7 @@ type handler struct {
 	userType string
 }
 
-func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
+func newAssignHandler(e *event, gc plugins.GithubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned", strings.Join(mu.Users, ", "), e.org, e.org)
 	}
@@ -224,7 +214,7 @@ func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	}
 }
 
-func newReviewHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
+func newReviewHandler(e *event, gc plugins.GithubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can review this PR, and authors cannot review their own PRs", strings.Join(mu.Users, ", "), e.org, e.repo)
 	}

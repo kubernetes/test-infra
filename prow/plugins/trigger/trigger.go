@@ -37,26 +37,13 @@ func init() {
 	plugins.RegisterPushEventHandler(pluginName, handlePush)
 }
 
-type githubClient interface {
-	AddLabel(org, repo string, number int, label string) error
-	BotName() string
-	IsMember(org, user string) (bool, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetRef(org, repo, ref string) (string, error)
-	CreateComment(owner, repo string, number int, comment string) error
-	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
-	CreateStatus(owner, repo, ref string, status github.Status) error
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(github.PullRequest) ([]github.PullRequestChange, error)
-	RemoveLabel(org, repo string, number int, label string) error
-}
-
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 type client struct {
-	GitHubClient githubClient
+	GitHubClient plugins.GithubClient
+	SlackClient  plugins.SlackClient
 	KubeClient   kubeClient
 	Config       *config.Config
 	Logger       *logrus.Entry
@@ -65,6 +52,7 @@ type client struct {
 func getClient(pc plugins.PluginClient) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
+		SlackClient:  pc.SlackClient,
 		Config:       pc.Config,
 		KubeClient:   pc.KubeClient,
 		Logger:       pc.Logger,

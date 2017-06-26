@@ -22,6 +22,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
+        "gitplugin.go",
         "plugins.go",
         "respond.go",
     ],
@@ -30,7 +31,6 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/slack:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
         "//vendor:github.com/ghodss/yaml",
     ],
