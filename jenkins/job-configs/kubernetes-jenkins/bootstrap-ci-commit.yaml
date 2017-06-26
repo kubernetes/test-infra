@@ -10,6 +10,7 @@
             --job='{job-name}' \
             --json \
             --repo='{repo-name}' \
+            --repo='k8s.io/release' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
