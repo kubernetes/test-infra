@@ -65,10 +65,9 @@
   },
   "ci-kubernetes-build-debian-unstable": {
     "args": [
-      "--script=./debian/jenkins.sh",
-      "--unstable"
+      "./debian/jenkins.sh"
     ],
-    "scenario": "kubernetes_build",
+    "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
     ]
