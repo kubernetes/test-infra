@@ -32,32 +32,45 @@ def check(*cmd):
 
 
 def main(args):
-    """Build kubernetes."""
-    env = {}
+    """Build and push kubernetes.
+
+    This is a python port of the kubernetes/hack/jenkins/build.sh script.
+    """
+    if os.path.split(os.getcwd())[-1] != 'kubernetes':
+        print >>sys.stderr, (
+            'Scenario should only run from a kubernetes directory!')
+        sys.exit(1)
+    env = {
+        # Skip gcloud update checking; do we still need this?
+        'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK': 'true',
+        # Don't run any unit/integration tests when building
+        'KUBE_RELEASE_RUN_TESTS': 'n',
+    }
+    push_build_args = ['--nomock', '--verbose', '--ci']
     if args.suffix:
-        env['KUBE_GCS_RELEASE_SUFFIX'] = args.suffix
-    env['KUBE_FASTBUILD'] = 'true' if args.fast else 'false'
+        push_build_args.append('--gcs-suffix=%s' % args.suffix)
     if args.federation:
+        # TODO: do we need to set these?
         env['PROJECT'] = args.federation
-        env['FEDERATION'] = 'true'
         env['FEDERATION_PUSH_REPO_BASE'] = 'gcr.io/%s' % args.federation
+        push_build_args.append('--federation')
     if args.release:
-        env['KUBE_GCS_RELEASE_BUCKET'] = args.release
-        env['KUBE_GCS_RELEASE_BUCKET_MIRROR'] = args.release
+        push_build_args.append('--bucket=%s' % args.release)
+    if args.registry:
+        push_build_args.append('--docker-registry=%s' % args.registry)
 
     for key, value in env.items():
         os.environ[key] = value
-
-    check(args.script)
-
+    check('make', 'clean')
+    if args.fast:
+        check('make', 'quick-release')
+    else:
+        check('make', 'release')
+    check('../release/push-build.sh', *push_build_args)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
-        'Runs verification checks on the kubernetes repo')
-    PARSER.add_argument(
-        '--script',
-        default='./hack/jenkins/build.sh',
-        help='Script relative to repo which builds')
+        'Build and push.')
     PARSER.add_argument('--fast', action='store_true', help='Build quickly')
     PARSER.add_argument(
         '--release', help='Upload binaries to the specified gs:// path')
@@ -66,5 +79,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--federation',
         help='Push federation images to the specified project')
+    PARSER.add_argument(
+        '--registry', help='Push images to the specified docker registry')
     ARGS = PARSER.parse_args()
     main(ARGS)
