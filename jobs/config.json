@@ -1935,7 +1935,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-serial-release-1-7.env",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--mode=local",
       "--check-leaked-resources=true"
     ],
@@ -2887,7 +2887,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial-release-1-7.env",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--mode=local",
       "--check-leaked-resources=true"
     ],
@@ -3297,7 +3297,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-serial-release-1-7.env",
       "--mode=local",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--check-leaked-resources=true"
     ],
     "scenario": "kubernetes_e2e",
@@ -5024,7 +5024,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-serial-release-1-7.env",
       "--mode=local",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--check-leaked-resources=true"
     ],
     "scenario": "kubernetes_e2e",
