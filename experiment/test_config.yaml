@@ -56,6 +56,60 @@ jobs:
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown:
+    envs:
+    - PROJECT=ubuntu-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
 
 common:
   args:
@@ -86,6 +140,8 @@ images:
     - KUBE_NODE_OS_DISTRIBUTION=ubuntu
     - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
     - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
+    - KUBE_GKE_IMAGE_TYPE=ubuntu
+    - KUBE_GKE_ENABLE_KUBERNETES_ALPHA=true
 
 k8sVersions:
   dev:
@@ -102,6 +158,16 @@ k8sVersions:
     - --extract=ci/latest-1.5
 
 testSuites:
+  alphafeatures:
+    args:
+    - --timeout=180m
+    envs:
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:DynamicKubeletConfig\]
+  autoscaling:
+    args:
+    - --timeout=300m
+    envs:
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]
   default:
     args:
     - --timeout=50m
@@ -109,6 +175,21 @@ testSuites:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
     - GINKGO_TEST_ARGS=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+  flaky:
+    args:
+    - --timeout=300m
+    envs:
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\]
+  ingress:
+    args:
+    - --timeout=300m
+    envs:
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:Ingress\]
+  reboot:
+    args:
+    - --timeout=180m
+    envs:
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:Reboot\]
   serial:
     args:
     - --timeout=300m
@@ -122,3 +203,9 @@ testSuites:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
     - GINKGO_TEST_ARGS=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+  updown:
+    args:
+    - --timeout=30m
+    envs:
+    - GINKGO_PARALLEL=y
+    - GINKGO_TEST_ARGS=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
