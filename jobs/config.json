@@ -21,10 +21,11 @@
   },
   "ci-kops-build": {
     "args": [
-      "--script=make gcs-publish-ci",
-      "--kops=gs://kops-ci/bin"
+      "make",
+      "gcs-publish-ci",
+      "GCS_LOCATION=gs://kops-ci/bin"
     ],
-    "scenario": "kubernetes_build",
+    "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
     ]
