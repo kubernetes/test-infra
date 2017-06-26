@@ -277,6 +277,29 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 			return
 		}
 
-		fmt.Fprint(res, "To be implemented.\n")
+		rtype := req.URL.Query().Get("type")
+		if rtype == "" {
+			msg := "Type must be set in the request."
+			logrus.Warning(msg)
+			http.Error(res, msg, http.StatusBadRequest)
+			return
+		}
+
+		metric, err := r.Metric(rtype)
+		if err != nil {
+			logrus.WithError(err).Error("Metric for %s failed", rtype)
+			http.Error(res, err.Error(), ErrorToStatus(err))
+			return
+		}
+
+		js, err := json.Marshal(metric)
+		if err != nil {
+			logrus.WithError(err).Error("Fail to marshal metric")
+			http.Error(res, err.Error(), ErrorToStatus(err))
+			return
+		}
+
+		res.Header().Set("Content-Type", "application/json")
+		res.Write(js)
 	}
 }

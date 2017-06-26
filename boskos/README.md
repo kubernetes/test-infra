@@ -77,34 +77,26 @@ State is a string that tells the current status of the resource.
 
 	Return: error code or JSON object with: 
 			Count of projects in each state
-			Sum of state moved to after /done
 			Count of projects with each owner (or without an owner)
+			Sum of state moved to after /done (Todo)
 			A sample object will look like:
 ```json
 			{
-				“type” : “project”
-				“Current”: 
+				"type" : "project"
+				"Current": 
 				{
-					“total”   : 35 
-					“free”    : 20
-					“dirty”   : 10
-					“injured” : 5
+					"total"   : 35 
+					"free"    : 20
+					"dirty"   : 10
+					"injured" : 5
 				}
-	
-				“Total”:
+				"Owners":
 				{
-					“free”:    600
-					“dirty”:   500
-					“injured”: 100
-				}
-
-				“Owner”:
-				{
-					“fejta” : 1
-					“Senlu” : 1
-					“sig-testing” : 20
-					“Janitor” : 10
-					“None” : 20
+					"fejta" : 1
+					"Senlu" : 1
+					"sig-testing" : 20
+					"Janitor" : 10
+					"None" : 20
 				}
 			}
 

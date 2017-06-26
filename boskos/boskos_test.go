@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 	"time"
 
@@ -614,6 +615,105 @@ func TestUpdate(t *testing.T) {
 		if rr.Code == http.StatusOK {
 			if c.Resources[0].LastUpdate == FakeNow {
 				t.Errorf("%s - Timestamp is not updated!", tc.name)
+			}
+		}
+	}
+}
+
+func TestGetMetric(t *testing.T) {
+	var testcases = []struct {
+		name      string
+		resources []common.Resource
+		path      string
+		code      int
+		method    string
+		expect    common.Metric
+	}{
+		{
+			name:      "reject none-get method",
+			resources: []common.Resource{},
+			path:      "?type=t",
+			code:      http.StatusMethodNotAllowed,
+			method:    http.MethodPost,
+		},
+		{
+			name:      "reject request no type",
+			resources: []common.Resource{},
+			path:      "",
+			code:      http.StatusBadRequest,
+			method:    http.MethodGet,
+		},
+		{
+			name:      "ranch has no resource",
+			resources: []common.Resource{},
+			path:      "?type=t",
+			code:      http.StatusNotFound,
+			method:    http.MethodGet,
+		},
+		{
+			name: "wrong type",
+			resources: []common.Resource{
+				{
+					Name:  "res",
+					Type:  "t",
+					State: "s",
+					Owner: "evil",
+				},
+			},
+			path:   "?type=foo",
+			code:   http.StatusNotFound,
+			method: http.MethodGet,
+		},
+		{
+			name: "ok",
+			resources: []common.Resource{
+				{
+					Name:  "res",
+					Type:  "t",
+					State: "s",
+					Owner: "merlin",
+				},
+			},
+			path:   "?type=t",
+			code:   http.StatusOK,
+			method: http.MethodGet,
+			expect: common.Metric{
+				Type: "t",
+				Current: map[string]int{
+					"s": 1,
+				},
+				Owners: map[string]int{
+					"merlin": 1,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeTestRanch(tc.resources)
+		handler := handleMetric(c)
+		req, err := http.NewRequest(tc.method, "", nil)
+		if err != nil {
+			t.Fatalf("Error making request: %v", err)
+		}
+		u, err := url.Parse(tc.path)
+		if err != nil {
+			t.Fatalf("Error parsing URL: %v", err)
+		}
+		req.URL = u
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
+		if rr.Code != tc.code {
+			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
+		}
+
+		if rr.Code == http.StatusOK {
+			var metric common.Metric
+			if err := json.Unmarshal(rr.Body.Bytes(), &metric); err != nil {
+				t.Errorf("%s - Fail to unmarshal body - %s", tc.name, err)
+			}
+			if !reflect.DeepEqual(metric, tc.expect) {
+				t.Errorf("%s - wrong metric, got %v, want %v", tc.name, metric, tc.expect)
 			}
 		}
 	}
