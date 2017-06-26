@@ -15,5 +15,7 @@
 FROM alpine:3.5
 MAINTAINER rmmh@google.com
 
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+
 COPY tot /tot
 ENTRYPOINT ["/tot"]
