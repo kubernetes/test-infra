@@ -21,11 +21,14 @@ A Github oauth token is required, even in readonly/test mode. For production, we
 
 After successfully running the local binary one may build, test, and deploy in readonly mode to a real kube cluster. To do so, one must make sure that one's kubeconfig file is set up for the test/read-only cluster by running any necessary `kubectl config` commands by hand. One may also need a container repository with read & write access. It is just as easy to create a new dockerhub account, and a public repository named `submit-queue` within that. We will refer to the repository as `docker.io/$USERNAME` where `$USERNAME` is a placeholder. The steps required to deploy on a real cluster for the submit-queue application are as follows. The instructions to run the cherrypick application are along the same lines. Below, we explain the steps to run on the kubernetes main repository. Running on other repositories is similar, except that the corresponding YAML files are in a directory for that repository.
 
-- Store your personal access token in a plain text file named (token) in the mungegithub directory.
-- Run `APP=submit-queue; TARGET=<reponame>; make secret` to generate a local.secret.yaml.
-- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/local.secret.yaml` to load the secret.
-- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pv.yaml` to create a persistent volume. (If you are running a local cluster, and not on GCP, use `mungegithub/submit-queue/pv-local.yaml` to create a persistent volume on your host. The file may need to be modified to match the expected name of the persistent volume by the deployment).
-- Run `kubectl --kubeconfig=... create -f mungegithub/submit-queue/deployment/<reponame>/pvc.yaml` to create a persistent volume claim.
+First store your personal access token in a plain text file named (token) in the mungegithub directory. If the app you are deploying uses github webhooks, store the github secret key in file named (hook-secret) in the mungegithub directory just like the access token.
+ 
+Also create a persistent disk named `<reponame>-cache` on the mungegithub cluster for every repo that a submit-queue will target.
+
+If you are deploying for the first time to a new cluster run `APP=submit-queue TARGET=<reponame> make first_time_deploy` to create and upload a persistent volume and persistent volume claim, a new service, a new `<reponame>-github-token` secret, a configmap, and the actual deployment. If you are updating a deployment or if setup is partially complete, see the step-by-step instructions for deployment below.
+
+- Run `APP=submit-queue TARGET=<reponame> make push_secret` to generate a local.secret.yaml and load it to the cluster.
+- Run `APP=submit-queue TARGET=<reponame> make volume` to create a persistent volume and persistent volume claim. (If you are running a local cluster, and not on GCP, apply `mungegithub/submit-queue/pv-local.yaml` to create a persistent volume on your host then create the persistent volume claim from `mungegithub/submit-queue/deployment/<reponame>/pvc.yaml`. The pv-local.yaml file may need to be modified to match the expected name of the persistent volume by the deployment).
 - Check that the persistent volume claim is bound by checking `kubectl --kubeconfig=... get pvc`.
 
 After these steps, we may need to push a configmap, in case any of the commandline arguments were changed. Pushing a new configmap for the kubernetes repository looks like the following:
@@ -91,7 +94,7 @@ Sometimes we may want to run QA tests locally using the mungegithub binary. The 
 
 ### Instructions on turning up a new submit-queue instance.
 
-The steps below make use of the utility cluster which runs the existing submit-queues.
+The steps below make use of the mungegithub cluster which runs the existing submit-queues.
 
 * Create a new directory for the repo on which you want to run the submit-queue instance. For example, if we want to call it `<TARGET>`, we create `contrib/submit-queue/deployments/<TARGET>`.
 * Add a service.yaml, pv.yaml, pvc.yaml, secret.yaml, configmap.yaml to the directory and configure them appropriately.
@@ -100,15 +103,15 @@ The steps below make use of the utility cluster which runs the existing submit-q
      * The PV and PVC must be named `<TARGET>-cache`.
      * The secret must be named `<TARGET>-github-token`.
      * The service must be named `<TARGET>-sq-status`.
-* Create a persistent disk named `<TARGET>-cache` on the utility cluster. It is typically 10G in size.
-* Switch context with kubectl to point to the utility cluster.
+* Create a persistent disk named `<TARGET>-cache` on the mungegithub cluster. It is typically 10G in size.
+* Switch context with kubectl to point to the mungegithub cluster.
 * Create the PV and PVC resources. After creation, the PV and PVC should be bound.
-* Create a new secret using the below command, which uses an API token stored in `./token`, and generates a `local.secret.yaml` file.
+* Create and load a new token secret using the below command, which uses an API token stored in `./token`, and generates a `local.secret.yaml` file.
 ```
-make secret APP=submit-queue TARGET=<TARGET>
+APP=submit-queue TARGET=<TARGET> make push_secret
 ```
-* Load the secret created yaml using `kubectl create -f submit-queue/local.secret.yaml`.
-* Create the service which is of type NodePort.
+* A kubernetes secret named `<TARGET>-github-secret` may be required if the submit-queue is configured to accept github webhooks.  If this is the case then create it by puting the webhook secret into the file `./hook-secret` before using the `push_secret` make target.
+* Create the service which is of type NodePort using `APP=submit-queue TARGET=<TARGET> make push_service`.
 * Finally, update the ingress.yaml with the new URL and the new service to point to.
 * Apply changes to the running ingress instance.
 

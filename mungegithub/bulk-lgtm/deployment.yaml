@@ -22,7 +22,7 @@ spec:
         - --token-file=/etc/secret-volume/token
         - --address=0.0.0.0:8080
         - --www=/bulk-lgtm-www
-        - --dry-run=false
+        - --dry-run=true
         - --bulk-lgtm-github-oauth-redirect-url=https://kubernetes.submit-queue.k8s.io/bulk-lgtm/bulkprs/callback
         - --bulk-lgtm-www-prefix=/bulk-lgtm
         image: gcr.io/k8s-testimages/submit-queue:2017-05-12-1f256fcd
