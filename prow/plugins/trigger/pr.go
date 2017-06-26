@@ -30,6 +30,15 @@ const (
 )
 
 func handlePR(c client, pr github.PullRequestEvent) error {
+	org := pr.PullRequest.Base.Repo.Owner.Login
+	repo := pr.PullRequest.Base.Repo.Name
+	var trustedOrg string
+	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
+		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
+		return nil
+	} else if tr != nil {
+		trustedOrg = tr.TrustedOrg
+	}
 	switch pr.Action {
 	case "opened":
 		// When a PR is opened, if the author is in the org then build it.
@@ -43,7 +52,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			return buildAll(c, pr.PullRequest)
 		} else {
 			c.Logger.Info("Asking PR author to join the org.")
-			if err := askToJoin(c.GitHubClient, pr.PullRequest); err != nil {
+			if err := askToJoin(c.GitHubClient, pr.PullRequest, trustedOrg); err != nil {
 				return fmt.Errorf("could not ask to join: %s", err)
 			}
 		}
@@ -51,7 +60,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		// When a PR is updated, check that the user is in the org or that an org
 		// member has said "ok to test" before building. There's no need to ask
 		// for "ok to test" because we do that once when the PR is created.
-		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest)
+		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
@@ -61,7 +70,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	case "labeled":
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
-			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest)
+			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -73,7 +82,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func askToJoin(ghc githubClient, pr github.PullRequest) error {
+func askToJoin(ghc githubClient, pr github.PullRequest, trustedOrg string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
@@ -100,7 +109,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 // trustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok to test
 // comments by org members.
-func trustedPullRequest(ghc githubClient, pr github.PullRequest) (bool, error) {
+func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
 	orgMember, err := ghc.IsMember(trustedOrg, author)

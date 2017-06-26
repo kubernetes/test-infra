@@ -261,7 +261,7 @@ func TestTrusted(t *testing.T) {
 				0: tc.Comments,
 			},
 		}
-		trusted, err := trustedPullRequest(g, tc.PR)
+		trusted, err := trustedPullRequest(g, tc.PR, "kubernetes")
 		if err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}

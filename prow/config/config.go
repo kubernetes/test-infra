@@ -34,6 +34,17 @@ type Config struct {
 
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
+
+	Triggers []Trigger `json:"triggers,omitempty"`
+}
+
+// Trigger is config for the trigger plugin.
+type Trigger struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// TrustedOrg is the org whose members' PRs will be automatically built
+	// for PRs to the above repos.
+	TrustedOrg string `json:"trusted_org,omitempty"`
 }
 
 // Load loads and parses the config at path.
