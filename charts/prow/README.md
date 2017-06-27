@@ -27,8 +27,8 @@ secret "hookmanager-cred" created
 2. Install the helm chart from the test-infra repo
 
 ```bash
-helm repo add test-infra http://storage.googleapis.com/test-infra-charts
-helm install test-infra/prow --set repos={"github_org/repo1" "github_org/repo2" ...}
+cd charts/prow
+helm install . --set repos={"github_org/repo1" "github_org/repo2" ...}
 ```
 
 3. Clean up
