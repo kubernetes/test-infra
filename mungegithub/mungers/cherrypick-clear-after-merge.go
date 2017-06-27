@@ -86,7 +86,7 @@ func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, s
 	// abcdef123..origin/release-1.2
 	logRefs := fmt.Sprintf("%s..origin/%s", base, branch)
 
-	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "--grep", logString, logRefs}
+	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "-F", "--grep", logString, logRefs}
 	out, err = c.features.Repos.GitCommand(args)
 	logs := string(out)
 	if err != nil {
