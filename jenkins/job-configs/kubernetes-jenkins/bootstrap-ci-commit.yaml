@@ -6,10 +6,9 @@
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
-            --branch='{branch}' \
             --job='{job-name}' \
             --json \
-            --repo='{repo-name}' \
+            --repo='{repo-name}={branch}' \
             --repo='k8s.io/release' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
