@@ -1510,7 +1510,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
@@ -2561,7 +2561,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-4": {
@@ -2575,7 +2575,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-5": {
@@ -2589,7 +2589,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-6": {
@@ -2603,7 +2603,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-7": {
@@ -2617,7 +2617,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ip-alias": {
@@ -2630,7 +2630,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-proto": {
@@ -3040,7 +3040,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-ingress-release-1-5": {
@@ -3054,7 +3054,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-ingress-release-1-6": {
@@ -3082,7 +3082,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-multizone": {
@@ -4663,7 +4663,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gke-large-cluster": {
@@ -5621,7 +5621,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-ubuntu-gke-1-6-reboot": {
@@ -5733,7 +5733,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-ubuntu-gke-reboot": {
