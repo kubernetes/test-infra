@@ -1485,7 +1485,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-ha-master": {
@@ -2132,8 +2132,399 @@
   "ci-kubernetes-e2e-gce-ubuntu-node": {
     "args": [
       "--properties=test/e2e_node/jenkins/jenkins-ci-ubuntu.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
+    ], 
+    "scenario": "kubernetes_kubelet", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-ubuntu-node-serial": {
+    "args": [
+      "--properties=test/e2e_node/jenkins/jenkins-serial-ubuntu.properties"
+    ], 
+    "scenario": "kubernetes_kubelet", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-ubuntu-serial": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-serial.env", 
+      "--mode=local", 
+      "--timeout=300m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gce-ubuntu-slow": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env", 
+      "--mode=local", 
+      "--timeout=150m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce.env", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-alpha-features": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features.env", 
+      "--timeout=180m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4.env", 
+      "--mode=local", 
+      "--timeout=180m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5.env", 
+      "--timeout=180m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6.env", 
+      "--timeout=180m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-autoscaling": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling.env", 
+      "--timeout=210m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-autoscaling-migs": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env", 
+      "--timeout=210m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-docker": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-docker.env", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-es-logging": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-es-logging.env", 
+      "--timeout=90m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-etcd3": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-etcd3.env", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-examples": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-examples.env", 
+      "--timeout=90m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-flaky": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-flaky.env", 
+      "--timeout=180m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-garbage": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-garbage.env", 
+      "--cluster=gc-feature", 
+      "--timeout=600m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-ingress": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress.env", 
+      "--timeout=90m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-ingress-release-1-4": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-4.env", 
+      "--mode=local", 
+      "--timeout=90m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-ingress-release-1-5": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-5.env", 
+      "--timeout=90m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-ingress-release-1-6": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress-release-1-6.env", 
+      "--timeout=90m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-ip-alias": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ip-alias.env", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "sig-network"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-proto": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-proto.env", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-reboot": {
+    "args": [
+      "--cluster=err-e2e", 
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot.env", 
+      "--timeout=180m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-reboot-release-1-4": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-4.env", 
+      "--mode=local", 
+      "--timeout=180m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-reboot-release-1-5": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-5.env", 
+      "--timeout=180m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-reboot-release-1-6": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot-release-1-6.env", 
+      "--timeout=180m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-release-1-4": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-4.env", 
+      "--mode=local", 
+      "--timeout=50m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-release-1-5": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-5.env", 
+      "--timeout=50m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-release-1-6": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-release-1-6.env", 
+      "--timeout=50m", 
+      "--mode=local"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-scalability": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability.env", 
+      "--cluster=e2e-scalability", 
+      "--timeout=120m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-scalability-release-1.5": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability-release-1.5.env", 
+      "--cluster=e2e-scalability-1-5", 
+      "--timeout=120m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-scalability-release-1.6": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env", 
+      "--cluster=e2e-scalability-1-6", 
+      "--timeout=120m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-sd-logging": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-sd-logging.env", 
+      "--timeout=120m"
+    ], 
+    "scenario": "kubernetes_e2e", 
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  }, 
+  "ci-kubernetes-e2e-gci-gce-serial": {
+    "args": [
+      "--env-file=platforms/gce.env", 
+      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial.env", 
+      "--timeout=500m"
+    ], 
+    "scenario": "kubernetes_e2e", 
     "sigOwners": [
       "UNKNOWN"
     ]
@@ -2483,7 +2874,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-es-logging": {
@@ -2496,7 +2887,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-etcd3": {
@@ -2511,8 +2902,8 @@
     "sigOwners": [
       "UNKNOWN"
     ]
-  },
-  "ci-kubernetes-e2e-gci-gce-examples": {
+  }, 
+  "ci-kubernetes-e2e-gci-gke-multizone": {
     "args": [
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-examples.env",
@@ -4664,7 +5055,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gke-large-cluster": {
@@ -5734,7 +6125,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-ubuntu-gke-reboot": {
