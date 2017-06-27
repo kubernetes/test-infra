@@ -46,7 +46,8 @@ type Config struct {
 	// PodNamespace is the namespace in the cluster that prow
 	// components will use for looking up Pods owned by ProwJobs.
 	// The namespace needs to exist and will not be created by prow.
-	PodNamespace string `json:"pod_namespace,omitempty"`
+	PodNamespace string       `json:"pod_namespace,omitempty"`
+	SlackEvents  []SlackEvent `json:"slackevents,omitempty"`
 }
 
 // Plank is config for the plank controller.
@@ -73,6 +74,18 @@ type Trigger struct {
 	// TrustedOrg is the org whose members' PRs will be automatically built
 	// for PRs to the above repos.
 	TrustedOrg string `json:"trusted_org,omitempty"`
+}
+
+// SlackEvent is config for the slackevents plugin.
+// If a PR is pushed to any of the repos listed in the config
+// then sent message to the all the  slack channels listed if pusher is NOT in the whitelist.
+type SlackEvent struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// List of channels on which a event is published.
+	Channels []string `json:"channels,omitempty"`
+	// A slack event is published if the user is not part of the WhiteList.
+	WhiteList []string `json:"whitelist,omitempty"`
 }
 
 // Load loads and parses the config at path.
