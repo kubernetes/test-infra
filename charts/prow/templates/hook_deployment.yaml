@@ -37,8 +37,9 @@ spec:
         image: {{ .Values.images.hook }}
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         args:
-        - "--github-bot-name={{ .Values.githubBotAccount }}"
-        - "--trusted-orgs={{ .Values.trustedOrgs }}"
+        - "-github-bot-name={{ .Values.githubBotAccount }}"
+        - "-config-path=/etc/prow/config.yaml"
+        - "-plugin-config=/etc/prow/plugins.yaml"
         ports:
           - name: http
             containerPort: {{ .Values.hook.service.internalPort }}
@@ -49,11 +50,8 @@ spec:
         - name: oauth
           mountPath: /etc/github
           readOnly: true
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
+        - name: prow
+          mountPath: /etc/prow
           readOnly: true
       volumes:
       - name: hmac
@@ -62,9 +60,6 @@ spec:
       - name: oauth
         secret:
           secretName: hookmanager-cred
-      - name: config
-        configMap:
-          name: {{ template "fullname" . }}
-      - name: plugins
+      - name: prow
         configMap:
           name: {{ template "fullname" . }}

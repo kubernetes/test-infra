@@ -17,17 +17,18 @@ spec:
       - name: "{{ template "splice" . }}"
         image: "{{ .Values.images.splice }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
         args:
+        - "-config-path=/etc/config/config.yaml"
         - -log-json
         env:
         - name: LINE_IMAGE
           value: "{{ .Values.images.line }}"
         - name: DRY_RUN
           value: "false"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
       volumes:
       - name: config
         configMap:

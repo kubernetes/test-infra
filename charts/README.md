@@ -6,7 +6,8 @@ This is the [helm](https://github.com/kubernetes/helm) chart repository for test
 To use this repository to install prow:
 
 ```bash
-helm repo add stable http://storage.googleapis.com/kubernetes-test-infra-charts
-helm install stable/prow --set repos={"github_org/repo1" "github_org/repo2" ...}
+git clone https://github.com/kubernetes/test-infra.git
+cd charts/prow
+helm install . --set repos={"github_org/repo1" "github_org/repo2" ...}
 ```
 

@@ -3,23 +3,20 @@ kind: ConfigMap
 metadata:
   name: {{ template "fullname" . }}
 data:
-  config: |-
+  config.yaml: |-
     ---
+    plank:
+      job_url_template: '{{ template "job_url_template" . }}'
+      report_template: '{{ template "report_template" . }}'
+      
+    triggers:
+    - repos:
+      {{ range .Values.repos }}
+      - {{ . }}
+      {{ end }}
+      trusted_org: {{ .Values.trustedOrg }}
+      
     presubmits:
-      # PR job triggering definitions.
-      # Keys: Full repo name: "org/repo".
-      # Values: List of jobs to run when events occur in the repo.
-      #   name:          Job name.
-      #   trigger:       Regexp commenters can say to trigger the job.
-      #   always_run:    Whether to run for every PR. Default is false. If this is
-      #                  set then your trigger needs to match "@k8s-bot test this".
-      #   context:       GitHub status context.
-      #   rerun_command: How should users trigger just this job, as a string, not a
-      #                  regex. For example, if the trigger regex is "(e2e )?test",
-      #                  then a rerun command might be "e2e test".
-      #   skip_report:   If true, then do not set status or comment on GitHub.
-      #   spec:          If this exists then run a kubernetes pod with this spec.
-      #                  Otherwise, run a Jenkins job.
       
       {{ range .Values.repos }}
       {{ . }}:
@@ -29,6 +26,7 @@ data:
         rerun_command: "@prow go"
         trigger: "@prow go"
       {{ end }}
+      
     postsubmits:
     periodics:
       - name: metrics-bigquery
@@ -38,7 +36,7 @@ data:
           - image: gcr.io/k8s-testimages/bigquery:0.1
             env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
+              value: /ectc/service-account/service-account.json
             volumeMounts:
             - name: service
               mountPath: /etc/service-account
@@ -47,7 +45,7 @@ data:
           - name: service
             secret:
               secretName: triage-service-account
-  plugins: |-
+  plugins.yaml: |-
       # Plugin repository whitelist.
       # Keys: Full repo name: "org/repo.
       # Values: List of plugins to run against the repo.

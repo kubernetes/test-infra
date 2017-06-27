@@ -31,6 +31,8 @@ spec:
       - name: {{ template "horologium" . }}
         image: "{{ .Values.images.horologium }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
+        args:
+        - "-config-path=/etc/config/config.yaml"
         volumeMounts:
         - name: config
           mountPath: /etc/config

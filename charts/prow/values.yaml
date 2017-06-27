@@ -5,8 +5,8 @@
 #the bot account used for hook management
 githubBotAccount: samsungbot
 
-#which orgs are trusted by prow
-trustedOrgs: samsung-cnct, kubernetes
+#which org is trusted by prow
+trustedOrg: kubernetes
 
 #this must be a domain under your control
 prowDomain: prow.k8s.io
@@ -19,16 +19,16 @@ repos:
 
 #docker iamges used by prow
 images:
-  crier: jfelten/crier:latest
-  deck: jfelten/deck:latest
-  hook: jfelten/hook:latest
+  crier: gcr.io/k8s-prow/crier:0.7
+  deck: gcr.io/k8s-prow/deck:0.30
+  hook: gcr.io/k8s-prow/hook:0.113
   hook_manager: jfelten/hook_manager:latest
-  horologium: jfelten/horologium:latest
+  horologium: gcr.io/k8s-prow/horologium:0.3
   lego: jetstack/kube-lego:0.1.3
-  line: jfelten/line:latest
-  sinker: jfelten/sinker:latest
-  splice: jfelten/splice:latest
-  tot: jfelten/tot:latest
+  line: gcr.io/k8s-prow/line:0.86
+  sinker: gcr.io/k8s-prow/sinker:0.10
+  splice: gcr.io/k8s-prow/splice:0.20
+  tot: gcr.io/k8s-prow/tot:0.2
   
   pullPolicy: Always
 
