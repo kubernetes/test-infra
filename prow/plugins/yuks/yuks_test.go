@@ -126,6 +126,15 @@ func TestJokes(t *testing.T) {
 			shouldError:   false,
 		},
 		{
+			name:          "leave joke on issue, trailing space",
+			state:         "open",
+			action:        "created",
+			body:          "/joke \r",
+			joke:          "this? that.",
+			shouldComment: true,
+			shouldError:   false,
+		},
+		{
 			name:          "reject bad joke chars",
 			state:         "open",
 			action:        "created",

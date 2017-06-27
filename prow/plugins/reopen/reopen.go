@@ -27,7 +27,7 @@ import (
 
 const pluginName = "reopen"
 
-var reopenRe = regexp.MustCompile(`(?mi)^\/reopen\r?$`)
+var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)

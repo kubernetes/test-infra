@@ -69,6 +69,15 @@ func TestCloseComment(t *testing.T) {
 			shouldComment: false,
 		},
 		{
+			name:          "close by author, trailing space.",
+			action:        "created",
+			state:         "open",
+			body:          "/close \r",
+			commenter:     "a",
+			shouldClose:   true,
+			shouldComment: false,
+		},
+		{
 			name:          "close by reviewer",
 			action:        "created",
 			state:         "open",

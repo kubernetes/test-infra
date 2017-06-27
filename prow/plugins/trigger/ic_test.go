@@ -96,6 +96,14 @@ func TestHandleIssueComment(t *testing.T) {
 			IsPR:        true,
 			ShouldBuild: true,
 		},
+		// Trusted member's ok to test, trailing space.
+		{
+			Author:      "t",
+			Body:        "looks great, thanks!\n/ok-to-test \r",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+		},
 		// Trusted member's not ok to test.
 		{
 			Author:      "t",
@@ -125,6 +133,15 @@ func TestHandleIssueComment(t *testing.T) {
 		{
 			Author:        "t",
 			Body:          "/retest",
+			State:         "open",
+			IsPR:          true,
+			ShouldBuild:   true,
+			StartsExactly: "pull-jib",
+		},
+		// Retest with one running and one failed, trailing space.
+		{
+			Author:        "t",
+			Body:          "/retest \r",
 			State:         "open",
 			IsPR:          true,
 			ShouldBuild:   true,

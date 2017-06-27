@@ -78,6 +78,15 @@ func TestOpenComment(t *testing.T) {
 			shouldComment: false,
 		},
 		{
+			name:          "re-open by reviewer, trailing space.",
+			action:        "created",
+			state:         "closed",
+			body:          "/reopen \r",
+			commenter:     "r1",
+			shouldReopen:  true,
+			shouldComment: false,
+		},
+		{
 			name:          "re-open edited by author",
 			action:        "edited",
 			state:         "closed",

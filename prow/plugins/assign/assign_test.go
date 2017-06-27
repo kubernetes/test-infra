@@ -230,6 +230,13 @@ func TestAssignAndReview(t *testing.T) {
 			unassigned: []string{"ashitaka", "eboshi"},
 		},
 		{
+			name:       "unassign buddies, trailing space.",
+			action:     "created",
+			body:       "/unassign @ashitaka @eboshi \r",
+			commenter:  "san",
+			unassigned: []string{"ashitaka", "eboshi"},
+		},
+		{
 			name:      "evil commenter",
 			action:    "created",
 			body:      "/assign @merlin",
@@ -366,7 +373,7 @@ func TestAssignAndReview(t *testing.T) {
 			unrequested: []string{"cjwagner"},
 		},
 		{
-			name:        "request review self with unrequest friend",
+			name:        "request review self, with unrequest friend, with trailing space.",
 			action:      "opened",
 			body:        "/cc \n/uncc @spxtr ",
 			commenter:   "cjwagner",
