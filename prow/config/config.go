@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"text/template"
 	"time"
 
 	"github.com/ghodss/yaml"
@@ -35,7 +36,25 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
+	Plank    Plank     `json:"plank,omitempty"`
 	Triggers []Trigger `json:"triggers,omitempty"`
+}
+
+// Plank is config for the plank controller.
+type Plank struct {
+	// JobURLTemplateString compiles into JobURLTemplate at load time.
+	JobURLTemplateString string `json:"job_url_template,omitempty"`
+	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
+	// will be passed a kube.ProwJob and is used to set the URL for the
+	// "details" link on GitHub as well as the link from deck.
+	JobURLTemplate *template.Template `json:"-"`
+
+	// ReportTemplateString compiles into ReportTemplate at load time.
+	ReportTemplateString string `json:"report_template,omitempty"`
+	// ReportTemplate is compiled at load time from ReportTemplateString. It
+	// will be passed a kube.ProwJob and can provide an optional blurb below
+	// the test failures comment.
+	ReportTemplate *template.Template `json:"-"`
 }
 
 // Trigger is config for the trigger plugin.
@@ -90,6 +109,18 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
 		}
 		c.Periodics[j].interval = d
+	}
+
+	if tmpl, err := template.New("JobURL").Parse(c.Plank.JobURLTemplateString); err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	} else {
+		c.Plank.JobURLTemplate = tmpl
+	}
+
+	if tmpl, err := template.New("Report").Parse(c.Plank.ReportTemplateString); err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	} else {
+		c.Plank.ReportTemplate = tmpl
 	}
 	return nil
 }

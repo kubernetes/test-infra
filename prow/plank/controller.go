@@ -22,21 +22,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"text/template"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 )
 
 const (
-	guberBasePR   = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull"
-	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
-	testInfra     = "https://github.com/kubernetes/test-infra/issues"
+	testInfra = "https://github.com/kubernetes/test-infra/issues"
 )
-
-var urlTmpl = template.Must(template.New("url").Parse(`https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/`))
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
@@ -63,22 +59,28 @@ type githubClient interface {
 	EditComment(org, repo string, ID int, comment string) error
 }
 
+type configAgent interface {
+	Config() *config.Config
+}
+
 type Controller struct {
 	kc     kubeClient
 	pkc    kubeClient
 	jc     jenkinsClient
 	ghc    githubClient
+	ca     configAgent
 	totURL string
 
 	reports []kube.ProwJob
 }
 
-func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, totURL string) *Controller {
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.ConfigAgent, totURL string) *Controller {
 	return &Controller{
 		kc:     kc,
 		pkc:    pkc,
 		jc:     jc,
 		ghc:    ghc,
+		ca:     ca,
 		totURL: totURL,
 	}
 }
@@ -212,7 +214,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 	} else {
 		pj.Status.BuildID = strconv.Itoa(status.Number)
 		var b bytes.Buffer
-		if err := urlTmpl.Execute(&b, &pj); err != nil {
+		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
 			return fmt.Errorf("error executing URL template: %v", err)
 		}
 		url := b.String()
@@ -265,7 +267,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			pj.Status.PodName = pn
 			pj.Status.BuildID = id
 			var b bytes.Buffer
-			if err := urlTmpl.Execute(&b, &pj); err != nil {
+			if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
 				return fmt.Errorf("error executing URL template: %v", err)
 			}
 			url := b.String()

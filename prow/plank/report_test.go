@@ -17,70 +17,12 @@ limitations under the License.
 package plank
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
-
-func TestTemplate(t *testing.T) {
-	var testcases = []struct {
-		org    string
-		repo   string
-		number int
-		suffix string
-	}{
-		{
-			org:    "o",
-			repo:   "r",
-			number: 4,
-			suffix: "o_r/4",
-		},
-		{
-			org:    "kubernetes",
-			repo:   "test-infra",
-			number: 123,
-			suffix: "test-infra/123",
-		},
-		{
-			org:    "kubernetes",
-			repo:   "kubernetes",
-			number: 123,
-			suffix: "123",
-		},
-		{
-			org:    "o",
-			repo:   "kubernetes",
-			number: 456,
-			suffix: "o_kubernetes/456",
-		},
-	}
-	for _, tc := range testcases {
-		var b bytes.Buffer
-		if err := tmpl.Execute(&b, &kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Refs: kube.Refs{
-					Org:  tc.org,
-					Repo: tc.repo,
-					Pulls: []kube.Pull{
-						kube.Pull{
-							Number: tc.number,
-						},
-					},
-				},
-			},
-		}); err != nil {
-			t.Errorf("Error executing template: %v", err)
-			continue
-		}
-		expectedPath := "https://k8s-gubernator.appspot.com/pr/" + tc.suffix
-		if !strings.Contains(b.String(), expectedPath) {
-			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
-		}
-	}
-}
 
 func TestParseIssueComment(t *testing.T) {
 	var testcases = []struct {

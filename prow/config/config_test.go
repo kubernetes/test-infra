@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -293,4 +294,183 @@ func TestBazelJobHasContainerPort(t *testing.T) {
 	if err := CheckBazelPortPeriodic(c.Periodics); err != nil {
 		t.Errorf("Error in periodic: %v", err)
 	}
+}
+
+func TestURLTemplate(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+	testcases := []struct {
+		name    string
+		jobType kube.ProwJobType
+		org     string
+		repo    string
+		job     string
+		build   string
+		expect  string
+	}{
+		{
+			name:    "k8s presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "kubernetes",
+			repo:    "kubernetes",
+			job:     "k8s-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/0/k8s-pre-1/1/",
+		},
+		{
+			name:    "k8s/test-infra presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "kubernetes",
+			repo:    "test-infra",
+			job:     "ti-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+		},
+		{
+			name:    "foo/k8s presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "foo",
+			repo:    "kubernetes",
+			job:     "k8s-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+		},
+		{
+			name:    "foo-bar presubmit",
+			jobType: kube.PresubmitJob,
+			org:     "foo",
+			repo:    "bar",
+			job:     "foo-pre-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+		},
+		{
+			name:    "k8s postsubmit",
+			jobType: kube.PostsubmitJob,
+			org:     "kubernetes",
+			repo:    "kubernetes",
+			job:     "k8s-post-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-post-1/1/",
+		},
+		{
+			name:    "k8s periodic",
+			jobType: kube.PeriodicJob,
+			org:     "kubernetes",
+			repo:    "kubernetes",
+			job:     "k8s-peri-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-peri-1/1/",
+		},
+		{
+			name:    "empty periodic",
+			jobType: kube.PeriodicJob,
+			org:     "",
+			repo:    "",
+			job:     "nan-peri-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/nan-peri-1/1/",
+		},
+		{
+			name:    "k8s batch",
+			jobType: kube.BatchJob,
+			org:     "kubernetes",
+			repo:    "kubernetes",
+			job:     "k8s-batch-1",
+			build:   "1",
+			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/batch/k8s-batch-1/1/",
+		},
+	}
+
+	for _, tc := range testcases {
+		var pj = kube.ProwJob{
+			Metadata: kube.ObjectMeta{Name: tc.name},
+			Spec: kube.ProwJobSpec{
+				Type: tc.jobType,
+				Job:  tc.job,
+				Refs: kube.Refs{
+					Pulls: []kube.Pull{{}},
+					Org:   tc.org,
+					Repo:  tc.repo,
+				},
+			},
+			Status: kube.ProwJobStatus{
+				BuildID: tc.build,
+			},
+		}
+
+		var b bytes.Buffer
+		if err := c.Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+			t.Fatalf("Error executing template: %v", err)
+		}
+		res := b.String()
+		if res != tc.expect {
+			t.Errorf("tc: %s, Expect URL: %s, got %s", tc.name, tc.expect, res)
+		}
+	}
+
+}
+
+func TestReportTemplate(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+	var testcases = []struct {
+		org    string
+		repo   string
+		number int
+		suffix string
+	}{
+		{
+			org:    "o",
+			repo:   "r",
+			number: 4,
+			suffix: "o_r/4",
+		},
+		{
+			org:    "kubernetes",
+			repo:   "test-infra",
+			number: 123,
+			suffix: "test-infra/123",
+		},
+		{
+			org:    "kubernetes",
+			repo:   "kubernetes",
+			number: 123,
+			suffix: "123",
+		},
+		{
+			org:    "o",
+			repo:   "kubernetes",
+			number: 456,
+			suffix: "o_kubernetes/456",
+		},
+	}
+	for _, tc := range testcases {
+		var b bytes.Buffer
+		if err := c.Plank.ReportTemplate.Execute(&b, &kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Refs: kube.Refs{
+					Org:  tc.org,
+					Repo: tc.repo,
+					Pulls: []kube.Pull{
+						kube.Pull{
+							Number: tc.number,
+						},
+					},
+				},
+			},
+		}); err != nil {
+			t.Errorf("Error executing template: %v", err)
+			continue
+		}
+		expectedPath := "https://k8s-gubernator.appspot.com/pr/" + tc.suffix
+		if !strings.Contains(b.String(), expectedPath) {
+			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
+		}
+	}
+
 }

@@ -11,7 +11,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "controller_test.go",
         "plank_test.go",
         "report_test.go",
     ],

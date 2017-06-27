@@ -24,6 +24,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
@@ -33,6 +34,7 @@ import (
 var (
 	totURL = flag.String("tot-url", "http://tot", "Tot URL")
 
+	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
 	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
@@ -77,6 +79,11 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
+	configAgent := &config.ConfigAgent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
 	var ghc *github.Client
 	if *dryRun {
 		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
@@ -84,7 +91,7 @@ func main() {
 		ghc = github.NewClient(*githubBotName, oauthSecret)
 	}
 
-	c := plank.NewController(kc, pkc, jc, ghc, *totURL)
+	c := plank.NewController(kc, pkc, jc, ghc, configAgent, *totURL)
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {
