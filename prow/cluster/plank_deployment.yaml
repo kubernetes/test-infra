@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.23
+        image: gcr.io/k8s-prow/plank:0.24
         args:
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
@@ -42,6 +42,9 @@ spec:
         - name: oauth
           mountPath: /etc/github
           readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
       volumes:
       - name: jenkins
         secret:
@@ -54,3 +57,6 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: config
+        configMap:
+          name: config

@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -28,8 +27,6 @@ import (
 )
 
 const commentTag = "<!-- test report -->"
-
-var tmpl = template.Must(template.New("report").Parse(`[Full PR test history](https://k8s-gubernator.appspot.com/pr/{{if eq .Spec.Refs.Org "kubernetes"}}{{if eq .Spec.Refs.Repo "kubernetes"}}{{else}}{{.Spec.Refs.Repo}}/{{end}}{{else}}{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}/{{end}}{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://k8s-gubernator.appspot.com/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.`))
 
 func (c *Controller) report(pj kube.ProwJob) error {
 	if !pj.Spec.Report {
@@ -61,7 +58,7 @@ func (c *Controller) report(pj kube.ProwJob) error {
 		}
 	}
 	if len(entries) > 0 {
-		comment, err := createComment(pj, entries)
+		comment, err := c.createComment(pj, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %v", err)
 		}
@@ -164,13 +161,13 @@ func createEntry(pj kube.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(pj kube.ProwJob, entries []string) (string, error) {
+func (c *Controller) createComment(pj kube.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
 	}
 	var b bytes.Buffer
-	if err := tmpl.Execute(&b, &pj); err != nil {
+	if err := c.ca.Config().Plank.ReportTemplate.Execute(&b, &pj); err != nil {
 		return "", err
 	}
 	lines := []string{

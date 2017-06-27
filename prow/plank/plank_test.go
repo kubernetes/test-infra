@@ -23,12 +23,32 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"text/template"
 	"time"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 )
+
+type fca struct {
+	c *config.Config
+}
+
+func newFakeConfigAgent() *fca {
+	return &fca{
+		c: &config.Config{
+			Plank: config.Plank{
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
+			},
+		},
+	}
+
+}
+
+func (f *fca) Config() *config.Config {
+	return f.c
+}
 
 type fkc struct {
 	prowjobs []kube.ProwJob
@@ -366,6 +386,7 @@ func TestSyncJenkinsJob(t *testing.T) {
 		c := Controller{
 			kc: fkc,
 			jc: fjc,
+			ca: newFakeConfigAgent(),
 		}
 		if err := c.syncJenkinsJob(tc.pj); err != nil != tc.expectedError {
 			t.Errorf("for case %s got wrong error: %v", tc.name, err)
@@ -625,6 +646,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		c := Controller{
 			kc:     fc,
 			pkc:    fpc,
+			ca:     newFakeConfigAgent(),
 			totURL: totServ.URL,
 		}
 		if err := c.syncKubernetesJob(tc.pj, pm); err != nil {
@@ -685,6 +707,7 @@ func TestBatch(t *testing.T) {
 		kc:  fc,
 		pkc: fc,
 		jc:  jc,
+		ca:  newFakeConfigAgent(),
 	}
 
 	if err := c.Sync(); err != nil {
@@ -760,6 +783,7 @@ func TestPeriodic(t *testing.T) {
 	c := Controller{
 		kc:     fc,
 		pkc:    fc,
+		ca:     newFakeConfigAgent(),
 		totURL: totServ.URL,
 	}
 
