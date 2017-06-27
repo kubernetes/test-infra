@@ -987,7 +987,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-flaky.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources=true",
+      "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
