@@ -86,7 +86,7 @@ func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, s
 	// abcdef123..origin/release-1.2
 	logRefs := fmt.Sprintf("%s..origin/%s", base, branch)
 
-	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "--grep", logString, logRefs}
+	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "-F", "--grep", logString, logRefs}
 	out, err = c.features.Repos.GitCommand(args)
 	logs := string(out)
 	if err != nil {
@@ -163,7 +163,7 @@ func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch 
 
 // Can we find a commit in the changelog that looks like it was done using the hack/cherry_pick_pull.sh script ?
 func (c *ClearPickAfterMerge) foundByScript(obj *github.MungeObject, branch string) bool {
-	logMsg := fmt.Sprintf("Cherry pick of #%d on %s.", *obj.Issue.Number, branch)
+	logMsg := fmt.Sprintf("Automated cherry pick of #%d", *obj.Issue.Number)
 
 	found, _ := c.foundLog(branch, logMsg)
 	if found {
