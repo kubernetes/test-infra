@@ -2853,3 +2853,10 @@ dashboard_groups:
   - latest-upgrades
   - 1.5-1.7-upgrade
   - 1.6-1.7-upgrade
+
+- name: master-health
+  dashboard_names:
+  - release-master-blocking
+  - master-kubectl-skew
+  - master-upgrade
+
