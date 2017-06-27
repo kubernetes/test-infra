@@ -163,7 +163,7 @@ func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch 
 
 // Can we find a commit in the changelog that looks like it was done using the hack/cherry_pick_pull.sh script ?
 func (c *ClearPickAfterMerge) foundByScript(obj *github.MungeObject, branch string) bool {
-	logMsg := fmt.Sprintf("Cherry pick of #%d on %s.", *obj.Issue.Number, branch)
+	logMsg := fmt.Sprintf("Automated cherry pick of #%d", *obj.Issue.Number)
 
 	found, _ := c.foundLog(branch, logMsg)
 	if found {
