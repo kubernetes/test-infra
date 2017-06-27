@@ -163,10 +163,13 @@ func (f fallbackHandler) get(b string) int {
 				body, err = ioutil.ReadAll(resp.Body)
 				if err == nil {
 					break
+				} else {
+					log.WithError(err).Error("Failed to read response body.")
 				}
 			}
+		} else {
+			log.WithError(err).Errorf("Failed to GET %s", url)
 		}
-		log.WithError(err).Error("fallback failed")
 		time.Sleep(2)
 	}
 
