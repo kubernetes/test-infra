@@ -167,7 +167,7 @@ function redraw() {
             r.appendChild(createTextCell(""));
             r.appendChild(createTextCell(""));
         }
-        if (build.url === "" || build.type === "periodic") {
+        if (build.url === "") {
             r.appendChild(createTextCell(build.job));
         } else {
             r.appendChild(createLinkCell(build.job, build.url));

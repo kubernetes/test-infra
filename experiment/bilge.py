@@ -16,7 +16,7 @@
 
 """Cancel old, duplicate tests of the same pr.
 
-This can happen with repeated '@k8s-bot test this' commands, or
+This can happen with repeated '/test all' commands, or
 even something as simple as pushing new code while builds are already queued.
 """
 

@@ -145,6 +145,37 @@ func TestConfig(t *testing.T) {
 		}
 	}
 
+	// No dup of dashboard groups, and no dup dashboard in a dashboard group
+	groups := make(map[string]bool)
+	tabs := make(map[string]string)
+
+	for idx, dashboardGroup := range config.DashboardGroups {
+		// All dashboard must have a name
+		if dashboardGroup.Name == "" {
+			t.Errorf("DashboardGroup %v: - DashboardGroup must have a name", idx)
+		}
+
+		// All dashboardgroup must not have duplicated names
+		if _, ok := groups[dashboardGroup.Name]; ok {
+			t.Errorf("Duplicated dashboard: %v", dashboardGroup.Name)
+		} else {
+			groups[dashboardGroup.Name] = true
+		}
+
+		for _, dashboard := range dashboardGroup.DashboardNames {
+			// All dashboard must not have duplicated names
+			if exist, ok := tabs[dashboard]; ok {
+				t.Errorf("Duplicated dashboard %v in dashboard group %v and %v", dashboard, exist, dashboardGroup.Name)
+			} else {
+				tabs[dashboard] = dashboardGroup.Name
+			}
+
+			if _, ok := dashboardmap[dashboard]; !ok {
+				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
+			}
+		}
+	}
+
 	// All Testgroup should be mapped to one or more tabs
 	for testgroupname, occurance := range testgroupMap {
 		if occurance == 1 {

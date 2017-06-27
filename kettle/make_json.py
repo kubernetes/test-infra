@@ -107,7 +107,10 @@ def path_to_job_and_number(path):
 def row_for_build(path, started, finished, results):
     tests = []
     for result in results:
-        tests.extend(parse_junit(result))
+        for test in parse_junit(result):
+            if '#' in test['name'] and not test.get('failed'):
+                continue  # skip successful repeated tests
+            tests.append(test)
     build = {
         'path': path,
         'test': tests,

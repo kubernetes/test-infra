@@ -17,6 +17,7 @@ limitations under the License.
 package githubutil
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -29,12 +30,12 @@ import (
 )
 
 type repositoryService interface {
-	CreateStatus(org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error)
-	GetCombinedStatus(org, repo, ref string, opt *github.ListOptions) (*github.CombinedStatus, *github.Response, error)
+	CreateStatus(ctx context.Context, org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error)
+	GetCombinedStatus(ctx context.Context, org, repo, ref string, opt *github.ListOptions) (*github.CombinedStatus, *github.Response, error)
 }
 
 type pullRequestService interface {
-	List(org, repo string, opt *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
+	List(ctx context.Context, org, repo string, opt *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
 }
 
 // Client is an augmentation of the go-github client that adds retry logic, rate limiting, and pagination
@@ -126,7 +127,7 @@ func (c *Client) CreateStatus(owner, repo string, pr *github.PullRequest, status
 	msg := fmt.Sprintf("creating status for ref '%s'", ref)
 	err := c.retry(msg, func() (*github.Response, error) {
 		var err error
-		result, resp, err = c.repoService.CreateStatus(owner, repo, ref, status)
+		result, resp, err = c.repoService.CreateStatus(context.Background(), owner, repo, ref, status)
 		return resp, err
 	})
 	return result, resp, err
@@ -145,7 +146,13 @@ func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedSta
 	for ; listOpts.Page <= lastPage; listOpts.Page++ {
 		err := c.retry(action, func() (*github.Response, error) {
 			var err error
-			status, resp, err = c.repoService.GetCombinedStatus(owner, repo, ref, listOpts)
+			status, resp, err = c.repoService.GetCombinedStatus(
+				context.Background(),
+				owner,
+				repo,
+				ref,
+				listOpts,
+			)
 			return resp, err
 		})
 		if err != nil {
@@ -180,7 +187,7 @@ func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptio
 	for ; opts.ListOptions.Page <= lastPage; opts.ListOptions.Page++ {
 		err := c.retry("processing PRs", func() (*github.Response, error) {
 			var err error
-			list, resp, err = c.prService.List(owner, repo, opts)
+			list, resp, err = c.prService.List(context.Background(), owner, repo, opts)
 			return resp, err
 		})
 		if err != nil {

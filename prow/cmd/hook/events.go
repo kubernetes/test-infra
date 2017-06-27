@@ -20,7 +20,52 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
+
+func (s *Server) handleReviewEvent(re github.ReviewEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":      re.PullRequest.Base.Repo.Owner.Login,
+		"repo":     re.PullRequest.Base.Repo.Name,
+		"pr":       re.PullRequest.Number,
+		"review":   re.Review.ID,
+		"reviewer": re.Review.User.Login,
+		"url":      re.Review.HTMLURL,
+	})
+	l.Infof("Review %s.", re.Action)
+	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
+		go func(p string, h plugins.ReviewEventHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, re); err != nil {
+				pc.Logger.WithError(err).Error("Error handling ReviewEvent.")
+			}
+		}(p, h)
+	}
+}
+
+func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
+	l := logrus.WithFields(logrus.Fields{
+		"org":       rce.PullRequest.Base.Repo.Owner.Login,
+		"repo":      rce.PullRequest.Base.Repo.Name,
+		"pr":        rce.PullRequest.Number,
+		"review":    rce.Comment.ReviewID,
+		"commenter": rce.Comment.User.Login,
+		"url":       rce.Comment.HTMLURL,
+	})
+	l.Infof("Review comment %s.", rce.Action)
+	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
+		go func(p string, h plugins.ReviewCommentEventHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, rce); err != nil {
+				pc.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
+			}
+		}(p, h)
+	}
+}
 
 func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	l := logrus.WithFields(logrus.Fields{
@@ -32,12 +77,14 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	})
 	l.Infof("Pull request %s.", pr.Action)
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
-		pc := s.Plugins.PluginClient
-		pc.Logger = l.WithField("plugin", p)
-		pc.Config = s.ConfigAgent.Config()
-		if err := h(pc, pr); err != nil {
-			pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
-		}
+		go func(p string, h plugins.PullRequestHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, pr); err != nil {
+				pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
+			}
+		}(p, h)
 	}
 }
 
@@ -50,12 +97,14 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 	})
 	l.Info("Push event.")
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
-		pc := s.Plugins.PluginClient
-		pc.Logger = l.WithField("plugin", p)
-		pc.Config = s.ConfigAgent.Config()
-		if err := h(pc, pe); err != nil {
-			pc.Logger.WithError(err).Error("Error handling PushEvent.")
-		}
+		go func(p string, h plugins.PushEventHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, pe); err != nil {
+				pc.Logger.WithError(err).Error("Error handling PushEvent.")
+			}
+		}(p, h)
 	}
 }
 
@@ -69,12 +118,14 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 	})
 	l.Infof("Issue %s.", i.Action)
 	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
-		pc := s.Plugins.PluginClient
-		pc.Logger = l.WithField("plugin", p)
-		pc.Config = s.ConfigAgent.Config()
-		if err := h(pc, i); err != nil {
-			pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
-		}
+		go func(p string, h plugins.IssueHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, i); err != nil {
+				pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
+			}
+		}(p, h)
 	}
 }
 
@@ -88,12 +139,14 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	})
 	l.Infof("Issue comment %s.", ic.Action)
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
-		pc := s.Plugins.PluginClient
-		pc.Logger = l.WithField("plugin", p)
-		pc.Config = s.ConfigAgent.Config()
-		if err := h(pc, ic); err != nil {
-			pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
-		}
+		go func(p string, h plugins.IssueCommentHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, ic); err != nil {
+				pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
+			}
+		}(p, h)
 	}
 }
 
@@ -108,11 +161,13 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
-		pc := s.Plugins.PluginClient
-		pc.Logger = l.WithField("plugin", p)
-		pc.Config = s.ConfigAgent.Config()
-		if err := h(pc, se); err != nil {
-			pc.Logger.WithError(err).Error("Error handling StatusEvent.")
-		}
+		go func(p string, h plugins.StatusEventHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = l.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			if err := h(pc, se); err != nil {
+				pc.Logger.WithError(err).Error("Error handling StatusEvent.")
+			}
+		}(p, h)
 	}
 }

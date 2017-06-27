@@ -34,8 +34,6 @@ def check(*cmd):
 def main(args):
     """Build kubernetes."""
     env = {}
-    if args.kops:
-        env['GCS_LOCATION'] = args.kops
     if args.unstable:
         env['DEB_CHANNEL'] = 'unstable'
     if args.suffix:
@@ -53,11 +51,7 @@ def main(args):
     for key, value in env.items():
         os.environ[key] = value
 
-    if args.script == 'make gcs-publish-ci':
-        # TODO(fejta): fix this hack
-        check('make', 'gcs-publish-ci')
-    else:
-        check(args.script)
+    check(args.script)
 
 
 if __name__ == '__main__':
@@ -79,7 +73,5 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--federation',
         help='Push federation images to the specified project')
-    PARSER.add_argument(
-        '--kops', help='Upload kops to the specified gs:// path')
     ARGS = PARSER.parse_args()
     main(ARGS)

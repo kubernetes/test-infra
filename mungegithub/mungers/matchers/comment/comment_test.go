@@ -19,8 +19,6 @@ package comment
 import (
 	"testing"
 	"time"
-
-	"github.com/google/go-github/github"
 )
 
 func getDate(year int, month time.Month, day, hour, min, sec int) *time.Time {
@@ -36,19 +34,19 @@ func TestCreationBefore(t *testing.T) {
 	}
 	if CreatedBefore(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{}) {
+	).Match(&Comment{}) {
 		t.Error("Shouldn't match nil CreatedAt")
 	}
 	if CreatedBefore(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{
+	).Match(&Comment{
 		CreatedAt: getDate(2000, 1, 1, 12, 0, 1),
 	}) {
 		t.Error("Should match later comment")
 	}
 	if !CreatedBefore(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{
+	).Match(&Comment{
 		CreatedAt: getDate(2000, 1, 1, 11, 0, 0),
 	}) {
 		t.Error("Shouldn't match earlier comment")
@@ -63,19 +61,19 @@ func TestCreationAfter(t *testing.T) {
 	}
 	if CreatedAfter(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{}) {
+	).Match(&Comment{}) {
 		t.Error("Shouldn't match nil CreatedAt")
 	}
 	if !CreatedAfter(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{
+	).Match(&Comment{
 		CreatedAt: getDate(2000, 1, 1, 12, 0, 1),
 	}) {
 		t.Error("Should match later comment")
 	}
 	if CreatedAfter(
 		time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
-	).Match(&github.IssueComment{
+	).Match(&Comment{
 		CreatedAt: getDate(2000, 1, 1, 11, 0, 0),
 	}) {
 		t.Error("Shouldn't match earlier comment")

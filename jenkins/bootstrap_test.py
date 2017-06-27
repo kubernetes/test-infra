@@ -346,7 +346,7 @@ class CheckoutTest(unittest.TestCase):
                 bootstrap.checkout(third_time_charm, REPO, None, PULL)
         self.assertEquals(expected_attempts, self.tries)
 
-    def test_pull(self):
+    def test_pull_ref(self):
         """checkout fetches the right ref for a pull."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
@@ -459,7 +459,7 @@ class ParseReposTest(unittest.TestCase):
             bootstrap.parse_repos(
                 FakeArgs(repo=['foo=this:abcd'], branch='', pull='')))
 
-    def test_pull(self):
+    def test_parse_repos(self):
         """--repo=foo=111,222 works"""
         self.assertEquals(
             {'foo': ('', '111,222')},
@@ -1996,6 +1996,25 @@ class JobTest(unittest.TestCase):
     def test_all_project_are_unique(self):
         # pylint: disable=line-too-long
         allowed_list = {
+            # The ubuntu image validation jobs intentionally share projects.
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow.env': 'ci-kubernetes-e2e-gke-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
@@ -2094,18 +2113,25 @@ class JobTest(unittest.TestCase):
                     self.fail('[%r]: Env %r: No quote in env' % (job, line))
                 if '$' in line:
                     self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
+                if '{' in line or '}' in line:
+                    self.fail('[%r]: Env %r: { and } are not allowed in env files' % (job, line))
 
                 # also test for https://github.com/kubernetes/test-infra/issues/2829
+                # TODO(fejta): sort this list
                 black = [
                     ('CHARTS_TEST=', '--charts-tests'),
                     ('E2E_DOWN=', '--down=true|false'),
                     ('E2E_NAME=', '--cluster=whatever'),
                     ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
                     ('E2E_TEST=', '--test=true|false'),
+                    ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
                     ('E2E_UP=', '--up=true|false'),
+                    ('E2E_OPT=--check_version_skew', '--check-version-skew=true|false'),
+                    ('E2E_OPT=', 'Send kubetest the flags directly'),
                     ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),
+                    ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
                     ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
                     ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
@@ -2188,6 +2214,7 @@ class JobTest(unittest.TestCase):
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
+                    self.assertNotIn('--charts-tests', args)  # Use --charts
                     self.assertTrue(
                         any('--check-leaked-resources' in a for a in args),
                         '--check-leaked-resources=true|false unset in %s' % job)
@@ -2199,8 +2226,14 @@ class JobTest(unittest.TestCase):
                     if (
                             '--env-file=jobs/platform/gce.env' not in args
                             and '--env-file=jobs/platform/gke.env' not in args
-                            and '--check-leaked-resources=true' in args):
+                            and '--check-leaked-resources=true' in args
+                            and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
+                    if (
+                            '--check-leaked-resources=true' not in args
+                            and 'generated' in config[job].get('tags', [])):
+                        self.fail('Generated job %s must have --check-leaked-resources=yes' % job)
+
                     extracts = [a for a in args if '--extract=' in a]
                     if not extracts:
                         self.fail('e2e job needs --extract flag: %s %s' % (job, args))
@@ -2216,6 +2249,22 @@ class JobTest(unittest.TestCase):
                             len(extracts), expected, job))
                     self.assertTrue(has_matching_env, job)
                     self.assertTrue(right_mode, job)
+
+                    has_image_family = any(
+                        [x for x in args if x.startswith('--image-family')])
+                    has_image_project = any(
+                        [x for x in args if x.startswith('--image-project')])
+                    local_mode = any(
+                        [x for x in args if x.startswith('--mode=local')])
+                    if (
+                            (has_image_family or has_image_project)
+                            and not local_mode):
+                        self.fail('--image-family / --image-project is not '
+                                  'supported in docker mode: %s' % job)
+                    if has_image_family != has_image_project:
+                        self.fail('--image-family and --image-project must be'
+                                  'both set or unset: %s' % job)
+
                     if job.startswith('pull-kubernetes-'):
                         self.assertIn('--cluster=', args)
                         if 'gke' in job:
@@ -2238,7 +2287,12 @@ class JobTest(unittest.TestCase):
         """Test jobs/config.json is sorted."""
         with open(bootstrap.test_infra('jobs/config.json')) as fp:
             original = fp.read()
-            expect = json.dumps(json.loads(original), sort_keys=True, indent=2) + '\n'
+            expect = json.dumps(
+                json.loads(original),
+                sort_keys=True,
+                indent=2,
+                separators=(',', ': ')
+                ) + '\n'
             if original != expect:
                 self.fail('config.json is not sorted, please run jobs/config_sort.py')
 

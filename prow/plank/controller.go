@@ -17,13 +17,15 @@ limitations under the License.
 package plank
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"text/template"
 	"time"
 
-	"k8s.io/test-infra/prow/crier"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -33,6 +35,8 @@ const (
 	guberBasePush = "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs"
 	testInfra     = "https://github.com/kubernetes/test-infra/issues"
 )
+
+var urlTmpl = template.Must(template.New("url").Parse(`https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/`))
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
@@ -50,25 +54,37 @@ type jenkinsClient interface {
 	Status(job, id string) (*jenkins.Status, error)
 }
 
-type Controller struct {
-	kc       kubeClient
-	pkc      kubeClient
-	jc       jenkinsClient
-	crierURL string
-	totURL   string
+type githubClient interface {
+	BotName() string
+	CreateStatus(org, repo, ref string, s github.Status) error
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	CreateComment(org, repo string, number int, comment string) error
+	DeleteComment(org, repo string, ID int) error
+	EditComment(org, repo string, ID int, comment string) error
 }
 
-func NewController(kc, pkc *kube.Client, jc *jenkins.Client, crierURL, totURL string) *Controller {
+type Controller struct {
+	kc     kubeClient
+	pkc    kubeClient
+	jc     jenkinsClient
+	ghc    githubClient
+	totURL string
+
+	reports []kube.ProwJob
+}
+
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, totURL string) *Controller {
 	return &Controller{
-		kc:       kc,
-		pkc:      pkc,
-		jc:       jc,
-		crierURL: crierURL,
-		totURL:   totURL,
+		kc:     kc,
+		pkc:    pkc,
+		jc:     jc,
+		ghc:    ghc,
+		totURL: totURL,
 	}
 }
 
 func (c *Controller) Sync() error {
+	c.reports = []kube.ProwJob{}
 	pjs, err := c.kc.ListProwJobs(nil)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
@@ -81,35 +97,41 @@ func (c *Controller) Sync() error {
 	for _, pod := range pods {
 		pm[pod.Metadata.Name] = pod
 	}
-	var errs []error
+	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
-		errs = append(errs, err)
+		syncErrs = append(syncErrs, err)
 	}
 	for _, pj := range pjs {
 		if pj.Spec.Agent == kube.KubernetesAgent {
 			if err := c.syncKubernetesJob(pj, pm); err != nil {
-				errs = append(errs, err)
+				syncErrs = append(syncErrs, err)
 			}
 		} else if pj.Spec.Agent == kube.JenkinsAgent {
 			if err := c.syncJenkinsJob(pj); err != nil {
-				errs = append(errs, err)
+				syncErrs = append(syncErrs, err)
 			}
 		} else {
-			errs = append(errs, fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent))
+			syncErrs = append(syncErrs, fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent))
 		}
 	}
-	if len(errs) == 0 {
-		return nil
-	} else {
-		return fmt.Errorf("errors syncing: %v", errs)
+	var reportErrs []error
+	for _, pj := range c.reports {
+		if err := c.report(pj); err != nil {
+			reportErrs = append(reportErrs, err)
+		}
 	}
+	if len(syncErrs) == 0 && len(reportErrs) == 0 {
+		return nil
+	}
+	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
-// terminateDupes aborts presubmits that have a newer version.
+// terminateDupes aborts presubmits that have a newer version. It modifies pjs
+// in-place when it aborts.
 func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]kube.ProwJob)
-	for _, pj := range pjs {
+	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
 		}
@@ -126,9 +148,11 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		if _, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel); err != nil {
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		if err != nil {
 			return err
 		}
+		pjs[i] = npj
 	}
 	return nil
 }
@@ -162,9 +186,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.JenkinsEnqueued = true
 			pj.Status.Description = "Jenkins job triggered."
 		}
-		if err := c.report(pj); err != nil {
-			return fmt.Errorf("error reporting to crier: %v", err)
-		}
+		c.reports = append(c.reports, pj)
 	} else if pj.Status.JenkinsEnqueued {
 		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
 			jerr = fmt.Errorf("error checking queue status: %v", err)
@@ -173,9 +195,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error checking queue status."
-			if err := c.report(pj); err != nil {
-				return fmt.Errorf("error reporting to crier: %v", err)
-			}
+			c.reports = append(c.reports, pj)
 		} else if eq {
 			// Still in queue.
 			return nil
@@ -188,16 +208,17 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
 		pj.Status.Description = "Error checking job status."
-		if err := c.report(pj); err != nil {
-			return fmt.Errorf("error reporting to crier: %v", err)
-		}
+		c.reports = append(c.reports, pj)
 	} else {
-		if url := guberURL(pj, strconv.Itoa(status.Number)); pj.Status.URL != url {
+		pj.Status.BuildID = strconv.Itoa(status.Number)
+		var b bytes.Buffer
+		if err := urlTmpl.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		url := b.String()
+		if pj.Status.URL != url {
 			pj.Status.URL = url
 			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
-			if err := c.report(pj); err != nil {
-				return fmt.Errorf("error reporting to crier: %v", err)
-			}
 		} else if status.Building {
 			// Build still going.
 			return nil
@@ -206,9 +227,6 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
-			if err := c.report(pj); err != nil {
-				return fmt.Errorf("error reporting to crier: %v", err)
-			}
 			for _, nj := range pj.Spec.RunAfterSuccess {
 				if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
@@ -218,10 +236,8 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
-			if err := c.report(pj); err != nil {
-				return fmt.Errorf("error reporting to crier: %v", err)
-			}
 		}
+		c.reports = append(c.reports, pj)
 	}
 	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
 	if rerr != nil || jerr != nil {
@@ -247,14 +263,18 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		pj.Status.State = kube.PendingState
 		if id, pn, err := c.startPod(pj); err == nil {
 			pj.Status.PodName = pn
-			pj.Status.URL = guberURL(pj, id)
+			pj.Status.BuildID = id
+			var b bytes.Buffer
+			if err := urlTmpl.Execute(&b, &pj); err != nil {
+				return fmt.Errorf("error executing URL template: %v", err)
+			}
+			url := b.String()
+			pj.Status.URL = url
 		} else {
 			return fmt.Errorf("error starting pod: %v", err)
 		}
 		pj.Status.Description = "Job triggered."
-		if err := c.report(pj); err != nil {
-			return fmt.Errorf("error reporting to crier: %v", err)
-		}
+		c.reports = append(c.reports, pj)
 	} else if pod, ok := pm[pj.Status.PodName]; !ok {
 		// Pod is missing. This shouldn't happen normally, but if someone goes
 		// in and manually deletes the pod then we'll hit it. Start a new pod.
@@ -269,13 +289,11 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		pj.Status.PodName = ""
 		pj.Status.State = kube.PendingState
 	} else if pod.Status.Phase == kube.PodSucceeded {
-		// Pod succeeded. Update ProwJob, talk to crier, and start next jobs.
+		// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.SuccessState
 		pj.Status.Description = "Job succeeded."
-		if err := c.report(pj); err != nil {
-			return fmt.Errorf("error reporting to crier: %v", err)
-		}
+		c.reports = append(c.reports, pj)
 		for _, nj := range pj.Spec.RunAfterSuccess {
 			if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
 				return fmt.Errorf("error starting next prowjob: %v", err)
@@ -287,13 +305,11 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			pj.Status.PodName = ""
 			pj.Status.State = kube.PendingState
 		} else {
-			// Pod failed. Update ProwJob, talk to crier.
+			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
-			if err := c.report(pj); err != nil {
-				return fmt.Errorf("error reporting to crier: %v", err)
-			}
+			c.reports = append(c.reports, pj)
 		}
 	} else {
 		// Pod is running. Do nothing.
@@ -303,27 +319,6 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 	return err
 }
 
-func (c *Controller) report(pj kube.ProwJob) error {
-	if !pj.Spec.Report {
-		return nil
-	}
-	if len(pj.Spec.Refs.Pulls) != 1 {
-		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(pj.Spec.Refs.Pulls))
-	}
-	return crier.ReportToCrier(c.crierURL, crier.Report{
-		RepoOwner:    pj.Spec.Refs.Org,
-		RepoName:     pj.Spec.Refs.Repo,
-		Author:       pj.Spec.Refs.Pulls[0].Author,
-		Number:       pj.Spec.Refs.Pulls[0].Number,
-		Commit:       pj.Spec.Refs.Pulls[0].SHA,
-		Context:      pj.Spec.Context,
-		State:        string(pj.Status.State),
-		RerunCommand: pj.Spec.RerunCommand,
-		Description:  pj.Status.Description,
-		URL:          pj.Status.URL,
-	})
-}
-
 func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	buildID, err := c.getBuildID(c.totURL, pj.Spec.Job)
 	if err != nil {
@@ -331,9 +326,6 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	}
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
-	spec.NodeSelector = map[string]string{
-		"role": "build",
-	}
 	// Keep this synchronized with get_running_build_log in Gubernator!
 	podName := fmt.Sprintf("%s-%s", pj.Spec.Job, buildID)
 	if len(podName) > 60 {
@@ -432,31 +424,4 @@ func (c *Controller) getBuildID(server, name string) (string, error) {
 		}
 	}
 	return "", err
-}
-
-// TODO(spxtr): Template this.
-func guberURL(pj kube.ProwJob, build string) string {
-	var url string
-	if pj.Spec.Type == kube.PresubmitJob || pj.Spec.Type == kube.BatchJob {
-		url = guberBasePR
-	} else {
-		url = guberBasePush
-	}
-	if pj.Spec.Refs.Org != "kubernetes" {
-		url = fmt.Sprintf("%s/%s_%s", url, pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
-	} else if pj.Spec.Refs.Repo != "kubernetes" {
-		url = fmt.Sprintf("%s/%s", url, pj.Spec.Refs.Repo)
-	}
-	switch t := pj.Spec.Type; t {
-	case kube.PresubmitJob:
-		return fmt.Sprintf("%s/%s/%s/%s/", url, strconv.Itoa(pj.Spec.Refs.Pulls[0].Number), pj.Spec.Job, build)
-	case kube.PostsubmitJob:
-		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
-	case kube.PeriodicJob:
-		return fmt.Sprintf("%s/%s/%s/", url, pj.Spec.Job, build)
-	case kube.BatchJob:
-		return fmt.Sprintf("%s/batch/%s/%s/", url, pj.Spec.Job, build)
-	default:
-		return testInfra
-	}
 }

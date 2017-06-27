@@ -358,29 +358,6 @@ func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
-func (c *Client) GetJob(name string) (Job, error) {
-	c.log("GetJob", name)
-	var retJob Job
-	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
-	}, &retJob)
-	return retJob, err
-}
-
-func (c *Client) ListJobs(labels map[string]string) ([]Job, error) {
-	c.log("ListJobs", labels)
-	var jl struct {
-		Items []Job `json:"items"`
-	}
-	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace),
-		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
-	}, &jl)
-	return jl.Items, err
-}
-
 func (c *Client) CreatePod(p Pod) (Pod, error) {
 	c.log("CreatePod", p)
 	var retPod Pod
@@ -390,47 +367,6 @@ func (c *Client) CreatePod(p Pod) (Pod, error) {
 		requestBody: &p,
 	}, &retPod)
 	return retPod, err
-}
-
-func (c *Client) CreateJob(j Job) (Job, error) {
-	c.log("CreateJob", j)
-	var retJob Job
-	err := c.request(&request{
-		method:      http.MethodPost,
-		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs", c.namespace),
-		requestBody: &j,
-	}, &retJob)
-	return retJob, err
-}
-
-func (c *Client) DeleteJob(name string) error {
-	c.log("DeleteJob", name)
-	return c.request(&request{
-		method: http.MethodDelete,
-		path:   fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
-	}, nil)
-}
-
-func (c *Client) PatchJob(name string, job Job) (Job, error) {
-	c.log("PatchJob", name, job)
-	var retJob Job
-	err := c.request(&request{
-		method:      http.MethodPatch,
-		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s", c.namespace, name),
-		requestBody: &job,
-	}, &retJob)
-	return retJob, err
-}
-
-func (c *Client) PatchJobStatus(name string, job Job) (Job, error) {
-	c.log("PatchJobStatus", name, job)
-	var retJob Job
-	err := c.request(&request{
-		method:      http.MethodPatch,
-		path:        fmt.Sprintf("/apis/batch/v1/namespaces/%s/jobs/%s/status", c.namespace, name),
-		requestBody: &job,
-	}, &retJob)
-	return retJob, err
 }
 
 func (c *Client) ReplaceSecret(name string, s Secret) error {

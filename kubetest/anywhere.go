@@ -29,11 +29,18 @@ import (
 
 var (
 	// kubernetes-anywhere specific flags.
-	kubernetesAnywherePath           = flag.String("kubernetes-anywhere-path", "", "(kubernetes-anywhere only) Path to the kubernetes-anywhere directory. Must be set for kubernetes-anywhere.")
-	kubernetesAnywherePhase2Provider = flag.String("kubernetes-anywhere-phase2-provider", "ignition", "(kubernetes-anywhere only) Provider for phase2 bootstrapping. (Defaults to ignition).")
-	kubernetesAnywhereKubeadmVersion = flag.String("kubernetes-anywhere-kubeadm-version", "stable", "(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
-	kubernetesAnywhereCluster        = flag.String("kubernetes-anywhere-cluster", "", "(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
-	kubernetesAnywhereUpTimeout      = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute, "(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
+	kubernetesAnywherePath = flag.String("kubernetes-anywhere-path", "",
+		"(kubernetes-anywhere only) Path to the kubernetes-anywhere directory. Must be set for kubernetes-anywhere.")
+	kubernetesAnywherePhase2Provider = flag.String("kubernetes-anywhere-phase2-provider", "ignition",
+		"(kubernetes-anywhere only) Provider for phase2 bootstrapping. (Defaults to ignition).")
+	kubernetesAnywhereKubeadmVersion = flag.String("kubernetes-anywhere-kubeadm-version", "stable",
+		"(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
+	kubernetesAnywhereKubernetesVersion = flag.String("kubernetes-anywhere-kubernetes-version", "",
+		"(kubernetes-anywhere only) Version of Kubernetes to use (e.g. latest, stable, latest-1.6, 1.6.3, etc).")
+	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
+		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
+	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
+		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -42,15 +49,15 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.cloud_provider="gce"
 
 .phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
-.phase1.gce.instance_type="n1-standard-2"
+.phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="us-central1"
-.phase1.gce.zone="us-central1-b"
+.phase1.gce.zone="us-central1-c"
 .phase1.gce.network="default"
 
 .phase2.installer_container="docker.io/colemickens/k8s-ignition:latest"
 .phase2.docker_registry="gcr.io/google-containers"
-.phase2.kubernetes_version="latest"
+.phase2.kubernetes_version="{{.KubernetesVersion}}"
 .phase2.provider="{{.Phase2Provider}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 
@@ -65,10 +72,11 @@ const kubernetesAnywhereConfigTemplate = `
 type kubernetesAnywhere struct {
 	path string
 	// These are exported only because their use in the config template requires it.
-	Phase2Provider string
-	KubeadmVersion string
-	Project        string
-	Cluster        string
+	Phase2Provider    string
+	KubeadmVersion    string
+	KubernetesVersion string
+	Project           string
+	Cluster           string
 }
 
 func NewKubernetesAnywhere() (*kubernetesAnywhere, error) {
@@ -92,11 +100,12 @@ func NewKubernetesAnywhere() (*kubernetesAnywhere, error) {
 	}
 
 	k := &kubernetesAnywhere{
-		path:           *kubernetesAnywherePath,
-		Phase2Provider: *kubernetesAnywherePhase2Provider,
-		KubeadmVersion: *kubernetesAnywhereKubeadmVersion,
-		Project:        project,
-		Cluster:        *kubernetesAnywhereCluster,
+		path:              *kubernetesAnywherePath,
+		Phase2Provider:    *kubernetesAnywherePhase2Provider,
+		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
+		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
+		Project:           project,
+		Cluster:           *kubernetesAnywhereCluster,
 	}
 
 	if err := k.writeConfig(); err != nil {

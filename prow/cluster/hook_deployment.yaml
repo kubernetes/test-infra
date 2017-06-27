@@ -30,15 +30,14 @@ spec:
       labels:
         app: hook
     spec:
-      nodeSelector:
-        role: prow
       terminationGracePeriodSeconds: 30
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.109
+        image: gcr.io/k8s-prow/hook:0.114
         imagePullPolicy: Always
         args:
-        - "--github-bot-name=k8s-ci-robot"
+        - --dry-run=false
+        - --github-bot-name=k8s-ci-robot
         ports:
           - name: http
             containerPort: 8888

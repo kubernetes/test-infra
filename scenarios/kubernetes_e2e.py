@@ -179,6 +179,26 @@ class LocalMode(object):
         """Add specified k8s.io repos (noop)."""
         pass
 
+    def use_latest_image(self, image_family, image_project):
+        """Gets the latest image from the image_family in the image_project."""
+        out = check_output(
+            'gcloud', 'compute', 'images', 'describe-from-family',
+            image_family, '--project=%s' % image_project)
+        latest_image = next(
+            (line[6:].strip() for line in out.split('\n') if (
+                line.startswith('name: '))),
+            None)
+        if not latest_image:
+            raise ValueError(
+                'Failed to get the latest image from family %s in project %s' % (
+                    image_family, image_project))
+        # TODO(yguo0905): Support this in GKE.
+        self.add_environment(
+            'KUBE_GCE_NODE_IMAGE=%s' % latest_image,
+            'KUBE_GCE_NODE_PROJECT=%s' % image_project)
+        print >>sys.stderr, 'Set KUBE_GCE_NODE_IMAGE=%s' % latest_image
+        print >>sys.stderr, 'Set KUBE_GCE_NODE_PROJECT=%s' % image_project
+
     def start(self, args):
         """Runs e2e-runner.sh after setting env and installing prereqs."""
         print >>sys.stderr, 'starts with local mode'
@@ -217,7 +237,7 @@ class DockerMode(object):
             '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
             '-v', '/etc/localtime:/etc/localtime:ro',
         ]
-        for path in mount_paths:
+        for path in mount_paths or []:
             self.cmd.extend(['-v', path])
 
         if sudo:
@@ -296,7 +316,6 @@ class DockerMode(object):
             '-v', '%s:%s:ro' % (path, service),
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
-
     def start(self, args):
         """Runs kubekins."""
         print >>sys.stderr, 'starts with docker mode'
@@ -346,7 +365,7 @@ def main(args):
         sudo = args.docker_in_docker or args.build is not None
         mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
-        mode = LocalMode(workspace)  # pylint: disable=redefined-variable-type
+        mode = LocalMode(workspace)  # pylint: disable=bad-option-value
     else:
         raise ValueError(args.mode)
 
@@ -379,50 +398,26 @@ def main(args):
         if not os.path.basename(k8s) == 'kubernetes':
             raise ValueError(k8s)
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
-    if args.stage:
-        runner_args.append('--stage=%s' % args.stage)
-    if args.stage_suffix:
-        runner_args.append('--stage-suffix=%s' % args.stage_suffix)
-    if args.multiple_federations:
-        runner_args.append('--multiple-federations')
-    if args.perf_tests:
-        runner_args.append('--perf-tests')
-    if args.charts_tests:
-        runner_args.append('--charts')
-    if args.kubemark:
-        runner_args.append('--kubemark')
+
     if args.up == 'true':
         runner_args.append('--up')
     if args.down == 'true':
         runner_args.append('--down')
-    if args.federation:
-        runner_args.append('--federation')
-    if args.deployment:
-        runner_args.append('--deployment=%s' % args.deployment)
-    if args.save:
-        runner_args.append('--save=%s' % args.save)
-    if args.publish:
-        runner_args.append('--publish=%s' % args.publish)
-    if args.timeout:
-        runner_args.append('--timeout=%s' % args.timeout)
-    if args.skew:
-        runner_args.append('--skew')
 
-    for ext in args.extract or []:
-        runner_args.append('--extract=%s' % ext)
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     # TODO(fejta): remove this add_environment after pushing new kubetest image
     mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
-    runner_args.append('--check-leaked-resources=%s' % args.check_leaked_resources)
+    runner_args.extend(args.kubetest_args)
 
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm)
-        opt = ' --kubernetes-anywhere-path /workspace/kubernetes-anywhere' \
-            ' --kubernetes-anywhere-phase2-provider kubeadm' \
-            ' --kubernetes-anywhere-cluster %s' \
-            ' --kubernetes-anywhere-kubeadm-version %s' % (cluster, version)
-        mode.add_environment('E2E_OPT=%s' % opt)
+        runner_args.extend([
+            '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
+            '--kubernetes-anywhere-phase2-provider=kubeadm',
+            '--kubernetes-anywhere-cluster=%s' % cluster,
+            '--kubernetes-anywhere-kubeadm-version=%s' % version,
+        ])
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
@@ -448,6 +443,9 @@ def main(args):
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
+    if args and args.image_family and args.image_project:
+        mode.use_latest_image(args.image_family, args.image_project)
+
     mode.start(runner_args)
 
 def create_parser():
@@ -457,6 +455,12 @@ def create_parser():
         '--mode', default='docker', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
+    parser.add_argument(
+        '--image-family',
+        help='The image family from which to fetch the latest image')
+    parser.add_argument(
+        '--image-project',
+        help='The image project from which to fetch the test images')
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
@@ -485,59 +489,47 @@ def create_parser():
         help='Path to service-account.json')
     parser.add_argument(
         '--mount-paths',
-        default=[],
-        nargs='*',
+        action='append',
         help='Paths that should be mounted within the docker container in the form local:remote')
-    parser.add_argument('--publish', help='Upload binaries to gs://path if set')
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
-        '--stage', help='Stage binaries to gs:// path if set')
-    parser.add_argument(
-        '--stage-suffix', help='Append suffix to staged version if set')
-    parser.add_argument(
-        '--charts-tests', action='store_true', help='If the test is a charts test job')
-    parser.add_argument(
-        '--extract', action="append", help='Pass --extract flag(s) to kubetest')
-    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
-    parser.add_argument(
-        '--deployment', default='bash', choices=['none', 'bash', 'kops', 'kubernetes-anywhere'])
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
-        '--down', default='true', help='If we need to tear down the e2e cluster')
-    parser.add_argument(
-        '--federation', action='store_true', help='If kubetest will have --federation flag')
-    parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
-    parser.add_argument(
-        '--kubemark', action='store_true', help='If the test uses kubemark')
-    parser.add_argument(
-        '--perf-tests', action='store_true', help='If the test need to run k8s/perf-test e2e test')
-    parser.add_argument(
-        '--save', default=None,
-        help='Save credentials to gs:// path on --up if set (or load from there if not --up)')
-    parser.add_argument(
-        '--skew', action='store_true',
-        help='If we need to run skew tests, pass --skew to kubetest.')
     parser.add_argument(
         '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
+        '--down', default='true', help='If we need to tear down the e2e cluster')
+    parser.add_argument(
         '--up', default='true', help='If we need to bring up a e2e cluster')
     parser.add_argument(
-        '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
-    parser.add_argument(
-        '--multiple-federations', action='store_true',
-        help='Run federation control planes in parallel')
-    parser.add_argument(
-        '--check-leaked-resources',
-        nargs='?', default='false', const='true',
-        help='Send --check-leaked-resources to kubetest')
+        '--kubetest_args',
+        action='append',
+        default=[],
+        help='Send unrecognized args directly to kubetest')
     return parser
 
+
+def parse_args(args=None):
+    """Return args, adding unrecognized args to kubetest_args."""
+    parser = create_parser()
+    args, extra = parser.parse_known_args(args)
+    args.kubetest_args += extra
+
+    if (args.image_family or args.image_project) and args.mode == 'docker':
+        raise ValueError(
+            '--image-family / --image-project is not supported in docker mode')
+    if bool(args.image_family) != bool(args.image_project):
+        raise ValueError(
+            '--image-family and --image-project must be both set or unset')
+    return args
+
+
 if __name__ == '__main__':
-    main(create_parser().parse_args())
+    main(parse_args())

@@ -1,6 +1,8 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  labels:
+    app: bulk-lgtm
   name: bulk-lgtm
 spec:
   replicas: 1
@@ -22,7 +24,7 @@ spec:
         - --dry-run=false
         - --bulk-lgtm-github-oauth-redirect-url=https://kubernetes.submit-queue.k8s.io/bulk-lgtm/bulkprs/callback
         - --bulk-lgtm-www-prefix=/bulk-lgtm
-        image: gcr.io/kubernetes-jenkins/submit-queue:2017-05-12-1f256fcd
+        image: gcr.io/k8s-testimages/submit-queue:2017-05-12-1f256fcd
         ports:
         - name: status
           containerPort: 8080

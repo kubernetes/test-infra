@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/slack"
 
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/cla"
@@ -50,12 +51,13 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
-	local = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
-	dry   = flag.Bool("dry", false, "Dry run for testing. Uses API tokens but does not mutate.")
+	local  = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
+	dryRun = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
 	githubBotName     = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack Kubernetes Team Token.")
 )
 
 func main() {
@@ -64,6 +66,7 @@ func main() {
 	var webhookSecret []byte
 	var githubClient *github.Client
 	var kubeClient *kube.Client
+	var slackClient *slack.Client
 	if *local {
 		logrus.Warning("Running in local mode for dev only.")
 
@@ -98,10 +101,19 @@ func main() {
 		}
 		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
+		teamToken := ""
+		if *slackTokenFile != "" {
+			teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
+			if err != nil {
+				logrus.WithError(err).Fatal("Could not read slack token file.")
+			}
+			teamToken = string(bytes.TrimSpace(teamTokenRaw))
+		}
+
 		if *githubBotName == "" {
 			logrus.Fatal("Must specify --github-bot-name.")
 		}
-		if *dry {
+		if *dryRun {
 			githubClient = github.NewDryRunClient(*githubBotName, oauthSecret)
 		} else {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)
@@ -110,6 +122,10 @@ func main() {
 		kubeClient, err = kube.NewClientInCluster(kube.ProwNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
+
+		if !*dryRun && teamToken != "" {
+			slackClient = slack.NewClient(teamToken)
 		}
 	}
 
@@ -122,6 +138,7 @@ func main() {
 		PluginClient: plugins.PluginClient{
 			GitHubClient: githubClient,
 			KubeClient:   kubeClient,
+			SlackClient:  slackClient,
 			Logger:       logrus.NewEntry(logrus.StandardLogger()),
 		},
 	}

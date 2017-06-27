@@ -18,6 +18,7 @@ package github
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	goflag "flag"
 	"fmt"
@@ -215,38 +216,41 @@ type analytics struct {
 	cachedAPICount     int       // how many api calls were answered by the local cache
 	apiPerSec          float64
 
-	AddLabels            analytic
-	AddLabelToRepository analytic
-	RemoveLabels         analytic
-	ListCollaborators    analytic
-	GetIssue             analytic
-	CloseIssue           analytic
-	CreateIssue          analytic
-	ListIssues           analytic
-	ListIssueEvents      analytic
-	ListCommits          analytic
-	ListLabels           analytic
-	GetCommit            analytic
-	ListFiles            analytic
-	GetCombinedStatus    analytic
-	SetStatus            analytic
-	GetPR                analytic
-	AddAssignee          analytic
-	RemoveAssignees      analytic
-	ClosePR              analytic
-	OpenPR               analytic
-	GetContents          analytic
-	ListComments         analytic
-	ListReviewComments   analytic
-	CreateComment        analytic
-	DeleteComment        analytic
-	EditComment          analytic
-	Merge                analytic
-	GetUser              analytic
-	SetMilestone         analytic
-	ListMilestones       analytic
-	GetBranch            analytic
-	EditBranch           analytic
+	AddLabels              analytic
+	AddLabelToRepository   analytic
+	RemoveLabels           analytic
+	ListCollaborators      analytic
+	GetIssue               analytic
+	CloseIssue             analytic
+	CreateIssue            analytic
+	ListIssues             analytic
+	ListIssueEvents        analytic
+	ListCommits            analytic
+	ListLabels             analytic
+	GetCommit              analytic
+	ListFiles              analytic
+	GetCombinedStatus      analytic
+	SetStatus              analytic
+	GetPR                  analytic
+	AddAssignee            analytic
+	RemoveAssignees        analytic
+	ClosePR                analytic
+	OpenPR                 analytic
+	GetContents            analytic
+	ListComments           analytic
+	ListReviewComments     analytic
+	CreateComment          analytic
+	DeleteComment          analytic
+	EditComment            analytic
+	Merge                  analytic
+	GetUser                analytic
+	SetMilestone           analytic
+	ListMilestones         analytic
+	GetBranch              analytic
+	UpdateBranchProtection analytic
+	RemoveBranchProtection analytic
+	GetBranchProtection    analytic
+	ListReviews            analytic
 }
 
 func (a analytics) print() {
@@ -284,7 +288,10 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "SetMilestone\t%d\t\n", a.SetMilestone.Count)
 	fmt.Fprintf(w, "ListMilestones\t%d\t\n", a.ListMilestones.Count)
 	fmt.Fprintf(w, "GetBranch\t%d\t\n", a.GetBranch.Count)
-	fmt.Fprintf(w, "EditBranch\t%d\t\n", a.EditBranch.Count)
+	fmt.Fprintf(w, "UpdateBranchProtection\t%d\t\n", a.UpdateBranchProtection.Count)
+	fmt.Fprintf(w, "RemoveBranchProtection\t%d\t\n", a.RemoveBranchProtection.Count)
+	fmt.Fprintf(w, "GetBranchProctection\t%d\t\n", a.GetBranchProtection.Count)
+	fmt.Fprintf(w, "ListReviews\t%d\t\n", a.ListReviews.Count)
 	w.Flush()
 	glog.V(2).Infof("\n%v", buf)
 }
@@ -299,6 +306,7 @@ type MungeObject struct {
 	events      []*github.IssueEvent
 	comments    []*github.IssueComment
 	prComments  []*github.PullRequestComment
+	prReviews   []*github.PullRequestReview
 	commitFiles []*github.CommitFile
 
 	// we cache the combinedStatus for `combinedStatusLifetime` seconds.
@@ -529,7 +537,12 @@ func (config *Config) SetClient(client *github.Client) {
 }
 
 func (config *Config) getPR(num int) (*github.PullRequest, error) {
-	pr, response, err := config.client.PullRequests.Get(config.Org, config.Project, num)
+	pr, response, err := config.client.PullRequests.Get(
+		context.Background(),
+		config.Org,
+		config.Project,
+		num,
+	)
 	config.analytics.GetPR.Call(config, response)
 	if err != nil {
 		glog.Errorf("Error getting PR# %d: %v", num, err)
@@ -539,7 +552,12 @@ func (config *Config) getPR(num int) (*github.PullRequest, error) {
 }
 
 func (config *Config) getIssue(num int) (*github.Issue, error) {
-	issue, resp, err := config.client.Issues.Get(config.Org, config.Project, num)
+	issue, resp, err := config.client.Issues.Get(
+		context.Background(),
+		config.Org,
+		config.Project,
+		num,
+	)
 	config.analytics.GetIssue.Call(config, resp)
 	if err != nil {
 		glog.Errorf("getIssue: %v", err)
@@ -567,57 +585,78 @@ func (config *Config) deleteCache(resp *github.Response) {
 
 // protects a branch and sets the required contexts
 func (config *Config) setBranchProtection(name string, contexts []string) error {
-	config.analytics.EditBranch.Call(config, nil)
-	glog.Infof("Setting protections for branch: %s", name)
-	if config.DryRun {
-		return nil
-	}
-	branch := &github.Branch{
-		Name: &name,
-		Protection: &github.Protection{
-			Enabled: boolPtr(true),
-			RequiredStatusChecks: &github.RequiredStatusChecks{
-				EnforcementLevel: stringPtr("non_admins"),
-				Contexts:         &contexts,
+	if len(contexts) > 0 {
+		glog.Infof("Setting protections for branch: %s", name)
+		config.analytics.UpdateBranchProtection.Call(config, nil)
+		if config.DryRun {
+			return nil
+		}
+		_, _, err := config.client.Repositories.UpdateBranchProtection(
+			context.Background(),
+			config.Org,
+			config.Project,
+			name,
+			&github.ProtectionRequest{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   false,
+					Contexts: contexts,
+				},
+				RequiredPullRequestReviews: nil,
+				Restrictions:               nil,
+				EnforceAdmins:              false,
 			},
-		},
+		)
+		if err != nil {
+			glog.Errorf("Unable to set branch protections for %s: %v", name, err)
+			return err
+		}
+	} else {
+		glog.Infof("Removing protections from branch: %s", name)
+		config.analytics.RemoveBranchProtection.Call(config, nil)
+		if config.DryRun {
+			return nil
+		}
+		_, err := config.client.Repositories.RemoveBranchProtection(
+			context.Background(),
+			config.Org,
+			config.Project,
+			name,
+		)
+		if err != nil {
+			glog.Errorf("Unable to remove branch protections from %s: %v", name, err)
+			return err
+		}
 	}
-	_, _, err := config.client.Repositories.EditBranch(config.Org, config.Project, name, branch)
-	if err != nil {
-		glog.Errorf("Unable to edit branch protections for %s: %v", name, err)
-	}
-	return err
+	return nil
 }
 
-// needsBranchProtection returns true if the branch is protected by exactly the set of
-// contexts in the argument
-func (config *Config) needsBranchProtection(branch *github.Branch, contexts []string) bool {
-	if branch == nil {
-		glog.Errorf("got a nil branch in needsBranchProtection()")
+// needsBranchProtection returns false if the branch is protected by exactly the set of
+// contexts in the argument, otherwise returns true.
+func (config *Config) needsBranchProtection(prot *github.Protection, contexts []string) bool {
+	if prot == nil {
+		if len(contexts) == 0 {
+			return false
+		}
+		glog.Infof("Setting branch protections because Protection is nil or disabled.")
 		return true
 	}
-
-	if branch.Protection == nil {
-		glog.Infof("Setting branch protections because branch.Protection is nil")
-		return true
-	}
-	if branch.Protection.Enabled == nil || *branch.Protection.Enabled == false {
-		glog.Infof("Setting branch protections because branch.Protection.Enabled is wrong")
-		return true
-	}
-	if branch.Protection.RequiredStatusChecks == nil {
+	if prot.RequiredStatusChecks == nil {
 		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks is nil")
 		return true
 	}
-	if branch.Protection.RequiredStatusChecks.EnforcementLevel == nil || *branch.Protection.RequiredStatusChecks.EnforcementLevel != "non_admins" {
-		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks.EnforcementLevel is wrong")
+	if prot.RequiredStatusChecks.Contexts == nil {
+		glog.Infof("Setting branch protections because Protection.RequiredStatusChecks.Contexts is wrong")
 		return true
 	}
-	if branch.Protection.RequiredStatusChecks.Contexts == nil {
-		glog.Infof("Setting branch protections because branch.Protection.RequiredStatusChecks.Contexts is wrong")
+	if prot.RequiredStatusChecks.Strict {
+		glog.Infof("Setting branch protections because Protection.RequiredStatusChecks.Strict is wrong")
 		return true
 	}
-	branchContexts := *branch.Protection.RequiredStatusChecks.Contexts
+	if prot.EnforceAdmins == nil || prot.EnforceAdmins.Enabled {
+		glog.Infof("Setting branch protections because Protection.EnforceAdmins.Enabled is wrong")
+		return true
+	}
+	branchContexts := prot.RequiredStatusChecks.Contexts
 
 	oldSet := sets.NewString(branchContexts...)
 	newSet := sets.NewString(contexts...)
@@ -630,14 +669,33 @@ func (config *Config) needsBranchProtection(branch *github.Branch, contexts []st
 
 // SetBranchProtection protects a branch and sets the required contexts
 func (config *Config) SetBranchProtection(name string, contexts []string) error {
-	branch, resp, err := config.client.Repositories.GetBranch(config.Org, config.Project, name)
+	branch, resp, err := config.client.Repositories.GetBranch(
+		context.Background(),
+		config.Org,
+		config.Project,
+		name,
+	)
 	config.analytics.GetBranch.Call(config, resp)
 	if err != nil {
-		glog.Errorf("Got error getting branch %s: %v", name, err)
+		glog.Errorf("Failed to get the branch '%s': %v\n", name, err)
 		return err
 	}
+	var prot *github.Protection
+	if branch != nil && branch.Protected != nil && *branch.Protected {
+		prot, resp, err = config.client.Repositories.GetBranchProtection(
+			context.Background(),
+			config.Org,
+			config.Project,
+			name,
+		)
+		config.analytics.GetBranchProtection.Call(config, resp)
+		if err != nil {
+			glog.Errorf("Got error getting branch protection for branch %s: %v", name, err)
+			return err
+		}
+	}
 
-	if !config.needsBranchProtection(branch, contexts) {
+	if !config.needsBranchProtection(prot, contexts) {
 		return nil
 	}
 
@@ -670,7 +728,12 @@ func (config *Config) ListMilestones(state string) ([]*github.Milestone, bool) {
 	listopts := github.MilestoneListOptions{
 		State: state,
 	}
-	milestones, resp, err := config.client.Issues.ListMilestones(config.Org, config.Project, &listopts)
+	milestones, resp, err := config.client.Issues.ListMilestones(
+		context.Background(),
+		config.Org,
+		config.Project,
+		&listopts,
+	)
 	config.analytics.ListMilestones.Call(config, resp)
 	if err != nil {
 		glog.Errorf("Error getting milestones of state %q: %v", state, err)
@@ -707,12 +770,17 @@ func (config *Config) NewIssue(title, body string, labels []string, owners []str
 		body = body[:maxCommentLen]
 	}
 
-	issue, _, err := config.client.Issues.Create(config.Org, config.Project, &github.IssueRequest{
-		Title:     &title,
-		Body:      &body,
-		Labels:    &labels,
-		Assignees: &owners,
-	})
+	issue, _, err := config.client.Issues.Create(
+		context.Background(),
+		config.Org,
+		config.Project,
+		&github.IssueRequest{
+			Title:     &title,
+			Body:      &body,
+			Labels:    &labels,
+			Assignees: &owners,
+		},
+	)
 	if err != nil {
 		glog.Errorf("createIssue: %v", err)
 		return nil, err
@@ -731,8 +799,14 @@ func (config *Config) GetBranchCommits(branch string, limit int) ([]*github.Repo
 	page := 0
 	for {
 		commitsPage, response, err := config.client.Repositories.ListCommits(
-			config.Org, config.Project,
-			&github.CommitsListOptions{ListOptions: github.ListOptions{PerPage: 100, Page: page}, SHA: branch})
+			context.Background(),
+			config.Org,
+			config.Project,
+			&github.CommitsListOptions{
+				ListOptions: github.ListOptions{PerPage: 100, Page: page},
+				SHA:         branch,
+			},
+		)
 		config.analytics.ListCommits.Call(config, response)
 		if err != nil {
 			glog.Errorf("Error reading commits for branch %s: %v", branch, err)
@@ -937,7 +1011,14 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 		}
 		obj.Issue.Labels = append(obj.Issue.Labels, label)
 	}
-	if _, _, err := config.client.Issues.AddLabelsToIssue(config.Org, config.Project, prNum, labels); err != nil {
+	_, _, err := config.client.Issues.AddLabelsToIssue(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		labels,
+	)
+	if err != nil {
 		glog.Errorf("Failed to set labels %v for %d: %v", labels, prNum, err)
 		return err
 	}
@@ -970,7 +1051,14 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	if config.DryRun {
 		return nil
 	}
-	if _, err := config.client.Issues.RemoveLabelForIssue(config.Org, config.Project, prNum, label); err != nil {
+	_, err := config.client.Issues.RemoveLabelForIssue(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		label,
+	)
+	if err != nil {
 		glog.Errorf("Failed to remove %v from issue %d: %v", label, prNum, err)
 		return err
 	}
@@ -1015,7 +1103,12 @@ func (obj *MungeObject) GetHeadAndBase() (headSHA, baseRef string, ok bool) {
 
 // GetSHAFromRef returns the current SHA of the given ref (i.e., branch).
 func (obj *MungeObject) GetSHAFromRef(ref string) (sha string, ok bool) {
-	commit, response, err := obj.config.client.Repositories.GetCommit(obj.config.Org, obj.config.Project, ref)
+	commit, response, err := obj.config.client.Repositories.GetCommit(
+		context.Background(),
+		obj.config.Org,
+		obj.config.Project,
+		ref,
+	)
 	obj.config.analytics.GetCommit.Call(obj.config, response)
 	if err != nil {
 		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.config.Org, obj.config.Project, ref, err)
@@ -1056,8 +1149,14 @@ func (obj *MungeObject) SetMilestone(title string) bool {
 		return true
 	}
 
-	request := &github.IssueRequest{Milestone: milestone.Number}
-	if _, _, err := obj.config.client.Issues.Edit(obj.config.Org, obj.config.Project, *obj.Issue.Number, request); err != nil {
+	_, _, err := obj.config.client.Issues.Edit(
+		context.Background(),
+		obj.config.Org,
+		obj.config.Project,
+		*obj.Issue.Number,
+		&github.IssueRequest{Milestone: milestone.Number},
+	)
+	if err != nil {
 		glog.Errorf("Failed to set milestone %d on issue %d: %v", *milestone.Number, *obj.Issue.Number, err)
 		return false
 	}
@@ -1139,7 +1238,12 @@ func (config *Config) fetchAllCollaborators() ([]*github.User, error) {
 	for {
 		glog.V(4).Infof("Fetching page %d of all users", page)
 		listOpts := &github.ListOptions{PerPage: 100, Page: page}
-		users, response, err := config.client.Repositories.ListCollaborators(config.Org, config.Project, listOpts)
+		users, response, err := config.client.Repositories.ListCollaborators(
+			context.Background(),
+			config.Org,
+			config.Project,
+			listOpts,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -1185,7 +1289,7 @@ func (config *Config) UsersWithAccess() ([]*github.User, []*github.User, error) 
 
 // GetUser will return information about the github user with the given login name
 func (config *Config) GetUser(login string) (*github.User, error) {
-	user, response, err := config.client.Users.Get(login)
+	user, response, err := config.client.Users.Get(context.Background(), login)
 	config.analytics.GetUser.Call(config, response)
 	return user, err
 }
@@ -1216,7 +1320,13 @@ func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, bool) {
 	tryNextPageAnyway := false
 	var lastResponse *github.Response
 	for {
-		eventPage, response, err := config.client.Issues.ListIssueEvents(config.Org, config.Project, prNum, &github.ListOptions{PerPage: 100, Page: page})
+		eventPage, response, err := config.client.Issues.ListIssueEvents(
+			context.Background(),
+			config.Org,
+			config.Project,
+			prNum,
+			&github.ListOptions{PerPage: 100, Page: page},
+		)
 		config.analytics.ListIssueEvents.Call(config, response)
 		if err != nil {
 			if tryNextPageAnyway {
@@ -1299,7 +1409,13 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus, ok b
 		return nil, false
 	}
 	// TODO If we have more than 100 statuses we need to deal with paging.
-	combinedStatus, response, err := config.client.Repositories.GetCombinedStatus(config.Org, config.Project, *pr.Head.SHA, &github.ListOptions{})
+	combinedStatus, response, err := config.client.Repositories.GetCombinedStatus(
+		context.Background(),
+		config.Org,
+		config.Project,
+		*pr.Head.SHA,
+		&github.ListOptions{},
+	)
 	config.analytics.GetCombinedStatus.Call(config, response)
 	if err != nil {
 		glog.Errorf("Failed to get combined status: %v", err)
@@ -1311,13 +1427,13 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus, ok b
 }
 
 // SetStatus allowes you to set the Github Status
-func (obj *MungeObject) SetStatus(state, url, description, context string) bool {
+func (obj *MungeObject) SetStatus(state, url, description, statusContext string) bool {
 	config := obj.config
 	status := &github.RepoStatus{
 		State:       &state,
 		TargetURL:   &url,
 		Description: &description,
-		Context:     &context,
+		Context:     &statusContext,
 	}
 	pr, ok := obj.GetPR()
 	if !ok {
@@ -1325,12 +1441,18 @@ func (obj *MungeObject) SetStatus(state, url, description, context string) bool 
 		return false
 	}
 	ref := *pr.Head.SHA
-	glog.Infof("PR %d setting %q Github status to %q", *obj.Issue.Number, context, description)
+	glog.Infof("PR %d setting %q Github status to %q", *obj.Issue.Number, statusContext, description)
 	config.analytics.SetStatus.Call(config, nil)
 	if config.DryRun {
 		return true
 	}
-	_, _, err := config.client.Repositories.CreateStatus(config.Org, config.Project, ref, status)
+	_, _, err := config.client.Repositories.CreateStatus(
+		context.Background(),
+		config.Org,
+		config.Project,
+		ref,
+		status,
+	)
 	if err != nil {
 		glog.Errorf("Unable to set status. PR %d Ref: %q: %v", *obj.Issue.Number, ref, err)
 		return false
@@ -1487,7 +1609,13 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 	commits := []*github.RepositoryCommit{}
 	page := 0
 	for {
-		commitsPage, response, err := config.client.PullRequests.ListCommits(config.Org, config.Project, *obj.Issue.Number, &github.ListOptions{PerPage: 100, Page: page})
+		commitsPage, response, err := config.client.PullRequests.ListCommits(
+			context.Background(),
+			config.Org,
+			config.Project,
+			*obj.Issue.Number,
+			&github.ListOptions{PerPage: 100, Page: page},
+		)
 		config.analytics.ListCommits.Call(config, response)
 		if err != nil {
 			glog.Errorf("Error commits for PR %d: %v", *obj.Issue.Number, err)
@@ -1506,7 +1634,12 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 			glog.Errorf("Invalid Repository Commit: %v", c)
 			continue
 		}
-		commit, response, err := config.client.Repositories.GetCommit(config.Org, config.Project, *c.SHA)
+		commit, response, err := config.client.Repositories.GetCommit(
+			context.Background(),
+			config.Org,
+			config.Project,
+			*c.SHA,
+		)
 		config.analytics.GetCommit.Call(config, response)
 		if err != nil {
 			glog.Errorf("Can't load commit %s %s %s: %v", config.Org, config.Project, *c.SHA, err)
@@ -1539,7 +1672,13 @@ func (obj *MungeObject) ListFiles() ([]*github.CommitFile, bool) {
 	for {
 		listOpts.Page = page
 		glog.V(8).Infof("Fetching page %d of changed files for issue %d", page, prNum)
-		files, response, err := obj.config.client.PullRequests.ListFiles(config.Org, config.Project, prNum, listOpts)
+		files, response, err := obj.config.client.PullRequests.ListFiles(
+			context.Background(),
+			config.Org,
+			config.Project,
+			prNum,
+			listOpts,
+		)
 		config.analytics.ListFiles.Call(config, response)
 		if err != nil {
 			glog.Errorf("Unable to ListFiles: %v", err)
@@ -1596,7 +1735,14 @@ func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 	if config.DryRun {
 		return nil
 	}
-	if _, _, err := config.client.Issues.RemoveAssignees(config.Org, config.Project, prNum, assignees); err != nil {
+	_, _, err := config.client.Issues.RemoveAssignees(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		assignees,
+	)
+	if err != nil {
 		glog.Errorf("Error unassigning %v from PR# %d: %v", assignees, prNum, err)
 		return err
 	}
@@ -1624,7 +1770,14 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 	if config.DryRun {
 		return nil
 	}
-	if _, _, err := config.client.Issues.AddAssignees(config.Org, config.Project, prNum, []string{owner}); err != nil {
+	_, _, err := config.client.Issues.AddAssignees(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		[]string{owner},
+	)
+	if err != nil {
 		glog.Errorf("Error assigning issue #%d to %v: %v", prNum, owner, err)
 		return err
 	}
@@ -1652,7 +1805,14 @@ func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
 	if config.DryRun {
 		return nil
 	}
-	if _, _, err := config.client.Issues.Edit(config.Org, config.Project, *obj.Issue.Number, state); err != nil {
+	_, _, err := config.client.Issues.Edit(
+		context.Background(),
+		config.Org,
+		config.Project,
+		*obj.Issue.Number,
+		state,
+	)
+	if err != nil {
 		glog.Errorf("Error closing issue #%d: %v: %v", *obj.Issue.Number, msg, err)
 		return err
 	}
@@ -1673,7 +1833,14 @@ func (obj *MungeObject) ClosePR() bool {
 	}
 	state := "closed"
 	pr.State = &state
-	if _, _, err := config.client.PullRequests.Edit(config.Org, config.Project, *pr.Number, pr); err != nil {
+	_, _, err := config.client.PullRequests.Edit(
+		context.Background(),
+		config.Org,
+		config.Project,
+		*pr.Number,
+		pr,
+	)
+	if err != nil {
 		glog.Errorf("Failed to close pr %d: %v", *pr.Number, err)
 		return false
 	}
@@ -1699,7 +1866,13 @@ func (obj *MungeObject) OpenPR(numTries int) bool {
 	pr.State = &state
 	// Try pretty hard to re-open, since it's pretty bad if we accidentally leave a PR closed
 	for tries := 0; tries < numTries; tries++ {
-		_, _, err := config.client.PullRequests.Edit(config.Org, config.Project, *pr.Number, pr)
+		_, _, err := config.client.PullRequests.Edit(
+			context.Background(),
+			config.Org,
+			config.Project,
+			*pr.Number,
+			pr,
+		)
 		if err == nil {
 			return true
 		}
@@ -1720,7 +1893,13 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 	if len(sha) > 0 {
 		getOpts.Ref = sha
 	}
-	output, _, response, err := config.client.Repositories.GetContents(config.Org, config.Project, file, getOpts)
+	output, _, response, err := config.client.Repositories.GetContents(
+		context.Background(),
+		config.Org,
+		config.Project,
+		file,
+		getOpts,
+	)
 	config.analytics.GetContents.Call(config, response)
 	if err != nil {
 		err = fmt.Errorf("unable to get %q at commit %q", file, sha)
@@ -1733,12 +1912,12 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 		glog.Errorf("%v", err)
 		return "", err
 	}
-	b, err := output.Decode()
+	content, err := output.GetContent()
 	if err != nil {
 		glog.Errorf("Unable to decode file contents: %v", err)
 		return "", err
 	}
-	return string(b), nil
+	return content, nil
 }
 
 // MergeCommit will return the sha of the merge. PRs which have not merged
@@ -1805,7 +1984,14 @@ func (obj *MungeObject) MergePR(who string) bool {
 		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, issueBody)
 	}
 
-	_, _, err := config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody, nil)
+	_, _, err := config.client.PullRequests.Merge(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		mergeBody,
+		nil,
+	)
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates
 	// we will only get the bellow error if we provided a particular sha to merge PUT. We aren't doing that
@@ -1815,7 +2001,14 @@ func (obj *MungeObject) MergePR(who string) bool {
 	// then merge this PR, so try again.
 	if err != nil && strings.Contains(err.Error(), "branch was modified. Review and try the merge again.") {
 		if mergeable, _ := obj.IsMergeable(); mergeable {
-			_, _, err = config.client.PullRequests.Merge(config.Org, config.Project, prNum, mergeBody, nil)
+			_, _, err = config.client.PullRequests.Merge(
+				context.Background(),
+				config.Org,
+				config.Project,
+				prNum,
+				mergeBody,
+				nil,
+			)
 		}
 	}
 	if err != nil {
@@ -1868,7 +2061,13 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, bool
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
-		comments, response, err := obj.config.client.PullRequests.ListComments(config.Org, config.Project, prNum, listOpts)
+		comments, response, err := obj.config.client.PullRequests.ListComments(
+			context.Background(),
+			config.Org,
+			config.Project,
+			prNum,
+			listOpts,
+		)
 		config.analytics.ListReviewComments.Call(config, response)
 		if err != nil {
 			if tryNextPageAnyway {
@@ -1922,7 +2121,13 @@ func (obj *MungeObject) ListComments() ([]*github.IssueComment, bool) {
 	for {
 		listOpts.ListOptions.Page = page
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, issueNum)
-		comments, response, err := obj.config.client.Issues.ListComments(config.Org, config.Project, issueNum, listOpts)
+		comments, response, err := obj.config.client.Issues.ListComments(
+			context.Background(),
+			config.Org,
+			config.Project,
+			issueNum,
+			listOpts,
+		)
 		config.analytics.ListComments.Call(config, response)
 		if err != nil {
 			if tryNextPageAnyway {
@@ -1971,7 +2176,14 @@ func (obj *MungeObject) WriteComment(msg string) error {
 		glog.Info("Comment in %d was larger than %d and was truncated", prNum, maxCommentLen)
 		msg = msg[:maxCommentLen]
 	}
-	if _, _, err := config.client.Issues.CreateComment(config.Org, config.Project, prNum, &github.IssueComment{Body: &msg}); err != nil {
+	_, _, err := config.client.Issues.CreateComment(
+		context.Background(),
+		config.Org,
+		config.Project,
+		prNum,
+		&github.IssueComment{Body: &msg},
+	)
+	if err != nil {
 		glog.Errorf("%v", err)
 		return err
 	}
@@ -2015,7 +2227,13 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 	if config.DryRun {
 		return nil
 	}
-	if _, err := config.client.Issues.DeleteComment(config.Org, config.Project, *comment.ID); err != nil {
+	_, err := config.client.Issues.DeleteComment(
+		context.Background(),
+		config.Org,
+		config.Project,
+		*comment.ID,
+	)
+	if err != nil {
 		glog.Errorf("Error removing comment: %v", err)
 		return err
 	}
@@ -2049,7 +2267,13 @@ func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) e
 		body = body[:maxCommentLen]
 	}
 	patch := github.IssueComment{Body: &body}
-	resp, _, err := config.client.Issues.EditComment(config.Org, config.Project, *comment.ID, &patch)
+	resp, _, err := config.client.Issues.EditComment(
+		context.Background(),
+		config.Org,
+		config.Project,
+		*comment.ID,
+		&patch,
+	)
 	if err != nil {
 		glog.Errorf("Error editing comment: %v", err)
 		return err
@@ -2127,6 +2351,70 @@ func (obj *MungeObject) MergedAt() (*time.Time, bool) {
 	return pr.MergedAt, true
 }
 
+// ListReviews returns a list of the Pull Request Reviews on a PR.
+func (obj *MungeObject) ListReviews() ([]*github.PullRequestReview, bool) {
+	if obj.prReviews != nil {
+		return obj.prReviews, true
+	}
+	if !obj.IsPR() {
+		return nil, false
+	}
+
+	pr, ok := obj.GetPR()
+	if !ok {
+		return nil, false
+	}
+	prNum := *pr.Number
+	allReviews := []*github.PullRequestReview{}
+
+	listOpts := &github.ListOptions{PerPage: 100}
+
+	config := obj.config
+	page := 1
+	// Try to work around not finding comments--suspect some cache invalidation bug when the number of pages changes.
+	tryNextPageAnyway := false
+	var lastResponse *github.Response
+	for {
+		listOpts.Page = page
+		glog.V(8).Infof("Fetching page %d of reviews for pr %d", page, prNum)
+		reviews, response, err := obj.config.client.PullRequests.ListReviews(
+			context.Background(),
+			config.Org,
+			config.Project,
+			prNum,
+			listOpts,
+		)
+		config.analytics.ListReviews.Call(config, response)
+		if err != nil {
+			if tryNextPageAnyway {
+				// Cached last page was actually truthful -- expected error.
+				break
+			}
+			return nil, false
+		}
+		if tryNextPageAnyway {
+			if len(reviews) == 0 {
+				break
+			}
+			glog.Infof("For %v: supposedly there weren't more reviews, but we asked anyway and found %v more.", prNum, len(reviews))
+			obj.config.deleteCache(lastResponse)
+			tryNextPageAnyway = false
+		}
+		allReviews = append(allReviews, reviews...)
+		if response.LastPage == 0 || response.LastPage <= page {
+			if len(allReviews)%100 == 0 {
+				tryNextPageAnyway = true
+				lastResponse = response
+			} else {
+				break
+			}
+		}
+		page++
+	}
+	obj.prReviews = allReviews
+	return allReviews, true
+}
+
 func (config *Config) runMungeFunction(obj *MungeObject, fn MungeFunction) error {
 	if obj.Issue.Number == nil {
 		glog.Infof("Skipping issue with no number, very strange")
@@ -2184,15 +2472,19 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	since := time.Now()
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
-		listOpts := &github.IssueListByRepoOptions{
-			Sort:        "created",
-			State:       config.State,
-			Labels:      config.Labels,
-			Direction:   "asc",
-			ListOptions: github.ListOptions{PerPage: 100, Page: page},
-			Since:       config.since,
-		}
-		issues, response, err := config.client.Issues.ListByRepo(config.Org, config.Project, listOpts)
+		issues, response, err := config.client.Issues.ListByRepo(
+			context.Background(),
+			config.Org,
+			config.Project,
+			&github.IssueListByRepoOptions{
+				Sort:        "created",
+				State:       config.State,
+				Labels:      config.Labels,
+				Direction:   "asc",
+				ListOptions: github.ListOptions{PerPage: 100, Page: page},
+				Since:       config.since,
+			},
+		)
 		config.analytics.ListIssues.Call(config, response)
 		if err != nil {
 			return err
@@ -2250,7 +2542,12 @@ func (config *Config) ListAllIssues(listOpts *github.IssueListByRepoOptions) ([]
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
 		listOpts.ListOptions = github.ListOptions{PerPage: 100, Page: page}
-		issues, response, err := config.client.Issues.ListByRepo(config.Org, config.Project, listOpts)
+		issues, response, err := config.client.Issues.ListByRepo(
+			context.Background(),
+			config.Org,
+			config.Project,
+			listOpts,
+		)
 		config.analytics.ListIssues.Call(config, response)
 		if err != nil {
 			return nil, err
@@ -2292,7 +2589,12 @@ func (config *Config) GetLabels() ([]*github.Label, error) {
 	for {
 		glog.V(4).Infof("Fetching page %d of labels", page)
 		listOpts = github.ListOptions{PerPage: 100, Page: page}
-		labels, response, err := config.client.Issues.ListLabels(config.Org, config.Project, &listOpts)
+		labels, response, err := config.client.Issues.ListLabels(
+			context.Background(),
+			config.Org,
+			config.Project,
+			&listOpts,
+		)
 		config.analytics.ListLabels.Call(config, response)
 		if err != nil {
 			return nil, err
@@ -2315,7 +2617,12 @@ func (config *Config) AddLabel(label *github.Label) error {
 	if config.DryRun {
 		return nil
 	}
-	_, _, err := config.client.Issues.CreateLabel(config.Org, config.Project, label)
+	_, _, err := config.client.Issues.CreateLabel(
+		context.Background(),
+		config.Org,
+		config.Project,
+		label,
+	)
 	if err != nil {
 		return err
 	}

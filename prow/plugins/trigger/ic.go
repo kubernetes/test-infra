@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var okToTest = regexp.MustCompile(`(?m)^(@k8s-bot )?ok to test\r?$`)
+var okToTest = regexp.MustCompile(`((?m)^(@k8s-bot )?ok to test\r?$|(?m)^/ok-to-test\r?$)`)
 var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleIC(c client, ic github.IssueCommentEvent) error {
@@ -48,6 +48,13 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	// Skip bot comments.
 	if commentAuthor == c.GitHubClient.BotName() {
 		return nil
+	}
+	var trustedOrg string
+	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
+		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
+		return nil
+	} else if tr != nil {
+		trustedOrg = tr.TrustedOrg
 	}
 
 	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
@@ -90,7 +97,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	if err != nil {
 		return err
 	} else if !orgMember {
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr)
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
 		if err != nil {
 			return err
 		}

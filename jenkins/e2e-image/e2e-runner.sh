@@ -57,9 +57,4 @@ if [[ "${E2E_TEST:-}" == "true" ]]; then
   fi
 fi
 
-# Optionally run upgrade tests before other tests.
-if [[ "${E2E_UPGRADE_TEST:-}" == "true" ]]; then
-  e2e_go_args+=(--upgrade_args="${GINKGO_UPGRADE_TEST_ARGS}")
-fi
-
-kubetest ${E2E_OPT:-} "${e2e_go_args[@]}" "${@}"
+kubetest "${e2e_go_args[@]}" "${@}"

@@ -18,8 +18,6 @@ package comment
 
 import (
 	"time"
-
-	"github.com/google/go-github/github"
 )
 
 // Pinger checks if it's time to send a ping.
@@ -60,7 +58,7 @@ func (p *Pinger) SetMaxCount(maxCount int) *Pinger {
 }
 
 // PingNotification creates a new notification to ping `who`
-func (p *Pinger) PingNotification(comments []*github.IssueComment, who string, startDate *time.Time) *Notification {
+func (p *Pinger) PingNotification(comments []*Comment, who string, startDate *time.Time) *Notification {
 	if startDate == nil {
 		startDate = &time.Time{}
 	}
@@ -90,7 +88,7 @@ func (p *Pinger) PingNotification(comments []*github.IssueComment, who string, s
 }
 
 // IsMaxReached tells you if you've reached the limit yet
-func (p *Pinger) IsMaxReached(comments []*github.IssueComment, startDate *time.Time) bool {
+func (p *Pinger) IsMaxReached(comments []*Comment, startDate *time.Time) bool {
 	if startDate == nil {
 		startDate = &time.Time{}
 	}

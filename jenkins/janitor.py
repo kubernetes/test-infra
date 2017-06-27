@@ -70,7 +70,7 @@ def collect(project, age, resource, filt):
         cmd.append(resource.group)
     cmd.extend([
         'list',
-        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,MANAGED)',
+        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
         '--filter=%s' % filt,
         '--project=%s' % project])
     print '%r' % cmd
@@ -105,19 +105,19 @@ def collect(project, age, resource, filt):
     return col
 
 
-def clear_resources(project, col, resource):
+def clear_resources(project, cols, resource):
     """Clear a collection of resource, from collect func above.
 
     Args:
         project: The name of a gcp project.
-        col: A dict of collection of resource.
+        cols: A dict of collection of resource.
         resource: Definition of a type of gcloud resource.
     Returns:
         0 if no error
         1 if deletion command fails
     """
     err = 0
-    for col, items in col.items():
+    for col, items in cols.items():
         if ARGS.dryrun:
             print ('Resource type %r(%r) to be deleted: %r' %
                    (resource.name, resource.group, list(items)))

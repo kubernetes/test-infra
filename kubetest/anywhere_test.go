@@ -29,21 +29,41 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 	}
 
 	cases := []struct {
+		name              string
 		phase2            string
+		kubeadmVersion    string
+		kubernetesVersion string
 		expectConfigLines []string
 	}{
 		{
+			name:   "kubeadm defaults",
 			phase2: "kubeadm",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"\"",
+				".phase2.kubernetes_version=\"\"",
 				".phase3.weave_net=y",
 			},
 		},
 		{
+			name:   "ignition defaults",
 			phase2: "ignition",
 			expectConfigLines: []string{
 				".phase2.provider=\"ignition\"",
+				".phase2.kubernetes_version=\"\"",
 				".phase3.weave_net=n",
+			},
+		},
+		{
+			name:              "kubeadm with specific versions",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubernetesVersion: "latest-1.6",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase3.weave_net=y",
 			},
 		},
 	}
@@ -60,28 +80,30 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywherePath = tmpdir
 		*kubernetesAnywhereCluster = "test-cluster"
 		*kubernetesAnywherePhase2Provider = tc.phase2
+		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
+		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
 
 		_, err = NewKubernetesAnywhere()
 		if err != nil {
-			t.Errorf("NewKubernetesAnywhere(%s) failed: %v", tc.phase2, err)
+			t.Errorf("NewKubernetesAnywhere(%s) failed: %v", tc.name, err)
 			continue
 		}
 
 		config, err := ioutil.ReadFile(tmpdir + "/.config")
 		if err != nil {
-			t.Errorf("NewKubernetesAnywhere(%s) failed to create readable config file: %v", tc.phase2, err)
+			t.Errorf("NewKubernetesAnywhere(%s) failed to create readable config file: %v", tc.name, err)
 			continue
 		}
 
 		configLines := strings.Split(string(config), "\n")
 
 		if !containsLine(configLines, ".phase1.cloud_provider=\"gce\"") {
-			t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: .cloud_provider=\"gce\"", tc.phase2, config)
+			t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: .cloud_provider=\"gce\"", tc.name, config)
 		}
 
 		for _, line := range tc.expectConfigLines {
 			if !containsLine(configLines, line) {
-				t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: %v", tc.phase2, config, line)
+				t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: %v", tc.name, config, line)
 			}
 		}
 	}

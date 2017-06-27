@@ -19,6 +19,8 @@
 Writes the JSON out to tests.json.
 """
 
+# pylint:disable=too-many-locals,too-many-branches
+
 from __future__ import print_function
 
 import argparse
@@ -41,9 +43,9 @@ import yaml
 MAX_AGE = 60 * 60 * 24  # 1 day
 
 
-def pad_numbers(s):
+def pad_numbers(string):
     """Modify a string to make its numbers suitable for natural sorting."""
-    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), string)
 
 
 class GCSClient(object):
@@ -68,13 +70,13 @@ class GCSClient(object):
                 resp.raise_for_status()
                 if as_json:
                     return resp.json()
-                else:
-                    return resp.content
+                return resp.content
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
             time.sleep(random.random() * min(60, 2 ** retry))
 
-    def parse_uri(self, path):
+    @staticmethod
+    def parse_uri(path):
         if not path.startswith('gs://'):
             raise ValueError("Bad GCS path")
         bucket, prefix = path[5:].split('/', 1)
@@ -84,7 +86,7 @@ class GCSClient(object):
         """Get an object from GCS."""
         bucket, path = self.parse_uri(path)
         return self.request('%s/o/%s' % (bucket, urllib2.quote(path, '')),
-                           {'alt': 'media'}, as_json=as_json)
+                            {'alt': 'media'}, as_json=as_json)
 
     def ls(self, path, dirs=True, files=True):
         """Lists objects under a path on gcs."""
@@ -125,7 +127,7 @@ class GCSClient(object):
         try:
             root = ElementTree.fromstring(data)
         except ElementTree.ParseError:
-            logging.exception("unable to parse %s" % path)
+            logging.exception("unable to parse %s", path)
             return
 
         for child in root:
@@ -203,15 +205,15 @@ class IndexedList(list):
         self._index = {}
         if iterable:
             super(IndexedList, self).__init__(iterable)
-            for n, el in enumerate(self):
-                self._index[el] = n
+            for idx, val in enumerate(self):
+                self._index[val] = idx
 
     def index(self, value):
         """Return value's position, appending it to the end if not present."""
         if value not in self._index:
-            n = len(self)
+            length = len(self)
             self.append(value)
-            self._index[value] = n
+            self._index[value] = length
         return self._index[value]
 
 
@@ -221,7 +223,7 @@ def mp_init_worker(jobs_dir, metadata, client_class):
     """
     # Multiprocessing doesn't allow local variables for each worker, so we need
     # to make a GCSClient global variable.
-    global WORKER_CLIENT
+    global WORKER_CLIENT # pylint:disable=global-variable-undefined
     WORKER_CLIENT = client_class(jobs_dir, metadata)
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # make Ctrl-C kill the worker
 
@@ -302,7 +304,7 @@ def get_tests(names, jobs_dir, metadata, matcher, threads, client_class, jobs):
 def remove_old_builds(buckets, now):
     pruned = 0
     for jobs in buckets.itervalues():
-        for job_name, job in jobs.iteritems():
+        for _, job in jobs.iteritems():
             for build_num, build in job.items():  # intentional copy
                 if build['timestamp'] < now - MAX_AGE:
                     pruned += 1
@@ -370,8 +372,7 @@ def get_options(argv):
 if __name__ == '__main__':
     if os.getenv('REQ_CACHE'):
         # for fast test iterations, enable caching GCS HTTP responses
-        import requests_cache
+        import requests_cache # pylint:disable=import-error
         requests_cache.install_cache(os.getenv('REQ_CACHE'))
     OPTIONS = get_options(sys.argv[1:])
-    jobs_dirs = yaml.load(open(OPTIONS.buckets))
-    main(jobs_dirs, OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)
+    main(yaml.load(open(OPTIONS.buckets)), OPTIONS.match, OPTIONS.outfile, OPTIONS.threads)

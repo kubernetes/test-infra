@@ -19,6 +19,7 @@ go_library(
     srcs = ["main.go"],
     tags = ["automanaged"],
     deps = [
+        "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/plank:go_default_library",

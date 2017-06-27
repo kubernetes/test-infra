@@ -19,6 +19,7 @@ package fakegithub
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"k8s.io/test-infra/prow/github"
 )
@@ -114,10 +115,23 @@ func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.Combine
 	return f.CombinedStatuses[ref], nil
 }
 
-func (f *FakeClient) GetLabels(owner, repo string) ([]github.Label, error) {
+func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	la := []github.Label{}
 	for _, l := range f.ExistingLabels {
 		la = append(la, github.Label{Name: l})
+	}
+	return la, nil
+}
+
+func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
+	// Only labels added to an issue are considered. Removals are ignored by this fake.
+	re := regexp.MustCompile(fmt.Sprintf(`%s/%s#%d:([\w-]*)`, owner, repo, number))
+	la := []github.Label{}
+	for _, l := range f.LabelsAdded {
+		groups := re.FindStringSubmatch(l)
+		if groups != nil {
+			la = append(la, github.Label{Name: groups[1]})
+		}
 	}
 	return la, nil
 }

@@ -20,7 +20,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/github"
 	mgh "k8s.io/test-infra/mungegithub/github"
 )
 
@@ -39,7 +38,7 @@ var (
 // ParseNotification attempts to read a notification from a comment
 // Returns nil if the comment doesn't contain a notification
 // Also note that Context is not parsed from the notification
-func ParseNotification(comment *github.IssueComment) *Notification {
+func ParseNotification(comment *Comment) *Notification {
 	if comment == nil || comment.Body == nil {
 		return nil
 	}

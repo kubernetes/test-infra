@@ -72,7 +72,9 @@ const (
 var (
 	_ = fmt.Print
 	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
-	retestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
+	// TODO(juntee): remove oldRetestBody when the old command retires
+	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
+	oldRetestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
 
 	// this is the order in which labels will be compared for queue priority
 	labelPriorities = []string{criticalFixLabel, retestNotRequiredLabel, retestNotRequiredDocsOnlyLabel, multirebaseLabel, fixLabel, blocksOthersLabel}
@@ -221,7 +223,6 @@ type SubmitQueue struct {
 	DoNotMergeMilestones   []string
 
 	RequiredRetestContexts []string
-	RetestBody             string
 	Metadata               submitQueueMetadata
 	AdminPort              int
 
@@ -577,7 +578,6 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 		[]string{},
 		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().StringVar(&sq.RetestBody, "retest-body", retestBody, "message which, when posted to the PR, will cause ALL `required-retest-contexts` to be re-tested")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	cmd.Flags().IntVar(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
@@ -1352,7 +1352,7 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 		return false
 	}
 
-	if err := obj.WriteComment(retestBody); err != nil {
+	if err := obj.WriteComment(newRetestBody); err != nil {
 		glog.Errorf("%d: unknown err: %v", *obj.Issue.Number, err)
 		sq.SetMergeStatus(obj, unknown)
 		return true
@@ -1581,7 +1581,7 @@ func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment *githubap
 	if !mergeBotComment(comment) {
 		return false
 	}
-	if *comment.Body != retestBody {
+	if *comment.Body != newRetestBody && *comment.Body != oldRetestBody {
 		return false
 	}
 	stale := commentBeforeLastCI(obj, comment, sq.RequiredRetestContexts)

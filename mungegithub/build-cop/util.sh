@@ -20,7 +20,7 @@ set -o pipefail
 
 function port-forward {
   PORT=${PORT:-9999}
-  PODNAME=$(kubectl get endpoints submit-queue-status -o template --template='{{index . "subsets" 0 "addresses" 0 "targetRef" "name"}}')
+  PODNAME=$(kubectl get endpoints kubernetes-sq-status -o template --template='{{index . "subsets" 0 "addresses" 0 "targetRef" "name"}}')
   echo "Admin interface will serve on port ${PORT}. Press ctrl-c to stop serving."
   kubectl port-forward "${PODNAME}" "${PORT}:9999"
 }

@@ -336,8 +336,7 @@ class BerghelRoach(object):
 def resize(array, size, cp):
     if cp:
         return array + [0] * (size - len(array))
-    else:
-        return [0] * size
+    return [0] * size
 
 # Computes the highest row in which the distance {@code p} appears
 # in diagonal {@code k} of the edit distance computation for

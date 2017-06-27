@@ -20,12 +20,10 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/google/go-github/github"
 )
 
 func TestFilterComments(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeCommentWithBody("1"),
 		makeCommentWithBody("2"),
 		makeCommentWithBody("3"),
@@ -38,14 +36,14 @@ func TestFilterComments(t *testing.T) {
 	}
 
 	fullList := FilterComments(comments, True{})
-	if !reflect.DeepEqual([]*github.IssueComment(fullList), comments) {
+	if !reflect.DeepEqual([]*Comment(fullList), comments) {
 		t.Error("True filter should have kept every element")
 	}
 }
 
-func makeCommentWithCreatedAt(year int, month time.Month, day int) *github.IssueComment {
+func makeCommentWithCreatedAt(year int, month time.Month, day int) *Comment {
 	date := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
-	return &github.IssueComment{
+	return &Comment{
 		CreatedAt: &date,
 	}
 }
@@ -60,7 +58,7 @@ func TestLastCommentDefault(t *testing.T) {
 }
 
 func TestLastComment(t *testing.T) {
-	comments := []*github.IssueComment{
+	comments := []*Comment{
 		makeCommentWithCreatedAt(2000, 1, 1),
 		makeCommentWithCreatedAt(2000, 1, 2),
 		makeCommentWithCreatedAt(2000, 1, 3),

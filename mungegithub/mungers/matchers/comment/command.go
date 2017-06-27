@@ -19,8 +19,6 @@ package comment
 import (
 	"regexp"
 	"strings"
-
-	"github.com/google/go-github/github"
 )
 
 // Command is a way for human to interact with the bot
@@ -39,7 +37,7 @@ var (
 
 // ParseCommands attempts to read a command from a comment
 // Returns nil if the comment doesn't contain a command
-func ParseCommands(comment *github.IssueComment) []*Command {
+func ParseCommands(comment *Comment) []*Command {
 	if comment == nil || comment.Body == nil {
 		return nil
 	}

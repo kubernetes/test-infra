@@ -17,6 +17,8 @@ limitations under the License.
 package trigger
 
 import (
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -28,7 +30,6 @@ import (
 const (
 	pluginName = "trigger"
 	lgtmLabel  = "lgtm"
-	trustedOrg = "kubernetes"
 )
 
 func init() {
@@ -60,6 +61,17 @@ type client struct {
 	KubeClient   kubeClient
 	Config       *config.Config
 	Logger       *logrus.Entry
+}
+
+func triggerConfig(c *config.Config, org, repo string) *config.Trigger {
+	for _, tr := range c.Triggers {
+		for _, r := range tr.Repos {
+			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
+				return &tr
+			}
+		}
+	}
+	return nil
 }
 
 func getClient(pc plugins.PluginClient) client {

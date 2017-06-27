@@ -17,20 +17,17 @@
 """Tests for gen_json."""
 
 import json
-import os
-import shutil
 import tempfile
+import time
 import unittest
 
 import gen_json
 
-import time
-
 
 TEST_BUCKETS_DATA = {
-    'gs://kubernetes-jenkins/logs/': { 'prefix': '' },
-    'gs://bucket1/': { 'prefix': 'bucket1_prefix' },
-    'gs://bucket2/': { 'prefix': 'bucket2_prefix' }
+    'gs://kubernetes-jenkins/logs/': {'prefix': ''},
+    'gs://bucket1/': {'prefix': 'bucket1_prefix'},
+    'gs://bucket2/': {'prefix': 'bucket2_prefix'}
 }
 
 
@@ -90,27 +87,27 @@ class MockedClient(gen_json.GCSClient):
     </testsuite>
     '''}
 
-    def get(self, path, **kwargs):
+    def get(self, path, **_kwargs):  # pylint: disable=arguments-differ
         return self.gets.get(path)
 
-    def ls(self, path, **kwargs):
+    def ls(self, path, **_kwargs):  # pylint: disable=arguments-differ
         return self.lists[path]
 
 
 class IndexedListTest(unittest.TestCase):
     def test_basic(self):
-        l = gen_json.IndexedList()
-        self.assertEqual(l.index('foo'), 0)
-        self.assertEqual(l.index('bar'), 1)
-        self.assertEqual(l.index('foo'), 0)
-        self.assertEqual(l, ['foo', 'bar'])
+        my_list = gen_json.IndexedList()
+        self.assertEqual(my_list.index('foo'), 0)
+        self.assertEqual(my_list.index('bar'), 1)
+        self.assertEqual(my_list.index('foo'), 0)
+        self.assertEqual(my_list, ['foo', 'bar'])
 
     def test_init(self):
-        l = gen_json.IndexedList(['foo', 'bar'])
-        self.assertEqual(l.index('baz'), 2)
-        self.assertEqual(l.index('bar'), 1)
-        self.assertEqual(l.index('foo'), 0)
-        self.assertEqual(l, ['foo', 'bar', 'baz'])
+        my_list = gen_json.IndexedList(['foo', 'bar'])
+        self.assertEqual(my_list.index('baz'), 2)
+        self.assertEqual(my_list.index('bar'), 1)
+        self.assertEqual(my_list.index('foo'), 0)
+        self.assertEqual(my_list, ['foo', 'bar', 'baz'])
 
 
 class GCSClientTest(unittest.TestCase):
@@ -137,6 +134,7 @@ class GCSClientTest(unittest.TestCase):
         tests = list(self.client.get_tests_from_build('fake', '123'))
         self.assertEqual(tests, [('Empty', 0.0, False, False)])
 
+    # pylint:disable=protected-access
     def test_get_builds_normal_list(self):
         # normal case: lists a directory
         self.assertEqual(['123', '122'], self.client._get_builds('fake'))
@@ -146,7 +144,7 @@ class GCSClientTest(unittest.TestCase):
         self.assertEqual(['4', '3', '2', '1'],
                          list(self.client._get_builds('latest')))
 
-    def test_get_builds_latest_list_fallback(self):
+    def test_gb_latest_list_fallback(self):
         # fallback: still lists a directory when build-latest.txt isn't an int
         self.assertEqual(['6'], list(self.client._get_builds('bad-latest')))
 
@@ -155,6 +153,7 @@ class GCSClientTest(unittest.TestCase):
         self.client.metadata = {'sequential': False}
         self.assertEqual(['4', '3'],
                          list(self.client._get_builds('latest')))
+    # pylint:enable=protected-access
 
     def test_get_daily_builds(self):
         builds = list(self.client.get_daily_builds(lambda x: True, set()))
@@ -171,19 +170,42 @@ class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""
     JOBS_DIR = GCSClientTest.JOBS_DIR
 
-    def get_expected_json(self):
+    @staticmethod
+    def get_expected_json():
         return {
-            'test_names': ['Foo', 'Bad', 'Lazy'],
-            'buckets': {'gs://kubernetes-jenkins/logs/':
-                {'fake': {'123':
-                    {'timestamp': MockedClient.NOW,
-                     'tests': [
-                             {'name': 0, 'time': 3.0},
-                             {'failed': True, 'name': 1, 'time': 4.0},
-                             {'skipped': True, 'name': 2, 'time': 0.0}
-        ]}}}}}
+            'test_names':[
+                'Foo',
+                'Bad',
+                'Lazy'
+            ],
+            'buckets':{
+                'gs://kubernetes-jenkins/logs/':{
+                    'fake':{
+                        '123':{
+                            'timestamp':MockedClient.NOW,
+                            'tests':[
+                                {
+                                    'name':0,
+                                    'time':3.0
+                                },
+                                {
+                                    'failed':True,
+                                    'name':1,
+                                    'time':4.0
+                                },
+                                {
+                                    'skipped':True,
+                                    'name':2,
+                                    'time':0.0
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
 
-    def assert_main_output(self, outfile, threads, expected=None,
+    def assert_main_output(self, outfile, _thread, expected=None,
                            client=MockedClient):
         if expected is None:
             expected = self.get_expected_json()

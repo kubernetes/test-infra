@@ -158,8 +158,7 @@ def pull_numbers(pull):
     """Turn a pull reference list into a list of PR numbers to merge."""
     if ref_has_shas(pull):
         return [r.split(':')[0] for r in pull.split(',')][1:]
-    else:
-        return [str(pull)]
+    return [str(pull)]
 
 
 def pull_ref(pull):
@@ -192,8 +191,7 @@ def branch_ref(branch):
     if ref_has_shas(branch):
         split_refs = branch.split(':')
         return [split_refs[0]], [split_refs[1]]
-    else:
-        return [branch], ['FETCH_HEAD']
+    return [branch], ['FETCH_HEAD']
 
 
 def repository(repo, ssh):

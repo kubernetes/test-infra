@@ -662,3 +662,50 @@ func TestFindIssues(t *testing.T) {
 	}
 
 }
+
+// TestGetLabels tests both GetRepoLabels and GetIssueLabels.
+func TestGetLabels(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		var labels []Label
+		switch r.URL.Path {
+		case "/repos/k8s/kuber/issues/5/labels":
+			labels = []Label{{Name: "issue-label"}}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+		case "/repos/k8s/kuber/labels":
+			labels = []Label{{Name: "repo-label"}}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+		case "/someotherpath":
+			labels = []Label{{Name: "label2"}}
+		default:
+			t.Errorf("Bad request path: %s", r.URL.Path)
+			return
+		}
+		b, err := json.Marshal(labels)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	labels, err := c.GetIssueLabels("k8s", "kuber", 5)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(labels) != 2 {
+		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
+	} else if labels[0].Name != "issue-label" || labels[1].Name != "label2" {
+		t.Errorf("Wrong label names: %v", labels)
+	}
+
+	labels, err = c.GetRepoLabels("k8s", "kuber")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(labels) != 2 {
+		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
+	} else if labels[0].Name != "repo-label" || labels[1].Name != "label2" {
+		t.Errorf("Wrong label names: %v", labels)
+	}
+}

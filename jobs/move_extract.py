@@ -33,50 +33,44 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'FAIL_ON_GCP_RESOURCE_LEAK=(.+)',
+        r'E2E_OPT=(--check_version_skew=false|true)'
     ]))
     problems = []
     for job, values in configs.items():
         if values.get('scenario') != 'kubernetes_e2e':
             continue
-        args = values.get('args', [])
-        migrated = any('--check-leaked-resources=' in a for a in args)
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
-        if migrated:
-            if any(j in env for j in [
-                    'FAIL_ON_GCP_RESOURCE_LEAK=',
-            ]):
-                problems.append(job)
-            continue
-        check = None
         lines = []
+        skew = None
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            checkv = mat.group(1)
-            if checkv:
-                if check:
-                    problems.append('Duplicate: %s' % job)
+            args = mat.group(1)
+            if args:
+                if skew:
+                    problems.append('Duplicate %s' % job)
                     break
-                check = checkv
-        else:
-            if not check:
-                if ('--env-file=jobs/pull-kubernetes-e2e.env' in args
-                        or '-aws' in job):
-                    check = 'false'
-                else:
-                    check = 'true'
-            if check not in ['true', 'false']:
-                problems.append('Bad value %s in %s' % (check, job))
+                skew = args
                 continue
-            values['args'].append('--check-leaked-resources=%s' % check)
+        else:
+            if not skew:
+                continue
+            for arg in values['args']:
+                if not arg.startswith('--check_version_skew'):
+                    continue
+                if arg != skew:
+                    problems.append('Mismatch in %s: %s != %s' % (job, arg, skew))
+                    continue
+                break
+            else:
+                values['args'].append(skew)
             with open(test_infra('jobs/%s.env' % job), 'w') as fp:
                 fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
-        fp.write(json.dumps(configs, sort_keys=True, indent=2))
+        fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
         fp.write('\n')
     if not problems:
         sys.exit(0)

@@ -19,9 +19,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -99,6 +100,18 @@ func (s *Server) demuxEvent(eventType string, payload []byte) error {
 			return err
 		}
 		go s.handlePullRequestEvent(pr)
+	case "pull_request_review":
+		var re github.ReviewEvent
+		if err := json.Unmarshal(payload, &re); err != nil {
+			return err
+		}
+		go s.handleReviewEvent(re)
+	case "pull_request_review_comment":
+		var rce github.ReviewCommentEvent
+		if err := json.Unmarshal(payload, &rce); err != nil {
+			return err
+		}
+		go s.handleReviewCommentEvent(rce)
 	case "push":
 		var pe github.PushEvent
 		if err := json.Unmarshal(payload, &pe); err != nil {

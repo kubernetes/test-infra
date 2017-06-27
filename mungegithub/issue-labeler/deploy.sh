@@ -45,12 +45,14 @@ spec:
   resources:
     requests:
       storage: 10Gi
+  storageClassName: standard
+  volumeName: machine-learning-volume
 EOF
 
 ! test -z "$(gcloud compute disks list --uri machine-learning-volume)" || \
 	    gcloud compute disks create machine-learning-volume --size 10GB
 
-IMAGE=${1:-gcr.io/google-containers/issue-triager:latest}
+IMAGE=${1:-gcr.io/k8s-testimages/issue-triager:latest}
 docker build --pull -t "$IMAGE" -f Dockerfile . 
 gcloud docker -- push "$IMAGE"
 

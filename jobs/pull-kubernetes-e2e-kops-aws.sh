@@ -18,6 +18,10 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+for i in {1..10}; do
+  echo 'WARNING: pull-kops-e2e-kubernetes-aws.sh is deprecated, migrate to scenarios/kubernetes_e2e.py'
+done
+
 readonly testinfra="$(dirname "${0}")/.."
 
 # TODO(fejta): remove this

@@ -77,6 +77,7 @@ type ProwJobStatus struct {
 	Description     string       `json:"description,omitempty"`
 	URL             string       `json:"url,omitempty"`
 	PodName         string       `json:"pod_name,omitempty"`
+	BuildID         string       `json:"build_id,omitempty"`
 	JenkinsQueueURL string       `json:"jenkins_queue_url,omitempty"`
 	JenkinsEnqueued bool         `json:"jenkins_enqueued,omitempty"`
 	JenkinsBuildID  string       `json:"jenkins_build_id,omitempty"`
