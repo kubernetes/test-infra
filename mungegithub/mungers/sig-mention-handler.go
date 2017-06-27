@@ -102,7 +102,17 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 			return
 		}
 
-		msg := fmt.Sprintf("@%s There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:<br>(1) mentioning a sig: `@kubernetes/sig-<team-name>-misc`<br>e.g., `@kubernetes/sig-api-machinery-*` for API Machinery<br>(2) specifying the label manually: `/sig <label>`<br>e.g., `/sig scalability` for sig/scalability<br><br>_Note: method (1) will trigger a notification to the team. You can find the team list [here](https://github.com/kubernetes/community/blob/master/sig-list.md) and label list [here](https://github.com/kubernetes/kubernetes/labels)_", *obj.Issue.User.Login)
+		msg := fmt.Sprintf(`@%s
+There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:
+	
+1. mentioning a sig: `+"`@kubernetes/sig-<group-name>-<group-suffix>`"+`
+    e.g., `+"`@kubernetes/sig-api-machinery-<group-suffix>`"+` to notify the API Machinery sig, OR
+
+2. specifying the label manually: `+"`/sig <label>`"+`
+    e.g., `+"`/sig scalability`"+` to apply the `+"`sig/scalability`"+` label
+
+Note: Method 1 will trigger an email to the group. You can find the group list [here](https://github.com/kubernetes/community/blob/master/sig-list.md) and label list [here](https://github.com/kubernetes/kubernetes/labels).
+The `+"`<group-suffix>`"+` in the method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_`, *obj.Issue.User.Login)
 
 		if err := obj.WriteComment(msg); err != nil {
 			glog.Errorf("failed to leave comment for %s that issue #%v needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
