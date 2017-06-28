@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var okToTest = regexp.MustCompile(`((?m)^(@k8s-bot )?ok to test\r?$|(?m)^/ok-to-test\r?$)`)
+var okToTest = regexp.MustCompile(`((?m)^(@k8s-bot )?ok to test\s*$|(?m)^/ok-to-test\s*$)`)
 var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleIC(c client, ic github.IssueCommentEvent) error {

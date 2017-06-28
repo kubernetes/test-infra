@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	match  = regexp.MustCompile(`^/joke\r?$`)
+	match  = regexp.MustCompile(`^/joke\s*$`)
 	simple = regexp.MustCompile(`^[\w?'!., ]+$`)
 )
 

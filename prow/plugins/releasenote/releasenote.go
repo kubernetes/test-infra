@@ -43,8 +43,8 @@ var (
 		releaseNote,
 	}
 
-	releaseNoteRe     = regexp.MustCompile(`(?mi)^\/release-note\r?$`)
-	releaseNoteNoneRe = regexp.MustCompile(`(?mi)^\/release-note-none\r?$`)
+	releaseNoteRe     = regexp.MustCompile(`(?mi)^/release-note\s*$`)
+	releaseNoteNoneRe = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
 )
 
 func init() {

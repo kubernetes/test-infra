@@ -57,10 +57,30 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    releaseNoteNone,
 		},
 		{
+			name:          "author release-note-none, trailing space.",
+			action:        "created",
+			isAuthor:      true,
+			body:          "/release-note-none ",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded},
+			addedLabel:    releaseNoteNone,
+		},
+		{
 			name:          "member release-note",
 			action:        "created",
 			isMember:      true,
 			body:          "/release-note",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded},
+			addedLabel:    releaseNote,
+		},
+		{
+			name:          "member release-note, trailing space.",
+			action:        "created",
+			isMember:      true,
+			body:          "/release-note \r",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
 
 			deletedLabels: []string{releaseNoteLabelNeeded},

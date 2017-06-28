@@ -30,8 +30,8 @@ const pluginName = "lgtm"
 
 var (
 	lgtmLabel    = "lgtm"
-	lgtmRe       = regexp.MustCompile(`(?mi)^\/lgtm\r?$`)
-	lgtmCancelRe = regexp.MustCompile(`(?mi)^\/lgtm cancel\r?$`)
+	lgtmRe       = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
+	lgtmCancelRe = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 )
 
 type event struct {

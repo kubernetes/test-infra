@@ -27,7 +27,7 @@ import (
 
 const pluginName = "close"
 
-var closeRe = regexp.MustCompile(`(?mi)^\/close\r?$`)
+var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
 
 func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
