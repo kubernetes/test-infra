@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Kubernetes CI Jobs</title>
+        <title>Prow Status</title>
         <link rel="stylesheet" type="text/css" href="style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <script type="text/javascript" src="script.js"></script>
@@ -15,7 +15,7 @@
         <div>
             <ul>
                 <li>Filter</li>
-                <li><select id="type" onchange="redraw();"></select></li>
+                <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
                 <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
                 <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
                 <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
