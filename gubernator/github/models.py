@@ -57,7 +57,7 @@ class GithubWebhookRaw(ndb.Model):
     body = ndb.TextProperty(compressed=True)
 
     def to_tuple(self):
-        return (self.event, shrink(json.loads(self.body)), int(self.timestamp.strftime('%s')))
+        return (self.event, shrink(json.loads(self.body)), float(self.timestamp.strftime('%s.%f')))
 
 
 def from_iso8601(t):
