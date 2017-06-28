@@ -62,9 +62,10 @@ FAKE=
 PR=
 
 # Defaults
-BASE_IMAGE='/debian-cloud/debian-8'
+BASE_IMAGE='debian-8'
 IMAGE='jenkins-agent'
 IMAGE_FLAG="--image-family=${IMAGE}"
+IMAGE_PROJECT='kubernetes-jenkins'
 SCOPES='cloud-platform,compute-rw,storage-full'  # TODO(fejta): verify
 
 if [[ -z "${1:-}" ]]; then
@@ -92,6 +93,7 @@ while true; do
       ;;
     --base-image)
       IMAGE_FLAG="--image-family=${BASE_IMAGE}"
+      IMAGE_PROJECT='debian-cloud'
       shift
       ;;
     *)
@@ -184,23 +186,12 @@ auto-agent() {
 }
 
 tunnel-to-master() {
-  for i in {1..10}; do
-    if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
-      sleep 1
-    else
-      break
-    fi
-  done
-  sudo netstat -anp | grep :8080 && echo "8080 already used" && exit 1 \
-    || echo "Tunneling to ${MASTER}..."
-  gcloud compute ssh "${MASTER}" --command='sleep 5' --ssh-flag='-L8080:localhost:8080' &
-  for i in {1..10}; do
-    if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
-      break
-    fi
+  if sudo netstat -anp | grep :8080 > /dev/null 2>&1 ; then
     sleep 1
-  done
-  sudo netstat -anp | grep :8080 > /dev/null 2>&1 || exit 1
+  else
+    echo "Please run gcloud compute ssh \"${MASTER}\" --ssh-flag='-L8080:localhost:8080'"
+    exit 1
+  fi
 }
 
 
@@ -213,8 +204,6 @@ master-change() {
     exit 1
   fi
   python "$(dirname "${0}")/attach_agent.py" "${cmd}" "${INSTANCE}" "${KIND}" "${ini}" "${MASTER}"
-  echo 'Waiting for tunnel to close...'
-  wait
 }
 
 
@@ -281,6 +270,7 @@ create-agent() {
     --boot-disk-size="${DISK_SIZE}" \
     --boot-disk-type="${DISK_TYPE}" \
     "${IMAGE_FLAG}" \
+    --image-project="${IMAGE_PROJECT}" \
     --machine-type="${MACHINE_TYPE}" \
     --scopes="${SCOPES}" \
     --tags='do-not-delete,jenkins'
