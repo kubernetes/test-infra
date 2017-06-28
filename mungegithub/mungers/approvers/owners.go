@@ -309,6 +309,9 @@ func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
 
 // AddSAuthorSelfApprover adds the author self approval
 func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
+	if ap.shouldNotOverrideApproval(login, false) {
+		return
+	}
 	ap.approvers[login] = Approval{
 		Login:     login,
 		How:       "Author self-approved",
