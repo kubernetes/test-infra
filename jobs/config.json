@@ -81,7 +81,7 @@
       "--charts",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -103,8 +103,7 @@
       "--aws",
       "--cluster=e2e-aws-1-5",
       "--timeout=120m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -118,7 +117,7 @@
       "--timeout=50m",
       "--extract=gci/gci-next-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -132,7 +131,7 @@
       "--timeout=300m",
       "--extract=gci/gci-next-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -146,7 +145,7 @@
       "--timeout=150m",
       "--extract=gci/gci-next-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -160,7 +159,7 @@
       "--publish=gs://kubernetes-release-dev/ci/latest-green.txt",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -174,8 +173,8 @@
       "--timeout=120m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -190,8 +189,8 @@
       "--timeout=120m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -206,9 +205,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -224,9 +223,9 @@
       "--extract=ci/latest-1.6",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -241,9 +240,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -259,8 +258,8 @@
       "--extract=ci/latest-1.5",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -275,8 +274,8 @@
       "--timeout=300m",
       "--extract=ci/latest-1.5",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -292,8 +291,8 @@
       "--extract=ci/latest-1.5",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -309,8 +308,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -325,8 +324,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -341,8 +340,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -357,8 +356,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -373,9 +372,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -391,9 +390,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -408,9 +407,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -426,8 +425,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -443,8 +442,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -460,8 +459,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -477,8 +476,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -491,7 +490,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-alpha-features.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -505,7 +504,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -519,7 +518,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -533,7 +532,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -547,7 +546,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -559,7 +558,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-audit.env",
       "--timeout=180m",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest",
       "--mode=local"
     ],
@@ -573,7 +572,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-audit-release-1-7.env",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--timeout=180m",
       "--mode=local"
     ],
@@ -588,7 +587,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -601,7 +600,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-autoscaling-migs.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -619,9 +618,9 @@
       "--timeout=40m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -634,7 +633,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-container-vm.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -650,7 +649,7 @@
       "--extract=ci/latest-1.7",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -666,7 +665,7 @@
       "--extract=ci/latest-1.7",
       "--mode=local",
       "--timeout=300m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -682,7 +681,7 @@
       "--extract=ci/latest-1.7",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -698,7 +697,7 @@
       "--extract=ci/latest-1.6",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -714,7 +713,7 @@
       "--extract=ci/latest-1.6",
       "--mode=local",
       "--timeout=300m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -730,7 +729,7 @@
       "--extract=ci/latest-1.6",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -746,7 +745,7 @@
       "--extract=ci/latest-1.5",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -762,7 +761,7 @@
       "--extract=ci/latest-1.5",
       "--mode=local",
       "--timeout=300m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -778,7 +777,7 @@
       "--extract=ci/latest-1.5",
       "--mode=local",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -793,7 +792,7 @@
       "--timeout=20m",
       "--mode=local",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -805,8 +804,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env",
       "--cluster=e2e-enormous-cluster",
       "--timeout=1400m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -819,8 +817,7 @@
       "--cluster=e2e-enormous-deploy",
       "--down=false",
       "--timeout=300m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -834,8 +831,7 @@
       "--up=false",
       "--test=false",
       "--timeout=180m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -848,7 +844,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-es-logging.env",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -862,7 +858,7 @@
       "--timeout=50m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -875,7 +871,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-etcd3.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -890,7 +886,7 @@
       "--extract=ci/latest",
       "--mode=local",
       "--cluster=pr-validation",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -904,7 +900,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -917,7 +913,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-examples.env",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -931,7 +927,7 @@
       "--federation",
       "--timeout=900m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -946,7 +942,7 @@
       "--mode=local",
       "--federation",
       "--timeout=900m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -960,7 +956,7 @@
       "--federation",
       "--timeout=900m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -974,7 +970,7 @@
       "--federation",
       "--timeout=900m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -987,7 +983,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-flaky.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1002,7 +998,7 @@
       "--cluster=gc-feature",
       "--timeout=600m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1017,9 +1013,9 @@
       "--timeout=60m",
       "--extract=ci/latest-1.5",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1035,9 +1031,9 @@
       "--timeout=60m",
       "--extract=ci/latest-1.5",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd3 --etcd-upgrade-version=3.0.17",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1052,7 +1048,7 @@
       "--timeout=50m",
       "--extract=ci/latest",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1066,7 +1062,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-4.env",
       "--timeout=50m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1080,7 +1076,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-5.env",
       "--timeout=50m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1094,7 +1090,7 @@
       "--timeout=300m",
       "--extract=ci/latest",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1108,7 +1104,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4.env",
       "--timeout=300m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1122,7 +1118,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5.env",
       "--timeout=300m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1136,7 +1132,7 @@
       "--timeout=150m",
       "--extract=ci/latest",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1150,7 +1146,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4.env",
       "--timeout=150m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1164,7 +1160,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5.env",
       "--timeout=150m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1179,9 +1175,9 @@
       "--timeout=60m",
       "--extract=ci/latest",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1197,9 +1193,9 @@
       "--timeout=60m",
       "--extract=ci/latest",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd3 --etcd-upgrade-version=3.0.17",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1214,7 +1210,7 @@
       "--timeout=50m",
       "--extract=gci/gci-56",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1228,7 +1224,7 @@
       "--timeout=50m",
       "--extract=gci/gci-57",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1242,7 +1238,7 @@
       "--timeout=50m",
       "--extract=gci/gci-58",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1256,7 +1252,7 @@
       "--timeout=50m",
       "--extract=gci/gci-59",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1270,7 +1266,7 @@
       "--timeout=50m",
       "--extract=gci/gci-60",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1284,7 +1280,7 @@
       "--timeout=50m",
       "--extract=gci/gci-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1298,7 +1294,7 @@
       "--timeout=300m",
       "--extract=gci/gci-56",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1312,7 +1308,7 @@
       "--timeout=300m",
       "--extract=gci/gci-57",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1326,7 +1322,7 @@
       "--timeout=300m",
       "--extract=gci/gci-58",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1340,7 +1336,7 @@
       "--timeout=300m",
       "--extract=gci/gci-59",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1354,7 +1350,7 @@
       "--timeout=300m",
       "--extract=gci/gci-60",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1368,7 +1364,7 @@
       "--timeout=150m",
       "--extract=gci/gci-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1382,7 +1378,7 @@
       "--timeout=150m",
       "--extract=gci/gci-56",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1396,7 +1392,7 @@
       "--timeout=150m",
       "--extract=gci/gci-57",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1410,7 +1406,7 @@
       "--timeout=150m",
       "--extract=gci/gci-58",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1424,7 +1420,7 @@
       "--timeout=150m",
       "--extract=gci/gci-59",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1438,7 +1434,7 @@
       "--timeout=150m",
       "--extract=gci/gci-60",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1452,7 +1448,7 @@
       "--timeout=150m",
       "--extract=gci/gci-canary",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1466,7 +1462,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1481,7 +1477,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1493,8 +1489,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-ha-master.env",
       "--timeout=220m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1506,8 +1501,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-ingress.env",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1522,8 +1516,8 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1539,8 +1533,8 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1556,8 +1550,8 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1573,8 +1567,8 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1589,7 +1583,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-multizone.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1603,8 +1597,8 @@
       "--timeout=120m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1619,8 +1613,8 @@
       "--timeout=120m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -1636,9 +1630,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1654,9 +1648,9 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1671,9 +1665,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1686,7 +1680,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-proto.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1699,7 +1693,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-reboot.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1714,7 +1708,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1728,7 +1722,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1743,7 +1737,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1758,7 +1752,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1772,7 +1766,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1786,7 +1780,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1800,7 +1794,7 @@
       "--timeout=50m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1814,7 +1808,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=50m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1827,8 +1821,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-scalability.env",
       "--cluster=e2e-scalability",
       "--timeout=120m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1841,8 +1834,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-scalability-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--cluster=e2e-scalability-1-7",
-      "--timeout=120m",
-      "--check-leaked-resources=false"
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1855,8 +1847,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-scalability-release-1.6.env",
       "--cluster=e2e-scalability-1-6",
       "--timeout=120m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1869,7 +1860,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-sd-logging.env",
       "--timeout=1320m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1882,7 +1873,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-serial.env",
       "--timeout=500m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1896,7 +1887,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1910,7 +1901,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1924,7 +1915,7 @@
       "--timeout=300m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1938,7 +1929,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=500m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1951,7 +1942,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-slow.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1965,7 +1956,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1979,7 +1970,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1993,7 +1984,7 @@
       "--timeout=150m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2007,7 +1998,7 @@
       "--timeout=150m",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2020,7 +2011,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-stackdriver.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2032,8 +2023,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-statefulset.env",
       "--timeout=50m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2045,8 +2035,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-taint-evict.env",
       "--timeout=50m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2060,7 +2049,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2074,7 +2063,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2108,7 +2097,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2122,7 +2111,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2154,7 +2143,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2168,7 +2157,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2180,7 +2169,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=50m",
       "--cluster=test-dcb74cd42a"
@@ -2198,7 +2187,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=300m",
       "--cluster=test-0ac5dfddd1"
@@ -2216,7 +2205,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=150m",
       "--cluster=test-d17516cf20"
@@ -2234,7 +2223,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest",
       "--timeout=50m",
       "--cluster=test-2e79fbd2ec"
@@ -2252,7 +2241,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest",
       "--timeout=300m",
       "--cluster=test-c858633e76"
@@ -2270,7 +2259,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest",
       "--timeout=150m",
       "--cluster=test-70b21a36b2"
@@ -2288,7 +2277,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.6",
       "--timeout=50m",
       "--cluster=test-b9bc64dba5"
@@ -2306,7 +2295,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.6",
       "--timeout=300m",
       "--cluster=test-4c9af8b031"
@@ -2324,7 +2313,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.6",
       "--timeout=150m",
       "--cluster=test-7214dd78b9"
@@ -2343,7 +2332,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2356,7 +2345,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-alpha-features.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2370,7 +2359,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2384,7 +2373,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2398,7 +2387,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2412,7 +2401,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2424,7 +2413,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-audit.env",
       "--timeout=180m",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest",
       "--mode=local"
     ],
@@ -2438,7 +2427,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-audit-release-1-7.env",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--timeout=180m",
       "--mode=local"
     ],
@@ -2453,7 +2442,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2466,7 +2455,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2479,7 +2468,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-docker.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2492,7 +2481,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-es-logging.env",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2505,7 +2494,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-etcd3.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2518,7 +2507,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-examples.env",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2531,7 +2520,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-flaky.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2545,7 +2534,7 @@
       "--cluster=gc-feature",
       "--timeout=600m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2557,8 +2546,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2572,7 +2560,7 @@
       "--mode=local",
       "--timeout=90m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2586,7 +2574,7 @@
       "--timeout=90m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2600,7 +2588,7 @@
       "--timeout=90m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2614,7 +2602,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=90m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2627,7 +2615,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-ip-alias.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2640,7 +2628,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-proto.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2654,7 +2642,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-reboot.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2668,7 +2656,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2682,7 +2670,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2696,7 +2684,7 @@
       "--timeout=180m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2710,7 +2698,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2724,7 +2712,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2738,7 +2726,7 @@
       "--timeout=50m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2752,7 +2740,7 @@
       "--timeout=50m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2766,7 +2754,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=50m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2779,8 +2767,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--cluster=e2e-scalability",
       "--timeout=120m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2793,8 +2780,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--cluster=e2e-scalability-1-7",
-      "--timeout=120m",
-      "--check-leaked-resources=false"
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2807,8 +2793,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env",
       "--cluster=e2e-scalability-1-6",
       "--timeout=120m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2821,7 +2806,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-sd-logging.env",
       "--timeout=1320m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2834,7 +2819,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-serial.env",
       "--timeout=500m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2848,7 +2833,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2862,7 +2847,7 @@
       "--timeout=300m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2876,7 +2861,7 @@
       "--timeout=300m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2890,7 +2875,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=500m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2903,7 +2888,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-slow.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2917,7 +2902,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest-1.4",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2931,7 +2916,7 @@
       "--timeout=150m",
       "--mode=local",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2945,7 +2930,7 @@
       "--timeout=150m",
       "--mode=local",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2959,7 +2944,7 @@
       "--extract=ci/latest-1.7",
       "--timeout=150m",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2971,8 +2956,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-statefulset.env",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2985,7 +2969,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2998,7 +2982,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-alpha-features.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3011,7 +2995,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-autoscaling.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3024,7 +3008,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-flaky.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3036,8 +3020,7 @@
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-ingress.env",
       "--timeout=300m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3051,7 +3034,7 @@
       "--timeout=90m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3065,7 +3048,7 @@
       "--timeout=300m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3079,7 +3062,7 @@
       "--extract=ci/latest-1.7",
       "--mode=local",
       "--timeout=300m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3092,7 +3075,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-multizone.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3105,7 +3088,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-pre-release.env",
       "--timeout=480m",
       "--extract=release/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3118,8 +3101,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-prod.env",
       "--timeout=600m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3132,8 +3115,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-prod-parallel.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3146,8 +3129,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-prod-smoke.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3160,7 +3143,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-reboot.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3174,7 +3157,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3188,7 +3171,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3202,7 +3185,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=180m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3216,7 +3199,7 @@
       "--timeout=50m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3230,7 +3213,7 @@
       "--timeout=50m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3244,7 +3227,7 @@
       "--extract=ci/latest-1.7",
       "--mode=local",
       "--timeout=50m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3257,7 +3240,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-serial.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3271,7 +3254,7 @@
       "--timeout=300m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3285,7 +3268,7 @@
       "--timeout=300m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3299,7 +3282,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=500m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3312,7 +3295,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-slow.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3326,7 +3309,7 @@
       "--timeout=150m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3340,7 +3323,7 @@
       "--timeout=150m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3354,7 +3337,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3367,8 +3350,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-staging.env",
       "--timeout=600m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3381,8 +3364,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-staging-parallel.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3396,8 +3379,8 @@
       "--cluster=auto-subnet",
       "--timeout=480m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3410,8 +3393,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-test.env",
       "--timeout=480m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3424,7 +3407,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-updown.env",
       "--timeout=30m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3437,7 +3420,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3451,8 +3434,8 @@
       "--timeout=120m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3467,8 +3450,8 @@
       "--timeout=120m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3484,8 +3467,8 @@
       "--extract=ci/latest-1.5",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3501,8 +3484,8 @@
       "--extract=ci/latest-1.5",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3518,8 +3501,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3534,8 +3517,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3550,8 +3533,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3566,8 +3549,8 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3583,8 +3566,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3600,8 +3583,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3617,8 +3600,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3634,8 +3617,8 @@
       "--skew",
       "--extract=ci/latest-1.7",
       "--mode=local",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3648,7 +3631,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-alpha-features.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3663,7 +3646,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3677,7 +3660,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3690,7 +3673,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-autoscaling.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3704,9 +3687,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3722,9 +3705,9 @@
       "--extract=ci/latest-1.6",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3739,9 +3722,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3757,9 +3740,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3775,9 +3758,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3792,9 +3775,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3808,9 +3791,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3826,9 +3809,9 @@
       "--extract=ci/latest-1.6",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3843,9 +3826,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -3861,9 +3844,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3879,9 +3862,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3896,9 +3879,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3913,9 +3896,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3931,9 +3914,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3948,9 +3931,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3965,9 +3948,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3983,9 +3966,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4000,9 +3983,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4017,9 +4000,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4035,9 +4018,9 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4052,9 +4035,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4069,9 +4052,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4087,9 +4070,9 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest--upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4104,9 +4087,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4121,9 +4104,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4138,9 +4121,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4153,7 +4136,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-flaky.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4167,9 +4150,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4185,9 +4168,9 @@
       "--extract=ci/latest-1.6",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4202,9 +4185,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4220,9 +4203,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4238,9 +4221,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4255,9 +4238,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4271,9 +4254,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4289,9 +4272,9 @@
       "--extract=ci/latest-1.6",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4306,9 +4289,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
-      "--check_version_skew=false",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4324,9 +4307,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4342,9 +4325,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4359,9 +4342,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.5",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4376,9 +4359,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4394,9 +4377,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4411,9 +4394,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4427,8 +4410,8 @@
       "--timeout=300m",
       "--extract=ci/latest-1.5",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4444,9 +4427,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4462,9 +4445,9 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4479,9 +4462,9 @@
       "--timeout=900m",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4495,7 +4478,7 @@
       "--timeout=50m",
       "--extract=ci/latest",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4510,9 +4493,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4528,9 +4511,9 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4545,9 +4528,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4562,9 +4545,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4580,9 +4563,9 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4597,9 +4580,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4614,9 +4597,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4631,9 +4614,9 @@
       "--timeout=900m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4647,7 +4630,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4659,8 +4642,7 @@
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gke-ingress.env",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4673,8 +4655,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-large-cluster.env",
       "--cluster=gke-large-cluster",
       "--timeout=600m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4688,8 +4669,7 @@
       "--cluster=gke-large-deploy",
       "--down=false",
       "--timeout=1200m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4704,8 +4684,7 @@
       "--up=false",
       "--test=false",
       "--timeout=180m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4720,8 +4699,8 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4737,8 +4716,8 @@
       "--extract=ci/latest",
       "--skew",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4754,8 +4733,8 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4771,8 +4750,8 @@
       "--extract=ci/latest-1.7",
       "--skew",
       "--extract=ci/latest",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4786,7 +4765,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-multizone.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4800,8 +4779,8 @@
       "--timeout=120m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4816,8 +4795,8 @@
       "--timeout=120m",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false",
+      "--check-leaked-resources",
+      "--check-version-skew=false",
       "--mode=local"
     ],
     "scenario": "kubernetes_e2e",
@@ -4831,7 +4810,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-pre-release.env",
       "--timeout=480m",
       "--extract=release/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4844,8 +4823,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-prod.env",
       "--timeout=600m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4858,8 +4837,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-prod-parallel.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4872,8 +4851,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-prod-smoke.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4886,7 +4865,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-reboot.env",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4900,7 +4879,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4914,7 +4893,7 @@
       "--timeout=180m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4928,7 +4907,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=180m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4942,7 +4921,7 @@
       "--timeout=50m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4957,7 +4936,7 @@
       "--timeout=50m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4971,7 +4950,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=50m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4984,7 +4963,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-serial.env",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4998,7 +4977,7 @@
       "--timeout=300m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5012,7 +4991,7 @@
       "--timeout=300m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5026,7 +5005,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=500m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5039,7 +5018,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-slow.env",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5053,7 +5032,7 @@
       "--timeout=150m",
       "--extract=ci/latest-1.5",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5067,7 +5046,7 @@
       "--timeout=150m",
       "--extract=ci/latest-1.6",
       "--mode=local",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5081,7 +5060,7 @@
       "--mode=local",
       "--extract=ci/latest-1.7",
       "--timeout=150m",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5094,7 +5073,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-stackdriver.env",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5107,8 +5086,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-staging.env",
       "--timeout=600m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5121,8 +5100,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-staging-parallel.env",
       "--timeout=80m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5136,8 +5115,8 @@
       "--cluster=auto-subnet",
       "--timeout=480m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5150,8 +5129,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-test.env",
       "--timeout=480m",
       "--extract=gke",
-      "--check-leaked-resources=true",
-      "--check_version_skew=false"
+      "--check-leaked-resources",
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5163,7 +5142,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--cluster=test-13973c955f"
@@ -5181,7 +5160,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=300m",
       "--cluster=test-e6f3dac867"
@@ -5199,7 +5178,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=50m",
       "--cluster=test-c2466af1f5"
@@ -5217,7 +5196,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=300m",
       "--cluster=test-f81e6e2c95"
@@ -5235,7 +5214,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=300m",
       "--cluster=test-755da6b04a"
@@ -5253,7 +5232,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=180m",
       "--cluster=test-ec83054550"
@@ -5271,7 +5250,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=300m",
       "--cluster=test-ea2434d90d"
@@ -5289,7 +5268,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=150m",
       "--cluster=test-6b4ae0b660"
@@ -5307,7 +5286,7 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown.env",
       "--mode=local",
-      "--check-leaked-resources=true",
+      "--check-leaked-resources",
       "--extract=ci/latest-1.7",
       "--timeout=30m",
       "--cluster=test-8bf2bd5e57"
@@ -5327,7 +5306,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-updown.env",
       "--timeout=30m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5462,8 +5441,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5480,8 +5458,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5498,8 +5475,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5516,8 +5492,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest-1.7",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.7"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5534,7 +5509,7 @@
       "--tag=latest",
       "--timeout=40m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5548,7 +5523,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5562,7 +5537,7 @@
       "--mode=local",
       "--timeout=50m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5576,7 +5551,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5590,7 +5565,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5604,7 +5579,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5618,7 +5593,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5632,7 +5607,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5646,7 +5621,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5660,7 +5635,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5674,7 +5649,7 @@
       "--mode=local",
       "--timeout=30m",
       "--extract=ci/latest-1.6",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5688,7 +5663,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5702,7 +5677,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5716,7 +5691,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5730,7 +5705,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5744,7 +5719,7 @@
       "--mode=local",
       "--timeout=180m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5758,7 +5733,7 @@
       "--mode=local",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5772,7 +5747,7 @@
       "--mode=local",
       "--timeout=150m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5786,7 +5761,7 @@
       "--mode=local",
       "--timeout=30m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5835,8 +5810,7 @@
       "--test=false",
       "--kubemark",
       "--timeout=240m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5852,8 +5826,7 @@
       "--test=false",
       "--kubemark",
       "--timeout=60m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5869,8 +5842,7 @@
       "--test=false",
       "--kubemark",
       "--timeout=60m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5886,8 +5858,7 @@
       "--test=false",
       "--kubemark",
       "--timeout=120m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5903,8 +5874,7 @@
       "--docker-in-docker",
       "--kubemark",
       "--timeout=1080m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5920,8 +5890,7 @@
       "--test=false",
       "--kubemark",
       "--timeout=280m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6052,8 +6021,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6070,7 +6038,7 @@
       "--mode=local",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6085,8 +6053,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=gci/gci-next-canary",
-      "--check-leaked-resources=false"
+      "--extract=gci/gci-next-canary"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6101,8 +6068,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=gci/gci-next-canary",
-      "--check-leaked-resources=false"
+      "--extract=gci/gci-next-canary"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6117,8 +6083,7 @@
       "--extract=ci/latest-1.7",
       "--test=false",
       "--down=false",
-      "--timeout=90m",
-      "--check-leaked-resources=false"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6133,8 +6098,7 @@
       "--extract=ci/latest-1.7",
       "--up=false",
       "--down=false",
-      "--timeout=600m",
-      "--check-leaked-resources=false"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6149,8 +6113,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.4"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6165,8 +6128,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.4"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6181,8 +6143,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6197,8 +6158,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6213,8 +6173,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6229,8 +6188,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6245,8 +6203,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6261,8 +6218,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6277,8 +6233,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6296,8 +6251,7 @@
       "--stage=gs://kubernetes-release-dev/ci/ci-kubernetes-soak-gce-federation-deploy",
       "--test=false",
       "--down=false",
-      "--timeout=90m",
-      "--check-leaked-resources=false"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6313,8 +6267,7 @@
       "--up=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6330,8 +6283,7 @@
       "--down=false",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=false",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6346,8 +6298,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6363,8 +6314,7 @@
       "--down=false",
       "--timeout=600m",
       "--extract=ci/latest",
-      "--check-leaked-resources=false",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6379,8 +6329,7 @@
       "--extract=ci/latest-1.7",
       "--test=false",
       "--down=false",
-      "--timeout=90m",
-      "--check-leaked-resources=false"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6395,8 +6344,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1-7-deploy",
       "--up=false",
       "--down=false",
-      "--timeout=600m",
-      "--check-leaked-resources=false"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6411,8 +6359,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.4"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6427,8 +6374,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.4",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.4"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6443,8 +6389,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6459,8 +6404,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.5",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.5"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6475,8 +6419,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6491,8 +6434,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6508,8 +6450,7 @@
       "--down=false",
       "--timeout=90m",
       "--extract=ci/latest",
-      "--check-leaked-resources=false",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6524,8 +6465,7 @@
       "--test=false",
       "--down=false",
       "--timeout=90m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6541,8 +6481,7 @@
       "--down=false",
       "--timeout=600m",
       "--extract=ci/latest",
-      "--check-leaked-resources=false",
-      "--check_version_skew=false"
+      "--check-version-skew=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6557,8 +6496,7 @@
       "--up=false",
       "--down=false",
       "--timeout=600m",
-      "--extract=ci/latest",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6679,7 +6617,7 @@
       "--perf-tests",
       "--timeout=60m",
       "--extract=ci/latest",
-      "--check-leaked-resources=true"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6738,8 +6676,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6756,8 +6693,7 @@
       "--deployment=kubernetes-anywhere",
       "--mode=local",
       "--timeout=300m",
-      "--extract=ci/latest-1.7",
-      "--check-leaked-resources=false"
+      "--extract=ci/latest-1.7"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6809,8 +6745,7 @@
       "--build",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
       "--cluster=",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6827,8 +6762,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel",
       "--cluster=",
       "--mode=local",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6844,8 +6778,7 @@
       "--build",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary",
       "--cluster=",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6861,8 +6794,7 @@
       "--build",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3",
       "--cluster=",
-      "--timeout=65m",
-      "--check-leaked-resources=false"
+      "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6878,8 +6810,7 @@
       "--build",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gci",
       "--cluster=",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6896,8 +6827,7 @@
       "--stage=gs://kubernetes-release-dev/ci",
       "--stage-suffix=pull-gke",
       "--cluster=",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6914,8 +6844,7 @@
       "--stage=gs://kubernetes-release-dev/ci",
       "--stage-suffix=pull-gke-gci",
       "--cluster=",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6932,8 +6861,7 @@
       "--kubernetes-anywhere-kubernetes-version=latest",
       "--deployment=kubernetes-anywhere",
       "--mode=local",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6953,8 +6881,7 @@
       "--federation",
       "--deployment=none",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy",
-      "--timeout=90m",
-      "--check-leaked-resources=false"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6976,8 +6903,7 @@
       "--deployment=none",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary",
       "--mode=local",
-      "--timeout=90m",
-      "--check-leaked-resources=false"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6995,8 +6921,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
       "--test=false",
       "--kubemark",
-      "--timeout=45m",
-      "--check-leaked-resources=false"
+      "--timeout=45m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7014,8 +6939,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-gci",
       "--test=false",
       "--kubemark",
-      "--timeout=55m",
-      "--check-leaked-resources=false"
+      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

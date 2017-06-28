@@ -2126,7 +2126,6 @@ class JobTest(unittest.TestCase):
                     ('E2E_TEST=', '--test=true|false'),
                     ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
                     ('E2E_UP=', '--up=true|false'),
-                    ('E2E_OPT=--check_version_skew', '--check-version-skew=true|false'),
                     ('E2E_OPT=', 'Send kubetest the flags directly'),
                     ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
@@ -2215,22 +2214,26 @@ class JobTest(unittest.TestCase):
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
                     self.assertNotIn('--charts-tests', args)  # Use --charts
-                    self.assertTrue(
-                        any('--check-leaked-resources' in a for a in args),
-                        '--check-leaked-resources=true|false unset in %s' % job)
+                    if any('--check_version_skew' in a for a in args):
+                        self.fail('Use --check-version-skew, not --check_version_skew in %s' % job)
+                    if '--check-leaked-resources=true' in args:
+                        self.fail('Use --check-leaked-resources (no value) in %s' % job)
+                    if '--check-leaked-resources==false' in args:
+                        self.fail(
+                            'Remove --check-leaked-resources=false (default value) from %s' % job)
                     if (
                             '--env-file=jobs/pull-kubernetes-e2e.env' in args
-                            and '--check-leaked-resources=false' not in args):
+                            and '--check-leaked-resources' in args):
                         self.fail('PR job %s should not check for resource leaks' % job)
                     # Consider deleting any job with --check-leaked-resources=false
                     if (
                             '--env-file=jobs/platform/gce.env' not in args
                             and '--env-file=jobs/platform/gke.env' not in args
-                            and '--check-leaked-resources=true' in args
+                            and '--check-leaked-resources' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
                     if (
-                            '--check-leaked-resources=true' not in args
+                            '--check-leaked-resources' not in args
                             and 'generated' in config[job].get('tags', [])):
                         self.fail('Generated job %s must have --check-leaked-resources=yes' % job)
 
