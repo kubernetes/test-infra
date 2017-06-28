@@ -817,7 +817,7 @@
       "--cluster=e2e-enormous-deploy",
       "--down=false",
       "--timeout=300m",
-      "--extract=ci/latest"
+      "--extract=ci/latest-1.6"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
