@@ -808,7 +808,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gce-enormous-deploy": {
@@ -821,7 +821,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gce-enormous-teardown": {
@@ -835,7 +835,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gce-es-logging": {
@@ -1825,7 +1825,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gce-scalability-release-1-7": {
@@ -2771,7 +2771,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
@@ -4659,7 +4659,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gke-large-deploy": {
@@ -4673,7 +4673,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gke-large-teardown": {
@@ -4688,7 +4688,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gke-latest-upgrade-cluster": {
@@ -5814,7 +5814,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-kubemark-5-gce": {
@@ -5830,7 +5830,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-kubemark-5-gce-1.5": {
@@ -5846,7 +5846,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-kubemark-500-gce": {
@@ -5862,7 +5862,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-kubemark-gce-scale": {
@@ -5878,7 +5878,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-kubemark-high-density-100-gce": {
@@ -5894,7 +5894,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
     ]
   },
   "ci-kubernetes-node-cos-docker-validation": {
