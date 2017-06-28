@@ -1163,3 +1163,9 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
+
+go_library(
+    name = "github.com/bwmarrin/snowflake",
+    srcs = ["github.com/bwmarrin/snowflake/snowflake.go"],
+    tags = ["automanaged"],
+)

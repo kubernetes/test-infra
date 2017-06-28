@@ -31,7 +31,6 @@ func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
 		Metadata: kube.ObjectMeta{
-			// TODO(spxtr): Remove this, replace with cmd/tot usage.
 			Name: uuid.NewV1().String(),
 		},
 		Spec: spec,

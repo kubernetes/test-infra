@@ -32,7 +32,7 @@ import (
 )
 
 var (
-	totURL = flag.String("tot-url", "http://tot", "Tot URL")
+	totURL = flag.String("tot-url", "", "Tot URL")
 
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
@@ -91,7 +91,10 @@ func main() {
 		ghc = github.NewClient(*githubBotName, oauthSecret)
 	}
 
-	c := plank.NewController(kc, pkc, jc, ghc, configAgent, *totURL)
+	c, err := plank.NewController(kc, pkc, jc, ghc, configAgent, *totURL)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating plank controller.")
+	}
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {
