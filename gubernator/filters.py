@@ -192,7 +192,7 @@ def do_get_latest(payload, user):
     if '#' not in text:
         return None
     _text, _start, latest = text.rsplit('#', 2)
-    return int(latest)
+    return float(latest)
 
 
 def do_ltrim(s, needle):
