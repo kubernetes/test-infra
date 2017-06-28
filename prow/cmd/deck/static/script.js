@@ -1,6 +1,6 @@
 "use strict";
 
-var types = ["presubmit", "postsubmit", "periodic", "batch"];
+var types = {};
 var repos = {};
 var jobs = {};
 var authors = {};
@@ -24,6 +24,7 @@ function updateQueryStringParameter(uri, key, value) {
 
 window.onload = function() {
     for (var i = 0; i < allBuilds.length; i++) {
+        types[allBuilds[i].type] = true;
         repos[allBuilds[i].repo] = true;
         jobs[allBuilds[i].job] = true;
         if (allBuilds[i].type === "presubmit") {
@@ -33,7 +34,8 @@ window.onload = function() {
         }
     }
 
-    addOptions(types, "type");
+    var ts = Array.from(Object.keys(types)).sort();
+    addOptions(ts, "type");
     var rs = Array.from(Object.keys(repos)).filter(function(r) { return r !== "/"; }).sort();
     addOptions(rs, "repo");
     var js = Array.from(Object.keys(jobs)).sort();
@@ -93,7 +95,6 @@ function redraw() {
         builds.removeChild(builds.firstChild);
 
     var typeSel = document.getElementById("type")
-    var selectedType = typeSel.options[typeSel.selectedIndex].text;
     var repoSel = document.getElementById("repo")
     var pullSel = document.getElementById("pull")
     var authorSel = document.getElementById("author")
@@ -102,7 +103,8 @@ function redraw() {
 
     if (window.history && window.history.replaceState !== undefined) {
         var args = [];
-        args.push("type=" + selectedType);
+        var tt = encodedText(typeSel);
+        if (tt !== "") args.push("type=" + tt);
         var rt = encodedText(repoSel);
         if (rt !== "") args.push("repo=" + rt);
         var pt = encodedText(pullSel);
@@ -123,7 +125,7 @@ function redraw() {
     var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
-        if (build.type !== selectedType) continue;
+        if (!equalSelected(typeSel, build.type)) continue;
 
         if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
         if (!equalSelected(stateSel, build.state)) continue;
@@ -137,7 +139,7 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
-            r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name));
+            r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name, "Build log."));
         } else {
             r.appendChild(createTextCell(""));
         }
@@ -151,7 +153,7 @@ function redraw() {
             if (build.type === "periodic") {
                 r.appendChild(createTextCell(""));
             } else {
-                r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo));
+                r.appendChild(createLinkCell(build.repo, "https://github.com/" + build.repo, ""));
             }
             if (build.type === "presubmit") {
                 r.appendChild(prRevisionCell(build));
@@ -170,7 +172,7 @@ function redraw() {
         if (build.url === "") {
             r.appendChild(createTextCell(build.job));
         } else {
-            r.appendChild(createLinkCell(build.job, build.url));
+            r.appendChild(createLinkCell(build.job, build.url, ""));
         }
         r.appendChild(createTextCell(build.started));
         r.appendChild(createTextCell(build.duration));
@@ -184,10 +186,13 @@ function createTextCell(text) {
     return c;
 }
 
-function createLinkCell(text, url) {
+function createLinkCell(text, url, title) {
     var c = document.createElement("td");
     var a = document.createElement("a");
     a.href = url;
+    if (title !== "") {
+        a.title = title;
+    }
     a.appendChild(document.createTextNode(text));
     c.appendChild(a);
     return c;
@@ -198,6 +203,7 @@ function createRerunCell(modal, rerun_command, prowjob) {
     var c = document.createElement("td");
     var a = document.createElement("a");
     a.href = "#";
+    a.title = "Show instructions for rerunning this job.";
     a.onclick = function() {
         modal.style.display = "block";
         rerun_command.textContent = "kubectl create -f \"" + url + "\"";
