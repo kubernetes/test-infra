@@ -70,7 +70,6 @@ const (
 )
 
 var (
-	_ = fmt.Print
 	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
 	// TODO(juntee): remove oldRetestBody when the old command retires
 	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
@@ -264,6 +263,7 @@ type SubmitQueue struct {
 
 	mergeLock   sync.Mutex // acquired when attempting to merge a specific PR
 	BatchURL    string
+	ContextURL  string
 	batchStatus submitQueueBatchStatus
 }
 
@@ -585,6 +585,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	cmd.Flags().StringVar(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	cmd.Flags().StringVar(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
+	cmd.Flags().StringVar(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	cmd.Flags().BoolVar(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
 }
 
@@ -776,7 +777,7 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	status, ok := obj.GetStatus(sqContext)
 	if !ok || status == nil || *status.Description != reason {
 		state := reasonToState(reason)
-		url := fmt.Sprintf("http://submit-queue.k8s.io/#/prs?prDisplay=%d&historyDisplay=%d", *obj.Issue.Number, *obj.Issue.Number)
+		url := fmt.Sprintf("%s/#/prs?prDisplay=%d&historyDisplay=%d", sq.ContextURL, *obj.Issue.Number, *obj.Issue.Number)
 		_ = obj.SetStatus(state, url, reason, sqContext)
 	}
 
@@ -1483,7 +1484,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>All of the <a href=http://submit-queue.k8s.io/#/e2e>continuously running e2e tests</a> must be passing</li>"))
+	out.WriteString(fmt.Sprintf("<li>All of the <a href=%s/#/e2e>continuously running e2e tests</a> must be passing</li>", sq.ContextURL))
 	if len(sq.RequiredRetestContexts) > 0 {
 		out.WriteString("<li>All of the following tests must pass a second time")
 		out.WriteString("<ul>")

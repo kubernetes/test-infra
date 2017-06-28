@@ -31,6 +31,7 @@ data:
   submit-queue.chart-url: ""
   submit-queue.history-url: ""
   submit-queue.batch-url: ""
+  submit-queue.context-url: ""
 
   # options used by the GCS feature.
   gcs.gcs-bucket: ""
