@@ -52,8 +52,8 @@ number.
 ## How to update the cluster
 
 Any modifications to Go code will require redeploying the affected binaries.
-Fortunately, this should result in no downtime for the system. [Bump](https://github.com/kubernetes/test-infra/commit/cf1ac2f67142e91cb36978691e1718c007a3377a) the relevant version 
-number in the makefile as well as in the `cluster` manifest,
+Fortunately, this should result in no downtime for the system. Run `./bump.sh <program-name>` 
+to bump the relevant version number in the makefile as well as in the `cluster` manifest,
 then run the image and deployment make targets on a branch which has the 
 changes. For instance, if you bumped the hook version, run 
 `make hook-image && make hook-deployment`.
