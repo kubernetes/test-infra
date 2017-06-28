@@ -470,6 +470,145 @@ func TestIsApproved(t *testing.T) {
 	}
 }
 
+func TestIsApprovedWithIssue(t *testing.T) {
+	aApprovers := sets.NewString("Author", "Anne", "Carl")
+	bApprovers := sets.NewString("Bill", "Carl")
+	FakeRepoMap := map[string]sets.String{"a": aApprovers, "b": bApprovers}
+	tests := []struct {
+		testName          string
+		filenames         []string
+		currentlyApproved map[string]bool
+		associatedIssue   int
+		isApproved        bool
+	}{
+		{
+			testName:          "Empty PR",
+			filenames:         []string{},
+			currentlyApproved: map[string]bool{},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Single file missing issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{"Carl": false},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Single file no-issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{"Carl": true},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Single file with issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{"Carl": false},
+			associatedIssue:   100,
+			isApproved:        true,
+		},
+		{
+			testName:          "Two files missing issue",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Carl": false},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Two files no-issue",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Carl": true},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Two files two no-issue two approvers",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Anne": true, "Bill": true},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Two files one no-issue two approvers",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Anne": true, "Bill": false},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Two files missing issue two approvers",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Anne": false, "Bill": false},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Self approval (implicit) missing issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Self approval (implicit) with issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{},
+			associatedIssue:   10,
+			isApproved:        true,
+		},
+		{
+			testName:          "Self approval (explicit) missing issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{"Author": false},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Self approval (explicit) no-issue",
+			filenames:         []string{"a/file.go"},
+			currentlyApproved: map[string]bool{"Author": true},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Self approval (explicit) missing issue, two files",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Author": false, "Bill": false},
+			associatedIssue:   0,
+			isApproved:        false,
+		},
+		{
+			testName:          "Self approval (explicit) no-issue from author, two files",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Author": true, "Bill": false},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+		{
+			testName:          "Self approval (explicit) no-issue from friend, two files",
+			filenames:         []string{"a/file.go", "b/file2.go"},
+			currentlyApproved: map[string]bool{"Author": false, "Bill": true},
+			associatedIssue:   0,
+			isApproved:        true,
+		},
+	}
+
+	for _, test := range tests {
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: 0})
+		testApprovers.AssociatedIssue = test.associatedIssue
+		for approver, noissue := range test.currentlyApproved {
+			testApprovers.AddApprover(approver, "REFERENCE", noissue)
+		}
+		testApprovers.AddAuthorSelfApprover("Author", "REFERENCE")
+		calculated := testApprovers.IsApprovedWithIssue()
+		if test.isApproved != calculated {
+			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
+		}
+	}
+}
+
 func TestGetFilesApprovers(t *testing.T) {
 	tests := []struct {
 		testName       string
