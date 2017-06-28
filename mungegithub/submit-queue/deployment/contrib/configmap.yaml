@@ -32,6 +32,7 @@ data:
   submit-queue.chart-url: ""
   submit-queue.history-url: ""
   submit-queue.batch-url: ""
+  submit-queue.context-url: https://contrib.submit-queue.k8s.io
 
   # options used by the GCS feature.
   gcs.gcs-bucket: ""

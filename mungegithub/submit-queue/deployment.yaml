@@ -52,6 +52,7 @@ spec:
         - --triager-url=$(TRIAGER_URL)
         - --alias-file=$(ALIAS_FILE_PATH)
         - --batch-url=$(BATCH_URL)
+        - --context-url=$(CONTEXT_URL)
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
         - --github-key=$(GITHUB_KEY)
@@ -150,6 +151,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: submit-queue.batch-url
+          - name: CONTEXT_URL
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: submit-queue.context-url
           - name: GCS_BUCKET
             valueFrom:
               configMapKeyRef:
