@@ -40,7 +40,7 @@ TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/
 
 **Note** The submit-queue should always be deployed from master so that looking at
 the master branch (configmap, etc) reflects what is currently running. The deployment may require finding
-appropriate hash found in [Godeps.json](https://github.com/kubernetes/test-infra/blob/master/Godeps/Godeps.json) and checkout all corresponding commits. This can be achieved by running `godep restore`.
+appropriate hashes listed in [Godeps.json](https://github.com/kubernetes/test-infra/blob/master/Godeps/Godeps.json) and checkout all corresponding commits beforehand. This can be achieved by running `godep restore`.
 
 After this has successfully deployed to the test cluster in read-only mode, running in production involves running any required `kubectl config` commands to point to the production cluster, pushing a configmap if necessary, and then running:
 ```sh
