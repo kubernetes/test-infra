@@ -14,6 +14,7 @@ go_test(
         "assign-fixes_test.go",
         "check-labels_test.go",
         "cherrypick-auto-approve_test.go",
+        "cherrypick-clear-after-merge_test.go",
         "comment-deleter-jenkins_test.go",
         "flakyjob-reporter_test.go",
         "inactive-review-handler_test.go",
