@@ -318,6 +318,10 @@ func main() {
 			log.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
 			continue
 		}
+		// No need to check for mergeable PRs if none is in the queue.
+		if len(queue) == 0 {
+			continue
+		}
 		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
 		if err != nil {
 			log.WithError(err).Error("Error computing mergeable PRs.")
