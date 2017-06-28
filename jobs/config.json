@@ -617,10 +617,10 @@
       "--publish=gs://kubernetes-release-dev/ci/latest-canarygreen.txt",
       "--tag=latest",
       "--timeout=40m",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.4",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest-1.6",
       "--check-leaked-resources=true",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.5",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
       "--check_version_skew=false"
     ],
     "scenario": "kubernetes_e2e",
