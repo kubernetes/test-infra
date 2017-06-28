@@ -15,6 +15,7 @@ spec:
       - name: bulk-lgtm
         command:
         - /mungegithub
+        - --stderrthreshold=0
         - --organization=kubernetes
         - --project=kubernetes
         - --pr-mungers=bulk-lgtm
