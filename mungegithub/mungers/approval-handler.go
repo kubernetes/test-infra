@@ -126,7 +126,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 	commentsFromIssueComments := c.FromIssueComments(issueComments)
-	comments := append(commentsFromIssueComments, c.FromReviewComments(reviewComments)...)
+	comments := append(c.FromReviewComments(reviewComments), commentsFromIssueComments...)
 	comments = append(comments, c.FromReviews(reviews)...)
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(*comments[j].CreatedAt)
@@ -158,12 +158,13 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 
 	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
 
-	latestNotification := c.FilterComments(commentsFromIssueComments, notificationMatcher).GetLast()
+	notifications := c.FilterComments(commentsFromIssueComments, notificationMatcher)
+	latestNotification := notifications.GetLast()
 	latestApprove := approveComments.GetLast()
 	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, approversHandler)
 	if newMessage != nil {
-		if latestNotification != nil {
-			obj.DeleteComment(latestNotification.Source.(*githubapi.IssueComment))
+		for _, notif := range notifications {
+			obj.DeleteComment(notif.Source.(*githubapi.IssueComment))
 		}
 		obj.WriteComment(*newMessage)
 	}
