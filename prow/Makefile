@@ -21,7 +21,7 @@ DECK_VERSION       = 0.31
 SPLICE_VERSION     = 0.21
 TOT_VERSION        = 0.3
 HOROLOGIUM_VERSION = 0.3
-PLANK_VERSION      = 0.24
+PLANK_VERSION      = 0.25
 
 # These are the usual GKE variables.
 PROJECT ?= k8s-prow

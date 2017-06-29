@@ -27,8 +27,9 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.24
+        image: gcr.io/k8s-prow/plank:0.25
         args:
+        - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-bot-name=k8s-ci-robot

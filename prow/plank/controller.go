@@ -24,6 +24,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bwmarrin/snowflake"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
@@ -69,20 +71,26 @@ type Controller struct {
 	jc     jenkinsClient
 	ghc    githubClient
 	ca     configAgent
+	node   *snowflake.Node
 	totURL string
 
 	reports []kube.ProwJob
 }
 
-func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.ConfigAgent, totURL string) *Controller {
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.ConfigAgent, totURL string) (*Controller, error) {
+	n, err := snowflake.NewNode(1)
+	if err != nil {
+		return nil, err
+	}
 	return &Controller{
 		kc:     kc,
 		pkc:    pkc,
 		jc:     jc,
 		ghc:    ghc,
 		ca:     ca,
+		node:   n,
 		totURL: totURL,
-	}
+	}, nil
 }
 
 func (c *Controller) Sync() error {
@@ -322,7 +330,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 }
 
 func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
-	buildID, err := c.getBuildID(c.totURL, pj.Spec.Job)
+	buildID, err := c.getBuildID(pj.Spec.Job)
 	if err != nil {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
@@ -403,9 +411,12 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	return buildID, actual.Metadata.Name, nil
 }
 
-func (c *Controller) getBuildID(server, name string) (string, error) {
+func (c *Controller) getBuildID(name string) (string, error) {
+	if c.totURL == "" {
+		return c.node.Generate().String(), nil
+	}
 	var err error
-	url := server + "/vend/" + name
+	url := c.totURL + "/vend/" + name
 	for retries := 0; retries < 60; retries++ {
 		if retries > 0 {
 			time.Sleep(2 * time.Second)

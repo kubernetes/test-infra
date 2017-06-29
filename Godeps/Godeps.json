@@ -48,6 +48,10 @@
 			"Rev": "3ac7bf7a47d159a033b107610db8a1b6575507a4"
 		},
 		{
+			"ImportPath": "github.com/bwmarrin/snowflake",
+			"Rev": "02cc386c183a1bf89dcac8c8008bb465f69d3340"
+		},
+		{
 			"ImportPath": "github.com/ghodss/yaml",
 			"Rev": "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 		},
