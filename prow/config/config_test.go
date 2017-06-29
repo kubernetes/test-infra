@@ -189,11 +189,11 @@ func CheckBazelPortContainer(c kube.Container, cache bool) error {
 	}
 
 	if len(c.Ports) != 1 {
-		return errors.New("job uses --cache-ssd and so needs to set ports in spec!")
+		return errors.New("job uses --cache-ssd and so needs to set ports in spec")
 	} else if c.Ports[0].ContainerPort != 9999 {
-		return errors.New("job uses --cache-ssd and so needs to have ContainerPort 9999!")
+		return errors.New("job uses --cache-ssd and so needs to have ContainerPort 9999")
 	} else if c.Ports[0].HostPort != 9999 {
-		return errors.New("job uses --cache-ssd and so needs to have HostPort 9999!")
+		return errors.New("job uses --cache-ssd and so needs to have HostPort 9999")
 	}
 	return nil
 }
