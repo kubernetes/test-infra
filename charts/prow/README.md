@@ -13,8 +13,7 @@ One goal of this chart was to minimize the manual steps around github auth token
 1. First generate a github user token and add it as a secret to the cluster:
 
 ```bash
-./generate_auth_k8s.sh
-Enter GitHub username: <MY-BOT-ACCOUNT>
+./generate_auth_k8s.sh <MY-BOT-ACCOUNT>
 <MY-BOT-ACCOUNT>'s GitHub Password:
 wrote results to file: github_cred
 GITHUB_AUTH_ID=99013573

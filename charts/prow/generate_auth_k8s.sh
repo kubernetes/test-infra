@@ -27,6 +27,11 @@
 # secret "hookmanager-cred" deleted
 # secret "hookmanager-cred" created
 
+if [ -z "$1" ]
+  then
+    echo "USAGE: generate_auth_k8s.sh <BOT_ACCOUNT>"; exit 1;
+fi
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -38,7 +43,7 @@ if [ $(echo $?) -eq 0 ]; then
   exit 1;
 fi
 
-bot_user_id=samsungbot
+bot_user_id=$1
 
 #first create an auth token
 contained_id=$(docker run -d jfelten/hook_manager tail -f /dev/null)
