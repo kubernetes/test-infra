@@ -65,6 +65,7 @@ type configAgent interface {
 	Config() *config.Config
 }
 
+// Controller manages ProwJobs.
 type Controller struct {
 	kc     kubeClient
 	pkc    kubeClient
@@ -77,6 +78,7 @@ type Controller struct {
 	reports []kube.ProwJob
 }
 
+// NewController creates a new Controller from the provided clients.
 func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.Agent, totURL string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
@@ -93,6 +95,7 @@ func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client,
 	}, nil
 }
 
+// Sync does one sync iteration.
 func (c *Controller) Sync() error {
 	c.reports = []kube.ProwJob{}
 	pjs, err := c.kc.ListProwJobs(nil)
@@ -432,9 +435,8 @@ func (c *Controller) getBuildID(name string) (string, error) {
 		}
 		if buf, err := ioutil.ReadAll(resp.Body); err == nil {
 			return string(buf), nil
-		} else {
-			return "", err
 		}
+		return "", err
 	}
 	return "", err
 }
