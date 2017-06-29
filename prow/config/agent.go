@@ -23,19 +23,22 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// ConfigAgent watches a path and automatically loads the config stored
+// Agent watches a path and automatically loads the config stored
 // therein.
-type ConfigAgent struct {
+type Agent struct {
 	sync.Mutex
 	c *Config
 }
 
-func (ca *ConfigAgent) Start(path string) error {
-	if c, err := Load(path); err != nil {
+// Start will begin polling the config file at the path. If the first load
+// fails, Start with return the error and abort. Future load failures will log
+// the failure message but continue attempting to load.
+func (ca *Agent) Start(path string) error {
+	c, err := Load(path)
+	if err != nil {
 		return err
-	} else {
-		ca.c = c
 	}
+	ca.c = c
 	go func() {
 		for range time.Tick(1 * time.Minute) {
 			if c, err := Load(path); err != nil {
@@ -50,7 +53,8 @@ func (ca *ConfigAgent) Start(path string) error {
 	return nil
 }
 
-func (ca *ConfigAgent) Config() *Config {
+// Config returns the latest config. Do not modify the config.
+func (ca *Agent) Config() *Config {
 	ca.Lock()
 	defer ca.Unlock()
 	return ca.c

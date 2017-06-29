@@ -33,7 +33,7 @@ import (
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	Plugins     *plugins.PluginAgent
-	ConfigAgent *config.ConfigAgent
+	ConfigAgent *config.Agent
 	HMACSecret  []byte
 }
 

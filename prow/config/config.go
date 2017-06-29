@@ -111,17 +111,17 @@ func parseConfig(c *Config) error {
 		c.Periodics[j].interval = d
 	}
 
-	if tmpl, err := template.New("JobURL").Parse(c.Plank.JobURLTemplateString); err != nil {
+	urlTmpl, err := template.New("JobURL").Parse(c.Plank.JobURLTemplateString)
+	if err != nil {
 		return fmt.Errorf("parsing template: %v", err)
-	} else {
-		c.Plank.JobURLTemplate = tmpl
 	}
+	c.Plank.JobURLTemplate = urlTmpl
 
-	if tmpl, err := template.New("Report").Parse(c.Plank.ReportTemplateString); err != nil {
+	reportTmpl, err := template.New("Report").Parse(c.Plank.ReportTemplateString)
+	if err != nil {
 		return fmt.Errorf("parsing template: %v", err)
-	} else {
-		c.Plank.ReportTemplate = tmpl
 	}
+	c.Plank.ReportTemplate = reportTmpl
 	return nil
 }
 
@@ -136,11 +136,11 @@ func setRegexes(js []Presubmit) error {
 			return err
 		}
 		if j.RunIfChanged != "" {
-			if re, err := regexp.Compile(j.RunIfChanged); err != nil {
+			re, err := regexp.Compile(j.RunIfChanged)
+			if err != nil {
 				return fmt.Errorf("could not compile changes regex for %s: %v", j.Name, err)
-			} else {
-				js[i].reChanges = re
 			}
+			js[i].reChanges = re
 		}
 	}
 	return nil

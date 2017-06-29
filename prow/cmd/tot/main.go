@@ -35,7 +35,7 @@ import (
 
 var (
 	port        = flag.Int("port", 8888, "port to listen on")
-	logJson     = flag.Bool("log-json", false, "output log in JSON format")
+	logJSON     = flag.Bool("log-json", false, "output log in JSON format")
 	storagePath = flag.String("storage", "tot.json", "where to store the results")
 
 	// TODO(rmmh): remove this once we have no jobs running on Jenkins
@@ -184,7 +184,7 @@ func (f fallbackHandler) get(b string) int {
 func main() {
 	flag.Parse()
 
-	if *logJson {
+	if *logJSON {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 	log.SetLevel(log.DebugLevel)

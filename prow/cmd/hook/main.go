@@ -129,7 +129,7 @@ func main() {
 		}
 	}
 
-	configAgent := &config.ConfigAgent{}
+	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}

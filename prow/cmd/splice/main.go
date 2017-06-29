@@ -39,7 +39,7 @@ var (
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	logJson        = flag.Bool("log-json", false, "output log in JSON format")
+	logJSON        = flag.Bool("log-json", false, "output log in JSON format")
 	configPath     = flag.String("config-path", "/etc/config/config", "Where is config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
@@ -263,7 +263,7 @@ func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob,
 func main() {
 	flag.Parse()
 
-	if *logJson {
+	if *logJSON {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 	log.SetLevel(log.DebugLevel)
@@ -274,7 +274,7 @@ func main() {
 	}
 	defer splicer.cleanup()
 
-	ca := &config.ConfigAgent{}
+	ca := &config.Agent{}
 	if err := ca.Start(*configPath); err != nil {
 		log.WithError(err).Fatal("Could not start config agent.")
 	}

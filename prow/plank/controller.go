@@ -77,7 +77,7 @@ type Controller struct {
 	reports []kube.ProwJob
 }
 
-func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.ConfigAgent, totURL string) (*Controller, error) {
+func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.Agent, totURL string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
