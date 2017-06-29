@@ -1461,6 +1461,7 @@ class JobTest(unittest.TestCase):
         'config.json',  # For --json mode
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
+        'config_test.py', # Script for testing config.json and Prow config.
         'move_timeout.py', # Tool to migrate timeouts to config.json
         'move_extract.py',
     ]
@@ -2293,19 +2294,6 @@ class JobTest(unittest.TestCase):
                             suffix,
                             any('--stage-suffix=' in a for a in args),
                             ('--stage-suffix=', suffix, job, args))
-
-    def test_config_is_sorted(self):
-        """Test jobs/config.json is sorted."""
-        with open(bootstrap.test_infra('jobs/config.json')) as fp:
-            original = fp.read()
-            expect = json.dumps(
-                json.loads(original),
-                sort_keys=True,
-                indent=2,
-                separators=(',', ': ')
-                ) + '\n'
-            if original != expect:
-                self.fail('config.json is not sorted, please run jobs/config_sort.py')
 
 
 if __name__ == '__main__':

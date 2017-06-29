@@ -48,7 +48,10 @@ test_suite(
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
-    deps = ["@pylint//:pylint"],
+    deps = [
+        "@pylint//:pylint",
+        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+    ],
 )
 
 filegroup(
