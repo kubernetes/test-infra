@@ -53,7 +53,7 @@ var _ Munger = &NagFlakeIssues{}
 func init() {
 	n := &NagFlakeIssues{}
 	RegisterMungerOrDie(n)
-	RegisterStaleComments(n)
+	RegisterStaleIssueComments(n)
 }
 
 // Name is the name usable in --pr-mungers
@@ -128,8 +128,8 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 	}
 }
 
-// StaleComments returns a slice of stale comments
-func (NagFlakeIssues) StaleComments(obj *mgh.MungeObject, issueComments []*github.IssueComment) []*github.IssueComment {
+// StaleIssueComments returns a slice of stale issue comments.
+func (NagFlakeIssues) StaleIssueComments(obj *mgh.MungeObject, issueComments []*github.IssueComment) []*github.IssueComment {
 	comments := c.FromIssueComments(issueComments)
 	// Remove all pings written before the last human actor comment
 	filtered := c.FilterComments(comments, c.And([]c.Matcher{

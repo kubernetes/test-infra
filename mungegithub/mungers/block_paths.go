@@ -55,7 +55,7 @@ type BlockPath struct {
 func init() {
 	b := &BlockPath{}
 	RegisterMungerOrDie(b)
-	RegisterStaleComments(b)
+	RegisterStaleIssueComments(b)
 }
 
 // Name is the name usable in --pr-mungers
@@ -144,7 +144,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (b *BlockPath) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -158,7 +158,7 @@ func (b *BlockPath) isStaleComment(obj *github.MungeObject, comment *githubapi.I
 	return stale
 }
 
-// StaleComments returns a slice of stale comments
-func (b *BlockPath) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, b.isStaleComment)
+// StaleIssueComments returns a slice of stale issue comments.
+func (b *BlockPath) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, b.isStaleIssueComment)
 }

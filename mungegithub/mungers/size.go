@@ -53,7 +53,7 @@ type SizeMunger struct {
 func init() {
 	s := &SizeMunger{}
 	RegisterMungerOrDie(s)
-	RegisterStaleComments(s)
+	RegisterStaleIssueComments(s)
 }
 
 // Name is the name usable in --pr-mungers
@@ -266,7 +266,7 @@ func calculateSize(adds, dels int) string {
 	return sizeXXL
 }
 
-func (s *SizeMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (s *SizeMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -277,7 +277,7 @@ func (s *SizeMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.
 	return stale
 }
 
-// StaleComments returns a slice of stale comments
-func (s *SizeMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, s.isStaleComment)
+// StaleIssueComments returns a slice of stale issue comments.
+func (s *SizeMunger) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }

@@ -283,7 +283,7 @@ func init() {
 		githubE2EQueue: map[int]*github.MungeObject{},
 	}
 	RegisterMungerOrDie(sq)
-	RegisterStaleComments(sq)
+	RegisterStaleIssueComments(sq)
 }
 
 // Name is the name usable in --pr-mungers
@@ -1578,7 +1578,7 @@ func (sq *SubmitQueue) serveHealthSVG(res http.ResponseWriter, req *http.Request
 	res.Write(sq.getHealthSVG())
 }
 
-func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (sq *SubmitQueue) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -1592,7 +1592,7 @@ func (sq *SubmitQueue) isStaleComment(obj *github.MungeObject, comment *githubap
 	return stale
 }
 
-// StaleComments returns a slice of stale comments
-func (sq *SubmitQueue) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, sq.isStaleComment)
+// StaleIssueComments returns a slice of stale issue comments.
+func (sq *SubmitQueue) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, sq.isStaleIssueComment)
 }
