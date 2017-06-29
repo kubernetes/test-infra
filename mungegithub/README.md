@@ -41,8 +41,8 @@ It can finally deployed as:
 TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/kubeconfig make deploy
 ```
 
-**Note** The submit-queue should always be deployed from master so that look at
-the master branch (configmap, etc) reflects what is currently running.
+**Note** The submit-queue should always be deployed from master so that looking at
+the master branch (configmap, etc) reflects what is currently running. Make sure you have appropriate version of all dependencies by running `godep restore`. Refer [this](https://github.com/tools/godep#restore) for more information.
 
 After this has successfully deployed to the test cluster in read-only mode, running in production involves running any required `kubectl config` commands to point to the production cluster, pushing a configmap if necessary, and then running:
 ```sh
