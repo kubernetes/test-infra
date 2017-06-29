@@ -4,7 +4,7 @@ metadata:
   name: '{{ template "fullname" . }}.lego'
 data:
   # modify this to specify your address
-  lego.email: "john.felten@gmail.com"
+  lego.email: "{{ .Values.lego.email }}"
   # configre letsencrypt's production api
   lego.url: "https://acme-v01.api.letsencrypt.org/directory"
 kind: ConfigMap

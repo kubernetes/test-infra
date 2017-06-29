@@ -21,16 +21,15 @@
 # ./delete_auth_k8s.sh
 #
 
-#set errexit, nounset, pipefail
 set -o errexit
 set -o nounset
 set -o pipefail
 
-GITHUB_USER_NAME=`kubectl get secret hookmanager-cred --output=jsonpath={.data.user_id} | base64 --decode | tr -d '\n\r'`
-GITHUB_AUTH_ID=`kubectl get secret hookmanager-cred --output=jsonpath={.data.auth_id} | base64 --decode | tr -d '\n\r'`
+github_user_name=$(kubectl get secret hookmanager-cred --output=jsonpath={.data.user_id} | base64 --decode | tr -d '\n\r')
+github_auth_id=$(kubectl get secret hookmanager-cred --output=jsonpath={.data.auth_id} | base64 --decode | tr -d '\n\r')
 
 #delete the token on github
-docker run -it jfelten/hook_manager /hook_manager delete_authorization --account=${GITHUB_USER_NAME} --auth_id=${GITHUB_AUTH_ID}
+docker run -it jfelten/hook_manager /hook_manager delete_authorization --account=${github_user_name} --auth_id=${github_auth_id}
 
 #delete the token and secret used by this cluster
 kubectl delete secret hookmanager-cred

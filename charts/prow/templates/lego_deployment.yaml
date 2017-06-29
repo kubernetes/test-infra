@@ -19,7 +19,7 @@ spec:
         - containerPort: 8080
         env:
         - name: LEGO_EMAIL
-          value: "john.felten@gmail.com"
+          value: "{{ .Values.lego.email }}"
         - name: LEGO_URL
           value: "https://acme-v01.api.letsencrypt.org/directory"
         - name: LEGO_POD_IP

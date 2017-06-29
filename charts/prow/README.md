@@ -43,6 +43,3 @@ helm delete <RELEASE_NAME>
 ## Configuration
 
 This chart defaults to the kubernetes production values for prow. Please configure prowDomain to a value you control, since github needs a public address or dns name for webhooks. Also make sure the repos values are also values your control.
-
-
-

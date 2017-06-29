@@ -19,7 +19,6 @@ repos:
 
 #docker iamges used by prow
 images:
-  crier: gcr.io/k8s-prow/crier:0.7
   deck: gcr.io/k8s-prow/deck:0.30
   hook: gcr.io/k8s-prow/hook:0.113
   hook_manager: jfelten/hook_manager:latest
@@ -77,7 +76,6 @@ hook:
       memory: 128Mi
 
 horologium:
-  replicaCount: 1
   resources:
     limits:
       cpu: 100m
@@ -102,7 +100,6 @@ marque:
       memory: 128Mi
 
 sinker:
-  replicaCount: 1
   resources:
     limits:
       cpu: 100m
@@ -112,7 +109,6 @@ sinker:
       memory: 128Mi
 
 splice:
-  replicaCount: 1
   resources:
     limits:
       cpu: 100m
@@ -140,4 +136,7 @@ tot:
     requests:
       cpu: 100m
       memory: 128Mi
+
+lego:
+  email: kubernetes@k8s.io
 

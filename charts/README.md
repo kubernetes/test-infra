@@ -1,7 +1,7 @@
 
 # Kubernetes Test-Infra Helm charts
 
-This is the [helm](https://github.com/kubernetes/helm) chart repository for test infra components. Helm is a package manager for kubernetes  this chart repository adapts test-infra components for general use on any kubernetes cluster. Please see documentation on individual components for more detail.
+This is the [helm](https://github.com/kubernetes/helm) chart repository for test infra components. Please see documentation on individual components for more detail.
 
 To use this repository to install prow:
 
