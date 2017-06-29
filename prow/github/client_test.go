@@ -687,8 +687,8 @@ func TestGetFile(t *testing.T) {
 	c := getClient(ts.URL)
 	if content, err := c.GetFile("k8s", "kuber", "foo.txt", ""); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
-	} else if content != "abcde" {
-		t.Errorf("Wrong content -- expect: abcde, got: %s", content)
+	} else if string(content) != "abcde" {
+		t.Errorf("Wrong content -- expect: abcde, got: %s", string(content))
 	}
 }
 
@@ -716,8 +716,8 @@ func TestGetFileRef(t *testing.T) {
 	c := getClient(ts.URL)
 	if content, err := c.GetFile("k8s", "kuber", "foo/bar.txt", "12345"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
-	} else if content != "abcde" {
-		t.Errorf("Wrong content -- expect: abcde, got: %s", content)
+	} else if string(content) != "abcde" {
+		t.Errorf("Wrong content -- expect: abcde, got: %s", string(content))
 	}
 }
 

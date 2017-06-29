@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	pluginName = "updater"
+	pluginName = "config-updater"
 	configFile = "prow/config.yaml"
 	pluginFile = "prow/plugins.yaml"
 )
@@ -39,7 +39,7 @@ func init() {
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error)
-	GetFile(org, repo, filepath, commit string) (string, error)
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
 type kubeClient interface {
@@ -58,14 +58,12 @@ func handleConfig(gc githubClient, kc kubeClient, org, repo, commit string) erro
 
 	c := kube.ConfigMap{
 		Data: map[string]string{
-			"config": content,
+			"config": string(content),
 		},
 	}
-	if _, err := kc.ReplaceConfigMap("config", c); err != nil {
-		return err
-	}
 
-	return nil
+	_, err = kc.ReplaceConfigMap("config", c)
+	return err
 }
 
 func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) error {
@@ -76,14 +74,12 @@ func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) erro
 
 	c := kube.ConfigMap{
 		Data: map[string]string{
-			"plugins": content,
+			"plugins": string(content),
 		},
 	}
-	if _, err = kc.ReplaceConfigMap("plugins", c); err != nil {
-		return err
-	}
 
-	return nil
+	_, err = kc.ReplaceConfigMap("plugins", c)
+	return err
 }
 
 func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent) error {

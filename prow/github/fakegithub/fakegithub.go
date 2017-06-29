@@ -177,22 +177,22 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	return m
 }
 
-func (f *FakeClient) GetFile(org, repo, file, commit string) (string, error) {
+func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	if contents, ok := f.RemoteFiles[file]; !ok {
-		return "", fmt.Errorf("Could not find file %s", file)
+		return nil, fmt.Errorf("Could not find file %s", file)
 	} else {
 		if commit == "" {
 			if master, ok := contents["master"]; ok {
-				return master, nil
+				return []byte(master), nil
 			}
 
-			return "", fmt.Errorf("Could not find file %s in master", file)
+			return nil, fmt.Errorf("Could not find file %s in master", file)
 		}
 
 		if content, ok := contents[commit]; ok {
-			return content, nil
+			return []byte(content), nil
 		}
 
-		return "", fmt.Errorf("Could not find file %s with ref %s", file, commit)
+		return nil, fmt.Errorf("Could not find file %s with ref %s", file, commit)
 	}
 }

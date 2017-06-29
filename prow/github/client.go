@@ -676,17 +676,14 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 }
 
 // GetFile uses github repo contents API to retrieve the content of a file with commit sha.
-// Todo: Support retrieve a directory
-func (c *Client) GetFile(org, repo, filepath, commit string) (string, error) {
+// If commit is empty, it will grab content from repo's default branch, usually master.
+// TODO(krzyzacy): Support retrieve a directory
+func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	c.log("GetFile", org, repo, filepath, commit)
 
-	var url string
-	if commit == "" {
-		// Request content from master head
-		url = fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath)
-	} else {
-		// Request from a specific commit
-		url = fmt.Sprintf("%s/repos/%s/%s/contents/%s?ref=%s", c.base, org, repo, filepath, commit)
+	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath)
+	if commit != "" {
+		url = fmt.Sprintf("%s?ref=%s", url, commit)
 	}
 
 	var res Content
@@ -697,10 +694,10 @@ func (c *Client) GetFile(org, repo, filepath, commit string) (string, error) {
 	}, &res)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	} else if decoded, err := base64.StdEncoding.DecodeString(res.Content); err != nil {
-		return "", fmt.Errorf("error decoding %s : %v", res.Content, err)
+		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
 	} else {
-		return string(decoded), nil
+		return decoded, nil
 	}
 }
