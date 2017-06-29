@@ -15,8 +15,10 @@ KUBECONFIG ?= $(HOME)/.kube/config
 TARGET ?= kubernetes
 
 TOKEN ?= "./token"
-token=$(shell cat $(TOKEN))
 token64=$(shell base64 $(TOKEN))
+
+HOOKSECRET ?= "./hook-secret"
+hooksecret64=$(shell base64 $(HOOKSECRET))
 
 READONLY ?= true
 
@@ -52,6 +54,20 @@ push_config:
 	# pushes a new configmap.
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/deployment/$(TARGET)/configmap.yaml
 
+# Creates a service resource spec for the specified target and app.
+service:
+ifneq ("", "$(wildcard $(APP)/service.yaml)")
+	# updating service.yaml by replacing @@ with $(TARGET).
+	sed -e 's!@@!$(TARGET)!g' $(APP)/service.yaml > $(APP)/local.service.yaml
+endif
+
+# Pushes a service resource spec.
+push_service: service
+ifneq ("", "$(wildcard $(APP)/service.yaml)")
+	# Applying service.yaml.
+	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.service.yaml
+endif
+
 # updates the deployment.yaml with current build information and sets it to --dry-run
 deployment:
 	# update the deployment.yaml with the current date and git hash
@@ -64,14 +80,42 @@ ifeq ($(READONLY),false)
 endif
 	# update the deployment.yaml with label "readonly: true"
 	sed -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.deployment.yaml
-
 	# String-replacement of @@ by $(TARGET) in the deployment file.
 	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.deployment.yaml
 
 # simple transformation of a github oauth secret file to a kubernetes secret
 secret:
-	@echo $(token64)
-	sed -e 's|1234567890123456789012345678901234567890123456789012345=|$(token64)|' $(APP)/deployment/$(TARGET)/secret.yaml > $(APP)/local.secret.yaml
+	# Updating secret.yaml and outputing to $(APP)/local.secret.yaml.
+	sed -e 's|<TOKEN>|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
+	sed -i -e 's|<HOOKSECRET>|$(hooksecret64)|' $(APP)/local.secret.yaml
+	# String-replacement of @@ by $(TARGET) in the secrets file.
+	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
+
+# Generate and deploy the token secret.
+push_secret: secret
+	# Appling local.secret.yaml.
+	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.secret.yaml
+
+# Generate resource spec files for the persistent volume and claim.
+volume:
+ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
+	# Updating pv.yaml and pvc.yaml by replacing @@ with TARGET.
+	sed -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
+	sed -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
+endif
+
+# Create the persistent volume and persistent volume claim.
+push_volume: volume
+ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
+	# Creating persistent volume and persistent volume claim.
+	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
+	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pvc.yaml
+	# Sleeping for 2s to allow claim to bind to volume.
+	@sleep 2
+endif
+
+# Deploys after completeing first time setup such as creating the volume and volume claim, and creating the token secret, and service.
+first_time_deploy: push_volume push_secret push_service push_config deploy
 
 clean:
 	rm -f mungegithub $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
@@ -92,16 +136,19 @@ help:
 	@echo " TARGET=     which repository this should run against. ex: contrib, test-infra, kubernetes. Default: $(TARGET)"
 	@echo ""
 	@echo "TARGETS:"
-	@echo " all:          runs 'container'"
-	@echo " mungegithub:  builds the binary"
-	@echo " container:    builds the binary and creates a container with the binary"
-	@echo " push:         pushes the container to the registry"
-	@echo " deploy:       launches/updates the app on a kubernetes cluster"
-	@echo " push_config:  applys changes to configMaps for the app/target. $(APP)/deployment/$(TARGET)/configmap.yaml"
-	@echo " deployment:   updates $(APP)/deployment.yaml and places results in $(APP)/local.deployment.yaml"
-	@echo " ui-stub:      grab upstream submit-queue data and launch the web ui on port 8000"
-	@echo " secret:       updates $(APP)/secret.yaml with TOKEN an creates $(APP)/local.secret.yaml"
-	@echo " clean:        deletes the binary and local files (does not delete old containers)"
+	@echo " all:              runs 'container'"
+	@echo " mungegithub:      builds the binary"
+	@echo " container:        builds the binary and creates a container with the binary"
+	@echo " push:             pushes the container to the registry"
+	@echo " deploy:           launches/updates the app on a kubernetes cluster"
+	@echo " push_config:      applys changes to configMaps for the app/target. $(APP)/deployment/$(TARGET)/configmap.yaml"
+	@echo " deployment:       updates $(APP)/deployment.yaml and places results in $(APP)/local.deployment.yaml"
+	@echo " ui-stub:          grab upstream submit-queue data and launch the web ui on port 8000"
+	@echo " secret:           updates $(APP)/secret.yaml with TOKEN and HOOKSECRET and creates $(APP)/local.secret.yaml"
+	@echo " push_secret:      creates $(APP)/local.secret.yaml using the secret make target and applies it to the cluster."
+	@echo " service:           updates $(APP)/service.yaml with TARGET and creates $(APP)/local.service.yaml"
+	@echo " push_service:      creates $(APP)/local.service.yaml using the service make target and applies it to the cluster."
+	@echo " clean:            deletes the binary and local files (does not delete old containers)"
 
 
-.PHONY: all mungegithub test container push dryrun cleandryrun deployment secret clean help
+.PHONY: all mungegithub test container push push_config service push_service deployment secret push_secret volume push_volume first_time_deploy clean ui-stub help

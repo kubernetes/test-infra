@@ -3,8 +3,8 @@ kind: Service
 metadata:
   labels:
     app: cherrypick
-    target-repo: kubernetes
-  name: kubernetes-cp-status
+    target-repo: @@
+  name: @@-cp-status
   namespace: default
 spec:
   ports:

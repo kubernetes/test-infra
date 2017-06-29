@@ -3,8 +3,8 @@ kind: PersistentVolume
 metadata:
   labels:
     app: submit-queue
-    target-repo: contrib
-  name: contrib-cache
+    target-repo: @@
+  name: @@-cache
 spec:
   capacity:
     storage: 10Gi
@@ -12,5 +12,5 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   gcePersistentDisk:
-    pdName: contrib-cache
+    pdName: @@-cache
     fsType: ext4

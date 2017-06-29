@@ -46,8 +46,13 @@ data:
   assign-fixes.fixes-issue-reassign: "false"
   blunderbuss.blunderbuss-reassign: "false"
   size.generated-files-config: ""
-  check-labels.label-file: "/gitrepos/test-infra/labels.yaml"
-  alias.alias-file: "/gitrepos/test-infra/OWNERS_ALIASES"
+  check-labels.label-file: ""
+  issue-categorizer.triager-url: ""
+  alias.alias-file: ""
+  issue-creator.test-owners-csv: ""
+  triage.window: "0"
+  triage.count: "0"
+  flakyjob.count: "0"
 
   # Temporary gate approval process
   approval-activated: "false"
