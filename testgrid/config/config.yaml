@@ -581,14 +581,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-6
 - name: ci-kubernetes-e2e-gce-etcd2-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd2-release-1-6
-- name: ci-kubernetes-e2e-gce-federation-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1.6
+- name: ci-kubernetes-e2e-gce-federation-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-6
 - name: ci-kubernetes-e2e-gce-reboot-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1-6
 - name: ci-kubernetes-e2e-gce-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1-6
-- name: ci-kubernetes-e2e-gce-scalability-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1.6
+- name: ci-kubernetes-e2e-gce-scalability-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1-6
 - name: ci-kubernetes-e2e-gce-serial-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial-release-1-6
 - name: ci-kubernetes-e2e-gce-slow-release-1-6
@@ -601,8 +601,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-release-1-6
-- name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+- name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-slow-release-1-6
@@ -1322,9 +1322,9 @@ dashboards:
   - name: gci-gce-scalability-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gci-gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: gce-serial
@@ -2051,7 +2051,7 @@ dashboards:
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-federation-serial
   - name: gce-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1.6
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: soak-gce-deploy
     test_group_name: ci-kubernetes-soak-gce-federation-deploy
   - name: soak-gce-test
@@ -2084,7 +2084,7 @@ dashboards:
   - name: gce-etcd2-1.6
     test_group_name: ci-kubernetes-e2e-gce-etcd2-release-1-6
   - name: gce-federation-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1.6
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: gce-reboot-1.6
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-6
   - name: gce-1.6
@@ -2092,7 +2092,7 @@ dashboards:
   - name: federation-build-1.6
     test_group_name: ci-kubernetes-federation-build-1.6
   - name: gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gce-serial-1.6
     test_group_name: ci-kubernetes-e2e-gce-serial-release-1-6
   - name: gce-slow-1.6
@@ -2106,7 +2106,7 @@ dashboards:
   - name: gci-gce-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-6
   - name: gci-gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
   - name: gci-gce-serial-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1-6
   - name: gci-gce-slow-1.6
@@ -2168,7 +2168,7 @@ dashboards:
   - name: gce-reboot-1.6
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-6
   - name: gce-scalability-1.6
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1.6
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: test-go-1.6
     test_group_name: ci-kubernetes-test-go-release-1.6
   - name: verify-1.6
